@@ -107,6 +107,8 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
     static final String ATTR_BROWSEABLE = "browseable"; //NOI18N
     static final String ATTR_PRIORITY = "priority"; //NOI18N
     
+    private static final Logger LOG = Logger.getLogger(AnnotationTypeProcessor.class.getName());
+    
     /** XML data object. */
     private FileObject xmlDataObject;
     
@@ -179,6 +181,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                 at.putProp(AnnotationType.PROP_FILE, xmlDataObject);
                 annotationType = at;
             } catch (Exception e) { 
+                LOG.warning("Corrupted xmlDataObject " + xmlDataObject.getPath());
                 Exceptions.printStackTrace(e);
             }
 

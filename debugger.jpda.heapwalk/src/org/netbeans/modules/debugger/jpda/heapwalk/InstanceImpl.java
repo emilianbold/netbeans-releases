@@ -208,7 +208,7 @@ public class InstanceImpl implements Instance {
                 int CHUNK = 1000;
                 for (int i = 0; i < length; i += CHUNK) {
                     int to = Math.min(i + CHUNK, length);
-                    Variable[] items = obj.getFields(i, to - i);
+                    Variable[] items = obj.getFields(i, to);
                     int j = i;
                     for (Variable item: items) {
                         if (var.equals(item)) {

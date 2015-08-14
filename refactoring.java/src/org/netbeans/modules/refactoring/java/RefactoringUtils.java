@@ -621,6 +621,9 @@ public class RefactoringUtils {
         assert files.length > 0;
         Set<URL> dependentSourceRoots = new HashSet();
         Set<URL> dependentCompileRoots = new HashSet();
+        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
+        ClassPath boot = null;
+        ClassPath compile = null;
         for (FileObject fo : files) {
             ClassPath cp = null;
             FileObject ownerRoot = null;
@@ -642,11 +645,11 @@ public class RefactoringUtils {
                             toRetain.add(e.getURL());
                         }
                     }
-                    Set<URL> compile = new HashSet<URL>(urls);
+                    Set<URL> compileUrls = new HashSet<URL>(urls);
                     urls.retainAll(toRetain);
-                    compile.removeAll(toRetain);
+                    compileUrls.removeAll(toRetain);
                     dependentSourceRoots.addAll(urls);
-                    dependentCompileRoots.addAll(compile);
+                    dependentCompileRoots.addAll(compileUrls);
                 } else {
                     dependentSourceRoots.add(sourceRoot);
                 }
@@ -661,6 +664,27 @@ public class RefactoringUtils {
                     for (FileObject root : scp.getRoots()) {
                         dependentSourceRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
                     }
+                }
+            }
+            
+            if(fo != null) {
+                ClassPath fboot = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                ClassPath fcompile = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                //When file[0] is a class file, there is no compile cp but execute cp
+                //try to get it
+                if (fcompile == null) {
+                    fcompile = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
+                }
+                //If no cp found at all log the file and use nullPath since the ClasspathInfo.create
+                //doesn't accept null compile or boot cp.
+                if (fcompile == null) {
+                    LOG.log(Level.WARNING, "No classpath for: {0} {1}", new Object[]{FileUtil.getFileDisplayName(fo), FileOwnerQuery.getOwner(fo)}); //NOI18N
+                } else {
+                    compile = compile != null ? merge(compile, fcompile) : fcompile;
+                }
+                
+                if (fboot != null) {
+                    boot = boot != null ? merge(boot, fboot) : fboot;
                 }
             }
         }
@@ -680,18 +704,7 @@ public class RefactoringUtils {
         }
 
         ClassPath rcp = ClassPathSupport.createClassPath(dependentSourceRoots.toArray(new URL[dependentSourceRoots.size()]));
-        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath boot = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.BOOT) : nullPath;
-        ClassPath compile = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.COMPILE) : nullPath;
-        //When file[0] is a class file, there is no compile cp but execute cp
-        //try to get it
         if (compile == null) {
-            compile = ClassPath.getClassPath(files[0], ClassPath.EXECUTE);
-        }
-        //If no cp found at all log the file and use nullPath since the ClasspathInfo.create
-        //doesn't accept null compile or boot cp.
-        if (compile == null) {
-            LOG.log(Level.WARNING, "No classpath for: {0} {1}", new Object[]{FileUtil.getFileDisplayName(files[0]), FileOwnerQuery.getOwner(files[0])}); //NOI18N
             compile = nullPath;
         }
         compile = merge(compile, ClassPathSupport.createClassPath(dependentCompileRoots.toArray(new URL[dependentCompileRoots.size()])));

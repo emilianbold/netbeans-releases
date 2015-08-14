@@ -105,7 +105,7 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI, JavaRefactoring
      */
     @Override
     public String getName() {
-        return NbBundle.getMessage(UseSuperTypeRefactoringUI.class, "LBL_UseSuperType"); // NOI18N
+        return NbBundle.getMessage(UseSuperTypeRefactoringUI.class, "LBL_UseSuperType").substring(1); // NOI18N
     }
     
     /**

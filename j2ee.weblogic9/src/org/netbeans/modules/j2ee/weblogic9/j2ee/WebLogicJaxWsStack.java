@@ -65,6 +65,8 @@ public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
     private static final Version JAXWS_228_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.2"); // NOI18N
     
     private static final Version JAXWS_2210_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.3"); // NOI18N
+
+    private static final Version JAXWS_2211_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.2.1"); // NOI18N
     
     private final Version serverVersion;
     
@@ -74,7 +76,9 @@ public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
     
     public WebLogicJaxWsStack(Version serverVersion) {
         this.serverVersion = serverVersion;
-        if (serverVersion != null && JAXWS_2210_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+        if (serverVersion != null && JAXWS_2211_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+            version = "2.2.11"; // NOI18N
+        } else if (serverVersion != null && JAXWS_2210_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
             version = "2.2.10"; // NOI18N
         } else if (serverVersion != null && JAXWS_228_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
             version = "2.2.8"; // NOI18N
