@@ -51,6 +51,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -110,79 +111,89 @@ public class InvalidFormatString extends AbstractCodeAudit {
             Runnable runnable = new Runnable () {
                 @Override
                 public void run() {
-                    TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, doc.getLength(), false, true);
-                    if (docTokenSequence == null) {
-                        return;
-                    }
-                    docTokenSequence.moveStart();
-                    
-                    final CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
-                    State state = State.DEFAULT;
-                    boolean formatFlag = false;  // detect was format string already processed
-                    List<FormatError> errorsList = new LinkedList<>();
-                    StringBuilder paramBuf = new StringBuilder();
-                    ArrayList<FormatInfo> info = new ArrayList<>();
-                    ArrayList<Parameter> params = new ArrayList<>();
-                    int bracketsCounter = 0;
-                    while (docTokenSequence.moveNext()) {
-                        if (docTokenSequence.token().id() instanceof CppTokenId) {
-                            CppTokenId tokenId = (CppTokenId) docTokenSequence.token().id();
-                            if (tokenId.equals(CppTokenId.IDENTIFIER) && state == State.DEFAULT) {
-                                CsmReference reference = rr.findReference(file, doc, docTokenSequence.offset());
-                                CsmObject object = reference.getReferencedObject();
-                                if (isFormattedPrintFunction(object)) {
-                                    state = State.START;
-                                }
-                            } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.START) {
-                                state = State.IN_PARAM;
-                            } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM) {
-                                state = State.IN_PARAM_BRACKET;
-                                bracketsCounter++;
-                                if (formatFlag) {
-                                    paramBuf.append(docTokenSequence.token().text());
-                                }
-                            } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM_BRACKET) {
-                                bracketsCounter++;
-                                if (formatFlag) {
-                                    paramBuf.append(docTokenSequence.token().text());
-                                }
-                            } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM_BRACKET) {
-                                bracketsCounter--;
-                                if (bracketsCounter == 0) {
-                                    state = State.IN_PARAM;
-                                }
-                                if (formatFlag) {
-                                    paramBuf.append(docTokenSequence.token().text());
-                                }
-                            } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
-                                if (paramBuf.length() > 0) {
-                                    params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
-                                }
-                                paramBuf = new StringBuilder();
-                                int line = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, docTokenSequence.offset())[0];
-                                errorsList.addAll(validateParameters(file, info, params, line));
-                                state = State.DEFAULT;
-                                formatFlag = false;
-                            } else if (state == State.IN_PARAM && tokenId.equals(CppTokenId.STRING_LITERAL) && !formatFlag) {
-                                formatFlag = true;
-                                if (!params.isEmpty()) { 
-                                    params = new ArrayList<>();
-                                }
-                                info = processFormatString(docTokenSequence.token().text().toString());
-                                int line = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, docTokenSequence.offset())[0];
-                            } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
-                                if (paramBuf.length() > 0) {
-                                    params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
-                                }
-                                paramBuf = new StringBuilder();
-                            } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
-                                    && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
-                                    && formatFlag) {
-                                paramBuf.append(docTokenSequence.token().text());
+                    if (doc instanceof AbstractDocument) {
+                        List<FormatError> errorsList = new LinkedList<>();
+                        List<FormattedPrintFunction> functions = new LinkedList<>();
+                        ((AbstractDocument) doc).readLock();
+                        try {
+                            TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, doc.getLength(), false, true);
+                            if (docTokenSequence == null) {
+                                return;
                             }
+                            docTokenSequence.moveStart();
+
+                            final CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
+                            State state = State.DEFAULT;
+                            boolean formatFlag = false;  // detect was format string already processed
+                            StringBuilder paramBuf = new StringBuilder();
+                            ArrayList<Parameter> params = new ArrayList<>();
+                            String formatString = "";
+                            int bracketsCounter = 0;
+                            while (docTokenSequence.moveNext()) {
+                                if (docTokenSequence.token().id() instanceof CppTokenId) {
+                                    CppTokenId tokenId = (CppTokenId) docTokenSequence.token().id();
+                                    if (tokenId.equals(CppTokenId.IDENTIFIER) && state == State.DEFAULT) {
+                                        CsmReference reference = rr.findReference(file, doc, docTokenSequence.offset());
+                                        CsmObject object = reference.getReferencedObject();
+                                        if (isFormattedPrintFunction(object)) {
+                                            state = State.START;
+                                        }
+                                    } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.START) {
+                                        state = State.IN_PARAM;
+                                    } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM) {
+                                        state = State.IN_PARAM_BRACKET;
+                                        bracketsCounter++;
+                                        if (formatFlag) {
+                                            paramBuf.append(docTokenSequence.token().text());
+                                        }
+                                    } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM_BRACKET) {
+                                        bracketsCounter++;
+                                        if (formatFlag) {
+                                            paramBuf.append(docTokenSequence.token().text());
+                                        }
+                                    } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM_BRACKET) {
+                                        bracketsCounter--;
+                                        if (bracketsCounter == 0) {
+                                            state = State.IN_PARAM;
+                                        }
+                                        if (formatFlag) {
+                                            paramBuf.append(docTokenSequence.token().text());
+                                        }
+                                    } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
+                                        if (paramBuf.length() > 0) {
+                                            params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
+                                        }
+                                        int line = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, docTokenSequence.offset())[0];
+                                        functions.add(new FormattedPrintFunction(file, line, formatString, params));
+                                        state = State.DEFAULT;
+                                        formatFlag = false;
+                                        paramBuf = new StringBuilder();
+                                    } else if (state == State.IN_PARAM && tokenId.equals(CppTokenId.STRING_LITERAL) && !formatFlag) {
+                                        formatFlag = true;
+                                        if (!params.isEmpty()) { 
+                                            params = new ArrayList<>();
+                                        }
+                                        formatString = docTokenSequence.token().text().toString();
+                                    } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
+                                        if (paramBuf.length() > 0) {
+                                            params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
+                                        }
+                                        paramBuf = new StringBuilder();
+                                    } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
+                                            && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
+                                            && formatFlag) {
+                                        paramBuf.append(docTokenSequence.token().text());
+                                    }
+                                }
+                            }
+                        } finally {
+                            ((AbstractDocument) doc).readUnlock();
                         }
+                        for (FormattedPrintFunction function : functions) {
+                            errorsList.addAll(function.validate());
+                        }
+                        result.set(errorsList);
                     }
-                    result.set(errorsList);
                 }
             };
             
@@ -380,7 +391,6 @@ public class InvalidFormatString extends AbstractCodeAudit {
         FormatInfo info = new FormatInfo();
         ConversionState state = ConversionState.DEFAULT;
         for (int i = 0, limit = format.length(); i < limit; i++) {
-            char __current_char__ = format.charAt(i);
             if (format.charAt(i) == '%' && state == ConversionState.DEFAULT) {  // NOI18N
                 state = ConversionState.START;
                 info = new FormatInfo();
@@ -680,6 +690,24 @@ public class InvalidFormatString extends AbstractCodeAudit {
 
         public int getOffset() {
             return offset;
+        }
+    }
+    
+    private class FormattedPrintFunction {
+        private final CsmFile file;
+        private final ArrayList<Parameter> parameters;
+        private final String formatString;
+        private final int line;
+        
+        public FormattedPrintFunction(CsmFile file, int line, String formatString, ArrayList<Parameter> parameters) {
+            this.file = file;
+            this.line = line;
+            this.formatString = formatString;
+            this.parameters = parameters;
+        }
+        
+        public List<FormatError> validate() {
+            return validateParameters(file, processFormatString(formatString), parameters, line);
         }
     }
     
