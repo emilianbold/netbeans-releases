@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.IOException;
+import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,6 +81,7 @@ import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.java.ui.elements.ElementNode;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.view.NodeRenderer;
@@ -479,6 +481,8 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
                 : new DefaultComboBoxModel());
     }
     
+    private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
+    
     private void updateClasses() {
         typeCombobox.setModel(new DefaultComboBoxModel(new Object[]{ElementNode.getWaitNode()}));
         RP.post(new Runnable() {
@@ -492,7 +496,13 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
                     String pathname = packageName.replaceAll("\\.", "/"); // NOI18N
                     FileObject fo = g.getRootFolder().getFileObject(pathname);
                     ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                    if(bootCp == null) {
+                        bootCp = EMPTY_PATH;
+                    }
                     ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                    if(compileCp == null) {
+                        compileCp = EMPTY_PATH;
+                    }
                     ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
                     final ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
                     Set<ClassIndex.SearchScopeType> searchScopeType = new HashSet<ClassIndex.SearchScopeType>(1);
