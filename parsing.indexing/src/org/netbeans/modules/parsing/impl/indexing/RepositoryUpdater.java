@@ -436,7 +436,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         FileObject root = URLCache.getInstance().findFileObject(rootUrl, true);
         if (root == null) {
-            LOGGER.log(Level.INFO, "{0} can''t be translated to FileObject", rootUrl); //NOI18N
+            LOGGER.log(Level.FINE, "{0} can't be translated to FileObject", rootUrl); //NOI18N
             return null;
         }
 
