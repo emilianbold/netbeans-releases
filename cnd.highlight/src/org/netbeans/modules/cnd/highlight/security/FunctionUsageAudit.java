@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.highlight.security;
 
-import java.util.List;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;

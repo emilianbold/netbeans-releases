@@ -945,6 +945,9 @@ public final class AttachPanel extends TopComponent {
                 if (selectedRow == -1) {
                     return false;
                 }
+                if (processModel.getRowCount() <= selectedRow) {
+                    return false;
+                }
                 Object pidobj = processModel.getValueAt(selectedRow, 1);
                 if (!(pidobj instanceof String)) {
                     return false;
