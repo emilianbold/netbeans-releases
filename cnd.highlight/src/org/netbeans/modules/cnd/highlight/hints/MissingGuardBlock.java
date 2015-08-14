@@ -139,21 +139,16 @@ public class MissingGuardBlock extends AbstractCodeAudit {
                     }
                 };
                 
-                FutureTask<AtomicInteger> moveBellowCommentsTask = new FutureTask<>(runnable, startOffset);
-                doc.render(moveBellowCommentsTask);
+                doc.render(runnable);
                 
-                try {
-                    String message = NbBundle.getMessage(MissingGuardBlock.class, "MissingGuardBlock.description"); // NOI18N
-                    int start = moveBellowCommentsTask.get().get();
-                    CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
-                    if (response instanceof AnalyzerResponse) {
-                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                            new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, start));  // NOI18N
-                    } else {
-                        response.addError(new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CsmHintProvider.NAME, getID(), message, severity, start));
-                    }
-                } catch (InterruptedException | CancellationException | ExecutionException ex) {
-                    ex.printStackTrace(System.err);
+                String message = NbBundle.getMessage(MissingGuardBlock.class, "MissingGuardBlock.description"); // NOI18N
+                int start = startOffset.get();
+                CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
+                if (response instanceof AnalyzerResponse) {
+                    ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
+                        new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, start));  // NOI18N
+                } else {
+                    response.addError(new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CsmHintProvider.NAME, getID(), message, severity, start));
                 }
             }
         }
