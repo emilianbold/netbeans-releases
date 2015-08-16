@@ -60,6 +60,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**
@@ -80,15 +81,29 @@ public final class DBMetaDataFactory {
     public static final int SYBASE = 7;
     public static final int AXION = 8;
     public static final int POINTBASE = 9;
-    private Connection dbconn;
-    private int dbType = -1;
-    private DatabaseMetaData dbmeta;
+    private final int dbType;
+    private final DatabaseMetaData dbmeta;
+    private final Quoter sqlquoter;
+    private final String identifierQuoteString;
 
     public DBMetaDataFactory(Connection dbconn) throws SQLException {
         assert dbconn != null;
-        this.dbconn = dbconn;
         dbmeta = dbconn.getMetaData();
-        dbType = getDBType();
+        
+        // get the database type based on the product name converted to lowercase
+        if (dbmeta.getURL() != null) {
+            dbType = getDBTypeFromURL(dbmeta.getURL());
+        } else {
+            dbType = JDBC;
+        }
+        
+        sqlquoter = SQLIdentifiers.createQuoter(dbmeta);
+        String buildIdentifierQuoteString = "\""; // NOI18N
+        try {
+            buildIdentifierQuoteString = dbmeta.getIdentifierQuoteString().trim();
+        } catch (SQLException e) {
+        }
+        identifierQuoteString = buildIdentifierQuoteString;
     }
 
     public boolean supportsLimit() {
@@ -103,14 +118,7 @@ public final class DBMetaDataFactory {
     }
 
     public int getDBType() throws SQLException {
-        if (dbType != -1) {
-            return dbType;
-        }
-        // get the database type based on the product name converted to lowercase
-        if (dbmeta.getURL() != null) {
-            return getDBTypeFromURL(dbmeta.getURL());
-        }
-        return JDBC;
+        return dbType;
     }
 
     private static int getDBTypeFromURL(String url) {
@@ -118,21 +126,21 @@ public final class DBMetaDataFactory {
 
         // get the database type based on the product name converted to lowercase
         url = url.toLowerCase();
-        if (url.indexOf("sybase") > -1) { // NOI18N
+        if (url.contains("sybase")) { // NOI18N
             dbtype = SYBASE;
-        } else if (url.indexOf("sqlserver") > -1) { // NOI18N
+        } else if (url.contains("sqlserver")) { // NOI18N
             dbtype = SQLSERVER;
-        } else if (url.indexOf("db2") > -1) { // NOI18N
+        } else if (url.contains("db2")) { // NOI18N
             dbtype = DB2;
-        } else if (url.indexOf("orac") > -1) { // NOI18N
+        } else if (url.contains("orac")) { // NOI18N
             dbtype = ORACLE;
-        } else if (url.indexOf("axion") > -1) { // NOI18N
+        } else if (url.contains("axion")) { // NOI18N
             dbtype = AXION;
-        } else if (url.indexOf("derby") > -1) { // NOI18N
+        } else if (url.contains("derby")) { // NOI18N
             dbtype = DERBY;
-        } else if (url.indexOf("postgre") > -1) { // NOI18N
+        } else if (url.contains("postgre")) { // NOI18N
             dbtype = PostgreSQL;
-        } else if (url.indexOf("mysql") > -1) { // NOI18N
+        } else if (url.contains("mysql")) { // NOI18N
             dbtype = MYSQL;
         } else if (url.contains("pointbase")) { // NOI18N
             dbtype = POINTBASE;
@@ -170,7 +178,7 @@ public final class DBMetaDataFactory {
     }
 
     public synchronized Collection<DBTable> generateDBTables(ResultSet rs, String sql, boolean isSelect) throws SQLException {
-        Map<String, DBTable> tables = new LinkedHashMap<String, DBTable>();
+        Map<String, DBTable> tables = new LinkedHashMap<>();
         String noTableName = "UNKNOWN"; // NOI18N
 
         // get table column information
@@ -267,13 +275,12 @@ public final class DBMetaDataFactory {
             }
 
             // create a table column and add it to the vector
-            //String typeName = typeInfo.containsKey(sqlTypeCode) ? typeInfo.get(sqlTypeCode) : DataViewUtils.getStdSqlType(sqlTypeCode);
             DBColumn col = new DBColumn(table, colName, sqlTypeCode, sqlTypeStr, scale, precision, isNullable, autoIncrement);
             col.setOrdinalPosition(position);
             col.setDisplayName(displayName);
             col.setDisplaySize(displaySize);
             table.addColumn(col);
-            table.setQuoter(SQLIdentifiers.createQuoter(dbmeta));
+            table.setQuoter(sqlquoter);
         }
 
         // Oracle does not return table name for resultsetmetadata.getTableName()
@@ -285,21 +292,31 @@ public final class DBMetaDataFactory {
             }
         }
 
+        return tables.values();
+    }
+
+    /**
+     * Do post processing of the resultset metadata and add data provided by
+     * database metadata.
+     * 
+     * This was decoupled from generateDBTables because accessing the database
+     * metadata before the resultset is fully read risks either a corrupted resultset
+     * (oracle, pointbase) or out of memory errors on large resultsets (mssql)
+     * 
+     * @param tables 
+     */
+    public void postprocessTables(Collection<DBTable> tables) {
         DBModel dbModel = new DBModel();
-        dbModel.setDBType(getDBType());
-        for (DBTable tbl : tables.values()) {
+        dbModel.setDBType(dbType);
+        for (DBTable tbl : tables) {
             if (DataViewUtils.isNullString(tbl.getName())) {
                 continue;
             }
             checkPrimaryKeys(tbl);
             checkForeignKeys(tbl);
             dbModel.addTable(tbl);
-            if (getDBType() != POINTBASE) {  //#173798 - dbmeta.getColumns invalidates rs ResultsSet
-                populateDefaults(tbl);
-            }
+            populateDefaults(tbl);
         }
-
-        return tables.values();
     }
 
     private void populateDefaults(DBTable table) {
@@ -359,12 +376,7 @@ public final class DBMetaDataFactory {
     }
 
     private String unQuoteIfNeeded(String id) {
-        String quoteStr = "\""; // NOI18N
-        try {
-            quoteStr = dbmeta.getIdentifierQuoteString().trim();
-        } catch (SQLException e) {
-        }
-        return id.replaceAll(quoteStr, "");
+        return id.replaceAll(identifierQuoteString, "");
     }
 
     private void checkPrimaryKeys(DBTable newTable) {
@@ -392,7 +404,7 @@ public final class DBMetaDataFactory {
             newTable.setForeignKeyMap(foreignKeys);
 
             // create a hash set of the keys
-            Set<String> foreignKeysSet = new HashSet<String>();
+            Set<String> foreignKeysSet = new HashSet<>();
             Iterator<DBForeignKey> it = foreignKeys.values().iterator();
             while (it.hasNext()) {
                 DBForeignKey key = it.next();
