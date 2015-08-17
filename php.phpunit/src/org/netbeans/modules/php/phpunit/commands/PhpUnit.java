@@ -123,6 +123,7 @@ public final class PhpUnit {
     private static final String COVERAGE_LOG_PARAM = "--coverage-clover"; // NOI18N
     private static final String LIST_GROUPS_PARAM = "--list-groups"; // NOI18N
     private static final String GROUP_PARAM = "--group"; // NOI18N
+    private static final String PARAM_SEPARATOR = "--"; // NOI18N
     // bootstrap & config
     private static final String BOOTSTRAP_PARAM = "--bootstrap"; // NOI18N
     private static final String BOOTSTRAP_FILENAME = "bootstrap%s.php"; // NOI18N
@@ -319,6 +320,8 @@ public final class PhpUnit {
             // #218607 - hotfix
             //params.add(SUITE_NAME)
             params.add(getNbSuite().getAbsolutePath());
+            // #254276
+            params.add(PARAM_SEPARATOR);
             params.add(String.format(SUITE_RUN, joinPaths(runInfo.getStartFiles(), SUITE_PATH_DELIMITER)));
         }
 
