@@ -129,8 +129,8 @@ public final class LaunchersRegistry {
         for (String key : properties.stringPropertyNames()) {
             Matcher matcher = pattern.matcher(key);
             if (matcher.find()) {
-                int n = Integer.parseInt(matcher.group(1));
-                Launcher l = create(n, key.substring(0, key.indexOf("." + COMMAND_TAG)), properties, common);//NOI18N
+                int index = Integer.parseInt(matcher.group(1));
+                Launcher l = create(index, key.substring(0, key.indexOf("." + COMMAND_TAG)), properties, common);//NOI18N
                 if (l != null) {
                     newLaunchers.add(l);
                 }
@@ -139,7 +139,7 @@ public final class LaunchersRegistry {
         Collections.sort(newLaunchers, new Comparator<Launcher>() {
             @Override
             public int compare(Launcher o1, Launcher o2) {
-                return o1.getN() - o2.getN();
+                return o1.getIndex() - o2.getIndex();
             }
         });
         boolean modified = false;
@@ -167,12 +167,12 @@ public final class LaunchersRegistry {
         return true;
     }
     
-    private Launcher create(int n, String name, Properties properties, Launcher common) {
+    private Launcher create(int index, String name, Properties properties, Launcher common) {
         boolean commonLauncher = name.equals(COMMON_TAG);
         assert !commonLauncher || common == null : "common launcher can not have other common";//NOI18N
         final String command = properties.getProperty(name + "." + COMMAND_TAG);//NOI18N
         assert commonLauncher || command != null : "usual launcher without command " + name;//NOI18N
-        Launcher launcher = new Launcher(n, command, common);
+        Launcher launcher = new Launcher(index, command, common);
         final String displayName = properties.getProperty(name + "." + NAME_TAG);//NOI18N
         if (displayName != null) {
             launcher.setName(displayName);
