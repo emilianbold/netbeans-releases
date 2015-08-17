@@ -175,7 +175,7 @@ public final class BowerProblemsProvider implements ProjectProblemsProvider, Pro
             return;
         }
         try {
-            FileUtil.addFileChangeListener(fileChangeListener, bowerComponents.getParentFile());
+            FileUtil.addFileChangeListener(fileChangeListener, FileUtil.normalizeFile(bowerComponents.getParentFile()));
         } catch (IllegalArgumentException exc) {
             // already listening
             LOGGER.log(Level.FINE, null, exc);
