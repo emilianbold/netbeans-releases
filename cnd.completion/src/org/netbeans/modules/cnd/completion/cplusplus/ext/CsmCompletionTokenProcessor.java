@@ -2717,19 +2717,35 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 break;
 
             case INT_LITERAL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("int"); // NOI18N
+                break;
+                
             case UNSIGNED_LITERAL:
 //                    case HEX_LITERAL:
 //                    case OCTAL_LITERAL:
                 constExp = createTokenExp(CONSTANT);
-                constExp.setType("int"); // NOI18N
+                constExp.setType("unsigned int"); // NOI18N
                 break;
 
             case LONG_LITERAL:
-            case LONG_LONG_LITERAL:
-            case UNSIGNED_LONG_LITERAL:
-            case UNSIGNED_LONG_LONG_LITERAL:
                 constExp = createTokenExp(CONSTANT);
                 constExp.setType("long"); // NOI18N
+                break;
+                
+            case LONG_LONG_LITERAL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("long long"); // NOI18N
+                break;
+                
+            case UNSIGNED_LONG_LITERAL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("unsigned long"); // NOI18N
+                break;
+                
+            case UNSIGNED_LONG_LONG_LITERAL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("unsigned long long"); // NOI18N
                 break;
 
             case FLOAT_LITERAL:
