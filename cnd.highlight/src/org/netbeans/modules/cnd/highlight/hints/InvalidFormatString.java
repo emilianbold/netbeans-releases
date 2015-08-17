@@ -652,10 +652,6 @@ public class InvalidFormatString extends AbstractCodeAudit {
                     return Arrays.asList("c");                                // NOI18N
                 } else if (type.contains("short")) {                          // NOI18N
                     return Arrays.asList("hd", "hi");                         // NOI18N
-                } else if (type.contains("long long")) {                      // NOI18N
-                    return Arrays.asList("lld", "lli");                       // NOI18N
-                } else if (type.contains("long")) {                           // NOI18N
-                    return Arrays.asList("ld", "li");                         // NOI18N
                 } else if (type.equals("int")) {                              // NOI18N
                     return Arrays.asList("d", "i", "c");                      // NOI18N
                 } else if (type.equals("intmax_t")) {                         // NOI18N
@@ -680,6 +676,10 @@ public class InvalidFormatString extends AbstractCodeAudit {
                                          "e", "le", "lle", "Le", "E", "lE", "llE", "LE",   // NOI18N
                                          "g", "lg", "llg", "Lg", "G", "lG", "llG", "LG",   // NOI18N
                                          "a", "la", "lla", "La", "A", "lA", "llA", "LA");  // NOI18N
+                } else if (type.contains("long long")) {                      // NOI18N
+                    return Arrays.asList("lld", "lli");                       // NOI18N
+                } else if (type.contains("long")) {                           // NOI18N
+                    return Arrays.asList("ld", "li");                         // NOI18N
                 }
             }
             return Collections.EMPTY_LIST;
