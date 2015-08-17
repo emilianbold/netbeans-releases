@@ -99,7 +99,7 @@ public class ExportXmlAction extends AbstractAction implements Presenter.Popup {
     
     private enum TagAtribute {
         ID("id"), // NOI18N
-        SOURCE("sourse"), // NOI18N
+        SOURCE("source"), // NOI18N
         TARGET("target"), // NOI18N
         EDGEDEFAULT("edgedefault"); // NOI18N
         
@@ -193,9 +193,9 @@ public class ExportXmlAction extends AbstractAction implements Presenter.Popup {
                 }
                 
                 Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                DOMSource sourse = new DOMSource(xmlDocument);
+                DOMSource source = new DOMSource(xmlDocument);
                 StreamResult result = new StreamResult(file);
-                transformer.transform(sourse, result);
+                transformer.transform(source, result);
             } catch (ParserConfigurationException e) {
                 e.printStackTrace(System.err);
             } catch (TransformerException e) {
