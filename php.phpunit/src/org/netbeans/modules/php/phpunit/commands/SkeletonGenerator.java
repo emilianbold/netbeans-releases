@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phpunit.commands;
 
@@ -157,11 +157,6 @@ public final class SkeletonGenerator {
         return null;
     }
 
-    @NbBundle.Messages({
-        "SkeletonGenerator.test.title=Skeleton Generator",
-        "# {0} - file name",
-        "SkeletonGenerator.test.generating=Creating test file for {0}"
-    })
     @CheckForNull
     public FileObject generateTest(PhpModule phpModule, FileObject sourceClassFile, String sourceClassName) throws ExecutionException {
         FileObject sourceDir = phpModule.getSourceDirectory();
@@ -189,7 +184,7 @@ public final class SkeletonGenerator {
         }
         String testClassName = PhpUnit.makeTestClass(sourceClassName);
         List<String> params = getParams(phpModule, sourceClassName, sourceClassFile, testClassName, testFile);
-        PhpExecutable skelGen = getExecutable(phpModule, Bundle.SkeletonGenerator_test_generating(sourceClassFile.getNameExt()), params);
+        PhpExecutable skelGen = getExecutable(phpModule, params);
         if (skelGen == null) {
             return null;
         }
@@ -248,15 +243,19 @@ public final class SkeletonGenerator {
         return params;
     }
 
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "SkeletonGenerator.run.title=PHPUnit Skeleton Generator ({0})",
+    })
     @CheckForNull
-    private PhpExecutable getExecutable(PhpModule phpModule, String title, List<String> params) {
+    private PhpExecutable getExecutable(PhpModule phpModule, List<String> params) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
             UiUtils.warnNoSources(phpModule.getDisplayName());
             return null;
         }
 
-        return getExecutable(title, FileUtil.toFile(sourceDirectory))
+        return getExecutable(Bundle.SkeletonGenerator_run_title(phpModule.getDisplayName()), FileUtil.toFile(sourceDirectory))
                 .optionsSubcategory(PhpUnitOptionsPanelController.OPTIONS_SUB_PATH)
                 .additionalParameters(params);
     }
