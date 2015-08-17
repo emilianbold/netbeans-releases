@@ -43,10 +43,14 @@ package org.netbeans.modules.cnd.makeproject.launchers;
 
 import org.netbeans.modules.cnd.makeproject.LaunchersRegistryAccessor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
@@ -69,6 +73,8 @@ public final class LaunchersRegistry {
     private static final String SYMFILES_TAG = "symbolFiles";// NOI18N    
     private static final String ENV_TAG = "env";// NOI18N
     
+    private static  Pattern pattern;
+
     private Object privateLaucnhersListener = null;  //for debugging purposes only
     
     static {  //for debugging purposes only
@@ -85,6 +91,8 @@ public final class LaunchersRegistry {
     
     LaunchersRegistry() {
         launchers = new ArrayList<>();
+        String regex = LAUNCHER_TAG + "(\\d*)[.]" + COMMAND_TAG;
+        pattern = Pattern.compile(regex);
     }
 
     public void add(Launcher launcher) {
@@ -117,15 +125,23 @@ public final class LaunchersRegistry {
 
     boolean load(Properties properties) {
         List<Launcher> newLaunchers = new ArrayList<>();
-        Launcher common = create(COMMON_TAG, properties, null);
+        Launcher common = create(-1, COMMON_TAG, properties, null);
         for (String key : properties.stringPropertyNames()) {
-            if (key.matches(LAUNCHER_TAG + "\\d*[.]" + COMMAND_TAG)) {//NOI18N
-                Launcher l = create(key.substring(0, key.indexOf("." + COMMAND_TAG)), properties, common);//NOI18N
+            Matcher matcher = pattern.matcher(key);
+            if (matcher.find()) {
+                int n = Integer.parseInt(matcher.group(1));
+                Launcher l = create(n, key.substring(0, key.indexOf("." + COMMAND_TAG)), properties, common);//NOI18N
                 if (l != null) {
                     newLaunchers.add(l);
                 }
             }
         }
+        Collections.sort(newLaunchers, new Comparator<Launcher>() {
+            @Override
+            public int compare(Launcher o1, Launcher o2) {
+                return o1.getN() - o2.getN();
+            }
+        });
         boolean modified = false;
         synchronized (lock) {
             if (!isEqualsLauncers(newLaunchers)) {
@@ -151,12 +167,12 @@ public final class LaunchersRegistry {
         return true;
     }
     
-    private Launcher create(String name, Properties properties, Launcher common) {
+    private Launcher create(int n, String name, Properties properties, Launcher common) {
         boolean commonLauncher = name.equals(COMMON_TAG);
         assert !commonLauncher || common == null : "common launcher can not have other common";//NOI18N
         final String command = properties.getProperty(name + "." + COMMAND_TAG);//NOI18N
-        assert commonLauncher || command != null : "usual laucnher without command " + name;//NOI18N
-        Launcher launcher = new Launcher(command, common);
+        assert commonLauncher || command != null : "usual launcher without command " + name;//NOI18N
+        Launcher launcher = new Launcher(n, command, common);
         final String displayName = properties.getProperty(name + "." + NAME_TAG);//NOI18N
         if (displayName != null) {
             launcher.setName(displayName);

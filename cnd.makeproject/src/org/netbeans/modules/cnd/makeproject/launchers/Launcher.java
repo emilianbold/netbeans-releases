@@ -50,6 +50,7 @@ import java.util.Objects;
  * @author Henk
  */
 public final class Launcher {
+    private final int n;
     //displayed name, can be null
     private String name;
     //command is required field, cannot be null
@@ -63,8 +64,17 @@ public final class Launcher {
     private final Launcher common;
 
     public Launcher(String command, Launcher common) {
+        this(-1, command, common);
+    }
+    
+    public Launcher(int n, String command, Launcher common) {
+        this. n = n;
         this.command = command;
         this.common = common;
+    }
+
+    /*package*/ int getN() {
+        return n;
     }
 
     public String getName() {
