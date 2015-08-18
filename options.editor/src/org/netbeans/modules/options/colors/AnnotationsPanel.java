@@ -389,7 +389,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         boolean isChanged = false;
         for (String profile : toBeSaved) {
             List<AttributeSet> attributeSet = getAnnotations(profile);
-            Map<String, AttributeSet> savedAnnotations = toMap(getDefaults(profile));
+            Map<String, AttributeSet> savedAnnotations = toMap(colorModel.getAnnotations(profile));
             Map<String, AttributeSet> currentAnnotations = toMap(attributeSet);
             if (savedAnnotations != null && currentAnnotations != null) {
                 if (savedAnnotations.size() >= currentAnnotations.size()) {
