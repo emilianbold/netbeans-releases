@@ -128,14 +128,18 @@ public final class IncludeDirEntry {
             }
             CharSequence asCharSeq = FilePathCache.getManager().getString(dir);
             // then go into sync block again
+            boolean resetNonExistanceFlag = false;
             synchronized (delegate) {
                 out = delegate.get(key);
                 if (out == null) {
                     out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq, key.hashCode());
                     delegate.put(key, out);
                 } else {
-                    out.resetNonExistanceFlag();
+                    resetNonExistanceFlag = true;
                 }
+            }
+            if (resetNonExistanceFlag) {
+                out.resetNonExistanceFlag();
             }
         } else {
             out.resetNonExistanceFlag();
