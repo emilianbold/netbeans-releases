@@ -257,8 +257,6 @@ public final class SuiteProperties extends ModuleProperties {
     public @Override void storeProperties() throws IOException {
         assert ProjectManager.mutex().isWriteAccess();
         NbPlatform plaf = getActivePlatform();
-        ModuleProperties.storePlatform(getHelper(), plaf);
-        ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
         getBrandingModel().store();
         
         // store submodules if they've changed
@@ -325,6 +323,8 @@ public final class SuiteProperties extends ModuleProperties {
             platformPropertiesChanged = false;
             refreshBuildScripts = false;
         }
+        ModuleProperties.storePlatform(getHelper(), plaf);
+        ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
         
         super.storeProperties();
     }
