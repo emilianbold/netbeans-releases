@@ -119,7 +119,6 @@
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.source</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
-                <friend>org.netbeans.modules.cnd.folding</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.indexing</friend>
                 <friend>org.netbeans.modules.cnd.model.jclank.bridge</friend>
