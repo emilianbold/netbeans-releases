@@ -353,7 +353,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
             return specifier;
         }
     }
-    
+
     private static class FormatInfo {
         private static final List<String> conversionCharacters = Arrays.asList("d","i","o","u","x","X","f","F","e","E","g","G","a","A","c","s","p","n","C","S","%"); // NOI18N
         private final List<FormatFlag> formatFlags;
@@ -604,7 +604,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
                                              ,handler);
 
             if (handler.type != null) {
-                return handler.type.getCanonicalText().toString().replace("const", "");  // NOI18N
+                return handler.type.getCanonicalText().toString().replace("const", "").replace("&", "");  // NOI18N
             }
             return null;
         }
