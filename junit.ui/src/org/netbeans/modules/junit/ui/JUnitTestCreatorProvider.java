@@ -79,7 +79,7 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
 
     @Override
     public boolean enable(FileObject[] activatedFOs) {
-        if (activatedFOs.length == 0) {
+        if (activatedFOs == null || activatedFOs.length == 0) {
             return false;
         }
         /*
