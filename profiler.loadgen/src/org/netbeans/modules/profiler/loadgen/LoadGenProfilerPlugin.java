@@ -341,11 +341,11 @@ final class LoadGenProfilerPlugin extends ProfilerPlugin {
     
     
     private void storeEnabled(boolean enabled) {
-        storage.storeFlag(PROP_ENABLED, enabled ? null : Boolean.FALSE.toString());
+        storage.storeFlag(PROP_ENABLED, enabled ? Boolean.TRUE.toString() : null);
     }
     
     private boolean readEnabled() {
-        return Boolean.parseBoolean(storage.readFlag(PROP_ENABLED, Boolean.TRUE.toString()));
+        return Boolean.parseBoolean(storage.readFlag(PROP_ENABLED, Boolean.FALSE.toString()));
     }
     
     private void storeSelected(String selected) {
