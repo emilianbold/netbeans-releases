@@ -106,7 +106,6 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-package-private" />
     <fontcolor name="mod-protected" />
     <fontcolor name="mod-public" />
-    <fontcolor name="mod-keyword" default="keyword" />
     
     <!--currently not used:-->
 <!--    <fontcolor name="mod-type-parameter-declaration" bgColor="lightGray"/>

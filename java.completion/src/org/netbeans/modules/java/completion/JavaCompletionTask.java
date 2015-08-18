@@ -534,7 +534,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             int extPos = (int) sourcePositions.getEndPosition(root, name);
             if (extPos != Diagnostic.NOPOS && offset > extPos) {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, extPos + 1, offset);
-                if (last != null && last.token().id() == JavaTokenId.IDENTIFIER) {
+                if (last != null && last.token().id() == JavaTokenId.TO) {
                     addModuleNames(env, null, true);
                 } else {
                     addKeyword(env, TO_KEYWORD, SPACE, false);
@@ -563,7 +563,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             int extPos = (int) sourcePositions.getEndPosition(root, serv);
             if (extPos != Diagnostic.NOPOS && offset > extPos) {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, extPos + 1, offset);
-                if (last != null && last.token().id() == JavaTokenId.IDENTIFIER) {
+                if (last != null && last.token().id() == JavaTokenId.WITH) {
                     CompilationController cc = env.getController();
                     cc.toPhase(Phase.RESOLVED);
                     Element el = cc.getTrees().getElement(new TreePath(path, serv));

@@ -651,7 +651,7 @@ public class Reformatter implements ReformatTask {
 
         @Override
         public Boolean visitModule(ModuleTree node, Void p) {
-            accept(IDENTIFIER);
+            accept(MODULE);
             boolean old = continuationIndent;
             try {
                 continuationIndent = true;
@@ -752,14 +752,14 @@ public class Reformatter implements ReformatTask {
 
         @Override
         public Boolean visitExports(ExportsTree node, Void p) {
-            accept(IDENTIFIER);
+            accept(EXPORTS);
             boolean old = continuationIndent;
             try {
                 continuationIndent = true;
                 space();
                 scan(node.getExportName(), p);
                 if (node.getModuleNames() != null) {
-                    wrapToken(cs.wrapExportsToKeyword(), 1, IDENTIFIER);
+                    wrapToken(cs.wrapExportsToKeyword(), 1, TO);
                     wrapList(cs.wrapExportsToList(), cs.alignMultilineExports(), true, COMMA, node.getModuleNames());
                 }
                 accept(SEMICOLON);
@@ -771,13 +771,13 @@ public class Reformatter implements ReformatTask {
 
         @Override
         public Boolean visitProvides(ProvidesTree node, Void p) {
-            accept(IDENTIFIER);
+            accept(PROVIDES);
             boolean old = continuationIndent;
             try {
                 continuationIndent = true;
                 space();
                 scan(node.getServiceName(), p);
-                wrapToken(cs.wrapProvidesWithKeyword(), 1, IDENTIFIER);
+                wrapToken(cs.wrapProvidesWithKeyword(), 1, WITH);
                 spaces(1, true);
                 scan(node.getImplementationName(), p);
                 accept(SEMICOLON);
@@ -789,7 +789,7 @@ public class Reformatter implements ReformatTask {
 
         @Override
         public Boolean visitRequires(RequiresTree node, Void p) {
-            accept(IDENTIFIER);
+            accept(REQUIRES);
             boolean old = continuationIndent;
             try {
                 continuationIndent = true;
@@ -808,7 +808,7 @@ public class Reformatter implements ReformatTask {
 
         @Override
         public Boolean visitUses(UsesTree node, Void p) {
-            accept(IDENTIFIER);
+            accept(USES);
             boolean old = continuationIndent;
             try {
                 continuationIndent = true;
