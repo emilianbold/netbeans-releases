@@ -88,6 +88,7 @@ import org.openide.util.Utilities;
 public final class CndFileUtils {
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
     private static final FileChangeListener FSL = new FSListener();
+    private static final FSProblemListener FSPL = new FSProblemListener();
     private static final FileSystem fileFileSystem;
     public static final int FS_TIME_OUT = 30;
     public static final String LS_FOLDER_UTILS_PERFORMANCE_EVENT = "LS_FOLDER_UTILS_PERFORMANCE_EVENT"; //NOI18N
@@ -138,6 +139,7 @@ public final class CndFileUtils {
         }
         TRUE_CASE_SENSITIVE_SYSTEM = caseSenstive;
         CndFileSystemProvider.addFileChangeListener(FSL);
+        CndFileSystemProviderHelper.addFileSystemProblemListener(FSPL);
     }
 
     public static boolean isSystemCaseSensitive() {
@@ -437,6 +439,8 @@ public final class CndFileUtils {
                         // no need to check non existing file
                         exists = Flags.NOT_FOUND;
 //                        files.put(path, exists);
+                    } else if (parentDirFlags == Flags.NOT_FOUND_CONNECTION_ISSUE) {
+                        exists = Flags.NOT_FOUND_CONNECTION_ISSUE;
                     } else if (indexParentFolder) {
                         assert (parentDirFlags == Flags.DIRECTORY) : "must be DIRECTORY but was " + parentDirFlags; // NOI18N
                         // let's index not indexed directory
@@ -461,6 +465,8 @@ public final class CndFileUtils {
                     } else if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.BROKEN_LINK) {
                         // no need to check non existing file
                         exists = Flags.NOT_FOUND;
+                    } else if (parentDirFlags == Flags.NOT_FOUND_CONNECTION_ISSUE) {
+                        exists = Flags.NOT_FOUND_CONNECTION_ISSUE;
                     } else {
                         // may be our parent was indexed in parallel thread
                         exists = files.get(absolutePath);
@@ -476,6 +482,9 @@ public final class CndFileUtils {
                 index(fs, absolutePath, files);
             }
         } else {
+            if (exists == Flags.NOT_FOUND_CONNECTION_ISSUE) {
+                CndFileSystemProviderHelper.fireFileSystemProblemOccurred(new FSPath(fs, absolutePath));
+            }
             //hits ++;
         }
         return exists;
@@ -493,7 +502,7 @@ public final class CndFileUtils {
         }
     }
 
-    private static void index(FileSystem fs, String path, ConcurrentMap<String, Flags> files) {
+    private static void index(FileSystem fs, String path, ConcurrentMap<String, Flags> files) {        
         if (isLocalFileSystem(fs)) {
             File file = new File(path);
             if (CndFileSystemProvider.canRead(path)) {
@@ -517,7 +526,14 @@ public final class CndFileUtils {
             FileObject file = fs.findResource(path);            
             if (file != null && file.isFolder() && file.canRead()) {
                 final char fileSeparatorChar = getFileSeparatorChar(fs);            
-                for (FileObject child : file.getChildren()) {
+                FileObject[] children;
+                fileSystemError.set(Boolean.FALSE);
+                children = file.getChildren();
+                if (fileSystemError.get()) {
+                    files.put(path, Flags.NOT_FOUND_CONNECTION_ISSUE);
+                    return;
+                }
+                for (FileObject child : children) {
                     //we do concat as we need to index relative path not absolute ones
                     String absPath = path + fileSeparatorChar + child.getNameExt();
                     if (child.isFolder()) {
@@ -671,6 +687,8 @@ public final class CndFileUtils {
     private static final Map<FileSystem, Reference<ConcurrentMap<String, Flags>>> maps = 
             new WeakHashMap<FileSystem, Reference<ConcurrentMap<String, Flags>>>();
 
+    private static final ThreadLocal<Boolean> fileSystemError = new ThreadLocal<>();
+    
     private final static class Flags {
 
         private final boolean exist;
@@ -683,20 +701,18 @@ public final class CndFileUtils {
         private static final Flags DIRECTORY = new Flags(true,true);
         private static final Flags INDEXED_DIRECTORY = new Flags(true,true);
         private static final Flags NOT_FOUND = new Flags(false,true);
+        private static final Flags NOT_FOUND_CONNECTION_ISSUE = new Flags(false,true);
         private static final Flags BROKEN_LINK = new Flags(false, false);
         
         private static Flags get(FileSystem fs, String absPath) {
             FileObject fo;
+            fileSystemError.set(Boolean.FALSE);
             if (isLocalFileSystem(fs)) {
                 absPath = FileUtil.normalizePath(absPath);
                 fo = CndFileSystemProvider.toFileObject(absPath);                
             } else {
                 fo = fs.findResource(absPath);
             }
-            return get(fo);
-        }
-        
-        private static Flags get(FileObject fo) {
             if (fo != null && fo.isValid()) {
                 if (fo.isFolder()) {
                     return DIRECTORY;
@@ -705,7 +721,7 @@ public final class CndFileUtils {
                     return FILE;
                 }
             } else {
-                return NOT_FOUND;
+                return fileSystemError.get() ? NOT_FOUND_CONNECTION_ISSUE : NOT_FOUND;
             }
         }
 
@@ -713,6 +729,8 @@ public final class CndFileUtils {
         public String toString() {
             if (this == NOT_FOUND) {
                 return "NOT_FOUND"; // NOI18N
+            } else if (this == NOT_FOUND_CONNECTION_ISSUE) {
+                return "NOT_FOUND_CONNECTION_ISSUE"; // NOI18N
             } else if (this == INDEXED_DIRECTORY) {
                 return "INDEXED_DIRECTORY"; // NOI18N
             } else if (this == DIRECTORY) {
@@ -727,6 +745,44 @@ public final class CndFileUtils {
         }
 
     }
+    
+    private static final class FSProblemListener implements CndFileSystemProvider.CndFileSystemProblemListener {
+
+        @Override
+        public void problemOccurred(FSPath fsPath) {
+            fileSystemError.set(Boolean.TRUE);
+        }
+
+        @Override
+        public void recovered(FileSystem fileSystem) {
+        }        
+    }
+    
+    private static class CndFileSystemProviderHelper {
+
+        private CndFileSystemProviderHelper() {
+        }
+
+        private static abstract class FakeProvider extends CndFileSystemProvider {
+
+            public static void addProblemListener(CndFileSystemProvider.CndFileSystemProblemListener listener) {
+                CndFileSystemProvider.addFileSystemProblemListener(listener);
+            }
+
+            protected static void fireProblem(FSPath fSPath) {
+                CndFileSystemProvider.fireFileSystemProblemOccurred(fSPath);
+            }
+        }
+
+        public static void addFileSystemProblemListener(CndFileSystemProvider.CndFileSystemProblemListener listener) {
+            FakeProvider.addProblemListener(listener);
+        }
+
+        public static void fireFileSystemProblemOccurred(FSPath fSPath) {
+            FakeProvider.fireProblem(fSPath);
+        }
+    }
+    
 
     private static final class FSListener implements FileChangeListener {
 
