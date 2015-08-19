@@ -1894,9 +1894,9 @@ jarsigner.storepass=${jarsigner.storepass}
         </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="windows"/>
-		<param name="bundle.platform.filename"  value="windows-x86"/>
+		<param name="bundle.platform.filename"  value="windows-i586"/>
 		<param name="bundle.extension"		value=".exe"/>
-		<param name="bundled.jvm.file.suffix"   value="windows-x86.exe"/>
+		<param name="bundled.jvm.file.suffix"   value="windows-i586.exe"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
 	</antcall>
     </target>
@@ -1920,7 +1920,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundle.platform"           value="linux"/>
                 <param name="bundle.platform.filename"  value="linux-x86"/>
 		<param name="bundle.extension"		value=".sh"/>
-		<param name="bundled.jvm.file.suffix"   value="linux-x86.bin"/>
+		<param name="bundled.jvm.file.suffix"   value="linux-i586.bin"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
 	</antcall>
     </target>
