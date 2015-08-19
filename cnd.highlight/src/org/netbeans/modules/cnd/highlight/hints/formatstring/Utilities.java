@@ -128,7 +128,10 @@ class Utilities {
             } else if (type.contains("wint_t")) {                         // NOI18N
                 return Arrays.asList("c", "lc", "C");                     // NOI18N
             } else if (type.contains("float")) {  // NOI18N
-                return Collections.EMPTY_LIST;
+                return Arrays.asList("f", "lf", "llf", "F", "lF", "llF",   // NOI18N
+                                     "e", "le", "lle", "E", "lE", "llE",   // NOI18N
+                                     "g", "lg", "llg", "G", "lG", "llG",   // NOI18N
+                                     "a", "la", "lla", "A", "lA", "llA");  // NOI18N
             } else if (type.contains("long double")) {                                 // NOI18N
                 return Arrays.asList("f", "lf", "llf", "Lf", "F", "lF", "llF", "LF",   // NOI18N
                                      "e", "le", "lle", "Le", "E", "lE", "llE", "LE",   // NOI18N
