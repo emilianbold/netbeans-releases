@@ -184,6 +184,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.tuxedo.testrunner</friend>
+                <friend>org.netbeans.gradle.project</friend>
                 <friend>org.netbeans.modules.android.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
