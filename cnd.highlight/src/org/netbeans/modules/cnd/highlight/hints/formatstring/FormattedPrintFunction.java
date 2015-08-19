@@ -112,7 +112,7 @@ class FormattedPrintFunction {
                         }
                     }
                     pIndex++;
-                } else {
+                } else if (!list.isEmpty()) {
                     result.addAll(list);
                     pIndex++;
                 }
