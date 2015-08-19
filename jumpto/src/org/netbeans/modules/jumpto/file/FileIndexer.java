@@ -67,10 +67,9 @@ public final class FileIndexer extends CustomIndexer {
 
     public static final String ID = "org-netbeans-modules-jumpto-file-FileIndexer"; //NOI18N
     public static final int VERSION = 1;
-    
+
     public static final String FIELD_NAME = "file-name"; //NOI18N
     public static final String FIELD_CASE_INSENSITIVE_NAME = "ci-file-name"; //NOI18N
-    public static final String FIELD_MIME_TYPE = "mime-type"; //NOI18N
 
     // used from the XML layer
     public static final class Factory extends CustomIndexerFactory {
@@ -87,7 +86,7 @@ public final class FileIndexer extends CustomIndexer {
                 for(Indexable i : deleted) {
                     is.removeDocuments(i);
                     if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest("removed " + i.getURL() + "/" + i.getRelativePath());
+                        LOG.log(Level.FINEST, "removed {0}/{1}", new Object[]{i.getURL(), i.getRelativePath()});
                     }
                 }
             } catch (IOException ioe) {
@@ -153,20 +152,16 @@ public final class FileIndexer extends CustomIndexer {
                     IndexDocument d = is.createDocument(i);
                     d.addPair(FIELD_NAME, nameExt, true, true);
                     d.addPair(FIELD_CASE_INSENSITIVE_NAME, nameExt.toLowerCase(Locale.ENGLISH), true, true);
-                    String mimeType = getMimeType(i);
-                    if (mimeType != null) {
-                        d.addPair(FIELD_MIME_TYPE, mimeType, false, true);
-                    }
                     is.addDocument(d);
                     if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest("added " + i.getURL() + "/" + i.getRelativePath());
+                        LOG.log(Level.FINEST, "added {0}/{1}", new Object[]{i.getURL(), i.getRelativePath()});
                     }
                 }
             }
             long tm2 = System.currentTimeMillis();
-            
+
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Processed " + cnt + " files in " + (tm2 - tm1) + "ms."); //NOI18N
+                LOG.log(Level.FINE, "Processed {0} files in {1}ms.", new Object[]{cnt, tm2 - tm1}); //NOI18N
             }
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);
@@ -187,16 +182,5 @@ public final class FileIndexer extends CustomIndexer {
         } else {
             return i.getRelativePath();
         }
-    }
-
-    private static String getMimeType(Indexable i) {
-//        FileObject f = URLMapper.findFileObject(i.getURL());
-//        if (f != null) {
-            String mimeType = i.getMimeType();
-            if (!mimeType.equals("content/unknown")) { //NOI18N
-                return mimeType;
-            }
-//        }
-        return null;
     }
 }

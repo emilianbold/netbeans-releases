@@ -306,20 +306,24 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             ParagraphView pView = get(pIndex);
             Shape pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
             if (pView.isChildrenNull()) {
-                // Perf.optimization: if pView.children == null returns default char's width from pView's begining.
-                // It may be disabled if it causes problems but computing children
-                // requires much more processing (especially when offsets for model2view are spread across the document).
-                Rectangle2D.Double pRect = ViewUtils.shape2Bounds(pAlloc);
-                pRect.width = docView.op.getDefaultCharWidth();
-                ret = pRect;
-            } else { // pView.children != null
-                if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
-                    pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+                if (offset == pView.getStartOffset()) {
+                    // Perf.optimization: if pView.children == null then return default char's width
+                    // from pView's begining for offset right at pView's begining.
+                    Rectangle2D.Double pRect = ViewUtils.shape2Bounds(pAlloc);
+                    pRect.width = docView.op.getDefaultCharWidth();
+                    return pRect;
+                } else { // Init the children
+                    if (ensureParagraphViewChildrenValid(docView, pIndex, pView)) {
+                        pView = get(pIndex);
+                    }
                 }
-                docView.op.getTextLayoutCache().activate(pView);
-                // Update the bounds with child.modelToView()
-                ret = pView.modelToViewChecked(offset, pAlloc, bias);
             }
+            if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
+                pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            }
+            docView.op.getTextLayoutCache().activate(pView);
+            // Update the bounds with child.modelToView()
+            ret = pView.modelToViewChecked(offset, pAlloc, bias);
         }
         return ret;
     }
