@@ -346,7 +346,7 @@ final class FoldView extends EditorView {
             Document doc = getDocument();
             if (kit != null && doc != null) {
                 Element lineRootElement = doc.getDefaultRootElement();
-                tooltipPane.putClientProperty(FoldViewFactory.VIEW_FOLDS_EXPANDED_PROPERTY, true);
+                tooltipPane.putClientProperty(FoldViewFactory.DISPLAY_ALL_FOLDS_EXPANDED_PROPERTY, true);
                 try {
                     // Start-offset of the fold => line start => position
                     int lineIndex = lineRootElement.getElementIndex(fold.getStartOffset());

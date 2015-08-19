@@ -66,4 +66,10 @@ public final class EditorViewFactoryEvent extends EventObject {
         return changes;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + "\nChanges: " + getChanges(); // NOI18N
+    }
+
+    
 }

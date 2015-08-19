@@ -138,6 +138,7 @@ public class RepositoryUpdater2Test extends IndexingTestBase {
 
         FileObject cache = workDir.createFolder("cache");
         CacheFolder.setCacheFolder(cache);
+        RootsListener.setUseAsyncListneres(false);
 
         ruSync = new RepositoryUpdaterTest.TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
