@@ -578,9 +578,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         assert (includedFile == null) == broken : "broken " + broken + " vs. " + includedFile;
         int startOffset = ppDirective.getDirectiveStartOffset();
         int endOffset = ppDirective.getDirectiveEndOffset();
-        boolean hasRecursiveInclude = curFile.equals(includedFile);
-        IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, hasRecursiveInclude, includedFile, curFile, startOffset, endOffset);
-        parsingFileContent.addInclude(incl, broken || hasRecursiveInclude);
+        //boolean hasRecursiveInclude = curFile.equals(includedFile);
+        IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, ppDirective.isRecursive(), includedFile, curFile, startOffset, endOffset);
+        parsingFileContent.addInclude(incl, broken || ppDirective.isRecursive());
     }
 
     private static final class CsmOffsetableImpl implements CsmOffsetable {

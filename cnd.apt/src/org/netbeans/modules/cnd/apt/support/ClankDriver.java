@@ -218,6 +218,7 @@ public final class ClankDriver {
       ResolvedPath getResolvedPath();
       CharSequence getSpellingName();
       boolean isAngled();
+      boolean isRecursive();
     }
 
     public interface ClankPreprocessorCallback {
