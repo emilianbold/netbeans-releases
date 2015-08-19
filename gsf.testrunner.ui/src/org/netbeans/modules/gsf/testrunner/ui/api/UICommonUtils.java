@@ -72,36 +72,17 @@ public class UICommonUtils {
      *          or {@code null} if no {@code FileObject} was found;
      */
     public static FileObject[] getFileObjectsFromNodes(final Node[] nodes){
-        FileObject[] fileObjects = new FileObject[nodes.length];
-        List<FileObject> fileObjectsList = null;
+        List<FileObject> fos = new ArrayList<FileObject>(nodes.length);
 
         for (int i = 0; i < nodes.length; i++) {
             final Node node = nodes[i];
             final FileObject fo;
             if (!hasParentAmongNodes(nodes, i)
                     && ((fo = getFileObject(node, true)) != null)) {
-                if (fileObjects != null) {
-                    fileObjects[i] = fo;
-                } else {
-                    if (fileObjectsList == null) {
-                        fileObjectsList = new ArrayList<FileObject>(
-                                                        nodes.length - i);
-                    }
-                    fileObjectsList.add(fo);
-                }
-            } else {
-                fileObjects = new FileObject[0];     //signs that some FOs were skipped
+                fos.add(fo);
             }
         }
-        if (fileObjects == null) {
-            if (fileObjectsList != null) {
-                fileObjects = fileObjectsList.toArray(
-                        new FileObject[fileObjectsList.size()]);
-                fileObjectsList = null;
-            }
-        }
-
-        return fileObjects;
+        return fos.isEmpty() ? null : fos.toArray(new FileObject[fos.size()]);
     }
 
     private static boolean hasParentAmongNodes(final Node[] nodes,

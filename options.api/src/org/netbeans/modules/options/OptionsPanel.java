@@ -451,8 +451,12 @@ public class OptionsPanel extends JPanel {
     }
     
     private void clearSearchField() {
+        if (text2search.trim().isEmpty()) { 
+            // do nothing if options quick search was not used
+            return;
+        }
         searchTC.setText("");
-	clearAllinQS();
+        clearAllinQS();
     }
     
     private void showHint (boolean showHint) {
