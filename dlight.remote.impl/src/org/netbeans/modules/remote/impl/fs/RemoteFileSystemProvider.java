@@ -443,6 +443,11 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
+    public void addFileSystemProblemListener(FileSystemProblemListener listener) {
+        RemoteFileSystem.addGlobalFileSystemProblemListener(listener);
+    }
+
+    @Override
     public void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
         ((RemoteFileSystem) fileSystem).removeFileSystemProblemListener(listener);
     }
