@@ -47,8 +47,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 
@@ -217,6 +220,10 @@ class FormattedPrintFunction {
                                          ,handler);
 
         if (handler.type != null) {
+            if (handler.type.getClassifier().getKind().equals(CsmDeclaration.Kind.TYPEDEF)) {
+                CsmClassifier cer = CsmClassifierResolver.getDefault().getTypeClassifier(handler.type, file, offset, true);
+                return cer.getName().toString().replace("const", "").replace("&", "");  // NOI18N
+            }
             return handler.type.getCanonicalText().toString().replace("const", "").replace("&", "");  // NOI18N
         }
         return null;
