@@ -91,7 +91,7 @@ public final class LaunchersRegistry {
     
     LaunchersRegistry() {
         launchers = new ArrayList<>();
-        String regex = LAUNCHER_TAG + "(\\d*)[.]" + COMMAND_TAG;
+        String regex = LAUNCHER_TAG + "(\\d*)[.]" + COMMAND_TAG; //NOI18N
         pattern = Pattern.compile(regex);
     }
 
