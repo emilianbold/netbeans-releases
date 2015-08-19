@@ -106,5 +106,10 @@ public final class EditorViewFactoryChange {
         REBUILD
     
     }
-    
+
+    @Override
+    public String toString() {
+        return getType() + ":<" + getStartOffset() + "," + getEndOffset() + ">"; // NOI18N
+    }
+
 }

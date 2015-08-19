@@ -1243,8 +1243,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.indexing");   //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("RepositoryUpdater.delay"); //NOI18N
     private static final RequestProcessor WORKER = new RequestProcessor("RepositoryUpdater.worker", 1, false, false);
-    private static final boolean notInterruptible = getSystemBoolean("netbeans.indexing.notInterruptible", false); //NOI18N
-    private static final boolean useRecursiveListeners = getSystemBoolean("netbeans.indexing.recursiveListeners", true); //NOI18N
+    private static final boolean notInterruptible = Util.getSystemBoolean("netbeans.indexing.notInterruptible", false); //NOI18N
     private static final int FILE_LOCKS_DELAY = BaseUtilities.isWindows() ? 2000 : 1000;
     private static final String PROP_LAST_INDEXED_VERSION = RepositoryUpdater.class.getName() + "-last-indexed-document-version"; //NOI18N
     private static final String PROP_LAST_DIRTY_VERSION = RepositoryUpdater.class.getName() + "-last-dirty-document-version"; //NOI18N
@@ -1295,8 +1294,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     private boolean ignoreIndexerCacheEvents = false;
 
-    /* test */ final RootsListeners rootsListeners = new RootsListeners();
-    private final FileChangeListener sourceRootsListener = new FCL(useRecursiveListeners ? Boolean.TRUE : null);
+    /* test */ final RootsListener rootsListeners = RootsListener.newInstance();
+    private final FileChangeListener sourceRootsListener = new FCL(rootsListeners.hasRecursiveListeners() ? Boolean.TRUE : null);
     private final FileChangeListener binaryRootsListener = new FCL(Boolean.FALSE);
     private final ThreadLocal<Boolean> inIndexer = new ThreadLocal<>();
 
@@ -1309,7 +1308,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     private RepositoryUpdater () {
         LOGGER.log(Level.FINE, "netbeans.indexing.notInterruptible={0}", notInterruptible); //NOI18N
-        LOGGER.log(Level.FINE, "netbeans.indexing.recursiveListeners={0}", useRecursiveListeners); //NOI18N
+        LOGGER.log(Level.FINE, "netbeans.indexing.recursiveListeners={0}", rootsListeners.hasRecursiveListeners()); //NOI18N
         LOGGER.log(Level.FINE, "FILE_LOCKS_DELAY={0}", FILE_LOCKS_DELAY); //NOI18N
         this.activeDocProvider = Lookup.getDefault().lookup(ActiveDocumentProvider.class);
         if (this.activeDocProvider == null) {
@@ -2043,15 +2042,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
         return f2d;
-    }
-
-    private static boolean getSystemBoolean(String propertyName, boolean defaultValue) {
-        if (defaultValue) {
-            String value = System.getProperty(propertyName);
-            return value == null || !value.equals("false"); //NOI18N
-        } else {
-            return Boolean.getBoolean(propertyName);
-        }
     }
 
     private static final Map<List<StackTraceElement>, Long> lastRecordedStackTraces = new HashMap<>();
@@ -3059,7 +3049,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final Map<BinaryIndexerFactory,Context> contexts) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
-            if (!RepositoryUpdater.getDefault().rootsListeners.add(root, false, null)) {
+            if (!RepositoryUpdater.getDefault().rootsListeners.addBinary(root)) {
                 //Exiting
                 return false;
             }
@@ -5189,7 +5179,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 for (BinaryIndexerFactory binFactory : binFactories) {
                     binFactory.rootsRemoved(roots);
                 }
-                RepositoryUpdater.getDefault().rootsListeners.remove(binaries, false);
+                RepositoryUpdater.getDefault().rootsListeners.removeBinaries(binaries);
             }
 
             if (!sources.isEmpty() || !unknown.isEmpty()) {
@@ -5203,7 +5193,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> embeddingIndexer : embeddingIndexers) {
                     embeddingIndexer.getIndexerFactory().rootsRemoved(roots);
                 }
-                RepositoryUpdater.getDefault().rootsListeners.remove(sources, true);
+                RepositoryUpdater.getDefault().rootsListeners.removeSources(sources);
             }
         }
 
@@ -5391,7 +5381,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             final ClassPath.Entry entry = sourceForBinaryRoot ?
                                 null :
                                 getClassPathEntry(URLCache.getInstance().findFileObject(source, false));
-                            RepositoryUpdater.getDefault().rootsListeners.add(source, true, entry);
+                            RepositoryUpdater.getDefault().rootsListeners.addSource(source, entry);
                             recursiveListenersTime[0] = System.currentTimeMillis() - st;
                             ctx.scannedRoots.add(source);
                             success = true;
@@ -5685,7 +5675,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     delete(deleted, ctxToFinish, usedIterables);
                                     invalidateSources(resources);
                                     final long tm = System.currentTimeMillis();
-                                    final boolean rlAdded = RepositoryUpdater.getDefault().rootsListeners.add(root, true, entry);
+                                    final boolean rlAdded = RepositoryUpdater.getDefault().rootsListeners.addSource(root, entry);
                                     if (recursiveListenersTime != null) {
                                         recursiveListenersTime[0] = System.currentTimeMillis() - tm;
                                     }
@@ -5727,7 +5717,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 };
                 return runInContext(rootFo, action);
             } else {
-                RepositoryUpdater.getDefault().rootsListeners.add(root,true, null);
+                RepositoryUpdater.getDefault().rootsListeners.addSource(root, null);
             }
             return true;
         }
@@ -6566,212 +6556,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return reverse ? -1 * order : order;
         }
     } // End of LexicographicComparator class
-
-    /* test */
-    static final class RootsListeners {
-
-        private FileChangeListener sourcesListener = null;
-        private FileChangeListener binariesListener = null;
-        private final Map<URL, File> sourceRoots = new HashMap<>();
-        private final Map<URL, Pair<File, Boolean>> binaryRoots = new HashMap<>();
-        private volatile boolean listens;
-
-        public RootsListeners() {
-        }
-
-        public void setListener(FileChangeListener sourcesListener, FileChangeListener binariesListener) {
-            assert (sourcesListener != null && binariesListener != null) || (sourcesListener == null && binariesListener == null) :
-                "Both sourcesListener and binariesListener must either be null or non-null"; //NOI18N
-
-            //todo: remove removeRecursiveListener from synchronized block
-            synchronized (this) {
-                if (sourcesListener != null) {
-                    assert this.sourcesListener == null : "Already using " + this.sourcesListener + "and " + this.binariesListener //NOI18N
-                            + ", won't attach " + sourcesListener + " and " + binariesListener; //NOI18N
-                    assert sourceRoots.isEmpty() : "Expecting no source roots: " + sourceRoots; //NOI18N
-                    assert binaryRoots.isEmpty() : "Expecting no binary roots: " + binaryRoots; //NOI18N
-
-                    this.sourcesListener = sourcesListener;
-                    this.binariesListener = binariesListener;
-                    if (!useRecursiveListeners) {
-                        FileUtil.addFileChangeListener(sourcesListener);
-                    }
-                    listens = true;
-                } else {
-                    assert this.sourcesListener != null : "RootsListeners are already dormant"; //NOI18N
-
-                    if (!useRecursiveListeners) {
-                        FileUtil.removeFileChangeListener(sourcesListener);
-                    }
-                    for(Map.Entry<URL, File> entry : sourceRoots.entrySet()) {
-                        safeRemoveRecursiveListener(this.sourcesListener, entry.getValue());
-                    }
-                    sourceRoots.clear();
-                    for(Map.Entry<URL, Pair<File, Boolean>> entry : binaryRoots.entrySet()) {
-                        if (entry.getValue().second()) {
-                            safeRemoveFileChangeListener(this.binariesListener, entry.getValue().first());
-                        } else {
-                            safeRemoveRecursiveListener(this.binariesListener, entry.getValue().first());
-                        }
-                    }
-                    binaryRoots.clear();
-                    this.sourcesListener = null;
-                    this.binariesListener = null;
-                    listens = false;
-                }
-            }
-        }
-
-        @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS",
-        justification="URLs have never host part")
-        public synchronized boolean add(
-                @NonNull final URL root,
-                final boolean sourceRoot,
-                @NullAllowed ClassPath.Entry entry) {
-            if (sourceRoot) {
-                if (sourcesListener != null) {
-                    if (!sourceRoots.containsKey(root) && root.getProtocol().equals("file")) { //NOI18N
-                        try {
-                            File f = BaseUtilities.toFile(root.toURI());
-                            safeAddRecursiveListener(sourcesListener, f, entry);
-                            sourceRoots.put(root, f);
-                        } catch (URISyntaxException use) {
-                            LOGGER.log(Level.INFO, null, use);
-                        }
-                    }
-                }
-            } else {
-                if (binariesListener != null) {
-                    if (!binaryRoots.containsKey(root)) {
-                        File f = null;
-                        URL archiveUrl = FileUtil.getArchiveFile(root);
-                        try {
-                            URI uri = archiveUrl != null ? archiveUrl.toURI() : root.toURI();
-                            if (uri.getScheme().equals("file")) { //NOI18N
-                                f = BaseUtilities.toFile(uri);
-                            }
-                        } catch (URISyntaxException use) {
-                            LOGGER.log(Level.INFO, "Can't convert " + root + " to java.io.File; archiveUrl=" + archiveUrl, use); //NOI18N
-                        }
-
-                        if (f != null) {
-                            if (archiveUrl != null) {
-                                // listening on an archive file
-                                safeAddFileChangeListener(binariesListener, f);
-                            } else {
-                                // listening on a folder
-                                safeAddRecursiveListener(binariesListener, f, entry);
-                            }
-                            binaryRoots.put(root, Pair.of(f, archiveUrl != null));
-                        }
-                    }
-                }
-            }
-            return listens;
-        }
-
-        @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS",
-        justification="URLs have never host part")
-        public synchronized void remove(final Iterable<? extends URL> roots, final boolean sourceRoot) {
-            for (URL root : roots) {
-                if (sourceRoot) {
-                    if (sourcesListener != null) {
-                        File f = sourceRoots.remove(root);
-                        if (f != null) {
-                            safeRemoveRecursiveListener(sourcesListener, f);
-                        }
-                    }
-                } else {
-                    if (binariesListener != null) {
-                        Pair<File, Boolean> pair = binaryRoots.remove(root);
-                        if (pair != null) {
-                            if (pair.second()) {
-                                safeRemoveFileChangeListener(binariesListener, pair.first());
-                            } else {
-                                safeRemoveRecursiveListener(binariesListener, pair.first());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void safeAddRecursiveListener(
-                @NonNull final FileChangeListener listener,
-                @NonNull final File path,
-                @NullAllowed final ClassPath.Entry entry) {
-            if (useRecursiveListeners) {
-                try {
-                    final FileFilter filter = entry == null?
-                        null:
-                        new FileFilter() {
-                            @Override
-                            public boolean accept(@NonNull final File pathname) {
-                                try {
-                                    return entry.includes(BaseUtilities.toURI(pathname).toURL());
-                                } catch (MalformedURLException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                    return true;
-                                }
-                            }
-                        };
-                    FileUtil.addRecursiveListener(
-                        listener,
-                        path,
-                        filter,
-                        new Callable<Boolean>() {
-                            @Override
-                            public Boolean call() throws Exception {
-                                return !listens;
-                            }
-                        });
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable e) {
-                    // ignore
-                    LOGGER.log(Level.FINE, null, e);
-                }
-            }
-        }
-
-        private void safeRemoveRecursiveListener(FileChangeListener listener, File path) {
-            if (useRecursiveListeners) {
-                try {
-                    FileUtil.removeRecursiveListener(listener, path);
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable e) {
-                    // ignore
-                    LOGGER.log(Level.FINE, null, e);
-                }
-            }
-        }
-
-        private void safeAddFileChangeListener(FileChangeListener listener, File path) {
-            try {
-                FileUtil.addFileChangeListener(listener, path);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                // ignore
-                LOGGER.log(Level.FINE, null, e);
-            }
-        }
-
-        private void safeRemoveFileChangeListener(FileChangeListener listener, File path) {
-            try {
-                FileUtil.removeFileChangeListener(listener, path);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                // ignore
-                LOGGER.log(Level.FINE, null, e);
-            }
-        }
-
-    } // End of RootsListeners class
 
     private final class FCL extends FileChangeAdapter {
         private final Boolean listeningOnSources;

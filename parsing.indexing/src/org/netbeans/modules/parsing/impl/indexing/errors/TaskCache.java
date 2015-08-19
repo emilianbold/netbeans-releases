@@ -75,6 +75,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
+import org.netbeans.modules.parsing.impl.indexing.URLCache;
 import org.netbeans.modules.parsing.impl.indexing.implspi.CacheFolderProvider;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.Convertor;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
@@ -580,7 +581,7 @@ public class TaskCache {
         }
 
         for (URL root : c.rootsToRefresh) {
-            FileObject rootFO = URLMapper.findFileObject(root);
+            FileObject rootFO = URLCache.getInstance().findFileObject(root, true);
 
             if (rootFO != null) {
                 TaskProvider.refresh(rootFO);
