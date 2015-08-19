@@ -356,7 +356,7 @@ public final class Codecept {
                         if (startFile.isFolder() && !relativePath.endsWith("/")) { // NOI18N
                             relativePath += "/"; // NOI18N
                         }
-                        if (!customTests.isEmpty() && !runInfo.isRerun()) {
+                        if (customTests.size() == 1) {
                             relativePath = relativePath + ":" + customTests.get(0).getName(); // NOI18N
                         }
                         params.add(relativePath);
@@ -379,8 +379,10 @@ public final class Codecept {
         if (!customTests.isEmpty()) {
             // rerun failed tests
             if (runInfo.isRerun()) {
-                params.add(GROUP_PARAM);
-                params.add(FAILED_GROUP);
+                if (runInfo.allTests() || customTests.size() > 1) {
+                    params.add(GROUP_PARAM);
+                    params.add(FAILED_GROUP);
+                }
             }
         }
         params.add(String.format(XML_PARAM, XML_LOG.getAbsolutePath()));

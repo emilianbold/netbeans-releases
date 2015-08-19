@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
@@ -17,33 +17,38 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
        <small><a href="#seealso">See Also</a></small>
     </p>
     <p>
-       The Call Graph window displays two views of the calling relationships between the functions
-      of your program. One view is a hierarchical tree with expanding and collapsing nodes. The
-      other view is a graphical view of the functions called from a selected function, or the
-      functions that call that function. The two views are synchronized.
+       The Call Graph window displays two views of the calling relationships between the parts
+      of your program. The left view is a hierarchical tree with expanding and collapsing nodes. The
+      right view is a graphical view of the functions called from a selected function, or the
+      functions that call that function. In addition, relationships between functions
+      and variables are shown with dotted lines. The two views are synchronized.
     </p>
+    <p>The starting point of a call graph can be a function, variable, or field.
+    Each element in the Call Graph is marked with an <a href="Icons.html">icon</a> to identify its type.</p>
     <p>
        <b>To open the Call Graph:</b>
     </p>
     <ul>
       <li>
-        In the Source Editor, right-click on a function and choose Show Call Graph.
+        In the Source Editor, right-click on a function, variable, or field, and choose Show Call Graph.
       </li>
       <li>
         The Call Graph window opens and displays the tree of functions called by the selected
-        function.
+        function, or the function that contains the selected variable or field.
       </li>
       <li>
-        The left panel shows a tree with the function that was originally selected at the top.
+        The left panel shows a tree with the item that was originally selected at the top.
       </li>
       <li>
-        The right panel shows a graphical view of the function and its callers and callees.
+        The right panel shows a graphical view of the selected function and its callers and callees,
+        or other selected item and associated function.
       </li>
     </ul>
     <p>
        <b>To use the Call Graph:</b>
     </p>
     <ul>
+        <li>Expand nodes in the left panel to expand the callers and callees in the graphic panel.</li>
       <li>
         Right-click a function in the Call Graph graphic window and select Expand Callees to add to
         the call graph all the functions that the selected function calls.
@@ -60,6 +65,8 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
         Save a PNG image of the call graph by right-clicking anywhere in the Call Graph window and
         selecting Export.
       </li>
+      <li>Export the call graph to a GraphML XML file by right-clicking anywhere in the Call Graph window and
+        selecting Export as XML.</li>
     </ul>
     <p>
        Buttons at the left side of the Call Graph window allow you to change the display of the
@@ -128,7 +135,7 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
     </table>
     <hr>
     <p>
-       <small><a href="nbdocs:/org/netbeans/modules/usersguide/legal_notice.htm">Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a></small>
+       <small><a href="nbdocs:/org/netbeans/modules/usersguide/legal_notice.htm">Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a></small>
     </p>
     <table border="0" cellpadding="20">
       <tr>
