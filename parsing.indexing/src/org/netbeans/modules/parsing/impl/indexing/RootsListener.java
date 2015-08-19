@@ -70,7 +70,7 @@ final class RootsListener {
 
     private static final Logger LOG = Logger.getLogger(RootsListener.class.getName());
     private static final boolean USE_RECURSIVE_LISTENERS = Util.getSystemBoolean("netbeans.indexing.recursiveListeners", true); //NOI18N
-    private static final boolean USE_ASYNC_LISTENERS = Util.getSystemBoolean("netbeans.indexing.asyncListeners", true); //NOI18N
+    private static volatile boolean useAsyncListneres = Util.getSystemBoolean("netbeans.indexing.asyncListeners", true); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(RootsListener.class);
 
 
@@ -227,6 +227,9 @@ final class RootsListener {
         return new RootsListener();
     }
 
+    /*test*/ static void setUseAsyncListneres(final boolean asyncListeners) {
+        useAsyncListneres = asyncListeners;
+    }
 
     private void safeAddFileChangeListener(
             @NonNull final FileChangeListener listener,
@@ -304,7 +307,7 @@ final class RootsListener {
     }
 
     private static <T> void performAsync(@NonNull final Callable<T> action) {
-        if (USE_ASYNC_LISTENERS) {
+        if (useAsyncListneres) {
             RP.execute(new Runnable() {
                 @Override
                 public void run() {
