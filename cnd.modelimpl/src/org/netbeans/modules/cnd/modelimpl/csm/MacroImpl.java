@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -96,13 +95,6 @@ public final class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implem
      */
     private final List<CharSequence> params;
     
-    public static CsmMacro createSystemMacro(CharSequence macroName, List<CharSequence> macroParams, CharSequence macroBody, CsmFile unresolved, Kind kind) {
-        if (unresolved instanceof Unresolved.UnresolvedFile) {
-            return SystemMacroImpl.create(macroName, macroBody, macroParams, unresolved, kind);
-        } else {
-            return create(macroName, macroParams, macroBody, unresolved, 0, 0, kind);
-        }
-    }
     
     private MacroImpl(CharSequence macroName, List<CharSequence> macroParams, CharSequence macroBody, CsmFile containingFile, int startOffset, int endOffset, Kind kind) {
         super(containingFile, startOffset, endOffset);
