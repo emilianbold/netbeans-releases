@@ -121,7 +121,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
                     boolean formatFlag = false;  // detect was format string already processed
                     StringBuilder paramBuf = new StringBuilder();
                     ArrayList<Parameter> params = new ArrayList<>();
-                    String formatString = "";
+                    String formatString = "";  // NOI18N
                     int bracketsCounter = 0;
                     int formatStringOffset = -1;
                     while (docTokenSequence.moveNext()) {
@@ -315,15 +315,18 @@ public class FormatStringAudit extends AbstractCodeAudit {
         private String getAppropriateFormat(String type) {
             List<String> formats = Utilities.typeToFormat(type);
             String specifier = error.getSpecifier(); 
-            if (specifier.startsWith("l")) {   // NOI18N
-                specifier.replace("l", "");   // NOI18N
-            } else if (specifier.startsWith("h")) {   // NOI18N
-                specifier.replace("h", "");   // NOI18N
+            if (specifier.startsWith("l")) {         // NOI18N
+                specifier.replace("l", "");          // NOI18N
+            } else if (specifier.startsWith("h")) {  // NOI18N
+                specifier.replace("h", "");          // NOI18N
             }
             for (String format : formats) {
                 if (format.contains(specifier)) {
                     return format;
                 }
+            }
+            if (formats.isEmpty()) {
+                return "p";  // NOI18N
             }
             return formats.get(0);
         }

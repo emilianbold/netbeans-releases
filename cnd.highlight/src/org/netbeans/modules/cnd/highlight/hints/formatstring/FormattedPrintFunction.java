@@ -104,13 +104,15 @@ class FormattedPrintFunction {
                         if (type != null) {
                             String fType = info.getFullType();
                             List<String> validFlags = Utilities.typeToFormat(type);
-                            if (!validFlags.contains(fType)) {
+                            if (!validFlags.isEmpty() && !validFlags.contains(fType)) {
+                                result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
+                            } else if (validFlags.isEmpty() && !fType.equals("p")) {  // NOI18N
                                 result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
                             }
                         }
                     }
                     pIndex++;
-                } else {
+                } else if (!list.isEmpty()) {
                     result.addAll(list);
                     pIndex++;
                 }

@@ -77,9 +77,7 @@ class Utilities {
     // take const modifier into account
     static List<String> typeToFormat(String type) {
         if (type.contains("*")) {                           // NOI18N
-            if (type.contains("void")) {                    // NOI18N
-                return Collections.singletonList("p");      // NOI18N
-            } else if (type.contains("char")) {             // NOI18N
+            if (type.contains("char")) {                    // NOI18N
                 return Arrays.asList("p", "hhn", "s");      // NOI18N
             } else if (type.contains("wchar_t")) {          // NOI18N
                 return Arrays.asList("p", "s", "ls", "S");  // NOI18N
@@ -97,7 +95,9 @@ class Utilities {
                 return Arrays.asList("p", "zn");            // NOI18N
             } else if (type.contains("ptrdiff_t")) {        // NOI18N
                 return Arrays.asList("p", "tn");            // NOI18N
-            }
+            } else {
+                return Collections.singletonList("p");      // NOI18N
+            } 
         } else if (type.startsWith("unsigned")) {                  // NOI18N
             if (type.contains("char")) {                           // NOI18N
                 return Arrays.asList("hho", "hhu", "hhx", "hhX");  // NOI18N
@@ -117,19 +117,19 @@ class Utilities {
                 return Arrays.asList("c");                                // NOI18N
             } else if (type.contains("short")) {                          // NOI18N
                 return Arrays.asList("hd", "hi");                         // NOI18N
-            } else if (type.contains("intmax_t")) {                         // NOI18N
+            } else if (type.contains("intmax_t")) {                       // NOI18N
                 return Arrays.asList("jd", "ji");                         // NOI18N
-            } else if (type.contains("uintmax_t")) {                        // NOI18N
+            } else if (type.contains("uintmax_t")) {                      // NOI18N
                 return Arrays.asList("jo", "ju", "jx", "jX");             // NOI18N
-            } else if (type.contains("size_t")) {                           // NOI18N
+            } else if (type.contains("size_t")) {                         // NOI18N
                 return Arrays.asList("zd", "zi","zo", "zu", "zx", "zX");  // NOI18N
-            } else if (type.contains("ptrdiff_t")) {                        // NOI18N
+            } else if (type.contains("ptrdiff_t")) {                      // NOI18N
                 return Arrays.asList("td", "ti","to", "tu", "tx", "tX");  // NOI18N
-            } else if (type.contains("wint_t")) {                           // NOI18N
+            } else if (type.contains("wint_t")) {                         // NOI18N
                 return Arrays.asList("c", "lc", "C");                     // NOI18N
             } else if (type.contains("float")) {  // NOI18N
                 return Collections.EMPTY_LIST;
-            } else if (type.contains("long double")) {                                   // NOI18N
+            } else if (type.contains("long double")) {                                 // NOI18N
                 return Arrays.asList("f", "lf", "llf", "Lf", "F", "lF", "llF", "LF",   // NOI18N
                                      "e", "le", "lle", "Le", "E", "lE", "llE", "LE",   // NOI18N
                                      "g", "lg", "llg", "Lg", "G", "lG", "llG", "LG",   // NOI18N
@@ -139,12 +139,12 @@ class Utilities {
                                      "e", "le", "lle", "E", "lE", "llE",   // NOI18N
                                      "g", "lg", "llg", "G", "lG", "llG",   // NOI18N
                                      "a", "la", "lla", "A", "lA", "llA");  // NOI18N
-            } else if (type.contains("long long")) {                      // NOI18N
-                return Arrays.asList("lld", "lli");                       // NOI18N
-            } else if (type.contains("long")) {                           // NOI18N
-                return Arrays.asList("ld", "li");                         // NOI18N
-            } else if (type.contains("int")) {                              // NOI18N
-                return Arrays.asList("d", "i", "c");                      // NOI18N
+            } else if (type.contains("long long")) {  // NOI18N
+                return Arrays.asList("lld", "lli");   // NOI18N
+            } else if (type.contains("long")) {       // NOI18N
+                return Arrays.asList("ld", "li");     // NOI18N
+            } else if (type.contains("int")) {        // NOI18N
+                return Arrays.asList("d", "i", "c");  // NOI18N
             }
         }
         return Collections.EMPTY_LIST;
