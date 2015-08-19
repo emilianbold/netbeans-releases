@@ -47,12 +47,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -66,12 +69,17 @@ import static org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit.toS
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -120,6 +128,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
                     ArrayList<Parameter> params = new ArrayList<>();
                     String formatString = "";
                     int bracketsCounter = 0;
+                    int formatStringOffset = -1;
                     while (docTokenSequence.moveNext()) {
                         Token<TokenId> token = docTokenSequence.token();
                         TokenId tokenId = token.id();
@@ -154,7 +163,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
                             if (paramBuf.length() > 0) {
                                 params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
                             }
-                            result.add(new FormattedPrintFunction(file, docTokenSequence.offset(), formatString, params));
+                            result.add(new FormattedPrintFunction(file, formatStringOffset, formatString, params));
                             state = State.DEFAULT;
                             formatFlag = false;
                             paramBuf = new StringBuilder();
@@ -162,6 +171,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
                             formatFlag = true;
                             params = new ArrayList<>();
                             formatString = token.text().toString();
+                            formatStringOffset = docTokenSequence.offset();
                         } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
                             if (paramBuf.length() > 0) {
                                 params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
@@ -181,14 +191,25 @@ public class InvalidFormatString extends AbstractCodeAudit {
                 errors.addAll(function.validate());
             }
             for (FormatError error : errors) {
-                int startOffset = (int) CsmFileInfoQuery.getDefault().getOffset(file, error.getLine(), 1);
-                int endOffset = (int) CsmFileInfoQuery.getDefault().getOffset(file, error.getLine()+1, 1) - 1;
                 CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
-                if (response instanceof AnalyzerResponse) {
-                    ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                        new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getMessageForError(error), severity, startOffset, endOffset));  // NOI18N
-                } else {
-                    response.addError(new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getMessageForError(error), severity, startOffset, endOffset));  // NOI18N
+                try {
+                    if (response instanceof AnalyzerResponse) {
+                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
+                            new FormatStringErrorInfoImpl(doc
+                                                         ,CsmHintProvider.NAME, getID()
+                                                         ,getMessageForError(error)
+                                                         ,severity
+                                                         ,error));
+                    } else {
+                        response.addError(new FormatStringErrorInfoImpl(doc
+                                                                       ,CsmHintProvider.NAME
+                                                                       ,getID()
+                                                                       ,getMessageForError(error)
+                                                                       ,severity
+                                                                       ,error));
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
@@ -226,6 +247,82 @@ public class InvalidFormatString extends AbstractCodeAudit {
             }
         }
         return false;
+    }
+    
+    // take const modifier into account
+    private static List<String> typeToFormat(String type) {
+        if (type.contains("*")) {                           // NOI18N
+            if (type.contains("void")) {                    // NOI18N
+                return Collections.singletonList("p");      // NOI18N
+            } else if (type.contains("char")) {             // NOI18N
+                return Arrays.asList("p", "hhn", "s");      // NOI18N
+            } else if (type.contains("wchar_t")) {          // NOI18N
+                return Arrays.asList("p", "s", "ls", "S");  // NOI18N
+            } else if (type.contains("short")) {            // NOI18N
+                return Arrays.asList("p", "hn");            // NOI18N
+            } else if (type.contains("int")) {              // NOI18N
+                return Arrays.asList("p", "n");             // NOI18N
+            } else if (type.contains("long long")) {        // NOI18N
+                return Arrays.asList("p", "lln");           // NOI18N
+            } else if (type.contains("long")) {             // NOI18N
+                return Arrays.asList("p", "ln");            // NOI18N
+            } else if (type.contains("intmax_t")) {         // NOI18N
+                return Arrays.asList("p", "jn");            // NOI18N
+            } else if (type.contains("size_t")) {           // NOI18N
+                return Arrays.asList("p", "zn");            // NOI18N
+            } else if (type.contains("ptrdiff_t")) {        // NOI18N
+                return Arrays.asList("p", "tn");            // NOI18N
+            }
+        } else if (type.startsWith("unsigned")) {                  // NOI18N
+            if (type.contains("char")) {                           // NOI18N
+                return Arrays.asList("hho", "hhu", "hhx", "hhX");  // NOI18N
+            } else if (type.contains("short")) {                   // NOI18N
+                return Arrays.asList("ho", "hu", "hx", "hX");      // NOI18N
+            } else if (type.contains("long long")) {               // NOI18N
+                return Arrays.asList("llo", "llu", "llx", "llX");  // NOI18N
+            } else if (type.contains("long")) {                    // NOI18N
+                return Arrays.asList("lo", "lu", "lx", "lX");      // NOI18N
+            } else if (type.contains("int")) {                     // NOI18N
+                return Arrays.asList("o", "u", "x", "X");          // NOI18N
+            }
+        } else {
+            if (type.contains("signed char")) {                           // NOI18N
+                return Arrays.asList("hhd", "hhi");                       // NOI18N
+            } else if (type.contains("char")) {                           // NOI18N
+                return Arrays.asList("c");                                // NOI18N
+            } else if (type.contains("short")) {                          // NOI18N
+                return Arrays.asList("hd", "hi");                         // NOI18N
+            } else if (type.contains("intmax_t")) {                         // NOI18N
+                return Arrays.asList("jd", "ji");                         // NOI18N
+            } else if (type.contains("uintmax_t")) {                        // NOI18N
+                return Arrays.asList("jo", "ju", "jx", "jX");             // NOI18N
+            } else if (type.contains("size_t")) {                           // NOI18N
+                return Arrays.asList("zd", "zi","zo", "zu", "zx", "zX");  // NOI18N
+            } else if (type.contains("ptrdiff_t")) {                        // NOI18N
+                return Arrays.asList("td", "ti","to", "tu", "tx", "tX");  // NOI18N
+            } else if (type.contains("wint_t")) {                           // NOI18N
+                return Arrays.asList("c", "lc", "C");                     // NOI18N
+            } else if (type.contains("float")) {  // NOI18N
+                return Collections.EMPTY_LIST;
+            } else if (type.contains("long double")) {                                   // NOI18N
+                return Arrays.asList("f", "lf", "llf", "Lf", "F", "lF", "llF", "LF",   // NOI18N
+                                     "e", "le", "lle", "Le", "E", "lE", "llE", "LE",   // NOI18N
+                                     "g", "lg", "llg", "Lg", "G", "lG", "llG", "LG",   // NOI18N
+                                     "a", "la", "lla", "La", "A", "lA", "llA", "LA");  // NOI18N
+            } else if (type.contains("double")) {  // NOI18N
+                return Arrays.asList("f", "lf", "llf", "F", "lF", "llF",   // NOI18N
+                                     "e", "le", "lle", "E", "lE", "llE",   // NOI18N
+                                     "g", "lg", "llg", "G", "lG", "llG",   // NOI18N
+                                     "a", "la", "lla", "A", "lA", "llA");  // NOI18N
+            } else if (type.contains("long long")) {                      // NOI18N
+                return Arrays.asList("lld", "lli");                       // NOI18N
+            } else if (type.contains("long")) {                           // NOI18N
+                return Arrays.asList("ld", "li");                         // NOI18N
+            } else if (type.contains("int")) {                              // NOI18N
+                return Arrays.asList("d", "i", "c");                      // NOI18N
+            }
+        }
+        return Collections.EMPTY_LIST;
     }
     
     @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 4000)
@@ -328,21 +425,27 @@ public class InvalidFormatString extends AbstractCodeAudit {
         private final FormatErrorType type;
         private final String flag;
         private final String specifier;
-        private final int line;
+        private final int startOffset;
+        private final int endOffset;
         
-        public FormatError(FormatErrorType type, String flag, String specifier, int line) {
+        public FormatError(FormatErrorType type, String flag, String specifier, int startOffset, int endOffset) {
             this.type = type;
             this.flag = flag;
             this.specifier = specifier;
-            this.line = line;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
         }
 
         public FormatErrorType getType() {
             return type;
         }
 
-        public int getLine() {
-            return line;
+        public int startOffset() {
+            return startOffset;
+        }
+
+        public int endOffset() {
+            return endOffset;
         }
 
         public String getFlag() {
@@ -361,17 +464,19 @@ public class InvalidFormatString extends AbstractCodeAudit {
         private String specifier;
         private boolean hasWidthWildcard = false;
         private boolean hasPrecisionWildcard = false;
-
+        private int startOffset;
+        private int endOffset;
+        
+        public FormatInfo() {
+            formatFlags = new LinkedList<>();
+        }
+        
         public boolean hasWidthWildcard() {
             return hasWidthWildcard;
         }
 
         public boolean hasPrecisionWildcard() {
             return hasPrecisionWildcard;
-        }
-        
-        public FormatInfo() {
-            formatFlags = new LinkedList<>();
         }
 
         public void setSpecifier(String specifier) {
@@ -394,6 +499,22 @@ public class InvalidFormatString extends AbstractCodeAudit {
             hasPrecisionWildcard = flag;
         }
         
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+        
+        public int startOffset() {
+            return startOffset;
+        }
+        
+        public int endOffset() {
+            return endOffset;
+        }
+        
         public String specifier() {
             return specifier;
         }
@@ -407,9 +528,9 @@ public class InvalidFormatString extends AbstractCodeAudit {
             return result.toString();
         }
         
-        public List<FormatError> validateFormat(int line) {
+        public List<FormatError> validateFormat() {
             if (!conversionCharacters.contains(specifier)) {
-                return Collections.singletonList(new FormatError(FormatErrorType.TYPE_NOTEXIST, null, specifier, line));
+                return Collections.singletonList(new FormatError(FormatErrorType.TYPE_NOTEXIST, null, specifier, startOffset, endOffset));
             }
             List<FormatError> result = new LinkedList<>();
             
@@ -418,7 +539,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
                 int filter = 0b100000000000000000000;
                 for (int i = 0, limit = conversionCharacters.size(); i < limit; i++) {
                     if ((flag.getMask() & filter) == 0 && specifier.equals(conversionCharacters.get(i))) {
-                        result.add(new FormatError(FormatErrorType.FLAG, String.valueOf(flag.character()), specifier, line));
+                        result.add(new FormatError(FormatErrorType.FLAG, String.valueOf(flag.character()), specifier, startOffset, endOffset));
                         break;
                     }
                     filter >>= 1;
@@ -430,7 +551,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
                 int filter = 0b100000000000000000000;
                 for (int i = 0, limit = conversionCharacters.size(); i < limit; i++) {
                     if ((lengthFlag.getMask() & filter) == 0 && specifier.equals(conversionCharacters.get(i))) {
-                        result.add(new FormatError(FormatErrorType.LENGTH, lengthFlag.toString(), specifier, line));
+                        result.add(new FormatError(FormatErrorType.LENGTH, lengthFlag.toString(), specifier, startOffset, endOffset));
                         break;
                     }
                     filter >>= 1;
@@ -440,7 +561,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
         }
     }
     
-    private class Parameter {
+    private static class Parameter {
         private final String value;
         private final int offset;
         
@@ -458,7 +579,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
         }
     }
     
-    private class FormattedPrintFunction {
+    private static class FormattedPrintFunction {
         private final CsmFile file;
         private final ArrayList<Parameter> parameters;
         private final String formatString;
@@ -472,60 +593,68 @@ public class InvalidFormatString extends AbstractCodeAudit {
         }
         
         public List<FormatError> validate() {
-            ArrayList<FormatInfo> formatInfoList = processFormatString(formatString);
+            ArrayList<FormatInfo> formatInfoList = processFormatString(formatString, offset);
             List<FormatError> result = new LinkedList<>();
-            int line = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, offset)[0];
             if (getParametersFromFormat(formatInfoList) != parameters.size()) {
-                result.add(new FormatError(FormatErrorType.ARGS, null, null, line));
-            }
-            for (int i = 0, limit = formatInfoList.size(), pIndex = 0; i < limit; i++) {
-                FormatInfo info = formatInfoList.get(i);
-                List<FormatError> list = info.validateFormat(line);
-                if (list.isEmpty() && !info.specifier().equals("%")) {  // NOI18N
-                    String wType = null;
-                    String pType = null;
-                    String type = null;
-                    if (pIndex < parameters.size() && info.hasWidthWildcard()) {
-                        wType = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
-                        if (wType != null && !wType.equals("int")) {  // NOI18N
-                            result.add(new FormatError(FormatErrorType.TYPE_WILDCARD, "Width", null, line));  // NOI18N
+                int line = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, offset)[0];
+                int start = (int) CsmFileInfoQuery.getDefault().getOffset(file, line, 1);
+                int end = (int) CsmFileInfoQuery.getDefault().getOffset(file, line+1, 1) - 1;
+                result.add(new FormatError(FormatErrorType.ARGS, null, null, start, end));
+            } else {
+                for (int i = 0, limit = formatInfoList.size(), pIndex = 0; i < limit; i++) {
+                    FormatInfo info = formatInfoList.get(i);
+                    List<FormatError> list = info.validateFormat();
+                    if (list.isEmpty() && !info.specifier().equals("%")) {  // NOI18N
+                        String wType = null;
+                        String pType = null;
+                        String type = null;
+                        if (pIndex < parameters.size() && info.hasWidthWildcard()) {
+                            wType = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
+                            if (wType != null && !wType.equals("int")) {  // NOI18N
+                                result.add(new FormatError(FormatErrorType.TYPE_WILDCARD, "Width", null, info.startOffset, info.endOffset));  // NOI18N
+                            }
+                            pIndex++;
                         }
-                        pIndex++;
-                    }
-                    if (pIndex < parameters.size() && info.hasPrecisionWildcard()) {
-                        pType = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
-                        if (pType != null && !pType.equals("int")) {  // NOI18N
-                            result.add(new FormatError(FormatErrorType.TYPE_WILDCARD, "Precision", null, line));  // NOI18N
+                        if (pIndex < parameters.size() && info.hasPrecisionWildcard()) {
+                            pType = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
+                            if (pType != null && !pType.equals("int")) {  // NOI18N
+                                result.add(new FormatError(FormatErrorType.TYPE_WILDCARD, "Precision", null, info.startOffset, info.endOffset));  // NOI18N
+                            }
+                            pIndex++;
                         }
-                        pIndex++;
-                    }
-                    if (pIndex < parameters.size()) {
-                        type = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
-                        if (type != null) {
-                            String fType = info.getFullType();
-                            List<String> validFlags = typeToFormat(type);
-                            if (!validFlags.contains(fType)) {
-                                result.add(new FormatError(FormatErrorType.TYPE_MISMATCH, type, fType, line));
+                        if (pIndex < parameters.size()) {
+                            type = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
+                            if (type != null) {
+                                String fType = info.getFullType();
+                                List<String> validFlags = typeToFormat(type);
+                                if (!validFlags.contains(fType)) {
+                                    result.add(new FormatError(FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
+                                }
                             }
                         }
+                        pIndex++;
+                    } else {
+                        result.addAll(list);
+                        pIndex++;
                     }
-                    pIndex++;
-                } else {
-                    result.addAll(list);
-                    pIndex++;
                 }
             }
             return result;
         }
         
-        private ArrayList<FormatInfo> processFormatString(String format) {
+        private ArrayList<FormatInfo> processFormatString(String format, int offset) {
             ArrayList<FormatInfo> result = new ArrayList<>();
             FormatInfo info = new FormatInfo();
             ConversionState state = ConversionState.DEFAULT;
+            int startOffset = 0;
+            int endOffset = 0;
             for (int i = 0, limit = format.length(); i < limit; i++) {
+                startOffset++;
+                endOffset++;
                 if (format.charAt(i) == '%' && state == ConversionState.DEFAULT) {  // NOI18N
                     state = ConversionState.START;
                     info = new FormatInfo();
+                    info.setStartOffset(offset+startOffset);
                 } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.charAt(i) == FormatFlag.APOSTROPHE.character()) {
                     state = ConversionState.FLAGS;
                     info.addFormatFlag(FormatFlag.APOSTROPHE);
@@ -552,6 +681,8 @@ public class InvalidFormatString extends AbstractCodeAudit {
                     }
                 } else if (state != ConversionState.DEFAULT) {
                     if (format.substring(i, i+2).equals("hh")) { // NOI18N
+                        startOffset++;
+                        endOffset++;
                         info.setLengthFlag(LengthFlag.hh);
                         i++;
                     } else if (format.charAt(i) == 'h') { // NOI18N
@@ -563,6 +694,8 @@ public class InvalidFormatString extends AbstractCodeAudit {
                     } else if (format.charAt(i) == 't') { // NOI18N
                         info.setLengthFlag(LengthFlag.t);
                     } else if (format.substring(i, i+2).equals("ll")) { // NOI18N
+                        startOffset++;
+                        endOffset++;
                         info.setLengthFlag(LengthFlag.ll);
                         i++;
                     } else if (format.charAt(i) == 'l') { // NOI18N
@@ -571,6 +704,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
                         info.setLengthFlag(LengthFlag.L);
                     } else {
                         info.setSpecifier(String.valueOf(format.charAt(i)));
+                        info.setEndOffset(offset+endOffset);
                         result.add(info);
                         state = ConversionState.DEFAULT;
                     }
@@ -608,85 +742,9 @@ public class InvalidFormatString extends AbstractCodeAudit {
             }
             return null;
         }
-
-        // take const modifier into account
-        private List<String> typeToFormat(String type) {
-            if (type.contains("*")) {                           // NOI18N
-                if (type.contains("void")) {                    // NOI18N
-                    return Collections.singletonList("p");      // NOI18N
-                } else if (type.contains("char")) {             // NOI18N
-                    return Arrays.asList("p", "hhn", "s");      // NOI18N
-                } else if (type.contains("wchar_t")) {          // NOI18N
-                    return Arrays.asList("p", "s", "ls", "S");  // NOI18N
-                } else if (type.contains("short")) {            // NOI18N
-                    return Arrays.asList("p", "hn");            // NOI18N
-                } else if (type.contains("int")) {              // NOI18N
-                    return Arrays.asList("p", "n");             // NOI18N
-                } else if (type.contains("long long")) {        // NOI18N
-                    return Arrays.asList("p", "lln");           // NOI18N
-                } else if (type.contains("long")) {             // NOI18N
-                    return Arrays.asList("p", "ln");            // NOI18N
-                } else if (type.contains("intmax_t")) {         // NOI18N
-                    return Arrays.asList("p", "jn");            // NOI18N
-                } else if (type.contains("size_t")) {           // NOI18N
-                    return Arrays.asList("p", "zn");            // NOI18N
-                } else if (type.contains("ptrdiff_t")) {        // NOI18N
-                    return Arrays.asList("p", "tn");            // NOI18N
-                }
-            } else if (type.startsWith("unsigned")) {                  // NOI18N
-                if (type.contains("char")) {                           // NOI18N
-                    return Arrays.asList("hho", "hhu", "hhx", "hhX");  // NOI18N
-                } else if (type.contains("short")) {                   // NOI18N
-                    return Arrays.asList("ho", "hu", "hx", "hX");      // NOI18N
-                } else if (type.contains("long long")) {               // NOI18N
-                    return Arrays.asList("llo", "llu", "llx", "llX");  // NOI18N
-                } else if (type.contains("long")) {                    // NOI18N
-                    return Arrays.asList("lo", "lu", "lx", "lX");      // NOI18N
-                } else if (type.contains("int")) {                     // NOI18N
-                    return Arrays.asList("o", "u", "x", "X");          // NOI18N
-                }
-            } else {
-                if (type.contains("signed char")) {                           // NOI18N
-                    return Arrays.asList("hhd", "hhi");                       // NOI18N
-                } else if (type.contains("char")) {                           // NOI18N
-                    return Arrays.asList("c");                                // NOI18N
-                } else if (type.contains("short")) {                          // NOI18N
-                    return Arrays.asList("hd", "hi");                         // NOI18N
-                } else if (type.equals("int")) {                              // NOI18N
-                    return Arrays.asList("d", "i", "c");                      // NOI18N
-                } else if (type.equals("intmax_t")) {                         // NOI18N
-                    return Arrays.asList("jd", "ji");                         // NOI18N
-                } else if (type.equals("uintmax_t")) {                        // NOI18N
-                    return Arrays.asList("jo", "ju", "jx", "jX");             // NOI18N
-                } else if (type.equals("size_t")) {                           // NOI18N
-                    return Arrays.asList("zd", "zi","zo", "zu", "zx", "zX");  // NOI18N
-                } else if (type.equals("ptrdiff_t")) {                        // NOI18N
-                    return Arrays.asList("td", "ti","to", "tu", "tx", "tX");  // NOI18N
-                } else if (type.equals("wint_t")) {                           // NOI18N
-                    return Arrays.asList("c", "lc", "C");                     // NOI18N
-                } else if (type.equals("float")) {  // NOI18N
-                    return Collections.EMPTY_LIST;
-                } else if (type.equals("double")) {  // NOI18N
-                    return Arrays.asList("f", "lf", "llf", "F", "lF", "llF",   // NOI18N
-                                         "e", "le", "lle", "E", "lE", "llE",   // NOI18N
-                                         "g", "lg", "llg", "G", "lG", "llG",   // NOI18N
-                                         "a", "la", "lla", "A", "lA", "llA");  // NOI18N
-                } else if (type.equals("long double")) {                                   // NOI18N
-                    return Arrays.asList("f", "lf", "llf", "Lf", "F", "lF", "llF", "LF",   // NOI18N
-                                         "e", "le", "lle", "Le", "E", "lE", "llE", "LE",   // NOI18N
-                                         "g", "lg", "llg", "Lg", "G", "lG", "llG", "LG",   // NOI18N
-                                         "a", "la", "lla", "La", "A", "lA", "llA", "LA");  // NOI18N
-                } else if (type.contains("long long")) {                      // NOI18N
-                    return Arrays.asList("lld", "lli");                       // NOI18N
-                } else if (type.contains("long")) {                           // NOI18N
-                    return Arrays.asList("ld", "li");                         // NOI18N
-                }
-            }
-            return Collections.EMPTY_LIST;
-        }
     }
     
-    private class DummyResolvedTypeHandler implements CsmExpressionResolver.ResolvedTypeHandler {
+    private static class DummyResolvedTypeHandler implements CsmExpressionResolver.ResolvedTypeHandler {
         
         public CsmType type;
 
@@ -694,5 +752,134 @@ public class InvalidFormatString extends AbstractCodeAudit {
         public void process(CsmType resolvedType) {
             type = resolvedType;
         }        
+    }
+    
+    private static final class FormatStringErrorInfoImpl extends ErrorInfoImpl {
+        private final BaseDocument doc;
+        private final Position startPosition;
+        private final Position endPosition;
+        private final FormatError error;
+        
+        public FormatStringErrorInfoImpl(Document doc
+                                        ,String providerName
+                                        ,String audutName
+                                        ,String message
+                                        ,CsmErrorInfo.Severity severity
+                                        ,FormatError error) throws BadLocationException {
+            super(providerName, audutName, message, severity, error.startOffset(), error.endOffset());
+            this.doc = (BaseDocument) doc;
+            this.error = error;
+            startPosition = NbDocument.createPosition(doc, this.error.startOffset(), Position.Bias.Forward);
+            endPosition = NbDocument.createPosition(doc, this.error.endOffset(), Position.Bias.Backward);
+        }
+    }
+    
+    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1600)
+    public static final class FormatStringFixProvider extends CsmErrorInfoHintProvider {
+        
+        @Override
+        protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
+            if (info instanceof FormatStringErrorInfoImpl) {
+                alreadyFound.addAll(createFixes((FormatStringErrorInfoImpl) info));
+            }
+            return alreadyFound;
+        }
+        
+        private List<? extends Fix> createFixes(FormatStringErrorInfoImpl info) {
+            try {
+                List<Fix> fixes = new ArrayList<>();
+                switch (info.error.type) {
+                    case FLAG:
+                    case LENGTH:
+                        fixes.add(new FixFormatFlag(info.doc, info.error, info.startPosition, info.endPosition));
+                        break;
+                    case TYPE_MISMATCH:
+                        fixes.add(new FixType(info.doc, info.error, info.startPosition, info.endPosition));
+                        break;
+                    default:
+                        break;
+                }
+                return fixes;
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+                return Collections.emptyList();
+            }
+        }
+    }
+    
+    private static final class FixFormatFlag implements Fix {
+        private final BaseDocument doc;
+        private final Position start;
+        private final Position end;
+        private final String oldText;
+        private final String newText;
+        
+        public FixFormatFlag(BaseDocument doc, FormatError error, Position start, Position end) throws BadLocationException {
+            this.doc = doc;
+            this.start = start;
+            this.end = end;
+            int length = end.getOffset() - start.getOffset();
+            oldText = doc.getText(start.getOffset(), length);
+            newText = oldText.replace(error.getFlag(), ""); // NOI18N
+        }
+        
+        @Override
+        public String getText() {
+            return NbBundle.getMessage(InvalidFormatString.class, "InvalidFormatString.fix.flag", oldText, newText); // NOI18N
+        }
+        
+        @Override
+        public ChangeInfo implement () throws Exception {
+            int length = end.getOffset() - start.getOffset();
+            doc.replace(start.getOffset(), length, newText, null);
+            return null;
+        }
+    }
+    
+    private static final class FixType implements Fix {
+        private final FormatError error;
+        private final BaseDocument doc;
+        private final Position start;
+        private final Position end;
+        private final String oldText;
+        private String newText;
+        
+        public FixType(BaseDocument doc, FormatError error, Position start, Position end) throws BadLocationException {
+            this.doc = doc;
+            this.error = error;
+            this.start = start;
+            this.end = end;
+            int length = end.getOffset() - start.getOffset();
+            oldText = doc.getText(start.getOffset(), length);
+            newText = getAppropriateFormat(error.flag);
+        }
+        
+        private String getAppropriateFormat(String type) {
+            List<String> formats = typeToFormat(type);
+            String specifier = error.specifier; 
+            if (specifier.startsWith("l")) {
+                specifier.replace("l", "");
+            } else if (specifier.startsWith("h")) {
+                specifier.replace("h", "");
+            }
+            for (String format : formats) {
+                if (format.contains(specifier)) {
+                    return format;
+                }
+            }
+            return formats.get(0);
+        }
+        
+        @Override
+        public String getText() {
+            return NbBundle.getMessage(InvalidFormatString.class, "InvalidFormatString.fix.flag", oldText, newText); // NOI18N
+        }
+        
+        @Override
+        public ChangeInfo implement () throws Exception {
+            int length = end.getOffset() - start.getOffset();
+            doc.replace(start.getOffset(), length, newText, null);
+            return null;
+        }
     }
 }
