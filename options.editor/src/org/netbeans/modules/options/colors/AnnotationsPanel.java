@@ -243,8 +243,11 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
         if (evt.getSource () == cbEffects) {
-            if (cbEffects.getSelectedIndex () == 0)
-                cbEffectColor.setSelectedItem( null );
+            if (cbEffects.getSelectedIndex () == 0) {
+                cbEffectColor.setSelectedItem(null);
+            } else if (cbEffectColor.getSelectedItem() == null) {
+                cbEffectColor.setSelectedIndex(0);
+            }
 	    cbEffectColor.setEnabled (cbEffects.getSelectedIndex () > 0);
             updateData ();
 	}
@@ -389,7 +392,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         boolean isChanged = false;
         for (String profile : toBeSaved) {
             List<AttributeSet> attributeSet = getAnnotations(profile);
-            Map<String, AttributeSet> savedAnnotations = toMap(getDefaults(profile));
+            Map<String, AttributeSet> savedAnnotations = toMap(colorModel.getAnnotations(profile));
             Map<String, AttributeSet> currentAnnotations = toMap(attributeSet);
             if (savedAnnotations != null && currentAnnotations != null) {
                 if (savedAnnotations.size() >= currentAnnotations.size()) {
