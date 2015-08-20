@@ -599,7 +599,7 @@ public class ServerUtils {
                     version = GlassFishVersion.toValue(versionString);
                 } catch (IllegalAccessException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException
-                        | SecurityException ex) {
+                        | SecurityException | NoClassDefFoundError ex) {
                     Logger.log(Level.WARNING, "Cannot retrieve Glassfish version: "
                             + commonUtilJar.getAbsolutePath() + ": ", ex);
                 }
