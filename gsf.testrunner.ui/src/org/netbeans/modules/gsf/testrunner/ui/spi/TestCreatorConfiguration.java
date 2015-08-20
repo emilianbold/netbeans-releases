@@ -49,6 +49,7 @@ import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
@@ -66,6 +67,43 @@ public abstract class TestCreatorConfiguration {
      * @return {@code true} if this provider can handle the specific framework, {@code false} otherwise
      */
     public abstract boolean canHandleProject(String framework);
+    
+    /**
+     * Checks if this configuration panel is valid. If the panel is valid, the
+     * "OK" button in the "Create Tests" dialog might be enabled.
+     * <p>
+     * If it returns {@code true}, check
+     * {@link #getErrorMessage() error message}, it should be {@code null} for
+     * no message and not {@code null} if there is a warning. If it returns
+     * {@code false}, check {@link #getErrorMessage() error message}, it should
+     * not be {@code null}.
+     * <p>
+     * Default implementation just returns {@code true}.
+     *
+     * @return {@code true} if the user has entered satisfactory information and
+     * the configuration panel is valid, {@code false} otherwise.
+     * @see #getErrorMessage()
+     * @since 1.9
+     */
+    public boolean isValid() {
+        return true;
+    }
+
+    /**
+     * Gets error message or warning message/{@code null} if the configuration panel is
+     * {@link #isValid() valid}.
+     * <p>
+     * Default implementation just returns {@code null}.
+     *
+     * @return error message or warning message/{@code null} if the configuration panel is
+     * {@link #isValid() valid}
+     * @see #isValid()
+     * @since 1.9
+     */
+    @CheckForNull
+    public String getErrorMessage() {
+        return null;
+    }
     
     /**
      * Finds the text component that should be presented in the test creator dialog.
