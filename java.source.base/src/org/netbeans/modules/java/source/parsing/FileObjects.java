@@ -102,7 +102,7 @@ import org.openide.util.Parameters;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
 
-/** Creates various kinds of file objects 
+/** Creates various kinds of file objects
  *
  * XXX - Rename to JavaFileObjects
  *
@@ -110,14 +110,14 @@ import org.openide.util.Lookup;
  * @author Tomas Zezula
  */
 public class FileObjects {
-    
+
     public static final Comparator<String> SIMPLE_NAME_STRING_COMPARATOR = new Comparator<String>(){
         @Override
         public int compare( String o1, String o2 ) {
             return getSimpleName( o1 ).compareTo( getSimpleName( o2 ) );
         }
     };
-    
+
     public static final Comparator<JavaFileObject> SIMPLE_NAME_FILEOBJECT_COMPARATOR = new Comparator<JavaFileObject>(){
         @Override
         public int compare( JavaFileObject o1, JavaFileObject o2 ) {
@@ -126,8 +126,8 @@ public class FileObjects {
             return n1.compareTo( n2 );
         }
     };
-    
-    
+
+
     public static final String JAVA  = "java"; //NOI18N
     public static final String CLASS = "class";//NOI18N
     public static final String JAR   = "jar";  //NOI18N
@@ -143,7 +143,7 @@ public class FileObjects {
 
     public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
 
-    private static final String encodingName = new OutputStreamWriter(new ByteArrayOutputStream()).getEncoding();    
+    private static final String encodingName = new OutputStreamWriter(new ByteArrayOutputStream()).getEncoding();
     //todo: If more clients than btrace will need this, create a SPI.
     private static final Set<String> javaFlavorExt = new HashSet<String>();
     static {
@@ -153,11 +153,11 @@ public class FileObjects {
     /** Creates a new instance of FileObjects */
     private FileObjects() {
     }
-    
+
     // Public methods ----------------------------------------------------------
-    
-    
-    
+
+
+
     /**
      * Creates {@link JavaFileObject} for a file inside an archive file. The archive file
      * is opened every time an input stream of this {@link JavaFileObject} is needed, it may
@@ -168,10 +168,10 @@ public class FileObjects {
      * @return {@link JavaFileObject}, never returns null
      */
     public static InferableJavaFileObject zipFileObject( File zipFile, String folder, String baseName, long mtime) {
-        assert zipFile != null;                
+        assert zipFile != null;
         return new ZipFileObject( zipFile, folder, baseName, mtime);
     }
-    
+
     /**
      * Creates {@link JavaFileObject} for a file inside an archive file. The returned {@link JavaFileObject}
      * tries to use {@link RandomAccessFile} to read the archive entry, in the case when it's not able to
@@ -186,7 +186,7 @@ public class FileObjects {
         assert zipFile != null;
         return new FastZipFileObject (zipFile, folder, baseName, mtime, offset);
     }
-    
+
     /**
      * Creates {@link JavaFileObject} for a file inside an {@link ZipFile}. The returned {@link JavaFileObject}
      * uses an opened ZipFile. It's a fastes way to read the archive file content, but the opened {@link ZipFile}s
@@ -226,7 +226,7 @@ public class FileObjects {
         assert zipFile != null;
         return new CachedZipFileObject (zipFile, pathToRootInArchive, folder, baseName, mtime);
     }
-            
+
     /**
      * Creates {@link JavaFileObject} for a regular {@link File}
      * @param file for which the {@link JavaFileObject} should be created
@@ -301,7 +301,7 @@ public class FileObjects {
      */
     public static @NonNull JavaFileObject templateFileObject (final @NonNull FileObject root, final @NonNull String path, final @NonNull String name) {
         assert root != null;
-        assert path != null;        
+        assert path != null;
         JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(root);
         Charset encoding = FileEncodingQuery.getEncoding(root);
         File rootFile = FileUtil.toFile(root);
@@ -311,7 +311,7 @@ public class FileObjects {
         File file = FileUtil.normalizeFile(new File (new File (rootFile, path.replace(NBFS_SEPARATOR_CHAR, File.separatorChar)), name));
         return new NewFromTemplateFileObject (file, convertFolder2Package(path), name, filter, encoding);
     }
-    
+
     /**
      * Creates {@link JavaFileObject} for a NetBeans {@link FileObject}
      * Any client which needs to create {@link JavaFileObject} for java
@@ -467,12 +467,12 @@ public class FileObjects {
         };
         return AbstractSourceFileObject.getFactory().createJavaFileObject(handle, null, null, false);
     }
-    
+
     /**
      * Creates virtual {@link JavaFileObject} with given name and content.
      * This method should be used only by tests, regular client should never
      * use this method.
-     * @param pkg packageName     
+     * @param pkg packageName
      * @param name the name of the {@link JavaFileObject}
      * @param content the content of the {@link JavaFileObject}
      * @return {@link JavaFileObject}, never returns null
@@ -484,7 +484,7 @@ public class FileObjects {
      * Creates virtual {@link JavaFileObject} with given name and content.
      * This method should be used only by tests, regular client should never
      * use this method.
-     * @param pkg packageName     
+     * @param pkg packageName
      * @param name the name of the {@link JavaFileObject}
      * @param URI uri of the {@link JavaFileObject}, if null the relative URI
      * in the form binaryName.extension is generated.
@@ -498,14 +498,14 @@ public class FileObjects {
         Parameters.notNull("name", name);
         Parameters.notNull("content", content);
         final String pkgStr  = (pkg instanceof String) ? (String) pkg : pkg.toString();
-        final String nameStr = (name instanceof String) ? (String) name : name.toString();        
-        int length = content.length();        
+        final String nameStr = (name instanceof String) ? (String) name : name.toString();
+        int length = content.length();
         if ( length != 0 && Character.isWhitespace( content.charAt( length - 1 ) ) ) {
             return new MemoryFileObject(pkgStr, nameStr, uri, lastModified, CharBuffer.wrap( content ) );
         }
         else {
             return new MemoryFileObject(pkgStr, nameStr, uri, lastModified, (CharBuffer)CharBuffer.allocate( length + 1 ).append( content ).append( ' ' ).flip() );
-        }        
+        }
     }
 
     /**
@@ -523,10 +523,10 @@ public class FileObjects {
      * @param fileName to remove extension from
      * @return the fileName without extension
      */
-    public static String stripExtension( String fileName ) {        
+    public static String stripExtension( String fileName ) {
         int dot = fileName.lastIndexOf(".");
         return (dot == -1 ? fileName : fileName.substring(0, dot));
-    }    
+    }
 
     /**
      * Returns file extension
@@ -537,8 +537,8 @@ public class FileObjects {
         int dot = fileName.lastIndexOf('.');
         return (dot == -1 || dot == fileName.length() -1 ) ? "" : fileName.substring(dot+1);    //NOI18N
     }
-    
-    
+
+
     /**
      * Returns the name of JavaFileObject, similar to
      * {@link java.io.File#getName}
@@ -570,10 +570,10 @@ public class FileObjects {
             return path;
         } catch (MalformedURLException e) {
             return null;
-        }        
+        }
     }
-        
-    
+
+
     /**
      * Returns the basename name without folder path
      *  @param file name, eg. obtained from {@link FileObjects#getPath} or {java.io.File.getPath}
@@ -583,7 +583,7 @@ public class FileObjects {
     public static String getBaseName( String fileName ) {
         return getBaseName(fileName, File.separatorChar);
     }
-    
+
     /**
      * Returns the basename name without folder path. You can specify
      * the path separator since eg zip files uses '/' regardless of platform.
@@ -594,8 +594,8 @@ public class FileObjects {
     public static String getBaseName( String fileName, char separator ) {
         return getFolderAndBaseName(fileName, separator)[1];
     }
-    
-    
+
+
     /**
      *Returns the folder (package name separated by original separators)
      *and base name.
@@ -626,8 +626,8 @@ public class FileObjects {
         int index = fileName.lastIndexOf('.');  //NOI18N
         if (index > 0) {
             fileName = fileName.substring(0,index);
-        }        
-        return fileName.replace(File.separatorChar,'.');   //NOI18N        
+        }
+        return fileName.replace(File.separatorChar,'.');   //NOI18N
     }
 
     /**
@@ -705,7 +705,7 @@ public class FileObjects {
             result[0] = result[0].replace('.',NBFS_SEPARATOR_CHAR);      //NOI18N
         }
         return result;
-    }     
+    }
 
     /**
      * Returns a tuple {package,simpleName} for given fully qualified name
@@ -730,13 +730,13 @@ public class FileObjects {
             };
         }
     }
-    
-    
+
+
     /**
      * Determines {@link JavaFileObject.Kind} for given extension
      * @param extension
      * @return the found kind
-     */ 
+     */
     public static @NonNull JavaFileObject.Kind getKind (final @NullAllowed String extension) {
         if (extension == null) {
             return JavaFileObject.Kind.OTHER;
@@ -763,7 +763,7 @@ public class FileObjects {
      * @param folder to be deleted
      */
     public static void deleteRecursively (final @NonNull File folder) {
-        assert folder != null;        
+        assert folder != null;
         if (folder.isDirectory()) {
             File[] children = folder.listFiles();
             if (children != null) {
@@ -806,7 +806,7 @@ public class FileObjects {
         final String path = getRelativePath(BaseUtilities.toFile(root.toURI()), BaseUtilities.toFile(fo.toURI()));
         return path.replace(File.separatorChar, NBFS_SEPARATOR_CHAR);
     }
-    
+
     @NonNull
     public static byte[] asBytes(@NonNull final File file) throws IOException {
         byte[] data = new byte[(int)file.length()];
@@ -909,15 +909,15 @@ public class FileObjects {
 
     }
     //</editor-fold>
-    
-    //<editor-fold defaultstate="collapsed" desc="JavaFileObject implementation">    
+
+    //<editor-fold defaultstate="collapsed" desc="JavaFileObject implementation">
     public static abstract class Base implements InferableJavaFileObject {
 
         protected final JavaFileObject.Kind kind;
         protected final String pkgName;
         protected final String nameWithoutExt;
-        protected final String ext;        
-        
+        protected final String ext;
+
         protected Base (final String pkgName, final String name) {
             assert pkgName != null;
             assert name != null;
@@ -927,27 +927,27 @@ public class FileObjects {
             this.ext = res[1];
             this.kind = FileObjects.getKind (this.ext);
         }
-                
+
         @Override
         public JavaFileObject.Kind getKind() {
             return this.kind;
         }
-        
+
         @Override
         public boolean isNameCompatible (String simplename, JavaFileObject.Kind k) {
             return this.kind == k && nameWithoutExt.equals(simplename);
-	}        
-        
+	}
+
         @Override
         public NestingKind getNestingKind() {
             return null;
         }
-        
+
         @Override
         public Modifier getAccessLevel() {
             return null;
         }
-    
+
         @Override
         public String toString() {
             return this.toUri().toString();
@@ -962,7 +962,7 @@ public class FileObjects {
         public String getNameWithoutExtension () {
             return this.nameWithoutExt;
         }
-        
+
         @Override
         @NonNull
         public String getName () {
@@ -988,11 +988,11 @@ public class FileObjects {
             }
             return res;
         }
-        
+
         public boolean isVirtual () {
             return false;
         }
-        
+
         @Override
         @NonNull
         public final String inferBinaryName () {
@@ -1002,11 +1002,11 @@ public class FileObjects {
                 sb.append('.'); //NOI18N
             }
             sb.append(this.nameWithoutExt);
-            return sb.toString();   
+            return sb.toString();
         }
-        
+
         private static String[] getNameExtPair (String name) {
-            int index = name.lastIndexOf ('.');            
+            int index = name.lastIndexOf ('.');
             String namenx;
             String ext;
             if (index <= 0) {
@@ -1117,7 +1117,7 @@ public class FileObjects {
                 res = getCharContentImpl(ignoreEncodingErrors);
             }
             return res;
-        }        
+        }
 
 	@Override
 	public boolean equals(final Object other) {
@@ -1131,14 +1131,14 @@ public class FileObjects {
 	public int hashCode() {
 	    return f.hashCode();
 	}
-        
+
         @Override
         public int prefetch() throws IOException {
             final CharSequence chc = getCharContentImpl(true);
             data = chc;
             return chc.length();
         }
-        
+
         @Override
         public int dispose() {
             final CharSequence _data = data;
@@ -1149,19 +1149,19 @@ public class FileObjects {
                 return 0;
             }
         }
-        
+
         private CharSequence getCharContentImpl(boolean ignoreEncodingErrors) throws IOException {
             return FileObjects.getCharContent(openInputStream(), encoding, filter, f.length(), ignoreEncodingErrors);
         }
     }
-        
+
     @Trusted
     private static final class NewFromTemplateFileObject extends FileBase {
 
         public NewFromTemplateFileObject (File f, String packageName, String baseName, JavaFileFilterImplementation filter, Charset encoding) {
             super (f,packageName,baseName, filter, encoding);
         }
-        
+
         @Override
         public InputStream openInputStream () throws IOException {
             if (f.exists()) {
@@ -1169,7 +1169,7 @@ public class FileObjects {
             }
             return new ByteArrayInputStream (new byte[0]);
         }
-        
+
         @Override
         public Reader openReader (boolean b) throws IOException {
             if (f.exists()) {
@@ -1177,7 +1177,7 @@ public class FileObjects {
             }
             return new StringReader ("");   //NOI18N
         }
-        
+
         @Override
         public OutputStream openOutputStream () throws IOException {
             if (!f.exists()) {
@@ -1185,15 +1185,15 @@ public class FileObjects {
             }
             return super.openOutputStream();
         }
-        
-        @Override 
+
+        @Override
         public Writer openWriter () throws IOException {
             if (!f.exists()) {
                 create ();
             }
             return super.openWriter();
         }
-        
+
         @Override
         public CharSequence getCharContent (boolean ignoreEncodingErrors) throws IOException {
             if (f.exists()) {
@@ -1201,7 +1201,7 @@ public class FileObjects {
             }
             return "";                      //NOI18N
         }
-        
+
         private void create() throws IOException {
             File parent = f.getParentFile();
             FileObject parentFo = FileUtil.createFolder(parent);
@@ -1218,10 +1218,10 @@ public class FileObjects {
     }
 
     abstract static class ZipFileBase extends Base {
-        
+
         protected final long mtime;
         protected final String resName;
-        
+
         public ZipFileBase (
                 @NullAllowed final String pathToRootInArchive,
                 @NonNull final String folderName,
@@ -1255,7 +1255,7 @@ public class FileObjects {
                 this.resName = rn.toString();
             }
         }
-        
+
         @Override
         public OutputStream openOutputStream() throws IOException {
 	    throw new UnsupportedOperationException();
@@ -1275,7 +1275,7 @@ public class FileObjects {
         public Writer openWriter() throws IOException {
 	    throw new UnsupportedOperationException();
 	}
-        
+
         @Override
         public long getLastModified() {
 	    return mtime;
@@ -1314,7 +1314,7 @@ public class FileObjects {
                 r.close();
             }
 	}
-        
+
         @Override
         public final URI toUri () {
             URI  zdirURI = this.getArchiveURI();
@@ -1344,12 +1344,12 @@ public class FileObjects {
                 }
             }
         }
-        
+
         @Override
 	public int hashCode() {
 	    return this.resName.hashCode();
-	}                
-        
+	}
+
 	@Override
 	public boolean equals(Object other) {
 	    if (!(other instanceof ZipFileBase))
@@ -1357,31 +1357,31 @@ public class FileObjects {
 	    ZipFileBase o = (ZipFileBase) other;
 	    return getArchiveURI().equals(o.getArchiveURI()) && resName.equals(o.resName);
 	}
-        
+
         protected abstract URI getArchiveURI ();
-        
+
         protected abstract long getSize() throws IOException;
-        
+
     }
 
     @Trusted
     private static class ZipFileObject extends ZipFileBase {
-	
+
 
 	/** The zipfile containing the entry.
 	 */
 	protected final File archiveFile;
-        
+
 
         ZipFileObject(final File archiveFile, final String folderName, final String baseName, long mtime) {
             super (null, folderName,baseName,mtime);
             assert archiveFile != null : "archiveFile == null";   //NOI18N
 	    this.archiveFile = archiveFile;
-            
+
 	}
 
         @Override
-        public InputStream openInputStream() throws IOException {            
+        public InputStream openInputStream() throws IOException {
             class ZipInputStream extends InputStream {
 
                 private ZipFile zipfile;
@@ -1398,7 +1398,7 @@ public class FileObjects {
                     this.zipfile = zf;
                     try {
                         this.delegate = zf.getInputStream(new ZipEntry(resName));
-                        if (this.delegate == null) {                        
+                        if (this.delegate == null) {
                             throw new IOException();
                         }
                     } catch (IOException e) {
@@ -1440,12 +1440,12 @@ public class FileObjects {
             // System.out.println("ZF OPEN " + archiveFile.getPath() + " took: " + (System.currentTimeMillis() - time )+ "ms." );
             return new BufferedInputStream (new ZipInputStream (zf));
 	}
-        
+
         @Override
         public URI getArchiveURI () {
             return BaseUtilities.toURI(this.archiveFile);
         }
-        
+
         @Override
         protected long getSize () throws IOException {
             ZipFile zf = new ZipFile (archiveFile);
@@ -1460,14 +1460,14 @@ public class FileObjects {
 
     @Trusted
     private static class FastZipFileObject extends ZipFileObject {
-        
+
         private long offset;
-        
-        FastZipFileObject (final File archiveFile, final String folderName, final String baseName, long mtime, long offset) {            
+
+        FastZipFileObject (final File archiveFile, final String folderName, final String baseName, long mtime, long offset) {
             super (archiveFile, folderName, baseName, mtime);
             this.offset = offset;
         }
-        
+
         @Override
         public InputStream openInputStream () throws IOException {
             try {
@@ -1482,8 +1482,8 @@ public class FileObjects {
                 return super.openInputStream();
             }
         }
-        
-        @Override 
+
+        @Override
         public long getSize () throws IOException {
             try {
                 ZipEntry e = FastJar.getZipEntry (archiveFile, offset);
@@ -1505,9 +1505,9 @@ public class FileObjects {
 
     @Trusted
     private static class CachedZipFileObject extends ZipFileBase {
-        
+
         private final ZipFile zipFile;
-        
+
         CachedZipFileObject(
                 @NonNull final ZipFile zipFile,
                 @NullAllowed final String pathToRootInArchive,
@@ -1518,44 +1518,44 @@ public class FileObjects {
             assert zipFile != null : "archiveFile == null";   //NOI18N
 	    this.zipFile = zipFile;
 	}
-        
+
         @Override
         public InputStream openInputStream() throws IOException {
             return new BufferedInputStream (this.zipFile.getInputStream(new ZipEntry (this.resName)));
 	}
-        
+
         @Override
         public URI getArchiveURI () {
             return BaseUtilities.toURI(new File (this.zipFile.getName()));
         }
-        
+
         @Override
         protected long getSize() throws IOException {
             ZipEntry ze = this.zipFile.getEntry(this.resName);
             return ze == null ? 0L : ze.getSize();
         }
     }
-    
-    
+
+
     /** Temporary FileObject for parsing input stream.
      */
     @Trusted
     private static class MemoryFileObject extends Base implements PrefetchableJavaFileObject {
-        
+
         final long lastModified;
         final CharBuffer cb;
         final URI uri;
         final boolean isVirtual;
-        
+
         public MemoryFileObject(final String packageName, final String fileName,
-                final URI uri, final long lastModified, final CharBuffer cb ) {            
+                final URI uri, final long lastModified, final CharBuffer cb ) {
             super (packageName, fileName);    //NOI18N
             this.cb = cb;
             this.lastModified = lastModified;
             this.uri = uri;
             this.isVirtual = uri != null;
         }
-        
+
 
         /**
          * Get the character content of the file, if available.
@@ -1572,7 +1572,7 @@ public class FileObjects {
         public boolean delete() {
             // Do nothing
             return false;
-        }        
+        }
 
         @Override
         public URI toUri () {
@@ -1583,7 +1583,7 @@ public class FileObjects {
                 return URI.create (convertPackage2Folder(this.pkgName) + NBFS_SEPARATOR_CHAR + this.nameWithoutExt);
             }
         }
-        
+
         @Override
         public boolean isVirtual () {
             return isVirtual;
@@ -1596,7 +1596,7 @@ public class FileObjects {
 
         /**
          * Get an InputStream for this object.
-         * 
+         *
          * @return an InputStream for this  object.
          * @throws UnsupportedOperationException if the byte access is not supported
          */
@@ -1607,7 +1607,7 @@ public class FileObjects {
 
         /**
          * Get an OutputStream for this object.
-         * 
+         *
          * @return an OutputStream for this  object.
          * @throws UnsupportedOperationException if byte access is not supported
          */
@@ -1618,7 +1618,7 @@ public class FileObjects {
 
         /**
          * Get a reader for this object.
-         * 
+         *
          * @return a Reader for this file object.
          * @throws UnsupportedOperationException if character access is not supported
          * @throws IOException if an error occurs while opening the reader
@@ -1643,7 +1643,7 @@ public class FileObjects {
          * Is the {@link PrefetchableJavaFileObject} just to
          * prevent down casts.
          * @return zero
-         * @throws IOException 
+         * @throws IOException
          */
         @Override
         public int prefetch() throws IOException {
@@ -1660,9 +1660,9 @@ public class FileObjects {
         public int dispose() {
             return 0;
         }
-        
-        
-        
+
+
+
     }
 
     @Trusted
@@ -1711,7 +1711,7 @@ public class FileObjects {
         }
 
         @Override
-        public OutputStream openOutputStream() throws IOException {            
+        public OutputStream openOutputStream() throws IOException {
             return new AsyncOutputStream(
                 new Callable<OutputStream>() {
                     @Override
