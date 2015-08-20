@@ -221,8 +221,18 @@ class FormattedPrintFunction {
 
         if (handler.type != null) {
             if (handler.type.getClassifier().getKind().equals(CsmDeclaration.Kind.TYPEDEF)) {
-                CsmClassifier cer = CsmClassifierResolver.getDefault().getTypeClassifier(handler.type, file, offset, true);
-                return cer.getName().toString().replace("const", "").replace("&", "");  // NOI18N
+                switch (handler.type.getCanonicalText().toString()) {
+                    case "intmax_t":   // NOI18N
+                    case "uintmax_t":  // NOI18N
+                    case "size_t":     // NOI18N
+                    case "ptrdiff_t":  // NOI18N
+                    case "wint_t":     // NOI18N
+                    case "wchar_t":    // NOI18N
+                        break;
+                    default:
+                        CsmClassifier cer = CsmClassifierResolver.getDefault().getTypeClassifier(handler.type, file, offset, true);
+                        return cer.getName().toString().replace("const", "").replace("&", "");  // NOI18N
+                }
             }
             return handler.type.getCanonicalText().toString().replace("const", "").replace("&", "");  // NOI18N
         }
