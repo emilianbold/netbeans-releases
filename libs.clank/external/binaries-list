@@ -1,6 +1,6 @@
-#changeset:   15454:8134d6aa62b7
+#changeset:   15455:5a7c92fb87eb
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Aug 20 17:58:13 2015 +0300
-#summary:     fixed old misspell
-CF3084F37224662B439D87F5D9203A13750EB12A clank_0.3.6.zip
+#date:        Thu Aug 20 20:46:02 2015 +0300
+#summary:     limit number of collected tokens as in APT
+6668CA8519C86A8BD3B9F66839495F143DEF5200 clank_0.3.6.zip
