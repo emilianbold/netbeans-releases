@@ -1,6 +1,6 @@
-#changeset:   15451:6442ed42411e
+#changeset:   15454:8134d6aa62b7
 #tag:         tip
-#user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Thu Aug 20 17:00:04 2015 +0300
-#summary:     Additional fix for recursive inclusions in FileModelTest3 - notification moved to PPCallbacks
-E8EF7C77F6E3528753B56366DACFC38914013639 clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Thu Aug 20 17:58:13 2015 +0300
+#summary:     fixed old misspell
+CF3084F37224662B439D87F5D9203A13750EB12A clank_0.3.6.zip
