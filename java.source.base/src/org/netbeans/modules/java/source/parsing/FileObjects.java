@@ -595,25 +595,6 @@ public class FileObjects {
         return getFolderAndBaseName(fileName, separator)[1];
     }
 
-
-    /**
-     *Returns the folder (package name separated by original separators)
-     *and base name.
-     * @param path
-     * @return array of 2 strings, 1st the folder 2nd the base name
-     */
-    public static String[] getFolderAndBaseName (final String fileName, final char separator) {
-        final int i = fileName.lastIndexOf( separator );
-        if ( i == -1 ) {
-            return new String[] {"",fileName};  //NOI18N
-        } else {
-            return new String[] {
-                fileName.substring(0,i),
-                fileName.substring( i + 1 )
-            };
-        }
-    }
-
     /**
      * Returns binary name of given file within a root
      * @param file to get binary name for
@@ -695,15 +676,38 @@ public class FileObjects {
     }
 
     /**
+     * Returns the folder (package name separated by original separators)
+     * and base name.
+     * @param path
+     * @return array of 2 strings, 1st the folder 2nd the base name
+     */
+    @NonNull
+    public static String[] getFolderAndBaseName (final String fileName, final char separator) {
+        final int i = fileName.lastIndexOf( separator );
+        if (i == -1) {
+            return new String[] {"",fileName};  //NOI18N
+        } else if (i == fileName.length() -1) {
+            return new String[] {
+                fileName.substring(0, i),
+                ""  //NOI18N
+            };
+        } else {
+            return new String[] {
+                fileName.substring(0,i),
+                fileName.substring(i + 1)
+            };
+        }
+    }
+
+    /**
      * Returns a tuple {parentPath,simpleName} for given fully qualified name
      * @param fqn to get the parent name tuple for
      * @return a tuple {parentPath, simpleName}
      */
-    public static @NonNull String[] getParentRelativePathAndName (@NonNull final String fqn) {
+    @NonNull
+    public static String[] getParentRelativePathAndName (@NonNull final String fqn) {
         final String[] result = getPackageAndName(fqn);
-        if (result != null) {
-            result[0] = result[0].replace('.',NBFS_SEPARATOR_CHAR);      //NOI18N
-        }
+        result[0] = result[0].replace('.',NBFS_SEPARATOR_CHAR);      //NOI18N
         return result;
     }
 
@@ -712,23 +716,9 @@ public class FileObjects {
      * @param fqn to get the package simpleName tuple for
      * @return a tuple {package,simpleName}
      */
-    public static @NonNull String[] getPackageAndName (final @NonNull String fqn) {
-        if (fqn.charAt(fqn.length()-1) == '.') {
-            return null;
-        }
-        final int index = fqn.lastIndexOf('.');
-        if (index<0) {
-            return new String[] {
-                "",     //NOI18N
-                fqn
-            };
-        }
-        else {
-            return new String[] {
-                fqn.substring(0,index),
-                fqn.substring(index+1)
-            };
-        }
+    @NonNull
+    public static String[] getPackageAndName (final @NonNull String fqn) {
+        return getFolderAndBaseName(fqn, '.');  //NOI18N
     }
 
 

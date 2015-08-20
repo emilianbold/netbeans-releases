@@ -127,9 +127,6 @@ public class SourceFileManager implements JavaFileManager {
     @Override
     public JavaFileObject getJavaFileForInput (Location l, final String className, JavaFileObject.Kind kind) {
         String[] namePair = FileObjects.getParentRelativePathAndName (className);
-        if (namePair == null) {
-            return null;
-        }
         String ext = kind == JavaFileObject.Kind.CLASS ? FileObjects.SIG : kind.extension.substring(1);   //tzezula: Clearly wrong in compile on save, but "class" is also wrong
         for (ClassPath.Entry entry : this.sourceRoots.entries()) {
             FileObject root = entry.getRoot();
