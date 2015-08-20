@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -65,9 +64,9 @@ import org.clank.support.Native;
 import org.clank.support.NativePointer;
 import org.clank.support.Unsigned;
 import org.clank.support.aliases.char$ptr;
+import org.llvm.adt.SmallString;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVector;
-import org.llvm.adt.aliases.SmallVectorChar;
 import org.llvm.adt.aliases.SmallVectorImplChar;
 import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
@@ -360,7 +359,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
     @Override
     protected void onMacroDefineDirective(FileInfo curStackElement, MacroDirectiveInfo macroDirective) {
-        SmallVectorChar spell = new SmallVectorChar(1024);
+        SmallString spell = new SmallString(1024);
         // old model tracked only #define and not #undef
         CharSequence macroName = ClankToAPTUtils.getTokenText(macroDirective.getMacroNameToken(), curStackElement.getPreprocessor(), spell);
         List<CharSequence> params = null;
@@ -641,7 +640,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             int nrDirectives = ppDirectives.size();
             assert this.convertedPPDirectives == null;
             this.convertedPPDirectives = new ArrayList<ClankDriver.ClankPreprocessorDirective>(nrDirectives);
-            SmallVectorChar spell = new SmallVectorChar(1024);
+            SmallString spell = new SmallString(1024);
             Preprocessor PP = current.getPreprocessor();
             for (int i = 0; i < nrDirectives; i++) {
                 PreprocessorDirectiveInfo curDirective = (PreprocessorDirectiveInfo)directives[i];
