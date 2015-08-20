@@ -239,17 +239,17 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public boolean needTokens() {
-          return this.insideInterestedFile || !CLEAN_STATE;
+          return this.insideInterestedFile || true;
         }
 
         @Override
         public boolean needSkippedRanges() {
-          return this.insideInterestedFile || !CLEAN_STATE;
+          return this.insideInterestedFile || true;
         }
 
         @Override
         public boolean needMacroExpansion() {
-          return this.insideInterestedFile || !CLEAN_STATE;
+          return this.insideInterestedFile || true;
         }
 
         @Override
@@ -375,11 +375,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                       System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project%n", inclPath, inclFileOwner.getName());
                     }
                   } else {
-                    if (CLEAN_STATE) {
-                      // FIXME: to regenerate headers' TS clean state
-                      inclState = APTHandlersSupport.createCleanPreprocState(inclState);
-                    }
-
                     FilePreprocessorConditionState pcState = CsmCorePackageAccessor.get().createPCState(inclPath, exitedFrom.getSkippedRanges());
                     PreprocessorStatePair ppStatePair = new PreprocessorStatePair(inclState, pcState);
                     inclFileOwner.postIncludeFile(aStartProject, currentInclusion, inclPath, ppStatePair, null);
@@ -404,8 +399,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private ClankDriver.APTTokenStreamCache getPPOut() {
             return foundTokens;
         }
-
-        private static final boolean CLEAN_STATE = false;
     }
     
     private static final class IncludeDirectiveTokensStreamCallback implements ClankPreprocessorCallback {
