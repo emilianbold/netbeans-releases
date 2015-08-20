@@ -72,7 +72,7 @@ public class TruffleObject {
         this.visualizer = visualizer;
         this.name = name;
         this.object = object;
-        this.displayValue = visualizer.displayValue(object, DISPLAY_TRIM);
+        this.displayValue = (visualizer != null) ? visualizer.displayValue(object, DISPLAY_TRIM) : object.toString();
         if (object instanceof String) {
             this.type = String.class.getSimpleName();
         } else if (object instanceof Number) {
