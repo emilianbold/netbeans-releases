@@ -194,7 +194,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         if (file == null) {
             final List<ClassPath.Entry> entries = this.cp.entries();
             if (!entries.isEmpty()) {
-                final String resourceName = FileObjects.getRelativePath(FileObjects.convertPackage2Folder(pkgName), relativeName);
+                final String resourceName = FileObjects.resolveRelativePath(pkgName, relativeName);
                 file = provider.getArchive(entries.get(0).getURL(), cacheFile).create(resourceName, filter);
             }
         }
@@ -272,7 +272,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     private javax.tools.JavaFileObject findFile(final String pkgName, String relativeName) {
         assert pkgName != null;
         assert relativeName != null;
-        final String resourceName = FileObjects.getRelativePath(pkgName,relativeName);
+        final String resourceName = FileObjects.resolveRelativePath(pkgName,relativeName);
 
         for( ClassPath.Entry root : this.cp.entries()) {
             try {

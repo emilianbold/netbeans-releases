@@ -144,7 +144,9 @@ public final class TreeLoaderOutputFileManager implements JavaFileManager {
             throw new IllegalArgumentException(String.valueOf(location));
         }
         final File root = new File(outputRoot);
-        final File file = FileUtil.normalizeFile(new File (root, getPath(packageName, relativeName, File.separatorChar)));
+        final File file = FileUtil.normalizeFile(new File (
+            root,
+            FileObjects.resolveRelativePath(packageName, relativeName).replace(FileObjects.NBFS_SEPARATOR_CHAR, File.separatorChar)));  //NOI18N
         return tx.createFileObject(location, file, root,null,null);
     }
 
@@ -154,8 +156,8 @@ public final class TreeLoaderOutputFileManager implements JavaFileManager {
             throw new IllegalArgumentException(String.valueOf(location));
         }
         final File root = new File(outputRoot);
-        final String path = getPath(packageName, relativeName, '/');
-        final String[] names = FileObjects.getFolderAndBaseName(path, '/');
+        final String path = FileObjects.resolveRelativePath(packageName, relativeName);
+        final String[] names = FileObjects.getFolderAndBaseName(path, FileObjects.NBFS_SEPARATOR_CHAR);
         final javax.tools.FileObject jfo = tx.readFileObject(location, names[0], names[1]);
         if (jfo != null) {
             return (JavaFileObject) jfo;
@@ -216,19 +218,4 @@ public final class TreeLoaderOutputFileManager implements JavaFileManager {
     @Override
     public void close() throws IOException {
     }
-
-    @NonNull
-    private static String getPath(@NonNull final String packageName, @NonNull String relativeName, final char separator) {
-        final StringBuilder  path = new StringBuilder();
-        if (packageName.length() > 0) {
-            path.append(FileObjects.convertPackage2Folder(packageName, separator));
-            path.append(separator);
-        }
-        if (separator != '/') {    //NOI18N
-            relativeName = relativeName.replace('/', separator);   //NOI18N
-        }
-        path.append(relativeName);
-        return path.toString();
-    }
-
 }

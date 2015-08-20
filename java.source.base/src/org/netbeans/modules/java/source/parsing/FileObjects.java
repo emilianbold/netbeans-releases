@@ -606,8 +606,7 @@ public class FileObjects {
         final int i = fileName.lastIndexOf( separator );
         if ( i == -1 ) {
             return new String[] {"",fileName};  //NOI18N
-        }
-        else {
+        } else {
             return new String[] {
                 fileName.substring(0,i),
                 fileName.substring( i + 1 )
@@ -686,7 +685,7 @@ public class FileObjects {
      * @param relativeName to resolve
      * @return a relative path resolved in package as path separated by '/' character
      */
-    public static @NonNull String getRelativePath (final @NonNull String packageName, final @NonNull String relativeName) {
+    public static @NonNull String resolveRelativePath (final @NonNull String packageName, final @NonNull String relativeName) {
         if (packageName.isEmpty()) return relativeName;
         StringBuilder relativePath = new StringBuilder ();
         relativePath.append(packageName.replace('.',NBFS_SEPARATOR_CHAR));  //NOI18N

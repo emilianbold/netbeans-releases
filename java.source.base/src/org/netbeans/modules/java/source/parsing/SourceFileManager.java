@@ -119,7 +119,7 @@ public class SourceFileManager implements JavaFileManager {
 
     @Override
     public javax.tools.FileObject getFileForInput (final Location l, final String pkgName, final String relativeName) {
-        final String rp = FileObjects.getRelativePath (pkgName, relativeName);
+        final String rp = FileObjects.resolveRelativePath (pkgName, relativeName);
         final FileObject[] fileRootPair = findFile(rp);
         return fileRootPair == null ? null : FileObjects.sourceFileObject(fileRootPair[0], fileRootPair[1]);
     }
@@ -154,7 +154,7 @@ public class SourceFileManager implements JavaFileManager {
         if (StandardLocation.SOURCE_PATH != l) {
             throw new UnsupportedOperationException("Only StandardLocation.SOURCE_PATH is supported."); // NOI18N
         }
-        final String rp = FileObjects.getRelativePath (pkgName, relativeName);
+        final String rp = FileObjects.resolveRelativePath (pkgName, relativeName);
         final FileObject[] fileRootPair = findFile(rp);
         if (fileRootPair == null) {
             final FileObject[] roots = this.sourceRoots.getRoots();
