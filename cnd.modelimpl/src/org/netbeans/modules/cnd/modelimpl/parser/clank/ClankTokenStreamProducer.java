@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.APTTokenStreamCache;
@@ -249,7 +250,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public boolean needMacroExpansion() {
-          return this.insideInterestedFile || true;
+          return !APTTraceFlags.DEFERRED_MACRO_USAGES;
         }
 
         @Override
@@ -518,6 +519,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     private static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.APTTokenStreamCache cache) {
         Map<Integer, ClankDriver.ClankMacroDirective> macroDefinitions = cache.getMacroDefinitions();
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
+            assert !APTTraceFlags.DEFERRED_MACRO_USAGES;
             int referencedDeclaration = cur.getReferencedMacroID();
             if (referencedDeclaration != 0) {
                 ClankDriver.ClankMacroDirective directive = macroDefinitions.get(referencedDeclaration);
@@ -528,6 +530,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             }
         }
         for(ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
+            assert !APTTraceFlags.DEFERRED_MACRO_USAGES;
             int referencedDeclaration = cur.getReferencedMacroID();
             if (referencedDeclaration != 0) {
                 ClankDriver.ClankMacroDirective directive = macroDefinitions.get(referencedDeclaration);
