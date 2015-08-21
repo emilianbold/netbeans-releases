@@ -64,7 +64,8 @@ class FormattedPrintFunction {
     private final ArrayList<Parameter> parameters;
     private final String formatString;
     private final int offset;
-
+    private static boolean STRICT_TYPE_CHECKS = false;
+    
     public FormattedPrintFunction(CsmFile file, int offset, String formatString, ArrayList<Parameter> parameters) {
         this.file = file;
         this.offset = offset;
@@ -109,7 +110,7 @@ class FormattedPrintFunction {
                             List<String> validFlags = Utilities.typeToFormat(type);
                             if (!validFlags.isEmpty() && !validFlags.contains(fType)) {
                                 result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
-                            } else if (validFlags.isEmpty() && !fType.equals("p")) {  // NOI18N
+                            } else if (validFlags.isEmpty() && !fType.equals("p") && STRICT_TYPE_CHECKS) {  // NOI18N
                                 result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
                             }
                         }

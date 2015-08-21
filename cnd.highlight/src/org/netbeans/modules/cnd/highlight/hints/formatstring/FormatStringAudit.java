@@ -120,6 +120,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
                     State state = State.DEFAULT;
                     boolean formatFlag = false;  // detect was format string already processed
                     StringBuilder paramBuf = new StringBuilder();
+                    int paramOffset = -1;
                     ArrayList<Parameter> params = new ArrayList<>();
                     String formatString = "";  // NOI18N
                     int bracketsCounter = 0;
@@ -140,11 +141,17 @@ public class FormatStringAudit extends AbstractCodeAudit {
                             bracketsCounter++;
                             if (formatFlag) {
                                 paramBuf.append(token.text());
+                                if (paramOffset == -1 && paramBuf.length() == 0) {
+                                    paramOffset = docTokenSequence.offset();
+                                }
                             }
                         } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM_BRACKET) {
                             bracketsCounter++;
                             if (formatFlag) {
                                 paramBuf.append(token.text());
+                                if (paramOffset == -1 && paramBuf.length() == 0) {
+                                    paramOffset = docTokenSequence.offset();
+                                }
                             }
                         } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM_BRACKET) {
                             bracketsCounter--;
@@ -153,10 +160,13 @@ public class FormatStringAudit extends AbstractCodeAudit {
                             }
                             if (formatFlag) {
                                 paramBuf.append(token.text());
+                                if (paramOffset == -1 && paramBuf.length() == 0) {
+                                    paramOffset = docTokenSequence.offset();
+                                }
                             }
                         } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
                             if (paramBuf.length() > 0) {
-                                params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
+                                params.add(new Parameter(paramBuf.toString(), paramOffset));
                             }
                             result.add(new FormattedPrintFunction(file, formatStringOffset, formatString, params));
                             state = State.DEFAULT;
@@ -169,13 +179,16 @@ public class FormatStringAudit extends AbstractCodeAudit {
                             formatStringOffset = docTokenSequence.offset();
                         } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
                             if (paramBuf.length() > 0) {
-                                params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
+                                params.add(new Parameter(paramBuf.toString(), paramOffset));
                             }
                             paramBuf = new StringBuilder();
                         } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
                                 && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
                                 && formatFlag) {
                             paramBuf.append(token.text());
+                            if (paramOffset == -1 && paramBuf.length() == 0) {
+                                paramOffset = docTokenSequence.offset();
+                            }
                         }
                     }
                 }
