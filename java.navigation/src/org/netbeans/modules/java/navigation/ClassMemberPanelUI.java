@@ -85,6 +85,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.Task;
@@ -606,11 +607,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private class MyBeanTreeView extends BeanTreeView implements ToolTipManagerEx.ToolTipProvider {
 
         private final ToolTipManagerEx toolTipManager;
-        
+
         public MyBeanTreeView() {
             toolTipManager = new ToolTipManagerEx( this );
         }
-        
+
         public boolean getScrollOnExpand() {
             return tree.getScrollsOnExpand();
 }
@@ -618,27 +619,39 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         public void setScrollOnExpand( boolean scroll ) {
             this.tree.setScrollsOnExpand( scroll );
         }
-        
+
+        @Override
         public JComponent getComponent() {
             return tree;
         }
 
-        public String getToolTipText(Point loc) {
-            ElementJavadoc doc = getDocumentation(loc);
+        @Override
+        public String getToolTipText(@NonNull Node node) {
+            ElementJavadoc doc = getDocumentation(node);
             return null == doc ? null : doc.getText();
         }
-        
-        private ElementJavadoc getDocumentation( Point loc ) {
-            TreePath path = tree.getPathForLocation( loc.x, loc.y );
-            if( null == path )
+
+
+        @CheckForNull
+        @Override
+        public Node findNode(@NonNull final Point loc) {
+            final TreePath path = tree.getPathForLocation( loc.x, loc.y );
+            if( null == path ) {
                 return null;
-            Node node = Visualizer.findNode( path.getLastPathComponent() );
+            }
+            return Visualizer.findNode( path.getLastPathComponent());
+        }
+
+
+        @CheckForNull
+        private ElementJavadoc getDocumentation(@NullAllowed final Node node) {
             if( node instanceof ElementNode ) {
                 return getJavaDocFor((ElementNode)node, toolTipManager);
             }
             return null;
         }
 
+        @Override
         public Rectangle getToolTipSourceBounds(Point loc) {
             ElementNode root = getRootNode();
             if ( root == null ) {
@@ -647,7 +660,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             TreePath path = tree.getPathForLocation( loc.x, loc.y );
             return null == path ? null : tree.getPathBounds( path );
         }
-        
+
+        @Override
         public Point getToolTipLocation( Point mouseLocation, Dimension tipSize ) {
             Point screenLocation = getLocationOnScreen();
             Rectangle sBounds = getGraphicsConfiguration().getBounds();
@@ -662,7 +676,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             Point viewPosition = getViewport().getViewPosition();
             screenLocation.x -= viewPosition.x;
             screenLocation.y -= viewPosition.y;
-            
+
             //first try bottom right
             res.x = screenLocation.x + compSize.width;
             res.y = screenLocation.y + tooltipSrcRect.y+tooltipSrcRect.height;
@@ -710,11 +724,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             return res;
         }
 
+        @Override
         public void invokeUserAction(final MouseEvent me) {
             Mutex.EVENT.readAccess( new Runnable() {
+                @Override
                 public void run() {
                     if( null != me ) {
-                        final ElementJavadoc doc = getDocumentation( me.getPoint() );
+                        final ElementJavadoc doc = getDocumentation(findNode(me.getPoint()));
                         final ElementNode root = getRootNode();
                         final FileObject owner = root == null ? null : root.getDescritption().fileObject;
                         JavadocTopComponent tc = JavadocTopComponent.findInstance();
