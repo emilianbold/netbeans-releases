@@ -9,7 +9,7 @@ MACROS (sorted 0):
 
 ========== Dumping model of FILE iz217711.h
 Includes:
-"iz217711.h" <RECURSIVE inclusion> [8:1/68-8:22/89]
+"iz217711.h" [8:1/68-8:22/89]
 Macros:
     <no macros>
 CLASS A217711 (A217711 ) [3:1/14-6:2/65] lcurly=27 SCOPE: $Global$ 

@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.APTTokenStreamCache;
@@ -239,17 +240,17 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public boolean needTokens() {
-          return this.insideInterestedFile || !CLEAN_STATE;
+          return this.insideInterestedFile || true;
         }
 
         @Override
         public boolean needSkippedRanges() {
-          return this.insideInterestedFile || !CLEAN_STATE;
+          return this.insideInterestedFile || true;
         }
 
         @Override
         public boolean needMacroExpansion() {
-          return this.insideInterestedFile || !CLEAN_STATE;
+          return !APTTraceFlags.DEFERRED_MACRO_USAGES;
         }
 
         @Override
@@ -375,11 +376,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                       System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project%n", inclPath, inclFileOwner.getName());
                     }
                   } else {
-                    if (CLEAN_STATE) {
-                      // FIXME: to regenerate headers' TS clean state
-                      inclState = APTHandlersSupport.createCleanPreprocState(inclState);
-                    }
-
                     FilePreprocessorConditionState pcState = CsmCorePackageAccessor.get().createPCState(inclPath, exitedFrom.getSkippedRanges());
                     PreprocessorStatePair ppStatePair = new PreprocessorStatePair(inclState, pcState);
                     inclFileOwner.postIncludeFile(aStartProject, currentInclusion, inclPath, ppStatePair, null);
@@ -404,8 +400,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private ClankDriver.APTTokenStreamCache getPPOut() {
             return foundTokens;
         }
-
-        private static final boolean CLEAN_STATE = false;
     }
     
     private static final class IncludeDirectiveTokensStreamCallback implements ClankPreprocessorCallback {
@@ -525,6 +519,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     private static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.APTTokenStreamCache cache) {
         Map<Integer, ClankDriver.ClankMacroDirective> macroDefinitions = cache.getMacroDefinitions();
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
+            assert !APTTraceFlags.DEFERRED_MACRO_USAGES;
             int referencedDeclaration = cur.getReferencedMacroID();
             if (referencedDeclaration != 0) {
                 ClankDriver.ClankMacroDirective directive = macroDefinitions.get(referencedDeclaration);
@@ -535,6 +530,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             }
         }
         for(ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
+            assert !APTTraceFlags.DEFERRED_MACRO_USAGES;
             int referencedDeclaration = cur.getReferencedMacroID();
             if (referencedDeclaration != 0) {
                 ClankDriver.ClankMacroDirective directive = macroDefinitions.get(referencedDeclaration);
@@ -585,9 +581,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         assert (includedFile == null) == broken : "broken " + broken + " vs. " + includedFile;
         int startOffset = ppDirective.getDirectiveStartOffset();
         int endOffset = ppDirective.getDirectiveEndOffset();
-        boolean hasRecursiveInclude = curFile.equals(includedFile);
-        IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, hasRecursiveInclude, includedFile, curFile, startOffset, endOffset);
-        parsingFileContent.addInclude(incl, broken || hasRecursiveInclude);
+        //boolean hasRecursiveInclude = curFile.equals(includedFile);
+        IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, ppDirective.isRecursive(), includedFile, curFile, startOffset, endOffset);
+        parsingFileContent.addInclude(incl, broken || ppDirective.isRecursive());
     }
 
     private static final class CsmOffsetableImpl implements CsmOffsetable {
