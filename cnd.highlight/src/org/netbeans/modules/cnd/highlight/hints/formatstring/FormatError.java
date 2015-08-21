@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,31 +34,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.folding;
-
-import java.util.List;
-import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
-import org.netbeans.modules.cnd.editor.parser.FoldingParser;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.cnd.highlight.hints.formatstring;
 
 /**
- * provider for Code Folding Parser
- * - for input document's stream construct list of CppFildRecords
  *
- * @author Vladimir Voskresensky
+ * @author Danila Sergeyev
  */
-//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.parser.FoldingParser.class, position = 1)
-public class APTFoldingProvider implements FoldingParser {
-    
-    /** we need public constructor for lookup */
-    public APTFoldingProvider() {
+class FormatError {
+    private final FormatErrorType type;
+    private final String flag;
+    private final String specifier;
+    private final int startOffset;
+    private final int endOffset;
+
+    public FormatError(FormatErrorType type, String flag, String specifier, int startOffset, int endOffset) {
+        this.type = type;
+        this.flag = flag;
+        this.specifier = specifier;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
     }
 
-    @Override
-    public List<CppFoldRecord> parse(FileObject fo, char[] buf) {
-        List<CppFoldRecord> res = APTFoldingParser.parse(fo, buf);
-        return res;
+    public FormatErrorType getType() {
+        return type;
+    }
+
+    public int startOffset() {
+        return startOffset;
+    }
+
+    public int endOffset() {
+        return endOffset;
+    }
+
+    public String getFlag() {
+        return flag;
+    }
+
+    public String getSpecifier() {
+        return specifier;
+    }
+    
+    public static enum FormatErrorType {
+        FLAG,           // usage of a flag character that is incompatible with the conversion specifier
+        LENGTH,         // usage of a length modifier that is incompatible with the conversion specifier
+        TYPE_MISMATCH,  // mismatching the argument type and conversion specifier
+        TYPE_WILDCARD,  // type of width or pressision not int
+        TYPE_NOTEXIST,  // wrong conversion specifier
+        ARGS            // incorrect number of arguments for the format string
     }
 }

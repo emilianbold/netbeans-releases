@@ -109,6 +109,8 @@ import static java.awt.Component.LEFT_ALIGNMENT;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -157,6 +159,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
     private UndoRedoSupport um;
     private final Preferences prefs;
+    private int notifyState = 0;
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
@@ -186,6 +189,10 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         super.addNotify();
 
         prefs.addPreferenceChangeListener(this);
+        if (notifyState == 1) {
+            Logger.getLogger(CommitPanel.class.getName()).log(Level.WARNING, "addNotify called twice in a row: {0}", notifyState);
+        }
+        notifyState = 1;
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         initCollapsibleSections();
@@ -209,6 +216,10 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     @Override
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
+        if (notifyState != 1) {
+            Logger.getLogger(CommitPanel.class.getName()).log(Level.WARNING, "addNotify not called: {0}", notifyState);
+        }
+        notifyState = 2;
         prefs.removePreferenceChangeListener(this);
         if (um != null) {
             um.unregister();

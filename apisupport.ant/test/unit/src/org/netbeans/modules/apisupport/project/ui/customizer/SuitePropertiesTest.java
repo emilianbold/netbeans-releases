@@ -47,6 +47,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import javax.swing.JList;
 import org.netbeans.api.project.Project;
@@ -302,6 +303,38 @@ public class SuitePropertiesTest extends TestBase {
         suiteProps.refresh(NbCollections.checkedSetByFilter(spp.getSubprojects(), NbModuleProject.class, true));
         model = suiteProps.getModulesListModel(); // reload
         assertEquals("two module suite components", 2, model.getSize());
+    }
+    
+    public void testSaveBothPlatformAndEnabledClusters () throws Exception {
+        final SuiteProject suite1 = generateSuite("suite1");
+        final SuiteProperties suiteProps = getSuiteProperties(suite1);
+        
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            @Override
+            public Void run() throws Exception {
+                // choose another way to store submodules
+                EditableProperties edProps = suiteProps.getProjectProperties();
+                edProps.setProperty("moddir", ".");
+                edProps.setProperty("modules", "${moddir}/module1:${moddir}/module2:${moddir}/module3");
+                Util.storeProperties(
+                        suite1.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH),
+                        edProps);
+                return null;
+            }
+        });
+        
+        suiteProps.refresh(Collections.<NbModuleProject>emptySet());
+        NbPlatform defaultPlatform = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
+        NbPlatform platform = NbPlatform.getPlatformByID("custom");
+        assertEquals(defaultPlatform.getID(), suiteProps.getActivePlatform().getID());
+        
+        // change platform and any property
+        suiteProps.setActivePlatform(platform);
+        suiteProps.setPlatformProperty("PROP", "PROP_VALUE");
+        saveProperties(suiteProps);
+        // both changes should be saved
+        suiteProps.refresh(Collections.<NbModuleProject>emptySet());
+        assertEquals(platform.getID(), suiteProps.getActivePlatform().getID());
     }
     
     public void testSuitePropertiesWithAnonymousPlatform() throws Exception { // #73795

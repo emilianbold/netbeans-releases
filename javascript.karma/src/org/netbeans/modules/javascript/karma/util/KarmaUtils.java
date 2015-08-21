@@ -70,7 +70,6 @@ public final class KarmaUtils {
 
     private static final Logger LOGGER = Logger.getLogger(KarmaUtils.class.getName());
 
-    private static final String SCRIPT_PREFIX = "<script type=\"text/javascript\" src=\""; // NOI18N
     private static final FilenameFilter KARMA_CONFIG_FILTER = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
@@ -89,22 +88,14 @@ public final class KarmaUtils {
     private KarmaUtils() {
     }
 
-    public static List<String> readScriptFiles(URL url) {
+    @CheckForNull
+    public static String readContent(URL url) {
         assert !EventQueue.isDispatchThread();
-        List<String> scripts = Collections.emptyList();
         try {
             Path tmpFile = Files.createTempFile("nb-karma-url-", ".html"); // NOI18N
             try {
                 NetworkSupport.download(url.toExternalForm(), tmpFile.toFile());
-                for (String line : Files.readAllLines(tmpFile, StandardCharsets.UTF_8)) {
-                    if (line.trim().contains(SCRIPT_PREFIX)) {
-                        if (scripts.isEmpty()) {
-                            scripts = new ArrayList<>();
-                        }
-                        scripts.add(line);
-                    }
-                }
-                return scripts;
+                return new String(Files.readAllBytes(tmpFile), StandardCharsets.UTF_8);
             } finally {
                 Files.delete(tmpFile);
             }
@@ -113,7 +104,7 @@ public final class KarmaUtils {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-        return scripts;
+        return null;
     }
 
     public static List<WebBrowser> getDebugBrowsers() {

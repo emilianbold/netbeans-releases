@@ -254,7 +254,8 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
     }
     
     private void deletePackage(FileObject source) {
-        FileObject root = ClassPath.getClassPath(source, ClassPath.SOURCE).findOwnerRoot(source);
+        ClassPath classPath = ClassPath.getClassPath(source, ClassPath.SOURCE);
+        FileObject root = classPath != null ? classPath.findOwnerRoot(source) : null;
 
         DataFolder dataFolder = DataFolder.findFolder(source);
 
@@ -279,7 +280,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
                 dataFolder.delete();
             }
 
-            // Second; delete empty super packages
+            // Second; delete empty super packages, or empty folders when there is not root
             while (!parent.equals(root) && parent.getChildren().length == 0) {
                 FileObject newParent = parent.getParent();
                 parent.delete();

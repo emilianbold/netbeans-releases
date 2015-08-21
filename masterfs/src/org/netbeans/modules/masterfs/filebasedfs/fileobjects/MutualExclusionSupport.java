@@ -118,10 +118,15 @@ public final class MutualExclusionSupport<K> {
             addStack(x, expectedCounter);
         } catch (IllegalArgumentException e) { // #233546
             Logger log = Logger.getLogger(MutualExclusionSupport.class.getName());
+            String unexpectedStr = unexpectedCounter == null
+                    ? "null" //NOI18N
+                    : Arrays.toString(unexpectedCounter.toArray());
+            String expectedStr = expectedCounter == null
+                    ? "null" //NOI18N
+                    : Arrays.toString(expectedCounter.toArray());
             log.log(Level.WARNING, "Cannot add stack to exception: " //NOI18N
                     + "unexpectedCounter: {0}, expectedCounter: {1}", //NOI18N
-                    new Object[]{Arrays.toString(unexpectedCounter.toArray()),
-                        Arrays.toString(expectedCounter.toArray())});
+                    new Object[]{unexpectedStr, expectedStr});
             log.log(Level.INFO, null, e);
             log.log(Level.INFO, "Exception x", x); //NOI18N
         }
