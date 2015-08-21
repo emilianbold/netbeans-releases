@@ -100,8 +100,9 @@ public final class ProxyFileManager implements JavaFileManager {
         public boolean isOutputLocation() { return false;}
     };
 
-    private final Map<Location,JavaFileManager[]> fileManagers;
+    private static final JavaFileManager[] EMPTY = new JavaFileManager[0];
 
+    private final Map<Location,JavaFileManager[]> fileManagers;
     private final ProcessorGenerated processorGeneratedFiles;
     private final SiblingSource siblings;
     private final Object ownerThreadLock = new Object();
@@ -118,6 +119,7 @@ public final class ProxyFileManager implements JavaFileManager {
             @NullAllowed final JavaFileManager sourcePath,
             @NullAllowed final JavaFileManager aptSources,
             @NullAllowed final JavaFileManager outputhPath,
+            @NullAllowed final TreeLoaderOutputFileManager treeLoaderOutput,
             @NullAllowed final MemoryFileManager memoryFileManager,
             @NonNull final ProcessorGenerated processorGeneratedFiles,
             @NonNull final SiblingSource siblings) {
@@ -129,6 +131,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 sourcePath,
                 aptSources,
                 outputhPath,
+                treeLoaderOutput,
                 memoryFileManager);
         this.processorGeneratedFiles = processorGeneratedFiles;
         this.siblings = siblings;
@@ -333,7 +336,12 @@ public final class ProxyFileManager implements JavaFileManager {
     public boolean hasLocation(@NonNull final JavaFileManager.Location location) {
         checkSingleOwnerThread();
         try {
-            return getFileManagers (location).length > 0;
+            for (JavaFileManager jfm : getFileManagers (location)) {
+                if (jfm.hasLocation(location)) {
+                    return true;
+                }
+            }
+            return false;
         } finally {
             clearOwnerThread();
         }
@@ -486,9 +494,23 @@ public final class ProxyFileManager implements JavaFileManager {
                 (T) FileObjects.nullWriteFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 
-    private JavaFileManager[] getFileManagers (final Location location) {
-        final JavaFileManager[] result = fileManagers.get(location);
-        return result != null ? result : new JavaFileManager[0];
+    private JavaFileManager[] getFileManagers (Location location) {
+        JavaFileManager[] result = fileManagers.get(location);
+        if (result == null) {
+            result = EMPTY;
+        } else if (location == StandardLocation.CLASS_OUTPUT) {
+            JavaFileManager activeOut = null;
+            for (JavaFileManager m  : result) {
+                if (m.hasLocation(location)) {
+                    activeOut = m;
+                    break;
+                }
+            }
+            result = activeOut != null ?
+                new JavaFileManager[] {activeOut} :
+                EMPTY;
+        }
+        return result;
     }
 
     private void checkSingleOwnerThread() {
@@ -551,6 +573,7 @@ public final class ProxyFileManager implements JavaFileManager {
             @NullAllowed final JavaFileManager sourcePath,
             @NullAllowed final JavaFileManager aptSources,
             @NullAllowed final JavaFileManager outputhPath,
+            @NullAllowed final JavaFileManager treeLoaderOutput,
             @NullAllowed final MemoryFileManager memoryFileManager) {
         assert bootPath != null;
         assert classPath != null;
@@ -577,8 +600,12 @@ public final class ProxyFileManager implements JavaFileManager {
         result.put(
             StandardLocation.CLASS_OUTPUT,
             outputhPath == null ?
-                new JavaFileManager[0]:
-                new JavaFileManager[] {outputhPath});
+                    treeLoaderOutput == null ?
+                        new JavaFileManager[0]:
+                        new JavaFileManager[] {treeLoaderOutput}:
+                    treeLoaderOutput == null ?
+                        new JavaFileManager[] {outputhPath}:
+                        new JavaFileManager[] {treeLoaderOutput, outputhPath});
         result.put(
             StandardLocation.SOURCE_OUTPUT,
             aptSources == null ?

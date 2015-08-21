@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -57,12 +56,12 @@ import java.util.logging.Logger;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
+import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -75,8 +74,6 @@ import org.openide.util.BaseUtilities;
  */
 public class OutputFileManager extends CachingFileManager {
 
-    private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
-    private static final String OUTPUT_ROOT = "output-root";   //NOI18N
     private static final Logger LOG = Logger.getLogger(OutputFileManager.class.getName());
     /**
      * Exception used to signal that the sourcepath is broken (project is deleted)
@@ -86,7 +83,6 @@ public class OutputFileManager extends CachingFileManager {
 
     private ClassPath scp;
     private ClassPath apt;
-    private String outputRoot;
     private  Pair<URI,File> cachedClassFolder;
     private final SiblingProvider siblings;
     private final FileManagerTransaction tx;
@@ -105,7 +101,7 @@ public class OutputFileManager extends CachingFileManager {
         assert siblings != null;
         assert tx != null;
 	this.scp = sourcePath;
-        this.apt = aptPath == null ? EMPTY_PATH : aptPath;
+        this.apt = aptPath == null ? ClassPath.EMPTY : aptPath;
         this.siblings = siblings;
         this.tx = tx;
     }
@@ -121,34 +117,29 @@ public class OutputFileManager extends CachingFileManager {
         if (kind != JavaFileObject.Kind.CLASS) {
             throw new IllegalArgumentException ();
         } else {
-            File activeRoot = null;
-            if (outputRoot != null) {
-                activeRoot = new File(outputRoot);
-            } else {
-                final String baseName = FileObjects.convertPackage2Folder(className);
-                activeRoot = getClassFolderForSource(sibling, baseName);
+            String baseName = FileObjects.convertPackage2Folder(className);     //Todo: Use File.separatorChar and remove below baseName = ...
+            File activeRoot = getClassFolderForSource(sibling, baseName);
+            if (activeRoot == null) {
+                activeRoot = getClassFolderForApt(sibling, baseName);
                 if (activeRoot == null) {
-                    activeRoot = getClassFolderForApt(sibling, baseName);
-                    if (activeRoot == null) {
-                        //Deleted project
-                        if (this.scp.getRoots().length > 0) {
-                            LOG.log(
-                                Level.WARNING,
-                                "No output for class: {0} sibling: {1} srcRoots: {2}",    //NOI18N
-                                new Object[]{
-                                    className,
-                                    sibling,
-                                    this.scp
-                                });
-                        }
-                        throw new InvalidSourcePath ();
+                    //Deleted project
+                    if (this.scp.getRoots().length > 0) {
+                        LOG.log(
+                            Level.WARNING,
+                            "No output for class: {0} sibling: {1} srcRoots: {2}",    //NOI18N
+                            new Object[]{
+                                className,
+                                sibling,
+                                this.scp
+                            });
                     }
+                    throw new InvalidSourcePath ();
                 }
             }
-            String baseName = className.replace('.', File.separatorChar);       //NOI18N
-            String nameStr = baseName + '.' + FileObjects.SIG;            
+            baseName = className.replace('.', File.separatorChar);       //NOI18N
+            String nameStr = baseName + '.' + FileObjects.SIG;
             final File f = new File (activeRoot, nameStr);
-            if (isValidClassName(className)) {
+            if (FileObjects.isValidFileName(className)) {
                 return tx.createFileObject(l, f, activeRoot, null, null);
             } else {
                 LOG.log(
@@ -215,13 +206,9 @@ public class OutputFileManager extends CachingFileManager {
         return super.getJavaFileForInput(l, className, kind);
     }
 
-    /**
-     * Prevents <error>, <any> from being generated.
-     * @param fqn to check
-     * @return true if the fqn does not contain '<'
-     */
-    private static boolean isValidClassName(@NonNull final String fqn) {
-        return fqn.indexOf('<') < 0;    //NOI18N
+    @Override
+    public boolean hasLocation(Location location) {
+        return location == StandardLocation.CLASS_OUTPUT;
     }
 
     private File getClassFolderForSource (final javax.tools.FileObject sibling, final String baseName) throws IOException {
@@ -359,19 +346,5 @@ public class OutputFileManager extends CachingFileManager {
                 result);
         }
         return result;
-    }
-    
-    @Override
-    public boolean handleOption(String head, Iterator<String> tail) {
-        if (OUTPUT_ROOT.equals(head)) { //NOI18N
-            if (!tail.hasNext())
-                throw new IllegalArgumentException();
-            outputRoot = tail.next();
-            if (outputRoot.length() <= 0)
-                outputRoot = null;
-            return true;
-        } else {
-            return super.handleOption(head, tail);
-        }
     }
 }

@@ -219,7 +219,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     public int isSupportedOption(String string) {
         return -1;
     }
-    
+
     @Override
     public boolean handleOption (final String head, final Iterator<String> tail) {
         return false;
@@ -237,15 +237,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     
     @Override
     public String inferBinaryName (Location l, JavaFileObject javaFileObject) {        
-        if (javaFileObject instanceof FileObjects.Base) {
-            final FileObjects.Base base = (FileObjects.Base) javaFileObject;
-            final StringBuilder sb = new StringBuilder ();
-            sb.append (base.getPackage());
-            sb.append('.'); //NOI18N
-            sb.append(base.getNameWithoutExtension());
-            return sb.toString();
-        }
-        else if (javaFileObject instanceof InferableJavaFileObject) {
+        if (javaFileObject instanceof InferableJavaFileObject) {
             return ((InferableJavaFileObject)javaFileObject).inferBinaryName();
         }
         return null;
