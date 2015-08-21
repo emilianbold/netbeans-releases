@@ -93,9 +93,9 @@ public class TruffleBreakpointsHandler {
     
     private static final String ACCESSOR_SET_LINE_BREAKPOINT = "setLineBreakpoint"; // NOI18N
     private static final String ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT =
-            "(Ljava/lang/String;IILjava/lang/String;)Lcom/oracle/truffle/debug/LineBreakpoint;";   // NOI18N
+            "(Ljava/lang/String;IILjava/lang/String;)Lcom/oracle/truffle/api/debug/Breakpoint;";   // NOI18N
     private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT = "removeLineBreakpoint"; // NOI18N
-    private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT = "(Lcom/oracle/truffle/debug/LineBreakpoint;)V";    // NOI18N
+    private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT = "(Lcom/oracle/truffle/tools/debug/engine/LineBreakpoint;)V";    // NOI18N
     
     private final JPDADebugger debugger;
     private ClassType accessorClass;
@@ -190,6 +190,9 @@ public class TruffleBreakpointsHandler {
             //if (path.indexOf("/src") > 0) {
             //    path = path.substring(path.indexOf("/src") + 1);
             //}
+            if (setLineBreakpointMethod == null) {
+                throw new IllegalStateException("Method "+ACCESSOR_SET_LINE_BREAKPOINT+" with signature:\n"+ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT+"\nis not present in accessor class "+accessorClass);
+            }
             StringReference pathRef = vm.mirrorOf(path);
             IntegerValue lineRef = vm.mirrorOf(line);
             IntegerValue icRef = vm.mirrorOf(ignoreCount);

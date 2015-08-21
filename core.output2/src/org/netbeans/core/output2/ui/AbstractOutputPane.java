@@ -57,7 +57,10 @@ import org.netbeans.core.output2.FoldingSideBar;
 import org.netbeans.core.output2.Lines;
 import org.netbeans.core.output2.OutputDocument;
 import org.netbeans.core.output2.options.OutputOptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * A scroll pane containing an editor pane, with special handling of the caret
@@ -79,6 +82,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     int caretBlinkRate = 500;
     boolean hadSelection = false;
     boolean recentlyReset = false;
+    private static boolean copyingOfLargeParts = false;
 
     public AbstractOutputPane() {
         textView = createTextView();
@@ -239,11 +243,28 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         }
     }
 
+    @NbBundle.Messages({
+        "MSG_TooMuchTextSelected=Selecting large parts of text can cause "
+                + "Out-Of-Memory errors. Do you want to continue?"
+    })
     public void selectAll() {
         unlockScroll();
         getCaret().setVisible(true);
-        textView.setSelectionStart(0);
-        textView.setSelectionEnd(getLength());
+        int start = 0;
+        int end = getLength();
+        if (end - start > 20000000 && !copyingOfLargeParts) { // 40 MB
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    Bundle.MSG_TooMuchTextSelected(),
+                    NotifyDescriptor.YES_NO_OPTION);
+            Object result = DialogDisplayer.getDefault().notify(nd);
+            if (result == NotifyDescriptor.YES_OPTION) {
+                copyingOfLargeParts = true;
+            } else {
+                return;
+            }
+        }
+        textView.setSelectionStart(start);
+        textView.setSelectionEnd(end);
     }
 
     public boolean isAllSelected() {

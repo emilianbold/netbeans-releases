@@ -454,11 +454,11 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
                     @Override
                     public void run() {
                         assert bootstrap.equals(files.first()) : bootstrap + " should equal " + files.first();
-                        assert bootstrap.isFile();
+                        assert bootstrap.isFile() : bootstrap;
                         bootstrapCheckBox.setSelected(true);
                         bootstrapTextField.setText(bootstrap.getAbsolutePath());
                         assert configuration.equals(files.second()) : configuration + " should equal " + files.second();
-                        assert configuration.isFile();
+                        assert configuration.isFile() : configuration;
                         configurationCheckBox.setSelected(true);
                         configurationTextField.setText(configuration.getAbsolutePath());
                     }

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.api.toolchain;
 
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -63,6 +65,38 @@ public final class PlatformTypes {
     private static int defaultPlatform = -1;
 
     private PlatformTypes() {
+    }
+
+    public static int getPlatformFromHostInfo(HostInfo hostInfo) {
+        HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
+        switch (osFamily) {
+            case SUNOS:
+                HostInfo.CpuFamily cpuFamily = hostInfo.getCpuFamily();
+                switch (cpuFamily) {
+                    case SPARC:
+                        return PLATFORM_SOLARIS_SPARC;
+                    case X86:
+                        return PLATFORM_SOLARIS_INTEL;
+                    case ARM:
+                    case UNKNOWN:
+                    default:
+                        Exceptions.printStackTrace(new IllegalStateException(
+                                "Unexpected cpu type " + cpuFamily + " for " + osFamily)); //NOI18N
+                        return PLATFORM_NONE;
+                }
+            case LINUX:
+                return PLATFORM_LINUX;
+            case WINDOWS:
+                return PLATFORM_WINDOWS;
+            case MACOSX:
+                return PLATFORM_MACOSX;
+            case UNKNOWN:
+                return PLATFORM_GENERIC;
+            default:
+                Exceptions.printStackTrace(new IllegalStateException(
+                        "Unexpected os " + osFamily)); //NOI18N
+                return PLATFORM_NONE;
+        }
     }
 
     public static int getDefaultPlatform() {

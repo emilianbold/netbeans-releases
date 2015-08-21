@@ -235,12 +235,20 @@ public class DocumentFinder
             endOffset = startOffset;
             startOffset = temp;
         }
-        if (back && blockSearch)
-            initOffset = endOffset - startOffset;
-        else if (!back && blockSearch) 
-            initOffset = startOffset - blockSearchStartOffset;
-         else
-            initOffset = startOffset;
+        if (blockSearch) {
+            if (back) {
+                initOffset = endOffset - startOffset;
+            } else {
+                initOffset = startOffset - blockSearchStartOffset;
+            }
+        } else {
+            if (back) {
+                initOffset = oppositeDir ? startOffset : endOffset;
+             } else {
+                initOffset = startOffset;
+            }
+        }
+        
         if (initOffset < 0 || initOffset > blockText.length ()) {
             LOG.log (
                 Level.INFO,
@@ -1247,8 +1255,12 @@ public class DocumentFinder
                 if (length <= 0){
                     found = false;
                     do {
-                        initOffset++;
-                    } while(initOffset < chars.length() && matcher.find(initOffset) && matcher.end() - matcher.start() == 0);
+                        initOffset = matcher.end() > initOffset ? matcher.end() : initOffset + 1;
+                    } while(initOffset < chars.length() &&
+                            (
+                            chars.charAt(initOffset) == chars.charAt(initOffset-1) 
+                            || (matcher.find(initOffset) && matcher.end() - matcher.start() == 0))
+                            );
                     if(initOffset < chars.length() && matcher.find(initOffset) && matcher.end() - matcher.start() > 0)
                         return find(initOffset,chars);
                     else

@@ -50,6 +50,7 @@ import org.netbeans.modules.visual.border.*;
 import org.netbeans.modules.visual.util.GeomUtil;
 
 import java.awt.*;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 import org.openide.util.Parameters;
 
 /**
@@ -200,7 +201,7 @@ public final class BorderFactory {
      * @return the line border
      */
     public static Border createLineBorder (int thickness, Color color) {
-        return new LineBorder (thickness, thickness, thickness, thickness, color != null ? color : Color.BLACK);
+        return new LineBorder (thickness, thickness, thickness, thickness, color != null ? color : (new DefaultLookFeel()).getForeground()/*Color.BLACK*/);
     }
  
     /**
@@ -249,7 +250,7 @@ public final class BorderFactory {
      * @return the line border
      */
     public static Border createLineBorder (int top, int left, int bottom, int right, Color color) {
-        return new LineBorder (top, left, bottom, right, color != null ? color : Color.BLACK);
+        return new LineBorder (top, left, bottom, right, color != null ? color : (new DefaultLookFeel()).getForeground()/*Color.BLACK*/);
     }
     
     /**
@@ -526,7 +527,7 @@ public final class BorderFactory {
      * @return the resize border
      */
     public static Border createResizeBorder (int thickness, Color color, boolean outer) {
-        return new ResizeBorder (thickness, color != null ? color : Color.BLACK, outer);
+        return new ResizeBorder (thickness, color != null ? color : (new DefaultLookFeel()).getForeground()/*Color.BLACK*/, outer);
     }
     
     /**
@@ -608,9 +609,9 @@ public final class BorderFactory {
      */
     public static Border createDashedBorder (Color color, int width, int height, boolean squares) {
         if (! squares)
-            return new FancyDashedBorder (color != null ? color : Color.BLACK, width, height);
+            return new FancyDashedBorder (color != null ? color : (new DefaultLookFeel()).getForeground()/*Color.BLACK*/, width, height);
         else
-            return new DashedBorder (color != null ? color : Color.BLACK, width, height);
+            return new DashedBorder (color != null ? color : (new DefaultLookFeel()).getForeground()/*Color.BLACK*/, width, height);
     }
 /**
      * Creates a resize border rendered with dashed stroke.
@@ -657,7 +658,7 @@ public final class BorderFactory {
      */
     public static Border createFancyDashedBorder (Color color, int width, int height) {
         GeomUtil.LOG.warning ("BorderFactory.createFancyDashedBorder() method is deprecated. Use BorderFactory.createDashedBorder(color,width,height,true) method instead."); // NOI18N
-        return new FancyDashedBorder (color != null ? color : Color.BLACK, width, height);
+        return new FancyDashedBorder (color != null ? color : (new DefaultLookFeel()).getForeground()/*Color.BLACK*/, width, height);
     }
 
 }

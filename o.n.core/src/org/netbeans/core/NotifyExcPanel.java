@@ -112,6 +112,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     private static final int SIZE_PREFERRED_WIDTH=550;
     /** preferred height of this component */
     private static final int SIZE_PREFERRED_HEIGHT=250;
+    private static final int MAX_STORED_EXCEPTIONS = 500;
 
     /** enumeration of NbExceptionManager.Exc to notify */
     static ArrayListPos exceptions;
@@ -341,6 +342,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 
                 if( null == exceptions ) {
                     exceptions = new ArrayListPos();
+                } else if (exceptions.size() >= MAX_STORED_EXCEPTIONS) {
+                    // Ignore huge number of exceptions, prevents from OOME.
+                    return ;
                 }
                 exceptions.add(t);
                 exceptions.position = exceptions.size()-1;

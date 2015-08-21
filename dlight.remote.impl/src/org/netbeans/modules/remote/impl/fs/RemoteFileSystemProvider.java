@@ -96,7 +96,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public boolean isAbsolute(String path) {
-        return path.startsWith("/"); //NOI18N
+        return path.isEmpty() || path.startsWith("/"); //NOI18N
     }
 
     @Override
@@ -440,6 +440,11 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     @Override
     public void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
         ((RemoteFileSystem) fileSystem).addFileSystemProblemListener(listener);
+    }
+
+    @Override
+    public void addFileSystemProblemListener(FileSystemProblemListener listener) {
+        RemoteFileSystem.addGlobalFileSystemProblemListener(listener);
     }
 
     @Override

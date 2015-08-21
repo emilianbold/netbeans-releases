@@ -50,6 +50,7 @@ import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.SwingUtilities;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -58,6 +59,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.validation.adapters.DialogDescriptorAdapter;
 import org.netbeans.api.validation.adapters.NotificationLineSupportAdapter;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
@@ -290,7 +292,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
                     //#76559
                     handle.start(MAX_WORK);
                     try {
-                        checkParentProject(project.getProjectDirectory().getNameExt(), newFolder);
+                        checkParentProject(project, newFolder);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -305,7 +307,6 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             }
         });
     }
-
 
     private static class ArtIdOperation implements ModelOperation<POMModel> {
         private final String artifactId;
@@ -329,32 +330,48 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         }
     }
 
-    private void checkParentProject(final String oldName, final String newName) throws IOException {
-        FileObject fo = project.getProjectDirectory().getParent();
-        Project possibleParent = ProjectManager.getDefault().findProject(fo);
-        if (possibleParent != null) {
-            final NbMavenProjectImpl par = possibleParent.getLookup().lookup(NbMavenProjectImpl.class);
-            if (par != null) {
-                FileObject pomFO = par.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-                    @Override
-                    public void performOperation(POMModel model) {
-                        List<String> modules = model.getProject().getModules();
-                        if (modules != null && modules.contains(oldName)) {
-                            //delete/add module from/to parent..
-                            model.getProject().removeModule(oldName);
-                            model.getProject().addModule(newName);
-                        }
-                    }
-                };
-                Utilities.performPOMModelOperations(pomFO, Collections.singletonList(operation));
+    private void checkParentProject(final NbMavenProjectImpl project, final String newName) throws IOException {
+        Project[] prjs = OpenProjects.getDefault().getOpenProjects();
+        for (Project prj : prjs) {
+            if(prj.getProjectDirectory().equals(project.getProjectDirectory())) {
+                continue;
             }
-        }
-
+            final NbMavenProjectImpl parentProject = prj.getLookup().lookup(NbMavenProjectImpl.class);        
+            if (parentProject != null) {
+                List<String> modules = parentProject.getOriginalMavenProject().getModules();
+                if(modules != null && !modules.isEmpty()) {
+                    String oldName = project.getProjectDirectory().getNameExt();                
+                    if(modules.contains(oldName)) {
+                        rename(parentProject, oldName, newName);
+                        return;
+                    } 
+                    File projectDir = project.getPOMFile().getParentFile();
+                    File parentDir = parentProject.getPOMFile().getParentFile();
+                    oldName = FileUtilities.relativizeFile(parentDir, projectDir);
+                    if(modules.contains(oldName)) {
+                        String relNewName = FileUtilities.relativizeFile(parentDir, new File(projectDir.getParent(), newName));
+                        rename(parentProject, oldName, relNewName);                    
+                    } 
+                }
+            }
+        }                
     }
-
-
-
+    
+    private void rename(Project parentProject, final String oldName, final String newName) {
+        FileObject pomFO = parentProject.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            @Override
+            public void performOperation(POMModel model) {
+                List<String> modules = model.getProject().getModules();
+                if (modules != null && modules.contains(oldName)) {
+                    //delete/add module from/to parent..
+                    model.getProject().removeModule(oldName);
+                    model.getProject().addModule(newName);
+                }
+            }
+        };
+        Utilities.performPOMModelOperations(pomFO, Collections.singletonList(operation));
+    }
 
 //--- copied from org.netbeans.modules.project.uiapi.DefaultProjectOperationsImplementation
 

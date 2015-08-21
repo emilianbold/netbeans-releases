@@ -92,14 +92,14 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
     private JbossWeb jbossWeb;
 
     public WarDeploymentConfiguration(J2eeModule j2eeModule) {
-        this(j2eeModule, null);
+        this(j2eeModule, null, true);
     }
 
     /**
      * Creates a new instance of WarDeploymentConfiguration
      */
-    public WarDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version) {
-        super(j2eeModule, version);
+    public WarDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version, boolean isWildFly) {
+        super(j2eeModule, version, isWildFly);
         jbossWebFile = j2eeModule.getDeploymentConfigurationFile("WEB-INF/jboss-web.xml"); // NOI18N
         getJbossWeb();
         if (deploymentDescriptorDO == null) {

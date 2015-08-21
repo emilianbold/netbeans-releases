@@ -41,23 +41,17 @@
  */
 package org.netbeans.modules.refactoring.java.ui.scope;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.spi.ui.ScopeProvider;
 import org.netbeans.modules.refactoring.spi.ui.ScopeReference;
@@ -73,14 +67,42 @@ import org.openide.util.NbBundle;
 @ScopeProvider.Registration(id = "all-projects", displayName = "#LBL_AllProjects", position = 100, iconBase = "org/netbeans/modules/refactoring/java/resources/all_projects.png")
 @ScopeReference(path = "org-netbeans-modules-refactoring-java-ui-WhereUsedPanel")
 public class OpenProjectsScopeProvider extends ScopeProvider {
+    private Scope scope;
 
     @Override
     public boolean initialize(Lookup context, AtomicBoolean cancel) {
+        Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
+        
+        Project[] projects;
+        try {
+            projects = openProjects.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            return false;
+        }
+        
+        if(projects == null || projects.length == 0) {
+            return false;
+        }
+
+        Set<FileObject> srcRoots = new HashSet<>();
+        
+        for (Project project : projects) {
+            ProjectInformation pi = ProjectUtils.getInformation(project);
+            final SourceGroup[] sourceGroups = ProjectUtils.getSources(pi.getProject()).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            for (int i = 0; i < sourceGroups.length; i++) {
+                srcRoots.add(sourceGroups[i].getRootFolder());
+            }
+        }
+        if(srcRoots.isEmpty()) {
+            return false;
+        }
+        scope = Scope.create(srcRoots, null, null);
+
         return true;
     }
 
     @Override
     public Scope getScope() {
-        return null;
+        return scope;
     }
 }

@@ -95,11 +95,8 @@ public final class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implem
      */
     private final List<CharSequence> params;
     
-    public static SystemMacroImpl createSystemMacro(CharSequence macroName, CharSequence macroBody, CsmFile unresolved, Kind kind) {
-        return SystemMacroImpl.create(macroName, macroBody, null, unresolved, kind);
-    }
     
-    private MacroImpl(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, int startOffset, int endOffset, Kind kind) {
+    private MacroImpl(CharSequence macroName, List<CharSequence> macroParams, CharSequence macroBody, CsmFile containingFile, int startOffset, int endOffset, Kind kind) {
         super(containingFile, startOffset, endOffset);
         macroName = macroName == null ? CharSequences.empty() : macroName;
         assert(macroBody != null);
@@ -113,7 +110,7 @@ public final class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implem
         }
     }
 
-    public static MacroImpl create(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, int startOffset, int endOffset, Kind kind) {
+    public static CsmMacro create(CharSequence macroName, List<CharSequence> macroParams, CharSequence macroBody, CsmFile containingFile, int startOffset, int endOffset, Kind kind) {
         return new MacroImpl(macroName, macroParams, macroBody, containingFile, startOffset, endOffset, kind);
     }
     

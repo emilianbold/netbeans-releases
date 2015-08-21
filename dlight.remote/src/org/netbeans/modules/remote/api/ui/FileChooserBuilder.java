@@ -296,6 +296,10 @@ public final class FileChooserBuilder {
         }
 
         private FileDialog createFileDialog(Component parentComponent, File currentDirectory) {
+            if (getFileSelectionMode() == FILES_AND_DIRECTORIES) {
+                //FileDialog does not support selection of files and directories
+                return null;
+            }
             boolean dirsOnly = getFileSelectionMode() == DIRECTORIES_ONLY;
             if (!Boolean.getBoolean("nb.native.filechooser")) { //NOI18N
                 return null;

@@ -64,6 +64,8 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -351,7 +353,17 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         } else if (!generateHashCode) {
             title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals"); //NOI18N
         }
-        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
+        final DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
+        panel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                List<ElementHandle<? extends Element>> vars = panel.getEqualsVariables();
+                if (vars == null || vars.isEmpty()) {
+                    vars = panel.getHashCodeVariables();
+                }
+                dialogDescriptor.setValid(vars != null && !vars.isEmpty());
+            }
+        });
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {

@@ -254,11 +254,13 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
 //            SourcePositions sourcePositions = info.getTrees().getSourcePositions();
             Tree leaf = info.getTrees().getPath(e).getLeaf();
             int[] namespan = info.getTreeUtilities().findNameSpan((VariableTree) leaf);
-            long start = namespan[0]; //sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
-            long end = namespan[1]; //sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
-            if ((start <= endOffset && start >= startOffset) ||
-                    (end <= endOffset && end >= startOffset)){
-                h.add(TreePathHandle.create(e, info));
+            if(namespan != null) {
+                long start = namespan[0]; //sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
+                long end = namespan[1]; //sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
+                if ((start <= endOffset && start >= startOffset) ||
+                        (end <= endOffset && end >= startOffset)){
+                    h.add(TreePathHandle.create(e, info));
+                }
             }
         }
         if (h.isEmpty()) {

@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
@@ -64,6 +65,8 @@ import org.netbeans.modules.javascript.karma.coverage.CoverageWatcher;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
 import org.netbeans.modules.javascript.karma.ui.KarmaErrorsDialog;
+import org.netbeans.modules.javascript.karma.util.KarmaUtils;
+import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
@@ -79,6 +82,8 @@ import org.openide.util.NbBundle;
 public final class KarmaServer implements PropertyChangeListener {
 
     static final Logger LOGGER = Logger.getLogger(KarmaServer.class.getName());
+
+    private static final String SERVER_URL = "http://localhost:%d/"; // NOI18N
 
     private final int port;
     private final Project project;
@@ -101,6 +106,9 @@ public final class KarmaServer implements PropertyChangeListener {
     private volatile File netBeansKarmaConfig = null;
     private volatile URL debugUrl = null;
     private volatile KarmaRunInfo karmaRunInfo = null;
+
+    // @GuardedBy("this")
+    private String debugPageContent = null;
 
 
     KarmaServer(int port, Project project) {
@@ -215,11 +223,35 @@ public final class KarmaServer implements PropertyChangeListener {
         return project;
     }
 
-    public boolean isAbsoluteUrls() {
-        if (karmaRunInfo == null) {
-            return false;
+    public String getServerUrl(@NullAllowed String path) {
+        assert path == null || !path.startsWith("/") : path;
+        String url = SERVER_URL;
+        if (StringUtils.hasText(path)) {
+            url += path;
         }
-        return karmaRunInfo.isAbsoluteUrls();
+        return String.format(url, getPort());
+    }
+
+    public boolean servesUrl(URL url) {
+        String externalForm = url.toExternalForm();
+        String serverUrl = getServerUrl(null);
+        if (externalForm.startsWith(serverUrl)) {
+            externalForm = externalForm.substring(serverUrl.length() - 1); // keep the leading "/"
+        }
+        // first, try karma.files object
+        if (getDebugPageContent().contains("'" + externalForm + "'")) { // NOI18N
+            return true;
+        }
+        // now, try <script> tag
+        return getDebugPageContent().contains("\"" + externalForm + "\""); // NOI18N
+    }
+
+    private synchronized String getDebugPageContent() {
+        if (debugPageContent == null) {
+            debugPageContent = KarmaUtils.readContent(getDebugUrl());
+            assert debugPageContent != null;
+        }
+        return debugPageContent;
     }
 
     private synchronized void openDebugUrl() {
@@ -314,6 +346,7 @@ public final class KarmaServer implements PropertyChangeListener {
                 .setProjectConfigFile(projectConfig.getAbsolutePath())
                 .setNbConfigFile(getNetBeansKarmaConfig().getAbsolutePath())
                 .setRerunHandler(new RerunHandlerImpl(this))
+                .setFailOnBrowserError(KarmaPreferences.isFailOnBrowserError(project))
                 .addEnvVars(getEnvVars(projectConfig))
                 .build();
     }

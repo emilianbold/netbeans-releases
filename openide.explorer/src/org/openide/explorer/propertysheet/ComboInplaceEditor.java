@@ -366,7 +366,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         boolean useClean = tableUI && (lf instanceof MetalLookAndFeel
                 || "GTK".equals(id) //NOI18N
                 || "Nimbus".equals(id) //NOI18N
-                || ("Aqua".equals(id) && "10.5".compareTo(System.getProperty("os.version")) <= 0) //NOI18N
+                || ("Aqua".equals(id) && checkMacSystemVersion()) // NOI18N
                 || PropUtils.isWindowsVistaLaF() //#217957
                 || "Kunststoff".equals(id)); //NOI18N
 
@@ -379,6 +379,34 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         if (tableUI & getEditor().getEditorComponent() instanceof JComponent) {
             ((JComponent) getEditor().getEditorComponent()).setBorder(null);
         }
+    }
+
+    private static Boolean syscheck = null;
+
+    static boolean checkMacSystemVersion() {
+        // Check that the system version is higher than "10.5":
+        int majv = 10;
+        int minv = 5;
+        if (syscheck == null) {
+            String version = System.getProperty("os.version");  //NOI18N
+            int d1 = version.indexOf('.');
+            if (d1 > 0) {
+                int d2 = version.indexOf('.', d1+1);
+                if (d2 < 0) {
+                    d2 = version.length();
+                }
+                try {
+                    int m1 = Integer.parseInt(version.substring(0, d1));
+                    int m2 = Integer.parseInt(version.substring(d1+1, d2));
+                    syscheck = m1 > majv || m1 == majv && m2 >= minv;
+                } catch (NumberFormatException nfex) {
+                    syscheck = false;
+                }
+            } else {
+                syscheck = false;
+            }
+        }
+        return syscheck;
     }
 
     /** Overridden to set a flag used to block the UI from adding a focus

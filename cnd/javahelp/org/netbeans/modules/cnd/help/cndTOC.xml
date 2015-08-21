@@ -145,5 +145,10 @@
 			<tocitem text="Creating and Modifying Scripts" target="sendto-createmodify" />
 			<tocitem text="Executing Scripts" target="sendto-execute" />
 		</tocitem>
+		<tocitem text="Working with Mixed Native and Java Applications">
+			<tocitem text="Mixed Development of Native and Java Applications" target="CppJavaDevelopment" />
+			<tocitem text="Working with JNI in Mixed Development Projects" target="WorkingWithJNI" />
+			<tocitem text="Working with JNA in Mixed Development Projects" target="WorkingWithJNA" />
+		</tocitem>
 	</tocitem>
 </toc>

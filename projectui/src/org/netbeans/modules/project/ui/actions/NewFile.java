@@ -62,13 +62,17 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu.Separator;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectList.TemplateItem;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import static org.netbeans.modules.project.ui.actions.Bundle.*;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.awt.DynamicMenuContent;
@@ -232,7 +236,22 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         if ( projects.length > 0 ) {
             preselectedProject = projects[0];
         }
-
+        //Ignore artificial (ProjectConvertor) projects which do not provide RecommendedTemplates
+        if (preselectedProject != null && !isImportant(preselectedProject)) {
+            Project p = null;
+            FileObject dir = preselectedProject.getProjectDirectory().getParent();
+            while (dir != null) {
+                p = FileOwnerQuery.getOwner(dir);
+                if (p != null && isImportant(p)) {
+                    break;
+                }
+                p = null;
+                dir = dir.getParent();
+            }
+            if (p != null) {
+                preselectedProject = p;
+            }
+        }
 
         //TODO candidate for removal
         if ( preselectedProject == null && inProject) {
@@ -247,6 +266,10 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         return preselectedProject;
     }
 
+    private static boolean isImportant(@NonNull final Project p) {
+        return !ProjectConvertors.isConvertorProject(p) || p.getLookup().lookup(RecommendedTemplates.class) != null;
+    }
+
     private DataFolder preselectedFolder( Lookup context ) {
 
         DataFolder preselectedFolder = null;
@@ -259,6 +282,16 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             if ( dobj != null) {
                 // DataObject found => we'll use the parent folder
                 preselectedFolder = dobj.getFolder();
+            } else {
+                // fallback
+                FileObject fo = context.lookup(FileObject.class);
+                if(fo != null) {
+                    if(fo.isFolder()) {
+                        preselectedFolder = DataFolder.findFolder(fo);
+                    } else if(fo.getParent() != null) {                        
+                        preselectedFolder = DataFolder.findFolder(fo.getParent());                    
+                    }
+                }
             }
         }
 

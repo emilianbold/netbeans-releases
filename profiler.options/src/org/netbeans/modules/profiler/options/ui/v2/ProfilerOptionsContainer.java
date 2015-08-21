@@ -52,11 +52,14 @@ import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
@@ -74,6 +77,8 @@ public class ProfilerOptionsContainer extends ProfilerOptionsPanel {
     private List<ProfilerOptionsPanel> panels; // only accessed in EDT
     private CategoriesListModel categoriesModel;
     private CategoriesSelectionModel categoriesSelection;
+    
+    private static int scrollIncrement = 20;
     
     private JPanel content;
     
@@ -126,6 +131,8 @@ public class ProfilerOptionsContainer extends ProfilerOptionsPanel {
         categoriesModel = new CategoriesListModel();
         categoriesSelection = new CategoriesSelectionModel();
         
+        scrollIncrement = new JCheckBox("XXX").getPreferredSize().height; // NOI18N
+        
         JList<ProfilerOptionsPanel> categoriesList = new JList(categoriesModel) {
             public Dimension getPreferredSize() {
                 Dimension dim = super.getPreferredSize();
@@ -133,6 +140,7 @@ public class ProfilerOptionsContainer extends ProfilerOptionsPanel {
                 return dim;
             }
         };
+        categoriesList.setVisibleRowCount(0);
         categoriesList.setSelectionModel(categoriesSelection);
         categoriesList.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -155,23 +163,42 @@ public class ProfilerOptionsContainer extends ProfilerOptionsPanel {
         
         content = new JPanel(new BorderLayout());
         content.setBorder(BorderFactory.createEmptyBorder(categoriesLabel.getPreferredSize().height + labelOffset, 11, 0, 0));
+        content.setMinimumSize(new Dimension(0, 0));
+        content.setPreferredSize(new Dimension(0, 0));
         
         setLayout(new BorderLayout());
         add(categoriesPanel, BorderLayout.WEST);
         add(content, BorderLayout.CENTER);
     }
     
-    private void panelSelected(int index) {
-        final ProfilerOptionsPanel selected = panels.get(index);
-        
+    private void panelSelected(final int index) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 content.removeAll();
-                content.add(selected, BorderLayout.CENTER);
+                content.add(createPanelScroll(panels.get(index)), BorderLayout.CENTER);
                 content.revalidate();
                 content.repaint();
             }
         });
+    }
+    
+    private JScrollPane createPanelScroll(ProfilerOptionsPanel panel) {
+        enlargeBorder(panel, 0, 0, 0, 5);
+        JScrollPane scroll = new JScrollPane(panel);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.setViewportBorder(BorderFactory.createEmptyBorder());
+        scroll.getVerticalScrollBar().setUnitIncrement(scrollIncrement);
+        scroll.getVerticalScrollBar().setBlockIncrement((int)(content.getHeight() * 0.8d));
+        scroll.getHorizontalScrollBar().setUnitIncrement(scrollIncrement);
+        scroll.getHorizontalScrollBar().setBlockIncrement((int)(content.getWidth() * 0.8d));
+        return scroll;
+    }
+    
+    private static void enlargeBorder(JComponent c, int t, int l, int b, int r) {
+        Border current = c.getBorder();
+        Border larger = BorderFactory.createEmptyBorder(t, l, b, r);
+        if (current == null) c.setBorder(larger);
+        else c.setBorder(BorderFactory.createCompoundBorder(larger, current));
     }
     
     

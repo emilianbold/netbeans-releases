@@ -87,6 +87,8 @@ import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
 import com.sun.source.util.DocTrees;
+import java.util.Collection;
+import java.util.Comparator;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -553,13 +555,13 @@ public class WorkingCopy extends CompilationController {
         }
     }
 
-    private List<Difference> processCurrentCompilationUnit(final DiffContext diffContext, Map<?, int[]> tag2Span) throws IOException, BadLocationException {
+    private List<Difference> processCurrentCompilationUnit(final DiffContext diffContext, final Map<?, int[]> tag2Span) throws IOException, BadLocationException {
         final Set<TreePath> pathsToRewrite = new LinkedHashSet<TreePath>();
         final Map<TreePath, Map<Tree, Tree>> parent2Rewrites = new IdentityHashMap<TreePath, Map<Tree, Tree>>();
         final Map<Tree, DocCommentTree> tree2Doc = new IdentityHashMap<Tree, DocCommentTree>();
         boolean fillImports = true;
         
-        Map<Integer, String> userInfo = new HashMap<Integer, String>();
+        final Map<Integer, String> userInfo = new HashMap<Integer, String>();
         final Set<Tree> oldTrees = new HashSet<Tree>();
 
         final Map<Tree, Boolean> presentInResult = new IdentityHashMap<Tree, Boolean>();
@@ -723,11 +725,10 @@ public class WorkingCopy extends CompilationController {
             fillImports = false;
         }
         
-        List<Diff> diffs = new ArrayList<Diff>();
+        final List<Diff> diffs = new ArrayList<Diff>();
         final ImportAnalysis2 ia = new ImportAnalysis2(this);
         
         boolean importsFilled = false;
-
         for (final TreePath path : pathsToRewrite) {
             List<ClassTree> classes = new ArrayList<ClassTree>();
 
@@ -834,7 +835,7 @@ public class WorkingCopy extends CompilationController {
             };
             Context c = impl.getJavacTask().getContext();
             itt.attach(c, ia, tree2Tag);
-            Tree brandNew = itt.translate(path.getLeaf());
+            final Tree brandNew = itt.translate(path.getLeaf());
 
             //tagging debug
             //System.err.println("brandNew=" + brandNew);
@@ -847,19 +848,31 @@ public class WorkingCopy extends CompilationController {
             if (brandNew.getKind() == Kind.COMPILATION_UNIT) {
                 fillImports = false;
             }
-            diffs.addAll(CasualDiff.diff(getContext(), diffContext, getTreeUtilities(), path, (JCTree) brandNew, userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
+            
+            diffs.addAll(
+                    CasualDiff.diff(getContext(), diffContext, getTreeUtilities(), path, (JCTree) brandNew, 
+                            userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees
+                    )
+            );
         }
+        
+        List<Diff> additionalDiffs = new ArrayList<>();
 
         if (fillImports) {
             Set<? extends Element> nueImports = ia.getImports();
 
             if (nueImports != null && !nueImports.isEmpty()) { //may happen if no changes, etc.
                 CompilationUnitTree ncut = GeneratorUtilities.get(this).addImports(diffContext.origUnit, nueImports);
-                diffs.addAll(CasualDiff.diff(getContext(), diffContext, getTreeUtilities(), diffContext.origUnit.getImports(), ncut.getImports(), userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
+                additionalDiffs.addAll(CasualDiff.diff(getContext(), diffContext, getTreeUtilities(), diffContext.origUnit.getImports(), ncut.getImports(), userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
             }
         }
         
-        diffs.addAll(textualChanges);
+        // textual changes may affect tag2Span
+        if (!textualChanges.isEmpty()) {
+            additionalDiffs.addAll(textualChanges);
+        }
+        adjustTag2Span(tag2Span, additionalDiffs);
+        diffs.addAll(additionalDiffs);
         
         userInfo.putAll(this.userInfo);
         
@@ -872,6 +885,67 @@ public class WorkingCopy extends CompilationController {
                 return Collections.emptyList();
             }
             throw ex;
+        }
+    }
+    
+    /**
+     * Adjusts existing spans assigned to tags, using additional diffs. Must be called for all diffs computed
+     * AFTER the tag2Span is populated.
+     */
+    private void adjustTag2Span(final Map<?, int[]> tag2Span, Collection<Diff> textChanges) {
+        if (textChanges.isEmpty()) {
+            return;
+        }
+        List<Diff> orderedDiffs = new ArrayList(textChanges);
+        Collections.sort(orderedDiffs, new Comparator<Diff>() {
+            @Override
+            public int compare(Diff o1, Diff o2) {
+                return o1.getPos() - o2.getPos();
+            }
+        });
+        
+        List<int[]> spans = new ArrayList<>(tag2Span.values());
+        Collections.sort(spans, new Comparator<int[]>() {
+            @Override
+            public int compare(int[] o1, int[] o2) {
+                return o1[0] - o2[0];
+            }
+        });
+        
+        int i = 0, j = 0;
+        
+        while (i < orderedDiffs.size() && j < spans.size()) {
+            Diff d = orderedDiffs.get(i);
+            int[] s = spans.get(j);
+            
+            if (d.getPos() >= s[1]) {
+                i++;
+            } else {
+                // move the entire span
+                int l;
+                switch (d.type) {
+                    case DELETE: {
+                        l = d.getPos() - d.getEnd();
+                        break;
+                    }
+                    case INSERT: {
+                        l = d.getText().length();
+                        break;
+                    }
+                    case MODIFY: {
+                        l = d.getText().length() - (d.getEnd() - d.getPos());
+                        break;
+                    }
+                    default:
+                        throw new IllegalStateException();
+                }
+                if (d.getPos() <= s[0]) {
+                    s[0] += l;
+                }
+                s[1] += l;
+                j++;
+                // the diff applies into the MIDDLE of the range, so 
+            }
         }
     }
     

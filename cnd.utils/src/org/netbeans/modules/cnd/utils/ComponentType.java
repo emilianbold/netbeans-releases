@@ -54,7 +54,8 @@ public enum ComponentType {
     OSS_IDE("sside"), //NOI18N
     DBXTOOL("dbxtool"), //NOI18N
     DLIGHTTOOL("dlighttool"), //NOI18N
-    CODE_ANALYZER("analytics"); //NOI18N
+    CODE_ANALYZER("analytics"), //NOI18N
+    PROJECT_CREATOR("ide_project"); //NOI18N
     
     private static ComponentType component;
     private String version = ""; //NOI18N

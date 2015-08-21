@@ -296,16 +296,50 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
 
     private final List<ProblemListenerAdapter> adapters = new ArrayList<>();
 
+    private void cleanDeadListeners() {
+        assert Thread.holdsLock(adapters);
+        for (Iterator<ProblemListenerAdapter> it = adapters.iterator(); it.hasNext();) {
+            ProblemListenerAdapter adapter = it.next();
+            if (adapter.listenerRef.get() == null) {
+                it.remove();
+            }
+        }
+    }
+    
     @Override
-    protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
-        ProblemListenerAdapter newAdapter = new ProblemListenerAdapter(listener);
+    protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener) {
+        ProblemListenerAdapter newAdapter = new ProblemListenerAdapter(listener, null);
         synchronized (adapters) {
-            for (Iterator<ProblemListenerAdapter> it = adapters.iterator(); it.hasNext(); ) {
-                ProblemListenerAdapter adapter = it.next();
-                if (adapter.listenerRef.get() == null) {
-                    it.remove();
+            cleanDeadListeners();
+            adapters.add(newAdapter);
+        }
+        FileSystemProvider.addFileSystemProblemListener(newAdapter);
+    }
+
+    @Override
+    protected void fireFileSystemProblemOccurredImpl(FSPath fsPath) {
+        List<CndFileSystemProblemListener> listeners = new ArrayList<>();
+        synchronized (adapters) {
+            for (ProblemListenerAdapter adapter : adapters) {
+                CndFileSystemProblemListener l = adapter.listenerRef.get();
+                if (l != null) {                    
+                    FileSystem listenerFS = (adapter.fileSystemRef == null) ? null : adapter.fileSystemRef.get();
+                    if (listenerFS == null || listenerFS.equals(fsPath.getFileSystem())) {
+                        listeners.add(l);
+                    }
                 }
             }
+        }
+        for (CndFileSystemProblemListener l : listeners) {
+            l.problemOccurred(fsPath);
+        }
+    }
+
+    @Override
+    protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+        ProblemListenerAdapter newAdapter = new ProblemListenerAdapter(listener, fileSystem);
+        synchronized (adapters) {
+            cleanDeadListeners();
             adapters.add(newAdapter);
         }
         FileSystemProvider.addFileSystemProblemListener(newAdapter, fileSystem);
@@ -392,13 +426,16 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
     private static class ProblemListenerAdapter implements FileSystemProblemListener {
 
         private final WeakReference<CndFileSystemProblemListener> listenerRef;
+        private final WeakReference<FileSystem> fileSystemRef;
 
-        public ProblemListenerAdapter(CndFileSystemProblemListener listener) {
+        public ProblemListenerAdapter(CndFileSystemProblemListener listener, FileSystem fileSystem) {
             listenerRef = new WeakReference<>(listener);
+            fileSystemRef = (fileSystem == null) ? null : new WeakReference<>(fileSystem);
         }
 
         @Override
         public void problemOccurred(FileSystem fileSystem, String path) {
+            checkFileSystem(fileSystem);
             CndFileSystemProblemListener listener = listenerRef.get();
             if (listener != null) {
                 listener.problemOccurred(new FSPath(fileSystem, path));
@@ -407,9 +444,19 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
 
         @Override
         public void recovered(FileSystem fileSystem) {
+            checkFileSystem(fileSystem);
             CndFileSystemProblemListener listener = listenerRef.get();
             if (listener != null) {
                 listener.recovered(fileSystem);
+            }
+        }
+        
+        private void checkFileSystem(FileSystem fileSystem) {
+            if (fileSystemRef != null && CndUtils.isDebugMode()) {
+                FileSystem fs = fileSystemRef.get();
+                if (fs != null) {
+                    CndUtils.assertTrue(fs.equals(fileSystem), "Unexpected file system: " + fileSystem + " , expected " + fs); //NOI18N
+                }
             }
         }
     }

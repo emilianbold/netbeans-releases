@@ -5,22 +5,25 @@ import com.tasktop.c2c.server.common.service.ValidationException;
 import com.tasktop.c2c.server.common.service.WrappedCheckedException;
 import com.tasktop.c2c.server.common.service.domain.QueryResult;
 import com.tasktop.c2c.server.common.service.web.ApacheHttpRestClientDelegate;
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectRelationship;
 import com.tasktop.c2c.server.profile.domain.project.ProjectsQuery;
-import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.service.ScmServiceClient;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import com.tasktop.c2c.server.tasks.service.TaskServiceClient;
+import oracle.clouddev.server.profile.activity.client.api.ActivityApi;
+import oracle.clouddev.server.profile.activity.client.api.ListRequestParams;
+import oracle.clouddev.server.profile.activity.client.rest.ActivityApiClient;
 import java.net.PasswordAuthentication;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.apache.commons.httpclient.HttpClient;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
@@ -36,7 +39,7 @@ public class ODCSClientImpl implements ODCSClient {
     private final HttpClient httpClient = new HttpClient(WebUtil.getConnectionManager());
     
     private final static Logger LOG = Logger.getLogger(ODCSClient.class.getName());
-    private ActivityServiceClient actvityServiceClient;
+    private ActivityApi activityClient;
     private ProfileWebServiceClient profileServiceClient;
     private ScmServiceClient scmServiceClient;
     private TaskServiceClient tasksServiceClient;
@@ -106,34 +109,21 @@ public class ODCSClientImpl implements ODCSClient {
     }
 
     @Override
-    public List<ProjectActivity> getRecentActivities(String projectId) throws ODCSException {
+    public List<Activity> getRecentActivities(String projectId) throws ODCSException {
         ClassLoader originalContextCL = null;
         try {
-            if(mockDelegate != null) {
+            if (mockDelegate != null) {
                 return mockDelegate.getRecentActivities(projectId);
             }
             originalContextCL = setupContextClassLoader();
-            return getActivityClient().getRecentActivity(projectId);
-        } catch (WrappedCheckedException e) {
-            throw new ODCSException(e.getCause());
-        } catch(RuntimeException e) {
-            throw new ODCSException(e);
-        } finally {
-            restoreContextClassLoader(originalContextCL);
-        }
-    }
 
-    @Override
-    public List<ProjectActivity> getRecentShortActivities(String projectId) throws ODCSException {
-        ClassLoader originalContextCL = null;
-        try {
-            if(mockDelegate != null) {
-                return mockDelegate.getRecentShortActivities(projectId);
-            }
-            originalContextCL = setupContextClassLoader();
-            return getActivityClient().getShortActivityList(projectId);
+            ListRequestParams params = new ListRequestParams(Collections.EMPTY_LIST, 0, 100);
+            oracle.clouddev.server.profile.activity.client.api.QueryResult r = getActivityClient().list(projectId, params);
+            return r.getActivities();
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch (ValidationException e) {
+            throw new ODCSException(e);
         } catch(RuntimeException e) {
             throw new ODCSException(e);
         } finally {
@@ -314,16 +304,17 @@ public class ODCSClientImpl implements ODCSClient {
         }
     }
 
-    private ActivityServiceClient getActivityClient() {
-        if (actvityServiceClient == null) {
-            actvityServiceClient = new ActivityServiceClient();
-            actvityServiceClient.setBaseUrl(url + "api/activity/");
+    private ActivityApi getActivityClient() {
+        if (activityClient == null) {
+            ActivityApiClient client = new ActivityApiClient();
             ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
-            actvityServiceClient.setRestClientDelegate(delegate);
+            client.setRestClientDelegate(delegate);
+            client.setBaseUrl(url + "api/activity/"); // NOI18N
+            activityClient = client;
         }
-        return actvityServiceClient;
+        return activityClient;
     }
-    
+
     private ProfileWebServiceClient getProfileClient() {
         if (profileServiceClient == null) {
             profileServiceClient = new ProfileWebServiceClient();

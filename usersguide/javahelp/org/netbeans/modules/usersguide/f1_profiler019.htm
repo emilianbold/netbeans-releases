@@ -2,74 +2,93 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>New Profiling Point Wizard: Choose Type and Project</title>
+<title>New Profiling Point Wizard: Timed Take Snapshot</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="PPointsWizardPanel1UI.HelpCtx" name="PPointsWizardPanel1UI.HelpCtx"></a></p>
-<div id="NBCSH3181"><!-- infolevel="all" infotype="General" --><a id="sthref407" name="sthref407"></a>
-<h1>New Profiling Point Wizard: Choose Type and Project</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="TimedTakeSnapshotCustomizer.HelpCtx" name="TimedTakeSnapshotCustomizer.HelpCtx"></a></p>
+<div id="NBCSH3204"><!-- infolevel="all" infotype="General" --><a id="sthref410" name="sthref410"></a>
+<h1>New Profiling Point Wizard: Timed Take Snapshot</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to set a new profiling point that invokes a profiling action. In this wizard, select the type of profiling point according to the profiling action that you want to invoke. Depending on the type of profiling point that you select, specify either a line in your code or a condition that needs to be met to invoke the action. In this wizard, you also specify settings for the action that is performed. 
+<p>Use to take profiling snapshots or heap dumps at a certain time or after a certain interval. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG745">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG728">
+<param name="text" value="<html><u>How</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</p>
+?</p>
 
-<table summary="Descriptions profiling points options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="35%" />
+<table summary="Descriptions of timed snapshot options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t21">Element</th>
-<th align="left" valign="bottom" id="r1c2-t21">Description</th>
+<th align="left" valign="bottom" id="r1c1-t20">Element</th>
+<th align="left" valign="bottom" id="r1c2-t20">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t21" headers="r1c1-t21">
-<p>Profiling Point Type</p>
+<td align="left" id="r2c1-t20" headers="r1c1-t20">
+<p>Name</p>
 </td>
-<td align="left" headers="r2c1-t21 r1c2-t21">. Select the type of profiling point according to the action that you want to invoke:
-<ul>
-<li>Reset Result</li>
-<li>Stopwatch</li>
-<li>Take Snapshot</li>
-<li>Load Generator</li>
-<li>Timed Take Snapshot</li>
-<li>Triggered Take Snapshot</li>
-</ul>
-<p>A description of the selected type is displayed in the wizard.</p>
+<td align="left" headers="r2c1-t20 r1c2-t20">Specifies the name that you want to use to identify the profiling point.
+<p>This name is used to identify the profiling point in the Profiling Points window.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t21" headers="r1c1-t21">
-<p>Profiling Point Project</p>
+<td align="left" id="r3c1-t20" headers="r1c1-t20">
+<p>Settings</p>
 </td>
-<td align="left" headers="r3c1-t21 r1c2-t21">Select a project from the dropdown list of open project.</td>
+<td align="left" headers="r3c1-t20 r1c2-t20">Snapshot options</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t20" headers="r1c1-t20">
+<p>Take</p>
+</td>
+<td align="left" headers="r4c1-t20 r1c2-t20">Specifies the type of snapshot that you want to take.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t20" headers="r1c1-t20">
+<p>Save</p>
+</td>
+<td align="left" headers="r5c1-t20 r1c2-t20">Specifies the location for the saved snapshots. You can save snapshots to the default directory in your project or you can specify a location on your local system.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t20" headers="r1c1-t20">
+<p>Reset results after taking snapshot</p>
+</td>
+<td align="left" headers="r6c1-t20 r1c2-t20">Resets the collected profiling results after each snapshot is taken.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t20" headers="r1c1-t20">
+<p>Time</p>
+</td>
+<td align="left" headers="r7c1-t20 r1c2-t20">Specifies when you want the IDE to take the snapshot.
+<p>If you select <b>Take Once</b>, you need to specify a time and the IDE takes a single snapshot at the specified time.</p>
+<p>If you select <b>Take Every</b>, you need to specify the interval between snapshots. The IDE takes snapshots at the specified interval while the profiling session is running.</p>
+</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3184" name="NBCSH3184"></a>
+<a id="NBCSH3211" name="NBCSH3211"></a>
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
+<p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
-<param name="text" value="<html><u>&quot;Setting a Profiling Point&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG733">
+<param name="text" value="<html><u>&quot;Taking a Heap Dump&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
 <param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -77,7 +96,7 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
 <param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -85,7 +104,7 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
 <param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

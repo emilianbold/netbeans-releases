@@ -45,6 +45,9 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -86,6 +89,31 @@ public class MessagesHandlerTest extends NbTestCase {
         if (msg.indexOf("16 bytes!") != -1) {
             fail("Contains no '16 bytes' message:\n" + msg);
         }
+    }
+    
+    public void testMessageRepeat() throws Exception {
+        clearWorkDir();
+        System.setProperty("netbeans.user", getWorkDirPath());
+        File logs = new File(getWorkDir(), "logs");
+        logs.mkdirs();
+        
+        MessagesHandler mh = new MessagesHandler(logs, 2, 10000);
+        
+        mh.publish(new LogRecord(Level.INFO, "Hi"));
+        mh.publish(new LogRecord(Level.INFO, "Hello"));
+        mh.publish(new LogRecord(Level.INFO, "Hello"));
+        mh.flush();
+        File log = logs.listFiles()[0];
+        List<String> allLines = Files.readAllLines(log.toPath(), Charset.defaultCharset());
+        assertTrue(allLines.get(allLines.size() - 1), allLines.get(allLines.size() - 1).endsWith(MessagesHandler.getRepeatingMessage(1)));
+        assertTrue(allLines.get(allLines.size() - 2), allLines.get(allLines.size() - 2).endsWith("Hello"));
+        assertTrue(allLines.get(allLines.size() - 3), allLines.get(allLines.size() - 3).endsWith("Hi"));
+        
+        mh.publish(new LogRecord(Level.INFO, "Hello"));
+        mh.publish(new LogRecord(Level.INFO, "Hello"));
+        mh.flush();
+        allLines = Files.readAllLines(log.toPath(), Charset.defaultCharset());
+        assertTrue(allLines.get(allLines.size() - 1), allLines.get(allLines.size() - 1).endsWith(MessagesHandler.getRepeatingMessage(2)));
     }
     
     private String readLog(File log) throws IOException {

@@ -48,9 +48,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -238,15 +240,18 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 }
 
                 List<CompletionProposal> result = new ArrayList();
-
+                Map<String, FSCompletionItem> ccItems  = new HashMap<>();
                 try {
-                    result = FSCompletionUtils.computeRelativeItems(relativeTo, writtenPath, ccContext.getCaretOffset(), addExtensionInCC, true, new FSCompletionUtils.JSIncludesFilter(fo));
+                    boolean addPrefix = !isClientCode(project, fo);
+                    List<CompletionProposal> tmpResult = FSCompletionUtils.computeRelativeItems(relativeTo, writtenPath, ccContext.getCaretOffset(), addExtensionInCC, addPrefix, new FSCompletionUtils.JSIncludesFilter(fo));
+                    handleFileNameDuplicityInCC(tmpResult, ccItems, result);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
                 
-                if (!result.isEmpty() && !writtenPath.isEmpty() 
+                if ((!result.isEmpty() || !ccItems.isEmpty()) && !writtenPath.isEmpty() 
                         && (writtenPath.charAt(0) == '/' || writtenPath.startsWith("./") || writtenPath.startsWith("../"))) { //NOI18N
+                    result.addAll(ccItems.values());
                     return result;
                 }
                 // if the prefix is empty, add all folders to the project root
@@ -269,10 +274,12 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                         topFolder = project.getProjectDirectory();
                     }
                     try {
+                        List<CompletionProposal> tmpResult = new ArrayList();
                         while (FileUtil.isParentOf(topFolder, parentFolder)) {
-                            result.add(new FSCompletionItem(parentFolder, writtenPath, addExtensionInCC, offset));
+                            tmpResult.add(new FSCompletionItem(parentFolder, writtenPath, addExtensionInCC, offset));
                             parentFolder = parentFolder.getParent();
                         }
+                        handleFileNameDuplicityInCC(tmpResult, ccItems, result);
                     } catch (IOException e) {
                         // do nothing
                     }
@@ -294,12 +301,7 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                     relativeTo.add(fromMapping);
                     try {
                         List<CompletionProposal> newItems = FSCompletionUtils.computeRelativeItems(relativeTo, prefixAfterMapping, ccContext.getCaretOffset(), addExtensionInCC, false, new FSCompletionUtils.JSIncludesFilter(fo));
-                        for (Iterator<CompletionProposal> it = newItems.iterator(); it.hasNext();) {
-                            CompletionProposal proposel = it.next();
-                            if (!result.contains(proposel)) {
-                                result.add(proposel);
-                            }
-                        }
+                        handleFileNameDuplicityInCC(newItems, ccItems, result);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -324,25 +326,69 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                         }
                     }
                 }
-                // add the plugin name
+                result.addAll(ccItems.values());
                 return result;
             }
         }
         return Collections.emptyList();
     }
 
+    private void handleFileNameDuplicityInCC(List<CompletionProposal> toCheck, Map<String, FSCompletionItem> ccItems, List<CompletionProposal> finalResult) {
+        for (Iterator<CompletionProposal> item = toCheck.iterator(); item.hasNext();) {
+            CompletionProposal next = item.next();
+            if (next instanceof FSCompletionItem) {
+                FSCompletionItem fsCC = (FSCompletionItem)next;
+                // XXX the key here correspond to the getLhs method implementation. Should be rewritten to a nice way
+                String key = fsCC.getFile().getNameExt();
+                if (!ccItems.containsKey(key)) {
+                    ccItems.put(key, fsCC);
+                } else {
+                    ((FSCompletionItem.FSElementHandle)ccItems.get(key).getElement()).addRepresentedFile(fsCC.getFile());
+                }
+            } else {
+                finalResult.add(next);
+            }
+        }
+    }
+    
     @Override
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
         if (element != null && element instanceof FSCompletionItem.FSElementHandle) {
-            FileObject fo = element.getFileObject();
-            if (fo != null) {
-                return FSCompletionUtils.writeFilePathForDocWindow(fo);
+            Set<FileObject> representedFiles = ((FSCompletionItem.FSElementHandle)element).getRepresentedFiles();
+            StringBuilder sb = new StringBuilder();
+            for (Iterator<FileObject> iterator = representedFiles.iterator(); iterator.hasNext();) {
+                FileObject next = iterator.next();
+                sb.append(FSCompletionUtils.writeFilePathForDocWindow(next));
+                sb.append("</br>"); //NOI18N
             }
+            return sb.toString();
         }
         if (element != null && element instanceof SimpleHandle.DocumentationHandle) {
             return ((SimpleHandle.DocumentationHandle)element).getDocumentation();
         }
         return null;
+    }
+    
+    private static String HTML_TEXT = "html";
+    private static String CLIENT_TEXT = "client";
+    
+    /**
+     * The implementation of this method is a hack. Needs to be done properly. 
+     * We should be able to recognized, whether the edited source is targeted 
+     * to be on client or server. 
+     * @param project
+     * @param source
+     * @return 
+     */
+    private boolean isClientCode(Project project, FileObject source) {
+        boolean result = false;
+        String path = source.getPath();
+        if (FileUtil.isParentOf(project.getProjectDirectory(), source)) {
+            path = path.substring(project.getProjectDirectory().getPath().length());
+        }
+        path = path.toLowerCase();
+        result = path.contains(HTML_TEXT) || path.contains(CLIENT_TEXT);
+        return result;
     }
 
 }

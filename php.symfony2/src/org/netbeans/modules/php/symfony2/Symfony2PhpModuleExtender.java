@@ -43,6 +43,7 @@ package org.netbeans.modules.php.symfony2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -133,7 +134,10 @@ public class Symfony2PhpModuleExtender extends PhpModuleExtender {
             File sf2Directory = installer.getSymfony2Dir();
             LOGGER.log(Level.INFO, "Using Symfony2 files from {0}", sf2Directory);
             FileObject sf2Dir = FileUtil.toFileObject(sf2Directory);
-            assert sf2Dir != null : sf2Directory;
+            assert sf2Dir != null : sf2Directory
+                    + "[exists: " + sf2Directory.exists()
+                    + ", isDir: " + sf2Directory.isDirectory()
+                    + ", children: " + Arrays.toString(sf2Directory.list());
             final FileObject sourceDirectory = phpModule.getSourceDirectory();
             assert sourceDirectory != null : phpModule.getProjectDirectory();
             try {

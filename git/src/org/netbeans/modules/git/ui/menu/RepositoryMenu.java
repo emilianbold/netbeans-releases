@@ -49,6 +49,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.repository.OpenConfigurationAction;
+import org.netbeans.modules.git.ui.repository.OpenGlobalConfigurationAction;
 import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -93,10 +94,21 @@ public final class RepositoryMenu extends DynamicMenu {
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
+            
+            menu.addSeparator();
+            item = new JMenuItem();
+            action = SystemAction.get(OpenGlobalConfigurationAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(OpenConfigurationAction.class), NbBundle.getMessage(OpenConfigurationAction.class, "LBL_OpenConfigurationAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(RepositoryBrowserAction.class), NbBundle.getMessage(RepositoryBrowserAction.class, "LBL_RepositoryBrowserAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            
+            menu.addSeparator();
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(OpenGlobalConfigurationAction.class), NbBundle.getMessage(OpenGlobalConfigurationAction.class, "LBL_OpenGlobalConfigurationAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;

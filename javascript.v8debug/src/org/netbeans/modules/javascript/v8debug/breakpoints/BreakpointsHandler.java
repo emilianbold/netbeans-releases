@@ -42,11 +42,10 @@
 
 package org.netbeans.modules.javascript.v8debug.breakpoints;
 
-import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,15 +60,17 @@ import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
+import org.netbeans.lib.v8debug.commands.Flags;
 import org.netbeans.lib.v8debug.commands.SetBreakpoint;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.modules.javascript.v8debug.ScriptsHandler;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
+import org.netbeans.modules.javascript2.debug.breakpoints.FutureLine;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.text.Line;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
@@ -89,6 +90,8 @@ public class BreakpointsHandler implements V8Debugger.Listener {
     private final Set<JSLineBreakpoint> removeAfterSubmit = new WeakSet<>();
     private final List<ActiveBreakpointListener> abListeners = new CopyOnWriteArrayList<ActiveBreakpointListener>();
     private volatile JSLineBreakpoint activeBreakpoint;
+    private final List<BreakpointsActiveListener> acListeners = new CopyOnWriteArrayList<>();
+    private volatile boolean areBreakpointsActive = true;
     
     public BreakpointsHandler(V8Debugger dbg) { // TODO pass in initially submitted breakpoints in the debuggee
         this.dbg = dbg;
@@ -144,18 +147,20 @@ public class BreakpointsHandler implements V8Debugger.Listener {
     @CheckForNull
     private SetBreakpoint.Arguments createSetRequestArguments(JSLineBreakpoint b) {
         FileObject fo = b.getFileObject();
-        if (fo == null) {
-            return null;
+        ScriptsHandler scriptsHandler = dbg.getScriptsHandler();
+        String serverPath = null;
+        if (fo != null) {
+            serverPath = scriptsHandler.getServerPath(fo);
+        } else {
+            Line line = b.getLine();
+            if (line instanceof FutureLine) {
+                URL url = ((FutureLine) line).getURL();
+                if (scriptsHandler.containsRemoteFile(url)) {
+                    serverPath = scriptsHandler.getServerPath(url);
+                }
+            }
         }
-        File file = FileUtil.toFile(fo);
-        if (file == null) {
-            return null;
-        }
-        String localPath = file.getAbsolutePath();
-        String serverPath;
-        try {
-            serverPath = dbg.getScriptsHandler().getServerPath(localPath);
-        } catch (ScriptsHandler.OutOfScope oos) {
+        if (serverPath == null) {
             return null;
         }
         String condition = (b.isConditional()) ? b.getCondition() : null;
@@ -237,6 +242,33 @@ public class BreakpointsHandler implements V8Debugger.Listener {
         abListeners.remove(abl);
     }
 
+    boolean areBreakpointsActive() {
+        return areBreakpointsActive;
+    }
+
+    void setBreakpointsActive(final boolean active) {
+        Flags.Arguments args = new Flags.Arguments(Flags.FLAG_BREAK_POINTS_ACTIVE, active);
+        V8Request fRequest = dbg.sendCommandRequest(V8Command.Flags, args, new V8Debugger.CommandResponseCallback() {
+            @Override
+            public void notifyResponse(V8Request request, V8Response response) {
+                if (response != null && response.isSuccess()) {
+                    areBreakpointsActive = active;
+                    for (BreakpointsActiveListener acl : acListeners) {
+                        acl.breakpointsActivated(active);
+                    }
+                }
+            }
+        });
+    }
+    
+    void addBreakpointsActiveListener(BreakpointsActiveListener abl) {
+        acListeners.add(abl);
+    }
+
+    void removeBreakpointsActiveListener(BreakpointsActiveListener abl) {
+        acListeners.remove(abl);
+    }
+    
     public void positionChanged(long bpId, long line, long column) {
         SubmittedBreakpoint sb;
         synchronized (submittedBreakpoints) {
@@ -246,10 +278,17 @@ public class BreakpointsHandler implements V8Debugger.Listener {
             sb.updatePosition(line, column);
         }
     }
-    
+
+    /** Fired when an active (hit) breakpoint changes. */
     public static interface ActiveBreakpointListener {
         
         void notifyActiveBreakpoint(JSLineBreakpoint activeBreakpoint);
+    }
+    
+    /** Fired when breakpoints are activated/deactivated */
+    static interface BreakpointsActiveListener {
+
+        void breakpointsActivated(boolean activated);
     }
     
     private final class BreakpointsCommandsCallback implements V8Debugger.CommandResponseCallback {

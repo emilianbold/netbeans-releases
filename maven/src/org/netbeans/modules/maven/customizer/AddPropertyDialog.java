@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
+import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.text.html.HTMLEditorKit;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -91,8 +92,10 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
         //project can be null when invoked from Tools/Options
         project = prj;
         okbutton = new JButton(NbBundle.getMessage(AddPropertyDialog.class, "BTN_OK"));
-        manager.setRootContext(Node.EMPTY);
+        manager.setRootContext(Node.EMPTY);        
         tpDesc.setEditorKit(new HTMLEditorKit());
+        tpDesc.putClientProperty( JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
+        
         manager.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {

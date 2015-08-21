@@ -43,7 +43,10 @@
 package org.netbeans.modules.javadoc.highlighting;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
@@ -54,6 +57,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.Token;
@@ -76,8 +80,7 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
     
     public static final String LAYER_ID = "org.netbeans.modules.javadoc.highlighting"; //NOI18N
     
-    private static AttributeSet fontColor = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getTokenFontColors("javadoc-first-sentence");
-    
+    private AttributeSet fontColor;
     
     private Document document;
     private TokenHierarchy<? extends Document> hierarchy = null;
@@ -85,6 +88,19 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
     
     /** Creates a new instance of Highlighting */
     public Highlighting(Document doc) {
+        AttributeSet firstLineFontColor = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getTokenFontColors("javadoc-first-sentence");
+        AttributeSet commentFontColor = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getTokenFontColors("comment");
+        Collection<Object> attrs = new LinkedList<Object>();
+        for (Enumeration<?> e = firstLineFontColor.getAttributeNames(); e.hasMoreElements(); ) {
+            Object key = e.nextElement();
+            Object value = firstLineFontColor.getAttribute(key);
+            
+            if (!commentFontColor.containsAttribute(key, value)) {
+                attrs.add(key);
+                attrs.add(value);
+            }
+        }
+        fontColor = AttributesUtilities.createImmutable(attrs.toArray());
         this.document = doc;
         hierarchy = TokenHierarchy.get(document);
         if (hierarchy != null) {

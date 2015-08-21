@@ -61,7 +61,6 @@ public class PeculiarityTestCase extends TestCase {
         GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(7.0, Platform.Solaris_x86);
         
         assertEquals("-environment-cd", peculiarity.environmentCdCommand());
-        assertEquals("-exec-arguments a.out 1 2 3", peculiarity.runArgsCommand("a.out 1 2 3"));
         assertEquals("-exec-step", peculiarity.execStepCommand("0"));
         assertEquals("-exec-next", peculiarity.execNextCommand("0"));
         assertEquals("-exec-step-instruction", peculiarity.execStepInstCommand("0"));
@@ -77,7 +76,6 @@ public class PeculiarityTestCase extends TestCase {
         GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(7.7, Platform.Solaris_x86);
         
         assertEquals("-environment-cd", peculiarity.environmentCdCommand());
-        assertEquals("-exec-arguments a.out 1 2 3", peculiarity.runArgsCommand("a.out 1 2 3"));
         assertEquals("-exec-step --thread 0", peculiarity.execStepCommand("0"));
         assertEquals("-exec-next --thread 0", peculiarity.execNextCommand("0"));
         assertEquals("-exec-step-instruction --thread 0", peculiarity.execStepInstCommand("0"));
@@ -95,7 +93,6 @@ public class PeculiarityTestCase extends TestCase {
         System.setProperty("cnd.debugger.lldb","false");
         
         assertEquals("-environment-cd", peculiarity.environmentCdCommand());
-        assertEquals("-interpreter-exec console \"settings set target.run-args a.out 1 2 3\"", peculiarity.runArgsCommand("a.out 1 2 3"));
         assertEquals("-exec-step --thread 0", peculiarity.execStepCommand("0"));
         assertEquals("-exec-next --thread 0", peculiarity.execNextCommand("0"));
         assertEquals("-exec-step-instruction --thread 0", peculiarity.execStepInstCommand("0"));
@@ -111,7 +108,6 @@ public class PeculiarityTestCase extends TestCase {
         GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(6.3, Platform.MacOSX_x86);
         
         assertEquals("cd", peculiarity.environmentCdCommand());
-        assertEquals("-exec-arguments a.out 1 2 3", peculiarity.runArgsCommand("a.out 1 2 3"));
         assertEquals("-exec-step", peculiarity.execStepCommand("0"));
         assertEquals("-exec-next", peculiarity.execNextCommand("0"));
         assertEquals("-exec-step-instruction", peculiarity.execStepInstCommand("0"));

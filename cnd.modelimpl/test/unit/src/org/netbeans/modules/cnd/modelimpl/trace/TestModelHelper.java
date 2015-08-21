@@ -63,8 +63,12 @@ public final class TestModelHelper {
      * Creates a new instance of TestModelHelper
      */
     public TestModelHelper(boolean clearCache) {
+        this(clearCache, null);
+    }
+
+    public TestModelHelper(boolean clearCache, TraceModelFileFilter filter) {
         synchronized (LOCK) {
-            traceModel = new TraceModel(clearCache);
+            traceModel = new TraceModel(clearCache, filter);
         }
     }
     

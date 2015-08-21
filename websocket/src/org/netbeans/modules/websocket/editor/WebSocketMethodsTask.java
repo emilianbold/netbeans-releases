@@ -88,7 +88,6 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
-import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
 
 import com.sun.source.tree.AnnotationTree;
@@ -106,6 +105,8 @@ import com.sun.source.util.SourcePositions;
  * 
  */
 public class WebSocketMethodsTask implements CancellableTask<CompilationInfo> {
+
+    private static final String ON_ERROR_ANNOTATION = "javax.websocket.OnError"; // NOI18N
 
     @Override
     public void run(CompilationInfo compilationInfo) throws Exception {
@@ -178,7 +179,7 @@ public class WebSocketMethodsTask implements CancellableTask<CompilationInfo> {
         result.put("javax.websocket.OnMessage", "onMessage"); // NOI18N
         result.put("javax.websocket.OnOpen", "onOpen"); // NOI18N
         result.put("javax.websocket.OnClose", "onClose"); // NOI18N
-        result.put("javax.websocket.OnError", "onError"); // NOI18N
+        result.put(ON_ERROR_ANNOTATION, "onError"); // NOI18N
         return result;
     }
 
@@ -350,11 +351,14 @@ public class WebSocketMethodsTask implements CancellableTask<CompilationInfo> {
                             ModifiersTree modifiers = maker.Modifiers(EnumSet
                                     .of(Modifier.PUBLIC), Collections
                                     .<AnnotationTree> singletonList(annotation));
-                            ModifiersTree parMods = maker.Modifiers(
-                                    Collections.<Modifier>emptySet(),
-                                    Collections.<AnnotationTree>emptyList());
-                            VariableTree par1 = maker.Variable(parMods, "t",
-                                    maker.QualIdent("java.lang.Throwable"), null);
+                            VariableTree par1 = null;
+                            if (ON_ERROR_ANNOTATION.equals(myAnnotation)) {
+                                ModifiersTree parMods = maker.Modifiers(
+                                        Collections.<Modifier>emptySet(),
+                                        Collections.<AnnotationTree>emptyList());
+                                par1 = maker.Variable(parMods, "t", // NOI18N
+                                        maker.QualIdent("java.lang.Throwable"), null); // NOI18N
+                            }
                             MethodTree method = maker.Method(
                                     modifiers,
                                     getMethodName(),
@@ -365,7 +369,9 @@ public class WebSocketMethodsTask implements CancellableTask<CompilationInfo> {
                                      * provided in the method signature :
                                      * javax.websocket.Session
                                      */
-                                    Collections.<VariableTree> singletonList(par1),
+                                    par1 != null
+                                            ? Collections.<VariableTree>singletonList(par1)
+                                            : Collections.<VariableTree>emptyList(),
                                     Collections.<ExpressionTree> emptyList(),
                                     "{}", null);
                             ClassTree newTree = maker.addClassMember(classTree,

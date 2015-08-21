@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -248,17 +249,42 @@ public class DependenciesNode extends AbstractNode {
     
     private final static class DependencyWrapper {
 
-        private Artifact artifact;
-        
-        private FileObject fileObject;
-        
+        private final Artifact artifact;        
+        private final FileObject fileObject;        
         private final Node nodeDelegate;
+        
+        private final String artifactString;
+        private final String depenencyTrailString;
+        private final String filePath;
+        private final int dependencyTrailSize;
+        private final String artifactId;
 
-        public DependencyWrapper(Artifact artifact, boolean longLiving) {
+        public DependencyWrapper(Artifact artifact, boolean longLiving) {                                    
             this.artifact = artifact;
             assert artifact.getFile() != null : "#200927 Artifact.getFile() is null: " + artifact;
             assert artifact.getDependencyTrail() != null : "#200927 Artifact.getDependencyTrail() is null:" + artifact;
             assert artifact.getVersion() != null : "200927 Artifact.getVersion() is null: " + artifact;
+            
+            // artifact is mutable and might be the source of issues like in #250473
+            // lets fix the values necessary for an imutable hasCode, equals 
+            // and compare computation. The Dependency nodes seem to get recreated 
+            // on relevant changes anyway ...
+            artifactId = artifact.getArtifactId();
+            artifactString = artifact.toString();
+            StringBuilder sb = new StringBuilder();
+            List<String> dependencyTrail = new ArrayList<>(artifact.getDependencyTrail());
+            Collections.sort(dependencyTrail);
+            dependencyTrailSize = dependencyTrail.size();
+            Iterator<String> it = dependencyTrail.iterator();
+            while(it.hasNext()) {
+                sb.append(it.next());
+                if(it.hasNext()) {
+                    sb.append(";"); // NOI18N
+                }
+            }
+            depenencyTrailString = sb.toString();
+            filePath = artifact.getFile().getAbsolutePath();
+            
             fileObject = FileUtil.toFileObject(artifact.getFile());
             nodeDelegate = DependencyNode.createNodeDelegate(artifact, fileObject, longLiving);
         }
@@ -270,8 +296,6 @@ public class DependenciesNode extends AbstractNode {
         public Node getNodeDelegate() {
             return nodeDelegate;
         }
-
-        
         
         public Artifact getArtifact() {
             return artifact;
@@ -286,13 +310,13 @@ public class DependenciesNode extends AbstractNode {
                 return false;
             }
             final DependencyWrapper other = (DependencyWrapper) obj;
-            if (!artifact.equals(other.artifact)) {
+            if (!artifactString.equals(other.artifactString)) {
                 return false;
             }
-            if (!artifact.getDependencyTrail().equals(other.artifact.getDependencyTrail())) {
+            if (!depenencyTrailString.equals(other.depenencyTrailString)) {
                 return false;
             }
-            if (!artifact.getFile().equals(other.artifact.getFile())) {
+            if (!filePath.equals(other.filePath)) {
                 return false;
             }
             return true;
@@ -301,10 +325,22 @@ public class DependenciesNode extends AbstractNode {
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 31 * hash + artifact.hashCode();
-            hash = 31 * hash + artifact.getDependencyTrail().hashCode();
-            hash = 31 * hash + artifact.getFile().hashCode();
+            hash = 31 * hash + artifactString.hashCode();
+            hash = 31 * hash + depenencyTrailString.hashCode();
+            hash = 31 * hash + filePath.hashCode();
             return hash;
+        }
+
+        private int getDependencyTrailSize() {
+            return dependencyTrailSize;
+        }
+
+        private String getArtifactId() {
+            return artifactId;
+        }
+
+        private String getArtifactString() {
+            return artifactString;
         }
         
     }
@@ -420,19 +456,19 @@ public class DependenciesNode extends AbstractNode {
 
         @Override
         public int compare(DependencyWrapper art1, DependencyWrapper art2) {
-            boolean transitive1 = art1.getArtifact().getDependencyTrail().size() > 2;
-            boolean transitive2 = art2.getArtifact().getDependencyTrail().size() > 2;
+            boolean transitive1 = art1.getDependencyTrailSize() > 2;
+            boolean transitive2 = art2.getDependencyTrailSize() > 2;
             if (transitive1 && !transitive2) {
                 return 1;
             }
             if (!transitive1 && transitive2)  {
                 return -1;
             }
-            int ret = art1.getArtifact().getArtifactId().compareTo(art2.getArtifact().getArtifactId());
+            int ret = art1.getArtifactId().compareTo(art2.getArtifactId());
             if (ret != 0) {
                 return ret;
             }
-            return art1.getArtifact().compareTo(art2.getArtifact());
+            return art1.getArtifactString().compareTo(art2.getArtifactString());
         }
         
     }

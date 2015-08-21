@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.clientproject.spi.platform;
 
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 
 /**
  * Hook into client side project type for different browsers to provider their

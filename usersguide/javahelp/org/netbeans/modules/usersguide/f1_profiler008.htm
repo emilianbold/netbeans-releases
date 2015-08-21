@@ -2,90 +2,65 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Select Profiling Task: Customize Filter Sets Dialog Box</title>
+<title>Set Quick Filter Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="FilterSetsPanel.HelpCtx" name="FilterSetsPanel.HelpCtx"></a></p>
-<div id="NBCSH3120"><!-- infolevel="all" infotype="General" --><a id="sthref396" name="sthref396"></a>
-<h1>Select Profiling Task: Customize Filter Sets Dialog Box</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="QuickFilterPanel.HelpCtx" name="QuickFilterPanel.HelpCtx"></a></p>
+<div id="NBCSH3135"><!-- infolevel="all" infotype="General" --><a id="sthref399" name="sthref399"></a>
+<h1>Set Quick Filter Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to customize existing filter sets and to create new custom filter sets. You use a filter set to limit the classes that are instrumented when analyzing application performance. 
+<p>Use to specify classes or packages that you want to exclude or include when analyzing application performance. Unlike global filters or custom filter sets, a quick filter can be applied only to the current application. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG740">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG740">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Descriptions of custom filter set options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="31%" />
+<table summary="Descriptions of Set Quick Filter options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="33%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t10">Element</th>
-<th align="left" valign="bottom" id="r1c2-t10">Description</th>
+<th align="left" valign="bottom" id="r1c1-t9">Element</th>
+<th align="left" valign="bottom" id="r1c2-t9">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t10" headers="r1c1-t10">
-<p>Defined Filter Sets.</p>
+<td align="left" id="r2c1-t9" headers="r1c1-t9">
+<p>Filter Type</p>
 </td>
-<td align="left" headers="r2c1-t10 r1c2-t10">Displays the filter sets that are available when profiling an application. Use the buttons to the right of the list to add and remove filter sets and to change the order that the filter sets are displayed in the Filter drop-down list in the configuration pane.
-<p>Select a filter set in the list to see the set name, type, and global filters included in the filter set displayed in the Filter Set Properties section. A filter set can include more than one global filter.</p>
+<td align="left" headers="r2c1-t9 r1c2-t9">Excludes or includes the selected methods when you click <b>Exclusive</b> or <b>Inclusive</b>.
+<p>If Exclude is selected, none of the listed methods are profiled.</p>
+<p>If Include is selected, only the listed methods are profiled.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t10" headers="r1c1-t10">
-<p>Filter Set Properties.</p>
+<td align="left" id="r3c1-t9" headers="r1c1-t9">
+<p>Filter Value</p>
 </td>
-<td align="left" headers="r3c1-t10 r1c2-t10">Displays the properties of the selected filter set. Filter sets have the following properties: F<b>ilter Set Name</b>, <b>Filter Set Type</b>, and <b>Global Filters</b>.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t10" headers="r1c1-t10">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Filter Set Name</p>
-</td>
-<td align="left" headers="r4c1-t10 r1c2-t10">Specifies the name used to identify the filter set in the Filter drop-down list in the configuration pane.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t10" headers="r1c1-t10">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Filter Set Type</p>
-</td>
-<td align="left" headers="r5c1-t10 r1c2-t10">Displays the filter set types: Exclusive and Inclusive.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t10" headers="r1c1-t10">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exclusive</p>
-</td>
-<td align="left" headers="r6c1-t10 r1c2-t10">Excludes and does not instrument classes meeting the criteria of the selected filters. Profiling results for these classes do not appear in the collected results.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t10" headers="r1c1-t10">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inclusive</p>
-</td>
-<td align="left" headers="r7c1-t10 r1c2-t10">Includes in the instrumentation only the classes meeting the criteria of the selected filters. Profiling results are collected only for these classes.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t10" headers="r1c1-t10">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Global Filters.</p>
-</td>
-<td align="left" headers="r8c1-t10 r1c2-t10">Displays global filters. Each global filter in the list represents groups of patterns that are typically related to one application. For example, <code dir="ltr">org.netbeans</code> is a pattern. A filter can contain more than one pattern. Patterns can be separated by a comma and/or space.
-<p>Select the global filters that you want to exclude or include. To modify or create global filters, click <b>Edit Global Filters</b>.</p>
+<td align="left" headers="r3c1-t9 r1c2-t9">Lists the classes and packages to include or exclude. You can type the name in the text area in the following formats:
+<ul>
+<li><code dir="ltr">java.*</code></li>
+<li><code dir="ltr">javax.swing</code></li>
+<li><code dir="ltr">javax.xml.parsers.SAXParser</code></li>
+</ul>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3128" name="NBCSH3128"></a>
+<a id="NBCSH3138" name="NBCSH3138"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
 <param name="text" value="<html><u>&quot;Setting Profiling Filters&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -93,7 +68,7 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
 <param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

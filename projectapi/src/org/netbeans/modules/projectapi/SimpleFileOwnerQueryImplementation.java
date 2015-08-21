@@ -51,12 +51,15 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -111,34 +114,43 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     private final Set<FileObject> warnedAboutBrokenProjects = new WeakSet<FileObject>();
         
-    private Reference<FileObject> lastFoundKey = null;
-    private Reference<Project> lastFoundValue = null;
-    
+    private Map<FileObject, Reference<Project>> projectCache = new WeakHashMap();    
     /**
      * 
      * #111892
      */
     public void resetLastFoundReferences() {
-        synchronized (this) {
-            lastFoundValue = null;
-            lastFoundKey = null;
+        synchronized (cacheLock) {
+            projectCache.clear();
+            cacheInvalid = false;
         }
     }
     
     
     public Project getOwner(FileObject f) {
+        List<FileObject> folders = new ArrayList();
+        
         deserialize();
         while (f != null) {
-            synchronized (this) {
-                if (lastFoundKey != null && lastFoundKey.get() == f) {
-                    Project p = lastFoundValue.get();
-                    if (p != null) {
-                        return p;
-                    }
-                }
-            }
             boolean folder = f.isFolder();
             if (folder) {
+                synchronized (cacheLock) {
+                    if (cacheInvalid) { 
+                        projectCache.clear();
+                        cacheInvalid = false;
+                    }
+                    Reference<Project> rp = projectCache.get(f);
+                    if (rp != null) {
+                        Project p = rp.get();
+                        if (p != null) {
+                            for (FileObject fldr : folders) {
+                                projectCache.put(fldr, rp);
+                            }
+                            return p;
+                        }
+                    }
+                }
+                folders.add(f);
                 if (!forbiddenFolders.contains(f.getPath())) {
                     Project p;
                     try {
@@ -151,9 +163,11 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                         return null;
                     }
                     if (p != null) {
-                        synchronized (this) {
-                            lastFoundKey = new WeakReference<FileObject>(f);
-                            lastFoundValue = new WeakReference<Project>(p);
+                        synchronized (cacheLock) {
+                            WeakReference<Project> rp = new WeakReference(p);
+                            for (FileObject fldr : folders) {
+                                projectCache.put(fldr, rp);
+                            }
                         }
                         return p;
                     }
@@ -173,9 +187,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                         try {
                             // Note: will be null if there is no such project.
                             Project p = ProjectManager.getDefault().findProject(externalOwner);
-                            synchronized (this) {
-                                lastFoundKey = new WeakReference<FileObject>(f);
-                                lastFoundValue = new WeakReference<Project>(p);
+                            if (p != null) {
+                                synchronized (cacheLock) {
+                                    projectCache.put(f, new WeakReference<Project>(p));
+                                }
                             }
                             return p;
                         } catch (IOException e) {
@@ -192,9 +207,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                     try {
                         // Note: will be null if there is no such project.
                         Project p = ProjectManager.getDefault().findProject(externalOwner);
-                        synchronized (this) {
-                            lastFoundKey = new WeakReference<FileObject>(f);
-                            lastFoundValue = new WeakReference<Project>(p);
+                        if (p != null) {
+                            synchronized (cacheLock) {
+                                projectCache.put(f, new WeakReference<Project>(p));
+                            }
                         }
                         return p;
                     } catch (IOException e) {
@@ -220,6 +236,9 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         Collections.synchronizedMap(new HashMap<URI,FileObject>());
 
     private static boolean externalRootsIncludeNonFolders = false;
+
+    private static final Object cacheLock = new Object();
+    private static volatile boolean cacheInvalid = false;
 
     private static enum ExternalRootsState {
         NEW,
@@ -312,7 +331,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     /** @see FileOwnerQuery#reset */
     public static void reset() {
-        externalOwners.clear();
+        synchronized (cacheLock) {
+            cacheInvalid = true;
+            externalOwners.clear();
+        }
     }
     
     /** @see FileOwnerQuery#markExternalOwner */
@@ -325,10 +347,17 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         externalRootsIncludeNonFolders |= !root.getPath().endsWith("/");
         if (owner != null) {
             FileObject fo = owner.getProjectDirectory();
-            externalOwners.put(root, owner == FileOwnerQuery.UNOWNED ? UNOWNED_URI : fo.toURI());
-            deserializedExternalOwners.remove(root);
+            URI foUri = owner == FileOwnerQuery.UNOWNED ? UNOWNED_URI : fo.toURI();
+            synchronized (cacheLock) {
+                cacheInvalid = true;
+                externalOwners.put(root, foUri);
+                deserializedExternalOwners.remove(root);
+            }
         } else {
-            externalOwners.remove(root);
+            synchronized (cacheLock) {
+                cacheInvalid = true;
+                externalOwners.remove(root);
+            }
         }
     }
     

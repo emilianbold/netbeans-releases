@@ -79,6 +79,10 @@ public class FoldingParserService implements FoldingParser {
         } else if (MIMENames.PREPROC_MIME_TYPE.equals(mimeType)) {
             lang = CppTokenId.languagePreproc();
         } // TODO: C_HEADER?
+        if (lang == null) {
+            // Won't parse unknown mime, see Bug 252483
+            return Collections.EMPTY_LIST;
+        }
         Set<CppTokenId> set = new HashSet<CppTokenId>();
         set.add(CppTokenId.WHITESPACE);
         set.add(CppTokenId.NEW_LINE);

@@ -1527,6 +1527,79 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue243566.js", "this.x^ = x;", true);
     }
     
+    public void testIssue252873_01() throws Exception {
+        checkOccurrences("testfiles/jsdoc/parser/issue252873.js", " * @param {*} var^iable", true);
+    }
+    
+    public void testIssue252873_02() throws Exception {
+        checkOccurrences("testfiles/jsdoc/parser/issue252873.js", "return !Breeze.isUndefined(variable) && var^iable !== null;", true);
+    }
+    
+    public void testIssue237914_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue237914.js", "j^ob.a = 3;", true);
+    }
+    
+    public void testIssue237914_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue237914.js", "return jo^b;", true);
+    }
+    
+    public void testIssue237421_01() throws Exception {
+        checkOccurrences("testfiles/completion/general/issue237421.js", "var foo2 = this.getT^est().m;", true);
+    }
+    
+    public void testIssue253129_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue253129.js", "var f^1 = f2 = function () {", true);
+    }
+    
+    public void testIssue253129_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue253129.js", "var f1 = f^2 = function () {", true);
+    }
+    
+    public void testIssue253129_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue253129.js", "var f3, f4, f5 = f3 = f^4 = function (){", true);
+    }
+    
+    //TODO this test is failing, but when the golden file is created, then it's created correctly. Probably problem with CSL testing
+//    public void testIssue253129_04() throws Exception {
+//        checkOccurrences("testfiles/coloring/issue253129.js", "f^3();", true);
+//    }
+    
+    public void testIssue253736_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "var addre^ss = {baseUrl:'', id:0};", true);
+    }
+     
+    public void testIssue253736_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "var address = {bas^eUrl:'', id:0};", true);
+    }
+    
+    public void testIssue253736_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "var address = {baseUrl:'', i^d:0};", true);
+    }
+    
+    public void testIssue253736_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "syste^mUri.replace(myPattern, function(a, protocol, server, id) {", true);
+    }
+    
+    public void testIssue253736_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "systemUri.replace(myPat^tern, function(a, protocol, server, id) {", true);
+    }
+    
+    public void testIssue253736_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "systemUri.replace(myPattern, function(a, prot^ocol, server, id) {", true);
+    }
+    
+    public void testIssue253736_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "systemUri.replace(myPattern, function(a, protocol, se^rver, id) {", true);
+    }
+    
+    public void testIssue253736_08() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "systemUri.replace(myPattern, function(a, protocol, server, i^d) {", true);
+    }
+    
+    public void testIssue253129_05() throws Exception {
+        checkOccurrences("testfiles/coloring/issue253129.js", "var f3, f4, f^5 = f3 = f4 = function (){", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

@@ -49,6 +49,8 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -56,11 +58,15 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ClassIndex.ResourceType;
 import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
+import org.netbeans.modules.refactoring.java.WhereUsedBinaryElement;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
@@ -69,8 +75,10 @@ import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters;
 import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters.ReadWrite;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ImageUtilities;
@@ -84,6 +92,8 @@ import org.openide.util.NbBundle;
 public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements FiltersDescription.Provider {
     private boolean fromLibrary;
     private final WhereUsedQuery refactoring;
+    
+    public static final boolean DEPENDENCIES = Boolean.getBoolean("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies");     //NOI18N
     
     private volatile CancellableTask queryTask;
 
@@ -153,18 +163,20 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 if(isSearchFromBaseClass() && fo != null) {
                     HashSet<FileObject> fileobjects = new HashSet<>(customScope.getSourceRoots());
                     fileobjects.add(fo);
-                    cpath = RefactoringUtils.getClasspathInfoFor(false, fileobjects.toArray(new FileObject[0]));
+                    cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), fileobjects.toArray(new FileObject[0]));
                 } else {
-                    cpath = RefactoringUtils.getClasspathInfoFor(false, customScope.getSourceRoots().toArray(new FileObject[0]));
+                    cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), customScope.getSourceRoots().toArray(new FileObject[0]));
                 }
-                fileSet.addAll(getRelevantFiles(tph,
+                Set<FileObject> relevantFiles = getRelevantFiles(tph,
                         cpath,
                         isFindSubclasses(),
                         isFindDirectSubclassesOnly(),
                         isFindOverridingMethods(),
                         isSearchOverloadedMethods(),
                         isFindUsages(),
-                        null, cancelRequested));
+                        customScope.isDependencies(),
+                        null, cancelRequested);
+                fileSet.addAll(relevantFiles);
             }
             Map<FileObject, Set<NonRecursiveFolder>> folders = new HashMap<>();
             
@@ -184,17 +196,18 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 Set<NonRecursiveFolder> packages = folders.get(sourceRoot);
                 if (packages != null && !packages.isEmpty()) {
                     if(isSearchFromBaseClass() && fo != null) {
-                        cpath = RefactoringUtils.getClasspathInfoFor(false, sourceRoot, fo);
+                        cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), sourceRoot, fo);
                     } else {
-                        cpath = RefactoringUtils.getClasspathInfoFor(false, sourceRoot);
+                        cpath = RefactoringUtils.getClasspathInfoFor(customScope.isDependencies(), sourceRoot);
                     }
-                    fileSet.addAll(getRelevantFiles(tph,
+                    Set<FileObject> relevantFiles = getRelevantFiles(tph,
                             cpath,
                             isFindSubclasses(),
                             isFindDirectSubclassesOnly(),
                             isFindOverridingMethods(),
                             isSearchOverloadedMethods(),
-                            isFindUsages(), packages, cancelRequested));
+                            isFindUsages(), customScope.isDependencies(), packages, cancelRequested);
+                    fileSet.addAll(relevantFiles);
                 }
             }
             return fileSet;
@@ -207,6 +220,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     isFindOverridingMethods(),
                     isSearchOverloadedMethods(),
                     isFindUsages(),
+                    false,
                     null,
                     cancelRequested);
         }
@@ -217,11 +231,12 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             final TreePathHandle tph, final ClasspathInfo cpInfo,
             final boolean isFindSubclasses, final boolean isFindDirectSubclassesOnly,
             final boolean isFindOverridingMethods, final boolean isSearchOverloadedMethods,
-            final boolean isFindUsages, final Set<NonRecursiveFolder> folders,
+            final boolean isFindUsages, final boolean isIncludeDependencies, final Set<NonRecursiveFolder> folders,
             final AtomicBoolean cancel) {
         final ClassIndex idx = cpInfo.getClassIndex();
-        final Set<FileObject> set = new TreeSet<>(new FileComparator());
+        final Set<FileObject> sourceSet = new TreeSet<>(new FileComparator());
         final Set<NonRecursiveFolder> packages = (folders == null)? Collections.<NonRecursiveFolder>emptySet() : folders;
+        final Set<ResourceType> resourceType = isIncludeDependencies? EnumSet.of(ResourceType.SOURCE, ResourceType.BINARY) : EnumSet.of(ResourceType.SOURCE);
         
         final FileObject file = tph.getFileObject();
         JavaSource source;
@@ -242,53 +257,51 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     throw new NullPointerException(String.format("#145291: Cannot resolve handle: %s\n%s", tph, info.getClasspathInfo())); // NOI18N
                 }
                 Set<SearchScopeType> searchScopeType = new HashSet<>(1);
-                if (packages.isEmpty()) {
-                    searchScopeType.add(ClassIndex.SearchScope.SOURCE);
-                } else {
-                    final Set<String> packageSet = new HashSet<>(packages.size());
-                    for (NonRecursiveFolder nonRecursiveFolder : packages) {
-                        String resourceName = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).getResourceName(nonRecursiveFolder.getFolder());
-                        if(resourceName != null) {
-                            packageSet.add(resourceName.replace('/', '.'));
-                        }
-                    }
-                    searchScopeType.add(new SearchScopeType() {
-                        @Override
-                        public Set<? extends String> getPackages() {
-                            return packageSet;
-                        }
-
-                        @Override
-                        public boolean isSources() {
-                            return true;
-                        }
-
-                        @Override
-                        public boolean isDependencies() {
-                            return false;
-                        }
-                    });
+                final Set<String> packageSet = new HashSet<>(packages.size());
+                for (NonRecursiveFolder nonRecursiveFolder : packages) {
+                    String resourceName = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE).getResourceName(nonRecursiveFolder.getFolder());
+                    packageSet.add(resourceName.replace('/', '.'));
                 }
+                searchScopeType.add(new SearchScopeType() {
+                    @Override
+                    public Set<? extends String> getPackages() {
+                        return packageSet.isEmpty() ? null : packageSet;
+                    }
+
+                    @Override
+                    public boolean isSources() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isDependencies() {
+                        return isIncludeDependencies;
+                    }
+                });
                 if (cancel != null && cancel.get()) {
-                    set.clear();
+                    sourceSet.clear();
                     return;
                 }
                 if (el.getKind().isField()) {
                     //get field references from index
-                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType));
+                    sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType, resourceType));
                 } else if (el.getKind().isClass() || el.getKind().isInterface()) {
                     if (isFindSubclasses || isFindDirectSubclassesOnly) {
+                        EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
                         if (isFindDirectSubclassesOnly) {
                             //get direct implementors from index
-                            EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
-                            set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), searchKind, searchScopeType));
+                            sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el), searchKind, searchScopeType, resourceType));
                         } else {
-                            //itererate implementors recursively
-                            set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement) el, cancel));
+                            Set<?> implementorsAsHandles = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el, cancel);
+                            if (cancel != null && cancel.get()) {
+                                sourceSet.clear();
+                                return;
+                            }
+                            sourceSet.addAll(SourceUtilsEx.getFiles((Collection<ElementHandle<? extends Element>>) implementorsAsHandles, cpInfo, cancel));
                         }
                     } else {
                         //get type references from index
-                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType));
+                        sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType, resourceType));
                     }
                 } else if (el.getKind() == ElementKind.METHOD) {
                     ExecutableElement method = (ExecutableElement) el;
@@ -306,14 +319,14 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     }
                     if (isFindOverridingMethods) {
                         //Find overriding methods
-                        set.addAll(getImplementorsRecursive(idx, cpInfo, enclosingTypeElement, cancel));
+                        sourceSet.addAll(getImplementorsRecursive(idx, cpInfo, enclosingTypeElement, cancel));
                     }
                     if (isFindUsages) {
                         //get method references for method and for all it's overriders
                         Set<ElementHandle<TypeElement>> s = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement) method.getEnclosingElement(), cancel);
                         for (ElementHandle<TypeElement> eh : s) {
                             if (cancel != null && cancel.get()) {
-                                set.clear();
+                                sourceSet.clear();
                                 return;
                             }
                             TypeElement te = eh.resolve(info);
@@ -324,19 +337,19 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                                 if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
                                     for (ExecutableElement executableElement : methods) {
                                         if (info.getElements().overrides((ExecutableElement) e, executableElement, te)) {
-                                            set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType));
+                                            sourceSet.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType, resourceType));
                                         }
                                     }
                                 }
                             }
                         }
-                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType)); //?????
+                        sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType, resourceType)); //?????
                     }
                 } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
-                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType));
+                    sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType, resourceType));
                 } else if((el.getKind().equals(ElementKind.LOCAL_VARIABLE) || el.getKind().equals(ElementKind.PARAMETER))
                         || el.getModifiers().contains(Modifier.PRIVATE)) {
-                    set.add(file);
+                    sourceSet.add(file);
                 }
             }
         };
@@ -345,18 +358,32 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
+        Set<FileObject> result = sourceSet;
         // filter out files that are not on source path
-        Set<FileObject> set2 = new HashSet<>(set.size());
-        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-        for (FileObject fo : set) {
-            if (cp.contains(fo)) {
-                set2.add(fo);
-            }
-            if (cancel != null && cancel.get()) {
-                return Collections.<FileObject>emptySet();
-            }
+        for (FileObject fileObject : result) {
+            LOG.fine(fileObject.getNameExt());
         }
-        return set2;
+        if(!isIncludeDependencies) {
+            Set<FileObject> filteredSources = new HashSet<>(sourceSet.size());
+            ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+            for (FileObject fo : sourceSet) {
+                if (cp.contains(fo)) {
+                    filteredSources.add(fo);
+                } else {
+                    LOG.log(Level.FINE, "Filtered out: {0}", fo.getNameExt());
+                }
+                if (cancel != null && cancel.get()) {
+                    return Collections.<FileObject>emptySet();
+                }
+            }
+            result = filteredSources;
+        }
+        return result;
+    }
+    private static final Logger LOG = Logger.getLogger(JavaWhereUsedQueryPlugin.class.getName());
+    
+    static {
+        LOG.setLevel(Level.ALL);
     }
     
     private static Collection<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el, AtomicBoolean cancel) {
@@ -382,7 +409,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         return set2;
     }
     
-    //@Override
     @Override
     public Problem prepare(final RefactoringElementsBag elements) {
         fireProgressListenerStart(ProgressEvent.START, -1);
@@ -393,7 +419,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         Problem problem = null;
         try {
             final FindTask findTask = new FindTask(elements);
-            queryFiles(a, findTask);
+            queryFiles(a, findTask, getClasspathInfo(refactoring));
         } catch (IOException e) {
             problem = createProblemAndLog(null, e);
         }
@@ -478,12 +504,22 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_comment.png", false));
         filtersDescription.addFilter(JavaWhereUsedFilters.SOURCEFILE.getKey(), "Source filter", true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_source.png", false));
+        if(DEPENDENCIES) {
+            filtersDescription.addFilter(JavaWhereUsedFilters.BINARYFILE.getKey(), "Binary filter", true,
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/clazz.png", false));
+        }
         filtersDescription.addFilter(JavaWhereUsedFilters.TESTFILE.getKey(), "Test filter", true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_test.png", false));
+        if(DEPENDENCIES) {
+            filtersDescription.addFilter(JavaWhereUsedFilters.DEPENDENCY.getKey(), "Dependency filter", true,
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_binary.gif", false));
+            filtersDescription.addFilter(JavaWhereUsedFilters.PLATFORM.getKey(), "Platform filter", true,
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/java/platform/resources/platform.gif", false));
+        }
     }
 
     private final EnumSet<JavaWhereUsedFilters.ReadWrite> usedAccessFilters = EnumSet.noneOf(JavaWhereUsedFilters.ReadWrite.class);
-    private final LinkedList<String> usedFilters = new LinkedList<>();
+    private final Set<String> usedFilters = new HashSet<>();
     @Override
     public void enableFilters(FiltersDescription filtersDescription) {
         for (JavaWhereUsedFilters.ReadWrite filter : usedAccessFilters) {
@@ -493,18 +529,19 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             filtersDescription.enable(string);
         }
     }
-    
+
     private class FindTask implements CancellableTask<CompilationController> {
 
         private final RefactoringElementsBag elements;
         private volatile AtomicBoolean cancelled;
+        private final Set<FileObject> cachedPlatformRoots;
 
         public FindTask(RefactoringElementsBag elements) {
-            super();
             this.elements = elements;
             this.cancelled = new AtomicBoolean(false);
+            this.cachedPlatformRoots = new HashSet<>();
         }
-
+        
         @Override
         public void cancel() {
             cancelled.set(true);
@@ -513,14 +550,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         @Override
         public void run(CompilationController compiler) throws IOException {
             if (cancelled.get()) {
-                return ;
-            }
-            if (compiler.toPhase(JavaSource.Phase.RESOLVED)!=JavaSource.Phase.RESOLVED) {
                 return;
             }
-            CompilationUnitTree cu = compiler.getCompilationUnit();
-            if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler); // NOI18N
+            if (compiler.toPhase(JavaSource.Phase.RESOLVED)!=JavaSource.Phase.RESOLVED) {
                 return;
             }
             TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
@@ -529,13 +561,41 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "element is null for handle " + handle); // NOI18N
                 return;
             }
-            
-            final boolean fromTestRoot = RefactoringUtils.isFromTestRoot(compiler.getFileObject(), compiler.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE));
+            final boolean fromPlatform;
+            final boolean fromTest;
+            CompilationUnitTree cu = compiler.getCompilationUnit();
+            FileObject fo = compiler.getFileObject();
+            fromPlatform = fromPlatform(fo);
+            if (cu == null) {
+                if(DEPENDENCIES) {
+//                if(!fromPlatform) {
+//                    fromTest |= UnitTestForSourceQuery.
+                    fromTest = false;
+//                }
+
+                    elements.add(refactoring, WhereUsedBinaryElement.create(fo, fromTest, fromPlatform));
+
+                    usedFilters.add(JavaWhereUsedFilters.BINARYFILE.getKey());
+                }
+                return;
+            }
+            final boolean fromDependency;
+            if(!fromPlatform) {
+                ClassPath srcPath = compiler.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
+                FileObject ownerRoot = srcPath.findOwnerRoot(fo);
+                fromDependency = ownerRoot == null;
+                fromTest = !fromDependency && RefactoringUtils.isFromTestRoot(fo, srcPath);
+            } else {
+                fromTest = false;
+                fromDependency = false;
+            }
             AtomicBoolean inImport = new AtomicBoolean();
             if (isFindUsages()) {
-                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, cancelled, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS), isSearchOverloadedMethods(), fromTestRoot, inImport);
-                findVisitor.scan(compiler.getCompilationUnit(), element);
-                Collection<WhereUsedElement> foundElements = findVisitor.getElements();
+                Collection<WhereUsedElement> foundElements;
+                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, cancelled, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS), isSearchOverloadedMethods(), fromTest, fromPlatform, fromDependency, inImport);
+                findVisitor.scan(cu, element);
+                foundElements = findVisitor.getElements();
+                boolean usagesInComments = findVisitor.usagesInComments();
                 for (WhereUsedElement el : foundElements) {
                     final ReadWrite access = el.getAccess();
                     if(access != null) {
@@ -544,14 +604,22 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     elements.add(refactoring, el);
                 }
                 if(!foundElements.isEmpty()) {
-                    if(fromTestRoot) {
+                    if(fromTest) {
                         usedFilters.add(JavaWhereUsedFilters.TESTFILE.getKey());
                     }
-                    if(!fromTestRoot) {
+                    if(!fromTest) {
                         usedFilters.add(JavaWhereUsedFilters.SOURCEFILE.getKey());
                     }
-                    if(findVisitor.usagesInComments()) {
+                    if(usagesInComments) {
                         usedFilters.add(JavaWhereUsedFilters.COMMENT.getKey());
+                    }
+                    if(DEPENDENCIES) {
+                        if(fromDependency) {
+                            usedFilters.add(JavaWhereUsedFilters.DEPENDENCY.getKey());
+                        }
+                        if(fromPlatform) {
+                            usedFilters.add(JavaWhereUsedFilters.PLATFORM.getKey());
+                        }
                     }
                 }
             }
@@ -567,18 +635,56 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 result.addAll(subtypes.getUsages());
             }
             for (TreePath tree : result) {
-                elements.add(refactoring, WhereUsedElement.create(compiler, tree, fromTestRoot, inImport));
+                elements.add(refactoring, WhereUsedElement.create(compiler, tree, fromTest, fromPlatform, fromDependency, inImport));
             }
-            if(fromTestRoot && !result.isEmpty()) {
-                usedFilters.add(JavaWhereUsedFilters.TESTFILE.getKey());
-            }
-            if(!fromTestRoot && !result.isEmpty()) {
-                usedFilters.add(JavaWhereUsedFilters.SOURCEFILE.getKey());
-            }
-            if(inImport.get()) {
-                usedFilters.add(JavaWhereUsedFilters.IMPORT.getKey());
+            if(!result.isEmpty()) {
+                if(DEPENDENCIES) {
+                    if(fromPlatform) {
+                        usedFilters.add(JavaWhereUsedFilters.PLATFORM.getKey());
+                    }
+                    if(fromDependency) {
+                        usedFilters.add(JavaWhereUsedFilters.DEPENDENCY.getKey());
+                    }
+                }
+                if(fromTest) {
+                    usedFilters.add(JavaWhereUsedFilters.TESTFILE.getKey());
+                }
+                if(!fromTest) {
+                    usedFilters.add(JavaWhereUsedFilters.SOURCEFILE.getKey());
+                }
+                if(inImport.get()) {
+                    usedFilters.add(JavaWhereUsedFilters.IMPORT.getKey());
+                }
+                
             }
             fireProgressListenerStep();
+        }
+
+        private boolean fromPlatform(FileObject fo) {
+            boolean fromPlatform = false;
+            FileObject archive = FileUtil.getArchiveFile(fo);
+            if(archive != null) {
+                FileObject root = FileUtil.getArchiveRoot(archive);
+                if(root != null) {
+                    if(cachedPlatformRoots.contains(root)) {
+                        fromPlatform = true;
+                    }
+                    JavaPlatformManager manager = JavaPlatformManager.getDefault();
+                    for (JavaPlatform javaPlatform : manager.getInstalledPlatforms()) {
+                        if(javaPlatform.getSourceFolders().contains(root) ||
+                                javaPlatform.getStandardLibraries().contains(root) ||
+                                javaPlatform.getBootstrapLibraries().contains(root)) {
+                            fromPlatform = true;
+                            if(DEPENDENCIES) {
+                                usedFilters.add(JavaWhereUsedFilters.PLATFORM.getKey());
+                            }
+                            cachedPlatformRoots.add(root);
+                            break;
+                        }
+                    }
+                }
+            }
+            return fromPlatform;
         }
     }
     

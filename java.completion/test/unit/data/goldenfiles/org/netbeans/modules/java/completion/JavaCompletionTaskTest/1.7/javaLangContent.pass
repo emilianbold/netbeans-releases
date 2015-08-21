@@ -81,6 +81,7 @@ StringBuilder
 StringIndexOutOfBoundsException
 SuppressWarnings
 System
+Test
 Thread
 ThreadDeath
 ThreadGroup

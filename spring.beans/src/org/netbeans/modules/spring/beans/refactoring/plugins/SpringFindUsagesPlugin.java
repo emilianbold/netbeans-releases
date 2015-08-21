@@ -115,6 +115,10 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
         }
         try {
             JavaSource source = JavaSource.forFileObject(fo);
+            // #253033
+            if (source == null) {
+                return null;
+            }
             final String[] className = new String[] { null };
             source.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController compilationController) throws Exception {

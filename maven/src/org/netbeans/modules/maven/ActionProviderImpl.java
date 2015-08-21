@@ -135,6 +135,12 @@ public class ActionProviderImpl implements ActionProvider {
     public static final String BUILD_WITH_DEPENDENCIES = "build-with-dependencies"; // NOI18N
 
     private final Project proj;
+    
+    // XXX introduce constant w/ CosChecker, ActionMappings, DefaultReplaceTokenProvider
+    public static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main";
+    public static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main";
+    public static final String PROFILE_MAIN = ActionProvider.COMMAND_PROFILE_SINGLE + ".main";
+    
     private static final String[] supported = new String[]{
         COMMAND_BUILD,
         BUILD_WITH_DEPENDENCIES,

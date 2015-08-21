@@ -61,6 +61,14 @@ public final class ThreadReferenceWrapper {
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.ObjectReference currentContendedMonitor(com.sun.jdi.ThreadReference a) throws com.sun.jdi.IncompatibleThreadStateException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper {
+        int status = status0(a);
+        if (status == com.sun.jdi.ThreadReference.THREAD_STATUS_NOT_STARTED ||
+            status == com.sun.jdi.ThreadReference.THREAD_STATUS_ZOMBIE ||
+            status == com.sun.jdi.ThreadReference.THREAD_STATUS_UNKNOWN) {
+            
+            // #253058, JDWP Error: 15
+            return null;
+        }
         if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
                     "com.sun.jdi.ThreadReference",

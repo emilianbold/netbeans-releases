@@ -521,15 +521,17 @@ public class EditorPropertySheet extends javax.swing.JPanel
     private void firePrefsChanged() {
         boolean isChanged = false;
         Map<String, PreviewPreferences> languagePreferences = preferencesModel.getLanguagePreferences(language);
-        Set<String> keys = EditorOptions.keys();
-        for (String style : languagePreferences.keySet()) {
-            for(String key : keys) {
-                String currentValue = languagePreferences.get(style).get(key, null);
-                String savedValue = EditorOptions.getPreferences(language, style).get(key, null);
-                if(currentValue == null) {
-                    isChanged |= savedValue != null;
-                } else {
-                    isChanged |= savedValue == null ? !EditorOptions.getDefault(language, style, key).toString().equals(currentValue) : !savedValue.equals(currentValue);
+        if (languagePreferences != null) {
+            Set<String> keys = EditorOptions.keys();
+            for (String style : languagePreferences.keySet()) {
+                for(String key : keys) {
+                    String currentValue = languagePreferences.get(style).get(key, null);
+                    String savedValue = EditorOptions.getPreferences(language, style).get(key, null);
+                    if(currentValue == null) {
+                        isChanged |= savedValue != null;
+                    } else {
+                        isChanged |= savedValue == null ? !EditorOptions.getDefault(language, style, key).toString().equals(currentValue) : !savedValue.equals(currentValue);
+                    }
                 }
             }
         }

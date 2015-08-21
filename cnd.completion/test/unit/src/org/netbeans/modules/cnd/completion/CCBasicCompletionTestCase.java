@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.cnd.completion;
 
+import java.util.Arrays;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  *
@@ -57,6 +59,21 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
      */
     public CCBasicCompletionTestCase(String testName) {
         super(testName, true);
+    }
+
+    @Override
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        final String testName = getName();
+        if (Arrays.asList("test208053").contains(testName)) {
+            return new TraceModelFileFilter() {
+
+                @Override
+                public boolean isProjectFile(String filename) {
+                    return filename.contains(testName);
+                }
+            };
+        }
+        return null;
     }
 
     public void test208053() throws Exception {

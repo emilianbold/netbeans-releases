@@ -261,6 +261,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             panel.switchQueryFields(false);
             panel.urlTextField.setText(urlParameters);
             populated = true;
+            setChanged();
         } else {
             querySemaphore.acquireUninterruptibly();
             Bugzilla.LOG.log(Level.FINE, "lock aquired because populating {0}", query.getDisplayName()); // NOI18N
@@ -435,7 +436,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                         severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
                     }
                     statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
-                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
+                    resolutionParameter.setParameterValues(toParameterValues(getQueryResolutions(bc)));
                     priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
                     changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
                     summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
@@ -876,7 +877,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     protected void onCloneQuery() {
         String p = getUrlParameters(false);
-        BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, false, true);
+        BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, isUrlDefined(), true);
         BugzillaUtil.openQuery(q);
     }
 
@@ -1055,6 +1056,12 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         return false;
     }
 
+    private List<String> getQueryResolutions(BugzillaConfiguration bc) {
+        List<String> l = new ArrayList(bc.getResolutions());
+        l.add(0, "---");
+        return l;
+    }
+    
     private void resetParameters() {
         for(QueryParameter p : parameters.values()) {
             p.reset();

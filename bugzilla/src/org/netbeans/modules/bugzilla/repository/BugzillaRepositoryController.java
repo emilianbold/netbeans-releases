@@ -183,6 +183,11 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
             errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
             return false;
         }
+        
+        if(url.startsWith("http://netbeans.org/bugzilla")) {
+            errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_WRONG_NETBEANS_URL_FORMAT");  // NOI18N
+            return false;
+        }
 
         // the url format is ok - lets enable the validate button
         panel.setValidateEnabled(true);

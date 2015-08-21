@@ -60,6 +60,10 @@ import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 
 public final class MutualExclusionSupport<K> {
+
+    private static final int TRIES = Integer.getInteger(               //#229903
+            "org.netbeans.modules.masterfs.mutualexclusion.tries", 10); //NOI18N
+
     private final Map<K,Set<Closeable>> exclusive = Collections.synchronizedMap(new WeakHashMap<K,Set<Closeable>>());
     private final Map<K,Set<Closeable>> shared = Collections.synchronizedMap(new WeakHashMap<K,Set<Closeable>>());
 
@@ -74,7 +78,7 @@ public final class MutualExclusionSupport<K> {
         final Set<Closeable> unexpectedCounter = unexpected.get(key);
         Set<Closeable> expectedCounter = expected.get(key);
 
-        for (int i = 0; i < 10 && isInUse; i++) {
+        for (int i = 0; i < TRIES && isInUse; i++) {
             isInUse = unexpectedCounter != null && unexpectedCounter.size() > 0;
 
             if (!isInUse) {            
@@ -114,10 +118,15 @@ public final class MutualExclusionSupport<K> {
             addStack(x, expectedCounter);
         } catch (IllegalArgumentException e) { // #233546
             Logger log = Logger.getLogger(MutualExclusionSupport.class.getName());
+            String unexpectedStr = unexpectedCounter == null
+                    ? "null" //NOI18N
+                    : Arrays.toString(unexpectedCounter.toArray());
+            String expectedStr = expectedCounter == null
+                    ? "null" //NOI18N
+                    : Arrays.toString(expectedCounter.toArray());
             log.log(Level.WARNING, "Cannot add stack to exception: " //NOI18N
                     + "unexpectedCounter: {0}, expectedCounter: {1}", //NOI18N
-                    new Object[]{Arrays.toString(unexpectedCounter.toArray()),
-                        Arrays.toString(expectedCounter.toArray())});
+                    new Object[]{unexpectedStr, expectedStr});
             log.log(Level.INFO, null, e);
             log.log(Level.INFO, "Exception x", x); //NOI18N
         }

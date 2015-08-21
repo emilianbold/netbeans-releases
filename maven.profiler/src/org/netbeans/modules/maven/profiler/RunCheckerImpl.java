@@ -43,21 +43,21 @@
 package org.netbeans.modules.maven.profiler;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher.Launcher;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher.Session;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 /**
@@ -77,8 +77,6 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
 //    private static final String PROFILER_JAVA = "${profiler.java}"; // NOI18N
 //    private static final String PROFILER_JDKHOME_OPT = "${profiler.jdkhome.opt}"; // NOI18N
     
-    private final Project project;
-
     @ProjectServiceProvider(service=ProfilerLauncher.LauncherFactory.class, projectType="org-netbeans-modules-maven")
     final public static class MavenLauncherFactory implements ProfilerLauncher.LauncherFactory {
         @Override
@@ -113,17 +111,14 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
         
     }
     
-    public RunCheckerImpl(Project prj) {
-        project = prj;
-    }
-    
     @Override
     public boolean checkRunConfig(final RunConfig config, ExecutionContext context) {
         Map<? extends String,? extends String> configProperties = config.getProperties();
+        final String actionName = config.getActionName();
         
-        if (ActionProvider.COMMAND_PROFILE.equals(config.getActionName()) ||
-               ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(config.getActionName()) ||
-              (config.getActionName() != null && config.getActionName().startsWith(ActionProvider.COMMAND_PROFILE_SINGLE))) {
+        if (ActionProvider.COMMAND_PROFILE.equals(actionName) ||
+               ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName) ||
+              (actionName != null && actionName.startsWith(ActionProvider.COMMAND_PROFILE_SINGLE))) {
             
             ProfilerLauncher.Session session = ProfilerLauncher.getLastSession();
             
@@ -154,12 +149,9 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             }
             final ProfilerLauncher.Session s = session;
             // Attach profiler engine (in separate thread) to profiled process
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    Profiler.getDefault().connectToStartedApp(s.getProfilingSettings(), s.getSessionSettings());
-                }
-            });
+            if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings(), new AtomicBoolean())) {
+                return false;
+            }
         }
         
         return true;

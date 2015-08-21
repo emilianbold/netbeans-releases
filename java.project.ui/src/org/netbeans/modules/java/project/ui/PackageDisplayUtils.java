@@ -45,6 +45,9 @@
 package org.netbeans.modules.java.project.ui;
 
 import java.awt.Image;
+import java.util.concurrent.Callable;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -62,7 +65,24 @@ import org.openide.util.NbBundle;
 public final class PackageDisplayUtils {
 
     private PackageDisplayUtils() {}
-    
+
+    public static enum Accessibility {
+        PRIVATE,
+        EXPORTED,
+        UNKNOWN;
+
+        @NonNull
+        public static Accessibility fromQuery(@NullAllowed final Boolean accessibilityQueryResult) {
+            if (accessibilityQueryResult == null) {
+                return UNKNOWN;
+            } else if (accessibilityQueryResult) {
+                return EXPORTED;
+            } else {
+                return PRIVATE;
+            }
+        }
+    }
+
     /** whether to turn on #42589 */
     private static final boolean TRUNCATE_PACKAGE_NAMES =
         Boolean.getBoolean("org.netbeans.spi.java.project.support.ui.packageView.TRUNCATE_PACKAGE_NAMES"); // NOI18N
@@ -121,35 +141,49 @@ public final class PackageDisplayUtils {
         }
     }
 
-     
-    
     /**
      * Find the proper display icon for a package.
      * @param pkg the actual folder
-     * @param pkgname the dot-separated package name (<code>""</code> for default package)
+     * @param empty the performance optimization if the isEmpty status is already known
      * @return an appropriate display icon for it
      */
-    public static Image getIcon(FileObject pkg) {
-        return getIcon( pkg, isEmpty(pkg) );
+    public static Image getIcon(
+            @NonNull final FileObject pkg,
+            final boolean empty) {
+        return getIcon(
+                pkg,
+                empty,
+                new Callable<Accessibility>() {
+                    @Override
+                    public Accessibility call() throws Exception {
+                        return Accessibility.fromQuery(AccessibilityQuery.isPubliclyAccessible(pkg));
+                    }
+                });
     }
-    
-    /** Performance optiomization if the the isEmpty status is alredy known.
-     * 
-     */
-    public static Image getIcon(FileObject pkg, boolean empty) {
+
+    public static Image getIcon(
+            @NonNull final FileObject pkg,
+            final boolean empty,
+            @NonNull Callable<Accessibility> accessibilityProvider) {
         if ( empty ) {
             return ImageUtilities.loadImage(PACKAGE_EMPTY);
         } else {
-            Boolean b = pkg.isValid() ? AccessibilityQuery.isPubliclyAccessible(pkg) : null;
-            if (b != null) {
-                if (b.booleanValue()) {
+            Accessibility a;
+            try {
+                a = pkg.isValid() ?  accessibilityProvider.call() : Accessibility.UNKNOWN;
+            } catch (Exception e) {
+                a = Accessibility.UNKNOWN;
+            }
+            switch (a) {
+                case EXPORTED:
                     return ImageUtilities.loadImage(PACKAGE_PUBLIC);
-                } else {
+                case PRIVATE:
                     return ImageUtilities.loadImage(PACKAGE_PRIVATE);
-                }
-            } else {
-                return ImageUtilities.loadImage(PACKAGE);
-            } 
+                case UNKNOWN:
+                    return ImageUtilities.loadImage(PACKAGE);
+                default:
+                    throw new IllegalStateException(String.valueOf(a));
+            }
         }
     }
     

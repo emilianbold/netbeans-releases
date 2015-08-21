@@ -69,6 +69,7 @@ import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -83,8 +84,10 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
     private boolean findInComments = false;
     private final boolean isSearchOverloadedMethods;
     private final boolean fromTestRoot;
+    private final boolean fromPlatform;
+    private final boolean fromDependency;
     private final AtomicBoolean inImport;
-    private Boolean usagesInComments;
+    private boolean usagesInComments;
     private final AtomicBoolean isCancelled;
     private List<ExecutableElement> methods;
 
@@ -93,10 +96,10 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
     }
     
     public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled, boolean findInComments, boolean isSearchOverloadedMethods) {
-        this(workingCopy, isCancelled, findInComments, isSearchOverloadedMethods, RefactoringUtils.isFromTestRoot(workingCopy.getFileObject(), workingCopy.getClasspathInfo().getClassPath(PathKind.SOURCE)), new AtomicBoolean());
+        this(workingCopy, isCancelled, findInComments, isSearchOverloadedMethods, RefactoringUtils.isFromTestRoot(workingCopy.getFileObject(), workingCopy.getClasspathInfo().getClassPath(PathKind.SOURCE)), false, false, new AtomicBoolean());
     }
 
-    public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled, boolean findInComments, boolean isSearchOverloadedMethods, boolean fromTestRoot, AtomicBoolean inImport) {
+    public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled, boolean findInComments, boolean isSearchOverloadedMethods, boolean fromTestRoot, boolean fromPlatform, boolean fromDependency, AtomicBoolean inImport) {
         try {
             setWorkingCopy(workingCopy);
         } catch (ToPhaseException ex) {
@@ -105,16 +108,22 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
         this.findInComments = findInComments;
         this.isSearchOverloadedMethods = isSearchOverloadedMethods;
         this.fromTestRoot = fromTestRoot;
+        this.fromPlatform = fromPlatform;
+        this.fromDependency = fromDependency;
         this.inImport = inImport;
         this.isCancelled = isCancelled;
         this.methods = new LinkedList<>();
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Find in Comments">
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
         if (findInComments) {
-            String originalName = p.getSimpleName().toString();
+            String originalName;
+            if(p.getKind() == ElementKind.CONSTRUCTOR) {
+                originalName = p.getEnclosingElement().getSimpleName().toString();
+            } else {
+                originalName = p.getSimpleName().toString();
+            }
             TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
 
             while (ts.moveNext()) {
@@ -126,12 +135,11 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
                 if (t.id() == JavaTokenId.BLOCK_COMMENT || t.id() == JavaTokenId.LINE_COMMENT || t.id() == JavaTokenId.JAVADOC_COMMENT) {
                     Scanner tokenizer = new Scanner(t.text().toString());
                     tokenizer.useDelimiter("[^a-zA-Z0-9_]"); //NOI18N
-
                     while (tokenizer.hasNext()) {
                         String current = tokenizer.next();
                         if (current.equals(originalName)) {
                             WhereUsedElement comment = WhereUsedElement.create(ts.offset() + tokenizer.match().start(),
-                                                                               ts.offset() + tokenizer.match().end(), workingCopy, fromTestRoot);
+                                                                               ts.offset() + tokenizer.match().end(), workingCopy, fromTestRoot, fromPlatform, fromDependency);
                             elements.add(comment);
                             usagesInComments = true;
                         }
@@ -155,7 +163,6 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
         }
         return super.visitCompilationUnit(node, p);
     }
-    //</editor-fold>
 
     private void addIfMatch(TreePath path, Tree tree, Element elementToFind) {
         if(isCancelled.get()) {
@@ -258,7 +265,7 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
         Kind parentKind = parentTree.getKind();
         if(parentKind == Kind.MEMBER_SELECT) {
             Element member = workingCopy.getTrees().getElement(parentPath);
-            if(member.getKind() == ElementKind.METHOD) {
+            if(member != null && member.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) member;
                 if (writeMethods.contains(method.getSimpleName().toString())) {
                     result = JavaWhereUsedFilters.ReadWrite.WRITE;
@@ -345,7 +352,7 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
     
     protected void addUsage(TreePath tp, JavaWhereUsedFilters.ReadWrite access) {
         assert tp != null;
-        elements.add(WhereUsedElement.create(workingCopy, tp, access, fromTestRoot, inImport));
+        elements.add(WhereUsedElement.create(workingCopy, tp, access, fromTestRoot, fromPlatform, fromDependency, inImport));
         usages.add(tp);
     }
 
@@ -355,7 +362,7 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
 
     protected void addUsage(TreePath tp) {
         assert tp != null;
-        elements.add(WhereUsedElement.create(workingCopy, tp, fromTestRoot, inImport));
+        elements.add(WhereUsedElement.create(workingCopy, tp, fromTestRoot, fromPlatform, fromDependency, inImport));
         usages.add(tp);
     }
     
@@ -431,6 +438,6 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
     }
 
     public boolean usagesInComments() {
-        return Boolean.TRUE == usagesInComments;
+        return usagesInComments;
     }
 }

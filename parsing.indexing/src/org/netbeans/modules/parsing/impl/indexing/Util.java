@@ -236,6 +236,17 @@ public final class Util {
         return slowTransitiveDeps(inverseDeps, peers);
     }
 
+    static boolean getSystemBoolean(
+            @NonNull final String propertyName,
+            final boolean defaultValue) {
+        if (defaultValue) {
+            String value = System.getProperty(propertyName);
+            return value == null || !value.equals("false"); //NOI18N
+        } else {
+            return Boolean.getBoolean(propertyName);
+        }
+    }
+
     @NonNull
     private static Map<URL,Collection<URL>> fastTransitiveDeps(
         @NonNull final Map<URL,? extends Collection<URL>> inverseDeps,

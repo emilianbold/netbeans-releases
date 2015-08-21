@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -65,9 +64,12 @@ import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.core.AbstractTaskFactory;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.navigation.ElementScanningTask;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -82,7 +84,6 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
@@ -91,110 +92,120 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-public class ComputeAnnotations extends ParserResultTask<Result> {
+public final class ComputeAnnotations extends ParserResultTask<Result> {
 
     private static final Logger LOG = Logger.getLogger(ComputeAnnotations.class.getName());
-    private final AtomicBoolean cancel = new AtomicBoolean();
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
     
     @Override
     public void run(Result result, SchedulerEvent event) {
         if (!(result instanceof ParserResult)) {
             return;
         }
-
-        cancel.set(false);
-        
-        final FileObject file = result.getSnapshot().getSource().getFileObject();
-
-        if (file == null) {
-            return;
-        }
-
-        final StyledDocument doc = (StyledDocument) result.getSnapshot().getSource().getDocument(false);
-
-        if (doc == null) {
-            return;
-        }
-
-        final List<IsOverriddenAnnotation> annotations = new LinkedList<IsOverriddenAnnotation>();
+        SpiSupportAccessor.getInstance().setCancelSupport(cancel);
         try {
-            ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
-                public @Override void run(ResultIterator resultIterator) throws Exception {
-                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
-                    if(language != null) { //check for non csl results
-                        StructureScanner scanner = language.getStructure();
-                        OverridingMethods om = language.getOverridingMethods();
-                        if (scanner != null && om != null) {
-                            Parser.Result r = resultIterator.getParserResult();
-                            if (r instanceof ParserResult) {
-                                Map<ElementHandle, Collection<? extends AlternativeLocation>> overriding = new HashMap<ElementHandle, Collection<? extends AlternativeLocation>>();
-                                Map<ElementHandle, Collection<? extends AlternativeLocation>> overridden = new HashMap<ElementHandle, Collection<? extends AlternativeLocation>>();
-                                Set<ElementHandle> seen = new HashSet<ElementHandle>();
-                                Map<ElementHandle, ElementHandle> node2Parent = new HashMap<ElementHandle, ElementHandle>();
-                                
-                                List<? extends StructureItem> children = ElementScanningTask.findCachedStructure(resultIterator.getSnapshot(), r);
-                                if (children == null) {
-                                    long startTime = System.currentTimeMillis();
-                                    children = scanner.scan((ParserResult) r);
+            final FileObject file = result.getSnapshot().getSource().getFileObject();
 
-                                    long endTime = System.currentTimeMillis();
-                                    Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
-                                            new Object[]{file, endTime - startTime});
-                                    ElementScanningTask.markProcessed(r, children);
-                                }        
-                                List<StructureItem> todo = new LinkedList<StructureItem>(children);
-                                
-                                while (!todo.isEmpty()) {
-                                    StructureItem i = todo.remove(0);
+            if (file == null) {
+                return;
+            }
 
-                                    todo.addAll(i.getNestedItems());
+            final StyledDocument doc = (StyledDocument) result.getSnapshot().getSource().getDocument(false);
 
-                                    for (StructureItem nested : i.getNestedItems()) {
-                                        if (!node2Parent.containsKey(nested.getElementHandle())) {
-                                            node2Parent.put(nested.getElementHandle(), i.getElementHandle());
+            if (doc == null) {
+                return;
+            }
+
+            final List<IsOverriddenAnnotation> annotations = new LinkedList<IsOverriddenAnnotation>();
+            try {
+                ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
+                    public @Override void run(ResultIterator resultIterator) throws Exception {
+                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
+                        if(language != null) { //check for non csl results
+                            StructureScanner scanner = language.getStructure();
+                            OverridingMethods om = language.getOverridingMethods();
+                            if (scanner != null && om != null) {
+                                Parser.Result r = resultIterator.getParserResult();
+                                if (r instanceof ParserResult) {
+                                    Map<ElementHandle, Collection<? extends AlternativeLocation>> overriding = new HashMap<ElementHandle, Collection<? extends AlternativeLocation>>();
+                                    Map<ElementHandle, Collection<? extends AlternativeLocation>> overridden = new HashMap<ElementHandle, Collection<? extends AlternativeLocation>>();
+                                    Set<ElementHandle> seen = new HashSet<ElementHandle>();
+                                    Map<ElementHandle, ElementHandle> node2Parent = new HashMap<ElementHandle, ElementHandle>();
+
+                                    List<? extends StructureItem> children = ElementScanningTask.findCachedStructure(resultIterator.getSnapshot(), r);
+                                    if (children == null) {
+                                        long startTime = System.currentTimeMillis();
+                                        children = scanner.scan((ParserResult) r);
+
+                                        long endTime = System.currentTimeMillis();
+                                        Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
+                                                new Object[]{file, endTime - startTime});
+                                        //Don't cache if cancelled
+                                        if (cancel.isCancelled()) {
+                                            return;
                                         }
+                                        ElementScanningTask.markProcessed(r, children);
                                     }
+                                    List<StructureItem> todo = new LinkedList<StructureItem>(children);
 
-                                    if (seen.add(i.getElementHandle())) {
-                                        if (i.getElementHandle().getKind() != ElementKind.CLASS && i.getElementHandle().getKind() != ElementKind.INTERFACE) {
-                                            Collection<? extends AlternativeLocation> ov = om.overrides((ParserResult) r, i.getElementHandle());
+                                    while (!todo.isEmpty()) {
+                                        StructureItem i = todo.remove(0);
 
-                                            if (ov != null && !ov.isEmpty()) {
-                                                overriding.put(i.getElementHandle(), ov);
+                                        todo.addAll(i.getNestedItems());
+
+                                        for (StructureItem nested : i.getNestedItems()) {
+                                            if (!node2Parent.containsKey(nested.getElementHandle())) {
+                                                node2Parent.put(nested.getElementHandle(), i.getElementHandle());
                                             }
                                         }
 
-                                        if (om.isOverriddenBySupported((ParserResult) r, i.getElementHandle())) {
-                                            Collection<? extends AlternativeLocation> on = om.overriddenBy((ParserResult) r, i.getElementHandle());
+                                        if (seen.add(i.getElementHandle())) {
+                                            if (i.getElementHandle().getKind() != ElementKind.CLASS && i.getElementHandle().getKind() != ElementKind.INTERFACE) {
+                                                Collection<? extends AlternativeLocation> ov = om.overrides((ParserResult) r, i.getElementHandle());
 
-                                            if (on != null && !on.isEmpty()) {
-                                                overridden.put(i.getElementHandle(), on);
+                                                if (ov != null && !ov.isEmpty()) {
+                                                    overriding.put(i.getElementHandle(), ov);
+                                                }
+                                            }
+
+                                            if (om.isOverriddenBySupported((ParserResult) r, i.getElementHandle())) {
+                                                Collection<? extends AlternativeLocation> on = om.overriddenBy((ParserResult) r, i.getElementHandle());
+
+                                                if (on != null && !on.isEmpty()) {
+                                                    overridden.put(i.getElementHandle(), on);
+                                                }
                                             }
                                         }
                                     }
+
+                                    createAnnotations((ParserResult) r, doc, overriding, node2Parent, false, annotations);
+                                    createAnnotations((ParserResult) r, doc, overridden, node2Parent, true, annotations);
                                 }
-
-                                createAnnotations((ParserResult) r, doc, overriding, node2Parent, false, annotations);
-                                createAnnotations((ParserResult) r, doc, overridden, node2Parent, true, annotations);
                             }
                         }
-                    }
 
-                    for(Embedding e : resultIterator.getEmbeddings()) {
-                        run(resultIterator.getResultIterator(e));
+                        for(Embedding e : resultIterator.getEmbeddings()) {
+                            if (cancel.isCancelled()) {
+                                return;
+                            }
+                            run(resultIterator.getResultIterator(e));
+                        }
                     }
-                }
-            });
-        } catch (ParseException e) {
-            LOG.log(Level.WARNING, null, e);
+                });
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
+            }
+
+            AnnotationsHolder holder = AnnotationsHolder.get(file);
+
+            if (holder != null) {
+                holder.setNewAnnotations(annotations);
+            }
+//          Logger.getLogger("TIMER").log(Level.FINE, "Is Overridden Annotations", new Object[] {info.getFileObject(), end - start});
+        } finally {
+            SpiSupportAccessor.getInstance().removeCancelSupport(cancel);
         }
 
-        AnnotationsHolder holder = AnnotationsHolder.get(file);
-
-        if (holder != null) {
-            holder.setNewAnnotations(annotations);
-        }
-//        Logger.getLogger("TIMER").log(Level.FINE, "Is Overridden Annotations", new Object[] {info.getFileObject(), end - start});
     }
 
     private void createAnnotations(ParserResult r, StyledDocument doc, Map<ElementHandle, Collection<? extends AlternativeLocation>> descriptions, Map<ElementHandle, ElementHandle> node2Parent, boolean overridden, List<IsOverriddenAnnotation> annotations) {
@@ -279,9 +290,8 @@ public class ComputeAnnotations extends ParserResultTask<Result> {
 
     @Override
     public void cancel() {
-        cancel.set(true);
     }
-    
+
     private static Position getPosition(final StyledDocument doc, final int offset) {
         class Impl implements Runnable {
             private Position pos;

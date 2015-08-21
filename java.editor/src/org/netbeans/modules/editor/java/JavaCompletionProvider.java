@@ -309,6 +309,9 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         @Override
         protected boolean canFilter(JTextComponent component) {
+            if (component.getCaret() == null) {
+                return false;
+            }
             filterPrefix = null;
             final int newOffset = component.getSelectionStart();
             final Document doc = component.getDocument();

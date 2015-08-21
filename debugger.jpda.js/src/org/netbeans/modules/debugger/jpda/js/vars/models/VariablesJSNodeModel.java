@@ -72,8 +72,8 @@ import org.openide.util.datatransfer.PasteType;
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/LocalsView",  types=ExtendedNodeModelFilter.class),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ResultsView", types=ExtendedNodeModelFilter.class),
-    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView", types=ExtendedNodeModelFilter.class),
-    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types=ExtendedNodeModelFilter.class),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView", types=ExtendedNodeModelFilter.class, position = 500),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types=ExtendedNodeModelFilter.class, position = 250),
 })
 public class VariablesJSNodeModel implements ExtendedNodeModelFilter {
     
@@ -123,6 +123,9 @@ public class VariablesJSNodeModel implements ExtendedNodeModelFilter {
         if (node instanceof JSVariable) {
             return original.getIconBaseWithExtension(new EmptyVar());
         }
+        if (node instanceof JSWatchVar) {
+            return original.getIconBaseWithExtension(((JSWatchVar) node).getWatch());
+        }
         if (node instanceof ScopeVariable) {
             return GLOBAL;
         }
@@ -136,6 +139,10 @@ public class VariablesJSNodeModel implements ExtendedNodeModelFilter {
         }
         if (node instanceof ScopeVariable) {
             return ((ScopeVariable) node).getName();
+        }
+        if (node instanceof JSWatchVar) {
+            JSWatchVar jswv = (JSWatchVar) node;
+            node = jswv.getWatch();
         }
         return original.getDisplayName(node);
     }
@@ -153,6 +160,15 @@ public class VariablesJSNodeModel implements ExtendedNodeModelFilter {
         }
         if (node instanceof ScopeVariable) {
             return ((ScopeVariable) node).getName();
+        }
+        if (node instanceof JSWatchVar) {
+            JSWatchVar jswv = (JSWatchVar) node;
+            JSVariable jsVar = jswv.getJSVar();
+            if (jsVar != null) {
+                return jswv.getWatch().getExpression() + " = " + jsVar.getValue();
+            } else {
+                node = jswv.getWatch();
+            }
         }
         return original.getShortDescription(node);
     }

@@ -41,50 +41,47 @@
  */
 package org.netbeans.modules.odcs.ui.project.activity;
 
-import com.tasktop.c2c.server.profile.domain.activity.WikiActivity;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.MouseEvent;
+import java.util.MissingResourceException;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
+import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.odcs.ui.utils.Utils;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
 
-public class WikiActivityDisplayer extends ActivityDisplayer {
+public final class WikiActivityDisplayer extends ActivityDisplayer {
 
-    private final WikiActivity activity;
+    private static final String PROP_PAGE = "page"; // NOI18N
+    private static final String PROP_TYPE = "type"; // NOI18N
 
-    public WikiActivityDisplayer(WikiActivity activity, int maxWidth) {
-        super(activity.getActivityDate(), maxWidth);
+    private final Activity activity;
+    private final ProjectHandle<ODCSProject> projectHandle;
+
+    public WikiActivityDisplayer(Activity activity, ProjectHandle<ODCSProject> projectHandle, int maxWidth) {
+        super(activity.getTimestamp(), maxWidth);
         this.activity = activity;
+        this.projectHandle = projectHandle;
     }
 
     @Override
     public JComponent getShortDescriptionComponent() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-        panel.add(new JLabel(Utils.getActivityName(activity.getActivity().getActivityType())), gbc);
-
-        gbc.insets = new Insets(0, 5, 0, 0);
-        LinkLabel linkPage = new LinkLabel(activity.getActivity().getPage().getPath()) {
+        final String page = activity.getProperty(PROP_PAGE);
+        LinkLabel pageLink = new LinkLabel(page) {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Utils.openBrowser(Utils.getWebUrl(activity.getActivity().getPage().getUrl()));
+                Utils.openBrowser(getPageUrl(page));
             }
         };
-        panel.add(linkPage, gbc);
-        
-        gbc = new GridBagConstraints();
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(), gbc);
-        return panel;
+        String bundleKey = "FMT_Wiki_" + activity.getProperty(PROP_TYPE); // NOI18N
+        try {
+            return createMultipartTextComponent(bundleKey, pageLink);
+        } catch (MissingResourceException ex) {
+            return createMultipartTextComponent("FMT_Wiki_UPDATED", pageLink); // NOI18N
+        }
     }
 
     @Override
@@ -94,11 +91,16 @@ public class WikiActivityDisplayer extends ActivityDisplayer {
 
     @Override
     String getUserName() {
-        return activity.getActivity().getAuthor().getName();
+        return activity.getAuthor().getFullname();
     }
 
     @Override
     public Icon getActivityIcon() {
         return ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/activity_wiki.png", true); //NOI18N
+    }
+
+    private String getPageUrl(String page) {
+        page = TextUtils.encodeURL(page);
+        return projectHandle.getTeamProject().getWebUrl() + "/wiki/p/" + page; // NOI18N
     }
 }

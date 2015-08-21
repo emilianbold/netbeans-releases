@@ -2,18 +2,18 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Create Site Template from Current Project Dialog Box</title>
+<title>Project Properties Window: Sources</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="org.netbeans.modules.web.clientproject.ui.wizard.CreateSiteTemplate" name="org.netbeans.modules.web.clientproject.ui.wizard.CreateSiteTemplate"></a></p>
-<div id="NBCSH4335"><!-- infolevel="all" infotype="General" --><a id="sthref551" name="sthref551"></a>
-<h1>Create Site Template from Current Project Dialog Box</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="org.netbeans.modules.web.clientproject.ui.customizer.SourcesPanel" name="org.netbeans.modules.web.clientproject.ui.customizer.SourcesPanel"></a></p>
+<div id="NBCSH4340"><!-- infolevel="all" infotype="General" --><a id="sthref576" name="sthref576"></a>
+<h1>Project Properties Window: Sources</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Create Site Template from Current Project dialog box enables you to creates a site template .zip archive that is based on your HTML5 project. You open the dialog box by right-clicking the HTML5 project node in the Projects window and selecting Save as Template in the popup menu.</p>
-<p>In the Describe Template panel of the Create Site Template from Current Project dialog box you need to specify the following properties.</p>
+<p>You open the Project Properties dialog box by right-clicking any HTML5/JS project node in the Projects window and choosing Properties. The Sources page lets you set the locations for the site root, sources, and the folder for tests.</p>
+<p>You can modify the following properties in the Sources page of the dialog box.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -27,33 +27,43 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t7" headers="r1c1-t7">
-<p>Name</p>
+<p>Project Folder</p>
 </td>
-<td align="left" headers="r2c1-t7 r1c2-t7">Specifies the name of the site template archive.</td>
+<td align="left" headers="r2c1-t7 r1c2-t7">(read-only) The folder on your local system that contains the project metadata and usually the site root.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t7" headers="r1c1-t7">
-<p>Destination</p>
+<p>Site Root Folder</p>
 </td>
-<td align="left" headers="r3c1-t7 r1c2-t7">Specifies the location where you want to save the site template archive.</td>
+<td align="left" headers="r3c1-t7 r1c2-t7">The contents of this folder will be available through the web server on the production site. This folder typically contains the <code dir="ltr">index.html</code> file.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t7" headers="r1c1-t7">
-<p>Files to Include</p>
+<td align="left" id="r4c1-t7" headers="r1c1-t7">Source Folder</td>
+<td align="left" headers="r4c1-t7 r1c2-t7"></td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t7" headers="r1c1-t7">
+<p>Unit Tests Folder</p>
 </td>
-<td align="left" headers="r4c1-t7 r1c2-t7">Expand the tree and select the files that you want to include in the site template.</td>
+<td align="left" headers="r5c1-t7 r1c2-t7">The folder in the project that contains the unit tests. This folder is the default location for JavaScript unit test files when you run tests with the JS Test Driver test runner.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t7" headers="r1c1-t7">
+<p>Encoding</p>
+</td>
+<td align="left" headers="r6c1-t7 r1c2-t7">Choose the character encoding that you want the IDE to apply when it saves and displays project source files.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Click Finish to create a <code dir="ltr">.zip</code> archive of the site template.</p>
-<a id="NBCSH4339" name="NBCSH4339"></a>
+<p>The project character encoding determines how the IDE interprets characters in your source files. The IDE displays and saves any new files you create using the encoding set by the project in which they reside. The default character encoding used with projects is UTF-8. Use the Encoding drop-down list to change the character encoding used with the project.</p>
+<a id="NBCSH4346" name="NBCSH4346"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1966">
-<param name="text" value="<html><u>&quot;Creating HTML5 Templates&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1950">
+<param name="text" value="<html><u>&quot;Creating an HTML5 Application Project&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

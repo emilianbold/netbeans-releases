@@ -114,7 +114,7 @@ public class CordovaPerformer implements BuildPerformer {
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
     //must be increased on each change in build.xml
-    private final int BUILD_SCRIPT_VERSION = 51;
+    private final int BUILD_SCRIPT_VERSION = 52;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);

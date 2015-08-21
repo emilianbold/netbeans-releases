@@ -93,12 +93,11 @@ public class ELDeclarationFinder implements DeclarationFinder {
 
     @Override
     public DeclarationLocation findDeclaration(final ParserResult info, int offset) {
-        Document doc = info.getSnapshot().getSource().getDocument(false);
-        final Pair<Node, ELElement> nodeElem = ELHyperlinkProvider.resolveNodeAndElement(doc, offset, new AtomicBoolean());
+        final Pair<Node, ELElement> nodeElem = ELHyperlinkProvider.resolveNodeAndElement(info.getSnapshot().getSource(), offset, new AtomicBoolean());
         if (nodeElem == null) {
             return DeclarationLocation.NONE;
         }
-        final FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
+        final FileObject file = info.getSnapshot().getSource().getFileObject();
         final ClasspathInfo cp = ELTypeUtilities.getElimplExtendedCPI(file);
         final RefsHolder refs = new RefsHolder();
         final List<AlternativeLocation> alternatives = new ArrayList<>();

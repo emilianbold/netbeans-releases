@@ -147,4 +147,14 @@ public class InstalledModuleItem extends ModuleItem {
         }
         return null;
     }
+    
+    @Override
+    public void setNeedsRestart(Boolean needsRestart) {
+        // do nothing
+    } 
+   
+    @Override
+    public boolean isFragment() {
+        return info.getAttribute("OpenIDE-Module-Fragment-Host") != null; // NOI18N
+    }
 }

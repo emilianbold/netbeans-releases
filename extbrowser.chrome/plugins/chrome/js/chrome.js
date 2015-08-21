@@ -113,9 +113,10 @@ NetBeans.browserDetachDebugger = function(tabId) {
 NetBeans.showPageIcon = function(tabId) {
     chrome.pageAction.show(tabId);
 };
-// hide NB icon in URL bar
 NetBeans.hidePageIcon = function(tabId) {
-    chrome.pageAction.hide(tabId);
+// Do not hide page icon. The tab is managed still and the page icon
+// can be used to reconnect to IDE.
+//    chrome.pageAction.hide(tabId);
 };
 
 // Creates the Select Mode context menu
@@ -174,7 +175,7 @@ NetBeans.showInfoBar = function(tabId) {
     });
 };
 NetBeans.getWindowInfo = function(callback) {
-    chrome.windows.getLastFocused(callback);
+    chrome.windows.getLastFocused({ populate: true }, callback);
 };
 NetBeans.detectViewPort = function(callback) {
     if (NetBeans.debuggedTab === null) {

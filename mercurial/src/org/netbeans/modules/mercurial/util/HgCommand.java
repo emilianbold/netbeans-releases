@@ -283,6 +283,7 @@ public abstract class HgCommand<T> implements Callable<T> {
     private static final String HG_FETCH_EXT_CMD = "extensions.fetch="; // NOI18N
     private static final String HG_FETCH_CMD = "fetch"; // NOI18N
     public static final String HG_PROXY_ENV = "http_proxy="; // NOI18N
+    private static final String HG_NO_COMMIT = "--no-commit"; // NOI18N
 
     private static final String HG_UPDATE_NEEDED_ERR = "(run 'hg update' to get a working copy)"; //NOI18N
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
@@ -655,9 +656,9 @@ public abstract class HgCommand<T> implements Callable<T> {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
+        command.add(HG_STRIP_CMD);
         command.add(HG_CONFIG_OPTION_CMD);
         command.add(HG_STRIP_EXT_CMD);
-        command.add(HG_STRIP_CMD);
         if(doForceMultiHead){
             command.add(HG_STRIP_FORCE_MULTIHEAD_CMD);
         }
@@ -782,8 +783,8 @@ public abstract class HgCommand<T> implements Callable<T> {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
-        command.add(HG_VERBOSE_CMD);
         command.add(HG_UNBUNDLE_CMD);
+        command.add(HG_VERBOSE_CMD);
         if (update) {
             command.add(HG_UPDATE_CMD);
         }
@@ -3315,12 +3316,15 @@ public abstract class HgCommand<T> implements Callable<T> {
      * @param File patchFile of the patch file
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doImport(File repository, File patchFile, OutputLogger logger)  throws HgException {
+    public static List<String> doImport (File repository, File patchFile, boolean commit, OutputLogger logger)  throws HgException {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_IMPORT_CMD);
         command.add(HG_VERBOSE_CMD);
+        if (!commit) {
+            command.add(HG_NO_COMMIT);
+        }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
@@ -3380,9 +3384,9 @@ public abstract class HgCommand<T> implements Callable<T> {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
+        command.add(HG_QSERIES_CMD);
         command.add(HG_CONFIG_OPTION_CMD);
         command.add(HG_MQ_EXT_CMD);
-        command.add(HG_QSERIES_CMD);
 
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
@@ -4668,7 +4672,10 @@ public abstract class HgCommand<T> implements Callable<T> {
     private static String getEncoding() {
         String enc = null;
         String prop = System.getProperty("mercurial.encoding", ""); //NOI18N
-        if (!prop.isEmpty()) {
+        if (prop.isEmpty()) {
+            prop = System.getenv(ENV_HGENCODING);
+        }
+        if (prop != null && !prop.isEmpty()) {
             try {
                 if (Charset.isSupported(prop)) {
                     enc = prop;

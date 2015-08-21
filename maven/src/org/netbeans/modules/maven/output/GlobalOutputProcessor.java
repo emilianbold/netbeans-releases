@@ -84,7 +84,6 @@ import org.openide.windows.OutputListener;
 public class GlobalOutputProcessor implements OutputProcessor {
     private static final String SECTION_SESSION = "session-execute"; //NOI18N
     private static final String SECTION_PROJECT = "project-execute"; //NOI18N
-    /*test*/ static final Pattern DOWNLOAD = Pattern.compile("^(\\d+(/\\d*)? ?(M|K|b|KB|B|\\?)\\s*)+$"); //NOI18N
     private static final Pattern LOW_MVN = Pattern.compile("(.*)Error resolving version for (.*): Plugin requires Maven version (.*)"); //NOI18N
     private static final Pattern HELP = Pattern.compile("\\[Help \\d+\\] (https?://.+)"); // NOI18N
     /**
@@ -112,10 +111,6 @@ public class GlobalOutputProcessor implements OutputProcessor {
 
     @Messages("TXT_ChangeSettings=NetBeans: Click here to change your settings.")
     @Override public void processLine(String line, OutputVisitor visitor) {
-        if (DOWNLOAD.matcher(line).matches()) {
-            visitor.skipLine();
-            return;
-        }
         //silly prepend of  [INFO} to reuse the same regexp
         if (CommandLineOutputHandler.startPatternM3.matcher("[INFO] " + line).matches() || CommandLineOutputHandler.startPatternM2.matcher("[INFO] " + line).matches()) {
             visitor.setOutputType(IOColors.OutputType.LOG_DEBUG);

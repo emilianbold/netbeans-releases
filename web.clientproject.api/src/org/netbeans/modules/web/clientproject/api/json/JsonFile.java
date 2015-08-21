@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.web.clientproject.api.json;
 
@@ -105,7 +105,7 @@ public final class JsonFile {
     };
 
     private final WatchedFile watchedFile;
-    private final List<Pair<String, String[]>> watchedFields;
+    private final WatchedFields watchedFields;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final ChangeListener watchedFileChangeListener = new WatchedFileChangeListener();
 
@@ -116,6 +116,9 @@ public final class JsonFile {
 
     /**
      * Creates new JSON file. JSON file does not need to exist on the disk in the moment.
+     * <p>
+     * <em>Note:</em> If listening for {@link WatchedFields#all() all field changes}, property name and values are always {@code null}
+     * and only one property change event is fired if content changes.
      * @param fileName name of the JSON file, e.g. "config.json"
      * @param directory directory where the JSON file is
      * @param watchedFields content fields that are watched for changes
@@ -123,7 +126,7 @@ public final class JsonFile {
     public JsonFile(String fileName, FileObject directory, WatchedFields watchedFields) {
         Parameters.notNull("watchedFields", watchedFields); // NOI18N
         watchedFile = WatchedFile.create(fileName, directory);
-        this.watchedFields = watchedFields.getData();
+        this.watchedFields = watchedFields.freeze();
         watchedFile.addChangeListener(WeakListeners.change(watchedFileChangeListener, watchedFile));
     }
 
@@ -507,11 +510,15 @@ public final class JsonFile {
     }
 
     private void fireChanges(@NullAllowed Map<String, Object> oldContent, @NullAllowed Map<String, Object> newContent) {
-        if (watchedFields == null) {
-            propertyChangeSupport.firePropertyChange(null, null, null);
+        if (watchedFields == WatchedFields.ALL) {
+            if (!Objects.equals(oldContent, newContent)) {
+                propertyChangeSupport.firePropertyChange(null, null, null);
+            }
             return;
         }
-        for (Pair<String, String[]> watchedField : watchedFields) {
+        List<Pair<String, String[]>> data = watchedFields.getData();
+        assert data != null;
+        for (Pair<String, String[]> watchedField : data) {
             String propertyName = watchedField.first();
             String[] field = watchedField.second();
             Object oldValue = getContentValue(oldContent, Object.class, field);
@@ -529,7 +536,11 @@ public final class JsonFile {
      */
     public static final class WatchedFields {
 
+        private static final WatchedFields ALL = new WatchedFields((List<Pair<String, String[]>>) null);
+
         private final List<Pair<String, String[]>> data;
+
+        private volatile boolean frozen = false;
 
 
         private WatchedFields(List<Pair<String, String[]>> data) {
@@ -550,7 +561,7 @@ public final class JsonFile {
          * @return new instance which listens on all content changes, not just specific ones
          */
         public static WatchedFields all() {
-            return new WatchedFields(null);
+            return ALL;
         }
 
         /**
@@ -562,6 +573,9 @@ public final class JsonFile {
         public WatchedFields add(@NonNull String propertyName, @NonNull String... fieldHierarchy) {
             if (data == null) {
                 throw new IllegalStateException("Listening to all changes already");
+            }
+            if (frozen) {
+                throw new IllegalStateException("Cannot add no more fields");
             }
             Parameters.notWhitespace("propertyName", propertyName); // NOI18N
             Parameters.notNull("fieldHierarchy", fieldHierarchy); // NOI18N
@@ -581,6 +595,11 @@ public final class JsonFile {
                 return null;
             }
             return new CopyOnWriteArrayList<>(data);
+        }
+
+        WatchedFields freeze() {
+            frozen = true;
+            return this;
         }
 
     }

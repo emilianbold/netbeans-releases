@@ -99,9 +99,11 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings implements 
             env = ExecutionEnvironmentFactory.getLocal();
         }
         CompilerSet compilerSet = CompilerSetManager.get(env).getDefaultCompilerSet();
-        Tool compiler = compilerSet.getTool(kind);
-        if (compiler instanceof AbstractCompiler) {
-            return (AbstractCompiler)compiler;
+        if (compilerSet != null) {
+            Tool compiler = compilerSet.getTool(kind);
+            if (compiler instanceof AbstractCompiler) {
+                return (AbstractCompiler)compiler;
+            }
         }
         return null;
     }

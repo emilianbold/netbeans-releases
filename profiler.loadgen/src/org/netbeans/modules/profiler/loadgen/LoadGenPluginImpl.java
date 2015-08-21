@@ -2,12 +2,14 @@
 
 package org.netbeans.modules.profiler.loadgen;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -113,13 +115,28 @@ public class LoadGenPluginImpl implements LoadGenPlugin {
    */
   public Collection<FileObject> listScripts(Lookup.Provider project) {
     EngineManager manager = Lookup.getDefault().lookup(EngineManager.class);
-    Set<String> allExtensions = new HashSet<String>();
     Collection<Engine> engines = manager.findEngines();
 
-    for (Engine engine : engines) {
-      allExtensions.addAll(engine.getSupportedExtensions());
+    if (project != null) {
+        // Find all supported scripts in project folder
+        Set<String> allExtensions = new HashSet<String>();
+        for (Engine engine : engines) {
+          allExtensions.addAll(engine.getSupportedExtensions());
+        }
+        return findScripts((Project)project, allExtensions);
+    } else {
+        // Return all registered scripts in Services | Load Generators
+        List<FileObject> scripts = new ArrayList();
+        for (Engine engine : engines) {
+            List<? extends ProcessInstance> processes = engine.getProcesses();
+            for (ProcessInstance process : processes) {
+                String script = process.getCurrentScript();
+                FileObject fo = FileUtil.toFileObject(new File(script));
+                if (fo != null) scripts.add(fo);
+            }
+        }
+        return scripts;
     }
-    return findScripts((Project)project, allExtensions);
   }
 
   /**

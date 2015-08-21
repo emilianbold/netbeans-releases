@@ -96,7 +96,7 @@ public class GenerateProjectAction extends NodeAction {
             //DataObject dao = activatedNodes[0].getLookup().lookup(DataObject.class);
             FileObject fo = activatedNodes[0].getLookup().lookup(FileObject.class);
             if (fo != null) {
-                List<String> jniClasses = JNISupport.getJNIClasses(fo);
+                List<String> jniClasses = JNISupport.getJNIClassNames(fo);
                 return jniClasses != null && !jniClasses.isEmpty();
             }
         }

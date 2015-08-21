@@ -62,9 +62,14 @@ public class TraceModelBase {
     // if true, then relative include paths oin -I option are considered
     // to be based on the file that we currently compile rather then current dir
     private boolean pathsRelCurFile = false;
+    private final TraceModelFileFilter filter;
+
+    public TraceModelBase(boolean clearCache) {
+        this(clearCache, null);
+    }
 
     @org.netbeans.api.annotations.common.SuppressWarnings("LG")
-    public TraceModelBase(boolean clearCache) {
+    public TraceModelBase(boolean clearCache, TraceModelFileFilter filter) {
         Logger openideLogger = Logger.getLogger("org.openide.loaders"); // NOI18N
         // reduce log level to prevent unnecessary messages in tests
         openideLogger.setLevel(Level.SEVERE);
@@ -75,6 +80,17 @@ public class TraceModelBase {
             RepositoryTestUtils.deleteDefaultCacheLocation();
         }
         currentIncludePaths = quoteIncludePaths;
+        if (filter == null) {
+            this.filter = new TraceModelFileFilter() {
+
+                @Override
+                public boolean isProjectFile(String filename) {
+                    return true;
+                }
+            };
+        } else {
+            this.filter = filter;
+        }
     }
 
     private static ModelImpl createModel() {
@@ -92,7 +108,7 @@ public class TraceModelBase {
         this.libProjectsPaths = libProjectsPaths;
     }
 
-    protected final void shutdown(boolean clearCache) {
+    protected void shutdown(boolean clearCache) {
         model.shutdown();
         if (clearCache){
             RepositoryTestUtils.deleteDefaultCacheLocation();
@@ -178,7 +194,9 @@ public class TraceModelBase {
             String[] list = file.list();
             if (list != null) {
                 for (int i = 0; i < list.length; i++) {
-                    addFile(files, new File(file, list[i]));
+                    if (filter.isProjectFile(list[i])) {
+                        addFile(files, new File(file, list[i]));
+                    }
                 }
             }
         } else {

@@ -109,6 +109,10 @@ public class RemoteLogger {
         return instance;
     }
 
+    public static boolean isLoggable(Level level) {
+        return instance.isLoggable(level);
+    }
+
     public static void assertTrueInConsole(boolean value, String message, Object... params) {
         if (assertionsEnabled && !value) {
             instance.log(Level.INFO, format(message, params));

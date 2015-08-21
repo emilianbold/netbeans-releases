@@ -59,6 +59,12 @@ import org.openide.util.*;
 
 import javax.swing.*;
 import java.awt.event.*;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
  * An action that opens editor and jumps to the element given in constructor.
@@ -87,11 +93,49 @@ public final class OpenAction extends AbstractAction {
                         NbBundle.getMessage(OpenAction.class, "MSG_NoSource", displayName) );  //NOI18N
             }
         } else {
-            ElementOpen.open(fileObject, elementHandle);
+            FileObject file = fileObject;
+            if (isClassFile(file)) {
+                final FileObject src = findSource(file, elementHandle);
+                if (src != null) {
+                    file = src;
+                }
+            }
+            ElementOpen.open(file, elementHandle);
         }
     }
 
     public boolean isEnabled () {
           return true;
+    }
+
+    private static boolean isClassFile(@NonNull final FileObject file) {
+        return "application/x-class-file".equals(file.getMIMEType("application/x-class-file")) || "class".equals(file.getExt());  //NOI18N
+    }
+
+    @CheckForNull
+    private static FileObject findSource(
+            @NonNull final FileObject file,
+            @NonNull final ElementHandle<?> elementHandle) {
+        FileObject owner = null;
+        for (String id : new String[] {
+                ClassPath.EXECUTE,
+                ClassPath.COMPILE,
+                ClassPath.BOOT}) {
+            final ClassPath cp = ClassPath.getClassPath(file, id);
+            if (cp != null) {
+                owner = cp.findOwnerRoot(file);
+                if (owner != null) {
+                    break;
+                }
+            }
+        }
+        return owner == null ?
+            owner :
+            SourceUtils.getFile(
+                elementHandle,
+                ClasspathInfo.create(
+                    ClassPathSupport.createClassPath(owner),
+                    ClassPath.EMPTY,
+                    ClassPath.EMPTY));
     }
 }

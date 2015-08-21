@@ -51,9 +51,12 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -194,6 +197,12 @@ public class GeneratorUtils {
     public static ClassTree insertClassMembers(WorkingCopy wc, ClassTree clazz, List<? extends Tree> members, int offset) throws IllegalStateException {
         if (members.isEmpty()) {
             return clazz;
+        }
+        for (Tree member : members) {
+            Tree dup = checkDuplicates(wc, clazz, member);
+            if (dup != null) {
+                throw new DuplicateMemberException((int) wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), dup));
+            }
         }
         if (offset < 0 || getCodeStyle(wc).getClassMemberInsertionPoint() != CodeStyle.InsertionPoint.CARET_LOCATION) {
             return GeneratorUtilities.get(wc).insertClassMembers(clazz, members);
@@ -390,12 +399,20 @@ public class GeneratorUtils {
     }
     
     static DialogDescriptor createDialogDescriptor( JComponent content, String label ) {
-        JButton[] buttons = new JButton[2];
+        final JButton[] buttons = new JButton[2];
         buttons[0] = new JButton(NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_button") );
 	buttons[0].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GeneratorUtils.class, "A11Y_Generate"));
         buttons[1] = new JButton(NbBundle.getMessage(GeneratorUtils.class, "LBL_cancel_button") );
-        return new DialogDescriptor(content, label, true, buttons, buttons[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-        
+        final DialogDescriptor dd = new DialogDescriptor(content, label, true, buttons, buttons[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+        dd.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (DialogDescriptor.PROP_VALID.equals(evt.getPropertyName())) {
+                    buttons[0].setEnabled(dd.isValid());
+                }
+            }
+        });
+        return dd;
     }
     
     public static void guardedCommit(JTextComponent component, ModificationResult mr) throws IOException {
@@ -408,6 +425,64 @@ public class GeneratorUtils {
                 Utilities.setStatusBoldText(component, message);
                 Logger.getLogger(GeneratorUtils.class.getName()).log(Level.FINE, null, e);
             }
+        }
+    }
+
+    private static Tree checkDuplicates(WorkingCopy wc, ClassTree clazz, Tree member) {
+        List<? extends VariableTree> memberParams = null;
+        TreePath tp = null;
+        outer: for (Tree tree : clazz.getMembers()) {
+            if (tp == null) {
+                tp = new TreePath(wc.getCompilationUnit());
+            }
+            if (tree.getKind() == member.getKind() && !wc.getTreeUtilities().isSynthetic(new TreePath(tp, tree))) {
+                switch (member.getKind()) {
+                    case CLASS:
+                        if (((ClassTree)member).getSimpleName().contentEquals(((ClassTree)tree).getSimpleName())) {
+                            return tree;
+                        }
+                        break;
+                    case VARIABLE:
+                        if (((VariableTree)member).getName().contentEquals(((VariableTree)tree).getName())) {
+                            return tree;
+                        }
+                        break;
+                    case METHOD:
+                        if (((MethodTree)member).getName().contentEquals(((MethodTree)tree).getName())) {
+                            if (memberParams == null) {
+                                memberParams = ((MethodTree)member).getParameters();
+                            }
+                            List<? extends VariableTree> treeParams = ((MethodTree)tree).getParameters();
+                            if (memberParams.size() == treeParams.size()) {
+                                Iterator<? extends VariableTree> memberIt = memberParams.iterator();
+                                Iterator<? extends VariableTree> treeIt = treeParams.iterator();
+                                while (memberIt.hasNext() && treeIt.hasNext()) {
+                                    TypeMirror mTM = wc.getTrees().getTypeMirror(new TreePath(tp, memberIt.next().getType()));
+                                    TypeMirror tTM = wc.getTrees().getTypeMirror(new TreePath(tp, treeIt.next().getType()));
+                                    if (!wc.getTypes().isSameType(mTM, tTM)) {
+                                        continue outer;
+                                    }
+                                }
+                                return tree;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static class DuplicateMemberException extends IllegalStateException {
+        private int pos;
+
+        public DuplicateMemberException(int pos) {
+            super("Class member already exists");
+            this.pos = pos;
+        }
+
+        public int getPos() {
+            return pos;
         }
     }
 }

@@ -162,6 +162,8 @@ public abstract class ClassIndexImpl {
     
     public abstract FileObject[] getSourceRoots ();
    
+    public abstract FileObject[] getBinaryRoots ();
+    
     public abstract BinaryAnalyser getBinaryAnalyser ();
     
     public abstract SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser ();

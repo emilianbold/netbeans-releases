@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.javaee.db;
 
+import org.netbeans.modules.glassfish.javaee.ApplicationScopedResourcesUtils.JndiNameResolver;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 
 /**
@@ -51,35 +52,39 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
  */
 public class SunDatasource implements Datasource {
 
-    private final String displayName;
     private final String jndiName;
     private final String url;
     private final String username;
     private final String password;
     private final String driverClassName;
 
+    private final JndiNameResolver resolver;
+
     public SunDatasource(String jndiName, String url, String username,
-            String password, String driverClassName/*, File resourceDir*/) {
-        this(jndiName, url, username, password, driverClassName, false);
+            String password, String driverClassName) {
+        this(jndiName, url, username, password, driverClassName, false, null);
     }
 
     public SunDatasource(String jndiName, String url, String username,
-            String password, String driverClassName/*, File resourceDir*/, boolean scoped) {
+            String password, String driverClassName, boolean scoped, JndiNameResolver resolver) {
         this.jndiName = jndiName;
         this.url = url;
         this.username = username;
         this.password = password;
         this.driverClassName = driverClassName;
-        this.displayName = jndiName;
+        this.resolver = resolver;
     }
 
     @Override
     public String getDisplayName() {
-        return displayName;
+        return getJndiName();
     }
 
     @Override
     public String getJndiName() {
+        if (resolver != null) {
+            return resolver.resolveJndiName(jndiName);
+        }
         return jndiName;
     }
 

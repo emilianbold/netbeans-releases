@@ -192,7 +192,11 @@ public final class LibrariesSupport {
         if (uri.isAbsolute()) {
             return BaseUtilities.toFile(uri).getPath();
         } else {
-            return uri.getPath().replace('/', File.separatorChar);
+            String path = uri.getPath();
+            if (path.length() > 0 && path.charAt(path.length()-1) == '/') {   //NOI18N
+                path = path.substring(0, path.length()-1);
+            }
+            return path.replace('/', File.separatorChar);   //NOI18N
         }
     }
 

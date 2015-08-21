@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.PhpVersion;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
@@ -362,7 +363,7 @@ public final class PhpProjectGenerator {
 
         // #187374
         try {
-            PhpProjectUtils.reformatFile(index);
+            FileUtils.reformatFile(index);
         } catch (IOException exc) {
             LOGGER.log(Level.WARNING, exc.getMessage(), exc);
         }

@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.highlight.security.SecurityCheckProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.Lookup;
@@ -185,7 +186,7 @@ public final class CsmHintProvider extends CsmErrorProvider implements CodeAudit
     public synchronized Collection<CodeAudit> getAudits() {
         if (audits == null) {
             List<CodeAudit> res = new ArrayList<>();
-            for(CodeAuditFactory factory : Lookups.forPath(CodeAuditFactory.REGISTRATION_PATH+NAME).lookupAll(CodeAuditFactory.class)) {
+            for(CodeAuditFactory factory : Lookups.forPath(CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME).lookupAll(CodeAuditFactory.class)) {
                 res.add(factory.create(myPreferences));
             }
             Collections.sort(res, new Comparator<CodeAudit>(){

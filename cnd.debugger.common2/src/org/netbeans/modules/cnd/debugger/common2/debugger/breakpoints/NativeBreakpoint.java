@@ -495,10 +495,11 @@ public abstract class NativeBreakpoint
 
     private int findByBreakpoint(NativeBreakpoint subBpt) {
 	// Vector.indexOf uses equals() which is overkill for us
-	for (int bx = 0; bx < children.size(); bx++) {
-	    NativeBreakpoint candidate = children.get(bx);
+        int bx = 0;
+	for (NativeBreakpoint candidate : children) {
 	    if (candidate == subBpt)
 		return bx;
+            bx++;
 	}
 	return -1;
     }
@@ -669,9 +670,7 @@ public abstract class NativeBreakpoint
 
 
     public final NativeBreakpoint[] getChildren() {
-	NativeBreakpoint array[] = new NativeBreakpoint[children.size()];
-	children.toArray(array);
-	return array;
+	return children.toArray(new NativeBreakpoint[0]);
     }
 
     /**
@@ -2945,7 +2944,7 @@ public abstract class NativeBreakpoint
 
     private static final String icon_dir =
 	"org/netbeans/modules/cnd/debugger/common2/icons";       // NOI18N
-
+    
     public String getIconBase() {
 	// SHOULD merge this with annotation types?
 
@@ -2955,6 +2954,13 @@ public abstract class NativeBreakpoint
 	// StringBuffer name = new StringBuffer("viewBpt");
 
 	// texteditor glyph gutter icons
+        if (debugger != null && !debugger.areBreakpointsActivated()) {
+            if (isEnabled()) {
+                return debugger_icon_dir + "/DeactivatedBreakpoint";       // NOI18N
+            } else {
+                return debugger_icon_dir + "/DeactivatedDisabledBreakpoint";       // NOI18N
+            }
+        }
 	StringBuilder name = new StringBuilder();
         if (!isEnabled()) {
 	    name.append(DebuggerAnnotation.TYPE_BPTX_DISABLED);

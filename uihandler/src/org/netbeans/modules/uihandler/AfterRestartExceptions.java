@@ -74,7 +74,13 @@ class AfterRestartExceptions implements Runnable {
     private static final Object IOLock = new Object();
     private static volatile Set<LogRecord> afterRestartRecords;
     
+    private static boolean ignoreOOME;
+    
     private AfterRestartExceptions() {}
+    
+    static void setIgnoreOOME(boolean ignoreOOME) {
+        AfterRestartExceptions.ignoreOOME = ignoreOOME;
+    }
     
     static boolean willSchedule(LogRecord record) {
         return getScheduledThrownClassName(record) != null;
@@ -101,6 +107,9 @@ class AfterRestartExceptions implements Runnable {
         String thrownClassName = getScheduledThrownClassName(record);
         if (thrownClassName != null) {
             if (OutOfMemoryError.class.getName().equals(thrownClassName)) {
+                if (ignoreOOME) {
+                    return true;    // Simulate scheduling, but ignore
+                }
                 addHeapDump(record);
             }
             return save(record);

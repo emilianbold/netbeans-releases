@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.*;
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -553,7 +552,13 @@ public final class ELTypeUtilities {
         }
         if (paramNode instanceof AstString) {
             CharSequence typeName = info.info().getTypeUtilities().getTypeName(param.asType(), TypeNameOptions.PRINT_FQN);
-            return String.class.getName().contentEquals(typeName);
+            if (String.class.getName().contentEquals(typeName)) {
+                return true;
+            }
+            if (paramKind == TypeKind.DECLARED) {
+                return isSubtypeOf(info, param.asType(), "java.lang.Enum"); // NOI18N
+            }
+            return false;
         }
         // the ast param is an object whose real type we don't know
         // would need to further type inference for more exact matching

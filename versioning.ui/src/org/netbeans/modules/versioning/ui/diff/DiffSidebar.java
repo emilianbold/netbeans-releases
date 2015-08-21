@@ -99,19 +99,12 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import javax.swing.plaf.TextUI;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.FontColorNames;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.UserQuestionException;
-import org.openide.util.WeakListeners;
 
 /**
  * Left editor sidebar showing changes in the file against the base version.
@@ -150,9 +143,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     private RequestProcessor.Task   refreshDiffTask;
     private VersioningSystem ownerVersioningSystem;
-    private final LookupListener lookupListenerGC;
-    private Color bgColor = Color.WHITE;
-    private Lookup.Result   colorResult;
 
     public DiffSidebar(JTextComponent target, FileObject file) {
         LOG.log(Level.FINE, "creating DiffSideBar for {0}", file != null ? file.getPath() : null);
@@ -161,26 +151,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         this.foldHierarchy = FoldHierarchy.get(target);
         this.document = (BaseDocument) textComponent.getDocument();
         this.markProvider = new DiffMarkProvider();
-        colorResult = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(target)).lookupResult(FontColorSettings.class);
-        
-        class LL implements LookupListener, Runnable {
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                if (!EventQueue.isDispatchThread()) {
-                    EventQueue.invokeLater(this);
-                } else {
-                    updateColors();
-                }
-            }
-
-            @Override
-            public void run() {
-                updateColors();
-            }
-        }
-        lookupListenerGC = new LL();
-        colorResult.addLookupListener(WeakListeners.create(LookupListener.class, lookupListenerGC , colorResult));
-        bgColor = defaultBackground();
         setToolTipText(""); // NOI18N
         refreshDiffTask = DiffSidebarManager.getInstance().createDiffSidebarTask(new RefreshDiffTask());
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
@@ -634,7 +604,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                 }
             }).schedule(0);
         }
-        updateColors();
     }
 
     private void shutdown() {
@@ -823,7 +792,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     private Color backgroundColor() {
-        return bgColor;
+        Container c = getParent();
+        if (c == null) {
+            return defaultBackground();
+        } else {
+            return c.getBackground();
+        }
     }
 
     private Color defaultBackground () {
@@ -1015,15 +989,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         File tempFolder = getTempFolder();
         FileObject tempFileObj = null;
 
-        Collection<File> originalFiles = null;
-        DiffFileEncodingQueryImpl encodinqQuery = null;
         try {            
-            originalFiles = checkoutOriginalFiles(filesToCheckout, tempFolder, vs);
+            Collection<File> originalFiles = checkoutOriginalFiles(filesToCheckout, tempFolder, vs);
 
-            encodinqQuery = Lookup.getDefault().lookup(DiffFileEncodingQueryImpl.class);
             Charset encoding = FileEncodingQuery.getEncoding(fileObject);
-            if(encodinqQuery != null) {
-                encodinqQuery.associateEncoding(encoding, originalFiles);
+            for (File f : originalFiles) {
+                org.netbeans.modules.versioning.util.Utils.associateEncoding(f, encoding);
             }
             File tempFile = new File(tempFolder, fileObject.getNameExt());
             tempFileObj = FileUtil.toFileObject(tempFile);     //can be null
@@ -1032,9 +1003,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             // let providers raise errors when they feel appropriate
             return null;
         } finally {
-            if ((originalFiles != null) && (encodinqQuery != null)) {
-                encodinqQuery.resetEncodingForFiles(originalFiles);
-            }
             deleteTempFolder(tempFolder, tempFileObj);
         }
     }
@@ -1285,30 +1253,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
     }
     
-    private void updateColors() {
-        if (getParent() == null) {
-            return;
-        }
-        Iterator<FontColorSettings> fcsIt = colorResult.allInstances().iterator();
-        if (fcsIt.hasNext()) {
-            updateColors(fcsIt.next());
-        }
-    }
-
-    private void updateColors (FontColorSettings fcs) {
-        Color oldC = bgColor;
-        bgColor = getParent().getBackground();
-        if (!bgColor.equals(oldC)) {
-            EventQueue.invokeLater(new Runnable() {
-
-                @Override
-                public void run () {
-                    DiffSidebar.this.repaint();
-                }
-            });
-        }
-    }
-         
     private static final class StringDecoder {
 
         private final CharsetDecoder charsetDecoder;

@@ -141,7 +141,7 @@ import org.openide.util.Exceptions;
 
 /** Prints out a tree as an indented Java source program.
  */
-public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<Void, Void> {
+public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<Void, Void>, TrimBufferObserver {
 
     private static final char[] hex = "0123456789ABCDEF".toCharArray();
     private static final String REPLACEMENT = "%[a-z]*%";
@@ -205,6 +205,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         prec = TreeInfo.notExpression;
         this.cs = cs;
         out = new CharBuffer(cs.getRightMargin(), cs.getTabSize(), cs.expandTabToSpaces());
+        out.addTrimObserver(this);
         this.indentSize = cs.getIndentSize();
         this.tree2Tag = tree2Tag;
         this.tree2Doc = tree2Doc == null ? Collections.EMPTY_MAP : tree2Doc;
@@ -387,7 +388,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
     
     public Set<Tree> oldTrees = Collections.emptySet();
-    public Set<int[]> reindentRegions = new TreeSet<>(new Comparator<int[]>() {
+    public SortedSet<int[]> reindentRegions = new TreeSet<>(new Comparator<int[]>() {
         @Override public int compare(int[] o1, int[] o2) {
             return o1[0] - o2[0];
         }
@@ -399,7 +400,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         if (!handlePossibleOldTrees(Collections.singletonList(t), printComments)) {
             if (printComments) printPrecedingComments(t, true);
             
-            int start = toString().length();
+            int start = out.length();
 
             if (t instanceof FieldGroupTree) {
                 //XXX: should be able to use handlePossibleOldTrees over the individual variables:
@@ -427,7 +428,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 this.commentsEnabled = saveComments;
             }
 
-            int end = toString().length();
+            int end = out.length();
 
             Object tag = tree2Tag != null ? tree2Tag.get(t) : null;
 
@@ -512,7 +513,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             realStart = getOldPos(firstTree);
         }
         
-        final int newStart = toString().length() + initialOffset;
+        final int newStart = out.length() + initialOffset;
 
         final int[] realEnd = {endPos(lastTree)};
         new TreeScanner<Void, Void>() {
@@ -568,13 +569,38 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         if (newLine == 0 && !wasWhitespaceLine) {
             print(text);
         } else {
-            int start = toString().length();
+            int start = out.length();
             print(text);
             int end = start + text.length();
 
             reindentRegions.add(new int[] {initialOffset + start + (wasWhitespaceLine ? 0 : newLine), initialOffset + end});
         }
     }
+
+    /**
+     * Adjusts {@link #reindentRegions} if the char buffer conntents is
+     * trimmed.
+     * 
+     * @param limit 
+     */
+    @Override
+    public void trimmed(int limit) {
+        SortedSet<int[]> s = reindentRegions;
+        while (!s.isEmpty()) {
+            int[] reg = s.last();
+            if (reg[1] <= initialOffset + limit) {
+                break;
+            }
+            if (reg[0] >= initialOffset + limit) {
+                // the region should be removed
+                s.remove(reg);
+            } else {
+                reg[1] = initialOffset + limit;
+                break;
+            }
+        }
+    }
+    
 
     /** Print a package declaration.
      */

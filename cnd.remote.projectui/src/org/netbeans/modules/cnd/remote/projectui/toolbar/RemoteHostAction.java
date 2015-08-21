@@ -58,6 +58,7 @@ import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -120,7 +121,7 @@ public class RemoteHostAction extends CallableSystemAction implements ContextAwa
         assert SwingUtilities.isEventDispatchThread();
         if (performer == null) {
             performer = Lookups.forPath("CND/Toobar/Services/RemoteHost").lookup(ActionListener.class); // NOI18N
-            performer.actionPerformed(new ActionEvent(RemoteHostAction.this, 0, "performerActivated")); // NOI18N
+            performer.actionPerformed(new ActionEvent(RemoteHostAction.this, 0, RemoteOpenActionBase.ACTIVATED_PSEUDO_ACTION_COMAND));
         }
     }
     

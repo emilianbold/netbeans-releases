@@ -124,6 +124,7 @@ public class IndexedElement implements JsElement {
     protected static IndexDocument createDocument(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
         IndexDocument elementDocument = support.createDocument(indexable);
         elementDocument.addPair(JsIndex.FIELD_BASE_NAME, object.getName(), true, true);
+        elementDocument.addPair(JsIndex.FIELD_BASE_NAME_INSENSITIVE, object.getName().toLowerCase(), true, false);
         elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  fqn + (object.isAnonymous() ? ANONYMOUS_POSFIX 
                 : object.getJSKind() == Kind.PARAMETER ? PARAMETER_POSTFIX : OBJECT_POSFIX), true, true);
 //        boolean isGlobal = object.getParent() != null ? ModelUtils.isGlobal(object.getParent()) : ModelUtils.isGlobal(object);
@@ -182,6 +183,7 @@ public class IndexedElement implements JsElement {
     protected static IndexDocument createDocumentForReference(JsObjectReference object, String fqn, IndexingSupport support, Indexable indexable) {
         IndexDocument elementDocument = support.createDocument(indexable);
         elementDocument.addPair(JsIndex.FIELD_BASE_NAME, object.getName(), true, true);
+        elementDocument.addPair(JsIndex.FIELD_BASE_NAME_INSENSITIVE, object.getName(), true, false);
         elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  fqn + (object.isAnonymous() ? ANONYMOUS_POSFIX 
                 : object.getJSKind() == Kind.PARAMETER ? PARAMETER_POSTFIX : OBJECT_POSFIX), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            

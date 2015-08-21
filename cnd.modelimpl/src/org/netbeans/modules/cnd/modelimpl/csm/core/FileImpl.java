@@ -142,6 +142,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
@@ -174,7 +175,8 @@ public final class FileImpl implements CsmFile,
         return false;
     }
 
-    /*package*/ FileContent prepareLazyStatementParsingContent() {
+    /*package*/
+    FileContent prepareLazyStatementParsingContent() {
         assert TraceFlags.PARSE_HEADERS_WITH_SOURCES;
         assert parsingFileContentRef.get().get() == null;
         FileContent out = FileContent.getHardReferenceBasedCopy(this.currentFileContent, false);
@@ -323,6 +325,8 @@ public final class FileImpl implements CsmFile,
     private FileContentSignature lastFileBasedSignature;
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
+    private int guardStart = -1;
+    private int guardEnd = -1;
 
     private volatile boolean disposed = false; // convert to flag field as soon as new flags appear
 
@@ -345,6 +349,7 @@ public final class FileImpl implements CsmFile,
     private static TraceModel.TestHook hook = null;
 
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, FileType fileType, NativeFileItem nativeFileItem) {
+        CndPathUtilities.assertNoUrl(fileBuffer.getAbsolutePath());
         state = State.INITIAL;
         parsingState = ParsingState.NOT_BEING_PARSED;
         this.projectUID = UIDCsmConverter.projectToUID(project);
@@ -1268,7 +1273,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguage = this.getContextLanguage(ppState);
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
-        tsp.setFixCode(new TokenStreamProducer.FixCode(startContextOffset, endContextOffset, context));
+        tsp.setCodePatch(new TokenStreamProducer.CodePatch(startContextOffset, endContextOffset, context));
         TokenStream tokenStream = tsp.getTokenStream(false, false, false, interrupter);
         if (tokenStream == null) {
             return null;
@@ -1757,6 +1762,23 @@ public final class FileImpl implements CsmFile,
         return currentFileContent.getScopeElements();
     }
 
+    public void setFileGuard(int guardStart, int guardEnd) {
+        this.guardStart = guardStart;
+        this.guardStart = guardEnd;
+    }
+
+    public boolean hasFileGuard() {
+        return guardStart >= 0;
+    }
+
+    public CsmOffsetable getFileGuard() {
+        if (guardStart >= 0) {
+            return new Offsetable(this, guardStart, guardStart);
+        }
+        return null;
+    }
+
+
     @Override
     public boolean isValid() {
         if (disposed) {
@@ -2038,6 +2060,8 @@ public final class FileImpl implements CsmFile,
             curState = State.INITIAL;
         }
         output.writeByte(curState.ordinal());
+        output.writeInt(guardStart);
+        output.writeInt(guardEnd);
     }
     //private static boolean firstDump = false;
 
@@ -2064,6 +2088,8 @@ public final class FileImpl implements CsmFile,
         lastParsedCompilationUnitCRC = input.readLong();
         state = State.values()[input.readByte()];
         parsingState = ParsingState.NOT_BEING_PARSED;
+        guardStart = input.readInt();
+        guardEnd = input.readInt();
     }
 
     public

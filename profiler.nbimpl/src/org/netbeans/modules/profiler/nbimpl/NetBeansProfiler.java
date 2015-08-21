@@ -137,28 +137,28 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
         return getActionSupport().getProperties();
     }
 
-    @Override
-    protected void cleanupAfterProfiling() {
-        stopLoadGenerator();
-        super.cleanupAfterProfiling();
-    }
-    
-    private void stopLoadGenerator() {
-        Properties profilingProperties = getCurrentProfilingProperties();
-
-        if (profilingProperties != null) {
-            LoadGenPlugin plugin = Lookup.getDefault().lookup(LoadGenPlugin.class);
-
-            if (plugin != null) {
-                // TODO factor out the "profiler.loadgen.path" constant; also used ing J2EEProjectTypeProfiler
-                String scriptPath = profilingProperties.getProperty("profiler.loadgen.path"); // NOI18N
-
-                if (scriptPath != null) {
-                    plugin.stop(scriptPath);
-                }
-            }
-        }
-    }
+//    @Override
+//    protected void cleanupAfterProfiling() {
+//        stopLoadGenerator();
+//        super.cleanupAfterProfiling();
+//    }
+//    
+//    private void stopLoadGenerator() {
+//        Properties profilingProperties = getCurrentProfilingProperties();
+//
+//        if (profilingProperties != null) {
+//            LoadGenPlugin plugin = Lookup.getDefault().lookup(LoadGenPlugin.class);
+//
+//            if (plugin != null) {
+//                // TODO factor out the "profiler.loadgen.path" constant; also used ing J2EEProjectTypeProfiler
+//                String scriptPath = profilingProperties.getProperty("profiler.loadgen.path"); // NOI18N
+//
+//                if (scriptPath != null) {
+//                    plugin.stop(scriptPath);
+//                }
+//            }
+//        }
+//    }
 
     private synchronized ProfilerControlPanel2Support getActionSupport() {
         if (actionSupport == null) {

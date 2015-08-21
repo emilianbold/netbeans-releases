@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.api.Constants;
@@ -115,8 +116,9 @@ public class SimpleJavaNativeMWI extends IDENativeMavenWizardIterator {
                                     props = model.getFactory().createProperties();
                                     root.setProperties(props);
                                 }
-                                props.setProperty("maven.compiler.source", "1.7");
-                                props.setProperty("maven.compiler.target", "1.7");
+                                String version = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
+                                props.setProperty("maven.compiler.source", version);
+                                props.setProperty("maven.compiler.target", version);
                             }
                         }
                     }

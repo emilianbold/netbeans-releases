@@ -55,6 +55,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
@@ -83,6 +85,8 @@ import org.openide.util.RequestProcessor;
 
 public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     private static final Logger LOGGER = Logger.getLogger(NewConnectionPanel.class.getName());
+    private static final Pattern numbers = Pattern.compile("(\\d+)");
+    private static final String USERINPUT_FIELD = "<USERNAME>";
     
     private AddConnectionWizard wd;
     private DatabaseConnection connection;
@@ -162,11 +166,13 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
         for (Entry<String, UrlField> entry : urlFields.entrySet()) {
             new InputAdapter(entry.getValue().getField());
+            new FocusAdapter(entry.getKey(), entry.getValue().getField());
         }
 
         new InputAdapter(templateComboBox);
         new InputAdapter(userField);
         new InputAdapter(passwordField);
+        new FocusAdapter(USERINPUT_FIELD, userField);
 
         urlField.addFocusListener(new FocusListener() {
 
@@ -909,7 +915,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         boolean requiredFieldMissing = false;
         if (url == null) {
             displayMessage(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.MSG_SelectADriver"), false);
-        } else if (url != null && url.isParseUrl()) {
+        } else if (url.isParseUrl()) {
             for (Entry<String, UrlField> entry : urlFields.entrySet()) {
                 if (url.requiresToken(entry.getKey()) && isEmpty(entry.getValue().getField().getText())) {
                     requiredFieldMissing = true;
@@ -1042,6 +1048,63 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         }
     }
 
+    /**
+     * Class handles focus lost event and trims field contents and ensures port
+     * to be numeric.
+     */
+    private class FocusAdapter implements FocusListener {
+        private final String targetToken;
+
+        public FocusAdapter(String targetToken, JTextField textField) {
+            this.targetToken = targetToken;
+            textField.addFocusListener(this);
+        }
+        
+        @Override
+        public void focusGained(FocusEvent e) {}
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            Object source = e.getSource();
+            if (source instanceof JTextField) {
+                JTextField textField = (JTextField) source;
+                String inputText = textField.getText();
+                switch(targetToken) {
+                    case JdbcUrl.TOKEN_HOST:
+                    case JdbcUrl.TOKEN_DB:
+                    case JdbcUrl.TOKEN_SID:
+                    case JdbcUrl.TOKEN_SERVICENAME:
+                    case JdbcUrl.TOKEN_TNSNAME:
+                    case JdbcUrl.TOKEN_DSN:
+                    case JdbcUrl.TOKEN_SERVERNAME:
+                    case JdbcUrl.TOKEN_INSTANCE:
+                    case USERINPUT_FIELD:
+                        textField.setText(inputText.trim());
+                        break;
+                    case JdbcUrl.TOKEN_PORT:
+                        Integer port = null;
+                        try {
+                            port = Integer.valueOf(inputText.trim());
+                        } catch (NumberFormatException ex) {}
+                        if(port != null) {
+                            textField.setText(Integer.toString(port));
+                        } else {
+                            Matcher numberMatcher = numbers.matcher(inputText);
+                            if(numberMatcher.find()) {
+                                textField.setText(numberMatcher.group(1));
+                            } else {
+                                textField.setText("");
+                            }
+                        }
+                        break;
+                    default:
+                        // Unhandled fields are left untouched
+                        break;
+                }
+            }
+        }
+    }
+    
     /**
      * This class is used to track user input for an associated input field.
      */

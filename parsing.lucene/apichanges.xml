@@ -110,6 +110,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="Convertors-firstNonNull">
+    <api name="LuceneSupport"/>
+    <summary>Added <code>Convertors.firstNonNull</code></summary>
+    <version major="2" minor="33"/>
+    <date day="8" month="7" year="2015"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added a <code>Convertors.firstNonNull</code> creating a Convertor
+            returning the first non null result of its delegates.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="Convertors"/>
+  </change>
   <change id="CustomCamelCase">
     <api name="LuceneSupport"/>
     <summary>Added camel case support methods into <code>Queries</code>.</summary>

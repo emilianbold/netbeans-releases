@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.cnd.mixeddev.java.model;
 
+import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.mixeddev.java.QualifiedNamePart;
 
 /**
  *
@@ -52,31 +54,48 @@ public final class JavaMethodInfo implements JavaEntityInfo {
     
     private final CharSequence name;
     
-    private final List<QualifiedNamePart> fullQualifiedName;
+    private final List<QualifiedNamePart> qualifiedName;
     
-    private final List<JavaTypeInfo> parameters;
+    private final List<JavaParameterInfo> parameters;
     
     private final JavaTypeInfo returnType;
     
     private final boolean overloaded;
+    
+    private final boolean finalMethod;
+    
+    private final boolean staticMethod;
+    
+    private final boolean nativeMethod;
 
-    public JavaMethodInfo(CharSequence name, List<QualifiedNamePart> fullQualifiedName, List<JavaTypeInfo> parameters, JavaTypeInfo returnType, boolean overloaded) {
+    public JavaMethodInfo(CharSequence name, 
+                            List<QualifiedNamePart> qualifiedName, 
+                            List<JavaParameterInfo> parameters, 
+                            JavaTypeInfo returnType, 
+                            boolean overloaded,
+                            boolean finalMethod,
+                            boolean staticMethod,
+                            boolean nativeMethod) 
+    {
         this.name = name;
-        this.fullQualifiedName = fullQualifiedName;
-        this.parameters = parameters;
+        this.qualifiedName = Collections.unmodifiableList(qualifiedName);
+        this.parameters = Collections.unmodifiableList(parameters);
         this.returnType = returnType;
         this.overloaded = overloaded;
+        this.finalMethod = finalMethod;
+        this.staticMethod = staticMethod;
+        this.nativeMethod = nativeMethod;
     }
     
     public CharSequence getName() {
         return name;
     }    
 
-    public List<QualifiedNamePart> getFullQualifiedName() {
-        return fullQualifiedName;
-    }    
+    public List<QualifiedNamePart> getQualifiedName() {
+        return qualifiedName;
+    }
 
-    public List<JavaTypeInfo> getParameters() {
+    public List<JavaParameterInfo> getParameters() {
         return parameters;
     }
 
@@ -86,5 +105,21 @@ public final class JavaMethodInfo implements JavaEntityInfo {
 
     public boolean isOverloaded() {
         return overloaded;
+    }
+    
+    public boolean isFinal() {
+        return finalMethod;
+    }
+    
+    public boolean isStatic() {
+        return staticMethod;
+    }
+    
+    public boolean isNative() {
+        return nativeMethod;
+    }
+    
+    public boolean isConstructor() {
+        return getReturnType() == null;
     }
 }

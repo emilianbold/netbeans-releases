@@ -131,6 +131,7 @@ import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.diff.DiffViewModeSwitcher;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -239,6 +240,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     private int currentSetupDiffLengthChanged;
     private boolean fileComponentSetSelectedIndexContext;
     private boolean popupAllowed;
+    private DiffViewModeSwitcher diffViewModeSwitcher;
 
     public MultiDiffPanelController (VCSContext context, Revision rev1, Revision rev2) {
         this(context, rev1, rev2, false);
@@ -460,6 +462,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         if (prefList != null) {
             GitModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(prefList);
         }
+        this.dpt = null;
+        DiffViewModeSwitcher.release(this);
+        diffViewModeSwitcher = null;
     }
 
     private void cancelBackgroundTasks() {
@@ -757,6 +762,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                     getActiveFileComponent().setSelectedNode(currentSetup.getNode());
                     fileComponentSetSelectedIndexContext = false;
                 }
+                getDiffViewModeSwitcher().setupMode(view);
                 diffView = view.getJComponent();
                 diffView.getActionMap().put("jumpNext", nextAction);  // NOI18N
                 diffView.getActionMap().put("jumpPrev", prevAction);  // NOI18N
@@ -886,6 +892,13 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         delegatingUndoRedo.setDiffView(diffView);
 
         refreshComponents();
+    }
+
+    private DiffViewModeSwitcher getDiffViewModeSwitcher () {
+        if (diffViewModeSwitcher == null) {
+            diffViewModeSwitcher = DiffViewModeSwitcher.get(this);
+        }
+        return diffViewModeSwitcher;
     }
 
     private Map.Entry<File, File[]> getSelectedActionRoots () {

@@ -57,9 +57,8 @@ public final class KarmaRunInfo {
     private final String nbConfigFile;
     private final String projectConfigFile;
     private final String testFile;
+    private final boolean failOnBrowserError;
     private final Map<String, String> envVars = new ConcurrentHashMap<>();
-
-    private volatile boolean absoluteUrls = false;
 
 
     private KarmaRunInfo(Builder builder) {
@@ -73,6 +72,7 @@ public final class KarmaRunInfo {
         nbConfigFile = builder.nbConfigFile;
         projectConfigFile = builder.projectConfigFile;
         testFile = builder.testFile;
+        failOnBrowserError = builder.failOnBrowserError;
         envVars.putAll(builder.envVars);
     }
 
@@ -97,22 +97,18 @@ public final class KarmaRunInfo {
         return testFile;
     }
 
+    public boolean isFailOnBrowserError() {
+        return failOnBrowserError;
+    }
+
     public Map<String, String> getEnvVars() {
         return new HashMap<>(envVars);
-    }
-
-    public boolean isAbsoluteUrls() {
-        return absoluteUrls;
-    }
-
-    public void setAbsoluteUrls(boolean absoluteUrls) {
-        this.absoluteUrls = absoluteUrls;
     }
 
     @Override
     public String toString() {
         return "KarmaRunInfo{" + "project=" + project + ", rerunHandler=" + rerunHandler + ", nbConfigFile=" + nbConfigFile // NOI18N
-                + ", projectConfigFile=" + projectConfigFile + ", testFile=" + testFile + ", envVars=" + envVars + ", absoluteUrls=" + absoluteUrls + '}'; // NOI18N
+                + ", projectConfigFile=" + projectConfigFile + ", testFile=" + testFile + ", envVars=" + envVars + '}'; // NOI18N
     }
 
 
@@ -125,6 +121,7 @@ public final class KarmaRunInfo {
         String nbConfigFile;
         String projectConfigFile;
         String testFile;
+        boolean failOnBrowserError;
         Map<String, String> envVars = new HashMap<>();
 
 
@@ -152,6 +149,11 @@ public final class KarmaRunInfo {
 
         public Builder setTestFile(@NullAllowed String testFile) {
             this.testFile = testFile;
+            return this;
+        }
+
+        public Builder setFailOnBrowserError(boolean failOnBrowserError) {
+            this.failOnBrowserError = failOnBrowserError;
             return this;
         }
 

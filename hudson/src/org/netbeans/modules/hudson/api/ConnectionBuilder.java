@@ -414,7 +414,11 @@ public final class ConnectionBuilder {
                 break RETRY;
             default:
                 // XXX are there other legitimate response codes?
-                throw new HttpRetryException("Server rejected connection to " + curr + " with code " + responseCode, responseCode); // NOI18N
+                String resMsg = ((HttpURLConnection) conn).getResponseMessage();
+                String errMsg = "Server rejected connection to " //NOI18N
+                        + curr + " with code " + responseCode //NOI18N
+                        + (resMsg != null ? " and message " + resMsg : ""); //NOI18N
+                throw new HttpRetryException(errMsg, responseCode);
             }
         }
         return conn;

@@ -531,7 +531,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 0, 6);
         add(btRetry, gridBagConstraints);
 
-        lbReason.setLabelFor(lbReason);
+        lbReason.setLabelFor(tfReason);
         org.openide.awt.Mnemonics.setLocalizedText(lbReason, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

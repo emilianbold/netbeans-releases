@@ -44,21 +44,17 @@ package org.netbeans.modules.css.visual;
 import org.netbeans.modules.css.visual.spi.Location;
 import org.netbeans.modules.css.visual.spi.RuleHandle;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.dnd.DnDConstants;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
-import javax.swing.JLabel;
 import javax.swing.JTree;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -193,7 +189,9 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                 if (!empty) {
                     RuleHandle ruleHandle = selected.getLookup().lookup(RuleHandle.class);
                     if (ruleHandle != null) {
-                        selectRuleInRuleEditor(ruleHandle);
+                        if (!settingRule.get()) {
+                            selectRuleInRuleEditor(ruleHandle);
+                        }
                         CssStylesListenerSupport.fireRuleSelected(ruleHandle);
                     }
                     Location location = selected.getLookup().lookup(Location.class);
@@ -280,14 +278,18 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         }
     }
 
+    private final AtomicReference<RuleHandle> ruleHandleToSelect = new AtomicReference<>();
+    private final AtomicBoolean settingRule = new AtomicBoolean();
+
     /**
      * Select rule in rule editor upon user action in the document view.
      */
     private void selectRuleInRuleEditor(final RuleHandle handle) {
+        ruleHandleToSelect.set(handle);
         RP.post(new Runnable() { 
             @Override
             public void run() {
-                RuleEditorController rec = cssStylesLookup.lookup(RuleEditorController.class);
+                final RuleEditorController rec = cssStylesLookup.lookup(RuleEditorController.class);
                 final AtomicReference<Rule> matched_rule_ref = new AtomicReference<>();
 
                 FileObject file = handle.getFile();
@@ -302,14 +304,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                                 final Model model = Model.getModel(result);
                                 Rule rule = handle.getRule(model);
                                 matched_rule_ref.set(rule);
-//                        model.runReadTask(new Model.ModelTask() {
-//                            @Override
-//                            public void run(StyleSheet styleSheet) {
-//                                ModelUtils utils = new ModelUtils(model);
-//                                Rule match = utils.findMatchingRule(rule.getModel(), rule);
-//                                matched_rule_ref.set(match);
-//                            }
-//                        });
                             }
                         }
                     });
@@ -317,10 +311,19 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                     Exceptions.printStackTrace(ex);
                 }
 
-                Rule match = matched_rule_ref.get();
+                final Rule match = matched_rule_ref.get();
                 if (match != null) {
-                    rec.setModel(match.getModel());
-                    rec.setRule(match);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (ruleHandleToSelect.get() == handle) {
+                                settingRule.set(true);
+                                rec.setModel(match.getModel());
+                                rec.setRule(match);
+                                settingRule.set(false);
+                            }
+                        }
+                    });
                 }
             }
         });
@@ -414,9 +417,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     private void initTreeView() {
         treeView = new BeanTreeView() {
             {
-                MouseAdapter listener = createTreeMouseListener();
-                tree.addMouseListener(listener);
-                tree.addMouseMotionListener(listener);
                 tree.setCellRenderer(createTreeCellRenderer(tree.getCellRenderer()));
             }
 
@@ -484,77 +484,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         }
         return null;
     }
-    // The last node we were hovering over.
-    Object lastHover = null;
-
-    /**
-     * Creates a mouse listener for the tree view.
-     *
-     * @return mouse listener for the tree view.
-     */
-    public MouseAdapter createTreeMouseListener() {
-        return new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                processEvent(e);
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                processEvent(e);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                processEvent(null);
-                // Make sure that lastHover != <any potential value>
-                // i.e., make sure that change in hover is triggered when
-                // mouse returns into this component
-                lastHover = new Object();
-            }
-
-            /**
-             * Processes the specified mouse event.
-             *
-             * @param e mouse event to process.
-             */
-            private void processEvent(MouseEvent e) {
-//                Object hover = null;
-//                if (e != null) {
-//                    JTree tree = (JTree)e.getSource();
-//                    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-//                    if (path != null) {
-//                        hover = path.getLastPathComponent();
-//                    }
-//                }
-//                if (hover != lastHover) {
-//                    lastHover = hover;
-//                    final String selector;
-//                    if (hover != null) {
-//                        Node node = Visualizer.findNode(hover);
-//                        Rule rule = node.getLookup().lookup(Rule.class);
-//                        if (rule != null) {
-//                            selector = rule.getSelector();
-//                        } else {
-//                            selector = null;
-//                        }
-//                    } else {
-//                        selector = null;
-//                    }
-//                    treeView.repaint();
-//                    final PageModel pageModel = currentPageModel();
-//                    if (pageModel != null) {
-//                        RP.post(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                pageModel.setHighlightedSelector(selector);
-//                            }
-//                        });
-//                    }
-//                }
-            }
-        };
-    }
 
     /**
      * Creates a cell renderer for the tree view.
@@ -563,25 +492,10 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      * @return call renderer for the tree view.
      */
     private TreeCellRenderer createTreeCellRenderer(final TreeCellRenderer delegate) {
-        Color origColor = UIManager.getColor("Tree.selectionBackground"); // NOI18N
-        Color color = origColor.brighter().brighter();
-        if (color.equals(Color.WHITE)) { // Issue 217127
-            color = origColor.darker();
-        }
-        // Color used for hovering highlight
-        final Color hoverColor = color;
         return new DefaultTreeCellRenderer() {
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-                JLabel component;
-                if (!selected && (value == lastHover)) {
-                    component = (JLabel) delegate.getTreeCellRendererComponent(tree, value, true, expanded, leaf, row, hasFocus);
-                    component.setBackground(hoverColor);
-                    component.setOpaque(true);
-                } else {
-                    component = (JLabel) delegate.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-                }
-                return component;
+                return delegate.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
             }
         };
     }

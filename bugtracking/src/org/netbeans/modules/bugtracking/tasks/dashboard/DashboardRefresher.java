@@ -41,15 +41,11 @@
  */
 package org.netbeans.modules.bugtracking.tasks.dashboard;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
@@ -62,6 +58,8 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class DashboardRefresher {
 
+    private static final Logger LOG = Logger.getLogger(DashboardRefresher.class.getName());
+    
     private static final RequestProcessor RP = new RequestProcessor(DashboardRefresher.class.getName());
     private final Task refreshDashboard;
     private final Task refreshSchedule;
@@ -74,6 +72,11 @@ public class DashboardRefresher {
         refreshDashboard = RP.create(new Runnable() {
             @Override
             public void run() {
+                
+                LOG.finer("dashbord refresh start:");
+                LOG.log(Level.FINER, "  dashboardBusy: {0}", dashboardBusy);
+                LOG.log(Level.FINER, "  refreshEnabled: {0}", refreshEnabled);
+                
                 if (dashboardBusy || !refreshEnabled) {
                     refreshWaiting = true;
                     return;
@@ -122,7 +125,9 @@ public class DashboardRefresher {
     private void scheduleDashboardRefresh() {
         final DashboardSettings settings = DashboardSettings.getInstance();
         int delay = settings.getAutoSyncValue();
-        refreshDashboard.schedule(delay * 60 * 1000); // given in minutes
+        delay = delay * 60 * 1000;
+        refreshDashboard.schedule(delay); // given in minutes
+        LOG.log(Level.FINE, "tasks dashboard refresh scheduled in {0}", delay); 
     }
 
     public void setRefreshEnabled(boolean refreshEnabled) {
@@ -143,8 +148,11 @@ public class DashboardRefresher {
         for (RepositoryImpl<?, ?, ?> repository : repositories) {
             for (QueryImpl query : repository.getQueries()) {
                 if(DashboardUtils.isQueryAutoRefresh(query)) {
-                    Logger.getLogger(DashboardRefresher.class.getName()).log(Level.INFO, "refreshing query {0} - {1}", new Object[]{query.getRepositoryImpl().getDisplayName(), query.getDisplayName()});
+                    LOG.log(Level.INFO, "refreshing query {0} - {1}", new Object[]{query.getRepositoryImpl().getDisplayName(), query.getDisplayName()});
                     query.refresh();
+                } else {
+                    LOG.log(Level.FINE, "skipped refreshing query {0} - {1}", new Object[]{query.getRepositoryImpl().getDisplayName(), query.getDisplayName()});
+                    
                 }
             }
         }

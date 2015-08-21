@@ -521,29 +521,24 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                     }
                 }
                 if (bootcp == null) {
-                    if (Utilities.isMac()) {
-                        bootcp = "${" + NBJDK_HOME + "}/../Classes/classes.jar";    //NOI18N
-                    }
-                    else {
-                        File jHome;
-                        if (home != null && (jHome = new File(home, "jre/lib")).isDirectory()) {
-                            String[] jars = jHome.list(new FilenameFilter() {
-                                public @Override boolean accept(File dir, String name) {
-                                    String n = name.toLowerCase(Locale.US);
-                                    return n.endsWith(".jar"); // NOI18N
-                                }
-                            });
-                            StringBuilder sb = new StringBuilder();
-                            for (String jar : jars) {
-                                if (sb.length() > 0) {
-                                    sb.append(File.pathSeparator);
-                                }
-                                sb.append("${" + NBJDK_HOME + "}/jre/lib/").append(jar);
+                    File jHome;
+                    if (home != null && (jHome = new File(home, "jre/lib")).isDirectory()) {
+                        String[] jars = jHome.list(new FilenameFilter() {
+                            public @Override boolean accept(File dir, String name) {
+                                String n = name.toLowerCase(Locale.US);
+                                return n.endsWith(".jar"); // NOI18N
                             }
-                            bootcp = sb.toString().replace('/', File.separatorChar); // NOI18N
-                        } else {
-                            bootcp = "${" + NBJDK_HOME + "}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                        });
+                        StringBuilder sb = new StringBuilder();
+                        for (String jar : jars) {
+                            if (sb.length() > 0) {
+                                sb.append(File.pathSeparator);
+                            }
+                            sb.append("${" + NBJDK_HOME + "}/jre/lib/").append(jar);
                         }
+                        bootcp = sb.toString().replace('/', File.separatorChar); // NOI18N
+                    } else {
+                        bootcp = "${" + NBJDK_HOME + "}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
                     }
                 }
             }

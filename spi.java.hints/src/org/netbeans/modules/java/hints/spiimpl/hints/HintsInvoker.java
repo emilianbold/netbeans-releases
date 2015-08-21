@@ -102,6 +102,7 @@ import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.api.java.source.matching.Pattern;
+import org.netbeans.spi.java.hints.TriggerOptions;
 import org.openide.util.Exceptions;
 
 /**
@@ -639,10 +640,14 @@ public class HintsInvoker {
         }
 
         private void runAndAdd(TreePath path, List<HintDescription> rules, Map<HintDescription, List<ErrorDescription>> d) {
-            if (rules != null && !isInGuarded(info, path)) {
+            if (rules != null) {
+                boolean guarded = isInGuarded(info, path);
                 OUTER: for (HintDescription hd : rules) {
                     if (isCanceled()) {
                         return ;
+                    }
+                    if (guarded && !hd.getTrigger().hasOption(TriggerOptions.PROCESS_GUARDED)) {
+                        continue;
                     }
 
                     HintMetadata hm = hd.getMetadata();

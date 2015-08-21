@@ -42,20 +42,33 @@
 
 package org.netbeans.modules.javascript.karma.util;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
+import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 
+@MIMEResolver.Registration(displayName = "karma.conf.js", resource = "../resources/karmaconf-resolver.xml", position = 126)
 public final class KarmaUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(KarmaUtils.class.getName());
 
     private static final FilenameFilter KARMA_CONFIG_FILTER = new FilenameFilter() {
         @Override
@@ -73,6 +86,25 @@ public final class KarmaUtils {
 
 
     private KarmaUtils() {
+    }
+
+    @CheckForNull
+    public static String readContent(URL url) {
+        assert !EventQueue.isDispatchThread();
+        try {
+            Path tmpFile = Files.createTempFile("nb-karma-url-", ".html"); // NOI18N
+            try {
+                NetworkSupport.download(url.toExternalForm(), tmpFile.toFile());
+                return new String(Files.readAllBytes(tmpFile), StandardCharsets.UTF_8);
+            } finally {
+                Files.delete(tmpFile);
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+        return null;
     }
 
     public static List<WebBrowser> getDebugBrowsers() {

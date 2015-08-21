@@ -175,7 +175,7 @@ public class BasicSearchResultsPanelTest {
             return new Node[]{new AbstractNode(LEAF, Lookups.singleton(key)) {
                     @Override
                     public String getDisplayName() {
-                        return key.getLineText();
+                        return key.getLineText().toString();
                     }
                 }};
         }

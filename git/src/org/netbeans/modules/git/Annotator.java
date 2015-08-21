@@ -83,6 +83,7 @@ import org.netbeans.modules.git.ui.menu.RemoteMenu;
 import org.netbeans.modules.git.ui.menu.RepositoryMenu;
 import org.netbeans.modules.git.ui.menu.RevertMenu;
 import org.netbeans.modules.git.ui.menu.ShelveMenu;
+import org.netbeans.modules.git.ui.repository.OpenGlobalConfigurationAction;
 import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.status.StatusAction;
@@ -155,6 +156,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 addAction("org-netbeans-modules-git-ui-init-InitAction", null, actions, true);
                 actions.add(null);
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
+                actions.add(SystemAction.get(OpenGlobalConfigurationAction.class));
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
                 actions.add(new DiffMenu(destination, null));

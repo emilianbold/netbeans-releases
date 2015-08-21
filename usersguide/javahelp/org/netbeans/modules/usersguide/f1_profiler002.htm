@@ -2,27 +2,27 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Attach Profiler: Attach Settings Dialog Box</title>
+<title>Analyze Performance: Basic Options</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="AttachDialog.HelpCtx" name="AttachDialog.HelpCtx"></a></p>
-<div id="NBCSH3071"><!-- infolevel="all" infotype="General" --><a id="sthref390" name="sthref390"></a>
-<h1>Attach Profiler: Attach Settings Dialog Box</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="CPUSettings.Basic.HelpCtx" name="CPUSettings.Basic.HelpCtx"></a></p>
+<div id="NBCSH3079"><!-- infolevel="all" infotype="General" --><a id="sthref393" name="sthref393"></a>
+<h1>Analyze Performance: Basic Options</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to configure and review the settings for attaching the profiling tool to an application. To attach the profiler to an application you need to specify the location of the target JVM and a connection method. The attach settings are specific for each project. 
+<p>Use to configure basic and advanced options for the profiling session. The following basic options are available for analyzing the object lifecycle. If you are configuring a custom configuration, click <b>Advanced Settings</b> to specify advanced options. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG707">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
+<param name="text" value="<html><u>How</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</p>
+?</p>
 
-<table summary="Descriptions of Attach Settings dialog box fields." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="33%" />
+<table summary="Descriptions of basic options for performance analysis." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="30%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,74 +33,70 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t3" headers="r1c1-t3">
-<p>Local</p>
+<p>Quick</p>
 </td>
-<td align="left" headers="r2c1-t3 r1c2-t3">Attaches the profiler to a local application. Select this option if the application is running on the local machine.
-<p>If you select this option you need to select one of the following Connection options: <b>Dynamic</b> or <b>Direct</b>.</p>
-</td>
+<td align="left" headers="r2c1-t3 r1c2-t3">Samples the application and takes a stack trace periodically. This option is less precise than instrumenting methods, but the overhead is lower. This option can help you locate methods that you might want to instrument.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t3" headers="r1c1-t3">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Dynamic</p>
+<p>Advanced</p>
 </td>
-<td align="left" headers="r3c1-t3 r1c2-t3">Connects to a process that is running.</td>
+<td align="left" headers="r3c1-t3 r1c2-t3">Instruments all of the methods of the profiled application if you do not specify any root methods.
+<p>When entering a method, threads generate a "method entry" event. Threads generate a corresponding "method exit" event when exiting the method. The timestamps for both of these events are recorded. This data is processed in real time.</p>
+<p>You can limit the part of the application's code that is instrumented by defining root methods. This option can greatly reduce the profiling overhead. Specify a root method using the context menu in the source code or by clicking <b>customize</b> to open the Edit Profiling Roots dialog box. When you specify a root method, profiling data is not collected until one of the application's threads enters the root method.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t3" headers="r1c1-t3">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Direct</p>
+<p>Filter</p>
 </td>
-<td align="left" headers="r4c1-t3 r1c2-t3">Starts the application after the profiler attaches.
-<p>If you select this option, you must modify the startup script of the application for standalone Java SE applications.</p>
-<p>If you are attaching to a server, you must modify the startup script and configuration file of the server.</p>
+<td align="left" headers="r4c1-t3 r1c2-t3">Sets a filter to limit the classes that are profiled and control the overhead. The following default filters are available.
+<ul>
+<li>Profile all classes</li>
+<li>Profile only project classes</li>
+<li>Profile project and subprojects classes</li>
+<li>Quick filter</li>
+<li>Exclude Java Core Classes</li>
+</ul>
+<p>If you select <b>Profile Only Project Classes</b> or P<b>rofile Project and Subprojects Classes</b>, click <b>Show Filter Value</b> to see the classes that are to be profiled.</p>
+<p>If you select <b>Quick Filter</b>, click <b>Edit Filter Value</b> to see and modify the filter criteria.</p>
+<p>Click <b>Edit Filter Sets</b> to create your own filter.</p>
+<p><b>Profile project and subprojects classes</b> is only available if the project contains subprojects.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t3" headers="r1c1-t3">
-<p>Remote</p>
+<p>Use Defined Profiling Points.</p>
 </td>
-<td align="left" headers="r5c1-t3 r1c2-t3">Attaches the profiler to an application running on a remote system. Select this option if the application is running on a remote machine.
-<p>If you select this option, you need to specify the following connection details for the remote host: <b>Hostname</b> and <b>OS and JVM</b>.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t3" headers="r1c1-t3">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Hostname</p>
-</td>
-<td align="left" headers="r6c1-t3 r1c2-t3">.Specifies the hostname of the target.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t3" headers="r1c1-t3">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;OS &amp; JVM</p>
-</td>
-<td align="left" headers="r7c1-t3 r1c2-t3">Selects the operating system of the target.</td>
+<td align="left" headers="r5c1-t3 r1c2-t3">When selected, any actions that are initiated by enabled profiling points in the project are performed. Disabled profiling points are ignored. When deselected, all profiling points in the project are ignored.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>After you specify the connection details, you must perform the configuration steps in the dialog box. Start the remote application on a Remote Profiling Pack that the IDE generates based on the connection details that you specified.</p>
-<a id="NBCSH3078" name="NBCSH3078"></a>
+<p>The Overhead bar graph provides you with a rough indication of the overhead that are incurred when you profile the application with the current settings.</p>
+<a id="NBCSH3084" name="NBCSH3084"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG706">
-<param name="text" value="<html><u>&quot;Attaching the Profiler to a Local Application&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
+<param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG716">
-<param name="text" value="<html><u>&quot;Attaching the Profiler to a Remote Application&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG719">
-<param name="text" value="<html><u>&quot;Attaching to a Remote Server&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
+<param name="text" value="<html><u>&quot;Setting Profiling Point&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

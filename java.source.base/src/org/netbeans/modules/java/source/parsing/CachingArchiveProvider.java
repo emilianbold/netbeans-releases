@@ -334,25 +334,7 @@ public final class CachingArchiveProvider {
             if (fo != null) {
                 for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
                     for (FileObject jdkFolder : jp.getInstallFolders()) {
-                        boolean found = FileUtil.isParentOf(jdkFolder, fo);
-                        // Workaround for issue #247351, try checking against canonical install folder. It's
-                        // "less correct" than if the platform de-canonicalized its bootcp roots as it may map rt.jars
-                        // from several symlinked JDKs to a single ct.sym FileObject, but contents of the (single, the same for all) 
-                        // ct.sym is the same for all of them.
-                        if (!found) {
-                            File f = FileUtil.toFile(jdkFolder);
-                            if (f == null) {
-                                continue;
-                            }
-                            try {
-                                f = f.getCanonicalFile();
-                                FileObject jf = FileUtil.toFileObject(f);
-                                found = jf != null && FileUtil.isParentOf(jf, fo);
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                        if (found) {
+                        if (FileUtil.isParentOf(jdkFolder, fo)) {
                             final FileObject ctSym = jdkFolder.getFileObject(PATH_CT_SYM);
                             File ctSymFile;
                             if (ctSym != null && (ctSymFile = FileUtil.toFile(ctSym)) != null) {

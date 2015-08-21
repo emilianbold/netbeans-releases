@@ -68,6 +68,7 @@ public final class KarmaPreferences {
     private static final String AUTOWATCH = "autowatch"; // NOI18N
     private static final String DEBUG = "debug"; // NOI18N
     private static final String DEBUG_BROWSER_ID = "debug.browser.id"; // NOI18N
+    private static final String BROWSER_ERROR_FAIL = "browser.error.fail"; // NOI18N
 
     private static final ConcurrentMap<Project, Preferences> CACHE = new ConcurrentHashMap<>();
 
@@ -127,6 +128,14 @@ public final class KarmaPreferences {
 
     public static void setDebugBrowserId(Project project, String browserId) {
         getPreferences(project).put(DEBUG_BROWSER_ID, browserId);
+    }
+
+    public static boolean isFailOnBrowserError(Project project) {
+        return getPreferences(project).getBoolean(BROWSER_ERROR_FAIL, true);
+    }
+
+    public static void setFailOnBrowserError(Project project, boolean fail) {
+        getPreferences(project).putBoolean(BROWSER_ERROR_FAIL, fail);
     }
 
     public static void addPreferenceChangeListener(Project project, PreferenceChangeListener listener) {

@@ -96,6 +96,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes.TypeDescriptor;
@@ -302,7 +303,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
 
         name.setColumns(20);
 
-        returnTypeLabel.setLabelFor(returnTypeLabel);
+        returnTypeLabel.setLabelFor(returnTypeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(returnTypeLabel, org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "IntroduceMethodPanel.returnTypeLabel.text")); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -569,8 +570,13 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
 
     private void initTableData() {
         boolean isC = res.isC();
-        for(IntroduceMethodRefactoring.VariableContext info : res.getImportantVariables()) {
-            model.addRow(getParameterRow(info, isC));
+        CsmCacheManager.enter();
+        try {
+            for(IntroduceMethodRefactoring.VariableContext info : res.getImportantVariables()) {
+                model.addRow(getParameterRow(info, isC));
+            }
+        } finally {
+            CsmCacheManager.leave();
         }
     }
 

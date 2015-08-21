@@ -125,11 +125,6 @@ public final class RemoteLink extends RemoteLinkBase {
     }
     
     @Override
-    public boolean isSymbolicLink() {
-        return true;
-    }
-
-    @Override
     public RemoteFileObjectBase readSymbolicLink()  {
         return getDelegateImpl();
     }

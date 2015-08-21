@@ -274,9 +274,19 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             table.isAncestorOf(focusOwner) ||
             (focusOwner instanceof Container &&
              ((Container) focusOwner).isAncestorOf(table));
+        if (tableHasFocus && !table.isPaintingForPrint()) {
+            boolean rowIsLead =
+                (table.getSelectionModel().getLeadSelectionIndex() == row);
+            boolean colIsLead =
+                (table.getColumnModel().getSelectionModel().getLeadSelectionIndex() == column);
+
+            hasFocus = (rowIsLead && colIsLead);
+        } else {
+            hasFocus = false;
+        }
         Component defaultRendererComponent = table.getDefaultRenderer(
                 Object.class).getTableCellRendererComponent(table, value,
-                        isSelected, tableHasFocus, row, column);
+                        isSelected, hasFocus, row, column);
         Color bg = getRealColor(defaultRendererComponent.getBackground());
         Color fg = defaultRendererComponent.getForeground();
 
@@ -310,9 +320,11 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                         toolT = val.toString();
                     }
                 }
-                if (toolT != null && toolT.trim ().length () > 0) {
-                    toolT = toolT.trim();
-                    if (toolT.length() > MAX_TOOLTIP_LENGTH) {
+                if (toolT != null && (toolT = toolT.trim ()).length () > 0) {
+                    int ttl = toolT.length();
+                    if (ttl > MAX_TOOLTIP_LENGTH &&
+                        !toolT.regionMatches(false, 0, "<html>", 0, 6)) {   // Do not cut HTML tooltips
+
                         toolT = toolT.substring(0, MAX_TOOLTIP_LENGTH) + "...";
                     }
                     propPanel.setToolTipText (toolT);

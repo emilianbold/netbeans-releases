@@ -144,7 +144,11 @@ public class PlatformSpecificProp extends BooleanNodeProp  implements PropertyCh
 
         @Override
         public String getAsText() {
-            return value.toString();
+            if (checkBox.isSelected()) {
+                return getTags()[1];
+            } else {
+                return getTags()[0];
+            }
         }
 
         @Override

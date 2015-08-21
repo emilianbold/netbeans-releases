@@ -63,6 +63,7 @@ import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.save.CasualDiff.LineInsertionType;
@@ -303,9 +304,7 @@ public abstract class PositionEstimator {
                 do {
                     Tree t = cut.getTypeDecls().get(tdpos);
                     typeDeclStart = (int) positions.getStartPosition(cut, t);
-                    if (t.getKind() == Tree.Kind.CLASS ||
-                        t.getKind() == Tree.Kind.INTERFACE || 
-                        t.getKind() == Tree.Kind.ENUM) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                         break;
                     }
                     tdpos++;
@@ -926,8 +925,8 @@ public abstract class PositionEstimator {
         
         private void findNextBoundary(Tree item, int start, int end) {
             int off = Math.max(start, end -1);
-            this.sectionEnd = diffContext.origText.length(); //diffContext.blockSequences.findSectionEnd(off);
-            this.sectionStart = 0; // diffContext.blockSequences.findSectionStart(start);
+            this.sectionEnd = diffContext.blockSequences.findSectionEnd(off);
+            this.sectionStart = diffContext.blockSequences.findSectionStart(start);
         }
         
         private JavaTokenId moveToSrcRelevantBounded(TokenSequence seq, Direction dir) {

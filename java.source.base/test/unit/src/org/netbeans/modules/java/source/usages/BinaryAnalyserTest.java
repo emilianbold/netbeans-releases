@@ -48,7 +48,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -70,6 +69,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser.Changes;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
@@ -81,6 +81,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
@@ -103,7 +104,7 @@ public class BinaryAnalyserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        SourceUtilsTestUtil.setLookup(new Object[0], getClass().getClassLoader());
+        SourceUtilsTestUtil.setLookup(new Object[] {new MockCfg()}, getClass().getClassLoader());
         clearWorkDir();
     }
 
@@ -117,7 +118,7 @@ public class BinaryAnalyserTest extends NbTestCase {
 
     public void testAnnotationsIndexed() throws Exception {
         requireFullIndex(true);
-        FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject indexDir = workDir.createFolder("index");
         File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
@@ -132,7 +133,7 @@ public class BinaryAnalyserTest extends NbTestCase {
     }
 
     public void testDeleteClassFolderContent() throws Exception {
-        FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject indexDir = workDir.createFolder("index");
         File jar = new File(getDataDir(), "Annotations.jar");
         FileObject classFolderFO = workDir.createFolder("classes");
@@ -171,7 +172,7 @@ public class BinaryAnalyserTest extends NbTestCase {
     }
 
     public void testDeleteClassFolder() throws Exception {
-        FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject indexDir = workDir.createFolder("index");
         File jar = new File(getDataDir(), "Annotations.jar");
         FileObject classFolderFO = workDir.createFolder("classes");
@@ -209,7 +210,7 @@ public class BinaryAnalyserTest extends NbTestCase {
 
     public void testTransactionalFlush() throws Exception {
         requireFullIndex(true);
-        FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject indexDir = workDir.createFolder("index");
         File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
@@ -447,10 +448,8 @@ public class BinaryAnalyserTest extends NbTestCase {
     }
 
     private static void requireFullIndex(final boolean fullIndex) throws ReflectiveOperationException {
-        final Class<BinaryAnalyser> clz = BinaryAnalyser.class;
-        final Field fld = clz.getDeclaredField("FULL_INDEX");   //NOI18N
-        fld.setAccessible(true);
-        fld.set(null, Boolean.valueOf(fullIndex));
+        final MockCfg cfg = Lookup.getDefault().lookup(MockCfg.class);
+        cfg.usgLvl = fullIndex ? BinaryAnalyser.Config.UsagesLevel.ALL : BinaryAnalyser.Config.UsagesLevel.EXEC_VAR_REFS;
     }
 
     @CheckForNull
@@ -528,5 +527,21 @@ public class BinaryAnalyserTest extends NbTestCase {
             res.clear();
         }
         return time/rounds;
+    }
+
+    public static final class MockCfg extends BinaryAnalyser.Config {
+
+        volatile UsagesLevel usgLvl = UsagesLevel.EXEC_VAR_REFS;
+        volatile IdentLevel idLvl = IdentLevel.VISIBLE;
+
+        @Override
+        protected UsagesLevel getUsagesLevel() {
+            return usgLvl;
+        }
+
+        @Override
+        protected IdentLevel getIdentLevel() {
+            return idLvl;
+        }
     }
 }

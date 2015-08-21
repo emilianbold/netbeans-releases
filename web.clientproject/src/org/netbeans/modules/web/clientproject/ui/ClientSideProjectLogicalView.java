@@ -61,6 +61,7 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -86,6 +87,7 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
@@ -189,6 +191,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
         return null;
     }
+
 
     @CheckForNull
     private static Node findNode(Node node, FileObject root, FileObject fo) {

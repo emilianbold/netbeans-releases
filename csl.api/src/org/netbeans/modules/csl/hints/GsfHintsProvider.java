@@ -69,6 +69,9 @@ import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -101,7 +104,8 @@ import org.openide.text.NbDocument;
 public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
     
     public static final Logger LOG = Logger.getLogger(GsfHintsProvider.class.getName()); // NOI18N
-    
+
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
     private FileObject file;
     
     /**
@@ -133,7 +137,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         }
         
         for (Error d : errors) {
-            if (isCanceled()) {
+            if (cancel.isCancelled()) {
                 return null;
             }
             
@@ -178,7 +182,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
             final String desc = d.getDisplayName();
             final Position[] range = getLine(d, doc, position, endPosition);
             
-            if (isCanceled()) {
+            if (cancel.isCancelled()) {
                 return null;
             }
             
@@ -189,7 +193,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
             descs.add(ErrorDescriptionFactory.createErrorDescription(errorKind2Severity.get(d.getSeverity()), desc, ehm, doc, range[0], range[1]));
         }
         
-        if (isCanceled()) {
+        if (cancel.isCancelled()) {
             return null;
         }
         
@@ -209,7 +213,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         // under the document read-lock.
         doc.render(new Runnable() {
             public void run() {
-                if (isCanceled()) {
+                if (cancel.isCancelled()) {
                     return;
                 }
                 ret[0] = getLine0(d, doc, startOffset, endOffset);
@@ -259,7 +263,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         int len = doc.getLength();
 
         if (startOffsetFinal > len || endOffsetFinal > len) {
-            if (!isCanceled() && LOG.isLoggable(Level.WARNING)) {
+            if (!cancel.isCancelled() && LOG.isLoggable(Level.WARNING)) {
                 LOG.log(Level.WARNING, "document changed, but not canceled?" );
                 LOG.log(Level.WARNING, "len = " + len );
                 LOG.log(Level.WARNING, "startOffset = " + startOffsetFinal );
@@ -279,29 +283,16 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         
         return result;
     }
-    
-    private boolean cancel;
-    
-    synchronized boolean isCanceled() {
-        return cancel;
-    }
-    
+
+
     @Override
     public void cancel() {
-        HintsProvider curProvider;
-        synchronized (this) {
-            curProvider = this.pendingProvider;
-            cancel = true;
-        }
+        final HintsProvider curProvider = this.pendingProvider;
         if (curProvider != null) {
             curProvider.cancel();
         }
     }
-    
-    synchronized void resume() {
-        cancel = false;
-    }
-    
+
     private List<Error> processProviderErrors(
             final List<ErrorDescription> descriptions, 
             Snapshot topLevelSnapshot, final ParserResult r, final Language language) throws ParseException {
@@ -324,7 +315,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         try {
             synchronized (this) {
                 pendingProvider = provider;
-                if (isCanceled()) {
+                if (cancel.isCancelled()) {
                     return errors;
                 }
             }
@@ -377,7 +368,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         
         for(Embedding e : resultIterator.getEmbeddings()) {
             try {
-                if (isCanceled()) {
+                if (cancel.isCancelled()) {
                     return;
                 }
             } catch (Exception ex) {
@@ -429,15 +420,12 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
     }
     
     public @Override void run(ParserResult result, SchedulerEvent event) {
-        resume();
-        
         final Document doc = getDocument();
-        
         if (doc == null) {
             LOG.log(Level.INFO, "SemanticHighlighter: Cannot get document!");
             return ;
         }
-        
+        SpiSupportAccessor.getInstance().setCancelSupport(cancel);
         try {
             ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
                 public @Override void run(ResultIterator resultIterator) throws ParseException {
@@ -447,6 +435,8 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
             });
         } catch (ParseException e) {
             LOG.log(Level.WARNING, null, e);
+        } finally {
+            SpiSupportAccessor.getInstance().removeCancelSupport(cancel);
         }
     }
     

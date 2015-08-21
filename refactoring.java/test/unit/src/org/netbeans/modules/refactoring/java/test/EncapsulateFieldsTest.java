@@ -73,6 +73,38 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test253363() throws Exception { // #219140 - Encapsulate Field setter with PCS does not throw property changes
+        writeFilesAndWaitForScan(src,
+                new File("encap/A.java", "package encap;\n"
+                + "public class A {\n"
+                + "    public int i;\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        (new A().i) = 5;\n"
+                + "        System.out.println(i);\n"
+                + "    }\n"
+                + "}\n"));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), false);
+        verifyContent(src,
+                new File("encap/A.java", "package encap;\n"
+                + "public class A {\n"
+                + "    private int i;\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        (new A()).setI(5);\n"
+                + "        System.out.println(getI());\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getI() {\n"
+                + "        return i;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setI(int i) {\n"
+                + "        this.i = i;\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test219140() throws Exception { // #219140 - Encapsulate Field setter with PCS does not throw property changes
         writeFilesAndWaitForScan(src,
                 new File("encap/A.java", "package encap;\n"

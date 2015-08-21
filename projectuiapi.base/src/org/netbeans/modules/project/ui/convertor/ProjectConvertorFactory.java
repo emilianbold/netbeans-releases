@@ -51,6 +51,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.uiapi.ProjectConvertorServiceFactory;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.project.ProjectFactory;
@@ -59,6 +60,7 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.ProjectConvertor;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -119,6 +121,28 @@ public final class ProjectConvertorFactory implements ProjectFactory2 {
         throw new IllegalStateException("ConvertorProject cannot be modified"); //NOI18N
     }
 
+    public static boolean isConvertorProject(@NonNull final Project project) {
+        Parameters.notNull("project", project); //NOI18N
+        return project.getLookup().lookup(ConvertorProject.class) != null;
+    }
+
+    public static void unregisterConvertorProject(@NonNull final Project project) {
+        Parameters.notNull("project", project);
+        if (!ProjectManager.mutex().isWriteAccess()) {
+            throw new IllegalStateException("Requires a write access on the ProjectManager's mutex");   //NOI18N
+        }
+        final ConvertorProject cp = project.getLookup().lookup(ConvertorProject.class);
+        if (cp == null) {
+            throw new IllegalArgumentException(String.format(
+                "The project: %s located in: %s of type: %s is not a convertor project.", //NOI18N
+                ProjectUtils.getInformation(project).getDisplayName(),
+                FileUtil.getFileDisplayName(project.getProjectDirectory()),
+                project.getClass().getName()
+            ));
+        }
+        cp.projectState.notifyDeleted();
+    }
+
     @CheckForNull
     private ProjectConvertor.Result isProjectImpl(@NonNull final FileObject projectDirectory) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<ProjectConvertor.Result>() {
@@ -166,7 +190,7 @@ public final class ProjectConvertorFactory implements ProjectFactory2 {
                     this.result));
             }
             this.projectLkp = new DynamicLookup();
-            final Lookup preLkp = Lookups.singleton(new OpenHook());
+            final Lookup preLkp = Lookups.fixed(new OpenHook(), this);
             final Queue<Object> postServices = new ArrayDeque<>();
             for (ProjectConvertorServiceFactory f : services.allInstances()) {
                 postServices.addAll(f.createServices(this, result));

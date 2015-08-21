@@ -337,18 +337,20 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         for (ElementHandle<TypeElement> elementHandle : elements) {
             TypeElement c = elementHandle.resolve(javac);
 
-            for (Element elm : c.getEnclosedElements()) {
-                if (ElementKind.METHOD == elm.getKind()) {
-                    ExecutableElement m = (ExecutableElement) elm;
-                    if (name.contentEquals(m.getSimpleName())
-                            && compareParams(javac, params, m.getParameters())
-                            && RefactoringUtils.isWeakerAccess(elm.getModifiers(), methodModifiers)) {
-                        String msg = NbBundle.getMessage(
-                        EncapsulateFieldRefactoringPlugin.class,
-                        msgKey,
-                        name,
-                        elm.getEnclosingElement().getSimpleName());
-                        return createProblem(p, false, msg);
+            if(c != null) {
+                for (Element elm : c.getEnclosedElements()) {
+                    if (ElementKind.METHOD == elm.getKind()) {
+                        ExecutableElement m = (ExecutableElement) elm;
+                        if (name.contentEquals(m.getSimpleName())
+                                && compareParams(javac, params, m.getParameters())
+                                && RefactoringUtils.isWeakerAccess(elm.getModifiers(), methodModifiers)) {
+                            String msg = NbBundle.getMessage(
+                                    EncapsulateFieldRefactoringPlugin.class,
+                                    msgKey,
+                                    name,
+                                    elm.getEnclosingElement().getSimpleName());
+                            return createProblem(p, false, msg);
+                        }
                     }
                 }
             }
@@ -940,9 +942,19 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
 
         private ExpressionTree createMemberSelection(ExpressionTree node, String name) {
             ExpressionTree selector;
-            if (node.getKind() == Tree.Kind.MEMBER_SELECT) {
-                MemberSelectTree select = (MemberSelectTree) node;
-                selector = make.MemberSelect(select.getExpression(), name);
+            ExpressionTree expr = node;
+            boolean addParens = false;
+            while (expr.getKind() == Tree.Kind.PARENTHESIZED) {
+                ParenthesizedTree parens = (ParenthesizedTree) expr;
+                expr = parens.getExpression();
+                addParens = true;
+            }
+            if (expr.getKind() == Tree.Kind.MEMBER_SELECT) {
+                ExpressionTree select = ((MemberSelectTree) expr).getExpression();
+                if (addParens) {
+                    select = make.Parenthesized(select);
+                }
+                selector = make.MemberSelect(select, name);
             } else {
                 selector = make.Identifier(name);
             }

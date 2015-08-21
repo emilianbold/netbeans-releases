@@ -153,6 +153,10 @@ implements ActionListener, Runnable, Callable<JButton> {
             }
         }
 
+        if ("UIHANDLER_TOO_BIG_FILE_LOADED".equals(record.getMessage())) {
+            AfterRestartExceptions.setIgnoreOOME(true);
+        }
+
         if (exceptionOnly) {
             if (record.getThrown() == null) {
                 return;

@@ -121,6 +121,10 @@ public class WildFlyProperties {
     private static final Logger LOGGER = Logger.getLogger(WildFlyProperties.class.getName());
 
     private final Version version;
+    
+    private final boolean wildfly;
+    
+    private final boolean servletOnly;
 
     /**
      * Creates a new instance of JBProperties
@@ -128,11 +132,14 @@ public class WildFlyProperties {
     public WildFlyProperties(WildflyDeploymentManager manager) {
         this.manager = manager;
         ip = manager.getInstanceProperties();
-        version = WildflyPluginUtils.getServerVersion(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR)));
+        File serverPath = new File(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
+        version = WildflyPluginUtils.getServerVersion(serverPath);
+        wildfly = WildflyPluginUtils.isWildFly(serverPath);
+        servletOnly = WildflyPluginUtils.isWildFlyServlet(serverPath);
     }
 
     public boolean isWildfly() {
-         return version != null && WildflyPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0;
+         return wildfly;
     }
 
     public String getServerProfile() {
@@ -148,6 +155,10 @@ public class WildFlyProperties {
 
     public Version getServerVersion() {
         return version;
+    }
+
+    public boolean isServletOnly() {
+        return servletOnly;
     }
 
     public boolean isVersion(Version targetVersion) {

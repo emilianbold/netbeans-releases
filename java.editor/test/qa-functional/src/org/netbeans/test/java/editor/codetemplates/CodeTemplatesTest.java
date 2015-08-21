@@ -129,7 +129,7 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
     }
 
     public void testAddTemplate() {
-        final String abbrev = "test";        
+        final String abbrev = "mytest";        
         final String expandedText = "System.out.println(\"test\");";
         final String expandedRegExpText = ".*System\\.out\\.println\\(\"test\"\\);.*";
         CodeTemplatesOperator oper = null;
@@ -394,7 +394,7 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
 
     public void testSynchronizedBlock() {
         final String abbrev = "form";
-        String regExp = ".*for \\(Map.Entry<Object, Object> entrySet \\: m\\.entrySet\\(\\)\\) \\{.*";
+        String regExp = ".*for \\(Map\\.Entry<Object, Object> en \\: m\\.entrySet\\(\\)\\) \\{.*";
         EditorOperator editor = null;
         try {
             openSourceFile("org.netbeans.test.java.editor.codetemplates", "Main");
@@ -402,9 +402,9 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
             useTemplateAt(editor, 6, 9, abbrev);
             checkContentOfEditorRegexp(editor, regExp);
             JEditorPaneOperator jepo = editor.txtEditorPane();
-            assertEquals("Text is not selected", "entrySet", jepo.getSelectedText());
+            assertEquals("Text is not selected", "en", jepo.getSelectedText());
             assertEquals("Wrong start selection position ", 159, jepo.getSelectionStart());
-            assertEquals("Wrong end selection position", 167, jepo.getSelectionEnd());
+            assertEquals("Wrong end selection position", 161, jepo.getSelectionEnd());
 
             jepo.typeText("var");
             checkContentOfEditorRegexp(editor, ".*var \\:.*var\\.getKey.*var\\.getValue.*");
@@ -530,7 +530,7 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
             useTemplateAt(editor, 6, 9, abbrev);
             jepo.pressKey(KeyEvent.VK_TAB);
             jepo.typeText("b");
-            checkContentOfEditorRegexp(editor, ".*for \\(Integer b1 \\: b\\) \\{.*");
+            checkContentOfEditorRegexp(editor, ".*for \\(Integer integer \\: b\\) \\{.*");
         } finally {
             editor.closeDiscard();
         }
@@ -593,6 +593,22 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
             editor.closeDiscard();
         }
     }
+    
+    public void testCodeTemplatesVariable() {        
+        final String abbrev = "variables";        
+        final String expandedText = "String a = \"${fqn currClassFQName} ${curM currMethodName} ${pkg currPackageName} ${name currClassName}\";";
+        final String expandedRegExpText = ".*String a = \"org\\.netbeans\\.test\\.java\\.editor\\.codetemplates\\.Main main org\\.netbeans\\.test\\.java\\.editor\\.codetemplates Main\";.*";
+        CodeTemplatesOperator oper = null;
+        try {
+            oper = CodeTemplatesOperator.invoke(true);
+            boolean selectTemplate = oper.switchLanguage("Java").addNewTemplate(abbrev).selectTemplate(abbrev);
+            assertTrue("Template with abbreviation " + abbrev + " not found", selectTemplate);
+            oper.setExtendedText(expandedText);
+        } finally {
+            oper.ok();
+        }
+        prepareEditorAndUseTemplate(6, 9, null, -1, abbrev, false, expandedRegExpText);
+    }
 
     public static Test suite() {
         return NbModuleSuite.create(
@@ -644,6 +660,7 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
 
         new EventTool().waitNoEvent(500);
         editor.pressKey(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK);
+        new EventTool().waitNoEvent(500);
         JListOperator jlo = new JListOperator(MainWindowOperator.getDefault());
         ListModel model = jlo.getModel();
         int i;
@@ -661,7 +678,9 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
         if (i == model.getSize()) {
             fail("Template not found in the hint popup");
         }
+        new EventTool().waitNoEvent(2000);
         jlo.selectItem(i);
+        new EventTool().waitNoEvent(500);
     }
 
     /**

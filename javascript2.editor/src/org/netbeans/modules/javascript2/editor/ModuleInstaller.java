@@ -54,12 +54,6 @@ import org.openide.modules.ModuleInstall;
 public class ModuleInstaller extends ModuleInstall {
 
     @Override
-    public void restored() {
-        // enable cache
-        ClassPathProviderImpl.getBootClassPath();
-    }
-     
-    @Override
     public void uninstalled() {
         GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.BOOT_CP,
                 new ClassPath[]{ClassPathProviderImpl.getBootClassPath()});

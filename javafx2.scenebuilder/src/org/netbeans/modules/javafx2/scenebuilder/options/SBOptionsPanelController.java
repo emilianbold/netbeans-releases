@@ -51,6 +51,7 @@ import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 @OptionsPanelController.SubRegistration(location = JavaOptions.JAVA,
 displayName = "#AdvancedOption_DisplayName_SB",
@@ -69,8 +70,9 @@ public final class SBOptionsPanelController extends OptionsPanelController {
     @Override
     public void update() {
         settings = Settings.getInstance();
+        Parameters.notNull("settings", settings); //NOI18N
+
         panel.load();
-        
         changed = false;
     }
 

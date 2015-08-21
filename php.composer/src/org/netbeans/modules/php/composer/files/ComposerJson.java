@@ -56,11 +56,15 @@ public final class ComposerJson {
     public static final String FILE_NAME = "composer.json"; // NOI18N
     public static final String PROP_REQUIRE = "REQUIRE"; // NOI18N
     public static final String PROP_REQUIRE_DEV = "REQUIRE_DEV"; // NOI18N
+    public static final String PROP_VENDOR_DIR = "VENDOR_DIR"; // NOI18N
     // file content
-    public static final String FIELD_REQUIRE = "require"; // NOI18N
-    public static final String FIELD_REQUIRE_DEV = "require-dev"; // NOI18N
+    private static final String FIELD_REQUIRE = "require"; // NOI18N
+    private static final String FIELD_REQUIRE_DEV = "require-dev"; // NOI18N
+    private static final String FIELD_CONFIG = "config"; // NOI18N
+    private static final String FIELD_VENDOR_DIR = "vendor-dir"; // NOI18N
+    // default values
+    static final String DEFAULT_VENDOR_DIR = "vendor"; // NOI18N
 
-    private final FileObject directory;
     private final JsonFile composerJson;
 
 
@@ -72,10 +76,10 @@ public final class ComposerJson {
     ComposerJson(FileObject directory, String filename) {
         assert directory != null;
         assert filename != null;
-        this.directory = directory;
         composerJson = new JsonFile(filename, directory, JsonFile.WatchedFields.create()
                 .add(PROP_REQUIRE, FIELD_REQUIRE)
-                .add(PROP_REQUIRE_DEV, FIELD_REQUIRE_DEV));
+                .add(PROP_REQUIRE_DEV, FIELD_REQUIRE_DEV)
+                .add(PROP_VENDOR_DIR, FIELD_CONFIG, FIELD_VENDOR_DIR));
     }
 
     public File getFile() {
@@ -86,16 +90,20 @@ public final class ComposerJson {
         return composerJson.exists();
     }
 
+    public File getVendorDir() {
+        String vendorDir = composerJson.getContentValue(String.class, FIELD_CONFIG, FIELD_VENDOR_DIR);
+        if (vendorDir == null) {
+            vendorDir = DEFAULT_VENDOR_DIR;
+        }
+        return new File(getFile().getParentFile(), vendorDir);
+    }
+
     public void addPropertyChangeListener(PropertyChangeListener composerJsonListener) {
         composerJson.addPropertyChangeListener(composerJsonListener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener composerJsonListener) {
         composerJson.removePropertyChangeListener(composerJsonListener);
-    }
-
-    public FileObject getDirectory() {
-        return directory;
     }
 
     public ComposerDependencies getDependencies() {

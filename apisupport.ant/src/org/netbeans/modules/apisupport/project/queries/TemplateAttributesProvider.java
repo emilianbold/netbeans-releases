@@ -51,6 +51,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
@@ -111,6 +115,23 @@ public class TemplateAttributesProvider implements CreateFromTemplateAttributesP
             }
         }
         values.put("encoding", "UTF-8"); // NOI18N
+        try {
+            Project prj = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+            ProjectInformation info = ProjectUtils.getInformation(prj);
+            if (info != null) {
+                String pname = info.getName();
+                if (pname != null) {
+                    values.put("name", pname);// NOI18N
+                }
+                String pdname = info.getDisplayName();
+                if (pdname != null) {
+                    values.put("displayName", pdname);// NOI18N
+                }
+            }
+        } catch (Exception ex) {
+            //not really important, just log.
+            LOG.log(Level.FINE, "", ex);
+        }
         return Collections.singletonMap("project", values); // NOI18N
     }
 

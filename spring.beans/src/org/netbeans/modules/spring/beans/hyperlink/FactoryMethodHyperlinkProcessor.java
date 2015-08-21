@@ -80,20 +80,24 @@ public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
                 return;
             }
             SpringConfigModel model = SpringConfigModel.forFileObject(fo);
-            try {
-                model.runReadAction(new Action<SpringBeans>() {
-                    @Override
-                    public void run(SpringBeans beans) {
-                        SpringBean bean = beans.findBean(factoryBeanName);
-                        if (bean == null) {
-                            className[0] = null;
-                            return;
+            if (model != null) {
+                try {
+                    model.runReadAction(new Action<SpringBeans>() {
+                        @Override
+                        public void run(SpringBeans beans) {
+                            SpringBean bean = beans.findBean(factoryBeanName);
+                            if (bean == null) {
+                                className[0] = null;
+                                return;
+                            }
+                            className[0] = bean.getClassName();
                         }
-                        className[0] = bean.getClassName();
-                    }
-                });
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                    });
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                    className[0] = null;
+                }
+            } else {
                 className[0] = null;
             }
 

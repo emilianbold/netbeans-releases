@@ -174,7 +174,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         preSetUp();
         super.setUp();
         super.clearWorkDir();
-        helper = new TestModelHelper(cleanCache);
+        helper = new TestModelHelper(cleanCache, getProjectFileFilter());
         assertNotNull("Model must be valid", getTraceModel().getModel()); // NOI18N
         postSetUp();
     }
@@ -183,6 +183,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         helper.shutdown(true);
+    }
+
+    protected TraceModelFileFilter getProjectFileFilter() {
+        return null;
     }
 
     protected final void performModelTest(File testFile, PrintStream streamOut, PrintStream streamErr) throws Exception {
@@ -296,7 +300,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             }
         };
         File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
-        PrintStream streamErr = goldenErrFileName == null ? null : new FilteredPrintStream(error) {
+        PrintStream streamErr = goldenErrFileName == null ? System.err : new FilteredPrintStream(error) {
 
             @Override
             public void print(String s) {
@@ -385,6 +389,9 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         String macro = "${origin}";
         String origin = goldenErrFile.getAbsolutePath();
         int i = origin.lastIndexOf(golden);
+        if (i < 1) { // this happens, for example, when running ReopenBrokenRepositoryValidationTest
+            return goldenErrFile;
+        }
         char separator = origin.charAt(i-1);
         origin = origin.substring(0,i-1)+origin.substring(i+golden.length());
         i = origin.lastIndexOf(separator);
@@ -396,9 +403,11 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         for (String line = br.readLine(); line != null; line = br.readLine()) {
             i = line.indexOf(macro);
             if (i >= 0) {
+                // fixing tests on Windows
                 char currentSeparator = line.charAt(i+macro.length());
                 if (separator != currentSeparator) {
-                    line = line.replace(currentSeparator, separator);
+                     //line = line.replace(currentSeparator, separator);
+                     line = line.replace(macro + currentSeparator, origin + separator);
                 }
                 line = line.replace(macro, origin);
             }

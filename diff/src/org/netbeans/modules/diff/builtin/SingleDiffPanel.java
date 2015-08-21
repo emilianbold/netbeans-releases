@@ -96,6 +96,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     private Action              prevAction;
     private JComponent innerPanel;
     private FileChangeListener baseFCL, modifiedFCL;
+    private PropertyChangeListener locationKeeper;
 
     /** Creates new form SingleDiffPanel */
     public SingleDiffPanel(FileObject left, FileObject right, FileObject type) throws IOException {
@@ -140,13 +141,19 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         getActionMap().put("jumpNext", nextAction);  // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
 
-        refreshController();
+        refreshController(false);
     }
 
-    private void refreshController() throws IOException {
+    private void refreshController(boolean keepLocation) throws IOException {
+        int diffIndex = -1;
         if (controller != null) {
+            diffIndex = controller.getDifferenceIndex();
             controller.removePropertyChangeListener(this);
             addPropertyChangeListener(this);
+            if (locationKeeper != null) {
+                controller.removePropertyChangeListener(locationKeeper);
+                locationKeeper = null;
+            }
         }
         
         // whatever the reason is that the fileobject isn't refreshed (!?),
@@ -159,6 +166,21 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         StreamSource ss2 = new DiffStreamSource(modified, type, true);
         controller = DiffController.createEnhanced(ss1, ss2);
         controller.addPropertyChangeListener(this);
+        if (keepLocation && diffIndex >= 0) {
+            final int fDiffIndex = diffIndex;
+            controller.addPropertyChangeListener(locationKeeper = new PropertyChangeListener() {
+
+                @Override
+                public void propertyChange (PropertyChangeEvent evt) {
+                    if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
+                        if (controller.getDifferenceCount() > controller.getDifferenceIndex()) {
+                            controller.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, fDiffIndex);
+                        }
+                        controller.removePropertyChangeListener(this);
+                    }
+                }
+            });
+        }
         
         controllerPanel.removeAll();
         innerPanel = controller.getJComponent();
@@ -341,7 +363,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     private void bRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRefreshActionPerformed
         LifecycleManager.getDefault().saveAll();
         try {
-            refreshController();
+            refreshController(false);
         } catch (IOException e) {
             Logger.getLogger(SingleDiffPanel.class.getName()).log(Level.SEVERE, "", e); // elegant, nice and simple exception logging
         }
@@ -353,7 +375,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         base = modified;
         modified = temp;
         try {
-            refreshController();
+            refreshController(true);
         } catch (IOException e) {
             Logger.getLogger(SingleDiffPanel.class.getName()).log(Level.SEVERE, "", e); // elegant, nice and simple exception logging
         }
@@ -395,7 +417,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
                 @Override
                 public void run() {
                     try {
-                        refreshController();
+                        refreshController(true);
                     } catch (IOException ex) {
                         Logger.getLogger(SingleDiffPanel.class.getName()).log(Level.SEVERE, "", ex); //NOI18N
                     }

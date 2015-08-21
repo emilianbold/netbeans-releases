@@ -400,6 +400,7 @@ public final class ClasspathInfo {
                             this.cachedAptSrcClassPath,
                             siblings.getProvider(),
                             fmTx) : null,
+                new TreeLoaderOutputFileManager(this.archiveProvider, fmTx),
                 this.memoryFileManager,
                 this.pgTx,
                 siblings);

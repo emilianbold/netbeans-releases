@@ -57,6 +57,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 /**
  * @author David Kaspar
@@ -80,7 +81,7 @@ public class BirdViewWindow extends JWindow implements MouseMotionListener {
         setAlwaysOnTop (true);
 
         JPanel pane = new JPanel ();
-        pane.setBorder (new CompoundBorder (new LineBorder (Color.BLACK, 1), new EmptyBorder (1, 1, 1, 1)));
+        pane.setBorder (new CompoundBorder (new LineBorder ((new DefaultLookFeel()).getForeground()/*Color.BLACK*/, 1), new EmptyBorder (1, 1, 1, 1)));
         pane.setLayout (new BorderLayout ());
         add (pane, BorderLayout.CENTER);
 
@@ -249,7 +250,7 @@ public class BirdViewWindow extends JWindow implements MouseMotionListener {
             Graphics2D gr = (Graphics2D) g;
             super.paint (g);
             if (scenePoint == null) {
-                gr.setColor (Color.BLACK);
+                gr.setColor ((new DefaultLookFeel()).getForeground()/*Color.BLACK*/);
                 gr.fill (getBounds ());
                 return;
             }

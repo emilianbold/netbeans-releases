@@ -44,6 +44,8 @@
 package org.netbeans.modules.java.editor.codegen;
 
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -213,7 +215,14 @@ public class GetterSetterGenerator implements CodeGenerator {
         } else {
             title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter_and_setter"); //NOI18N
         }
-        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
+        final DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
+        panel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                List<ElementHandle<? extends Element>> vars = panel.getVariables();
+                dialogDescriptor.setValid(vars != null && !vars.isEmpty());
+            }
+        });
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {

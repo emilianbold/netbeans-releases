@@ -92,7 +92,7 @@ class TranslateIdentifier extends TreePathScanner<Void, Void>{
                 Tree parent = path.getParentPath() != null ? path.getParentPath().getLeaf() : null;
                 
                 if (   (parent != null && parent.getKind() == Kind.CASE && ((CaseTree) parent).getExpression() == node && element.getKind() == ElementKind.ENUM_CONSTANT)
-                    || path.getCompilationUnit().getSourceFile() == ((Symbol) element).enclClass().sourcefile) {
+                    || (path.getCompilationUnit() != null && ((Symbol) element).enclClass() != null && path.getCompilationUnit().getSourceFile() == ((Symbol) element).enclClass().sourcefile)) {
                     translateMap.put(node, make.Identifier(element.getSimpleName()));
                 } else {
                     translateMap.put(node, make.QualIdent(element));

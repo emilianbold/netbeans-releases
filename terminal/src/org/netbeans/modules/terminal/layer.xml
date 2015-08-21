@@ -62,6 +62,9 @@ made subject to such option by the copyright holder.
             <file name="RunMainProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
             </file>
+            <file name="CONTEXT_MENU.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -76,8 +77,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -102,6 +107,16 @@ public class J2SEPlatformImpl extends JavaPlatform {
     private static final String DEFAULT_SOURCES_PROVIDER_PATH =
             "org-netbeans-api-java/platform/j2seplatform/defaultSourcesProviders/";  //NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEPlatformImpl.class.getName());
+
+    /**
+     * Holds {@link J2SEPlatformDefaultSources} implementations
+     */
+    private static final AtomicReference<Lookup.Result<J2SEPlatformDefaultSources>> sourcesRes = new AtomicReference<>();
+
+    /**
+     * Holds {@link J2SEPlatformDefaultJavadoc} implementations
+     */
+    private static final AtomicReference<Lookup.Result<J2SEPlatformDefaultJavadoc>> jdocRes = new AtomicReference<>();
 
     /**
      * Holds the display name of the platform
@@ -142,6 +157,18 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * Holds the specification of the platform
      */
     private Specification spec;
+
+    /**
+     * Holds a listener on global {@link J2SEPlatformDefaultSources} instances.
+     */
+    //@GuardedBy("this")
+    private LookupListener[] sourcesListener;
+
+    /**
+     * Holds a listener on global {@link J2SEPlatformDefaultJavadoc} instances.
+     */
+    //@GuardedBy("this")
+    private LookupListener[] jdocListener;
 
     J2SEPlatformImpl (String dispName, List<URL> installFolders, Map<String,String> initialProperties, Map<String,String> sysProperties, List<URL> sources, List<URL> javadoc) {
         super();
@@ -290,15 +317,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
      */
     @Override
     public final Collection<FileObject> getInstallFolders() {
-        Collection<FileObject> result = new ArrayList<FileObject> ();
-        for (Iterator<URL> it = this.installFolders.iterator(); it.hasNext();) {
-            URL url = it.next ();
-            FileObject root = URLMapper.findFileObject(url);
-            if (root != null) {
-                result.add (root);
-            }
-        }
-        return result;
+        return Util.toFileObjects(installFolders);
     }
 
 
@@ -323,7 +342,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     @Override
     public final ClassPath getSourceFolders () {
         if (sources == null) {
-            sources = createClassPath(defaultSources(this));
+            sources = createClassPath(defaultSources(true));
         }
         return this.sources;
     }
@@ -331,6 +350,14 @@ public class J2SEPlatformImpl extends JavaPlatform {
     public final void setSourceFolders (ClassPath c) {
         assert c != null;
         this.sources = c;
+        LookupListener listener;
+        synchronized(this) {
+            listener = sourcesListener == null ? null : sourcesListener[1];
+            sourcesListener = null;
+        }
+        if (listener != null) {
+            getJ2SEPlatformDefaultSources().removeLookupListener(listener);
+        }
         this.firePropertyChange(PROP_SOURCE_FOLDER, null, null);
     }
 
@@ -341,14 +368,14 @@ public class J2SEPlatformImpl extends JavaPlatform {
     @Override
     public final List<URL> getJavadocFolders () {
         if (javadoc == null) {
-            javadoc = shouldAddDefaultJavadoc() ? defaultJavadoc(this) : Collections.<URL>emptyList();
+            javadoc = shouldAddDefaultJavadoc() ? defaultJavadoc(true) : Collections.<URL>emptyList();
         }
         return this.javadoc;
     }
 
     public final void setJavadocFolders (List<URL> c) {
         assert c != null;
-        List<URL> safeCopy = Collections.unmodifiableList (new ArrayList<> (c));
+        final List<URL> safeCopy = Collections.unmodifiableList (new ArrayList<> (c));
         for (Iterator<URL> it = safeCopy.iterator(); it.hasNext();) {
             URL url = it.next ();
             if (!Util.isRemote(url) && !"jar".equals (url.getProtocol()) && FileUtil.isArchiveFile(url)) {
@@ -356,7 +383,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
             }
         }
         if (c.isEmpty()) {
-            if (toURIList(this.javadoc).equals(toURIList(defaultJavadoc(this)))) {
+            if (toURIList(this.javadoc).equals(toURIList(defaultJavadoc()))) {
                 //Set the PROP_NO_DEFAULT_JAVADOC
                 this.properties.put(PROP_NO_DEFAULT_JAVADOC, Boolean.TRUE.toString());
             }
@@ -365,6 +392,14 @@ public class J2SEPlatformImpl extends JavaPlatform {
             this.properties.remove(PROP_NO_DEFAULT_JAVADOC);
         }
         this.javadoc = safeCopy;
+        LookupListener listener;
+        synchronized (this) {
+            listener = jdocListener == null ? null : jdocListener[1];
+            jdocListener = null;
+        }
+        if (listener != null) {
+            getJ2SEPlatformDefaultJavadoc().removeLookupListener(listener);
+        }
         this.firePropertyChange(PROP_JAVADOC_FOLDER, null, null);
     }
 
@@ -466,15 +501,35 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * @param platform a JDK
      * @return a (possibly empty) list of URLs
      */
-    public static List<URL> defaultJavadoc(JavaPlatform platform) {
-        final JavaPlatform safePlatform = new ForwardingJavaPlatform(platform) {
+    public List<URL> defaultJavadoc() {
+        return defaultJavadoc(false);
+    }
+
+    private List<URL> defaultJavadoc(final boolean listen) {
+        final JavaPlatform safePlatform = new ForwardingJavaPlatform(this) {
             @Override
             public List<URL> getJavadocFolders() {
                 return Collections.<URL>emptyList();
             }
         };
         final Set<URI> roots = new LinkedHashSet<>();
-        for (J2SEPlatformDefaultJavadoc jdoc : Lookups.forPath(DEFAULT_JAVADOC_PROVIDER_PATH).lookupAll(J2SEPlatformDefaultJavadoc.class)) {
+        final Lookup.Result<? extends J2SEPlatformDefaultJavadoc> res = getJ2SEPlatformDefaultJavadoc();
+        if (listen) {
+            synchronized (this) {
+                if (jdocListener == null) {
+                    jdocListener = new LookupListener[2];
+                    jdocListener[0] = new LookupListener() {
+                        @Override
+                        public void resultChanged(LookupEvent ev) {
+                            javadoc = null;
+                        }
+                    };
+                    jdocListener[1] = WeakListeners.create(LookupListener.class, jdocListener[0], res);
+                    res.addLookupListener(jdocListener[1]);
+                }
+            }
+        }
+        for (J2SEPlatformDefaultJavadoc jdoc : res.allInstances()) {
             roots.addAll(jdoc.getDefaultJavadoc(safePlatform));
         }
         final List<URL> result = new ArrayList<>(roots.size());
@@ -488,16 +543,36 @@ public class J2SEPlatformImpl extends JavaPlatform {
         return Collections.unmodifiableList(result);
     }
 
+    public List<URL> defaultSources() {
+        return defaultSources(false);
+    }
+
     @NonNull
-    public static List<URL> defaultSources(JavaPlatform platform) {
-        final JavaPlatform safePlatform = new ForwardingJavaPlatform(platform) {
+    private List<URL> defaultSources(final boolean listen) {
+        final JavaPlatform safePlatform = new ForwardingJavaPlatform(this) {
             @Override
             public List<URL> getJavadocFolders() {
                 return Collections.<URL>emptyList();
             }
         };
         final Set<URI> roots = new LinkedHashSet<>();
-        for (J2SEPlatformDefaultSources src : Lookups.forPath(DEFAULT_SOURCES_PROVIDER_PATH).lookupAll(J2SEPlatformDefaultSources.class)) {
+        final Lookup.Result<? extends J2SEPlatformDefaultSources> res = getJ2SEPlatformDefaultSources();
+        if (listen) {
+            synchronized (this) {
+                if (sourcesListener == null) {
+                    sourcesListener = new LookupListener[2];
+                    sourcesListener[0] = new LookupListener() {
+                        @Override
+                        public void resultChanged(LookupEvent ev) {
+                            sources = null;
+                        }
+                    };
+                    sourcesListener[1] = WeakListeners.create(LookupListener.class, sourcesListener[0], res);
+                    res.addLookupListener(sourcesListener[1]);
+                }
+            }
+        }
+        for (J2SEPlatformDefaultSources src : res.allInstances()) {
             roots.addAll(src.getDefaultSources(safePlatform));
         }
         final List<URL> result = new ArrayList<>(roots.size());
@@ -521,5 +596,29 @@ public class J2SEPlatformImpl extends JavaPlatform {
             }
         }
         return false;
+    }
+
+    @NonNull
+    private static Lookup.Result<? extends J2SEPlatformDefaultSources> getJ2SEPlatformDefaultSources() {
+        Lookup.Result<J2SEPlatformDefaultSources> res = sourcesRes.get();
+        if (res == null) {
+            res = Lookups.forPath(DEFAULT_SOURCES_PROVIDER_PATH).lookupResult(J2SEPlatformDefaultSources.class);
+            if (!sourcesRes.compareAndSet(null, res)) {
+                res = sourcesRes.get();
+            }
+        }
+        return res;
+    }
+
+    @NonNull
+    private static Lookup.Result<? extends J2SEPlatformDefaultJavadoc> getJ2SEPlatformDefaultJavadoc() {
+        Lookup.Result<J2SEPlatformDefaultJavadoc> res = jdocRes.get();
+        if (res == null) {
+            res = Lookups.forPath(DEFAULT_JAVADOC_PROVIDER_PATH).lookupResult(J2SEPlatformDefaultJavadoc.class);
+            if (!jdocRes.compareAndSet(null, res)) {
+                res = jdocRes.get();
+            }
+        }
+        return res;
     }
 }

@@ -1,3 +1,27 @@
+
+# URLMappers are OK
+org.netbeans.modules.javascript2.debug.sources.SourceURLMapper
+org.netbeans.modules.hudson.impl.HudsonRemoteFileSystem$Mapper
+org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper
+
+#251589
+org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation$ExternalRootsState
+
+# SVN
+org.netbeans.modules.subversion.remote.SvnMetadataFolderLoader
+
+# Document-related interfaces split from editor.lib(2)
+org.netbeans.api.editor.document.AtomicLockListener
+
+#237882
+org.openide.filesystems.AbstractFileSystem$SymlinkInfo
+
+# new UI scroll editor tabs when a TC is being dragged over
+org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI$Autoscroller
+
+# commandline option
+org.netbeans.modules.autoupdate.cli.ModuleOptions
+
 #226670
 org.eclipse.core.runtime.internal.adaptor.BasicLocation$MockLocker
 org.eclipse.osgi.internal.baseadaptor.weaving.DynamicImportList

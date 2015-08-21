@@ -779,7 +779,7 @@ public class TreeFactory {
                 return make.at(NOPOS).Type((Type)type);
         }
     
-        return tp;
+        return tp.setType(t);
     }
     
     public TypeCastTree TypeCast(Tree type, ExpressionTree expression) {

@@ -277,8 +277,10 @@ public class JavacClassInfo extends SourceClassInfo {
                                     TypeMirror superTm = te.getSuperclass();
                                     if (superTm != null) {
                                         TypeElement superType = (TypeElement)cc.getTypes().asElement(superTm);
-
-                                        rslt[0] = new JavacClassInfo(ElementHandle.create(superType), cc);
+                                        
+                                        if (superType != null) {
+                                            rslt[0] = new JavacClassInfo(ElementHandle.create(superType), cc);
+                                        }
                                     }
                                 }
                             }

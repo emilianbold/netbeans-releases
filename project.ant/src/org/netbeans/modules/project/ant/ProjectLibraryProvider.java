@@ -244,7 +244,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
-        pcs.firePropertyChange(ArealLibraryProvider.PROP_OPEN_AREAS, null, null);
+        if (AntProjectHelper.PROJECT_XML_PATH.equals(ev.getPath())) {
+            pcs.firePropertyChange(ArealLibraryProvider.PROP_OPEN_AREAS, null, null);
+        }
     }
 
     public void propertiesChanged(AntProjectEvent ev) {}

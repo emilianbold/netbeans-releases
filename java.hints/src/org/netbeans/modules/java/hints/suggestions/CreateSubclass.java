@@ -134,8 +134,20 @@ public class CreateSubclass {
         }
 
         TypeElement typeElement = (TypeElement) info.getTrees().getElement(tp);
-
+        
         if (typeElement == null || typeElement.getModifiers().contains(Modifier.FINAL)) return null;
+
+        Element outer = typeElement.getEnclosingElement();
+        // do not offer the hint for non-static inner classes. Permit for classes nested into itnerface - no enclosing instance
+        if (outer != null && outer.getKind() != ElementKind.PACKAGE && outer.getKind() != ElementKind.INTERFACE) {
+            if (outer.getKind() != ElementKind.CLASS && outer.getKind() != ElementKind.ENUM) {
+                return null;
+            }
+            if (!typeElement.getModifiers().contains(Modifier.STATIC)) {
+                return null;
+            }
+        }
+
         
         ClassPath cp = info.getClasspathInfo().getClassPath(PathKind.SOURCE);
         FileObject root = cp.findOwnerRoot(info.getFileObject());
@@ -293,15 +305,17 @@ public class CreateSubclass {
                             public void run(WorkingCopy parameter) throws Exception {
                                 parameter.toPhase(JavaSource.Phase.RESOLVED);
                                 CompilationUnitTree cut = parameter.getCompilationUnit();
-                                TreePath path = TreePath.getPath(cut, cut.getTypeDecls().get(0));
-                                if (isAbstract) {
-                                    GeneratorUtils.generateAllAbstractMethodImplementations(parameter, path);
-                                }
-                                if (hasNonDefaultConstructor) {
-                                    ConstructorGenerator.Factory factory = new ConstructorGenerator.Factory();
-                                    Iterator<? extends CodeGenerator> generators = factory.create(Lookups.fixed(component, parameter, path)).iterator();
-                                    if (generators.hasNext()) {
-                                        generators.next().invoke();
+                                if (!cut.getTypeDecls().isEmpty()) {
+                                    TreePath path = TreePath.getPath(cut, cut.getTypeDecls().get(0));
+                                    if (isAbstract) {
+                                        GeneratorUtils.generateAllAbstractMethodImplementations(parameter, path);
+                                    }
+                                    if (hasNonDefaultConstructor) {
+                                        ConstructorGenerator.Factory factory = new ConstructorGenerator.Factory();
+                                        Iterator<? extends CodeGenerator> generators = factory.create(Lookups.fixed(component, parameter, path)).iterator();
+                                        if (generators.hasNext()) {
+                                            generators.next().invoke();
+                                        }
                                     }
                                 }
                             }

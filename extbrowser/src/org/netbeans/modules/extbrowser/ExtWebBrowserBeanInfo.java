@@ -53,17 +53,18 @@ import org.openide.util.Utilities;
 
 public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(ExtWebBrowser.class);
     }
 
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         PropertyDescriptor[] properties;
         if (Utilities.isWindows()) {
             try {
                 properties = new PropertyDescriptor [] {
                                     new PropertyDescriptor(ExtWebBrowser.PROP_BROWSER_EXECUTABLE, ExtWebBrowser.class),
-//                                    new PropertyDescriptor(ExtWebBrowser.PROP_BROWSER_START_TIMEOUT, ExtWebBrowser.class),
                                     new PropertyDescriptor(ExtWebBrowser.PROP_DDE_ACTIVATE_TIMEOUT, ExtWebBrowser.class),
                                     new PropertyDescriptor(ExtWebBrowser.PROP_DDE_OPENURL_TIMEOUT, ExtWebBrowser.class)
                                  };
@@ -71,10 +72,6 @@ public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
                 properties[0].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_browserExecutable"));
                 properties[0].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_browserExecutable"));
                 properties[0].setPreferred(true);
-
-//                properties[1].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_BROWSER_START_TIMEOUT"));
-//                properties[1].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_BROWSER_START_TIMEOUT"));
-//                properties[1].setExpert(true);
 
                 properties[1].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_DDE_ACTIVATE_TIMEOUT"));
                 properties[1].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_DDE_ACTIVATE_TIMEOUT"));
@@ -110,6 +107,7 @@ public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
     /**
     * Returns the icon. 
     */
+    @Override
     public Image getIcon (int type) {
         return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
     }

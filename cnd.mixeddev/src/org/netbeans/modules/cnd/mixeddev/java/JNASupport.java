@@ -66,6 +66,8 @@ import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.RPAREN;
 import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.stringize;
 import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.transform;
 import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.createMethodInfo;
+import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.isInterface;
+import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.isMethod;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaEntityInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 
@@ -136,27 +138,6 @@ public final class JNASupport {
     }
     
     private static final String JNA_LIBRARY = "com.sun.jna.Library"; // NOI18N
-    
-    private static boolean isMethod(TreePath path) {
-        return path != null &&
-            path.getLeaf().getKind() == Tree.Kind.METHOD;
-    }
-    
-    private static boolean isClass(TreePath path) {
-        return path != null && 
-               path.getLeaf() != null &&
-               path.getLeaf().getKind() == Tree.Kind.CLASS;
-    }
-    
-    private static boolean isInterface(TreePath path) {
-        return path != null && 
-               path.getLeaf() != null &&
-               path.getLeaf().getKind() == Tree.Kind.INTERFACE;
-    }    
-    
-    private static boolean isClassOrInterface(TreePath path) {
-        return isClass(path) || isInterface(path);
-    }
     
     private static boolean findLibraryInterface(CompilationController controller, TreePath ifacePath) {
         TypeElement ifaceElement = (TypeElement) controller.getTrees().getElement(ifacePath);

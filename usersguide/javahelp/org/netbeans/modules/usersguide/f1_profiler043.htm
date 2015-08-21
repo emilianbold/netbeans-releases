@@ -2,62 +2,28 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Live Results Window - Memory Usage</title>
+<title>Memory Snapshot Comparison</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="MemoryLiveResultsWindow.HelpCtx" name="MemoryLiveResultsWindow.HelpCtx"></a></p>
-<div id="NBCSH3327"><!-- infolevel="all" infotype="General" --><a id="sthref431" name="sthref431"></a>
-<h1>Live Results Window - Memory Usage</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="MemoryDiff.HelpCtx" name="MemoryDiff.HelpCtx"></a></p>
+<div id="NBCSH3379"><!-- infolevel="all" infotype="General" --><a id="sthref434" name="sthref434"></a>
+<h1>Memory Snapshot Comparison</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to displays data on object allocation and liveness. The profiling results displayed depend on which of the following options you choose. 
+<p>Use to display a comparison of two memory snapshots. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG784">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p><b>Record Object Creation Only</b></p>
-<p>The Live Results window displays a list of classes (including array classes), with the total size and number of instances that have been allocated since you issued the instrumentation command. All classes currently loaded by the target JVM (and each new class as it is loaded) are instrumented.</p>
+<p><b>Sampling Comparison</b></p>
+<p>If the <b>Quick (Sampled)</b> option was selected for the profiling session, the comparison provides details on the difference between the number of live objects in the two snapshots.</p>
 
-<table summary="Descriptions of object creation results of Live Results window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t43">Element</th>
-<th align="left" valign="bottom" id="r1c2-t43">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t43" headers="r1c1-t43">
-<p>Bytes Allocated [%]</p>
-</td>
-<td align="left" headers="r2c1-t43 r1c2-t43">Displays a graphical representation of the percentage of bytes allocated.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t43" headers="r1c1-t43">
-<p>Bytes Allocated</p>
-</td>
-<td align="left" headers="r3c1-t43 r1c2-t43">Displays the actual number of bytes allocated and the percentage of total bytes.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t43" headers="r1c1-t43">
-<p>Objects Allocated</p>
-</td>
-<td align="left" headers="r4c1-t43 r1c2-t43">Displays the number of live objects and the percentage of the total number of objects.</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>Right-click a class name to access the following context menu commands.</p>
-
-<table summary="Descriptions of context menu commands for classes in Live Results window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Description of sampling comparison results in Memory Snapshot Comparison window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="34%" />
 <col width="*" />
 <thead>
@@ -69,24 +35,36 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t44" headers="r1c1-t44">
-<p>Go To Source</p>
+<p>Class Name - Live Objects</p>
 </td>
-<td align="left" headers="r2c1-t44 r1c2-t44">Opens the source <code dir="ltr">.java</code> file for the selected class in the Source Editor.</td>
+<td align="left" headers="r2c1-t44 r1c2-t44">Displays the name of the class or live object.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t44" headers="r1c1-t44">
-<p>Log Class History</p>
+<p>Live Bytes [%]</p>
 </td>
-<td align="left" headers="r3c1-t44 r1c2-t44">Displays the history for the selected instance.</td>
+<td align="left" headers="r3c1-t44 r1c2-t44">Provides a graphic display of the relative amount of memory currently occupied by the live object.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t44" headers="r1c1-t44">
+<p>Live Bytes</p>
+</td>
+<td align="left" headers="r4c1-t44 r1c2-t44">Displays the memory size in bytes that is currently occupied by the live object.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t44" headers="r1c1-t44">
+<p>Live Objects</p>
+</td>
+<td align="left" headers="r5c1-t44 r1c2-t44">Displays the exact difference between the number of live objects in the two snapshots.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p><b>Record Both Object Allocation and Garbage Collection</b></p>
-<p>The Live Results window displays both object allocation and garbage collection data.</p>
+<p><b>Allocations Comparison</b></p>
+<p>If <b>Record object creation</b> was selected for the profiling session, the comparison provides details on the total number of instances.</p>
 
-<table summary="Descriptions of object allocation and GC data in Live Results window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Description of allocations comparison results in Memory Snapshot Comparison window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="34%" />
 <col width="*" />
 <thead>
@@ -98,57 +76,36 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t45" headers="r1c1-t45">
-<p>Live bytes [%]</p>
+<p>Class Name - Allocated Objects</p>
 </td>
-<td align="left" headers="r2c1-t45 r1c2-t45">Displays graphical representation of live bytes.</td>
+<td align="left" headers="r2c1-t45 r1c2-t45">Displays the name of the class or allocated object.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t45" headers="r1c1-t45">
-<p>Live byte</p>
+<p>Bytes Allocated [%]</p>
 </td>
-<td align="left" headers="r3c1-t45 r1c2-t45">Displays the actual number of live bytes.</td>
+<td align="left" headers="r3c1-t45 r1c2-t45">Provides a graphic display of the relative amount of memory occupied by instances of the class.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t45" headers="r1c1-t45">
-<p>Live Objects</p>
+<p>Bytes Allocated</p>
 </td>
-<td align="left" headers="r4c1-t45 r1c2-t45">Displays the size and number of live tracked objects for the given class at the moment.
-<p>You can set the proportion of objects that are tracked when you configure the profiling session.</p>
-</td>
+<td align="left" headers="r4c1-t45 r1c2-t45">Displays the memory size in bytes occupied by the instances of the class.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t45" headers="r1c1-t45">
-<p>Allocated objects</p>
+<p>Objects Allocated</p>
 </td>
-<td align="left" headers="r5c1-t45 r1c2-t45">Displays the total number of tracked objects that have been allocated.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t45" headers="r1c1-t45">
-<p>Average object age</p>
-</td>
-<td align="left" headers="r6c1-t45 r1c2-t45">Displays the average age for the live tracked objects of this class, measured as the number of garbage collections that the object has survived.
-<p>The IDE does not distinguish between partial (young generation) and full garbage collections if a generational garbage collector is used.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t45" headers="r1c1-t45">
-<p>Generations</p>
-</td>
-<td align="left" headers="r7c1-t45 r1c2-t45">Displays the number of survived generations and represents the total number of different object ages for objects of this class.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t45" headers="r1c1-t45">
-<p>Total number of allocated objects</p>
-</td>
-<td align="left" headers="r8c1-t45 r1c2-t45">Displays the total number of allocated objects for this class.</td>
+<td align="left" headers="r5c1-t45 r1c2-t45">Displays the number of all instances of the class.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Right-click a class name for the following context menu commands:</p>
+<p><b>Liveness Comparison</b></p>
+<p>If <b>Record both object creation and garbage collection</b> was selected for the profiling session, the comparison provides more detailed data on live instances.</p>
 
-<table summary="Descriptions of context menu commands for classes in Live Results window with GC results." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Description of liveness comparison results in Memory Snapshot Comparison window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="34%" />
 <col width="*" />
 <thead>
@@ -160,47 +117,64 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t46" headers="r1c1-t46">
-<p>Go To Source</p>
+<p>Class Name - Allocated Objects</p>
 </td>
-<td align="left" headers="r2c1-t46 r1c2-t46">Opens the source <code dir="ltr">.java</code> file for the selected class in the Source Editor.</td>
+<td align="left" headers="r2c1-t46 r1c2-t46">Displays the name of the class or allocated object.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t46" headers="r1c1-t46">
-<p>Log Class History</p>
+<p>Live Bytes [%]</p>
 </td>
-<td align="left" headers="r3c1-t46 r1c2-t46">Displays the history for the selected instance.</td>
+<td align="left" headers="r3c1-t46 r1c2-t46">Provides a graphic display of the relative amount of memory occupied by live instances of the class.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t46" headers="r1c1-t46">
-<p>Stop Profiling this Class</p>
+<p>Live Bytes</p>
 </td>
-<td align="left" headers="r4c1-t46 r1c2-t46">Stops profiling the selected class.</td>
+<td align="left" headers="r4c1-t46 r1c2-t46">Displays the memory size in bytes that is currently occupied by the live instances of the class.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t46" headers="r1c1-t46">
-<p>Stop Profiling Classes Below this Line</p>
+<p>Live Objects</p>
 </td>
-<td align="left" headers="r5c1-t46 r1c2-t46">Stops profiling classes below the selected line.</td>
+<td align="left" headers="r5c1-t46 r1c2-t46">Displays the number of current live instances of the class.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t46" headers="r1c1-t46">
-<p>Take Snapshot and Show Allocation Stack Traces.</p>
+<p>Allocated Objects</p>
 </td>
-<td align="left" headers="r6c1-t46 r1c2-t46">Takes a snapshot of the current profiling session and displays the memory allocation stack trace.
-<p>This command available only if you selected the Record stack trace for allocations option in the Analyze Memory pane of the Profiler window.</p>
+<td align="left" headers="r6c1-t46 r1c2-t46">Displays the number of all instances of the class created since the application was started or since the results were last reset.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t46" headers="r1c1-t46">
+<p>Average Age</p>
 </td>
+<td align="left" headers="r7c1-t46 r1c2-t46">Displays the average age in generations of live instances of the class.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t46" headers="r1c1-t46">
+<p>Generations</p>
+</td>
+<td align="left" headers="r8c1-t46 r1c2-t46">Displays the number of different generations (garbage collections survived) of live instances of the class.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p><b>Note:</b> Limiting the profiled classes to only those you are interested in can help reduce the profiling overhead.</p>
-<a id="NBCSH3345" name="NBCSH3345"></a>
+<a id="NBCSH3395" name="NBCSH3395"></a>
 <hr><p><b>Related Topics</b></p>
-<p>Developing Applications with NetBeans IDE, 
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
-<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

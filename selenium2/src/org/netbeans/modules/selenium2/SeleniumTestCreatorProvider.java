@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Theofanis Oikonomou
  */
-@Registration(displayName = TestCreatorProvider.FRAMEWORK_SELENIUM)
+@Registration(displayName = TestCreatorProvider.FRAMEWORK_SELENIUM, identifier = TestCreatorProvider.IDENTIFIER_SELENIUM)
 public class SeleniumTestCreatorProvider extends TestCreatorProvider {
 
     @Override

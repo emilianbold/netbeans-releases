@@ -214,7 +214,12 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 int i = 0;
                 for(Configuration conf : configurationDescriptor.getConfs().getConfigurations()) {
                     MakeConfiguration mk = (MakeConfiguration)conf;
-                    if (localPlatform == mk.getDevelopmentHost().getBuildPlatform()) {
+                    if (mk.getPlatformSpecific().getValue()) {
+                        if (localPlatform == mk.getDevelopmentHost().getBuildPlatform()) {
+                            configurationDescriptor.getConfs().setActive(i);
+                            break;
+                        }
+                    } else {
                         configurationDescriptor.getConfs().setActive(i);
                         break;
                     }

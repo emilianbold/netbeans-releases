@@ -46,20 +46,18 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.ExecutionContext;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.debug.Debugger;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrument.Probe;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.debug.DebugClient;
-import com.oracle.truffle.debug.DebugEngine;
-import com.oracle.truffle.debug.DebugException;
+import com.oracle.truffle.api.vm.TruffleVM;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
 import com.oracle.truffle.js.runtime.JSContext;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
@@ -69,8 +67,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.script.ScriptEngine;
-import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSDebugProber;
-import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSSourceExecution;
 
 /**
  *
@@ -80,20 +76,23 @@ class JPDATruffleDebugManager {
     
     //private static final JSNodeProberDelegate nodeProberDelegate = new JSNodeProberDelegate();
     
-    private final ScriptEngine engine;
-    private final ExecutionContext context;
-    private final TopFrameHolder topFrameHolder;
-    private final JPDAJSSourceExecution sourceExecution;
-    private final DebugEngine debugger;
+    //private final ScriptEngine engine;
+    //private final ExecutionContext context;
+    //private final TopFrameHolder topFrameHolder;
+    //private final TruffleVM.Language language;
+    private final Debugger debugger;
+    private final TruffleVM tvm;
 
-    public JPDATruffleDebugManager(ScriptEngine engine, ExecutionContext context, DebugClient dbgClient) {
+    public JPDATruffleDebugManager(Debugger debugger, TruffleVM tvm) {
         //super(dbgClient);
-        this.engine = engine;
-        this.context = context;
-        this.topFrameHolder = new TopFrameHolder();
-        ((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
-        this.sourceExecution = new JPDAJSSourceExecution((TruffleJSEngine) engine);
-        this.debugger = DebugEngine.create(dbgClient, sourceExecution);
+        //this.engine = engine;
+        //this.context = context;
+        //this.topFrameHolder = new TopFrameHolder();
+        //((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
+        //this.sourceExecution = new JPDAJSSourceExecution((TruffleJSEngine) engine);
+        //language = getLanguage(engine);
+        this.debugger = debugger; // DebugEngine.create(dbgClient, language);
+        this.tvm = tvm;
         /*
         startExecution(null);
         prepareContinue();
@@ -106,28 +105,48 @@ class JPDATruffleDebugManager {
     static JPDATruffleDebugManager setUp() {
         //System.err.println("JPDATruffleDebugManager.setUp()");
         //TruffleJSEngineFactory.addNodeProber(nodeProberDelegate);
-        Probe.registerASTProber(new JPDAJSDebugProber());
+        //Probe.registerASTProber(new JPDAJSDebugProber());
         return null; // Initialize TruffleJSEngine class only.
     }
 
-    static JPDATruffleDebugManager setUp(ScriptEngine engine) {
+    static JPDATruffleDebugManager setUp(Debugger debugger, TruffleVM tvm) {
         //System.err.println("JPDATruffleDebugManager.setUp()");
-        JSContext jsContext = ((TruffleJSEngine) engine).getJSContext();
+        //JSContext jsContext = ((TruffleJSEngine) engine).getJSContext();
         //ScriptContext context = engine.getContext();
-        JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(engine, jsContext, new JPDADebugClient(jsContext));
+        JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(debugger, tvm);
+                //engine, jsContext, new JPDADebugClient(getLanguage(engine)));
         //jsContext.setDebugContext(new JPDADebugContext(jsContext, debugManager));
         //jsContext.addNodeProber(new JPDAJSNodeProber(jsContext, debugManager, ));
         //System.err.println("SET UP of JPDATruffleDebugManager = "+debugManager+" for "+engine+" and prober to "+jsContext);
         return debugManager;
     }
     
+    /*
+    private static TruffleVM.Language getLanguage(ScriptEngine engine) {
+        Map<String, TruffleVM.Language> languages = TruffleVM.newVM().build().getLanguages();
+        List<String> languageMIMETypes = engine.getFactory().getMimeTypes();
+        TruffleVM.Language language = languages.get(languageMIMETypes.get(0));
+        return language;
+    }
+    */
+
+    /*
     ExecutionContext getContext() {
         return context;
-    }
+    }*/
     
-    DebugEngine getDebugger() {
+    Debugger getDebugger() {
         return debugger;
     }
+    
+    TruffleVM getTruffleVM() {
+        return tvm;
+    }
+    
+    /*
+    Visualizer getVisualizer() {
+        return language.getToolSupport().getVisualizer();
+    }*/
     
     /*
     @Override
@@ -179,9 +198,10 @@ class JPDATruffleDebugManager {
     }
     */
     
-    Object eval(Source source) {
+    /*
+    Object eval(Source source) throws DebugException {
         return debugger.eval(source, topFrameHolder.currentNode, topFrameHolder.currentTopFrame);
-    }
+    }*/
     
     /*
     @Override
@@ -261,13 +281,14 @@ class JPDATruffleDebugManager {
         return lb;
     }*/
     
+    /*
     private static class JPDADebugClient implements DebugClient {
         
-        private final ExecutionContext context;
+        private final TruffleVM.Language language;
         private TopFrameHolder topFrameHolder;
         
-        public JPDADebugClient(ExecutionContext context) {
-            this.context = context;
+        public JPDADebugClient(TruffleVM.Language language) {
+            this.language = language;
         }
 
         @Override
@@ -276,7 +297,7 @@ class JPDATruffleDebugManager {
             topFrameHolder.currentTopFrame = frame;
             topFrameHolder.currentNode = astNode;
             SourcePosition position = getPosition(astNode);
-            Visualizer visualizer = context.getVisualizer();
+            Visualizer visualizer = language.getToolSupport().getVisualizer();
             
             FrameInfo fi = new FrameInfo(frame, visualizer, astNode);
             
@@ -286,14 +307,14 @@ class JPDATruffleDebugManager {
                         position.line, position.code,
                         fi.slots, fi.slotNames, fi.slotTypes,
                         fi.stackTrace, fi.topFrame,
-                        new TruffleObject(context, "this", fi.thisObject));
+                        new TruffleObject(visualizer, "this", fi.thisObject));
             } else {
                 JPDATruffleAccessor.executionHalted(astNode, frame,
                         position.id, position.name, position.path,
                         position.line, position.code,
                         fi.slots, fi.slotNames, fi.slotTypes,
                         fi.stackTrace, fi.topFrame,
-                        new TruffleObject(context, "this", fi.thisObject));
+                        new TruffleObject(visualizer, "this", fi.thisObject));
             }
             
             topFrameHolder.currentTopFrame = null;
@@ -305,19 +326,20 @@ class JPDATruffleDebugManager {
         }
 
         @Override
-        public ExecutionContext getExecutionContext() {
-            return context;
+        public TruffleVM.Language getLanguage() {
+            return language;
         }
 
     }
+    */
     
     /*
     private static class JPDAInstrumentProxy implements DebugInstrumentCallback {
-        
+    
         private final DebugInstrumentCallback delegateCallback;
         private final ExecutionContext context;
         private boolean isStepping = false;
-        
+    
         public JPDAInstrumentProxy(DebugInstrumentCallback delegateCallback,
                                    ExecutionContext context) {
             this.delegateCallback = delegateCallback;
@@ -368,124 +390,12 @@ class JPDATruffleDebugManager {
     }
     */
     
-    private static final class FrameInfo {
-        
-        private final FrameSlot[] slots;
-        private final String[] slotNames;
-        private final String[] slotTypes;
-        private final FrameInstance[] stackTrace;
-        private final String topFrame;
-        private final Object thisObject;
-        
-        public FrameInfo(MaterializedFrame frame, Visualizer visualizer,
-                         Node astNode) {
-            Object[] arguments = frame.getArguments();
-            FrameDescriptor frameDescriptor = frame.getFrameDescriptor();
-            Set<Object> identifiers = frameDescriptor.getIdentifiers();
-            
-            List<? extends FrameSlot> slotsList = frameDescriptor.getSlots();
-            ArrayList<FrameSlot> slotsArr = new ArrayList<>();
-            for (FrameSlot fs : slotsList) {
-                FrameSlotKind kind = fs.getKind();
-                if (FrameSlotKind.Illegal.equals(kind)) {
-                    continue;
-                }
-                slotsArr.add(fs);
-            }
-            slots = slotsArr.toArray(new FrameSlot[]{});
-            slotNames = new String[slots.length];
-            slotTypes = new String[slots.length];
-            for (int i = 0; i < slots.length; i++) {
-                slotNames[i] = visualizer.displayIdentifier(slots[i]);// slots[i].getIdentifier().toString();
-                slotTypes[i] = slots[i].getKind().toString();
-            }
-            //System.err.println("FrameInfo: arguments = "+Arrays.toString(arguments));
-            //System.err.println("           identifiers = "+frameDescriptor.getIdentifiers());
-            if (frame instanceof VirtualFrame) {
-                Object thisObj = JSFrameUtil.getThisObj((VirtualFrame) frame);
-                //System.err.println("           this = "+thisObj);
-                thisObject = thisObj;
-            } else if (arguments.length > 1) {
-                thisObject = arguments[0];
-            } else {
-                thisObject = null;
-            }
-            
-            SourcePosition position = getPosition(astNode);
-            //thisObject = new TruffleObject(context, "this", thisObj);
-            /*
-            System.err.println("JPDADebugClient: HALTED AT "+astNode+", "+frame+
-                               "\n                 src. pos. = "+
-                               position.path+":"+position.line);
-            System.err.println("  frame arguments = "+Arrays.toString(arguments));
-            System.err.println("  identifiers = "+Arrays.toString(identifiers.toArray()));
-            System.err.println("  slots = "+Arrays.toString(slotsList.toArray()));
-            
-            for (int i = 0; i < slots.length; i++) {
-                System.err.println("    "+slotNames[i]+" = "+JPDATruffleAccessor.getSlotValue(frame, slots[i]));
-            }
-            */
-            ArrayList<FrameInstance> stackTraceArr = new ArrayList<>();
-            Truffle.getRuntime().iterateFrames((FrameInstance fi) -> {
-                // Filter frames with null call node. How should we display them?
-                if (fi.getCallNode() == null) {
-                    return false;
-                }
-                return stackTraceArr.add(fi);
-            });
-            stackTrace = stackTraceArr.toArray(new FrameInstance[]{});
-            /*
-            String[] stackNames = new String[stackTrace.length];
-            for (int i = 0; i < stackTrace.length; i++) {
-                //stackNames[i] = stackTrace[i].getCallNode().getDescription();
-                stackNames[i] = visualizer.displaySourceLocation(stackTrace[i].getCallNode());
-            }*/
-            //System.err.println("  stack trace = "+Arrays.toString(stackTrace));
-            //System.err.println("  stack names = "+Arrays.toString(stackNames));
-            topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget())+"\n"+
-                       visualizer.displayMethodName(astNode)+"\n"+
-                       visualizer.displaySourceLocation(astNode)+"\n"+
-                       position.id+"\n"+
-                       position.name+"\n"+
-                       position.path+"\n"+
-                       position.line;
-            //System.err.println("  top frame = \n'"+topFrame+"'");
-        }
-    }
-    
-    static final class SourcePosition {
-        
-        private static final Map<Source, Long> sourceId = new WeakHashMap<>();
-        private static long nextId = 0;
-        
-        long id;
-        String name;
-        String path;
-        int line;
-        String code;
-        
-        public SourcePosition(Source source, String name, String path, int line, String code) {
-            this.id = getId(source);
-            this.name = name;
-            this.path = path;
-            this.line = line;
-            this.code = code;
-        }
-        
-        private static synchronized long getId(Source s) {
-            Long id = sourceId.get(s);
-            if (id == null) {
-                id = new Long(nextId++);
-                sourceId.put(s, id);
-            }
-            return id;
-        }
-    }
-    
+    /*
     private static class TopFrameHolder {
         MaterializedFrame currentTopFrame;
         Node currentNode;
     }
+    */
     
     /*
     private static class JPDADebugContext implements DebugContext {

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.glassfish.common.nodes;
 
+import java.awt.Component;
 import org.netbeans.modules.glassfish.tooling.admin.CommandUndeploy;
 import org.netbeans.modules.glassfish.tooling.admin.CommandDisable;
 import org.netbeans.modules.glassfish.tooling.admin.CommandDeploy;
@@ -65,6 +66,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.PartialCompletionException;
@@ -446,6 +448,7 @@ public class Hk2Cookie {
         @Override
         public void openCustomizer() {
             final BasePanel retVal = getBasePanel();
+            retVal.initializeUI();
             RequestProcessor.getDefault().post(new Runnable() {
 
                 // fetch the data for the BasePanel
@@ -453,7 +456,7 @@ public class Hk2Cookie {
                 public void run() {
                     if (instance != null) {
                         Future<ResultMap> future = ServerAdmin.<ResultMap>exec(
-                        instance, new CommandGetProperty(query));
+                                instance, new CommandGetProperty(query));
                         Map<String, String> value;
                         try {
                             ResultMap result = future.get();
@@ -461,11 +464,11 @@ public class Hk2Cookie {
                         } catch (InterruptedException ie) {
                             Logger.getLogger("glassfish")
                                     .log(Level.INFO, ie.getMessage(), ie);
-                            value = new HashMap<String,String>();
+                            value = new HashMap<String, String>();
                         } catch (ExecutionException ee) {
                             Logger.getLogger("glassfish")
                                     .log(Level.INFO, ee.getMessage(), ee);
-                            value = new HashMap<String,String>();
+                            value = new HashMap<String, String>();
                         }
                         retVal.initializeData(name, value);
                     }

@@ -73,6 +73,34 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="TestCreatorConfiguration_validity">
+        <api name="CommonTestrunnerUIAPI"/>
+        <summary>Added methods to determine the validity of the configuration panel in the "Create Tests" dialog</summary>
+        <version major="1" minor="9"/>
+        <date day="20" month="8" year="2015"/>
+        <author login="theofanis"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added two new methods, isValid() and getErrorMessage(), in order to be able to determine 
+            the validity of the configuration panel in the "Create Tests" dialog.
+        </description>
+        <class package="org.netbeans.modules.gsf.testrunner.ui.spi" name="TestCreatorConfiguration"/>
+        <issue number="253523"/>
+    </change>
+    <change id="TestCreatorConfiguration">
+        <api name="CommonTestrunnerUIAPI"/>
+        <summary>SPI to make hooking to the configuration dialog when creating tests easier</summary>
+        <version major="1" minor="5"/>
+        <date day="23" month="7" year="2015"/>
+        <author login="theofanis"/>
+        <compatibility addition="yes"/>
+        <description>
+            Modified existing SPI in order to be easier for providers to hook to the configuration dialog when creating tests, so that it
+	    can be filled with correct data for example by JUnit, TestNG, PHPUnit or Selenium support.
+        </description>
+        <class package="org.netbeans.modules.gsf.testrunner.ui.spi" name="TestCreatorConfiguration"/>
+        <issue number="253523"/>
+    </change>
     <change id="TestCreatorConfigurationProvider">
         <api name="CommonTestrunnerUIAPI"/>
         <summary>SPI to hook to the configuration dialog when creating tests</summary>

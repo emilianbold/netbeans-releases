@@ -504,19 +504,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             return childrenFO;
         } catch (InterruptedException | InterruptedIOException | 
-                FileNotFoundException | CancellationException ex) {
-            // don't report, this just means that we aren't connected
-            // or just interrupted (for example by FileChooser UI)
-            // or cancelled
+                FileNotFoundException | CancellationException | ExecutionException ex ) {
+            // InterruptedException:
+            //      don't report, this just means that we aren't connected
+            //      or just interrupted (for example by FileChooser UI)
+            //      or cancelled
+            // ExecutionException: should we report it?
             RemoteLogger.finest(ex, this);
-        } catch (ExecutionException ex) {
+        } catch (ConnectException ex) {
             RemoteLogger.finest(ex, this);
-            // should we report ExecutionException?
             // don't report, this just means that we aren't connected
             setFlag(CONNECTION_ISSUES, true);
-            RemoteLogger.finest(ex, this);
-        }catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            RemoteLogger.info(ex, this); // undo won't show a red brick dialog, but print
         }
         return new RemoteFileObject[0];
     }
@@ -547,21 +547,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 trace("refreshDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
             }
         }
-    }
-
-    private static final Collection<String> AUTO_MOUNTS;
-    static {
-        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/workspace")); //NOI18N
-        String t = System.getProperty("remote.autofs.list"); //NOI18N
-        if (t != null) {
-            String[] paths = t.split(","); //NOI18N
-            for (String p : paths) {
-                if (p.startsWith("/")) { //NOI18N
-                    list.add(p);
-                }
-            }
-        }
-        AUTO_MOUNTS = Collections.unmodifiableList(list);
     }
 
     private boolean isProhibited() {
@@ -714,8 +699,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private boolean isAutoMount() {
-        String path = getPath();
-        return AUTO_MOUNTS.contains(path);
+        return getFileSystem().isAutoMount(getPath());
     }
 
     private boolean canLs() {
@@ -1100,6 +1084,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (trace) { trace("returning cached storage"); } // NOI18N
             return storage;
         }
+        if (childName != null && RemoteFileSystem.isSniffing(childName)) {
+            if (isAutoMount() || getFileSystem().isDirectAutoMountChild(getPath())) {
+                return DirectoryStorage.EMPTY;
+            }
+        }
         // neither memory nor disk cache helped or was request to force refresh
         // proceed with reading remote content
 
@@ -1129,6 +1118,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
             if (trace) { trace("synchronizing"); } // NOI18N
+
+            if (childName != null && RemoteLogger.isLoggable(Level.FINEST)) {
+                RemoteLogger.finest("{0} is asked for child {1} while not having cache", getPath(), childName);
+            }
+
             Exception problem = null;
             Map<String, DirEntry> newEntries = Collections.emptyMap();
             try {
@@ -1575,7 +1569,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (rc == 0) {
                 getFileSystem().incrementFileCopyCount();
             } else {
-                RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
                         "EXC_CanNotDownload", getDisplayName(child.getPath()), errorWriter.toString())); //NOI18N
             }
         } catch (InterruptedException | ExecutionException ex) {

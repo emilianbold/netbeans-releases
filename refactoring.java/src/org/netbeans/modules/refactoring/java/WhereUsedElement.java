@@ -44,7 +44,6 @@
 package org.netbeans.modules.refactoring.java;
 
 import com.sun.source.tree.*;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
@@ -80,24 +79,18 @@ import static org.netbeans.modules.refactoring.java.Bundle.*;
 
 @NbBundle.Messages({"WARN_ElementNotFound=The destination was not found."})
 public class WhereUsedElement extends SimpleRefactoringElementImplementation implements FiltersManager.Filterable {
-    private PositionBounds bounds;
-    private String htmlText;
-    private String elementText;
-    private FileObject parentFile;
+    private final PositionBounds bounds;
+    private final String htmlText;
+    private final String elementText;
+    private final FileObject parentFile;
     private final JavaWhereUsedFilters.ReadWrite access;
     private final boolean inComment;
     private final boolean inImport;
+    private final boolean inPlatform;
+    private final boolean inDependency;
     private final boolean inTestclass;
 
-//    public WhereUsedElement(PositionBounds bounds, String htmlText, FileObject parentFile, TreePath tp, CompilationInfo info) {
-//        this(bounds, htmlText, parentFile, tp, info, null, false, true);
-//    }
-//    
-//    public WhereUsedElement(PositionBounds bounds, String htmlText, FileObject parentFile, TreePath tp, CompilationInfo info, JavaWhereUsedFilters.ReadWrite access) {
-//        this(bounds, htmlText, parentFile, tp, info, access, false, false);
-//    }
-    
-    public WhereUsedElement(PositionBounds bounds, String htmlText, String elementText, FileObject parentFile, TreePath tp, CompilationInfo info, ReadWrite access, boolean inTestclass, boolean inComment, boolean inImport) {
+    public WhereUsedElement(PositionBounds bounds, String htmlText, String elementText, FileObject parentFile, TreePath tp, CompilationInfo info, ReadWrite access, boolean inTestclass, boolean inPlatform, boolean inDependency, boolean inComment, boolean inImport) {
         this.bounds = bounds;
         this.htmlText = htmlText;
         this.elementText = elementText;
@@ -108,6 +101,8 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
         ElementGripFactory.getDefault().put(parentFile, inTestclass);
         this.access = access;
         this.inTestclass = inTestclass;
+        this.inPlatform = inPlatform;
+        this.inDependency = inDependency;
         this.inComment = inComment;
         this.inImport = inImport;
     }
@@ -119,7 +114,10 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
 
     @Override
     public Lookup getLookup() {
-        Object composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
+        Object composite = null;
+        if(bounds != null) {
+            composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
+        }
         if (composite==null) {
             composite = parentFile;
         }
@@ -178,14 +176,18 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
     }
     
     public static WhereUsedElement create(CompilationInfo compiler, TreePath tree, boolean inTest) {
-        return create(compiler, tree, null, inTest, new AtomicBoolean());
+        return create(compiler, tree, inTest, false, false);
     }
     
-    public static WhereUsedElement create(CompilationInfo compiler, TreePath tree, boolean inTest, AtomicBoolean inImport) {
-        return create(compiler, tree, null, inTest, inImport);
+    public static WhereUsedElement create(CompilationInfo compiler, TreePath tree, boolean inTest, boolean inPlatform, boolean inDependency) {
+        return create(compiler, tree, null, inTest, inPlatform, inDependency, new AtomicBoolean());
     }
     
-    public static WhereUsedElement create(CompilationInfo compiler, TreePath tree, JavaWhereUsedFilters.ReadWrite access, boolean inTest, AtomicBoolean inImport) {
+    public static WhereUsedElement create(CompilationInfo compiler, TreePath tree, boolean inTest, boolean inPlatform, boolean inDependency, AtomicBoolean inImport) {
+        return create(compiler, tree, null, inTest, inPlatform, inDependency, inImport);
+    }
+    
+    public static WhereUsedElement create(CompilationInfo compiler, TreePath tree, JavaWhereUsedFilters.ReadWrite access, boolean inTest, boolean inPlatform, boolean inDependency, AtomicBoolean inImport) {
         CompilationUnitTree unit = tree.getCompilationUnit();
         CharSequence content = compiler.getSnapshot().getText();
         SourcePositions sp = compiler.getTrees().getSourcePositions();
@@ -344,14 +346,12 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
                 start==end && anonClassNameBug128074 ? NbBundle.getMessage(WhereUsedPanel.class, "LBL_AnonymousClass"):content.subSequence((int)sta, (int)en).toString().trim(),
                 compiler.getFileObject(),
                 tr,
-                compiler, access, inTest, false, elementInImport);
+                compiler, access, inTest, inPlatform,inDependency, false, elementInImport);
     }
     
     private static String trimStart(String s) {
         for (int x = 0; x < s.length(); x++) {
-            if (Character.isWhitespace(s.charAt(x))) {
-                continue;
-            } else {
+            if (!Character.isWhitespace(s.charAt(x))) {
                 return s.substring(x, s.length());
             }
         }
@@ -360,16 +360,14 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
     
     private static String trimEnd(String s) {
         for (int x = s.length()-1; x >=0; x--) {
-            if (Character.isWhitespace(s.charAt(x))) {
-                continue;
-            } else {
+            if (!Character.isWhitespace(s.charAt(x))) {
                 return s.substring(0, x + 1);
             }
         }
         return "";
     }
     
-    public static WhereUsedElement create(int start, int end, CompilationInfo compiler, boolean inTest) {
+    public static WhereUsedElement create(int start, int end, CompilationInfo compiler, boolean inTest, boolean inPlatform, boolean inDependency) {
         CharSequence content = compiler.getSnapshot().getText();
         LineMap lm = compiler.getCompilationUnit().getLineMap();
         long line = lm.getLineNumber(start);
@@ -397,7 +395,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
         PositionBounds bounds = new PositionBounds(ref1, ref2);
         return new WhereUsedElement(bounds, sb.toString().trim(),
                 content.subSequence((int)sta, (int)en).toString(),
-                compiler.getFileObject(), null, compiler, null, inTest, true, false);
+                compiler.getFileObject(), null, compiler, null, inTest, inPlatform, inDependency, true, false);
     }
     
     private static TreePath getEnclosingImportTree(TreePath tp) {
@@ -405,7 +403,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
             Tree tree = tp.getLeaf();
             if (tree.getKind() == Tree.Kind.IMPORT) {
                 return tp;
-            } 
+            }
             tp = tp.getParentPath();
         }
         return null;
@@ -414,7 +412,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
     private static TreePath getEnclosingTree(TreePath tp) {
         while(tp != null) {
             Tree tree = tp.getLeaf();
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind()) || tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.IMPORT || tree.getKind() == tree.getKind().VARIABLE) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind()) || tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.IMPORT || tree.getKind() == Tree.Kind.VARIABLE) {
                 return tp;
             } 
             tp = tp.getParentPath();
@@ -424,19 +422,35 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
 
     @Override
     public boolean filter(FiltersManager manager) {
-        if((!inTestclass  && manager.isSelected(JavaWhereUsedFilters.SOURCEFILE.getKey())) ||
-	    (inTestclass && (inTestclass && manager.isSelected(JavaWhereUsedFilters.TESTFILE.getKey())))) { 
-            if (access != null) {
-                return manager.isSelected(access.getKey());
-            } else if (inComment) {
-                return manager.isSelected(JavaWhereUsedFilters.COMMENT.getKey());
-            } else if (inImport) {
-                return manager.isSelected(JavaWhereUsedFilters.IMPORT.getKey());
-            } else {
-                return true;
+        boolean show = true;
+
+        if(JavaWhereUsedQueryPlugin.DEPENDENCIES) {
+            if (inPlatform) {
+                show = show && manager.isSelected(JavaWhereUsedFilters.PLATFORM.getKey());
             }
-        } else {
-            return false;
+
+            if (inDependency) {
+                show = show && manager.isSelected(JavaWhereUsedFilters.DEPENDENCY.getKey());
+            }
         }
+
+        if (inTestclass) {
+            show = show && manager.isSelected(JavaWhereUsedFilters.TESTFILE.getKey());
+        }
+
+        show = show && manager.isSelected(JavaWhereUsedFilters.SOURCEFILE.getKey());
+
+        if (access != null) {
+            show = show && manager.isSelected(access.getKey());
+        }
+        
+        if (inComment) {
+            show = show && manager.isSelected(JavaWhereUsedFilters.COMMENT.getKey());
+        }
+        
+        if (inImport) {
+            show = show && manager.isSelected(JavaWhereUsedFilters.IMPORT.getKey());
+        }
+        return show;
     }
 }

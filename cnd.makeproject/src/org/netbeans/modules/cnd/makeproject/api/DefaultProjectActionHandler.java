@@ -62,6 +62,7 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -171,14 +172,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 && actionType != ProjectActionEvent.PredefinedType.TEST) {
             assert false;
         }
-
+        
         final String origRunDir = pae.getProfile().getRunDir();
         boolean preventRunPathConvertion = origRunDir.startsWith("///"); // NOI18N
         final String runDirectory = RemoteFileUtil.normalizeAbsolutePath(pae.getProfile().getRunDirectory(), pae.getProject());
         final MakeConfiguration conf = pae.getConfiguration();
         final PlatformInfo pi = conf.getPlatformInfo();
         final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
-
+        
         Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
         boolean unbuffer = false;
@@ -187,7 +188,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         boolean statusEx = false;
         String commandLine = null;
         CompilerSet cs;
-
+        
         int consoleType = pae.getProfile().getConsoleType().getValue();
         ArrayList<String> args = null;
         // Used if not RUN. Also in case of QMake args are tweaked...
@@ -296,14 +297,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
         // TODO: this is actual only for sun studio compiler
         env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
-
+        
         String workingDirectory = preventRunPathConvertion ? runDirectory : ProjectSupport.convertWorkingDirToRemoteIfNeeded(pae, runDirectory);
-
+        
         if (workingDirectory == null) {
             // TODO: fix me
             // return null;
         }
-
+        
         WriterRedirector writer = null;
         if (outputHandlers != null && outputHandlers.size() > 0) {
             writer = new WriterRedirector(outputHandlers);
@@ -322,14 +323,21 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             buf.append(commandLine);
             npb.setCommandLine(commandLine);
         } else {
-            String exe = pae.getExecutable();
+            String exe = getExecutable(cs);
+            
             if (args == null) {
                 args = pae.getArguments();
             }
             if (actionType == ProjectActionEvent.PredefinedType.PRE_BUILD) {
                 ArrayList<String> expandedArgs = new ArrayList<>();
-                for(String s :args) {
-                    expandedArgs.add(PreBuildSupport.expandMacros(s, cs));
+                if (isCygwinCompilerSet(cs)) {
+                    for(String s :args) {
+                        expandedArgs.add(PreBuildSupport.expandMacrosCygwin(s, cs));
+                    }
+                } else {
+                    for(String s :args) {
+                        expandedArgs.add(PreBuildSupport.expandMacros(s, cs));
+                    }
                 }
                 args = expandedArgs;
             }
@@ -421,6 +429,15 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
         executorTask = es.run();
     }
+    
+    private String getExecutable(CompilerSet cs) {
+        if (pae.getExecutable().contains("cmake")) { // NOI18N
+            if (isCygwinCompilerSet(cs)) {
+                return PreBuildSupport.getCmakePath(cs);
+            }
+        }
+        return pae.getExecutable();
+    }
 
     @Override
     public void addExecutionListener(ExecutionListener l) {
@@ -461,7 +478,13 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
     protected static String getString(String key, String... a1) {
         return NbBundle.getMessage(DefaultProjectActionHandler.class, key, a1);
     }
-
+    
+    private static boolean isCygwinCompilerSet(CompilerSet compilerSet) {
+        CompilerFlavor flavor = compilerSet.getCompilerFlavor();
+        if (flavor.isCygwinCompiler()) return true;
+        else return false;
+    }
+    
     private static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
 
         private final AtomicReference<NativeProcess> processRef = new AtomicReference<>();

@@ -64,12 +64,15 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
+import org.netbeans.modules.refactoring.java.plugins.JavaPluginUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.ScopeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -133,24 +136,29 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
     @Override
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
         query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS, panel.isSearchInComments());
-//        query.putValue(query., name);
-        Scope customScope = panel.getCustomScope();
+        ScopeProvider customScope = panel.getCustomScope();
+        Problem prob = null;
+        Scope scope = null;
         if (customScope != null) {
-            query.getContext().add(customScope);
+            prob = customScope.getProblem();
+            scope = customScope.getScope();
+        }
+        if(scope != null) {
+            query.getContext().add(scope);
         } else {
             query.getContext().remove(Scope.class);
         }
         if (kind == ElementKind.METHOD) {
             setForMethod();
-            return query.checkParameters();
+            return JavaPluginUtils.chainProblems(prob, query.checkParameters());
         } else if (kind.isClass() || kind.isInterface()) {
             setForClass();
-            return query.checkParameters();
+            return JavaPluginUtils.chainProblems(prob, query.checkParameters());
         } else if(kind == ElementKind.CONSTRUCTOR) {
             setForConstructor();
-            return query.checkParameters();
+            return JavaPluginUtils.chainProblems(prob, query.checkParameters());
         } else {
-            return null;
+            return prob;
         }
     }
 
@@ -175,17 +183,22 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
 
     @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
+        ScopeProvider customScope = panel.getCustomScope();
+        Problem prob = null;
+        if (customScope != null) {
+            prob = customScope.getProblem();
+        }
         if (kind == ElementKind.METHOD) {
             setForMethod();
-            return query.fastCheckParameters();
+            return JavaPluginUtils.chainProblems(prob, query.fastCheckParameters());
         } else if (kind.isClass() || kind.isInterface()) {
             setForClass();
-            return query.fastCheckParameters();
+            return JavaPluginUtils.chainProblems(prob, query.fastCheckParameters());
         } else if(kind == ElementKind.CONSTRUCTOR) {
             setForConstructor();
-            return query.fastCheckParameters();
+            return JavaPluginUtils.chainProblems(prob, query.fastCheckParameters());
         } else {
-            return null;
+            return prob;
         }
     }
 

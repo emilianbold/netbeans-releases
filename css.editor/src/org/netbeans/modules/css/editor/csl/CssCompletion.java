@@ -755,6 +755,9 @@ public class CssCompletion implements CodeCompletionHandler {
                     addSemicolon = false;
                     if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                         //strip off the leading quote and the rest of token after caret
+                        if (tokenDiff < 1) { // @import |"";
+                            return null;
+                        }
                         String valuePrefix = originalToken.text().toString().substring(1, tokenDiff);
                         List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file,
                                 caretOffset, valuePrefix, false, addSemicolon);
@@ -917,6 +920,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //complete class selectors
             Collection<String> allids = new HashSet<>();
             Collection<String> refids = new HashSet<>();
+            Collection<String> fileids = new HashSet<>();
 
             //adjust prefix - if there's just # before the caret, it is returned as a prefix
             //if there is some text behind the prefix the hash is part of the prefix
@@ -943,6 +947,7 @@ public class CssCompletion implements CodeCompletionHandler {
                             refids.addAll(search.get(fo));
                         }
                     }
+                    fileids = search.get(file);
                 }
             }
 
@@ -957,7 +962,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), id),
                         id,
                         offset,
-                        refids.contains(id)));
+                        fileids == null || !fileids.contains(id))); 
             }
             completionProposals.addAll(proposals);
 

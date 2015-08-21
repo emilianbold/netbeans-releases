@@ -47,7 +47,10 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.csl.core.AbstractTaskFactory;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
 import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -108,6 +111,7 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
     }
 
     private final class ProxyElementScanningTask extends IndexingAwareParserResultTask<ParserResult> {
+        private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
         private ElementScanningTask task = null;
         private Class<? extends Scheduler> clazz;
 
@@ -126,16 +130,22 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
         }
 
         public @Override void cancel() {
-            ElementScanningTask t = getTask();
+            final ElementScanningTask t = getTask();
             if (t != null) {
                 t.cancel();
             }
         }
 
-        public @Override void run(ParserResult result, SchedulerEvent event) {
-            ElementScanningTask t = getTask();
-            if (t != null) {
-                t.run(result, event);
+        @Override
+        public void run(ParserResult result, SchedulerEvent event) {
+            SpiSupportAccessor.getInstance().setCancelSupport(cancel);
+            try {
+                final ElementScanningTask t = getTask();
+                if (t != null) {
+                    t.run(result, event);
+                }
+            } finally {
+                SpiSupportAccessor.getInstance().removeCancelSupport(cancel);
             }
         }
 

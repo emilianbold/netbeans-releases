@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.csl.navigation;
 
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.*;
 
@@ -56,43 +59,35 @@ import org.netbeans.modules.parsing.spi.*;
  * This task is called every time the caret position changes in a GSF editor.
  * It delegates to the navigator to show the current selection.
  */
-public class CaretListeningTask extends IndexingAwareParserResultTask<ParserResult> {
+public final class CaretListeningTask extends IndexingAwareParserResultTask<ParserResult> {
     
-    private boolean canceled;
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
     
     CaretListeningTask() {
         super(TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
     
     public @Override void run(ParserResult result, SchedulerEvent event) {
-        resume();
-        
+
         boolean navigatorShouldUpdate = ClassMemberPanel.getInstance() != null; // XXX set by navigator visible
-        
-        if (isCancelled() || (!navigatorShouldUpdate) || !(event instanceof CursorMovedSchedulerEvent)) {
+        if (cancel.isCancelled() || (!navigatorShouldUpdate) || !(event instanceof CursorMovedSchedulerEvent)) {
             return;
         }
-        
-        int offset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
-        if (offset != -1) {
-            ClassMemberPanel.getInstance().selectElement(result, offset);
+
+        SpiSupportAccessor.getInstance().setCancelSupport(cancel);
+        try {
+            int offset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
+            if (offset != -1) {
+                ClassMemberPanel.getInstance().selectElement(result, offset);
+            }
+        } finally {
+            SpiSupportAccessor.getInstance().removeCancelSupport(cancel);
         }
     }
 
-    /**
-     * After this method is called the task if running should exit the run
-     * method immediately.
-     */
+
+    @Override
     public final synchronized void cancel() {
-        canceled = true;
-    }
-    
-    protected final synchronized boolean isCancelled() {
-        return canceled;
-    }
-    
-    protected final synchronized void resume() {
-        canceled = false;
     }
 
     public @Override int getPriority() {

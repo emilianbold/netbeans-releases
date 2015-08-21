@@ -54,6 +54,7 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import java.awt.*;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 /**
  * @author David Kaspar
@@ -100,8 +101,9 @@ public class FlowLayoutWeightOverflow108052Test extends VisualTestCase {
         hbox2.setBorder (BorderFactory.createLineBorder (1, Color.BLUE));
         hbox2.setPreferredSize (new Dimension (200, 20));
         vbox.addChild (hbox2);
-
-        assertScene (scene, Color.WHITE, new Rectangle (-5, -5, 210, 100));
+        
+        Color color = (Color) (new DefaultLookFeel()).getBackground();
+        assertScene (scene, color, new Rectangle (-5, -5, 210, 100));
     }
 
 }

@@ -69,11 +69,12 @@ public class OutputLimits {
     }
 
     /**
-     * Constructor for default output limits: 4 million lines (2^22), 1 billion
-     * characters (2^30), remove 2 million lines (2^21) if a limit is reached.
+     * Constructor for default output limits: 4 million lines (2^22), 512
+     * million characters (2^29), remove 2 million lines (2^21) if a limit is
+     * reached.
      */
     private OutputLimits() {
-        this(4194304, Integer.MAX_VALUE / 2, 2097152);
+        this(4194304, Integer.MAX_VALUE / 4, 2097152);
     }
 
     public int getMaxLines() {

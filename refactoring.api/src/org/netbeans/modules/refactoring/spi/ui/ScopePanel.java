@@ -57,6 +57,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -82,6 +84,7 @@ public final class ScopePanel extends javax.swing.JPanel {
     private final Preferences preferences;
     private final String preferencesKey;
     private ArrayList<DelegatingScopeInformation> scopes;
+    private ChangeListener parent;
 
     /**
      * Creates new form ScopePanel.
@@ -104,10 +107,27 @@ public final class ScopePanel extends javax.swing.JPanel {
      * @param preferencesKey a key to use to store user's selection
      */
     public ScopePanel(String id, Preferences preferences, String preferencesKey) {
+        this(id, preferences, preferencesKey, null);
+    }
+    
+    /**
+     * Creates a new ScopePanel. The supplied id will be used to only get the
+     * Scopes registered for a specific set of Scopes. The preferences and
+     * preferencesKey will be used to store the user's selection.
+     *
+     * @param id the id for which the scopes are registered
+     * @param preferences a preferences object to store user's selection
+     * @param preferencesKey a key to use to store user's selection
+     * @param parent listener which is called after the user's selection has changed
+     * 
+     * @since XXX
+     */
+    public ScopePanel(String id, Preferences preferences, String preferencesKey, ChangeListener parent) {
         this.id = id;
         this.preferences = preferences;
         this.preferencesKey = preferencesKey;
-        this.scopes = new ArrayList<DelegatingScopeInformation>();
+        this.scopes = new ArrayList<>();
+        this.parent = parent;
         initComponents();
     }
 
@@ -199,6 +219,17 @@ public final class ScopePanel extends javax.swing.JPanel {
         final ScopeProvider selectedScope = (ScopeProvider) scopeCombobox.getSelectedItem();
         return selectedScope != null ? selectedScope.getScope() : null;
     }
+    
+    /**
+     * The currently selected ScopeProvider in the Combobox.
+     *
+     * @return the selected ScopeProvider
+     * @since 1.44
+     */
+    @CheckForNull
+    public ScopeProvider getSelectedScopeProvider() {
+        return (ScopeProvider) scopeCombobox.getSelectedItem();
+    }
 
     /**
      * Change the selected scope to one with the specified id. If the id does
@@ -279,6 +310,9 @@ public final class ScopePanel extends javax.swing.JPanel {
             preferences.put(preferencesKey, scopeInfo.getId());
         } else {
             preferences.remove(preferencesKey);
+        }
+        if(parent != null) {
+            parent.stateChanged(new ChangeEvent(this));
         }
     }//GEN-LAST:event_scopeComboboxActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

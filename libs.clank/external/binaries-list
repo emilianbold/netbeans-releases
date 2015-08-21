@@ -1,2 +1,6 @@
-#changeset:   478064f210f9 (branch:      default)
-D4BF6B1BBE51F2D8EEC23CCB28C40BA587885B71 clank_0.3.6.zip
+#changeset:   15359:e091d48db2e3
+#tag:         tip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Fri Aug 07 15:51:11 2015 +0200
+#summary:     extra fix after 15337:01eaf71eb9fe
+05D079C8352DA7A77245577B4FE3E55DC7390D87 clank_0.3.6.zip

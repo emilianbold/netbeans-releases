@@ -60,10 +60,10 @@ package org.netbeans.api.debugger.jpda;
 public interface ClassVariable extends ObjectVariable {
     
     /**
-     * Provides the class type of this class object.
-     * 
-     * @return the {@link JPDAClassType} representing the type of this class.
+     * Provides the class type corresponding to this class variable.
+     * @return the class type reflected by this class variable
+     * @since 3.2
      */
-    JPDAClassType getClassType();
+    JPDAClassType getReflectedType();
     
 }

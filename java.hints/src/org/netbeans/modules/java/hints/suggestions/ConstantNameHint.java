@@ -92,10 +92,10 @@ public class ConstantNameHint {
     
     // constant name: starts with capital, followed by capital-digit strings, possibly terminated by _. Must end with
     // capital/digit, not _.
-    static final String DEFAULT_CONSTANT_NAME_PATTERN = "([A-Z][A-Z\\d]+_?)*[A-Z\\d]+";
+    static final String DEFAULT_CONSTANT_NAME_PATTERN = "([A-Z][A-Z\\d]*_?)*[A-Z\\d]+";
     static final int DEFAULT_MIN_LENGTH = 0;
     static final int DEFAULT_MAX_LENGTH = 35;
-    static final boolean DEFAULT_CHECK_ONLY_IMMUTABLES = false;
+    static final boolean DEFAULT_CHECK_ONLY_IMMUTABLES = true;
     
     @NbBundle.Messages({
         "# {0} - minimum constant name length",
@@ -128,11 +128,13 @@ public class ConstantNameHint {
         // only work on static final fields
         VariableTree vt = (VariableTree) p.getLeaf();
         Set<Modifier> mods = vt.getModifiers().getFlags();
-        if (!mods.contains(Modifier.FINAL)) {
-            return null;
-        }
-        if (parent.getKind() != Tree.Kind.INTERFACE && !mods.contains(Modifier.STATIC)) {
-            return null;
+        if (parent.getKind() != Tree.Kind.INTERFACE) {
+            if (parent.getKind() == Tree.Kind.ENUM) {
+                return null;
+            }
+            if (!mods.contains(Modifier.FINAL) || !mods.contains(Modifier.STATIC)) {
+                return null;
+            }
         }
         Preferences prefs = ctx.getPreferences();
         
@@ -237,7 +239,7 @@ public class ConstantNameHint {
         if (xpr.getKind() == Tree.Kind.NEW_ARRAY) {
             NewArrayTree nat = (NewArrayTree)xpr;
             List<? extends ExpressionTree> dims = nat.getDimensions();
-            if (dims != null) {
+            if (dims != null && !dims.isEmpty()) {
                 Object size = ArithmeticUtilities.compute(info, 
                         new TreePath(
                             new TreePath(val, xpr),

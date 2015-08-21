@@ -2,32 +2,204 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>DrillDown Window</title>
+<title>Live Results Window - Memory Usage</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="DrillDownWindow.HelpCtx" name="DrillDownWindow.HelpCtx"></a></p>
-<div id="NBCSH3281"><!-- infolevel="all" infotype="General" --><a id="sthref426" name="sthref426"></a>
-<h1>DrillDown Window</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="MemoryLiveResultsWindow.HelpCtx" name="MemoryLiveResultsWindow.HelpCtx"></a></p>
+<div id="NBCSH3327"><!-- infolevel="all" infotype="General" --><a id="sthref429" name="sthref429"></a>
+<h1>Live Results Window - Memory Usage</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to view a graphic overview of the information in the Live Results window and explore the profiled methods according to general predefined categories. For example, this window enables you to view methods according to functionality. 
+<p>Use to displays data on object allocation and liveness. The profiling results displayed depend on which of the following options you choose. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG776">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>Click a category area displayed in the graph to drill down to view methods in that category. You can use this to filter the list of methods displayed in the Live Results window.</p>
-<p>Click a category to view the methods grouped in that category.</p>
-<p>Click a method in the Live Results window to view the category for that method in the DrillDown window. It also displays the HTTP Request URI for the selected method, if applicable.</p>
-<a id="NBCSH3282" name="NBCSH3282"></a>
+<p><b>Record Object Creation Only</b></p>
+<p>The Live Results window displays a list of classes (including array classes), with the total size and number of instances that have been allocated since you issued the instrumentation command. All classes currently loaded by the target JVM (and each new class as it is loaded) are instrumented.</p>
+
+<table summary="Descriptions of object creation results of Live Results window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t37">Element</th>
+<th align="left" valign="bottom" id="r1c2-t37">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t37" headers="r1c1-t37">
+<p>Bytes Allocated [%]</p>
+</td>
+<td align="left" headers="r2c1-t37 r1c2-t37">Displays a graphical representation of the percentage of bytes allocated.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t37" headers="r1c1-t37">
+<p>Bytes Allocated</p>
+</td>
+<td align="left" headers="r3c1-t37 r1c2-t37">Displays the actual number of bytes allocated and the percentage of total bytes.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t37" headers="r1c1-t37">
+<p>Objects Allocated</p>
+</td>
+<td align="left" headers="r4c1-t37 r1c2-t37">Displays the number of live objects and the percentage of the total number of objects.</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>Right-click a class name to access the following context menu commands.</p>
+
+<table summary="Descriptions of context menu commands for classes in Live Results window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t38">Element</th>
+<th align="left" valign="bottom" id="r1c2-t38">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t38" headers="r1c1-t38">
+<p>Go To Source</p>
+</td>
+<td align="left" headers="r2c1-t38 r1c2-t38">Opens the source <code dir="ltr">.java</code> file for the selected class in the Source Editor.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t38" headers="r1c1-t38">
+<p>Log Class History</p>
+</td>
+<td align="left" headers="r3c1-t38 r1c2-t38">Displays the history for the selected instance.</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p><b>Record Both Object Allocation and Garbage Collection</b></p>
+<p>The Live Results window displays both object allocation and garbage collection data.</p>
+
+<table summary="Descriptions of object allocation and GC data in Live Results window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t39">Element</th>
+<th align="left" valign="bottom" id="r1c2-t39">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t39" headers="r1c1-t39">
+<p>Live bytes [%]</p>
+</td>
+<td align="left" headers="r2c1-t39 r1c2-t39">Displays graphical representation of live bytes.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t39" headers="r1c1-t39">
+<p>Live byte</p>
+</td>
+<td align="left" headers="r3c1-t39 r1c2-t39">Displays the actual number of live bytes.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t39" headers="r1c1-t39">
+<p>Live Objects</p>
+</td>
+<td align="left" headers="r4c1-t39 r1c2-t39">Displays the size and number of live tracked objects for the given class at the moment.
+<p>You can set the proportion of objects that are tracked when you configure the profiling session.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t39" headers="r1c1-t39">
+<p>Allocated objects</p>
+</td>
+<td align="left" headers="r5c1-t39 r1c2-t39">Displays the total number of tracked objects that have been allocated.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t39" headers="r1c1-t39">
+<p>Average object age</p>
+</td>
+<td align="left" headers="r6c1-t39 r1c2-t39">Displays the average age for the live tracked objects of this class, measured as the number of garbage collections that the object has survived.
+<p>The IDE does not distinguish between partial (young generation) and full garbage collections if a generational garbage collector is used.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t39" headers="r1c1-t39">
+<p>Generations</p>
+</td>
+<td align="left" headers="r7c1-t39 r1c2-t39">Displays the number of survived generations and represents the total number of different object ages for objects of this class.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t39" headers="r1c1-t39">
+<p>Total number of allocated objects</p>
+</td>
+<td align="left" headers="r8c1-t39 r1c2-t39">Displays the total number of allocated objects for this class.</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>Right-click a class name for the following context menu commands:</p>
+
+<table summary="Descriptions of context menu commands for classes in Live Results window with GC results." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t40">Element</th>
+<th align="left" valign="bottom" id="r1c2-t40">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t40" headers="r1c1-t40">
+<p>Go To Source</p>
+</td>
+<td align="left" headers="r2c1-t40 r1c2-t40">Opens the source <code dir="ltr">.java</code> file for the selected class in the Source Editor.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t40" headers="r1c1-t40">
+<p>Log Class History</p>
+</td>
+<td align="left" headers="r3c1-t40 r1c2-t40">Displays the history for the selected instance.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t40" headers="r1c1-t40">
+<p>Stop Profiling this Class</p>
+</td>
+<td align="left" headers="r4c1-t40 r1c2-t40">Stops profiling the selected class.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t40" headers="r1c1-t40">
+<p>Stop Profiling Classes Below this Line</p>
+</td>
+<td align="left" headers="r5c1-t40 r1c2-t40">Stops profiling classes below the selected line.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t40" headers="r1c1-t40">
+<p>Take Snapshot and Show Allocation Stack Traces.</p>
+</td>
+<td align="left" headers="r6c1-t40 r1c2-t40">Takes a snapshot of the current profiling session and displays the memory allocation stack trace.
+<p>This command available only if you selected the Record stack trace for allocations option in the Analyze Memory pane of the Profiler window.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p><b>Note:</b> Limiting the profiled classes to only those you are interested in can help reduce the profiling overhead.</p>
+<a id="NBCSH3345" name="NBCSH3345"></a>
 <hr><p><b>Related Topics</b></p>
 <p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
 <param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

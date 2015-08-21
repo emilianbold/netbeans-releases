@@ -57,6 +57,7 @@
                 <friend>org.netbeans.modules.php.api.testing</friend>
                 <friend>org.netbeans.modules.php.atoum</friend>
                 <friend>org.netbeans.modules.php.cake3</friend>
+                <friend>org.netbeans.modules.php.codeception</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.fuel</friend>
                 <friend>org.netbeans.modules.php.nette.tester</friend>

@@ -2,27 +2,29 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>New JDBC Connection Pool: Choose Database Connection</title>
+<title>glassfish-ejb-jar.xml Visual Editor: General</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="AS_Wiz_ConnPool_chooseDB" name="AS_Wiz_ConnPool_chooseDB"></a></p>
-<div id="NBCSH4804"><!-- infolevel="all" infotype="General" --><a id="sthref636" name="sthref636"></a>
-<h1>New JDBC Connection Pool: Choose Database Connection</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"></a></p>
+<div id="NBCSH4795"><!-- infolevel="all" infotype="General" --><a id="sthref673" name="sthref673"></a>
+<h1>glassfish-ejb-jar.xml Visual Editor: General</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You see this page of the New File wizard when you are defining a connection pool. On this page you name the connection pool and specify the database connection to use. You can choose an existing database connection or enter the configuration information. 
+<p>Use to specify the name of the EJB module. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1700">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2677">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
+<p>The Visual Editor enables you to configure descriptor settings for an EJB module when your target server is the GlassFish server.</p>
+<p>The Visual Editor groups descriptor settings under the following tabs:</p>
 
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
+<table summary="Descriptions of name and location properties of new Java Project existing sources wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="36%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -32,68 +34,88 @@
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t65" headers="r1c1-t65">JDBC Connection Pool Name</td>
-<td align="left" headers="r2c1-t65 r1c2-t65">Enter the Connection Pool name.</td>
+<td align="left" id="r2c1-t65" headers="r1c1-t65">
+<p>General</p>
+</td>
+<td align="left" headers="r2c1-t65 r1c2-t65">Enables you to edit the EJB module name.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t65" headers="r1c1-t65">
-<p>Extract from existing connection</p>
+<p>EJB</p>
 </td>
-<td align="left" headers="r3c1-t65 r1c2-t65">Choose this option if the database connection for the database you want to use already exists. The drop-down list contains connections that have already been created. When you select this option, the configuration information, including the complete URL, user name, and password, is extracted from the selected connection. To add a new connection to the list, see: 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1702">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</td>
+<td align="left" headers="r3c1-t65 r1c2-t65">enables you to set resource references in the EJBs in the module.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t65" headers="r1c1-t65">
-<p>New configuration using database</p>
+<p>Security</p>
 </td>
-<td align="left" headers="r4c1-t65 r1c2-t65">If there is no suitable existing connection, you can select a driver from the list of databases with known JDBC drivers. If you would like to use a datasource that is not listed you need to first register the database driver with the IDE. To add to the list of drivers, see: 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1821">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-
-<p><b>Note</b>: If you select this option you will need to provide the connection information in the next page.</p>
-</td>
+<td align="left" headers="r4c1-t65 r1c2-t65">Enables you to create and set properties for security roles in the EJB module</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t65" headers="r1c1-t65">XA (Global Transaction)</td>
-<td align="left" headers="r5c1-t65 r1c2-t65">Select the <b>XA</b> (Global Transaction) radio button if using XA transactions.</td>
+<td align="left" id="r5c1-t65" headers="r1c1-t65">
+<p>Web Services</p>
+</td>
+<td align="left" headers="r5c1-t65 r1c2-t65">Enables you to add web services used by the EJB and specify a WSDL publish location.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t65" headers="r1c1-t65">
+<p>Messaging</p>
+</td>
+<td align="left" headers="r6c1-t65 r1c2-t65">Enables you to add JMS message destinations used by the EJB and specify the JNDI name of the destination.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t65" headers="r1c1-t65">
+<p>XML</p>
+</td>
+<td align="left" headers="r7c1-t65 r1c2-t65">Enables you to view and edit the xml file directly in the xml editor.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Click <b>Next</b> to add connection pool properties.</p>
-<a id="NBCSH4807" name="NBCSH4807"></a>
+<p><b>Module Details</b></p>
+
+<table summary="Descriptions of name and location properties of new Java Project existing sources wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="36%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t66">Element</th>
+<th align="left" valign="bottom" id="r1c2-t66">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t66" headers="r1c1-t66">
+<p>Name</p>
+</td>
+<td align="left" headers="r2c1-t66 r1c2-t66">(Optional) Specifies the name of the module. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1715">
+<param name="text" value="<html><u></u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="NBCSH4803" name="NBCSH4803"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1821">
-<param name="text" value="<html><u>&quot;Setting Up a Database Connection&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2696">
+<param name="text" value="<html><u>&quot;About Developing with Enterprise Beans&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1681">
-<param name="text" value="<html><u>&quot;Working with Glassfish Application Servers&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1651">
-<param name="text" value="<html><u>&quot;About Working with Web Application Servers&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2805">
+<param name="text" value="<html><u>&quot;Configuring Web Services&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

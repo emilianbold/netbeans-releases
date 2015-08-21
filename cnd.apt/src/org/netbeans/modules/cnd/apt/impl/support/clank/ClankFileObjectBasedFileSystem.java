@@ -50,7 +50,6 @@ import org.clang.basic.vfs.directory_iterator;
 import org.clank.java.std;
 import org.clank.java.std_errors;
 import org.clank.java.std_ptr;
-import org.clank.support.NativePointer;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.Twine;
 import org.llvm.support.ErrorOr;
@@ -61,11 +60,14 @@ import org.llvm.support.sys.fs;
 import org.llvm.support.sys.fs.UniqueID;
 import org.llvm.support.sys.fs.file_type;
 import org.llvm.support.sys.fs.perms;
+import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
+import org.netbeans.modules.cnd.apt.support.spi.APTBufferProvider;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 
 /**
@@ -80,10 +82,24 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
     private static final AtomicLong totalStatTime  = TRACE_TIME ? new AtomicLong() : null;
     private static final AtomicLong totalStatCount = TRACE_TIME ? new AtomicLong() : null;
 
-    private final org.openide.filesystems.FileSystem nbFS;
-    
-    public ClankFileObjectBasedFileSystem(org.openide.filesystems.FileSystem nbFS) {
-        this.nbFS = nbFS;
+    private static final ClankFileObjectBasedFileSystem INSTANCE = new ClankFileObjectBasedFileSystem();
+
+    public static ClankFileObjectBasedFileSystem getInstance() {
+        return INSTANCE;
+    }
+
+    /** if null, then FileObject based file will be used */
+    private final APTBufferProvider bufferProvider;
+
+    private ClankFileObjectBasedFileSystem() {
+        if (DebugUtils.getBoolean("apt.use.buffer.fs", true)) { // NOI18N
+            bufferProvider = Lookup.getDefault().lookup(APTBufferProvider.class);
+            if (bufferProvider == null) {
+                Exceptions.printStackTrace(new IllegalStateException("No providers found for " + APTBufferProvider.class.getName())); //NOI18N
+            }
+        } else {
+            bufferProvider = null;
+        }
     }
 
     private static void printStatistics(std.string Name, long readTime) {
@@ -100,7 +116,6 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
     }
 
     /// \brief Get the status of the entry at \p Path, if one exists.
-    //<editor-fold defaultstate="collapsed" desc="clang::vfs::FileSystem::status">
     @Override
     public ErrorOr<Status> status(Twine Path) {
         long time = TRACE_TIME ? System.currentTimeMillis() : 0;
@@ -121,8 +136,18 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         if (fo == null || !fo.isValid()) {
             result = new ErrorOr(std_errors.errc.no_such_file_or_directory);
         } else {
-            ClankFileObjectBasedFile file = new ClankFileObjectBasedFile(fo);
-            result = new ErrorOr(new std_ptr.unique_ptr<File>(file));
+            if (bufferProvider == null) {
+                ClankFileObjectBasedFile file = new ClankFileObjectBasedFile(fo);
+                result = new ErrorOr(new std_ptr.unique_ptr<File>(file));
+            } else {
+                APTFileBuffer buffer = bufferProvider.getOrCreateFileBuffer(fo);
+                if (buffer == null) {
+                    result = new ErrorOr(std_errors.errc.no_such_file_or_directory);
+                } else {
+                    ClankAPTFileBufferBasedFile file = new ClankAPTFileBufferBasedFile(fo, buffer);
+                    result = new ErrorOr(new std_ptr.unique_ptr<File>(file));
+                }
+            }
         }
         if (TRACE_TIME) {
             totalReadTime.addAndGet(System.currentTimeMillis() - time);
@@ -142,28 +167,19 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         return str.toJavaString();
     }
     
-    private void assertFS(FileObject fo) {
-        try {
-            CndUtils.assertTrue(fo.getFileSystem() == nbFS);
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
 
     private UniqueID getUniqueID(FileObject fo) {
-        assertFS(fo);
         CndFileSystemProvider.CndStatInfo stat = CndFileSystemProvider.getStatInfo(fo);
         if (stat.isValid()) {
             return new fs.UniqueID(stat.device, stat.inode);
         } else {
-            return new fs.UniqueID(System.identityHashCode(nbFS), System.identityHashCode(fo));
+            return new fs.UniqueID(System.identityHashCode(this), System.identityHashCode(fo));
         }
     }
 
     private FileObject getFileObject(Twine Path) {
         String strPath = toCharSequence(Path);
-        FileObject fo = nbFS.findResource(strPath);
-        return fo;
+        return CndFileSystemProvider.urlToFileObject(strPath);
     }
 
     private ErrorOr<Status> getStatus(ClankFileObjectBasedFile file) {
@@ -181,7 +197,7 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
             // TODO: should we set errno?
             return new ErrorOr(std_errors.errc.no_such_file_or_directory);
         } else {
-            StringRef name = new StringRef(fo.getPath());
+            StringRef name = new StringRef(CndFileSystemProvider.fileObjectToUrl(fo));
             UniqueID uid = getUniqueID(fo);
             long ms = fo.lastModified().getTime();
             TimeValue time = new TimeValue(ms/1000, (int) (ms%1000)*1000000);
@@ -229,15 +245,19 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
             return ClankFileObjectBasedFileSystem.this.getStatus(this);
         }
 
+        protected ClankMemoryBufferImpl createMemoryBufferImpl() throws IOException {
+            return ClankMemoryBufferImpl.create(fo);
+        }
+
         @Override
         public ErrorOr<std_ptr.unique_ptr<MemoryBuffer>> getBuffer(Twine Name) {
             long time = TRACE_TIME ? System.currentTimeMillis() : 0;
             ErrorOr<std_ptr.unique_ptr<MemoryBuffer>> buf;
-            if (!fo.getPath().contentEquals(Name.str().toJavaString())) {
+            if (CndUtils.isDebugMode() &&  !fo.getPath().contentEquals(ClankFileSystemProviderImpl.getPathFromUrl(Name.str().toJavaString()))) {
                 CndUtils.assertTrueInConsole(false, "Unexpected Name parameter: '" + Name.str() + " expected " + fo.getPath()); //NOI18N
             }
             try {
-                ClankMemoryBufferImpl mb = ClankMemoryBufferImpl.create(fo);
+                ClankMemoryBufferImpl mb = createMemoryBufferImpl();
                 std_ptr.unique_ptr<MemoryBuffer> p = new std_ptr.unique_ptr<MemoryBuffer>(mb);
                 buf = new ErrorOr<std_ptr.unique_ptr<MemoryBuffer>>(p);
             } catch (FileNotFoundException ex) {
@@ -280,4 +300,18 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         }
     }
 
+    private class ClankAPTFileBufferBasedFile extends ClankFileObjectBasedFile {
+
+        private final APTFileBuffer buffer;
+
+        public ClankAPTFileBufferBasedFile(FileObject fo, APTFileBuffer buffer) {
+            super(fo);
+            this.buffer = buffer;
+        }
+
+        @Override
+        protected ClankMemoryBufferImpl createMemoryBufferImpl() throws IOException {
+            return ClankMemoryBufferImpl.create(buffer);
+        }
+    }
 }

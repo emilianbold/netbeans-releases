@@ -75,6 +75,7 @@ import org.netbeans.modules.web.clientproject.env.Env;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -102,6 +103,8 @@ public final class ClientSideProjectUtilities {
 
     /**
      * Check whether the given folder is already a project.
+     * <p>
+     * This method ignores ProjectConvertor projects.
      * @param folder folder to be checked
      * @return {@code true} if the given folder is already a project, {@code false} otherwise
      */
@@ -115,7 +118,11 @@ public final class ClientSideProjectUtilities {
         } catch (IllegalArgumentException ex) {
             // noop
         }
-        return prj != null || foundButBroken;
+        if (prj != null
+                && !ProjectConvertors.isConvertorProject(prj)) {
+            return true;
+        }
+        return foundButBroken;
     }
 
     // XXX

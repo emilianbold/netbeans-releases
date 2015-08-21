@@ -54,9 +54,9 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -81,7 +81,6 @@ import org.openide.xml.XMLUtil;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
@@ -101,6 +100,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.javaee.project.api.ant.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ConfigurationFilesListener;
@@ -113,6 +113,7 @@ import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -120,7 +121,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
@@ -142,6 +142,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper resolver;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final AtomicBoolean listensOnProblems = new AtomicBoolean();
     private PropertyChangeListener pcl;
     private ConnectionListener cl;
     private InstanceListener il;
@@ -161,53 +162,9 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         registerListeners(j2eeModuleProvider);
     }
 
-    private void addLibraryManagerListener() {
-        final Map<URL,Object[]> oldLMs;
-        final boolean attachToDefault;
-        synchronized (this) {
-            attachToDefault = activeLibManLocs == null;
-            if (attachToDefault) {
-                activeLibManLocs = new HashMap<URL,Object[]>();
-            }
-            oldLMs = new HashMap<URL,Object[]>(activeLibManLocs);
-        }
-        if (attachToDefault) {
-            final LibraryManager manager = LibraryManager.getDefault();
-            manager.addPropertyChangeListener(WeakListeners.propertyChange(pcl, manager));
-        }
-        final Collection<? extends LibraryManager> managers = LibraryManager.getOpenManagers();
-        final Map<URL,LibraryManager> managerByLocation = new HashMap<URL, LibraryManager>();
-        for (LibraryManager manager : managers) {
-            final URL url = manager.getLocation();
-            if (url != null) {
-                managerByLocation.put(url, manager);
-            }
-        }
-        final HashMap<URL,Object[]> toRemove = new HashMap<URL,Object[]>(oldLMs);
-        toRemove.keySet().removeAll(managerByLocation.keySet());
-        for (Object[] pair : toRemove.values()) {
-            ((LibraryManager)pair[0]).removePropertyChangeListener((PropertyChangeListener)pair[1]);
-        }
-        managerByLocation.keySet().removeAll(oldLMs.keySet());
-        final HashMap<URL,Object[]> toAdd = new HashMap<URL,Object[]>();
-        for (Map.Entry<URL,LibraryManager> e : managerByLocation.entrySet()) {
-            final LibraryManager manager = e.getValue();
-            final PropertyChangeListener listener = WeakListeners.propertyChange(pcl, manager);
-            manager.addPropertyChangeListener(listener);
-            toAdd.put(e.getKey(), new Object[] {manager, listener});
-        }
-        synchronized (this) {
-            activeLibManLocs.keySet().removeAll(toRemove.keySet());
-            activeLibManLocs.putAll(toAdd);
-        }
-    }
-    
     private void registerListeners(J2eeModuleProvider j2eeModuleProvider) {
         pcl = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
-                if (LibraryManager.PROP_OPEN_LIBRARY_MANAGERS.equals(evt.getPropertyName())) {
-                    addLibraryManagerListener();
-                }
                 testBroken();
             }
         };
@@ -243,13 +200,6 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
             }
         };
         evaluator.addPropertyChangeListener(pcl);
-        // When evaluator fires changes that platform properties were
-        // removed the platform still exists in JavaPlatformManager.
-        // That's why I have to listen here also on JPM:
-        JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(pcl, JavaPlatformManager.getDefault()));
-        LibraryManager.addOpenManagersPropertyChangeListener(new OpenManagersWeakListener(pcl));
-        addLibraryManagerListener();
-
         j2eeModuleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
                     InstanceListener.class, il, j2eeModuleProvider));
 //        j2eeModuleProvider.addConfigurationFilesListener((ConfigurationFilesListener)WeakListeners.create(
@@ -445,11 +395,6 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
             if (old != _broken) {
                 setBroken(_broken);
             }
-            old = illegalState;
-            boolean _illegalState = hasInvalidJdkVersion();
-            if (old != _illegalState) {
-                setIllegalState(_illegalState);
-            }
             old = deployOnSaveDisabled;
             boolean _deployOnSaveDisabled = isDeployOnSaveSupportedAndDisabled();
             if (old != _deployOnSaveDisabled) {
@@ -481,13 +426,18 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     @Override
     public void testBroken () {
         if (isInitialized()) {
+            if (listensOnProblems.compareAndSet(false,true)) {
+                final ProjectProblemsProvider problems = project.getLookup().lookup(ProjectProblemsProvider.class);
+                if (problems != null) {
+                    problems.addPropertyChangeListener(pcl);
+                }
+            }
             task.schedule(500);
         }
     }
     
     public boolean hasBrokenLinks() {
-        return BrokenReferencesSupport.isBroken(helper.getAntProjectHelper(), resolver, getBreakableProperties(),
-            new String[] {JAVA_PLATFORM});
+        return ProjectProblems.isBroken(project);
     }
     
     abstract public String[] getBreakableProperties();
@@ -532,30 +482,6 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
                 }
             }
             return null;
-        }
-    }
-
-    private boolean hasInvalidJdkVersion() {
-        String javaSource = this.evaluator.getProperty("javac.source");     //NOI18N
-        String javaTarget = this.evaluator.getProperty("javac.target");    //NOI18N
-        if (javaSource == null && javaTarget == null) {
-            //No need to check anything
-            return false;
-        }
-
-        final String platformId = this.evaluator.getProperty(JAVA_PLATFORM);  //NOI18N
-        final JavaPlatform activePlatform = getActivePlatform (platformId);
-        if (activePlatform == null) {
-            return true;
-        }
-        SpecificationVersion platformVersion = activePlatform.getSpecification().getVersion();
-        try {
-            return (javaSource != null && new SpecificationVersion (javaSource).compareTo(platformVersion)>0)
-                   || (javaTarget != null && new SpecificationVersion (javaTarget).compareTo(platformVersion)>0);
-        } catch (NumberFormatException nfe) {
-            ErrorManager.getDefault().log("Invalid javac.source: "+javaSource+" or javac.target: "+javaTarget+" of project:"
-                +this.project.getProjectDirectory().getPath());
-            return true;
         }
     }
 
@@ -668,7 +594,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         // Private methods -------------------------------------------------
 
         private boolean isBroken() {
-            return broken || brokenServer || brokenDataSource || illegalState || brokenServerLibrary;
+            return broken || brokenServer || brokenDataSource || brokenServerLibrary;
         }
 
         public @Override void stateChanged(ChangeEvent e) {
@@ -680,7 +606,6 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     }
     
     private boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
-    private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
     private boolean deployOnSaveDisabled;  //true iff Deploy-on-Save is disabled
     private boolean brokenServer;
     private boolean brokenDataSource;
@@ -690,11 +615,6 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
 
     private void setBroken(boolean broken) {
         this.broken = broken;
-        changeSupport.fireChange();
-    }
-
-    private void setIllegalState (boolean illegalState) {
-        this.illegalState = illegalState;
         changeSupport.fireChange();
     }
 
@@ -821,7 +741,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         public void actionPerformed(ActionEvent e) {
             try {
                 helper.requestUpdate();
-                BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), getPlatformProperties());
+                ProjectProblems.showCustomizer(project);
                 testBroken();
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);

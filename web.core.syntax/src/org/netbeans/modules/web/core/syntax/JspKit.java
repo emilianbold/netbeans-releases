@@ -263,7 +263,8 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 int startPos = org.netbeans.editor.Utilities.getRowStart(doc, target.getSelectionStart());
                 TokenHierarchy th = TokenHierarchy.create(target.getText(), JspTokenId.language());
                 List<TokenSequence> ets = th.embeddedTokenSequences(startPos, false);
-                if (ets.get(ets.size() - 1).languagePath().mimePath().endsWith("text/x-java")) { //NOI18N
+                if (!ets.isEmpty()
+                        && ets.get(ets.size() - 1).languagePath().mimePath().endsWith("text/x-java")) { //NOI18N
                     super.actionPerformed(evt, target);
                     toggled = true;
                 }
@@ -271,7 +272,9 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 // inside one line scriptlet
                 if (!toggled) {
                     List<TokenSequence> ets2 = th.embeddedTokenSequences(target.getCaretPosition(), false);
-                    if (ets.get(ets.size() - 1).languagePath().mimePath().endsWith("text/html") //NOI18N
+                    if (!ets.isEmpty()
+                            && ets.get(ets.size() - 1).languagePath().mimePath().endsWith("text/html") //NOI18N
+                            && !ets2.isEmpty()
                             && ets2.get(ets2.size() - 1).languagePath().mimePath().endsWith("text/x-java")) { //NOI18N
                         commentUncomment(th, evt, target);
                     }

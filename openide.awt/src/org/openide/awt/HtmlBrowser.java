@@ -679,7 +679,7 @@ public class HtmlBrowser extends JPanel {
         * Listens on changes in HtmlBrowser.Impl.
         */
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
             String property = evt.getPropertyName();
 
             if (property == null) {
@@ -690,6 +690,20 @@ public class HtmlBrowser extends JPanel {
                 HtmlBrowser.this.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
             }
 
+            if (EventQueue.isDispatchThread()) {
+                propertyChangeInAWT(evt);
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        propertyChangeInAWT(evt);
+                    }
+                });
+            }
+        }
+
+        private void propertyChangeInAWT(PropertyChangeEvent evt) {
+            String property = evt.getPropertyName();
             if (property.equals(Impl.PROP_URL)) {
                 updateLocationBar();
             } else if (property.equals(Impl.PROP_STATUS_MESSAGE)) {

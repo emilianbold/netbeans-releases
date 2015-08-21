@@ -55,7 +55,19 @@ public enum JavaWhereUsedFilters {
     /**
      * @since 1.54
      */
-    SOURCEFILE("filter-sourcefile");
+    SOURCEFILE("filter-sourcefile"),
+    /**
+     * @since 1.55
+     */
+    BINARYFILE("filter-binaryfile"),
+    /**
+     * @since 1.55
+     */
+    DEPENDENCY("filter-dependencyfile"),
+    /**
+     * @since 1.55
+     */
+    PLATFORM("filter-platformfile");
     private final String key;
 
     private JavaWhereUsedFilters(String key) {

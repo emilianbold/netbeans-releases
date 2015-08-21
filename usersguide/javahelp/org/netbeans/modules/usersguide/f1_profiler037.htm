@@ -2,132 +2,79 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Options Window: Java: Profiler</title>
+<title>Live Results Window - Profiling Application Performance</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="ProfilerOptions.Help" name="ProfilerOptions.Help"></a></p>
-<div id="NBCSH3268"><!-- infolevel="all" infotype="General" --><a id="sthref425" name="sthref425"></a>
-<h1>Options Window: Java: Profiler</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="CpuLiveResultsWindow.HelpCtx" name="CpuLiveResultsWindow.HelpCtx"></a></p>
+<div id="NBCSH3321"><!-- infolevel="all" infotype="General" --><a id="sthref428" name="sthref428"></a>
+<h1>Live Results Window - Profiling Application Performance</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to configure settings that effect the behavior of the IDE when profiling applications. Choose <b>Tools</b> &gt; <b>Options</b> from the main menu, click the Java category and then click the <b>Profiler</b> tab to access this panel. 
+<p>Use to display data on the time and number of invocations for executing each method. The results that are displayed in the Live Results window depend upon which profiling task is in progress. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG719">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
+<p>The following context commands are available when you right-click a method:</p>
 
-<table summary="Descriptions of Java profiler options in the Profiler panel of the Options window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="32%" />
+<table summary="Descriptions of Live Results window context menu commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t37">Element</th>
-<th align="left" valign="bottom" id="r1c2-t37">Description</th>
+<th align="left" valign="bottom" id="r1c1-t36">Element</th>
+<th align="left" valign="bottom" id="r1c2-t36">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t37" headers="r1c1-t37">
-<p>General</p>
+<td align="left" id="r2c1-t36" headers="r1c1-t36">
+<p>Self time</p>
 </td>
-<td align="left" headers="r2c1-t37 r1c2-t37">General profiling option.</td>
+<td align="left" headers="r2c1-t36 r1c2-t36">Displays the time spent in all the invocations of the method. This data is displayed graphically as a percentage of the total time and as the actual amount of time.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t37" headers="r1c1-t37">
-<p>Communication Port</p>
+<td align="left" id="r3c1-t36" headers="r1c1-t36">
+<p>Invocations</p>
 </td>
-<td align="left" headers="r3c1-t37 r1c2-t37">Changes the communication port that the profiler listens to.
-<p>The default port is 5140.</p>
-</td>
+<td align="left" headers="r3c1-t36 r1c2-t36">Displays the number of times that the method was invoked.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t37" headers="r1c1-t37">
-<p>When Profiling Session Starts</p>
+<td align="left" id="r4c1-t36" headers="r1c1-t36">
+<p>Go To Source</p>
 </td>
-<td align="left" headers="r4c1-t37 r1c2-t37">Profiling options when a session starts.</td>
+<td align="left" headers="r4c1-t36 r1c2-t36">Displays the source <code dir="ltr">.java</code> file for the selected method in the Source Editor. The cursor is placed at this method's location in the code.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t37" headers="r1c1-t37">
-<p>Open Telemetry Overview</p>
+<td align="left" id="r5c1-t36" headers="r1c1-t36">
+<p>Add to Instrumentation Roots</p>
 </td>
-<td align="left" headers="r5c1-t37 r1c2-t37">Specifies when the Telemetry Overview window opens.
-<p>Choose an option from the drop-down list.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t37" headers="r1c1-t37">
-<p>Open Threads View</p>
-</td>
-<td align="left" headers="r6c1-t37 r1c2-t37">Specifies when the Threads window opens.
-<p>Choose an option from the drop-down list. For example, if you want the Threads View to open every time you start a profiling session, select <b>Always</b> from the drop-down list.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t37" headers="r1c1-t37">
-<p>Open Live Results For</p>
-</td>
-<td align="left" headers="r7c1-t37 r1c2-t37">Automatically opens the Live Results window when starting the selected profiling session type.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t37" headers="r1c1-t37">
-<p>Miscellaneous</p>
-</td>
-<td align="left" headers="r8c1-t37 r1c2-t37">Other profiling options.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t37" headers="r1c1-t37">
-<p>When Taking Snapshot</p>
-</td>
-<td align="left" headers="r9c1-t37 r1c2-t37">Specifies what the IDE does when you take a snapshot, either manually or using a profiling point.
-<p>Choose an option from the drop-down list. For example, if you select <b>Save New Snapshot</b>, when you click <b>Take Snapshot</b>, the snapshot is saved and appears in the Snapshot list but does not open in the Profiling Results tab.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t37" headers="r1c1-t37">
-<p>On OutOfMemoryError</p>
-</td>
-<td align="left" headers="r10c1-t37 r1c2-t37">Specifies what the IDE does when an OutOfMemoryError is encountered.
-<p>Choose an option from the drop-down list. The default behavior is to save the heap dump to the profiled project.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t37" headers="r1c1-t37">
-<p>Heap Walker Settings</p>
-</td>
-<td align="left" headers="r11c1-t37 r1c2-t37">Enables automatic rule-based analysis of heap dump structures.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r12c1-t37" headers="r1c1-t37">
-<p>Profiler Dialogs Confirmations</p>
-</td>
-<td align="left" headers="r12c1-t37 r1c2-t37">Automatically resets the <b>Do Not Show This Message Again</b> checkbox in all dialog boxes to the default state of unselected.
-<p>This means that if you want to stop a dialog window from appearing, you must select the <b>Do Not Show</b> checkbox in that dialog window.</p>
-<p>Click <b>Reset</b> to set this operation.</p>
-</td>
+<td align="left" headers="r5c1-t36 r1c2-t36">Adds the selected method to the list of root methods available when profiling part of an application.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3280" name="NBCSH3280"></a>
+<p>Click <b>Method Name Filter</b> ( <img width="18" height="16" src="img/filter.png" alt="Filter icon." title="Filter icon." />) at the bottom of the Live Results window to filter the list of methods that are displayed.</p>
+<a id="NBCSH3326" name="NBCSH3326"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG117">
-<param name="text" value="<html><u>&quot;Working with the Options Window&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
+<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG733">
-<param name="text" value="<html><u>&quot;Taking a Heap Dump&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

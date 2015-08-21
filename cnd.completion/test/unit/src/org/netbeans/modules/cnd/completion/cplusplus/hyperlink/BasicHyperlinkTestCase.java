@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import java.util.Arrays;
 import org.junit.Test;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  *
@@ -54,6 +56,21 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public BasicHyperlinkTestCase(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        final String testName = getName();
+        if (Arrays.asList("testTwoMacros").contains(testName)) {
+            return new TraceModelFileFilter() {
+
+                @Override
+                public boolean isProjectFile(String filename) {
+                    return filename.contains("twoMacros");
+                }
+            };
+        }
+        return null;
     }
 
     public void test239814() throws Exception {
@@ -136,27 +153,27 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     }
 
     public void testIZ139600() throws Exception {
-        performTest("main.c", 35, 15, "main.c", 35, 5); // funPtr in int (*funPtr)();
+        performTest("main.cc", 35, 15, "main.cc", 35, 5); // funPtr in int (*funPtr)();
     }
 
     public void testVarInFunWithInitalization() throws Exception {
-        performTest("main.c", 19, 10, "main.c", 19, 5); // iiii in int iiii = fun(null, null);
+        performTest("main.cc", 19, 10, "main.cc", 19, 5); // iiii in int iiii = fun(null, null);
     }
 
     public void testParamWithoutSpace() throws Exception {
-        performTest("main.c", 18, 17, "main.c", 18, 10); // aaa in void foo(char* aaa, char**bbb)
-        performTest("main.c", 18, 28, "main.c", 18, 21); // bbb in void foo(char* aaa, char**bbb)
+        performTest("main.cc", 18, 17, "main.cc", 18, 10); // aaa in void foo(char* aaa, char**bbb)
+        performTest("main.cc", 18, 28, "main.cc", 18, 21); // bbb in void foo(char* aaa, char**bbb)
     }
 
     public void testFileLocalVariable() throws Exception {
-        performTest("main.c", 15, 12, "main.c", 15, 1); // VALUE in const int VALUE = 10;
-        performTest("main.c", 16, 30, "main.c", 15, 1); // VALUE in const int VALUE_2 = 10 + VALUE;
-        performTest("main.c", 16, 12, "main.c", 16, 1); // VALUE_2 in const int VALUE_2 = 10 + VALUE;
+        performTest("main.cc", 15, 12, "main.cc", 15, 1); // VALUE in const int VALUE = 10;
+        performTest("main.cc", 16, 30, "main.cc", 15, 1); // VALUE in const int VALUE_2 = 10 + VALUE;
+        performTest("main.cc", 16, 12, "main.cc", 16, 1); // VALUE_2 in const int VALUE_2 = 10 + VALUE;
     }
 
     public void testFuncParamUsage() throws Exception {
-        performTest("main.c", 3, 15, "main.c", 2, 9); // aa in 'int kk = aa + bb;'
-        performTest("main.c", 3, 20, "main.c", 2, 17); // bb in 'int kk = aa + bb;'
+        performTest("main.cc", 3, 15, "main.cc", 2, 9); // aa in 'int kk = aa + bb;'
+        performTest("main.cc", 3, 20, "main.cc", 2, 17); // bb in 'int kk = aa + bb;'
     }
 
     public void testFuncUsage() throws Exception {
@@ -165,38 +182,38 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     }
 
     public void testFuncLocalVarsUsage() throws Exception {
-        performTest("main.c", 5, 20, "main.c", 3, 5); // kk in "for (int ii = kk; ii > 0; ii--) {"
-        performTest("main.c", 6, 10, "main.c", 4, 5); // res in "res *= ii;"
-        performTest("main.c", 8, 13, "main.c", 4, 5); // res in "return res;"
+        performTest("main.cc", 5, 20, "main.cc", 3, 5); // kk in "for (int ii = kk; ii > 0; ii--) {"
+        performTest("main.cc", 6, 10, "main.cc", 4, 5); // res in "res *= ii;"
+        performTest("main.cc", 8, 13, "main.cc", 4, 5); // res in "return res;"
         performTest("kr.c", 6, 17, "kr.c", 5, 5); // first kk in "return foo(kk) + boo(kk);"
         performTest("kr.c", 6, 27, "kr.c", 5, 5); // second kk in "return foo(kk) + boo(kk);"
     }
 
     public void testForLoopLocalVarsUsage() throws Exception {
-        performTest("main.c", 5, 24, "main.c", 5, 10); // second ii in "for (int ii = kk; ii > 0; ii--) {"
-        performTest("main.c", 5, 32, "main.c", 5, 10); // third ii in "for (int ii = kk; ii > 0; ii--) {"
-        performTest("main.c", 6, 17, "main.c", 5, 10); // ii in "res *= ii;"
+        performTest("main.cc", 5, 24, "main.cc", 5, 10); // second ii in "for (int ii = kk; ii > 0; ii--) {"
+        performTest("main.cc", 5, 32, "main.cc", 5, 10); // third ii in "for (int ii = kk; ii > 0; ii--) {"
+        performTest("main.cc", 6, 17, "main.cc", 5, 10); // ii in "res *= ii;"
     }
 
     public void testNameWithUnderscore() throws Exception {
-        performTest("main.c", 12, 6, "main.c", 11, 1); // method_name_with_underscore();
+        performTest("main.cc", 12, 6, "main.cc", 11, 1); // method_name_with_underscore();
     }
 
     public void testSameNameDiffScope() throws Exception {
         // IZ#131560: Hyperlink does not distinguish variables with the same names within function body
         // function parameter
-        performTest("main.c", 22, 30, "main.c", 22, 24); // name in void sameNameDiffScope(int name) {
-        performTest("main.c", 23, 10, "main.c", 22, 24); // name in if (name++) {
-        performTest("main.c", 26, 17, "main.c", 22, 24); // name in } else if (name++) {
-        performTest("main.c", 26, 17, "main.c", 22, 24); // name in name--;
+        performTest("main.cc", 22, 30, "main.cc", 22, 24); // name in void sameNameDiffScope(int name) {
+        performTest("main.cc", 23, 10, "main.cc", 22, 24); // name in if (name++) {
+        performTest("main.cc", 26, 17, "main.cc", 22, 24); // name in } else if (name++) {
+        performTest("main.cc", 26, 17, "main.cc", 22, 24); // name in name--;
 
         // local variable
-        performTest("main.c", 24, 17, "main.c", 24, 9); // name in name--;
-        performTest("main.c", 25, 10, "main.c", 24, 9); // name in name--;
+        performTest("main.cc", 24, 17, "main.cc", 24, 9); // name in name--;
+        performTest("main.cc", 25, 10, "main.cc", 24, 9); // name in name--;
 
         // second local variable
-        performTest("main.c", 27, 17, "main.c", 27, 9); // name in name--;
-        performTest("main.c", 28, 17, "main.c", 27, 9); // name in name--;
+        performTest("main.cc", 27, 17, "main.cc", 27, 9); // name in name--;
+        performTest("main.cc", 28, 17, "main.cc", 27, 9); // name in name--;
     }
 
     public void testGlobalVar() throws Exception {
@@ -204,13 +221,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // variable if they has same name
 
         // local variable
-        performTest("main.c", 33, 24, "main.c", 32, 5);
-        performTest("main.c", 34, 36, "main.c", 32, 5);
+        performTest("main.cc", 33, 24, "main.cc", 32, 5);
+        performTest("main.cc", 34, 36, "main.cc", 32, 5);
 
         // global variable
-        performTest("main.c", 33, 14, "main.c", 38, 1);
-        performTest("main.c", 34, 12, "main.c", 38, 1);
-        performTest("main.c", 34, 28, "main.c", 38, 1);
+        performTest("main.cc", 33, 14, "main.cc", 38, 1);
+        performTest("main.cc", 34, 12, "main.cc", 38, 1);
+        performTest("main.cc", 34, 28, "main.cc", 38, 1);
     }
 
     public void testConstParameter() throws Exception {

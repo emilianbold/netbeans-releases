@@ -211,7 +211,9 @@ public final class BookmarkHistoryPopup implements KeyListener {
         List<BookmarkNode> entries = new ArrayList<BookmarkNode>(historyBookmarks.size() + 1);
         entries.add(bookmark2NodeMap.get(BookmarkInfo.BOOKMARKS_WINDOW));
         for (BookmarkInfo bookmark : historyBookmarks) {
-            entries.add(bookmark2NodeMap.get(bookmark));
+            BookmarkNode bookmarkNode = bookmark2NodeMap.get(bookmark);
+            assert bookmarkNode != null;
+            entries.add(bookmarkNode);
         }
         Collections.reverse(entries);
         tableModel = new BookmarksTableModel(true);

@@ -94,7 +94,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
     private JPDADebuggerImpl        debugger;
-    private SourcePath           engineContext;
+    private SourcePath              engineContext;
+    private SourceRootsCache        sourceRootsCache;
     private boolean                 started = false;
     private Session                 session;
     private BreakpointsReader       breakpointsReader;
@@ -104,6 +105,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
             (null, JPDADebugger.class);
         engineContext = lookupProvider.lookupFirst(null, SourcePath.class);
+        sourceRootsCache = new SourceRootsCache(engineContext);
         session = lookupProvider.lookupFirst(null, Session.class);
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,
@@ -339,28 +341,31 @@ implements PropertyChangeListener, DebuggerManagerListener {
                     breakpointsReader,
                     debugger,
                     session,
-                    engineContext
+                    sourceRootsCache
                     );
         } else
         if (b instanceof ExceptionBreakpoint) {
             bpi = new ExceptionBreakpointImpl (
                     (ExceptionBreakpoint) b,
                     debugger,
-                    session
+                    session,
+                    sourceRootsCache
                     );
         } else
         if (b instanceof MethodBreakpoint) {
             bpi = new MethodBreakpointImpl (
                     (MethodBreakpoint) b,
                     debugger,
-                    session
+                    session,
+                    sourceRootsCache
                     );
         } else
         if (b instanceof FieldBreakpoint) {
             bpi = new FieldBreakpointImpl (
                     (FieldBreakpoint) b,
                     debugger,
-                    session
+                    session,
+                    sourceRootsCache
                     );
         } else
         if (b instanceof ThreadBreakpoint) {
@@ -374,7 +379,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
             bpi = new ClassBreakpointImpl (
                     (ClassLoadUnloadBreakpoint) b,
                     debugger,
-                    session
+                    session,
+                    sourceRootsCache
                     );
         } else {
             bpi = null;

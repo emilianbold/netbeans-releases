@@ -344,7 +344,10 @@ public class NbModuleProjectGenerator {
         }
         EditableProperties props = new EditableProperties(true);
         props.setProperty("suite.dir", suiteLocation); // NOI18N
-        FileObject suiteProperties = createFileObject(projectDir, suitePropertiesLocation);
+        FileObject suiteProperties = projectDir.getFileObject(suitePropertiesLocation);
+        if (suiteProperties == null || !suiteProperties.isValid()) {
+            suiteProperties = createFileObject(projectDir, suitePropertiesLocation);
+        }
         Util.storeProperties(suiteProperties, props);
     }
     

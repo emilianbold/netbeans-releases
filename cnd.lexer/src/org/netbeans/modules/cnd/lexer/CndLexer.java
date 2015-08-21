@@ -642,6 +642,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 case '7':
                 case '8':
                 case '9':
+                case '\'':
                     break;
                 case 'e':
                 case 'E': // exponent part

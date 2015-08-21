@@ -870,8 +870,8 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
             }
             if (commonText != null && anchorOffset >= 0) {
-                int caretOffset = c.getSelectionStart();
-                if (caretOffset - anchorOffset < commonText.length()) {
+                int len = c.getSelectionStart() - anchorOffset;
+                if (len >= 0 && len < commonText.length()) {
 
                     Document doc = getActiveDocument();
                     BaseDocument baseDoc = null;
@@ -882,7 +882,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     if(baseDoc != null)
                         baseDoc.atomicLock();
                     try {
-                        doc.remove(anchorOffset, caretOffset - anchorOffset);
+                        doc.remove(anchorOffset, len);
                         doc.insertString(anchorOffset, commonText.toString(), null);
                     } catch (BadLocationException e) {
                     } finally {
@@ -1099,6 +1099,12 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                             return idx;
                         }
                         int d = getDistance(part.toLowerCase(), prefLC);
+                        if (part.toLowerCase().startsWith(prefLC)) {
+                            d -= 500;
+                        }
+                        if (isSmart) {
+                            d -= 1000;
+                        }
                         if (d < distance) {
                             distance = d;
                             closestIdx = idx;

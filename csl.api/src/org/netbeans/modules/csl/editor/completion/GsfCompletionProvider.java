@@ -83,6 +83,8 @@ import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.GsfLanguage;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -292,6 +294,8 @@ public class GsfCompletionProvider implements CompletionProvider {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, final int caretOffset) {
+            final CancelSupportImplementation cs = CompletionCancelSupportImpl.create(this);
+            SpiSupportAccessor.getInstance().setCancelSupport(cs);
             try {
                 this.caretOffset = caretOffset;
                 if (queryType == TOOLTIP_QUERY_TYPE || queryType == DOCUMENTATION_QUERY_TYPE || isJavaContext(component, caretOffset)) {
@@ -361,7 +365,11 @@ public class GsfCompletionProvider implements CompletionProvider {
             } catch (ParseException ioe) {
                 Exceptions.printStackTrace(ioe);
             } finally {
-                resultSet.finish();
+                try {
+                    resultSet.finish();
+                } finally {
+                    SpiSupportAccessor.getInstance().removeCancelSupport(cs);
+                }
             }
         }
         

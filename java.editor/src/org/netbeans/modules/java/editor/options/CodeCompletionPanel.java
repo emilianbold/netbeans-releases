@@ -85,7 +85,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     public static final String JAVA_AUTO_COMPLETION_SUBWORDS = "javaCompletionSubwords"; //NOI18N
     public static final boolean JAVA_AUTO_COMPLETION_SUBWORDS_DEFAULT = false;
 
-    private static final String JAVA_FQN_REGEX = "[$\\p{L}\\p{Digit}._]*"; //NOI18N
+    private static final String JAVA_FQN_REGEX = "[$\\p{L}\\p{Digit}._]*\\*?"; //NOI18N
 
     private final Preferences preferences;
 
@@ -489,10 +489,6 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         for (String entry : entries) {
             // strip zero width spaces
             entry = entry.replaceAll("\u200B", "");  // NOI18N
-            // strip wildcards
-            if (entry.contains("*"))  { // NOI18N
-                entry = entry.replaceAll("\\*", "");  // NOI18N
-            }
             entry = entry.trim();
             if (entry.length() != 0 && entry.matches(JAVA_FQN_REGEX)){
                 model.insertElementAt(entry, index);

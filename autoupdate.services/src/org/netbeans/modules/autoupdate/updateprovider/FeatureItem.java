@@ -143,4 +143,8 @@ public class FeatureItem extends UpdateItemImpl {
         return "FeatureItem[" + this.getCodeName() + "/" + this.getSpecificationVersion() + "]";
     }
 
+    @Override
+    public void setNeedsRestart(Boolean needsRestart) {
+        // do nothing
+    }
 }

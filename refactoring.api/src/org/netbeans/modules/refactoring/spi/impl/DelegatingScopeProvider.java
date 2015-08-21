@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.spi.impl;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Icon;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.spi.ui.ScopeProvider;
 import org.openide.util.ImageUtilities;
@@ -98,6 +99,12 @@ public class DelegatingScopeProvider extends ScopeProvider implements Delegating
     public Scope getScope() {
         ScopeProvider d = getDelegate();
         return d != null ? d.getScope() : null;
+    }
+
+    @Override
+    public Problem getProblem() {
+        ScopeProvider d = getDelegate();
+        return d != null ? d.getProblem(): null;
     }
     
     @Override

@@ -44,13 +44,17 @@ package org.netbeans.modules.debugger.jpda.truffle.actions;
 
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
+import java.io.InvalidObjectException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.actions.JPDADebuggerActionProvider;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
@@ -109,7 +113,7 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
     public void doAction(Object action) {
         LOG.fine("doAction("+action+")");
         JPDADebuggerImpl debugger = getDebuggerImpl();
-        //CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
         int stepCmd = 0;
         final String stepInto = (String) ActionsManager.ACTION_STEP_INTO;
         if (ActionsManager.ACTION_CONTINUE.equals(action)) {
@@ -121,6 +125,14 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
         } else if (ActionsManager.ACTION_STEP_OUT.equals(action)) {
             stepCmd = 3;
         }
+        JPDAClassType accessorClass = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
+        try {
+            Variable[] arguments = new Variable[] { currentPCInfo.getSuspendedInfo(), debugger.createMirrorVar((Integer) stepCmd, true) };
+            accessorClass.invokeMethod("setStep", "(Ljava/lang/Object;I)V", arguments);
+        } catch (InvalidExpressionException | InvalidObjectException | NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        /*
         ClassType accessorClass = TruffleDebugManager.getDebugAccessorClass(debugger);
         try {
             Field stepCmdField = ReferenceTypeWrapper.fieldByName(accessorClass, "stepCmd");
@@ -130,6 +142,7 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
+        */
         if (stepCmd > 0) {
             debugger.resumeCurrentThread();
         } else {

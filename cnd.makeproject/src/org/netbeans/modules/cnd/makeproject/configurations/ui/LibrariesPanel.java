@@ -275,10 +275,15 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            PkgConfigLibrary stdLibPanel = new PkgConfigLibrary(conf.getDevelopmentHost().getExecutionEnvironment());
-            DialogDescriptor dialogDescriptor = new DialogDescriptor(stdLibPanel, getString("SELECT_STATNDARD_LIBRARY_DIALOG_TITLE"));
+            JButton okButton = new JButton(getString("PkgConfigLibrary_CTL_OK")); //NOI18N
+            JButton cancel = new JButton(getString("PkgConfigLibrary_CTL_Cancel")); //NOI18N
+            PkgConfigLibrary stdLibPanel = new PkgConfigLibrary(conf.getDevelopmentHost().getExecutionEnvironment(), okButton);
+            DialogDescriptor dialogDescriptor = new DialogDescriptor(stdLibPanel, getString("SELECT_STATNDARD_LIBRARY_DIALOG_TITLE")); //NOI18N
+            Object[] options = new Object[] { okButton , cancel };
+            dialogDescriptor.setOptions(options);
+            dialogDescriptor.setClosingOptions(options);
             DialogDisplayer.getDefault().notify(dialogDescriptor);
-            if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
+            if (dialogDescriptor.getValue() != okButton) {
                 return;
             }
             PackageConfiguration[] libs = stdLibPanel.getPkgConfigLibs();

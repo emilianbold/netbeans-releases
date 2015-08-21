@@ -51,7 +51,7 @@
     </Container>
     <Component class="org.netbeans.modules.refactoring.spi.ui.ScopePanel" name="scope">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.refactoring.spi.ui.ScopePanel(WhereUsedPanel.class.getCanonicalName().replace(&apos;.&apos;, &apos;-&apos;), NbPreferences.forModule(WhereUsedPanel.class), &quot;whereUsed.scope&quot;)"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.refactoring.spi.ui.ScopePanel(WhereUsedPanel.class.getCanonicalName().replace(&apos;.&apos;, &apos;-&apos;), NbPreferences.forModule(WhereUsedPanel.class), &quot;whereUsed.scope&quot;, parent)"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">

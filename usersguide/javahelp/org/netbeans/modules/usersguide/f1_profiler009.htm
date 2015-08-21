@@ -2,65 +2,51 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Edit Global Filters Dialog Box</title>
+<title>Select Profiling Task: Filter Value Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="GlobalFiltersPanel.HelpCtx" name="GlobalFiltersPanel.HelpCtx"></a></p>
-<div id="NBCSH3129"><!-- infolevel="all" infotype="General" --><a id="sthref397" name="sthref397"></a>
-<h1>Edit Global Filters Dialog Box</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="PreferredInstrFilterPanel.HelpCtx" name="PreferredInstrFilterPanel.HelpCtx"></a></p>
+<div id="NBCSH3139"><!-- infolevel="all" infotype="General" --><a id="sthref400" name="sthref400"></a>
+<h1>Select Profiling Task: Filter Value Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to edit, delete or modify global filters that are used in filter sets. You use filter sets to limit the classes that are profiled when analyzing application performance. How?</p>
+<p>Use to view the classes that are to be profiled when you run the profiling session with the selected filter. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
-<table summary="Descriptions of Edit Global Filters commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="32%" />
+<table summary="Description of Filter Value dialog box command." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t11">Element</th>
-<th align="left" valign="bottom" id="r1c2-t11">Description</th>
+<th align="left" valign="bottom" id="r1c1-t10">Element</th>
+<th align="left" valign="bottom" id="r1c2-t10">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t11" headers="r1c1-t11">
-<p>New</p>
+<td align="left" id="r2c1-t10" headers="r1c1-t10">
+<p>To QuickFilter</p>
 </td>
-<td align="left" headers="r2c1-t11 r1c2-t11">Creates a new row in the list and types the new name and values directly in the fields in the list.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t11" headers="r1c1-t11">
-<p>Edit</p>
-</td>
-<td align="left" headers="r3c1-t11 r1c2-t11">Modifies the selected filter. Click Edit and type directly in the field in the list to edit the name or value.
-<p>You can also edit a field by double-clicking in the field.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t11" headers="r1c1-t11">
-<p>Delete</p>
-</td>
-<td align="left" headers="r4c1-t11 r1c2-t11">Removes the selected filter from the list when you click <b>Delete</b>.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t11" headers="r1c1-t11">
-<p>Move Up and Move Down</p>
-</td>
-<td align="left" headers="r5c1-t11 r1c2-t11">Reorders the filter list when you click <b>Move Up</b> and <b>Move Down</b> on a selected filter.
-<p>The new order is also displayed in the Customize Filter Sets dialog box.</p>
-</td>
+<td align="left" headers="r2c1-t10 r1c2-t10">Adds all listed classes to the QuickFilter and the Set Quick Filter dialog box open.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3134" name="NBCSH3134"></a>
+<p>Create a custom QuickFilter of specific classes by clicking <b>To QuickFilter</b>. The listed classes are added to the QuickFilter. In the Set Quick Filter dialog box that opens, you can choose the filter type and modify the list of filtered classes by entering the class or package names in the Filter Value text box. Choose <b>Quick filter</b> in the Filter drop-down list in the Basic settings pane of the Select Profiling Task window to apply the filter to the profiling session.</p>
+<a id="NBCSH3141" name="NBCSH3141"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
 <param name="text" value="<html><u>&quot;Setting Profiling Filters&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -68,8 +54,8 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
-<param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1133">
+<param name="text" value="<html><u>&quot;Profiling a Web Application&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

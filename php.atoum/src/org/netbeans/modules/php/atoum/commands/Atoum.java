@@ -85,8 +85,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
-import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.DEBUG;
-import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.TEST;
 
 /**
  * Represents <tt>atoum</tt> or <tt>mageekguy.atoum.phar</tt>.
@@ -247,7 +245,7 @@ public final class Atoum {
                 assert new File(command).isFile() : "Coverage script should exist: " + command;
             }
         }
-        PhpExecutable atoum = getExecutable(command, phpModule, getOutputTitle(runInfo));
+        PhpExecutable atoum = getExecutable(command, phpModule);
         // params
         List<String> params = new ArrayList<>();
         if (coverageEnabled) {
@@ -301,8 +299,8 @@ public final class Atoum {
             assert startFiles.size() == 1 : "Exactly one file expected for debugging but got " + startFiles;
             return atoum.debug(startFiles.get(0), getDescriptor(), new ParsingFactory(testSession));
         } catch (CancellationException ex) {
-            // canceled
-            LOGGER.log(Level.FINE, "Test creating cancelled", ex);
+            // cancelled
+            LOGGER.log(Level.FINE, "Test running cancelled", ex);
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
             if (AtoumPreferences.isAtoumEnabled(phpModule)) {
@@ -316,17 +314,16 @@ public final class Atoum {
         return null;
     }
 
-    @NbBundle.Messages("Atoum.init=atoum (init)")
     @CheckForNull
     public Pair<File, File> init(PhpModule phpModule) {
-        PhpExecutable atoum = getExecutable(phpModule, Bundle.Atoum_init());
+        PhpExecutable atoum = getExecutable(phpModule);
         List<String> params = new ArrayList<>();
         addBootstrap(phpModule, params);
         addConfiguration(phpModule, params);
         params.add(INIT_PARAM);
         atoum.additionalParameters(params);
         try {
-            Integer result = atoum.runAndWait(getDescriptor(), "Running atoum init..."); // NOI18N
+            Integer result = atoum.runAndWait(getDescriptor().inputVisible(true), "Running atoum init..."); // NOI18N
             if (result == null
                     || result != 0) {
                 return null;
@@ -342,11 +339,15 @@ public final class Atoum {
         return null;
     }
 
-    private PhpExecutable getExecutable(PhpModule phpModule, String title) {
-        return getExecutable(atoumPath, phpModule, title);
+    private PhpExecutable getExecutable(PhpModule phpModule) {
+        return getExecutable(atoumPath, phpModule);
     }
 
-    private PhpExecutable getExecutable(String command, PhpModule phpModule, String title) {
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "Atoum.run.title=atoum ({0})",
+    })
+    private PhpExecutable getExecutable(String command, PhpModule phpModule) {
         // backward compatibility, simply return the first test directory
         FileObject testDirectory = phpModule.getTestDirectory(null);
         assert testDirectory != null : "Test directory not found for " + phpModule.getName();
@@ -355,7 +356,7 @@ public final class Atoum {
                 .workDir(FileUtil.toFile(testDirectory))
                 .redirectErrorStream(true)
                 .noDebugConfig(true)
-                .displayName(title);
+                .displayName(Bundle.Atoum_run_title(phpModule.getDisplayName()));
     }
 
     private ExecutionDescriptor getDescriptor() {
@@ -365,32 +366,6 @@ public final class Atoum {
                 .showProgress(true)
                 .outLineBased(true)
                 .errLineBased(true);
-    }
-
-    @NbBundle.Messages({
-        "Atoum.run.test.single=atoum (test)",
-        "Atoum.run.test.all=atoum (test all)",
-        "Atoum.debug.single=atoum (debug)",
-        "Atoum.debug.all=atoum (debug all)",
-    })
-    private String getOutputTitle(TestRunInfo runInfo) {
-        boolean allTests = runInfo.allTests();
-        switch (runInfo.getSessionType()) {
-            case TEST:
-                if (allTests) {
-                    return Bundle.Atoum_run_test_all();
-                }
-                return Bundle.Atoum_run_test_single();
-                //break;
-            case DEBUG:
-                if (allTests) {
-                    return Bundle.Atoum_debug_all();
-                }
-                return Bundle.Atoum_debug_single();
-                //break;
-            default:
-                throw new IllegalStateException("Unknown session type: " + runInfo.getSessionType());
-        }
     }
 
     private String sanitizeClassName(String className) {

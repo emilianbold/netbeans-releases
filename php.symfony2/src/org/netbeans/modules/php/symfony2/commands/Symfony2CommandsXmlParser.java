@@ -43,6 +43,8 @@ package org.netbeans.modules.php.symfony2.commands;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,7 +68,7 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
     private final List<Symfony2CommandVO> commands;
 
     private String currentCommand = null;
-    private StringBuilder currentUsage = null;
+    private List<StringBuilder> currentUsages = null;
     private String currentDescription = null;
     private StringBuilder currentHelp = null;
     private Content content = Content.NONE;
@@ -100,23 +102,31 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if ("command".equals(qName)) { // NOI18N
+        if ("commands".equals(qName)) { // NOI18N
+            assert content == Content.NONE;
+            content = Content.COMMANDS;
+        } else if ("command".equals(qName)) { // NOI18N
+            if (content != Content.COMMANDS) {
+                // not interested
+                return;
+            }
             assert currentCommand == null;
-            assert currentUsage == null;
+            assert currentUsages == null;
             assert currentDescription == null;
             assert currentHelp == null;
             currentCommand = attributes.getValue("name"); // NOI18N
+            currentUsages = new ArrayList<>();
         } else if ("usage".equals(qName)) { // NOI18N
-            assert content == Content.NONE;
-            assert currentUsage == null;
+            assert content == Content.COMMANDS : content;
+            assert currentUsages != null;
             assert currentDescription == null;
             assert currentHelp == null;
             if (currentCommand != null) {
                 content = Content.USAGE;
-                currentUsage = new StringBuilder();
+                currentUsages.add(new StringBuilder());
             }
         } else if ("description".equals(qName)) { // NOI18N
-            assert content == Content.NONE;
+            assert content == Content.COMMANDS : content;
             assert currentDescription == null;
             assert currentHelp == null;
             if (currentCommand != null) {
@@ -124,7 +134,7 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
                 content = Content.DESCRIPTION;
             }
         } else if ("help".equals(qName)) { // NOI18N
-            assert content == Content.NONE;
+            assert content == Content.COMMANDS : content;
             assert currentHelp == null;
             if (currentCommand != null) {
                 content = Content.HELP;
@@ -135,19 +145,21 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if ("usage".equals(qName)) { // NOI18N
+        if ("commands".equals(qName)) { // NOI18N
+            content = Content.NONE;
+        } else if ("usage".equals(qName)) { // NOI18N
             if (content == Content.USAGE) {
-                content = Content.NONE;
+                content = Content.COMMANDS;
             }
         } else if ("description".equals(qName)) { // NOI18N
             if (content == Content.DESCRIPTION) {
-                content = Content.NONE;
+                content = Content.COMMANDS;
             }
         } else if ("help".equals(qName)) { // NOI18N
             if (content == Content.HELP) {
                 assert currentCommand != null;
-                if (currentUsage == null) {
-                    currentUsage = new StringBuilder();
+                if (currentUsages == null) {
+                    currentUsages = Collections.emptyList();
                 }
                 if (currentDescription == null) {
                     currentDescription = ""; // NOI18N
@@ -156,12 +168,12 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
                 commands.add(new Symfony2CommandVO(
                         currentCommand.trim(),
                         currentDescription.trim(),
-                        processHelp(currentUsage.toString().trim(), currentHelp.toString().trim())));
+                        processHelp(currentUsages, currentHelp.toString().trim())));
                 currentCommand = null;
-                currentUsage = null;
+                currentUsages = null;
                 currentDescription = null;
                 currentHelp = null;
-                content = Content.NONE;
+                content = Content.COMMANDS;
             }
         }
     }
@@ -169,8 +181,11 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
         switch (content) {
+            case COMMANDS:
+                // noop
+                break;
             case USAGE:
-                currentUsage.append(ch, start, length);
+                currentUsages.get(currentUsages.size() - 1).append(ch, start, length);
                 break;
             case DESCRIPTION:
                 currentDescription = new String(ch, start, length);
@@ -188,21 +203,35 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
     }
 
     @Messages("LBL_Usage=Usage:")
-    private static String processHelp(String usage, String help) {
+    private static String processHelp(List<StringBuilder> usages, String help) {
         StringBuilder result = new StringBuilder();
-        if (StringUtils.hasText(usage)) {
-            result.append(Bundle.LBL_Usage());
-            result.append("<br><i>"); // NOI18N
-            result.append(usage);
-            result.append("</i><br><br>"); // NOI18N
+        boolean titlePrinted = false;
+        for (StringBuilder usage : usages) {
+            String usg = usage.toString().trim();
+            if (StringUtils.hasText(usg)) {
+                if (!titlePrinted) {
+                    titlePrinted = true;
+                    result.append(Bundle.LBL_Usage());
+                }
+                result.append("<br><i>"); // NOI18N
+                result.append(usg
+                        .replace("<", "&lt;") // NOI18N
+                        .replace(">", "&gt;") // NOI18N
+                );
+                result.append("</i>"); // NOI18N
+            }
+        }
+        if (titlePrinted) {
+            result.append("<br><br>"); // NOI18N
         }
         if (StringUtils.hasText(help)) {
-            help = help.replace("<info>", "<i>"); // NOI18N
-            help = help.replace("</info>", "</i>"); // NOI18N
-            help = help.replace("<comment>", "<i>"); // NOI18N
-            help = help.replace("</comment>", "</i>"); // NOI18N
-            help = help.replace("\n", "<br>"); // NOI18N
-            result.append(help);
+            result.append(help
+                    .replace("<info>", "<i>") // NOI18N
+                    .replace("</info>", "</i>") // NOI18N
+                    .replace("<comment>", "<i>") // NOI18N
+                    .replace("</comment>", "</i>") // NOI18N
+                    .replace("\n", "<br>") // NOI18N
+            );
         }
         if (result.length() == 0) {
             return ""; // NOI18N
@@ -214,6 +243,7 @@ public final class Symfony2CommandsXmlParser extends DefaultHandler {
 
     enum Content {
         NONE,
+        COMMANDS,
         USAGE,
         DESCRIPTION,
         HELP,

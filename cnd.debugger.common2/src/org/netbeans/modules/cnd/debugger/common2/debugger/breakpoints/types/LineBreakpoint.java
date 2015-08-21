@@ -158,6 +158,13 @@ public final class LineBreakpoint extends NativeBreakpoint {
             return super.getLine(filename, line);
         }
     }
+
+    @Override
+    public NativeBreakpoint makeEditableCopy() {
+        LineBreakpoint res = (LineBreakpoint)super.makeEditableCopy();
+        res.fs = fs;
+        return res;
+    }
     
     @Override
     public void seedToplevelAnnotations() {
@@ -238,6 +245,10 @@ public final class LineBreakpoint extends NativeBreakpoint {
     @Override
     public GroupProperties getGroupProperties() {
         return new LineGroupProperties();
+    }
+
+    public FileSystem getFileSystem() {
+        return fs;
     }
     
     private class LineGroupProperties extends NativeGroupProperties {

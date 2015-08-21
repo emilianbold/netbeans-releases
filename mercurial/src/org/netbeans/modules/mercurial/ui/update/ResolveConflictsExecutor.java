@@ -89,6 +89,8 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
     private String rightFileRevision = null;
 
     private final File file;
+    private String newLineString;
+    private static final String SYSTEM_LINE_SEPARATOR = System.getProperty("line.separator");
 
     public ResolveConflictsExecutor(File file) {
         super();
@@ -143,6 +145,8 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         f1.deleteOnExit();
         f2.deleteOnExit();
         f3.deleteOnExit();
+        
+        newLineString = Utils.getLineEnding(fo, lock);
 
         Charset encoding = FileEncodingQuery.getEncoding(fo);
         final Difference[] diffs = copyParts(true, file, f1, true, encoding);
@@ -186,7 +190,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         final StreamSource result = new MergeResultWriterInfo(f1, f2, f3, file, mimeType,
                                                               originalLeftFileRevision,
                                                               originalRightFileRevision,
-                                                              fo, lock, encoding);
+                                                              fo, lock, encoding, newLineString);
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
@@ -323,7 +327,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                     }
                     if (!leftPart) {
                         w.write(lineText);
-                        w.newLine();
+                        w.write(newLineString);
                     }
                     isChangeRight = !isChangeRight;
                     continue;
@@ -342,12 +346,12 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                         continue;
                     }
                 } else if (line.endsWith(CHANGE_DELIMETER) && !line.endsWith(CHANGE_DELIMETER + CHANGE_DELIMETER.charAt(0))) {
-                    String lineText = line.substring(0, line.length() - CHANGE_DELIMETER.length()) + "\n"; // NOI18N
+                    String lineText = line.substring(0, line.length() - CHANGE_DELIMETER.length()) + newLineString; // NOI18N
                     if (isChangeLeft) {
                         text1.append(lineText);
                         if (leftPart) {
                             w.write(lineText);
-                            w.newLine();
+                            w.write(newLineString);
                         }
                         isChangeLeft = false;
                         isChangeRight = true;
@@ -357,7 +361,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                         text2.append(lineText);
                         if (!leftPart) {
                             w.write(lineText);
-                            w.newLine();
+                            w.write(newLineString);
                         }
                         isChangeRight = false;
                         isChangeLeft = true;
@@ -368,10 +372,10 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                 }
                 if (!isChangeLeft && !isChangeRight || leftPart == isChangeLeft) {
                     w.write(line);
-                    w.newLine();
+                    w.write(newLineString);
                 }
-                if (isChangeLeft) text1.append(line + "\n"); // NOI18N
-                if (isChangeRight) text2.append(line + "\n"); // NOI18N
+                if (isChangeLeft) text1.append(line + newLineString); // NOI18N
+                if (isChangeRight) text2.append(line + newLineString); // NOI18N
                 if (generateDiffs) {
                     if (isChangeLeft) i++;
                     else if (isChangeRight) j++;
@@ -414,7 +418,6 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         }
         return sb.toString();
     }
-    
 
     private static class MergeResultWriterInfo extends StreamSource {
         
@@ -426,11 +429,13 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         private FileObject fo;
         private FileLock lock;
         private Charset encoding;
+        private final String newLineString;
         
         public MergeResultWriterInfo(File tempf1, File tempf2, File tempf3,
                                      File outputFile, String mimeType,
                                      String leftFileRevision, String rightFileRevision,
-                                     FileObject fo, FileLock lock, Charset encoding) {
+                                     FileObject fo, FileLock lock, Charset encoding,
+                                     String newLineString) {
             this.tempf1 = tempf1;
             this.tempf2 = tempf2;
             this.tempf3 = tempf3;
@@ -440,6 +445,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
             this.rightFileRevision = rightFileRevision;
             this.fo = fo;
             this.lock = lock;
+            this.newLineString = newLineString;
             if (encoding == null) {
                 encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(tempf1));
             }
@@ -471,16 +477,16 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         public Writer createWriter(Difference[] conflicts) throws IOException {
             Writer w;
             if (fo != null) {
-                w = new OutputStreamWriter(fo.getOutputStream(lock), encoding);
+                w = new LineEndingFilterWriter(new OutputStreamWriter(fo.getOutputStream(lock), encoding), newLineString);
             } else {
-                w = new OutputStreamWriter(new FileOutputStream(outputFile), encoding);
+                w = new LineEndingFilterWriter(new OutputStreamWriter(new FileOutputStream(outputFile), encoding), newLineString);
             }
             if (conflicts == null || conflicts.length == 0) {
                 fileToRepairEntriesOf = outputFile;
                 return w;
             } else {
                 return new MergeConflictFileWriter(w, fo, conflicts,
-                                                   leftFileRevision, rightFileRevision);
+                                                   leftFileRevision, rightFileRevision, newLineString);
             }
         }
         
@@ -516,14 +522,16 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         private String leftName;
         private String rightName;
         private FileObject fo;
+        private final String newLineString;
         
         public MergeConflictFileWriter(Writer delegate, FileObject fo,
                                        Difference[] conflicts, String leftName,
-                                       String rightName) throws IOException {
+                                       String rightName, String newLineString) throws IOException {
             super(delegate);
             this.conflicts = conflicts;
             this.leftName = leftName;
             this.rightName = rightName;
+            this.newLineString = newLineString;
             this.lineNumber = 1;
             this.currentConflict = 0;
             if (lineNumber == conflicts[currentConflict].getFirstStart()) {
@@ -533,9 +541,13 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
             this.fo = fo;
         }
         
+        @Override
         public void write(String str) throws IOException {
+            if (!SYSTEM_LINE_SEPARATOR.equals(newLineString)) {
+                str = str.replaceAll(SYSTEM_LINE_SEPARATOR, newLineString);
+            }
             super.write(str);
-            lineNumber += numChars('\n', str);
+            lineNumber += numChars(newLineString, str);
             if (currentConflict < conflicts.length && lineNumber >= conflicts[currentConflict].getFirstStart()) {
                 writeConflict(conflicts[currentConflict]);
                 currentConflict++;
@@ -543,16 +555,16 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         }
         
         private void writeConflict(Difference conflict) throws IOException {
-            super.write(CHANGE_LEFT + leftName + "\n"); // NOI18N
+            super.write(CHANGE_LEFT + leftName + newLineString); // NOI18N
             super.write(conflict.getFirstText());
-            super.write(CHANGE_DELIMETER + "\n"); // NOI18N
+            super.write(CHANGE_DELIMETER + newLineString); // NOI18N
             super.write(conflict.getSecondText());
-            super.write(CHANGE_RIGHT + rightName + "\n"); // NOI18N
+            super.write(CHANGE_RIGHT + rightName + newLineString); // NOI18N
         }
         
-        private static int numChars(char c, String str) {
+        private static int numChars(String s, String str) {
             int n = 0;
-            for (int pos = str.indexOf(c); pos >= 0 && pos < str.length(); pos = str.indexOf(c, pos + 1)) {
+            for (int pos = str.indexOf(s); pos >= 0 && pos < str.length(); pos = str.indexOf(s, pos + 1)) {
                 n++;
             }
             return n;
@@ -561,6 +573,23 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         public void close() throws IOException {
             super.close();
             if (fo != null) fo.refresh(true);
+        }
+    }
+
+    private static class LineEndingFilterWriter extends FilterWriter {
+        private final String lineEnding;
+
+        public LineEndingFilterWriter (OutputStreamWriter outputStreamWriter, String lineEnding) {
+            super(outputStreamWriter);
+            this.lineEnding = lineEnding;
+        }
+        
+        @Override
+        public void write(String str) throws IOException {
+            if (!SYSTEM_LINE_SEPARATOR.equals(lineEnding)) {
+                str = str.replaceAll(SYSTEM_LINE_SEPARATOR, lineEnding);
+            }
+            super.write(str);
         }
     }
 }

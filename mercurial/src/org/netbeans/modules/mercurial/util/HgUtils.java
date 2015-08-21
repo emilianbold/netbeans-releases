@@ -1169,7 +1169,9 @@ itor tabs #66700).
             }
             
             String root = rootManagedFolder.getAbsolutePath();
-            if(shortPath.startsWith(root)) {
+            if (shortPath.equals(root)) {
+                return "";
+            } else if (shortPath.startsWith(root)) {
                 return shortPath.substring(root.length()+1);
             }else{
                 return NbBundle.getMessage(SyncFileNode.class, "LBL_Location_NotInRepository"); // NOI18N

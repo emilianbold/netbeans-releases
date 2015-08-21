@@ -434,6 +434,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	    if (original == null) {
 		original = new DebugTarget( (MakeConfiguration) info.getConfiguration());
 		original.setHostName(info.getHostName());
+                original.setEngine(info.getEngineDescriptor().getType());
 	    }
 	    DebugTarget dt = original.cloneRecord();
             DebuggerSettings newSettings = createSettingsFromTarget(dt);

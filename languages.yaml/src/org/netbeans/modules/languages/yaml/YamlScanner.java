@@ -69,6 +69,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.StructureScanner.Configuration;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
@@ -79,6 +80,7 @@ import org.openide.xml.XMLUtil;
  * @author Tor Norbye
  */
 public class YamlScanner implements StructureScanner {
+
     private static final Logger LOGGER = Logger.getLogger(YamlScanner.class.getName());
 
     @Override
@@ -116,12 +118,13 @@ public class YamlScanner implements StructureScanner {
         Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
         folds.put("tags", codeblocks); // NOI18N
+
         BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
 
         if (doc != null) {
             for (StructureItem item : items) {
                 try {
-                    addBlocks(result, doc, codeblocks, item);
+                    addBlocks(result, doc, result.getSnapshot().getText(), codeblocks, item);
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
                     break;
@@ -132,12 +135,13 @@ public class YamlScanner implements StructureScanner {
         return folds;
     }
 
-    private void addBlocks(YamlParserResult result, BaseDocument doc, List<OffsetRange> codeblocks, StructureItem item) throws BadLocationException {
-        int docLength = doc.getLength();
+    private void addBlocks(YamlParserResult result, BaseDocument doc, CharSequence text, List<OffsetRange> codeblocks, StructureItem item) throws BadLocationException {
+        int docLength = doc == null ? text.length() : doc.getLength();
         int begin = Math.min((int) item.getPosition(), docLength);
         int end = Math.min((int) item.getEndPosition(), docLength);
-        int firstRowEnd = Utilities.getRowEnd(doc, begin);
-        if (begin < end && firstRowEnd != Utilities.getRowEnd(doc, end)) {
+        int firstRowEnd = doc == null ? GsfUtilities.getRowEnd(text, begin) : Utilities.getRowEnd(doc, begin);
+        int lastRowEnd = doc == null ? GsfUtilities.getRowEnd(text, end) : Utilities.getRowEnd(doc, end);
+        if (begin < end && firstRowEnd != lastRowEnd) {
             codeblocks.add(new OffsetRange(firstRowEnd, end));
         } else {
             return;
@@ -147,7 +151,7 @@ public class YamlScanner implements StructureScanner {
             int childBegin = (int) child.getPosition();
             int childEnd = (int) child.getEndPosition();
             if (childBegin >= begin && childEnd <= end) {
-                addBlocks(result, doc, codeblocks, child);
+                addBlocks(result, doc, text, codeblocks, child);
             }
         }
     }

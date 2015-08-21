@@ -57,6 +57,7 @@ import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.net.ConnectException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -83,6 +84,7 @@ import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptor
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
+import org.netbeans.modules.remote.spi.RemoteFileSystemHintsProvider;
 import org.openide.actions.FileSystemRefreshAction;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileObject;
@@ -106,7 +108,6 @@ import org.openide.windows.WindowManager;
 @org.netbeans.api.annotations.common.SuppressWarnings("Se") // is it ever serialized?
 public final class RemoteFileSystem extends FileSystem implements ConnectionListener {
 
-    private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[]{};
     private static final boolean ATTR_STATS = Boolean.getBoolean("remote.attr.stats");
 
     public static final String ATTRIBUTES_FILE_NAME = ".rfs_attr"; // NOI18N
@@ -133,8 +134,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private static final Object mainLock = new Object();
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<>();
     private final AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
+    private static final List<FileSystemProblemListener> globalProblemListeners = new CopyOnWriteArrayList<>();
     private final List<FileSystemProblemListener> problemListeners =
-            new ArrayList<>();
+            new ArrayList<>(globalProblemListeners);
     transient private final StatusImpl status = new StatusImpl();
     private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<>();
     private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<>();
@@ -144,6 +146,16 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<>();
 
     private final RequestProcessor.Task connectionTask;
+
+    /** 
+     * ConnectionTaskLock is now scheduled not only upon connection change, but from ctor as well
+     * (in order to get auto mounts). 
+     * The connectionChanged distinguishes these two cases
+     */
+    private volatile boolean connectionChanged;
+
+    /** @guarded by self */
+    private final List<String> autoMounts;
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -190,8 +202,50 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
         });
         connectionTask = new RequestProcessor("Connection and R/W change", 1).create(new ConnectionChangeRunnable()); //NOI18N;
+        connectionChanged = false; // volatile
+        connectionTask.schedule(0);
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
         remoteFileZipper = new RemoteFileZipper(execEnv);
+        autoMounts = getFixedAutoMounts();
+    }
+
+    private List<String> getFixedAutoMounts() {
+        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/workspace")); //NOI18N
+        String t = System.getProperty("remote.autofs.list"); //NOI18N
+        if (t != null) {
+            String[] paths = t.split(","); //NOI18N
+            for (String p : paths) {
+                if (p.startsWith("/")) { //NOI18N
+                    list.add(p);
+                }
+            }
+        }
+        return list;
+    }
+
+    public boolean isAutoMount(String path) {
+        synchronized (autoMounts) {
+            return autoMounts.contains(path);
+        }
+    }
+
+    public boolean isDirectAutoMountChild(String path) {
+        String parent = PathUtilities.getDirName(path);
+        if (parent != null && ! parent.isEmpty()) {
+            return isAutoMount(parent);
+        }
+        return false;
+    }
+
+    public static boolean isSniffing(String childName) {
+        if (childName != null) {
+            for (RemoteFileSystemHintsProvider hp : Lookup.getDefault().lookupAll(RemoteFileSystemHintsProvider.class)) {
+                if (hp.isSniffing(childName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean isInsideVCS() {
@@ -207,12 +261,21 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
 
     void warmup(Collection<String> paths, FileSystemProvider.WarmupMode mode, Collection<String> extensions) {
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            RemoteLogger.fine("Warmup: no connection to host {0}", execEnv); //NOI18N
+            return;
+        }
         for (String path : paths) {
             // we still do this via RemoteFileObject (and eventually via RemoteDirectory)
             // since we need its own cahche files to be created first
             RemoteFileObject fo = findResource(path);
             if (fo == null) {
-                RemoteLogger.info("Warmup: can't find file object {0} at {1}", path, execEnv); //NOI18N
+                if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                    RemoteLogger.info("Warmup: no connection to host while warmiong up {0} at {1}", path, execEnv); //NOI18N
+                    break;
+                } else {
+                    RemoteLogger.info("Warmup: can't find file object {0} at {1}", path, execEnv); //NOI18N
+                }
             } else {
                 fo.getImplementor().warmup(mode, extensions);
             }                        
@@ -234,11 +297,36 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
         @Override
         public void run() {
-            if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-                refreshManager.scheduleRefreshOnConnect();
+            if (connectionChanged) {
+                if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                    refreshManager.scheduleRefreshOnConnect();
+                }
+                for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
+                    fo.connectionChanged();
+                }
             }
-            for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
-                fo.connectionChanged();
+            if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                maintainAutoMounts();
+            }
+        }
+
+        private void maintainAutoMounts() {
+            long time = System.currentTimeMillis();
+            RemoteLogger.fine("Getting automount list for {0}...", execEnv); //NOI18N
+            AutoMountsProvider amp = new AutoMountsProvider(execEnv);
+            if (amp.analyze()) {
+                List<String> newAutoMounts = amp.getAutoMounts();
+                synchronized (autoMounts) {
+                    autoMounts.clear();
+                    autoMounts.addAll(newAutoMounts);
+                }
+                if (RemoteLogger.isLoggable(Level.FINE)) {
+                    RemoteLogger.fine("Getting automount list for {0} took {1} ms", //NOI18N
+                            execEnv, System.currentTimeMillis() - time);
+                    for (String path : newAutoMounts) {
+                        RemoteLogger.fine("\t{0}", path);
+                    }
+                }
             }
         }
     }
@@ -247,6 +335,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     public void connected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
             readOnlyConnectNotification.compareAndSet(true, false);
+            connectionChanged = true; // volatile
             connectionTask.schedule(0);
         }
     }
@@ -255,6 +344,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     public void disconnected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
             readOnlyConnectNotification.compareAndSet(true, false);
+            connectionChanged = true; // volatile
             connectionTask.schedule(0);
         }
         if (ATTR_STATS) { dumpAttrStat(); }
@@ -538,6 +628,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
         if (attrName.equals(FileObject.DEFAULT_LINE_SEPARATOR_ATTR)) {
             return "\n"; // NOI18N
+        } else if (attrName.equals(FileObject.DEFAULT_PATHNAME_SEPARATOR_ATTR)) {
+            return "/"; // NOI18N
         } else if (attrName.equals(READONLY_ATTRIBUTES)) {
             return Boolean.FALSE;
         } else if (attrName.equals("isRemoteAndSlow")) { // NOI18N
@@ -693,6 +785,13 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
 
+    public static void addGlobalFileSystemProblemListener(FileSystemProblemListener listener) {
+        globalProblemListeners.add(listener);
+        for (RemoteFileSystem fs : RemoteFileSystemManager.getInstance().getAllFileSystems()) {
+            fs.addFileSystemProblemListener(listener);
+        }
+    }
+    
     public void addFileSystemProblemListener(FileSystemProblemListener listener) {
         synchronized (problemListeners) {
             problemListeners.add(listener);

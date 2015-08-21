@@ -236,7 +236,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
     public String getAbsPath() {
         String retPath = null;
-        if (CndPathUtilities.isPathAbsolute(getPath())) {// UNIX path
+        if (CndPathUtilities.isPathAbsolute(fileSystem, getPath())) {// UNIX path
             retPath = getPath();
         } else if (getFolder() != null) {
             retPath = getFolder().getConfigurationDescriptor().getBaseDir() + '/' + getPath(); // UNIX path
@@ -330,7 +330,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             if (getFolder() != null) {
                 FileObject fo = (FileObject) evt.getNewValue();
                 String newPath = fo.getPath();
-                if (!CndPathUtilities.isPathAbsolute(getPath())) {
+                if (!CndPathUtilities.isPathAbsolute(fileSystem, getPath())) {
                     newPath = CndPathUtilities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), newPath);
                 }
                 newPath = CndPathUtilities.normalizeSlashes(newPath);
@@ -474,7 +474,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     // don't know file system, fall back to the default one
                     // but do not cache file object
                     String p = getPath();
-                    if (CndPathUtilities.isPathAbsolute(p)) {// UNIX path
+                    if (CndPathUtilities.isPathAbsolute(fileSystem, p)) {// UNIX path
                         p = FileSystemProvider.normalizeAbsolutePath(p, fileSystem);                        
                         fileObject = fileSystem.findResource(p);
                     }
@@ -718,7 +718,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     }
                     p = macroConverter.expand(p);
                 }
-                if (CndPathUtilities.isPathAbsolute(p)) {
+                if (CndPathUtilities.isPathAbsolute(fileSystem, p)) {
                     result.add(new FSPath(compilerFS, p));
                 } else {
                     String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);

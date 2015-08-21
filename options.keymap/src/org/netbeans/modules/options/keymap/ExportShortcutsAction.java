@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -76,6 +77,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -166,6 +168,12 @@ public class ExportShortcutsAction {
         public void actionPerformed (ActionEvent e) {
             exportShortcutsOfAllProfilesToHTML ();
         }
+
+        @Override
+        public boolean isEnabled() {
+            return !Boolean.getBoolean(ExportShortcutsAction.class.getName() + ".disable");
+        }
+        
     };
     
     public static Action getExportShortcutsToHTMLAction () {
@@ -244,7 +252,11 @@ public class ExportShortcutsAction {
 
 		if (fo.canRead() && displayHumanReadibleShortcuts) {
 		    //open generated HTML in external browser
-		    HtmlBrowser.URLDisplayer.getDefault().showURLExternal(fo.toURL());
+                    URL u = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                    if (u == null) {
+                        u = fo.toURL();
+                    }
+		    HtmlBrowser.URLDisplayer.getDefault().showURLExternal(u);
 		}
 	    } catch (IOException ex) {
                 ErrorManager.getDefault ().notify (ex);

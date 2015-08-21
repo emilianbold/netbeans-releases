@@ -49,6 +49,40 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="ScopeProblem">
+        <api name="refactoring"/>
+        <summary>Let ScopeProvider report a Problem.</summary>
+        <version major="1" minor="44"/>
+        <date day="27" month="6" year="2015"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                When a ScopeProvider should be displayed, it returns true from the
+                initialize method, but it will not work or work as expected the 
+                ScopeProvider can return a Problem. Added the method
+                getProblem() to ScopeProvider and getScopeProvider() to ScopePanel.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeProvider"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopePanel"/>
+        <issue number="252995"/>
+    </change>
+    <change id="ScopeDependencies">
+        <api name="refactoring"/>
+        <summary>Add property to include dependencies in Scope.</summary>
+        <version major="1" minor="43"/>
+        <date day="27" month="6" year="2015"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added the property dependencies in class Scope to include dependencies of the specified scope, like libraries, used by WhereUsedQuery.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.refactoring.api" name="Scope"/>
+        <issue number="252993"/>
+    </change>
     <change id="FilterSetSelected">
         <api name="refactoring"/>
         <summary>Introduce a way to update a filter's selected state after creation.</summary>

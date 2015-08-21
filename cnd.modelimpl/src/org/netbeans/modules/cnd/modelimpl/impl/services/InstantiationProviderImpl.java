@@ -820,7 +820,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 DefaultDeduceTemplateTypeStrategy calcStrategy = new DefaultDeduceTemplateTypeStrategy(DeduceTemplateTypeStrategy.Error.MatchQualsError);
                 CsmType deduced[] = deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy);
                 if (deduced != null && deduced.length > 0) {
-                    results.addAll(Arrays.asList(deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy)));
+                    results.addAll(Arrays.asList(deduced));
                     if (specTemplateParam.isVarArgs()
                             && instParamIter.hasNext()
                             && CsmBaseUtilities.isValid(specParamType.getClassifier())
@@ -837,7 +837,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam) && instType != null) {
                                 deduced = deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy);
                                 if (deduced != null && deduced.length > 0) {
-                                    results.addAll(Arrays.asList(deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy)));
+                                    results.addAll(Arrays.asList(deduced));
                                 }
                             } else {
                                 break;
@@ -961,6 +961,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         boolean variadic = paramsInfo.isVariadic();
 
         if (!specializations.isEmpty()) {
+            final boolean templateBasedInstantiation = CsmKindUtilities.isInstantiation(cls) && Instantiation.isTemplateBasedInstantiation((CsmInstantiation) cls);
             int bestMatch = 0;
             int paramsSize = 0;
             for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : paramsInfo.getExpandedParams()) {
@@ -1011,7 +1012,13 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                             CsmKindUtilities.isTypeBasedSpecalizationParameter(param2)) {
                                         CsmType type1 = paramsType.get(i);
                                         CsmType type2 = paramsType.get(j);
-                                        if (CsmUtilities.checkTypesEqual(type1, param1.getContainingFile(), type2, param2.getContainingFile())) {
+                                        if (CsmUtilities.checkTypesEqual(
+                                                type1, param1.getContainingFile(),
+                                                type2, param2.getContainingFile(),
+                                                new CsmUtilities.AlwaysEqualQualsEqualizer(),
+                                                !templateBasedInstantiation
+                                            )) 
+                                        {
                                             match += 1;
                                         }
                                     }
@@ -1031,7 +1038,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                     if (declClsQualifiedName.equals(paramsText.get(i))) {
                                         match += 2;
                                     } else if (declCls.isValid()) {
-                                        final Set<String> nestedQualifiedNames = getNestedTypeNames(instSpecParam);
+                                        final Set<String> nestedQualifiedNames = getNestedTypeNames(instSpecParam, !templateBasedInstantiation);
                                         int matchValue = 0;
                                         for (String nestedQualifiedName : nestedQualifiedNames) {
                                             matchValue = getQualifiedNamesMatchValue(nestedQualifiedName, declClsQualifiedName);
@@ -1090,7 +1097,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return bestSpecialization;
     }
 
-    private static Set<String> getNestedTypeNames(CsmType instSpecParam) {
+    private static Set<String> getNestedTypeNames(CsmType instSpecParam, final boolean resolveTypeChain) {
         final Set<String> nestedQualifiedNames = new HashSet<>();
         CsmUtilities.iterateTypeChain(instSpecParam, new CsmUtilities.Predicate<CsmType>() {
             @Override
@@ -1099,7 +1106,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 if (classifier != null) {
                     nestedQualifiedNames.add(classifier.getQualifiedName().toString());
                 }
-                return false;
+                return !resolveTypeChain;
             }
         });
         return nestedQualifiedNames;
@@ -1206,7 +1213,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                      specParam.getScope()
                              );
                         }
-                        if (val1.equals(val2)) {
+                        if (p.isValid(val1) && p.isValid(val2) && val1.equals(val2)) {
                             return 2;
                         }
                     } else {
@@ -1224,7 +1231,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         val1 = p.eval(instParamsText.get(instParamIndex), instParams.get(instParamIndex).getScope());
                         val2 = p.eval(specParamText, specParam.getScope());
                     }
-                    if (val1.equals(val2)) {
+                    if (p.isValid(val1) && p.isValid(val2) && val1.equals(val2)) {
                         return 2;
                     }
                 }

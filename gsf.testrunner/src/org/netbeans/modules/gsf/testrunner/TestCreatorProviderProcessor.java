@@ -78,6 +78,7 @@ public class TestCreatorProviderProcessor extends LayerGeneratingProcessor {
             File f = layer(e).instanceFile("Services", null);
             f.stringvalue("instanceOf", TestCreatorProvider.class.getName());
             f.bundlevalue("displayName", registration.displayName());
+            f.bundlevalue("identifier", registration.identifier());
             f.write();
         }
 

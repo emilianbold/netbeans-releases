@@ -61,6 +61,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
@@ -99,7 +100,7 @@ import org.openide.util.Union2;
  */
 final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implements Fix {
 
-    static List computeViableTargets(final CompilationInfo info, TreePath commonParent, Iterable<? extends Tree> toInclude, Iterable<? extends Occurrence> duplicates, 
+    static List<TargetDescription> computeViableTargets(final CompilationInfo info, TreePath commonParent, Iterable<? extends Tree> toInclude, Iterable<? extends Occurrence> duplicates, 
             AtomicBoolean cancel, AtomicBoolean allIfaces) {
         List<TargetDescription> targets = new ArrayList<>();
         TreePath acceptableParent = commonParent;
@@ -173,9 +174,9 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
     private final List<TreePathHandle> parameters;
     private final Set<TypeMirrorHandle> thrownTypes;
     private final List<TreePathHandle> typeVars;
-    private final List<TargetDescription> targets;
+    private final Map<TargetDescription, Set<String>> targets;
 
-    public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount, List<TreePathHandle> typeVars, int offset, List<TargetDescription> targets) {
+    public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount, List<TreePathHandle> typeVars, int offset, Map<TargetDescription, Set<String>> targets) {
         super(js, expression, duplicatesCount, offset);
         this.parameters = parameters;
         this.thrownTypes = thrownTypes;

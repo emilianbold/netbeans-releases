@@ -86,7 +86,7 @@ public class ServerLocalPropertiesPanel implements WizardDescriptor.Panel, Chang
 
     @Override
     public HelpCtx getHelp() {
-         return new HelpCtx("j2eeplugins_registering_app_server_weblogic_properties"); // NOI18N
+         return new HelpCtx("j2eeplugins_registering_app_server_weblogic_properties_local"); // NOI18N
     }
 
     @Override

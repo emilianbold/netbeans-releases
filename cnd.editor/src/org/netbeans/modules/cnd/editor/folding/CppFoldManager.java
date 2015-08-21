@@ -231,9 +231,11 @@ final class CppFoldManager extends CppFoldManagerBase
             }
             return null;
         }
-
-        CppFile cpf = CppMetaModel.getDefault().
-                get(doc.getProperty(Document.TitleProperty).toString());
+        Object titleProperty = doc.getProperty(Document.TitleProperty);
+        if (titleProperty == null) {
+            return null;
+        }
+        CppFile cpf = CppMetaModel.getDefault().get(titleProperty.toString());
         if (cpf == null) {
             return null;
         }

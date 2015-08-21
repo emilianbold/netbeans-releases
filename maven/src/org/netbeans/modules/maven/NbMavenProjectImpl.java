@@ -49,7 +49,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,8 +57,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -110,7 +110,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
@@ -864,6 +863,7 @@ public final class NbMavenProjectImpl implements Project {
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     UILookupMergerSupport.createProjectProblemsProviderMerger(),
                     LookupProviderSupport.createSourcesMerger(),
+                    LookupProviderSupport.createSharabilityQueryMerger(),
                     ProjectClassPathModifier.extenderForModifier(this),
                     LookupMergerSupport.createClassPathModifierMerger());
     }
@@ -909,12 +909,14 @@ public final class NbMavenProjectImpl implements Project {
 
         
         private final FileProvider fileProvider;
-        private File[] filesToWatch;
+        private List<File> filesToWatch;
         private long lastTime = 0;
-
+        
+        private Map<File, Long> lastMods;
+        
         /** Relative file paths to watch. */
         Updater(FileProvider toWatch) {
-            fileProvider = toWatch;
+            fileProvider = toWatch;            
         }
 
         @Override
@@ -949,18 +951,18 @@ public final class NbMavenProjectImpl implements Project {
         public void fileFolderCreated(FileEvent fileEvent) {
             //TODO possibly remove this fire.. watch for actual path..
 //            NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
-        }
+        }    
 
         @Override
         public void fileRenamed(FileRenameEvent fileRenameEvent) {
         }
 
         synchronized void attachAll() {
-            File[] toWatch = fileProvider.getFiles();
-            Arrays.sort(toWatch);
-            this.filesToWatch = toWatch;
+            this.filesToWatch = new ArrayList(Arrays.asList(fileProvider.getFiles()));
             
-            for (File file : toWatch) {
+            filesToWatch.addAll(getParents()); 
+            Collections.sort(filesToWatch);
+            for (File file : filesToWatch) {
                 try {
                     FileUtil.addFileChangeListener(this, file);
                 } catch (IllegalArgumentException ex) {
@@ -975,11 +977,53 @@ public final class NbMavenProjectImpl implements Project {
                     assert false : "project opened twice in a row, issue #236211 for " + projectFile.getAbsolutePath();
                 }
             }
+            
+            if(lastMods == null) {
+                // attached for the first time, 
+                // preserve lastModified of interestig files 
+                lastMods = new HashMap<>(filesToWatch.size());
+                for (File file : filesToWatch) {
+                    lastMods.put(file, file.lastModified());
+                }
+            } else {
+                for (Map.Entry<File, Long> e : lastMods.entrySet()) {
+                    File file = e.getKey();
+                    long ts = file.lastModified();
+                    if( e.getValue() < ts ) {
+                        // attached after being previously dettached and 
+                        // lastModified of an interesting file changed in the meantime 
+                        // -> force pom refresh
+                        lastMods.put(file, ts);
+                        NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
+                    }
+                }
+                
+            }            
+        }
+
+        protected List<File> getParents() {
+            LinkedList<File> ret = new LinkedList<>();
+            MavenProject project = getOriginalMavenProject();
+            while(true) {
+                try {
+                    MavenProject parent = loadParentOf(getEmbedder(), project);
+                    File parentFile = parent != null ? parent.getFile() : null;
+                    if(parentFile != null) {
+                        ret.add(parentFile);
+                        project = parent;
+                    } else {
+                        break;
+                    }
+                } catch (ProjectBuildingException ex) {
+                    break;
+                }
+            } 
+            return ret;
         }
 
         synchronized void detachAll() {
             if (filesToWatch != null) {
-                File[] toWatch = filesToWatch;
+                List<File> toWatch = filesToWatch;
                 filesToWatch = null;
                 for (File file : toWatch) {
                     try {

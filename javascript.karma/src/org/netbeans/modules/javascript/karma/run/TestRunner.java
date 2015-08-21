@@ -43,6 +43,10 @@
 package org.netbeans.modules.javascript.karma.run;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,8 +73,11 @@ public final class TestRunner {
 
     public static final String NB_LINE = "$NB$netbeans "; // NOI18N
 
+    private static final String NEW_LINE_REGEX = "\\s*\\\\n\\s*"; // NOI18N
+    private static final String UNCAUGHT_ERROR_PREFIX = "Uncaught Error: "; // NOI18N
     private static final String BROWSER_START = "$NB$netbeans browserStart"; // NOI18N
     private static final String BROWSER_END = "$NB$netbeans browserEnd"; // NOI18N
+    private static final String BROWSER_ERROR = "$NB$netbeans browserError"; // NOI18N
     private static final String SUITE_START = "$NB$netbeans suiteStart"; // NOI18N
     private static final String SUITE_END = "$NB$netbeans suiteEnd"; // NOI18N
     private static final String TEST = "$NB$netbeans test"; // NOI18N
@@ -82,8 +89,10 @@ public final class TestRunner {
     private static final String BROWSER_REGEX = "browser=" + NB_VALUE_REGEX; // NOI18N
     private static final String DURATION_REGEX = "duration=" + NB_VALUE_REGEX; // NOI18N
     private static final String DETAILS_REGEX = "details=" + NB_VALUE_REGEX; // NOI18N
+    private static final String ERROR_REGEX = "error=" + NB_VALUE_REGEX; // NOI18N
     private static final Pattern NAME_PATTERN = Pattern.compile(NAME_REGEX);
     private static final Pattern BROWSER_NAME_PATTERN = Pattern.compile(BROWSER_REGEX + " " + NAME_REGEX); // NOI18N
+    private static final Pattern BROWSER_ERROR_PATTERN = Pattern.compile(BROWSER_REGEX + " " + ERROR_REGEX); // NOI18N
     private static final Pattern NAME_DURATION_PATTERN = Pattern.compile(NAME_REGEX + " " + DURATION_REGEX); // NOI18N
     private static final Pattern NAME_DETAILS_DURATION_PATTERN = Pattern.compile(NAME_REGEX + " " + DETAILS_REGEX + " " + DURATION_REGEX); // NOI18N
 
@@ -91,6 +100,7 @@ public final class TestRunner {
 
     private final KarmaRunInfo karmaRunInfo;
     private final AtomicLong browserCount = new AtomicLong();
+    private final Map<String, List<String>> browserErrors = new HashMap<>();
 
     private TestSession testSession;
     private TestSuite testSuite;
@@ -119,6 +129,8 @@ public final class TestRunner {
             if (browserCount.decrementAndGet() == 0) {
                 sessionFinished(line);
             }
+        } else if (line.startsWith(BROWSER_ERROR)) {
+            browserError(line);
         } else {
             LOGGER.log(Level.FINE, "Unexpected line: {0}", line);
             assert false : line;
@@ -144,18 +156,25 @@ public final class TestRunner {
         return Bundle.TestRunner_runner_title(sb.toString());
     }
 
-    private void sessionStarted(String line) {
-        assert testSession == null;
+    private void initTestSession() {
+        if (testSession != null) {
+            return;
+        }
         Manager.getInstance().setNodeFactory(new KarmaTestRunnerNodeFactory(new CallStackCallback(karmaRunInfo.getProject())));
         testSession = new TestSession(getOutputTitle(), karmaRunInfo.getProject(), TestSession.SessionType.TEST);
         testSession.setRerunHandler(karmaRunInfo.getRerunHandler());
         getManager().testStarted(testSession);
     }
 
+    private void sessionStarted(String line) {
+        initTestSession();
+    }
+
     @NbBundle.Messages({
-        "TestRunner.tests.none.1=No tests executed - perhaps an error occured?",
-        "TestRunner.tests.none.2=Full output can be verified in Output window.",
-        "TestRunner.output.full=Full output can be found in Output window.",
+        "TestRunner.tests.error=Uncaught errors occured.",
+        "TestRunner.tests.none=No tests executed - perhaps an error occured?",
+        "TestRunner.output.verify=Full output can be verified in Output window.",
+        "TestRunner.output.view=Full output can be found in Output window.",
     })
     private void sessionFinished(String line) {
         assert testSession != null;
@@ -163,15 +182,101 @@ public final class TestRunner {
             // can happen for qunit
             suiteFinished(null);
         }
-        if (!hasTests) {
-            getManager().displayOutput(testSession, Bundle.TestRunner_tests_none_1(), true);
-            getManager().displayOutput(testSession, Bundle.TestRunner_tests_none_2(), true);
+        if (!browserErrors.isEmpty()) {
+            processErrors();
+            getManager().displayOutput(testSession, Bundle.TestRunner_tests_error(), true);
+            getManager().displayOutput(testSession, Bundle.TestRunner_output_verify(), true);
+        } else if (!hasTests) {
+            getManager().displayOutput(testSession, Bundle.TestRunner_tests_none(), true);
+            getManager().displayOutput(testSession, Bundle.TestRunner_output_verify(), true);
         } else {
-            getManager().displayOutput(testSession, Bundle.TestRunner_output_full(), false);
+            getManager().displayOutput(testSession, Bundle.TestRunner_output_view(), false);
         }
         getManager().sessionFinished(testSession);
         testSession = null;
         hasTests = false;
+        browserErrors.clear();
+    }
+
+    @NbBundle.Messages({
+        "# {0} - browser name",
+        "TestRunner.browser.error=[{0}] ERROR:",
+        "TestRunner.browser.unknown=Unknown",
+    })
+    private void browserError(String line) {
+        initTestSession();
+        Matcher matcher = BROWSER_ERROR_PATTERN.matcher(line);
+        String browser;
+        String error;
+        if (matcher.find()) {
+            browser = matcher.group(1);
+            getManager().displayOutput(testSession, Bundle.TestRunner_browser_error(browser), true);
+            error = matcher.group(2);
+            if (error.startsWith("\"")) { // NOI18N
+                error = error.substring(1);
+                if (error.endsWith("\"")) { // NOI18N
+                    error = error.substring(0, error.length() - 1);
+                }
+            }
+            String[] errorLines = error.split(NEW_LINE_REGEX);
+            for (String errorLine : errorLines) {
+                getManager().displayOutput(testSession, errorLine, true);
+            }
+        } else {
+            LOGGER.log(Level.FINE, "Unexpected browser error line: {0}", line);
+            getManager().displayOutput(testSession, line, true);
+            browser = Bundle.TestRunner_browser_unknown();
+            error = line;
+            // to work around FindBugs
+            assert assertLine(line);
+        }
+        getManager().displayOutput(testSession, "", false); // NOI18N
+        List<String> errors = browserErrors.get(browser);
+        if (errors == null) {
+            errors = new ArrayList<>();
+            browserErrors.put(browser, errors);
+        }
+        errors.add(error);
+    }
+
+    private boolean assertLine(String line) {
+        assert false : line;
+        return true;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - browser name",
+        "TestRunner.error.suite=[{0}] Uncaught Errors",
+    })
+    private void processErrors() {
+        if (!karmaRunInfo.isFailOnBrowserError()) {
+            return;
+        }
+        for (Map.Entry<String, List<String>> entry : browserErrors.entrySet()) {
+            // suite
+            TestSuite errorTestSuite = new TestSuite(Bundle.TestRunner_error_suite(entry.getKey()));
+            testSession.addSuite(errorTestSuite);
+            getManager().displaySuiteRunning(testSession, errorTestSuite.getName());
+            // tests
+            for (String info : entry.getValue()) {
+                String[] details = processDetails(info);
+                String name = details[0];
+                if (name.startsWith(UNCAUGHT_ERROR_PREFIX)) {
+                    name = name.substring(UNCAUGHT_ERROR_PREFIX.length()).trim();
+                    if (!StringUtils.hasText(name)) {
+                        name = details[0];
+                    }
+                }
+                Trouble trouble = new Trouble(true);
+                if (details.length > 1) {
+                    String[] stackTrace = new String[details.length - 1];
+                    System.arraycopy(details, 1, stackTrace, 0, stackTrace.length);
+                    trouble.setStackTrace(stackTrace);
+                }
+                addTestCase(name, Status.ERROR, 0, trouble);
+            }
+            getManager().displayReport(testSession, testSession.getReport(0), true);
+        }
     }
 
     @NbBundle.Messages({
@@ -270,7 +375,7 @@ public final class TestRunner {
         }
         return STACK_TRACE_FILE_LINE_PATTERN.matcher(details)
                 .replaceAll("${FILE}") // NOI18N
-                .split("\\s*\\\\n\\s*"); // NOI18N
+                .split(NEW_LINE_REGEX);
     }
 
     private void testIgnore(String line) {

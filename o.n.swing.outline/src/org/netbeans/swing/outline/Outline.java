@@ -448,7 +448,9 @@ public class Outline extends ETable {
 
             if (tipText != null) {
                 tipText = tipText.trim();
-                if (tipText.length() > MAX_TOOLTIP_LENGTH) {
+                if (tipText.length() > MAX_TOOLTIP_LENGTH &&
+                    !tipText.regionMatches(false, 0, "<html>", 0, 6)) {   // Do not cut HTML tooltips
+
                     tipText = tipText.substring(0, MAX_TOOLTIP_LENGTH) + "...";
                 }
             }

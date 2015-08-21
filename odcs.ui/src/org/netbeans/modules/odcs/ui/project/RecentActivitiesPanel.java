@@ -41,12 +41,6 @@
  */
 package org.netbeans.modules.odcs.ui.project;
 
-import com.tasktop.c2c.server.profile.domain.activity.BuildActivity;
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
-import com.tasktop.c2c.server.profile.domain.activity.RssActivity;
-import com.tasktop.c2c.server.profile.domain.activity.ScmActivity;
-import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
-import com.tasktop.c2c.server.profile.domain.activity.WikiActivity;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
@@ -67,16 +61,16 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
+import org.netbeans.modules.odcs.ui.project.activity.ActivityTypes;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
-import org.netbeans.modules.team.server.ui.spi.JobHandle;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -85,19 +79,20 @@ import org.openide.windows.WindowManager;
  *
  * @author jpeska
  */
-public class RecentActivitiesPanel extends javax.swing.JPanel {
+public class RecentActivitiesPanel extends javax.swing.JPanel implements ActivityTypes {
 
     private static final RequestProcessor RP = new RequestProcessor(RecentActivitiesPanel.class);
     private final ProjectHandle<ODCSProject> projectHandle;
     private final ODCSClient client;
     private JCheckBox chbTask;
     private JCheckBox chbWiki;
-    private JCheckBox chbBuildWatched;
-    private JCheckBox chbBuildUnwatched;
+    private JCheckBox chbBuilds;
+    private JCheckBox chbReviews;
     private JCheckBox chbScm;
     private JCheckBox chbRss;
-    private List<ProjectActivity> recentActivities = Collections.emptyList();
-    private final Map<ProjectActivity, ActivityPanel> activity2Panel = new HashMap<ProjectActivity, ActivityPanel>();
+    private JCheckBox chbDeploy;
+    private List<Activity> activities = Collections.emptyList();
+    private final Map<Activity, ActivityPanel> activity2Panel = new HashMap<>();
     private int maxWidth = -1;
     private final BuilderAccessor<ODCSProject> buildAccessor;
     private Cursor defaultCursor;
@@ -230,24 +225,9 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
             public void run() {
                 showWaitCursor(true);
                 try {
-                    List<ProjectActivity> recentActivities = client.getRecentActivities(projectHandle.getTeamProject().getId());
-                    if(recentActivities != null) {
-                        RecentActivitiesPanel.this.recentActivities = recentActivities;
-                    } else {
-                        RecentActivitiesPanel.this.recentActivities = Collections.emptyList();
-                    }
-                    
-                    final Collection<ProjectActivity> activities = getAllowedActivities(recentActivities);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!activities.isEmpty()) {
-                                showRecentActivities(activities);
-                            } else {
-                                showEmptyContent();
-                            }
-                        }
-                    });
+                    List<Activity> activities = client.getRecentActivities(projectHandle.getTeamProject().getId());
+                    RecentActivitiesPanel.this.activities = activities != null ? activities : Collections.EMPTY_LIST;
+                    showSelectedActivities();
                 } catch (ODCSException ex) {
                     Utils.logException(ex, true);
                     SwingUtilities.invokeLater(new Runnable() {
@@ -263,60 +243,92 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         });
     }
 
-    private Collection<ProjectActivity> getAllowedActivities(List<ProjectActivity> activities) {
-        List<ProjectActivity> ret = new LinkedList<ProjectActivity>();
-        for (ProjectActivity projectActivity : activities) {
-            if (isActivityAllowed(projectActivity)) {
-                ret.add(projectActivity);
+    private void showSelectedActivities() {
+        final Collection<Activity> selectedActivities = getShowableActivities(activities);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (!selectedActivities.isEmpty()) {
+                    showActivities(selectedActivities);
+                } else {
+                    showEmptyContent();
+                }
+            }
+        });
+    }
+
+    private Collection<Activity> getShowableActivities(List<Activity> activities) {
+        List<Activity> ret = new LinkedList<>();
+        if (activities != null) {
+            for (Activity a : activities) {
+                if (isActivityShowable(a)) {
+                    ret.add(a);
+                }
             }
         }
         return ret;
     }
-            
+
+    private boolean isActivityShowable(Activity activity) {
+        String type = activity.getType();
+        return (TASK.equals(type) && chbTask.isSelected())
+                || (REVIEW.equals(type) && chbReviews.isSelected())
+                || ((SCM_COMMIT.equals(type) || SCM_REPO.equals(type)) && chbScm.isSelected())
+                || (WIKI.equals(type) && chbWiki.isSelected())
+                || (RSS.equals(type) && chbRss.isSelected())
+                || (BUILD.equals(type) && chbBuilds.isSelected())
+                || (DEPLOYMENT.equals(type) && chbDeploy.isSelected());
+    }
+
     private void createShowButtons() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.EAST;
         gbc.gridheight = GridBagConstraints.REMAINDER;
 
-        chbTask = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Tasks"), Utils.Settings.isShowTasks());
-        chbTask.setOpaque(false);
-        chbTask.addActionListener(new ShowActionListener(TaskActivity.class));
-        pnlShow.add(chbTask, gbc);
-
-        chbWiki = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Wiki"), Utils.Settings.isShowWiki());
-        chbWiki.setOpaque(false);
-        chbWiki.addActionListener(new ShowActionListener(WikiActivity.class));
-        pnlShow.add(chbWiki, gbc);
-
-        chbScm = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Commits"), Utils.Settings.isShowScm());
+        chbScm = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Commits"), Utils.Settings.isShowScm()); // NOI18N
         chbScm.setOpaque(false);
-        chbScm.addActionListener(new ShowActionListener(ScmActivity.class));
+        chbScm.addActionListener(new ShowActionListener(SCM_COMMIT, SCM_REPO));
         pnlShow.add(chbScm, gbc);
         
-        chbRss = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Rss"), Utils.Settings.isShowRss());
+        chbReviews = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Reviews"), Utils.Settings.isShowReviews()); // NOI18N
+        chbReviews.setOpaque(false);
+        chbReviews.addActionListener(new ShowActionListener(REVIEW));
+        pnlShow.add(chbReviews, gbc);
+
+        chbTask = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Tasks"), Utils.Settings.isShowTasks()); // NOI18N
+        chbTask.setOpaque(false);
+        chbTask.addActionListener(new ShowActionListener(TASK));
+        pnlShow.add(chbTask, gbc);
+
+        chbWiki = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Wiki"), Utils.Settings.isShowWiki()); // NOI18N
+        chbWiki.setOpaque(false);
+        chbWiki.addActionListener(new ShowActionListener(WIKI));
+        pnlShow.add(chbWiki, gbc);
+
+        chbBuilds = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Builds"), Utils.Settings.isShowBuilds()); // NOI18N
+        chbBuilds.setOpaque(false);
+        chbBuilds.addActionListener(new ShowActionListener(BUILD));
+        pnlShow.add(chbBuilds, gbc);
+
+        chbDeploy =  new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Deployments"), Utils.Settings.isShowDeployments()); // NOI18N
+        chbDeploy.setOpaque(false);
+        chbDeploy.addActionListener(new ShowActionListener(DEPLOYMENT));
+        pnlShow.add(chbDeploy, gbc);
+
+        chbRss = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Rss"), Utils.Settings.isShowRss()); // NOI18N
         chbRss.setOpaque(false);
-        chbRss.addActionListener(new ShowActionListener(ScmActivity.class));
+        chbRss.addActionListener(new ShowActionListener(RSS));
         pnlShow.add(chbRss, gbc);
-
-        chbBuildWatched = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Builds"), Utils.Settings.isShowBuilds());
-        chbBuildWatched.setOpaque(false);
-        chbBuildWatched.addActionListener(new ShowActionListener(BuildActivity.class));
-        pnlShow.add(chbBuildWatched, gbc);
-
-        chbBuildUnwatched = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_BuildsUnwatched"), Utils.Settings.isShowBuildsUnwatched());
-        chbBuildUnwatched.setOpaque(false);
-        chbBuildUnwatched.addActionListener(new ShowActionListener(BuildActivity.class));
-        pnlShow.add(chbBuildUnwatched, gbc);
 
         pnlShow.revalidate();
     }
 
-    private void showRecentActivities(Collection<ProjectActivity> activities) {
+    private void showActivities(Collection<Activity> activities) {
         Date lastDate = null;
         DateSeparatorPanel currentDatePanel = null;
         pnlContent.removeAll();
         boolean isEmpty = true;
-        for (ProjectActivity activity : activities) {
+        for (Activity activity : activities) {
             isEmpty = false;
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(0, 3, 0, 0);
@@ -324,7 +336,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1.0;
             gbc.gridwidth = GridBagConstraints.REMAINDER;
-            Date currentDate = activity.getActivityDate();
+            Date currentDate = activity.getTimestamp();
             // group activities by days
             if (isAnotherDay(lastDate, currentDate)) {
                 GridBagConstraints gbc1 = new GridBagConstraints();
@@ -397,32 +409,6 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         });
     }
 
-    private boolean isActivityAllowed(ProjectActivity activity) {
-        boolean isBuildActivity = activity instanceof BuildActivity;
-        if (isBuildActivity) {
-            boolean watched = isJobWatched((BuildActivity) activity);
-            isBuildActivity = watched ? chbBuildWatched.isSelected() : chbBuildUnwatched.isSelected();
-        }
-        return activity instanceof TaskActivity && chbTask.isSelected()
-                || activity instanceof ScmActivity && chbScm.isSelected()
-                || activity instanceof WikiActivity && chbWiki.isSelected()
-                || activity instanceof RssActivity && chbRss.isSelected()
-                || isBuildActivity;
-    }
-
-    private boolean isJobWatched(BuildActivity buildActivity) {
-        JobHandle job = buildAccessor.getJob(projectHandle, buildActivity.getJobSummary().getName());
-        return job != null ? job.isWatched() : false;
-    }
-
-    private boolean isActivityEnable(List<ProjectActivity> recentActivities, Class clazz) {
-        for (ProjectActivity activity : recentActivities) {
-            if (activity.getClass().isAssignableFrom(clazz)) {
-                return true;
-            }
-        }
-        return false;
-    }
     private void showEmptyContent() {
         pnlContent.removeAll();
         pnlContent.add(lblEmptyContent, new GridBagConstraints());
@@ -443,38 +429,32 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
     }
 
     private void persistShowSettings() {
-        Utils.Settings.setShowBuilds(chbBuildWatched.isSelected());
-        Utils.Settings.setShowBuildsUnwatched(chbBuildUnwatched.isSelected());
+        Utils.Settings.setShowBuilds(chbBuilds.isSelected());
+        Utils.Settings.setShowReviews(chbReviews.isSelected());
         Utils.Settings.setShowScm(chbScm.isSelected());
         Utils.Settings.setShowTasks(chbTask.isSelected());
         Utils.Settings.setShowWiki(chbWiki.isSelected());
         Utils.Settings.setShowRss(chbRss.isSelected());
+        Utils.Settings.setShowDeployments(chbDeploy.isSelected());
     }
 
     private class ShowActionListener implements ActionListener {
+        private final String[] types;
 
-        private final Class clazz;
-
-        public ShowActionListener(Class clazz) {
-            this.clazz = clazz;
+        ShowActionListener(String... types) {
+            this.types = types;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             persistShowSettings();
-            if (isActivityEnable(recentActivities, clazz)) {
+            if (containsActivity(types)) {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
                         showWaitCursor(true);
                         try {
-                            final Collection<ProjectActivity> activities = getAllowedActivities(recentActivities);                
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    showRecentActivities(activities);
-                                }
-                            });
+                            showSelectedActivities();
                         } finally {
                             showWaitCursor(false);
                         }    
@@ -482,5 +462,16 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
                 });
             }
         }
+    }
+
+    private boolean containsActivity(String[] types) {
+        for (Activity activity : activities) {
+            for (String type : types) {
+                if (type.equalsIgnoreCase(activity.getType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

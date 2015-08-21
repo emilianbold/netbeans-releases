@@ -59,7 +59,7 @@ import org.openide.util.Pair;
  *
  * @author Tomas Zezula
  */
-class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {
+class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> implements Runnable {
         
         private final Document doc;
         private final SourcePositions pos;
@@ -67,13 +67,18 @@ class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {
         private CompilationUnitTree cu;
         private final List<Pair<DocPositionRegion,MethodTree>> posRegions = new LinkedList<Pair<DocPositionRegion, MethodTree>>();
         
-        public FindMethodRegionsVisitor (final Document doc, final SourcePositions pos, final AtomicBoolean canceled) {
+        public FindMethodRegionsVisitor (final Document doc, final SourcePositions pos, final AtomicBoolean canceled, CompilationUnitTree unit) {
             assert doc != null;
             assert pos != null;
             assert canceled != null;
             this.doc = doc;
             this.pos = pos;
             this.canceled = canceled;
+            this.cu = unit;
+        }
+        
+        public void run() {
+            visit(cu, null);
         }
 
         public List<Pair<DocPositionRegion,MethodTree>> getResult () {
@@ -86,7 +91,6 @@ class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {
 
         @Override
         public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
-            cu = node;
             for (Tree t : node.getTypeDecls()) {
                 visit (t,p);
             }

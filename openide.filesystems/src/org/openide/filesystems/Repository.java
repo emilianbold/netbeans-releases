@@ -55,6 +55,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -397,6 +399,19 @@ public class Repository implements Serializable {
             throw new IllegalStateException(ex);
         }
     }
+
+    /**
+     * Last known Lookup instance, for which the {@link #lastLocalProvider} holds a value.
+     */
+    private static Reference<Lookup>    lastDefLookup = new WeakReference<>(null);
+
+    /**  
+     * LocalProvider associated with the {@link #lastDefLookup}.
+     * The Provider is cached rather than the Repository instance, to avoid
+     * several locations where Repository is cached - testsuites may recycle instances
+     * and would have to be updated if another cache is created.
+     */
+    private static LocalProvider lastLocalProvider = null; 
     
     /**
      * Provides a safe initialization for repository in a context Lookup.
@@ -406,27 +421,70 @@ public class Repository implements Serializable {
      * existing ADD_FS value. In fact, the Repository instance <b>is usually instantiated twice</b>,
      * because ctor initialization indirectly invokes Repository.getDefault(), resulting in another
      * initialization.
+     * <p/>
+     * <b>Performance note:</b> during startup, the default Lookup changes frequently because of modules
+     * activations. The <code>lkp.lookup(LocalProvider.class)</code> query blocks on Lookup computation
+     * locks, adding up to 20% to startup time. The last discovered value of LocalProvider is therefore cached
+     * ({@link #lastLocalProvider}) and the default Lookup in effect is remembered in {@link #lastDefLookup}.
+     * If {@code getLocalRepository} is called again with the default Lookup instance unchanged (= the same execution context),
+     * no {@code lookup()} query will be executed and the cached {@code LocalProvider} instance will be
+     * used to return the repository instance.
+     * <p/>
+     * In multi-user/execution environment, this cache is beneficial during system startup; after that, the
+     * default Lookup changes with the execution context frequently, but contents of individual Lookups are rather
+     * stable, so performance should be acceptable.
      * 
      * @return Repository instance
      */
     /* package private */ static Repository getLocalRepository() {
         Lookup lkp = Lookup.getDefault();
-        
-        LocalProvider lp = lkp.lookup(LocalProvider.class);
-        Repository repo = null;
-        if (lp != null) {
-            try {
-                repo = lp.getRepository();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+        Reference<Lookup> c;
+        LocalProvider p = null;
+        LocalProvider q;
+        synchronized (Repository.class) {
+            c = lastDefLookup;
+            Lookup l = c.get();
+            if (lkp == l) {
+                p = lastLocalProvider;
+            }
+            q = p;
+        }
+        if (p == null) {
+            q = lkp.lookup(LocalProvider.class);
+            if (q == null) {
+                q = NO_PROVIDER;
             }
         }
-        return repo != null ? repo : getDefault();
+        Repository inst = null;
+        try {
+            inst = q.getRepository();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        if (p == null) {
+            synchronized (Repository.class) {
+                if (lastDefLookup == c) {
+                    lastLocalProvider = q;
+                    lastDefLookup = new WeakReference(lkp);
+                }
+            }
+        }
+        return inst;
     }
+    
+    private static final LocalProvider NO_PROVIDER = new LocalProvider() {
+        @Override
+        public Repository getRepository() throws IOException {
+            return getDefault();
+        }
+    };
     
     
     static synchronized void reset() {
         repository = null;
+        lastLocalProvider = null;
+        lastDefLookup = new WeakReference(null);
     }
     private static final ThreadLocal<FileSystem[]> ADD_FS = new ThreadLocal<FileSystem[]>();
     private static boolean addFileSystemDelayed(FileSystem fs) {

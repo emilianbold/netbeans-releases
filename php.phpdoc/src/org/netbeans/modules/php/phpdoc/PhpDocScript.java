@@ -115,6 +115,10 @@ public final class PhpDocScript {
         return PhpExecutableValidator.validateCommand(composerPath, NbBundle.getMessage(PhpDocScript.class, "LBL_PhpDocScript"));
     }
 
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "PhpDocScript.run.title=phpDocumentor ({0})",
+    })
     public void generateDocumentation(final PhpModule phpModule) {
         assert !EventQueue.isDispatchThread();
         String phpDocTarget = PhpDocPreferences.getPhpDocTarget(phpModule, true);
@@ -126,7 +130,7 @@ public final class PhpDocScript {
         String sanitizedPhpDocTarget = sanitizePath(phpDocTarget);
         Future<Integer> result = new PhpExecutable(phpDocPath)
                 .optionsSubcategory(OPTIONS_SUB_PATH)
-                .displayName(NbBundle.getMessage(PhpDocScript.class, "LBL_GeneratingPhpDocForProject", phpModule.getDisplayName()))
+                .displayName(Bundle.PhpDocScript_run_title(phpModule.getDisplayName()))
                 .additionalParameters(getParameters(sanitizedPhpDocTarget, phpModule))
                 .run(getExecutionDescriptor(sanitizedPhpDocTarget));
 

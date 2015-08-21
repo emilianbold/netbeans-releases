@@ -359,7 +359,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                 tasklistCheckBox.setSelected(toTasklist);
 
                 String description = hint.getDescription();
-                descriptionTextArea.setText( description == null ? "" : wrapDescription(description)); // NOI18N
+                descriptionTextArea.setText( description == null ? wrapDescription("") : wrapDescription(description)); // NOI18N
             } finally {                                    
                 ignoreControlChanges = false;
             }
@@ -470,7 +470,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             customizerPanel.getParent().repaint();
             severityComboBox.setSelectedIndex(severity2index.get(HintsSettings.SEVERITY_DEFAUT));
             tasklistCheckBox.setSelected(HintsSettings.IN_TASK_LIST_DEFAULT);
-            descriptionTextArea.setText(""); // NOI18N
+            descriptionTextArea.setText(wrapDescription("")); // NOI18N
         }
         
         severityComboBox.setEnabled(enabled);

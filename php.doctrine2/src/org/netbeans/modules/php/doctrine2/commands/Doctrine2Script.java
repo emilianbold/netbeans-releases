@@ -115,7 +115,7 @@ public final class Doctrine2Script {
     public void runCommand(PhpModule phpModule, List<String> parameters, Runnable postExecution) {
         new PhpExecutable(doctrine2Path)
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
-                .displayName(getDisplayName(phpModule, parameters.get(0)))
+                .displayName(getDisplayName(phpModule))
                 .additionalParameters(getAllParameters(parameters))
                 .run(getDescriptor(postExecution));
     }
@@ -175,11 +175,10 @@ public final class Doctrine2Script {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "# {1} - command",
-        "Doctrine2Script.command.title={0} ({1})"
+        "Doctrine2Script.command.title=Doctrine2 ({0})"
     })
-    private String getDisplayName(PhpModule phpModule, String command) {
-        return Bundle.Doctrine2Script_command_title(phpModule.getDisplayName(), command);
+    private String getDisplayName(PhpModule phpModule) {
+        return Bundle.Doctrine2Script_command_title(phpModule.getDisplayName());
     }
 
     private List<String> getAllParameters(List<String> params) {

@@ -128,6 +128,9 @@ public class JsDocElementUtils {
         int typeOffset = descStartOffset + (elementText.indexOf("{") == -1 ? 0 : elementText.indexOf("{") + 1); //NOI18N
         if (typeOffset > 0 && elementText.endsWith("}")) { //NOI18N
             type = type.substring(1, type.length() - 1);
+            if (type.equals("*")) {
+                type = "";
+            }
         }
         return DeclarationElement.create(elementType, createTypeUsage(type, typeOffset));
     }
@@ -184,6 +187,9 @@ public class JsDocElementUtils {
                     }
                 } else {
                     types = parts[0].substring(1, rparIndex);
+                    if (types.trim().equals("*")) {
+                        types = "";
+                    }
                 }
                 process++;
             }

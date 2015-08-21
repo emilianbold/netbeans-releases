@@ -251,7 +251,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         panel.isCaseSensitive());
                 final Models.MutableListModel baseListModel = Models.mutable(
                         itemsComparator,
-                        currentSearch.resetFilter());
+                        currentSearch.resetFilter(),
+                        null);
                 panel.setModel(Models.refreshable(
                         baseListModel,
                         new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {

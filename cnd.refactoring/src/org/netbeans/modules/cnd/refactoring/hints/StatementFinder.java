@@ -412,6 +412,9 @@ public class StatementFinder {
                                  scopeToAdd += "::"; //NOI18N
                              }
                         }
+                        if (en.isStronglyTyped()) {
+                            scopeToAdd += en.getQualifiedName() + "::";  //NOI18N
+                        }
                         for(CsmEnumerator e : en.getEnumerators()) {
                             if (caseSet.contains(e)) {
                                 continue;

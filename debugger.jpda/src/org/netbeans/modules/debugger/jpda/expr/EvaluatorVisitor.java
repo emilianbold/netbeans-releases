@@ -505,7 +505,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         for (int i = 0; i < length; i++) {
             elements.add(argVals.get(varIndex + i));
         }
-        autoboxElements(null, at, elements, evaluationContext);
+        try {
+            autoboxElements(null, at.componentType(), elements, evaluationContext);
+        } catch (ClassNotLoadedException cnlex) {}
         try {
             array.setValues(elements);
         } catch (InvalidTypeException ex) {

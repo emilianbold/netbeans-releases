@@ -668,7 +668,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             }
         } else {
             int timeout = tm.getTomcatProperties().getRunningCheckTimeout();
-            return !Utils.pingTomcat(tm.getServerPort(), timeout);
+            return !Utils.pingTomcat(tm.getServerPort(), timeout, tm.getServerHeader());
         }
     }
     

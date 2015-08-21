@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 
@@ -91,6 +92,22 @@ abstract class CompileWorker {
         if (hasClassesLivingElsewhere) {
             file2FQNs.put(tuple.jfo, fqns);
         }
+    }
+
+    protected final boolean isLowMemory(final boolean[] tryToFree) {
+        final LowMemoryWatcher lm = LowMemoryWatcher.getInstance();
+        boolean ilm = lm.isLowMemory();
+        if (ilm && tryToFree != null && tryToFree[0]) {
+            lm.free();
+            ilm = lm.isLowMemory();
+            tryToFree[0] = false;
+        }
+        return ilm;
+    }
+
+    protected final void freeMemory(final boolean freeCaches) {
+        final LowMemoryWatcher lm = LowMemoryWatcher.getInstance();
+        lm.free(freeCaches);
     }
 
     static class ParsingOutput {

@@ -50,6 +50,7 @@ import org.clang.tools.services.support.DataBaseEntryBuilder;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
 
@@ -100,7 +101,8 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
         ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl)ppHandler.getIncludeHandler();
         StartEntry startEntry = includeHandler.getStartEntry();
         FSPath startPath = new FSPath(startEntry.getFileSystem(), startEntry.getStartFile().toString());
-        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(startPath.getFileObject().toURI(), null);
+        CharSequence startUrl = CndFileSystemProvider.toUrl(startPath);
+        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(startUrl, null);
 
         builder.setLang(getLang(ppHandler.getLanguage(), startPath.getPath()));
         builder.setLangStd(getLangStd(ppHandler.getLanguageFlavor()));
@@ -111,7 +113,8 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 FSPath fsPath = new FSPath(incDir.getFileSystem(), incDir.getPath());
                 FileObject fileObject = fsPath.getFileObject();
                 if (fileObject != null && fileObject.isFolder()) {
-                    builder.addUserIncludePath(fileObject.toURI());
+                    CharSequence incPathUrl = CndFileSystemProvider.fileObjectToUrl(fileObject);
+                    builder.addUserIncludePath(incPathUrl);
                 }
             }
         }
@@ -121,7 +124,8 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 FSPath fsPath = new FSPath(incDir.getFileSystem(), incDir.getPath());
                 FileObject fileObject = fsPath.getFileObject();
                 if (fileObject != null && fileObject.isFolder()) {
-                    builder.addPredefinedSystemIncludePath(fileObject.toURI());
+                    CharSequence incPathUrl = CndFileSystemProvider.fileObjectToUrl(fileObject);
+                    builder.addPredefinedSystemIncludePath(incPathUrl);
                 }
             }
         }

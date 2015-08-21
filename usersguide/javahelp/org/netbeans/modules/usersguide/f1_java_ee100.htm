@@ -2,71 +2,59 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Web Service Attributes Editor: WSDL Customization: Global Customization</title>
+<title>Web Service Attributes Editor: Quality of Service: Advanced Configuration</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="ID_GLOBAL" name="ID_GLOBAL"></a></p>
-<div id="NBCSH4975"><!-- infolevel="all" infotype="General" --><a id="sthref669" name="sthref669"></a>
-<h1>Web Service Attributes Editor: WSDL Customization: Global Customization</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode" name="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode"></a></p>
+<div id="NBCSH4972"><!-- infolevel="all" infotype="General" --><a id="sthref706" name="sthref706"></a>
+<h1>Web Service Attributes Editor: Quality of Service: Advanced Configuration</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use the Global Customization section of the WSDL Customization panel to customize the entire WSDL file. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2805">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>You can define the following global properties:</p>
+<p>In the Quality of Service tab's, Advanced Configuration section, on the client side for clients that interact with Quality of Service enabled web services, you can set the following related fields.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t98">Element</th>
-<th align="left" valign="bottom" id="r1c2-t98">Description</th>
+<th align="left" valign="bottom" id="r1c1-t99">Element</th>
+<th align="left" valign="bottom" id="r1c2-t99">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t98" headers="r1c1-t98">
-<p>Package Name</p>
+<td align="left" id="r2c1-t99" headers="r1c1-t99">
+<p>RM Resend Interval (ms)</p>
 </td>
-<td align="left" headers="r2c1-t98 r1c2-t98">Customizes the package name that you specified when creating the artifact.</td>
+<td align="left" headers="r2c1-t99 r1c2-t99">The time in milliseconds after which the sender (RMSource) resends unacknowledged messages to the receiver (RM Destination) . By default, resends happen every 2000ms.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t98" headers="r1c1-t98">Enable Wrapper Style</td>
-<td align="left" headers="r3c1-t98 r1c2-t98">Customizes the way the parameter types and return types of a WSDL operation are generated. By default, wsimport uses the wrapper style.</td>
+<td align="left" id="r3c1-t99" headers="r1c1-t99">RM Close Timeout (ms)</td>
+<td align="left" headers="r3c1-t99 r1c2-t99">By default, the call to <code dir="ltr">proxy.close()</code> will not return until all messages have been acknowledged. RM close timeout is the interval (in milliseconds) that the client runtime will block waiting for a call to <code dir="ltr">close(</code>) to return. If there are still unacknowledged messages after this interval is reached, and the call to close has returned, an error will be logged about messages being lost.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t98" headers="r1c1-t98">Enable MIME Content</td>
-<td align="left" headers="r4c1-t98 r1c2-t98">Customizes the attachment mechanism that provides additional metadata as to how the WSDL type is bound to Java.</td>
+<td align="left" id="r4c1-t99" headers="r1c1-t99">RM Ack Request Interval (ms)</td>
+<td align="left" headers="r4c1-t99 r1c2-t99">The suggested minimum time that the sender (RMSource) should allow to elapse between Acknowledgement requests to the receiver (RMDestination).</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t98" headers="r1c1-t98">Enable Asynchronous Client</td>
-<td align="left" headers="r5c1-t98 r1c2-t98">Generates asynchchronous methods for the WSDL operations. For each operation, two asynchronous methods are generated. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2835">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</td>
+<td align="left" id="r5c1-t99" headers="r1c1-t99">Secure Session Token Lifetime (ms)</td>
+<td align="left" headers="r5c1-t99 r1c2-t99">The life span of the security context. The security context expires when the value set here expires.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t99" headers="r1c1-t99">Renew Expired Secure Session Tokens</td>
+<td align="left" headers="r6c1-t99 r1c2-t99">Specifies when the expired security context will be renewed. If not set, the expired security context will automatically be renewed.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>If the latter three properties are enabled in the Global Customization section, all port type operations will be affected. You can then override at the port type level to affect only the operations of that port type. And, finally, you can overrride at the port type operation level to designate which operations are affected.</p>
-<a id="NBCSH4977" name="NBCSH4977"></a>
+<a id="NBCSH4974" name="NBCSH4974"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1842">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1842">
 <param name="text" value="<html><u>&quot;Developing and Securing Web Services&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

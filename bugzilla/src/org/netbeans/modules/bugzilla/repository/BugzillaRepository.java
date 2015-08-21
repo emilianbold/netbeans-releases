@@ -129,10 +129,10 @@ public class BugzillaRepository {
 
     public BugzillaRepository(RepositoryInfo info) {
         this();
-        this.info = info;
-        String name = info.getDisplayName();
-        String url = info.getUrl();
-        boolean shortLoginEnabled = Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN));
+        this.info = checkAndPatchNetbeansUrl(info);
+        String name = this.info.getDisplayName();
+        String url = this.info.getUrl();
+        boolean shortLoginEnabled = Boolean.parseBoolean(this.info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN));
         taskRepository = setupTaskRepository(name, null, url, "", new char[0], "", new char[0], shortLoginEnabled);
     }
 
@@ -483,14 +483,14 @@ public class BugzillaRepository {
     }
 
     public synchronized void setInfoValues(String user, char[] password) {
-        setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, null, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
         info = createInfo(info.getID(), info.getUrl(), info.getDisplayName(), user, null, password, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
+        setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, null, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
     }
     
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
-        setTaskRepository(name, url, user, password, httpUser, httpPassword, localUserEnabled);
         String id = info != null ? info.getID() : name + System.currentTimeMillis();
         info = createInfo(id, url, name, user, httpUser, password, httpPassword, localUserEnabled);
+        setTaskRepository(name, url, user, password, httpUser, httpPassword, localUserEnabled);
     }
 
     protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword, boolean localUserEnabled) {
@@ -709,6 +709,25 @@ public class BugzillaRepository {
             }
             return unsubmittedTasksContainer;
         }
+    }
+
+    private RepositoryInfo checkAndPatchNetbeansUrl(RepositoryInfo info) {
+        if(BugzillaUtil.isNbRepository(info.getUrl()) && info.getUrl().startsWith("http://")) { // NOI18N
+            RepositoryInfo i = new RepositoryInfo(
+                                    info.getID(),
+                                    info.getConnectorId(),
+                                    NBRepositorySupport.NB_BUGZILLA_URL,
+                                    info.getDisplayName(),
+                                    info.getTooltip(),
+                                    info.getUsername(),
+                                    info.getHttpUsername(),
+                                    info.getPassword(), 
+                                    info.getHttpPassword());
+            i.putValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN, info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN));
+            Bugzilla.LOG.warning("Changed NetBeans repository url protocol to https");
+            return i;
+        } 
+        return info;
     }
 
     private static class TaskMapping extends org.eclipse.mylyn.tasks.core.TaskMapping {

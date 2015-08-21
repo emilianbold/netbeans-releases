@@ -8,5 +8,5 @@ DummyProject MemoryCategory
 DummyProject MemoryType
 DummyProject Module
 DummyProject Module()
-DummyProject Module(const Module&amp;)
+DummyProject Module(const Module&)
 DummyProject Module(const char*,const char*,int,int,int)

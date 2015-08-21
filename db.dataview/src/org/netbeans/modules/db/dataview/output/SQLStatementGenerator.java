@@ -270,7 +270,7 @@ class SQLStatementGenerator {
 
     // TODO: Support for FK, and other constraint and Index recreation.
     String generateCreateStatement(DBTable table) throws DBException, Exception {
-        boolean isdb2 = table.getParentObject().getDBType() == DBMetaDataFactory.DB2 ? true : false;
+        boolean isdb2 = table.getParentObject().getDBType() == DBMetaDataFactory.DB2;
 
         StringBuilder sql = new StringBuilder();
         List<DBColumn> columns = table.getColumnList();
@@ -383,14 +383,14 @@ class SQLStatementGenerator {
         assert SwingUtilities.isEventDispatchThread() : "Needs to be called on the EDT";
 
         DBPrimaryKey key = table.getPrimaryKey();
-        Set<String> columnsSelected = new HashSet<String>();
+        Set<String> columnsSelected = new HashSet<>();
         boolean and = false;
 
         List<DBColumn> columns = table.getColumnList();
 
         StringBuilder pkSelect = new StringBuilder();
-        List<Integer> pkTypes = new ArrayList<Integer>();
-        List<Object> pkObject = new ArrayList<Object>();
+        List<Integer> pkTypes = new ArrayList<>();
+        List<Object> pkObject = new ArrayList<>();
 
         if (key != null) {
             for (String keyName : key.getColumnNames()) {
@@ -410,7 +410,7 @@ class SQLStatementGenerator {
             }
         }
 
-        if (key != null && columnsSelected.equals(new HashSet<String>(key.getColumnNames()))) {
+        if (key != null && columnsSelected.equals(new HashSet<>(key.getColumnNames()))) {
             result.append(pkSelect);
             types.addAll(pkTypes);
             values.addAll(pkObject);
@@ -429,7 +429,7 @@ class SQLStatementGenerator {
         assert SwingUtilities.isEventDispatchThread() : "Needs to be called on the EDT";
 
         DBPrimaryKey key = table.getPrimaryKey();
-        Set<String> columnsSelected = new HashSet<String>();
+        Set<String> columnsSelected = new HashSet<>();
         boolean and = false;
 
         List<DBColumn> columns = table.getColumnList();
@@ -454,7 +454,7 @@ class SQLStatementGenerator {
             }
         }
 
-        if (key != null && columnsSelected.equals(new HashSet<String>(key.getColumnNames()))) {
+        if (key != null && columnsSelected.equals(new HashSet<>(key.getColumnNames()))) {
             sql.append(pkSelect);
         } else {
             and = false;

@@ -275,9 +275,13 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
 			javac.toPhase(JavaSource.Phase.RESOLVED);
 			CompilationUnitTree cut = javac.getCompilationUnit();
 			Tree classTree = cut.getTypeDecls().get(0);
-			List<? extends Tree> methodTrees = ((ClassTree) classTree).getMembers();
-			for (int i = 0; i < methodTrees.size(); i++) {
-                            MethodTree methodTree = (MethodTree) methodTrees.get(i);
+			List<? extends Tree> members = ((ClassTree) classTree).getMembers();
+			for (int i = 0; i < members.size(); i++) {
+                            Tree member = members.get(i);
+                            if(member.getKind() != Tree.Kind.METHOD) {
+                                continue;
+                            }
+                            MethodTree methodTree = (MethodTree) member;
 			    if (methodTree.getName().contentEquals(testMethodName)
                                     && methodTree.getReturnType().getKind() == Tree.Kind.PRIMITIVE_TYPE
                                     && ((PrimitiveTypeTree) methodTree.getReturnType()).getPrimitiveTypeKind() == TypeKind.VOID) {

@@ -176,7 +176,7 @@ public class JsCamelCaseInterceptor implements CamelCaseInterceptor {
                 return ts.offset() + i;
             }
         }
-        return -1;
+        return ts.offset() + imageLength;
     }
 
     @MimeRegistration(mimeType = "text/javascript", service = CamelCaseInterceptor.Factory.class)

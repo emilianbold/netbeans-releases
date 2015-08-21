@@ -45,27 +45,31 @@ package org.netbeans.modules.refactoring.java.spi;
 
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindVisitor;
 import org.netbeans.modules.refactoring.java.plugins.JavaPluginUtils;
-import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
+import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.Transaction;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -225,11 +229,11 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         }
     }
     
-    private Iterable<? extends List<FileObject>> groupByRoot (Iterable<? extends FileObject> data) {
-        Map<FileObject,List<FileObject>> result = new HashMap<FileObject,List<FileObject>> ();
-        for (FileObject file : data) {
+    private Map<FileObject,List<FileObject>> groupByRoot (Set<FileObject> sourceFiles) {
+        Map<FileObject,List<FileObject>> result = new LinkedHashMap<> (); // Keep order, sources first!
+        for (FileObject file : sourceFiles) {
             if (cancelRequested.get()) {
-                return Collections.emptyList();
+                return Collections.emptyMap();
             }
             ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
             if (cp != null) {
@@ -237,15 +241,25 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
                 if (root != null) {
                     List<FileObject> subr = result.get (root);
                     if (subr == null) {
-                        subr = new LinkedList<FileObject>();
+                        subr = new LinkedList<>();
                         result.put (root,subr);
                     }
                     subr.add (file);
                 }
+            } else {
+                FileObject root = FileUtil.getArchiveFile(file);
+                if (root != null) {
+                    List<FileObject> subr = result.get (root);
+                    if (subr == null) {
+                        subr = new LinkedList<>();
+                        result.put (root,subr);
+                    }
+                    subr.add(file);
+                }
             }
         }
-        return result.values();
-    }    
+        return result;
+    }
     
     protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) throws IOException {
         return processFiles(files, task, null);
@@ -256,29 +270,64 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     }
     
     protected final void queryFiles(Set<FileObject> files, CancellableTask<? extends CompilationController> task)  throws java.io.IOException {
-        processFiles(files, task, null, false);
+        queryFiles(files, task, null);
     }
+    
+    protected final void queryFiles(Set<FileObject> files, CancellableTask<? extends CompilationController> task, ClasspathInfo info)  throws java.io.IOException {
+        processFiles(files, task, info, false);
+    }
+    
+    private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
 
-    private Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<? extends CompilationController> task, ClasspathInfo info, boolean modification) throws IOException {
+    private Collection<ModificationResult> processFiles(Set<FileObject> sourceFiles, CancellableTask<? extends CompilationController> task, ClasspathInfo info, boolean modification) throws IOException {
         currentTask = task;
-        Collection<ModificationResult> results = new LinkedList<ModificationResult>();
+        Collection<ModificationResult> results = new LinkedList<>();
         try {
-            Iterable<? extends List<FileObject>> work = groupByRoot(files);
-            for (List<FileObject> fos : work) {
-                if (cancelRequested.get()) {
-                    return Collections.<ModificationResult>emptyList();
-                }
-                final JavaSource javaSource = JavaSource.create(info==null?ClasspathInfo.create(fos.get(0)):info, fos);
-                if (modification) {
-                    results.add(javaSource.runModificationTask((CancellableTask<WorkingCopy>)task)); // can throw IOException
-                } else {
-                    javaSource.runUserActionTask(currentTask, true);
-                }
-            }
+            Map<FileObject, List<FileObject>> work = groupByRoot(sourceFiles);
+            processFiles(work, info, modification, results, task);
         } finally {
             currentTask = null;
         }
         return results;
+    }
+
+    private void processFiles(Map<FileObject, List<FileObject>> work, ClasspathInfo info, boolean modification, Collection<ModificationResult> results, CancellableTask<? extends CompilationController> task) throws IOException, IllegalArgumentException {
+        for (Map.Entry<FileObject, List<FileObject>> entry : work.entrySet()) {
+            if (cancelRequested.get()) {
+                results.clear();
+                return;
+            }
+            final FileObject root = entry.getKey();
+            if (info == null) {
+                ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+                if (bootPath == null) {
+                    //javac requires at least java.lang
+                    bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+                }
+                ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+                if (compilePath == null) {
+                    compilePath = EMPTY_PATH;
+                }
+                ClassPath executePath = ClassPath.getClassPath(root, ClassPath.EXECUTE);
+                if (executePath == null) {
+                    executePath = EMPTY_PATH;
+                }
+                ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
+                if (srcPath == null) {
+                    srcPath = EMPTY_PATH;
+                }
+                info = ClasspathInfo.create(
+                        bootPath,
+                        ClassPathSupport.createProxyClassPath(compilePath,executePath),
+                        srcPath);
+            }
+            final JavaSource javaSource = JavaSource.create(info, entry.getValue());
+            if (modification) {
+                results.add(javaSource.runModificationTask((CancellableTask<WorkingCopy>)task)); // can throw IOException
+            } else {
+                javaSource.runUserActionTask(currentTask, true);
+            }
+        }
     }
     
     protected final Problem createAndAddElements(Set<FileObject> files, CancellableTask<WorkingCopy> task, RefactoringElementsBag elements, AbstractRefactoring refactoring, ClasspathInfo info) {

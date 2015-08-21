@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -82,7 +83,7 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        if ("performerActivated".equals(e.getActionCommand())) { // NOI18N
+        if (RemoteOpenActionBase.ACTIVATED_PSEUDO_ACTION_COMAND.equals(e.getActionCommand())) { // NOI18N
             presenter = (ConnectionStatusAction) e.getSource();
             init();
             return;

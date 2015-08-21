@@ -80,7 +80,14 @@ public final class WatchedFile {
             throw new IllegalArgumentException("Directory must be given, got " + directory);
         }
         if (!directory.isValid()) {
-            throw new IllegalArgumentException("Valid file must be given, got " + directory);
+            // try to recover
+            File testFile = FileUtil.toFile(directory);
+            if (testFile != null) {
+                FileObject testFo = FileUtil.toFileObject(testFile);
+                if (testFo != null) {
+                    directory = testFo;
+                }
+            }
         }
         this.filename = filename;
         this.directory = directory;

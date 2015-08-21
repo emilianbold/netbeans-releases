@@ -2,63 +2,28 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>VM Telemetry Overview Window</title>
+<title>Snapshot Information</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="TelemetryOverviewPanel.HelpCtx" name="TelemetryOverviewPanel.HelpCtx"></a></p>
-<div id="NBCSH3411"><!-- infolevel="all" infotype="General" --><a id="sthref439" name="sthref439"></a>
-<h1>VM Telemetry Overview Window</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="SnapshotInfo.HelpCtx" name="SnapshotInfo.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref447" name="sthref447"></a>
+<h1>Snapshot Information</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to view smaller versions of the graphs that are presented in the VM Telemetry window. The window displays high-level data on thread activity, memory heap, and garbage collection in the VM. The VM Telemetry Overview window is typically located below the editing area and sharing the space with the Output window. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG770">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-
-<table summary="Descriptions of VM Telemetry Overview window elements." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t58">Element</th>
-<th align="left" valign="bottom" id="r1c2-t58">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t58" headers="r1c1-t58">
-<p>Memory (Heap)</p>
-</td>
-<td align="left" headers="r2c1-t58 r1c2-t58">Displays the total and used size. These are the figures that a Java application can obtain using the j<code dir="ltr">ava.lang.Runtime.totalMemory()</code> and <code dir="ltr">java.lang.Runtime.freeMemory()</code> calls.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t58" headers="r1c1-t58">
-<p>Memory (GC)</p>
-</td>
-<td align="left" headers="r3c1-t58 r1c2-t58">Displays the relative time spent in garbage collection and the number of surviving generations.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t58" headers="r1c1-t58">
-<p>Threads (Statistics)</p>
-</td>
-<td align="left" headers="r4c1-t58 r1c2-t58">Displays the total number of threads in the profiled application JVM. You can place your cursor over the graph to display a tooltip with the current and maximum number of threads.</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<a id="NBCSH3415" name="NBCSH3415"></a>
+<p>Provides snapshot metadata including the following sections:</p>
+<ul>
+<li>Summary&mdash;displays profiler session date and time, snapshot date and time, snapshot location, profiler settings when snapshot was taken.</li>
+<li>User Comments&mdash;displays user comments. These comments may be edited by clicking the Edit button.</li>
+<li>Settings&mdash;displays the profiler settings.</li>
+</ul>
+<a id="sthref448" name="sthref448"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
-<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG659">
+<param name="text" value="<html><u>&quot;Testing and Profiling Java Application Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

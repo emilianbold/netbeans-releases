@@ -279,7 +279,7 @@ public class ElementJavadoc {
                                     Element e = ElementJavadoc.this.handle.resolve(controller);
                                     if (e != null) {
                                         PackageElement pe = controller.getElements().getPackageOf(e);                                        
-                                        uri = URI.create(FileObjects.getRelativePath(pe.getQualifiedName().toString(), uri.getPath()));
+                                        uri = URI.create(FileObjects.resolveRelativePath(pe.getQualifiedName().toString(), uri.getPath()));
                                     }
                                 }
                             } catch (IllegalArgumentException iae) {}

@@ -44,14 +44,50 @@
 
 package org.netbeans.modules.cnd.apt.debug;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ComponentType;
 
 /**
  * A common place for APT tracing flags that are used by several classes
  * @author Vladimir Voskresensky
  */
-public interface APTTraceFlags {
-    public static final boolean USE_CLANK = DebugUtils.getBoolean("apt.use.clank", false); // NOI18N
+public class APTTraceFlags {
+
+    public static final boolean USE_CLANK;
+
+    static {
+        String propUseClank = System.getProperty("apt.use.clank"); //NOI18N
+        if (propUseClank != null) {
+            USE_CLANK = Boolean.parseBoolean(propUseClank);
+        } else {
+            final ComponentType product = ComponentType.getComponent();
+            switch (product) {
+                case CND:
+                case PROJECT_CREATOR:
+                    USE_CLANK = true;
+                    break;
+                case OSS_IDE:
+                case DBXTOOL:
+                case DLIGHTTOOL:
+                case CODE_ANALYZER:
+                    USE_CLANK = false;
+                    break;
+                default:
+                    USE_CLANK = false;
+                    APTUtils.LOG.severe("Unexpected product type: " + product); //NOI18N
+                    break;
+            }
+        }
+        if (!CndUtils.isUnitTestMode()) {
+            // APTUtils.LOG has level SEVERE by default, so we can't use it here
+            Logger.getLogger(APTTraceFlags.class.getName()).log(Level.INFO, "C/C++ code model: using {0} preprocessor", (USE_CLANK ? "new" : "old")); //NOI18N
+        }
+    }
+
     public static final boolean ALWAYS_USE_NB_FS = DebugUtils.getBoolean("apt.always.use.filesystem", false); // NOI18N
     
     public static final boolean INCLUDE_TOKENS_IN_TOKEN_STREAM = DebugUtils.getBoolean("apt.include.tokens", false); // NOI18N

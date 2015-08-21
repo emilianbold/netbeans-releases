@@ -357,7 +357,7 @@ public final class Watcher extends BaseAnnotationProvider {
                         File file = new File(path);
                         final FileObjectFactory factory = FileObjectFactory.getInstance(file);
                         FileObject fo = factory.getCachedOnly(file);
-                        if (fo == null) {
+                        if (fo == null || fo.isData()) {
                             fo = factory.getCachedOnly(file.getParentFile());
                         }
                         if (fo != null) {

@@ -48,6 +48,7 @@ import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -72,6 +73,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -86,8 +89,10 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -362,11 +367,30 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     typeVars.retainAll(scanner.usedTypeVariables);
 
                     AtomicBoolean allIfaces = new AtomicBoolean();
-                    List<TargetDescription> targets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, resolved.getParentPath(), 
+                    Map<TargetDescription, Set<String>> targets = new LinkedHashMap<>(); 
+                     List<TargetDescription> viableTargets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, resolved.getParentPath(), 
                             Collections.singleton(resolved.getLeaf()), duplicates, cancel, allIfaces);
-
-                    methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars, end, targets);
-                    methodFix.setTargetIsInterface(allIfaces.get());
+                    if (viableTargets != null && !viableTargets.isEmpty()) {
+                        for (TargetDescription target : viableTargets) {
+                            Set<String> cNames = new HashSet<>();
+                            outer: for (ExecutableElement ee : ElementFilter.methodsIn(target.type.resolve(info).getEnclosedElements())) {
+                                List<? extends TypeMirror> pTypes = ((ExecutableType) ee.asType()).getParameterTypes();
+                                if (pTypes.size() == scanner.usedLocalVariables.keySet().size()) {
+                                    Iterator<? extends TypeMirror> pTypesIt = pTypes.iterator();
+                                    Iterator<VariableElement> pVarsIt = scanner.usedLocalVariables.keySet().iterator();
+                                    while (pTypesIt.hasNext() && pVarsIt.hasNext()) {
+                                        if (!info.getTypes().isSameType(pTypesIt.next(), pVarsIt.next().asType())) {
+                                            continue outer;
+                                        }
+                                    }
+                                    cNames.add(ee.getSimpleName().toString());
+                                }
+                            }
+                            targets.put(target, cNames);
+                        }
+                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars, end, targets);
+                        methodFix.setTargetIsInterface(allIfaces.get());
+                    }
                 }
             }
         }
@@ -904,6 +928,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             case CASE:
                 nueTree = make.Case(((CaseTree) toReplace).getExpression(), newStatements);
                 break;
+            case LAMBDA_EXPRESSION: {
+                LambdaExpressionTree let = (LambdaExpressionTree)toReplace;
+                nueTree = make.LambdaExpression(let.getParameters(), make.Block(newStatements, false));
+                break;
+            }
             default:
                 assert getStatements(firstLeaf).size() == 1 : getStatements(firstLeaf).toString();
                 assert newStatements.size() == 1 : newStatements.toString();

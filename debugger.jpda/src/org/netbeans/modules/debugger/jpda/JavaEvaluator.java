@@ -47,9 +47,16 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -78,9 +85,17 @@ import org.openide.util.NbBundle;
 public class JavaEvaluator implements Evaluator<JavaExpression> {
 
     private final JPDADebuggerImpl debugger;
+    private final Map<Value, EvaluationContext.VariableInfo> valueContainers =
+            Collections.synchronizedMap(new IdentityHashMap<Value, EvaluationContext.VariableInfo>());
 
     public JavaEvaluator (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst (null, JPDADebugger.class);
+        debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                valueContainers.clear();
+            }
+        });
     }
 
     public Result evaluate(Expression<JavaExpression> expression, final Context context) throws InvalidExpressionException {
@@ -144,7 +159,16 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
                     )
                 );
             try {
-                return evaluator.evaluate ();
+                Value v = evaluator.evaluate ();
+                TreePath treePath = context.getTreePath();
+                if (treePath != null) {
+                    Tree tree = treePath.getLeaf();
+                    EvaluationContext.VariableInfo vi = context.getVariableInfo(tree);
+                    if (vi != null) {
+                        valueContainers.put(v, vi);
+                    }
+                }
+                return v;
             } finally {
                 if (debugger.methodCallsUnsupportedExc == null && !context.canInvokeMethods()) {
                     debugger.methodCallsUnsupportedExc =
@@ -175,6 +199,16 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
             isex.initCause(itsex);
             throw isex;
         }
+    }
+
+    /**
+     * Get a variable containing evaluated value, if any.
+     * @param v A value
+     * @return Info about variable containing the value, or <code>null</code> when
+     *         no such variable exist.
+     */
+    public EvaluationContext.VariableInfo getValueContainer(Value v) {
+        return valueContainers.get(v);
     }
 
 }

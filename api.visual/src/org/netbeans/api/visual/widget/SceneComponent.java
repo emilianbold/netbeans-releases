@@ -54,6 +54,7 @@ import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 import org.openide.util.NbBundle;
 
 /**
@@ -141,7 +142,7 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
         scene.setPaintEverything (true);
         gr.setTransform (previousTransform);
 
-        g.setColor (Color.BLACK);
+        g.setColor ((new DefaultLookFeel()).getForeground()/*Color.BLACK*/);
         super.paint (g);
 //        System.out.println ("PAINT Time: " + (System.currentTimeMillis () - s));
     }

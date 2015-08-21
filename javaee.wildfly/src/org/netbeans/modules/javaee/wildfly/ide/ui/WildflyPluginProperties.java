@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
  * Plugin Properties Singleton class
  * @author Ivan Sidorkin
  */
-public class WildflyPluginProperties {
+public final class WildflyPluginProperties {
 
     public static final String PROPERTY_DISPLAY_NAME ="displayName";//NOI18N
     public static final String PROPERTY_SERVER = "server";//NOI18N
@@ -91,16 +91,18 @@ public class WildflyPluginProperties {
         try {
             try {
                 propertiesFile = getPropertiesFile();
-                if (null != propertiesFile)
+                if (null != propertiesFile) {
                     inStream = propertiesFile.getInputStream();
+                }
             } catch (java.io.FileNotFoundException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             } catch (java.io.IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             } finally {
                 loadPluginProperties(inStream);
-                if (null != inStream)
+                if (null != inStream) {
                     inStream.close();
+                }
             }
         } catch (java.io.IOException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
@@ -110,12 +112,13 @@ public class WildflyPluginProperties {
 
     void loadPluginProperties(java.io.InputStream inStream) {
         Properties inProps = new Properties();
-        if (null != inStream)
+        if (null != inStream) {
             try {
                 inProps.load(inStream);
             } catch (java.io.IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
+        }
         String loc = inProps.getProperty(INSTALL_ROOT_KEY);
         if (loc!=null){// try to get the default value
             setInstallLocation(loc);
@@ -144,8 +147,9 @@ public class WildflyPluginProperties {
     public void saveProperties(){
         Properties outProp = new Properties();
         String installRoot = getInstallLocation();
-        if (installRoot != null)
+        if (installRoot != null) {
             outProp.setProperty(INSTALL_ROOT_KEY, installRoot);
+        }
 
         FileLock l = null;
         java.io.OutputStream outStream = null;
@@ -154,15 +158,18 @@ public class WildflyPluginProperties {
                 try {
                     l = propertiesFile.lock();
                     outStream = propertiesFile.getOutputStream(l);
-                    if (null != outStream)
+                    if (null != outStream) {
                         outProp.store(outStream, "");
+                    }
                 } catch (java.io.IOException e) {
                     Logger.getLogger("global").log(Level.INFO, null, e);
                 } finally {
-                    if (null != outStream)
+                    if (null != outStream) {
                         outStream.close();
-                    if (null != l)
+                    }
+                    if (null != l) {
                         l.releaseLock();
+                    }
                 }
             }
         } catch (java.io.IOException e) {

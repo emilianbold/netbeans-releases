@@ -31,12 +31,17 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>com.tasktop.c2c.server.deployment.api</code-name-base>
+                    <code-name-base>com.tasktop.c2c.server.wiki.api</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>oracle.clouddev.server.profile.rsshandler.api</code-name-base>
+                    <code-name-base>oracle.clouddev.server.profile.activity.client.api</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>oracle.clouddev.server.profile.activity.client.rest</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>                

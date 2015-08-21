@@ -41,36 +41,46 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide.commands;
 
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.UNDEFINED;
+
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentFactory;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 
 /**
  *
  * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyManagementAPI {
+    
+    private static final String SASL_DISALLOWED_MECHANISMS = "SASL_DISALLOWED_MECHANISMS";
+    private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
 
-    private static Map<String, Object> clientConstants;
+    private static final Map<String, String> DISABLED_LOCAL_AUTH = Collections.singletonMap(SASL_DISALLOWED_MECHANISMS, JBOSS_LOCAL_USER);
+    private static final Map<String, String> ENABLED_LOCAL_AUTH = Collections.emptyMap();
+    private static final int TIMEOUT = 1000;
 
-    private static Map<String, Object> modelDescriptionConstants;
-
-    static Object createClient(WildflyDeploymentFactory.WildFlyClassLoader cl, final String serverAddress, final int serverPort,
+    static Object createClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Version version, final String serverAddress, final int serverPort,
             final CallbackHandler handler) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, NoSuchAlgorithmException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory"); // NOI18N
+        if (version.compareTo(WildflyPluginUtils.WILDFLY_9_0_0) >= 0) {
+            Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class, Map.class);
+            return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), TIMEOUT, ENABLED_LOCAL_AUTH);
+        }
         Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class);
-        return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), 1000);
+        return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), TIMEOUT);
     }
 
     static void closeClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Object client) throws ClassNotFoundException, NoSuchMethodException,
@@ -88,7 +98,7 @@ public class WildflyManagementAPI {
         Method peFactory = peClazz.getDeclaredMethod("pathElement",// NOI18N
                 name != null ? new Class[]{String.class, String.class} : new Class[]{String.class});
         Object pe = peFactory.invoke(null,
-                name != null ? new Object[]{getClientConstant(cl, "DEPLOYMENT"), name} : new Object[]{getClientConstant(cl, "DEPLOYMENT")});// NOI18N
+                name != null ? new Object[]{DEPLOYMENT, name} : new Object[]{DEPLOYMENT});// NOI18N
 
         Object array = Array.newInstance(peClazz, 1);
         Array.set(array, 0, pe);
@@ -330,33 +340,7 @@ public class WildflyManagementAPI {
         return (Boolean) method.invoke(null, modelNode);
     }
 
-    static Object getClientConstant(WildflyDeploymentFactory.WildFlyClassLoader cl, String name) throws ClassNotFoundException, IllegalAccessException {
-        if (clientConstants == null || clientConstants.isEmpty()) {
-            clientConstants = new HashMap<String, Object>();
-            Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.ClientConstants"); // NOI18N
-            Field[] fields = clazz.getDeclaredFields();
-            for (Field f : fields) {
-                int modifiers = f.getModifiers();
-                if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
-                    clientConstants.put(f.getName(), f.get(null));
-                }
-            }
-        }
-        return clientConstants.get(name);
-    }
-
-    static Object getModelDescriptionConstant(WildflyDeploymentFactory.WildFlyClassLoader cl, String name) throws ClassNotFoundException, IllegalAccessException {
-        if (modelDescriptionConstants == null) {
-            modelDescriptionConstants = new HashMap<String, Object>();
-            Class clazz = cl.loadClass("org.jboss.as.controller.descriptions.ModelDescriptionConstants"); // NOI18N
-            Field[] fields = clazz.getDeclaredFields();
-            for (Field f : fields) {
-                int modifiers = f.getModifiers();
-                if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
-                    modelDescriptionConstants.put(f.getName(), f.get(null));
-                }
-            }
-        }
-        return modelDescriptionConstants.get(name);
+    static boolean isDefined(String value) {
+        return value != null && !value.isEmpty() && !UNDEFINED.equalsIgnoreCase(value);
     }
 }

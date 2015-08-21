@@ -69,7 +69,7 @@ public class RepositoryBrowserAction extends GitAction {
     private static final Logger LOG = Logger.getLogger(RepositoryBrowserAction.class.getName());
 
     @Override
-    protected boolean enable (Node[] activatedNodes) {
+    protected boolean enableFull (Node[] activatedNodes) {
         return true;
     }
 

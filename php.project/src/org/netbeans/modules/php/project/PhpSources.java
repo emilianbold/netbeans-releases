@@ -39,6 +39,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.php.api.PhpConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
@@ -54,8 +55,6 @@ import org.openide.util.Mutex;
  * @author avk
  */
 public class PhpSources implements Sources, ChangeListener, PropertyChangeListener {
-
-    public static final String SOURCES_TYPE_PHP = "PHPSOURCE"; // NOI18N
 
     private final Project project;
     private final AntProjectHelper helper;
@@ -142,7 +141,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
             String loc = "${" + prop + "}"; // NOI18N
             sourcesHelper.sourceRoot(loc).displayName(displayName)
                     .add() // adding as principal root, continuing configuration
-                    .type(SOURCES_TYPE_PHP).add(); // adding as typed root
+                    .type(PhpConstants.SOURCES_TYPE_PHP).add(); // adding as typed root
          }
      }
 

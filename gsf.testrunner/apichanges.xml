@@ -73,6 +73,34 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="TestCreatorProvider_Registration_Identifier">
+        <api name="CommonTestrunnerAPI"/>
+        <summary>Added identifier attribute in TestCreatorProvider @Registration</summary>
+        <version major="2" minor="6"/>
+        <date day="24" month="7" year="2015"/>
+        <author login="theofanis"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added identifier attribute in TestCreatorProvider @Registration.
+            This attribute should never change to facilitate e.g. usage statistics.
+        </description>
+        <class package="org.netbeans.modules.gsf.testrunner.api" name="TestCreatorProvider"/>
+        <issue number="253523"/>
+    </change>
+    <change id="TestCreatorProvider_Context_Properties">
+        <api name="CommonTestrunnerAPI"/>
+        <summary>Added methods to get/set configuration properties</summary>
+        <version major="2" minor="5"/>
+        <date day="23" month="7" year="2015"/>
+        <author login="theofanis"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added getter and setter in order to be able to transfer configuration properties
+            from the configuration panel inside the "Create Tests" dialog into TestCreatorProvider.Context.
+        </description>
+        <class package="org.netbeans.modules.gsf.testrunner.api" name="TestCreatorProvider"/>
+        <issue number="253523"/>
+    </change>
     <change id="TestCreatorProvider_constants">
         <api name="CommonTestrunnerAPI"/>
         <summary>Introducing various constants.</summary>

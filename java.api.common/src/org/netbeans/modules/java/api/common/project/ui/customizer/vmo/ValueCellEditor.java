@@ -182,12 +182,18 @@ public class ValueCellEditor extends AbstractCellEditor implements TableCellRend
                         //The D is missing in entries from customizer but is in entries from parser, how it shoud behave?
                         //Probably it's good to have it there to find out there it's a property.
                         String text = textEditor.getText();
-                        if (DEFAULT_USER_PROPERTY_TEXT.equals(text)) {
+                        //if user didn't enter any value or value is empty set it to default
+                        if (text == null || text.isEmpty() || DEFAULT_USER_PROPERTY_TEXT.equals(text.trim())) {
                             //Don't generate wrong value!
-                            text = DEFAULT_USER_PROPERTY_NAME_VALUE;
+                            text = UserPropertyNode.NAME + DEFAULT_USER_PROPERTY_NAME_VALUE;
+                        } else { //if user enter something check that first letter is D otherwise append D
+                            if(!text.startsWith(UserPropertyNode.NAME)) {
+                                text = UserPropertyNode.NAME + text;
+                        }
                         }
                         Map.Entry<String, String> replacement
-                                = new AbstractMap.SimpleEntry<java.lang.String,java.lang.String>( UserPropertyNode.NAME + text, sse.getValue());
+                                = new AbstractMap.SimpleEntry<>(
+                                        text.trim(), sse.getValue());
                         pair.setValue(replacement);
                         return pair;
                     } else if (editedColumn == 1) {

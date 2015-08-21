@@ -74,6 +74,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -123,9 +124,35 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         /*"class",*/    "finally", 	"long", 	"strictfp", 	"volatile",
         "const",        "float", 	"native", 	"super", 	"while",
     }));
-    private static final boolean isJDK8 = System.getProperty("java.version").startsWith("1.8.");
-    // There is a severe memory defect on JDK 8 (https://bugs.openjdk.java.net/browse/JDK-8072775):
-    private static final int MAX_TOOLTIP_TEXT = isJDK8 ? 1000 : 100000;
+
+    private static final int MAX_STRING_LENGTH;
+
+    static {
+        int maxStringLength = 100000;
+        String javaV = System.getProperty("java.version");
+        if (javaV.startsWith("1.8.0")) {
+            String update = "";
+            for (int i = "1.8.0_".length(); i < javaV.length(); i++) {
+                char c = javaV.charAt(i);
+                if (Character.isDigit(c)) {
+                    update += c;
+                } else {
+                    break;
+                }
+            }
+            int updateNo = 0;
+            if (!update.isEmpty()) {
+                try {
+                    updateNo = Integer.parseInt(update);
+                } catch (NumberFormatException nfex) {}
+            }
+            if (updateNo < 60) {
+                // Memory problem on JDK 8, fixed in update 60 (https://bugs.openjdk.java.net/browse/JDK-8072775):
+                maxStringLength = 1000;
+            }
+        }
+        MAX_STRING_LENGTH = maxStringLength;
+    }
 
     private Part lp;
     private EditorCookie ec;
@@ -357,8 +384,10 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     }
     
     private static String truncateLongText(String text) {
-        if (text.length() > MAX_TOOLTIP_TEXT) {
-            text = text.substring(0, MAX_TOOLTIP_TEXT) + "...";
+        if (text.length() > MAX_STRING_LENGTH &&
+            !text.regionMatches(false, 0, "<html>", 0, 6)) {   // Do not cut HTML tooltips
+
+            text = text.substring(0, MAX_STRING_LENGTH) + "...";
         }
         return text;
     }
@@ -596,6 +625,10 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     fqn = superTypeVar.getType();
                     superTypeNames.add(fqn);
                     superTypeVar = superTypeVar.getSuper();
+                }
+                List<JPDAClassType> allInterfaces = thisVar.getClassType().getAllInterfaces();
+                for (JPDAClassType intrfc : allInterfaces) {
+                    superTypeNames.add(intrfc.getName());
                 }
             } else {
                 addClassNames(currentFrame.getClassName(), superTypeNames);

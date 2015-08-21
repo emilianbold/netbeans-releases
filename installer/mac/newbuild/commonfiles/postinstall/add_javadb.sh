@@ -17,7 +17,7 @@ then
   dirname=`dirname "$0"`
   jdk_home=`"$dirname"/get_current_jdk.sh`
   "$jdk_home"/bin/java -cp \
-                           platform/core/core.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:ide/modules/org-netbeans-modules-derby.jar \
+                           platform/core/core.jar:platform/core/core-base.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:platform/lib/org-openide-util-ui.jar:ide/modules/org-netbeans-modules-derby.jar \
                            \
                            org.netbeans.modules.derby.DerbyRegistration \
                            \

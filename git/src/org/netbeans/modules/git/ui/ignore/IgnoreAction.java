@@ -94,8 +94,8 @@ public class IgnoreAction extends MultipleRepositoryAction {
     }
 
     @Override
-    protected boolean enable (Node[] activatedNodes) {
-        boolean enabled = super.enable(activatedNodes);
+    protected boolean enableFull (Node[] activatedNodes) {
+        boolean enabled = super.enableFull(activatedNodes);
         if (enabled) {
             VCSContext ctx = getCurrentContext(activatedNodes);
             FileStatusCache cache = Git.getInstance().getFileStatusCache();

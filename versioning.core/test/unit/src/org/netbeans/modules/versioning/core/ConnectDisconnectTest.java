@@ -153,6 +153,7 @@ public class ConnectDisconnectTest extends NbTestCase {
         VCSFileProxy folderProxy = VCSFileProxy.createFileProxy(folder);
         VCSFileProxy rootProxy = VCSFileProxy.createFileProxy(root);
         VersioningSupport.getOwner(folderProxy);
+        awakeDelegates();
 
         assertEquals(DisconnectableVCS1.proxyVS.getDelegate(), VersioningSupport.getOwner(rootProxy));
         assertEquals(rootProxy, DisconnectableVCS1.proxyVS.getTopmostManagedAncestor(folderProxy));

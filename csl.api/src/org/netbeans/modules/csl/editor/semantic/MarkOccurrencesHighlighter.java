@@ -45,7 +45,6 @@ package org.netbeans.modules.csl.editor.semantic;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -60,6 +59,9 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.api.ColoringAttributes.Coloring;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
@@ -78,11 +80,12 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
+public final class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
 
     private static final Logger LOG = Logger.getLogger(MarkOccurrencesHighlighter.class.getName());
     
     //private FileObject file;
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
     private final Language language;
     private final Snapshot snapshot;
     private int version;
@@ -101,59 +104,62 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
 //    }
 //
     public void run(ParserResult info, SchedulerEvent event) {
-        resume();
-        
-        Document doc = snapshot.getSource().getDocument(false);
-        
-        if (doc == null) {
-            LOG.log(Level.INFO, "MarkOccurencesHighlighter: Cannot get document!"); //NOI18N
-            return ;
-        }
-        
-        if (!(event instanceof CursorMovedSchedulerEvent)) {
-            return;
-        }
+        SpiSupportAccessor.getInstance().setCancelSupport(cancel);
+        try {
+            Document doc = snapshot.getSource().getDocument(false);
 
-        int caretPosition = ((CursorMovedSchedulerEvent) event).getCaretOffset();
-        
-        if (isCancelled()) {
-            return;
-        }
-        
-        int snapshotOffset = info.getSnapshot().getEmbeddedOffset(caretPosition);
+            if (doc == null) {
+                LOG.log(Level.INFO, "MarkOccurencesHighlighter: Cannot get document!"); //NOI18N
+                return ;
+            }
 
-        if (snapshotOffset == -1) {
-            // caret offset not part of this lang embedding, ignore, since
-            // we cannot assume identifiers in different languages match.
-            return;
-        }
+            if (!(event instanceof CursorMovedSchedulerEvent)) {
+                return;
+            }
 
-        List<OffsetRange> bag = processImpl(info, doc, caretPosition);
-        if(bag == null) {
-            //the occurrences finder haven't found anything, just ignore the result
-            //and keep the previous occurrences
-            return ;
-        }
+            int caretPosition = ((CursorMovedSchedulerEvent) event).getCaretOffset();
 
-        if (isCancelled()) {
-            return;
-        }
-        
-        GsfSemanticLayer layer = GsfSemanticLayer.getLayer(MarkOccurrencesHighlighter.class, doc);
-        SortedSet seqs = new TreeSet<SequenceElement>();
+            if (cancel.isCancelled()) {
+                return;
+            }
 
-        if (bag.size() > 0) {
-            for (OffsetRange range : bag) {
-                if (range != OffsetRange.NONE) {
-                    SequenceElement s = new SequenceElement(language, range, MO);
-                    seqs.add(s);
+            int snapshotOffset = info.getSnapshot().getEmbeddedOffset(caretPosition);
+
+            if (snapshotOffset == -1) {
+                // caret offset not part of this lang embedding, ignore, since
+                // we cannot assume identifiers in different languages match.
+                return;
+            }
+
+            List<OffsetRange> bag = processImpl(info, doc, caretPosition);
+            if(bag == null) {
+                //the occurrences finder haven't found anything, just ignore the result
+                //and keep the previous occurrences
+                return ;
+            }
+
+            if (cancel.isCancelled()) {
+                return;
+            }
+
+            GsfSemanticLayer layer = GsfSemanticLayer.getLayer(MarkOccurrencesHighlighter.class, doc);
+            SortedSet seqs = new TreeSet<SequenceElement>();
+
+            if (bag.size() > 0) {
+                for (OffsetRange range : bag) {
+                    if (range != OffsetRange.NONE) {
+                        SequenceElement s = new SequenceElement(language, range, MO);
+                        seqs.add(s);
+                    }
                 }
             }
+
+            layer.setColorings(seqs, version++);
+
+            OccurrencesMarkProvider.get(doc).setOccurrences(OccurrencesMarkProvider.createMarks(doc, bag, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
+        } finally {
+            SpiSupportAccessor.getInstance().removeCancelSupport(cancel);
         }
-        
-        layer.setColorings(seqs, version++);
-        
-        OccurrencesMarkProvider.get(doc).setOccurrences(OccurrencesMarkProvider.createMarks(doc, bag, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
     }
     
     @NonNull
@@ -168,7 +174,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
             ErrorManager.getDefault().notify(ex);
         }
 
-        if (isCancelled()) {
+        if (cancel.isCancelled()) {
             finder.cancel();
         }
 
@@ -186,21 +192,11 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
     public Class<? extends Scheduler> getSchedulerClass () {
         return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
-    
-    private boolean canceled;
-    
-    public final synchronized void cancel() {
-        canceled = true;
+
+    @Override
+    public final void cancel() {
     }
-    
-    protected final synchronized boolean isCancelled() {
-        return canceled;
-    }
-    
-    protected final synchronized void resume() {
-        canceled = false;
-    }
-    
+
     public static AbstractHighlightsContainer getHighlightsBag(Document doc) {
         GsfSemanticLayer highlight = GsfSemanticLayer.getLayer(MarkOccurrencesHighlighter.class, doc);
         return highlight;

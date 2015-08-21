@@ -70,6 +70,7 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
@@ -100,7 +101,7 @@ public class RemoteHostActionPerformer implements ActionListener, PropertyChange
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        if ("performerActivated".equals(e.getActionCommand())) { // NOI18N
+        if (RemoteOpenActionBase.ACTIVATED_PSEUDO_ACTION_COMAND.equals(e.getActionCommand())) {
             if (presenter == null) {
                 presenter = (RemoteHostAction) e.getSource();
                 hostListCombo = presenter.hostListCombo;

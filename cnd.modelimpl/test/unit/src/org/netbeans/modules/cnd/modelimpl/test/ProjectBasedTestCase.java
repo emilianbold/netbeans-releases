@@ -77,6 +77,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
+import static junit.framework.Assert.fail;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  * IMPORTANT NOTE:
@@ -121,6 +123,10 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     public ProjectBasedTestCase(String testName, boolean performInWorkDir) {
         super(testName);
         this.performInWorkDir = performInWorkDir;
+    }
+
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        return null;
     }
 
     protected final List<String> getSysIncludes(String prjPath) {
@@ -191,7 +197,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         FileObject fobjs[] = new FileObject[changedDirs.length];
         for (int i = 0; i < changedDirs.length; i++) {
             File file = changedDirs[i];
-            TestModelHelper projectHelper = new TestModelHelper(i==0);
+            TestModelHelper projectHelper = new TestModelHelper(i==0, getTraceModelFileFilter());
             String prjPath = file.getAbsolutePath();
             projectHelper.initParsedProject(prjPath, getSysIncludes(prjPath), getUsrIncludes(prjPath), getLibProjectsPaths(prjPath));
             projectHelpers.put(prjPath, projectHelper);
@@ -272,6 +278,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         sysIncludes.clear();
         usrIncludes.clear();
         projectDependencies.clear();
+        projectHelpers.clear();
         assertTrue("unexpected exception " + CndUtils.getLastAssertion(), CndUtils.getLastAssertion() == null);
     }
 

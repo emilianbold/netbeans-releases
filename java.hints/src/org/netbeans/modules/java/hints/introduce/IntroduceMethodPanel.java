@@ -36,6 +36,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
@@ -65,13 +66,15 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
     /**
      * True, if the target is an interface.
      */
-    private boolean targetInterface;
+    private boolean targetInterface;    
+    private final Map<TargetDescription, Set<String>> targets2conflictingNames;
     
-    public IntroduceMethodPanel(String name, int duplicatesCount, Iterable<TargetDescription> targets, boolean targetInterface) {
-        super(targets);
+    public IntroduceMethodPanel(String name, int duplicatesCount, Map<TargetDescription, Set<String>> targets2conflictingNames, boolean targetInterface) {
+        super(targets2conflictingNames.keySet());
         initComponents();
         
         this.targetInterface = targetInterface;
+        this.targets2conflictingNames = targets2conflictingNames;
         this.name.setText(name);
         if ( name != null && name.trim().length() > 0 ) {
             this.name.setCaretPosition(name.length());
@@ -155,6 +158,9 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
                     || text.length() == 0 ) return "";
                 if (!Utilities.isJavaIdentifier(text))
                     return getDefaultErrorMessage( text );
+                Set<String> blackList = targets2conflictingNames.get((TargetDescription)target.getModel().getSelectedItem());
+                if (blackList != null && blackList.contains(text))
+                    return getConflictErrorMessage(text);
                 return null;
             }
         };
@@ -170,6 +176,10 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
     
     String getDefaultErrorMessage( String inputText ) {
         return "'" + inputText +"' is not a valid identifier";
+    }
+    
+    String getConflictErrorMessage( String inputText ) {
+        return "'" + inputText +"' method already exists";
     }
     
     /** This method is called from within the constructor to

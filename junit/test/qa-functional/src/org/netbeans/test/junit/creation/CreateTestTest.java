@@ -93,8 +93,9 @@ public class CreateTestTest extends JunitTestCase {
 //        NbTestSuite suite = new NbTestSuite(CreateTestTest.class);
 //        return suite;
           return NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateTestTest.class).addTest(
-                  "testCreateTestByPopup"/*,
-                  "testCreateTestByPopup2",
+                  "testCreateTestByPopup",
+                  "testCreateTestAndSuiteByPopup"/*,
+                  "testCreateTestByPopupNoPublicMethods",
                   "testCreateTestByPopup3",
                   "testCreateTestByPopup4",
                   "testCreateTestByWizard",
@@ -227,7 +228,7 @@ public class CreateTestTest extends JunitTestCase {
      * Test creation accessed from popup menu
      * Without public methods
      */
-    public void testCreateTestByPopup2() {
+    public void testCreateTestByPopupNoPublicMethods() {
         Utilities.deleteNode(Utilities.TEST_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME);
         

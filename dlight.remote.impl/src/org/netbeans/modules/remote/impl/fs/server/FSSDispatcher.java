@@ -83,9 +83,11 @@ import org.netbeans.modules.remote.impl.fs.RefreshManager;
 import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.netbeans.modules.remote.impl.fs.ui.RemoteNotifier;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -211,7 +213,7 @@ import org.openide.util.RequestProcessor;
     }
 
     private static FileSystemProvider.AccessCheckType restoreAccessCheckType() {
-        FileSystemProvider.AccessCheckType result = FileSystemProvider.AccessCheckType.FULL;
+        FileSystemProvider.AccessCheckType result = FileSystemProvider.AccessCheckType.FAST;
         String name = NbPreferences.forModule(FSSDispatcher.class).get("accessCheckType", result.name()); // NOI18N
         if (name != null) {
             try {
@@ -754,7 +756,26 @@ import org.openide.util.RequestProcessor;
                     ? Charset.forName("UTF-8") // NOI18N
                     : Charset.defaultCharset();
             writer = new PrintWriter(new OutputStreamWriter(process.getOutputStream(), charset));
-            reader = new BufferedReader(new InputStreamReader(process.getInputStream(), charset));
+
+            InputStream inputStream = process.getInputStream();
+            //Thread.sleep(100);
+            int available = inputStream.available();
+            if (available > 0) {
+                StringBuilder sb = new StringBuilder();
+                while ((available = inputStream.available()) > 0) {
+                    byte[] buffer = new byte[available];
+                    int cnt = inputStream.read(buffer);
+                    String line = new String(buffer, charset);
+                    sb.append(line).append('\n');
+                }
+                RemoteLogger.finest("Warning: got the following without any request on {0} startup: \n{1}\n", env, sb); //NOI18N
+                RemoteNotifier.notifyError(
+                        NbBundle.getMessage(FSSDispatcher.class, "EchoInProfile_Title", env.getDisplayName()),
+                        NbBundle.getMessage(FSSDispatcher.class, "EchoInProfile_Details", env.getDisplayName()));
+            }
+
+
+            reader = new BufferedReader(new InputStreamReader(inputStream, charset));
             if (RemoteFileSystemUtils.isUnitTestMode()) {
                 StringBuilder sb = new StringBuilder("launching ").append(path).append(' '); // NOI18N
                 for (String p : args) {

@@ -1199,7 +1199,11 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
                 if (fo == null) {
                     // system error
-                    throw new FileStateInvalidException(NbBundle.getMessage(MultiFileObject.class, "EXC_ApplicationCreateError", getPath(), n));
+                    throw new FileStateInvalidException(NbBundle.getMessage(
+                            MultiFileObject.class,
+                            "EXC_ApplicationCreateErrorMulti", //NOI18N
+                            getPath(), n, simple,
+                            simple.getRoot().getFileObject(fullName)));
                 }
 
                 if (hasListeners()) {

@@ -115,14 +115,15 @@ public class ClassCompletionProvider implements CompletionProvider {
                 } else {
                     classFilter = text;
                 }
-                Set<ElementHandle<TypeElement>> declaredTypes = classIndex.getDeclaredTypes(classFilter, ClassIndex.NameKind.PREFIX, scope);
+                String classFilterLC = classFilter.toLowerCase();
+                Set<ElementHandle<TypeElement>> declaredTypes = classIndex.getDeclaredTypes(classFilter, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, scope);
                 Set<String> resultClasses = new HashSet<String>();
                 for (ElementHandle<TypeElement> type : declaredTypes) {
                     String className = type.getQualifiedName();
                     int packageDotIndex = -1;
                     if (lastTextDot > 0) {
                         className = className.substring(lastTextDot + 1);
-                        if (!className.startsWith(classFilter)) {
+                        if (!className.toLowerCase().startsWith(classFilterLC)) {
                             continue;
                         }
                     } else {

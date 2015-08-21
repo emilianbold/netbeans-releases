@@ -72,8 +72,38 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
     public ExtractSuperclassTest(String name) {
         super(name);
     }
-    
-//    MyClass<D extends Comparable<? super D>>
+
+    public void test235246() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "public class ExtractBaseClass {\n"
+                + "    public class MyClass {\n"
+                + "        public void method() {\n"
+                + "            System.out.println(\"123\");\n"
+                + "        }\n"
+                + "    }\n"
+                + "}"));
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, 1, "ExtractSuperClass", Boolean.FALSE);
+        verifyContent(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "public class ExtractBaseClass {\n"
+                + "    public class MyClass extends ExtractSuperClass {\n"
+                + "    }\n"
+                + "}"),
+                new File("extract/ExtractSuperClass.java", "/* * Refactoring License */ package extract;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class ExtractSuperClass {\n"
+                + "    public void method() {\n"
+                + "        System.out.println(\"123\");\n"
+                + "    }\n"
+                + "}\n"));
+    }
     
     public void test231146() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -87,7 +117,42 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "    } // Trailing comments\n"
                 + "}\n"
                 + "class ExtractSuperClass { }\n"));
-        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE, new Problem(true, "ERR_ClassClash"));
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, -1, "ExtractSuperClass", Boolean.FALSE, new Problem(true, "ERR_ClassClash"));
+    }
+    
+    public void test252621() throws Exception { //#252621 - [Extract Superclass] Import for annotation is not added
+        writeFilesAndWaitForScan(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                        + "\n"
+                        + "import java.beans.Transient;\n"
+                        + "\n"
+                        + "public class ExtractBaseClass {\n"
+                        + "    @Transient\n"
+                        + "    public void m() {\n"
+                        + "    }\n"
+                        + "}"));
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, -1, "ExtractSuperClass", Boolean.FALSE);
+        verifyContent(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "import java.beans.Transient;\n"
+                + "\n"
+                + "public class ExtractBaseClass extends ExtractSuperClass {\n"
+
+                + "}"),
+                new File("extract/ExtractSuperClass.java", "/* * Refactoring License */ package extract;\n"
+                + "\n"
+                + "import java.beans.Transient;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class ExtractSuperClass {\n"
+                + "    @Transient\n"
+                + "    public void m() {\n"
+                + "    }\n"
+                + "}\n"));
     }
     
     
@@ -102,7 +167,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "        System.out.println(\"Hello\");\n"
                 + "    }\n"
                 + "}"));
-        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, -1, "ExtractSuperClass", Boolean.FALSE);
         verifyContent(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -137,7 +202,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "        System.out.println(\"Hello\");\n"
                 + "    }\n"
                 + "}"));
-        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, -1, "ExtractSuperClass", Boolean.FALSE);
         verifyContent(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -172,7 +237,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "        return null;\n"
                 + "    }\n"
                 + "}"));
-        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, -1, "ExtractSuperClass", Boolean.FALSE);
         verifyContent(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -208,7 +273,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "        return new LinkedList();\n"
                 + "    }\n"
                 + "}"));
-        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, -1, "ExtractSuperClass", Boolean.FALSE);
         verifyContent(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -244,7 +309,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "     */\n"
                 + "    private String value;\n"
                 + "}"));
-        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, -1, "ExtractSuperClass", Boolean.FALSE);
         verifyContent(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -273,7 +338,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "    // Method comments\n"
                 + "    private String value;\n"
                 + "}"));
-        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, -1, "ExtractSuperClass", Boolean.FALSE);
         verifyContent(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -305,7 +370,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "        System.out.println(\"Hello\");\n"
                 + "    } // Trailing comments\n"
                 + "}"));
-        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, -1, "ExtractSuperClass", Boolean.FALSE);
         verifyContent(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -340,7 +405,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "        System.out.println(\"Hello\");\n"
                 + "    } // Trailing comments\n"
                 + "}"));
-        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, -1, "ExtractSuperClass", Boolean.FALSE);
         verifyContent(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -362,7 +427,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "}\n"));
     }
 
-    private void performExtractSuperclass(FileObject source, final int position, final String newName, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
+    private void performExtractSuperclass(FileObject source, final int position, final int innerpos, final String newName, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final ExtractSuperclassRefactoring[] r = new ExtractSuperclassRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -371,7 +436,10 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = info.getCompilationUnit();
                 
-                final ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                if(innerpos >= 0) {
+                    classTree = (ClassTree) classTree.getMembers().get(innerpos);
+                }
                 final TreePath classPath = info.getTrees().getPath(cut, classTree);
                 TypeElement classEl = (TypeElement) info.getTrees().getElement(classPath);
                 

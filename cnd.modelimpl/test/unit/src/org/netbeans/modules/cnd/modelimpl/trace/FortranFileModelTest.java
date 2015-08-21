@@ -42,6 +42,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileObject;
+
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
@@ -56,6 +62,14 @@ public class FortranFileModelTest extends TraceModelTestBase {
         System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
+    }
+
+    @Override
+    protected List<Class<?>> getServices() {
+        List<Class<?>> list = new ArrayList<>();
+        list.add(FileEncodingQueryImplementationImpl.class);
+        list.addAll(super.getServices());
+        return list;
     }
 
     @Override
@@ -148,4 +162,14 @@ public class FortranFileModelTest extends TraceModelTestBase {
         performTest("bug228631.f"); // NOI18N
     }
 
+    public static class FileEncodingQueryImplementationImpl extends FileEncodingQueryImplementation {
+
+        public FileEncodingQueryImplementationImpl() {
+        }
+
+        @Override
+        public Charset getEncoding(FileObject file) {
+            return Charset.forName("UTF-8");
+        }
+    }
 }

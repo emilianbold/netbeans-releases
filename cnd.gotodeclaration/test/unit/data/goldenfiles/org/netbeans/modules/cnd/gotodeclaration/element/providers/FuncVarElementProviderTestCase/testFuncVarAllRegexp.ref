@@ -48,7 +48,7 @@ DummyProject MemoryCategory
 DummyProject MemoryType
 DummyProject Module
 DummyProject Module()
-DummyProject Module(const Module&amp;)
+DummyProject Module(const Module&)
 DummyProject Module(const char*,const char*,int,int,int)
 DummyProject OPTERON
 DummyProject RAID
@@ -65,7 +65,7 @@ DummyProject SetUnits(int)
 DummyProject SetVendor(const char*)
 DummyProject System
 DummyProject System()
-DummyProject System(const System&amp;)
+DummyProject System(const System&)
 DummyProject T100
 DummyProject T200
 DummyProject T500
@@ -80,10 +80,10 @@ DummyProject getDiscountFor(string)
 DummyProject main(int,char**)
 DummyProject moduleList
 DummyProject name
-DummyProject operator &lt;&lt;(ostream&amp;,const Customer&amp;)
-DummyProject operator &lt;&lt;(ostream&amp;,const Module&amp;)
-DummyProject operator &lt;&lt;(ostream&amp;,const System&amp;)
-DummyProject operator =(const Module&amp;)
+DummyProject operator <<(ostream&,const Customer&)
+DummyProject operator <<(ostream&,const Module&)
+DummyProject operator <<(ostream&,const System&)
+DummyProject operator =(const Module&)
 DummyProject outCustomersList()
 DummyProject readChar(const char*,char)
 DummyProject readNumberOf(const char*,int,int)

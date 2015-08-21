@@ -55,7 +55,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -113,34 +112,19 @@ public final class ServerMapping {
             return null;
         }
         assert serverUrl.endsWith("/") : serverUrl;
-        if (KarmaServers.getInstance().isAbsoluteUrls(project)) {
-            return createAbsoluteUrl(serverUrl, projectFile);
+        // absolute url?
+        URL absoluteUrl = createAbsoluteUrl(serverUrl, projectFile);
+        if (KarmaServers.getInstance().servesUrl(project, absoluteUrl)) {
+            return absoluteUrl;
         }
+        // relative url?
         FileObject projectDirectory = project.getProjectDirectory();
-        // try relative first
         String filePath = FileUtil.getRelativePath(projectDirectory, projectFile);
         if (filePath != null) {
-            return createUrl(serverUrl, BASE_PREFIX, filePath);
-        }
-        // now absolute (tests or web root outside project folder)
-        // web root first
-        for (FileObject webRoot : ProjectWebRootQuery.getWebRoots(project)) {
-            if (isUnderneath(webRoot, projectFile)) {
-                return createAbsoluteUrl(serverUrl, projectFile);
+            URL relativeUrl = createUrl(serverUrl, BASE_PREFIX, filePath);
+            if (KarmaServers.getInstance().servesUrl(project, relativeUrl)) {
+                return relativeUrl;
             }
-        }
-        // now tests
-        FileObject testsFolder = getTestsFolder(project);
-        if (testsFolder == null) {
-            // no tests
-            return null;
-        }
-        boolean testsUnderneath = isUnderneath(projectDirectory, testsFolder);
-        if (testsUnderneath) {
-            return null;
-        }
-        if (isUnderneath(testsFolder, projectFile)) {
-            return createAbsoluteUrl(serverUrl, projectFile);
         }
         return null;
     }

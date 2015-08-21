@@ -153,6 +153,13 @@ class WildflyStartRunnable implements Runnable {
         // set the JAVA_OPTS value
         String javaOpts = properties.getJavaOpts();
         StringBuilder javaOptsBuilder = new StringBuilder(javaOpts);
+        if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
+            String logManagerJar = findLogManager(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
+            if (!logManagerJar.isEmpty()) {
+                javaOptsBuilder.append(" -Xbootclasspath/p:").append(logManagerJar)
+                        .append(" -Djava.util.logging.manager=org.jboss.logmanager.LogManager");
+            }
+        }
         if(platform.getSpecification().getVersion().compareTo(JDK_18) < 0) {
             javaOptsBuilder.append(" -XX:MaxPermSize=256m");
         }
@@ -368,6 +375,21 @@ class WildflyStartRunnable implements Runnable {
             Thread.currentThread().interrupt();
         }
 
+    }
+
+    private String findLogManager(String serverDirPath) {
+        StringBuilder logManagerPath = new StringBuilder(serverDirPath);
+        logManagerPath.append(File.separatorChar).append("modules").append(File.separatorChar).append("system");
+        logManagerPath.append(File.separatorChar).append("layers").append(File.separatorChar).append("base");
+        logManagerPath.append(File.separatorChar).append("org").append(File.separatorChar).append("jboss");
+        logManagerPath.append(File.separatorChar).append("logmanager").append(File.separatorChar).append("main");
+        FileObject logManagerDir = FileUtil.toFileObject(new File(logManagerPath.toString()));
+        for(FileObject child : logManagerDir.getChildren()) {
+            if(child.isData() && "jar".equalsIgnoreCase(child.getExt())) {
+                return child.getPath();
+            }
+        }
+        return "";
     }
 
     // Fix for BZ#179961 -  [J2EE] No able to start profiling JBoss 5.1.0

@@ -90,7 +90,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                        # PROPERTIES
                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                         namespace      : OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PROPERTY]
-                                        undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PRIVATE, METHOD]
+                                        undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                        # RETURN TYPES
                                                        undefined, RESOLVED: true
                                                        # PARAMETERS
@@ -392,7 +392,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                         ctor              : OBJECT ctor [ANONYMOUS: false, DECLARED: true - ctor, MODIFIERS: PRIVATE, OBJECT]
                                                                                           # PROPERTIES
                                                                                           displayName : OBJECT displayName [ANONYMOUS: false, DECLARED: true - displayName, MODIFIERS: PUBLIC, PROPERTY]
-                                        createNamespaces                : FUNCTION createNamespaces [ANONYMOUS: false, DECLARED: true - createNamespaces, MODIFIERS: PRIVATE, METHOD]
+                                        createNamespaces                : FUNCTION createNamespaces [ANONYMOUS: false, DECLARED: true - createNamespaces, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                                         # RETURN TYPES
                                                                         @exp;ClassManager_L214@pro;Manager@pro;createNamespaces@pro;root, RESOLVED: false
                                                                         # PROPERTIES
@@ -447,7 +447,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                         uses                : OBJECT uses [ANONYMOUS: false, DECLARED: true - uses, MODIFIERS: PRIVATE, VARIABLE]
                                         createdListeners                : OBJECT createdListeners [ANONYMOUS: false, DECLARED: true - createdListeners, MODIFIERS: PUBLIC, PROPERTY]
                                         defaultPostprocessors           : OBJECT defaultPostprocessors [ANONYMOUS: false, DECLARED: true - defaultPostprocessors, MODIFIERS: PUBLIC, PROPERTY]
-                                        dynInstantiate                  : FUNCTION dynInstantiate [ANONYMOUS: false, DECLARED: true - dynInstantiate, MODIFIERS: PRIVATE, METHOD]
+                                        dynInstantiate                  : FUNCTION dynInstantiate [ANONYMOUS: false, DECLARED: true - dynInstantiate, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                                         # RETURN TYPES
                                                                         ClassManager_L214.Manager@pro;instantiate@call;apply, RESOLVED: false
                                                                         # PARAMETERS
@@ -510,7 +510,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                                 self : OBJECT self [ANONYMOUS: false, DECLARED: false - self, MODIFIERS: PUBLIC, PROPERTY]
                                                                         # PROPERTIES
                                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                        getInstantiator                 : FUNCTION getInstantiator [ANONYMOUS: false, DECLARED: true - getInstantiator, MODIFIERS: PRIVATE, METHOD]
+                                        getInstantiator                 : FUNCTION getInstantiator [ANONYMOUS: false, DECLARED: true - getInstantiator, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                                         # RETURN TYPES
                                                                         @exp;ClassManager_L214@pro;Manager@pro;getInstantiator@pro;instantiator, RESOLVED: false
                                                                         # PARAMETERS
@@ -617,7 +617,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                         possibleName     : OBJECT possibleName [ANONYMOUS: false, DECLARED: true - possibleName, MODIFIERS: PRIVATE, VARIABLE]
                                                                         regex            : OBJECT regex [ANONYMOUS: false, DECLARED: true - regex, MODIFIERS: PRIVATE, VARIABLE]
-                                        instantiate                     : FUNCTION instantiate [ANONYMOUS: false, DECLARED: true - instantiate, MODIFIERS: PROTECTED, METHOD]
+                                        instantiate                     : FUNCTION instantiate [ANONYMOUS: false, DECLARED: true - instantiate, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                                         # RETURN TYPES
                                                                         ClassManager_L214.Manager@call;@call;getInstantiator, RESOLVED: false
                                                                         # PROPERTIES
@@ -675,7 +675,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                         nameCreatedListeners            : OBJECT nameCreatedListeners [ANONYMOUS: false, DECLARED: true - nameCreatedListeners, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                                         namespaceParseCache             : OBJECT namespaceParseCache [ANONYMOUS: false, DECLARED: true - namespaceParseCache, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                                         namespaceRewrites               : OBJECT namespaceRewrites [ANONYMOUS: false, DECLARED: true - namespaceRewrites, MODIFIERS: PUBLIC, PROPERTY]
-                                        onCreated                       : FUNCTION onCreated [ANONYMOUS: false, DECLARED: true - onCreated, MODIFIERS: PRIVATE, METHOD]
+                                        onCreated                       : FUNCTION onCreated [ANONYMOUS: false, DECLARED: true - onCreated, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                                         # RETURN TYPES
                                                                         undefined, RESOLVED: true
                                                                         # PARAMETERS
@@ -704,7 +704,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                                                   # PROPERTIES
                                                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                         nameListeners        : OBJECT nameListeners [ANONYMOUS: false, DECLARED: true - nameListeners, MODIFIERS: PRIVATE, VARIABLE]
-                                        parseNamespace                  : FUNCTION parseNamespace [ANONYMOUS: false, DECLARED: true - parseNamespace, MODIFIERS: PROTECTED, METHOD]
+                                        parseNamespace                  : FUNCTION parseNamespace [ANONYMOUS: false, DECLARED: true - parseNamespace, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                                         # RETURN TYPES
                                                                         @arr;cache, RESOLVED: false
                                                                         @exp;ClassManager_L214@pro;Manager@pro;parseNamespace@pro;parts, RESOLVED: false
@@ -801,7 +801,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                                            OBJECT param5 [ANONYMOUS: false, DECLARED: true - param5, MODIFIERS: PUBLIC, PARAMETER]
                                                                                            # PROPERTIES
                                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                        registerPostprocessor           : FUNCTION registerPostprocessor [ANONYMOUS: false, DECLARED: true - registerPostprocessor, MODIFIERS: PRIVATE, METHOD]
+                                        registerPostprocessor           : FUNCTION registerPostprocessor [ANONYMOUS: false, DECLARED: true - registerPostprocessor, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                                         # RETURN TYPES
                                                                         ClassManager_L214.Manager, RESOLVED: true
                                                                         # PARAMETERS
@@ -853,7 +853,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                         arguments            : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                         className            : OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PRIVATE, VARIABLE]
                                                                         nameToAliasesMap     : OBJECT nameToAliasesMap [ANONYMOUS: false, DECLARED: true - nameToAliasesMap, MODIFIERS: PRIVATE, VARIABLE]
-                                        setDefaultPostprocessorPosition : FUNCTION setDefaultPostprocessorPosition [ANONYMOUS: false, DECLARED: true - setDefaultPostprocessorPosition, MODIFIERS: PRIVATE, METHOD]
+                                        setDefaultPostprocessorPosition : FUNCTION setDefaultPostprocessorPosition [ANONYMOUS: false, DECLARED: true - setDefaultPostprocessorPosition, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                                         # RETURN TYPES
                                                                         ClassManager_L214.Manager, RESOLVED: true
                                                                         Ext.ClassManager, RESOLVED: false
@@ -876,7 +876,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                                                       # PROPERTIES
                                                                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                         index                 : OBJECT index [ANONYMOUS: false, DECLARED: true - index, MODIFIERS: PRIVATE, VARIABLE]
-                                        setDefaultPostprocessors        : FUNCTION setDefaultPostprocessors [ANONYMOUS: false, DECLARED: true - setDefaultPostprocessors, MODIFIERS: PRIVATE, METHOD]
+                                        setDefaultPostprocessors        : FUNCTION setDefaultPostprocessors [ANONYMOUS: false, DECLARED: true - setDefaultPostprocessors, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                                         # RETURN TYPES
                                                                         ClassManager_L214.Manager, RESOLVED: true
                                                                         Ext.ClassManager, RESOLVED: false
@@ -901,7 +901,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                                              # PROPERTIES
                                                                                              length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                                                         root                 : OBJECT root [ANONYMOUS: false, DECLARED: true - root, MODIFIERS: PRIVATE, VARIABLE]
-                                        triggerCreated                  : FUNCTION triggerCreated [ANONYMOUS: false, DECLARED: true - triggerCreated, MODIFIERS: PRIVATE, METHOD]
+                                        triggerCreated                  : FUNCTION triggerCreated [ANONYMOUS: false, DECLARED: true - triggerCreated, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                                                         # RETURN TYPES
                                                                         undefined, RESOLVED: true
                                                                         # PARAMETERS
@@ -996,7 +996,7 @@ Ext               : OBJECT Ext [ANONYMOUS: false, DECLARED: true - Ext, MODIFIER
                                  # PROPERTIES
                                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                   namespace      : OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PROPERTY]
-                  undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PRIVATE, METHOD]
+                  undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PUBLIC, PRIVATE, METHOD]
                                  # RETURN TYPES
                                  undefined, RESOLVED: true
                                  # PARAMETERS

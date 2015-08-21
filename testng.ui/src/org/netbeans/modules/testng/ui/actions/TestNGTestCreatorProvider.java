@@ -61,14 +61,14 @@ import org.openide.util.RequestProcessor;
  *
  * @author Theofanis Oikonomou
  */
-@Registration(displayName=GuiUtils.TESTNG_TEST_FRAMEWORK)
+@Registration(displayName=GuiUtils.TESTNG_TEST_FRAMEWORK, identifier = TestCreatorProvider.IDENTIFIER_TESTNG)
 public class TestNGTestCreatorProvider extends TestCreatorProvider {
 
     private static final Logger LOGGER = Logger.getLogger(TestNGTestCreatorProvider.class.getName());
 
     @Override
     public boolean enable(FileObject[] activatedFOs) {
-        if (activatedFOs.length == 0) {
+        if (activatedFOs == null || activatedFOs.length == 0) {
             return false;
         }
         if (activatedFOs[0] != null && activatedFOs[0].isValid()) {

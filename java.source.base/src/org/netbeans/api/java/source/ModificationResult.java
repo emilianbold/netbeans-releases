@@ -58,7 +58,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -250,12 +249,12 @@ public final class ModificationResult {
         Source source = Source.create(fo);
         if (source != null && out == null) {
             final Document doc = source.getDocument(false);
-            if (doc instanceof StyledDocument) {
+            if (doc != null) {
                 final IOException[] exceptions = new IOException [1];
                 LineDocumentUtils.asRequired(doc, AtomicLockDocument.class).runAtomic(new Runnable () {
                     public void run () {
                         try {
-                            commit2 ((StyledDocument)doc, differences, out);
+                            commit2 (doc, differences, out);
                         } catch (IOException ex) {
                             exceptions [0] = ex;
                         }
@@ -269,7 +268,7 @@ public final class ModificationResult {
                     }
                     throw exceptions [0];
                 }
-                return;
+            return;
             }
         }
         Reader in = null;
@@ -345,7 +344,7 @@ public final class ModificationResult {
         }            
     }
 
-    private static void commit2 (final StyledDocument doc, final List<Difference> differences, Writer out) throws IOException {
+    private static void commit2 (final Document doc, final List<Difference> differences, Writer out) throws IOException {
         for (Difference diff : differences) {
             if (diff.isExcluded())
                 continue;
@@ -362,7 +361,7 @@ public final class ModificationResult {
         }
     }
     
-    private static void processDocument(final StyledDocument doc, final Difference diff) throws IOException {
+    private static void processDocument(final Document doc, final Difference diff) throws IOException {
         final BadLocationException[] blex = new BadLocationException[1];
         Runnable task = new Runnable() {
 
@@ -501,6 +500,20 @@ public final class ModificationResult {
         final String description;
         private boolean excluded;
         private boolean ignoreGuards = false;
+        
+        /**
+         * The Lookup acquired from the Source
+         */
+        private final Lookup ctxLookup;
+        /**
+         * The FileObject backing the original Source. If the Source is not backed
+         * by a file, the Source instance will be stored in {@link #theSource} field.
+         */
+        private final FileObject sourceFile;
+        
+        /**
+         * The Source object, only in the case the Source is not backed by a FileObject.
+         */
         private final Source theSource;
 
         Difference(Kind kind, Position startPos, Position endPos, String oldText, String newText, String description, Source theSource) {
@@ -511,7 +524,20 @@ public final class ModificationResult {
             this.newText = newText;
             this.description = description;
             this.excluded = false;
-            this.theSource = theSource;
+            if (theSource != null) {
+                this.ctxLookup = theSource.getLookup();
+                assert ctxLookup != null;
+                this.sourceFile = theSource.getFileObject();
+                if (sourceFile == null) {
+                    this.theSource = theSource;
+                } else {
+                    this.theSource = null;
+                }
+            } else {
+                this.ctxLookup = null;
+                this.sourceFile = null;
+                this.theSource = null;
+            }
             // conservatively assume that pos could be null. They shouldn't be, but no doc states so.
             assert startPos == null || endPos == null || (startPos.getOffset() <= endPos.getOffset());
         }
@@ -588,7 +614,18 @@ public final class ModificationResult {
          */
         @CheckForNull
         public Document openDocument() throws IOException {
-            return theSource == null ? null : theSource.getDocument(true);
+            if (ctxLookup == null) {
+                return null;
+            } else if (theSource != null) {
+                return theSource.getDocument(true);
+            }
+            
+            // obtain the source again:
+            Source s = Source.create(sourceFile, ctxLookup);
+            if (s == null) {
+                return null;
+            }
+            return s.getDocument(true);
         }
         
         public static enum Kind {

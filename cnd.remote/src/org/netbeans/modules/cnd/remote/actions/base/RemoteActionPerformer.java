@@ -81,7 +81,7 @@ public abstract class RemoteActionPerformer implements ActionListener, DynamicMe
 
     @Override
     public final void actionPerformed(ActionEvent e) {
-        if (e != null && "performerActivated".equals(e.getActionCommand())) { // NOI18N
+        if (e != null && RemoteOpenActionBase.ACTIVATED_PSEUDO_ACTION_COMAND.equals(e.getActionCommand())) {
             presenter = (RemoteOpenActionBase) e.getSource();
             return;
         }
@@ -94,6 +94,11 @@ public abstract class RemoteActionPerformer implements ActionListener, DynamicMe
                 ServerListUI.showServerListDialog();
             }
             return;
+        } else if (e!= null && (e.getSource() instanceof Lookup.Provider)) {
+            ExecutionEnvironment env = ((Lookup.Provider) e.getSource()).getLookup().lookup(ExecutionEnvironment.class);
+            if (env != null) {
+                actionPerformedRemote(env, e);
+            }
         }
         actionPerformedRemote(ServerList.getDefaultRecord().getExecutionEnvironment(), e);
     }

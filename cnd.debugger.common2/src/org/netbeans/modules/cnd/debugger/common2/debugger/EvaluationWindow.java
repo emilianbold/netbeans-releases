@@ -74,7 +74,7 @@ public final class EvaluationWindow extends TopComponent {
     private transient JComponent tree = null;
     private String name;
     private String view_name;
-    private NativeDebugger debugger = null;
+    private volatile NativeDebugger debugger = null;
     private JMenuItem menuItemClear;
     private JPopupMenu popup;
     private JTextArea ta;

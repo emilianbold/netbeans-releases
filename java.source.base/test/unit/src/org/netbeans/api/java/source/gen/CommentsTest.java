@@ -1218,7 +1218,7 @@ public class CommentsTest extends GeneratorTestBase {
                         "         * f\n" +
                         "         */\n" +
                         "        int f;\n" +
-                        "        \n" +
+                        "\n" +
                         "        /**\n" +
                         "         * run\n" +
                         "         */\n" +

@@ -106,9 +106,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
     
-    private static final boolean isJDK8 = System.getProperty("java.version").startsWith("1.8.");
-    // There is a severe memory defect on JDK 8 (https://bugs.openjdk.java.net/browse/JDK-8072775):
-    static final int MAX_STRING_LENGTH = isJDK8 ? 1000 : 100000; // Limit retrieved String length to 100K characters to limit memory consumption.
+    public static final int MAX_STRING_LENGTH = 100000; // Limit retrieved String length to 100K characters to limit memory consumption.
 
     private String          genericType;
     private Field[]         fields;
@@ -985,7 +983,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             Field[] ch = new Field [k];
             for (i = 0; i < k; i++) {
                 Value v = (Value) l.get (i);
-                ch [i] = (v instanceof ObjectReference) ?
+                ch [i] = (v == null || v instanceof ObjectReference) ?
                     new ObjectArrayFieldVariable (
                         getDebugger(), 
                         (ObjectReference) v, 

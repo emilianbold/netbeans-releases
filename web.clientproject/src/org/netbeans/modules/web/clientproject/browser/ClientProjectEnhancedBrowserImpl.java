@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject.browser;
 
 import java.util.EnumSet;
 import javax.swing.JPanel;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
@@ -71,7 +72,7 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
 
     @Override
     public void save() {
-        if (cust != null && browser.hasNetBeansIntegration()) {
+        if (cust != null && cust.hasDataToSave()) {
             EditableProperties p = project.getProjectHelper().getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
             p.put(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+browser.getId(), Boolean.toString(cust.panel.isAutoRefresh())); //NOI18N
             p.put(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+browser.getId(), Boolean.toString(cust.panel.isHighlightSelection())); //NOI18N
@@ -79,6 +80,7 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
         }
     }
 
+    @Override
     public boolean isAutoRefresh() {
         String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+browser.getId()); //NOI18N
         if (val != null) {
@@ -96,8 +98,7 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
         if (val != null) {
             return Boolean.parseBoolean(val);
         } else {
-            // if browserIntegration is available then default is true for HighlightSelectionEnabled
-            return browser.hasNetBeansIntegration();
+            return true;
         }
     }
 
@@ -158,6 +159,10 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
         @Override
         public EnumSet<HiddenProperties> getHiddenProperties() {
             return EnumSet.noneOf(HiddenProperties.class);
+        }
+
+        boolean hasDataToSave() {
+            return browser.hasNetBeansIntegration() || browser.getBrowserFamily() == BrowserFamilyId.CHROME;
         }
 
     }

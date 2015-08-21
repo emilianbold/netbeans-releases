@@ -265,7 +265,16 @@ public final class TreePathHandle {
             child = true;
             current = current.getParentPath();
         }
-        return new TreePathHandle(new TreeDelegate(pos, new TreeDelegate.KindPath(treePath), file, element != null ? ElementHandle.create(element) : null, correspondingElement != null && isSupported(correspondingElement) ? ElementHandle.create(correspondingElement) : null));
+        ElementHandle<?> elementHandle = null;
+        //Do not create ElementHandle for OTHER (<any>,<none>).
+        if (element != null && element.getKind() != ElementKind.OTHER) {
+            elementHandle = createHandle(element);
+        }
+        ElementHandle<?> correspondingElementHandle = null;
+        if (correspondingElement != null && isSupported(correspondingElement)) {
+            correspondingElementHandle = createHandle(correspondingElement);
+        }
+        return new TreePathHandle(new TreeDelegate(pos, new TreeDelegate.KindPath(treePath), file, elementHandle, correspondingElementHandle));
     }
 
     /**                                                                                                                                                                                                                        
@@ -302,6 +311,22 @@ public final class TreePathHandle {
         }
             
         return new TreePathHandle(new ElementDelegate(ElementHandle.create(element), u, qualName, info.getClasspathInfo()));
+    }
+
+    @CheckForNull
+    private static <T extends Element> ElementHandle<T> createHandle (@NonNull final T element) {
+        try {
+            return ElementHandle.create(element);
+        } catch (IllegalArgumentException e) {
+            log.log(
+                Level.INFO,
+                "Unresolvable element: {0}, reason: {1}",    //NOI18N
+                new Object[]{
+                    element,
+                    e.getMessage()
+                });
+            return null;
+        }
     }
 
     private static boolean isSupported(Element el) {

@@ -70,6 +70,7 @@ import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
@@ -749,7 +750,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             Object var = evt.getSource();
-            if (var instanceof Variable) {
+            if (var instanceof Variable && !(var instanceof JPDAWatch)) {
                 fireNodeChanged(var);
             }
         }
