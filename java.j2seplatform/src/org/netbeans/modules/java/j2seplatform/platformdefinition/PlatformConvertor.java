@@ -213,7 +213,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         }
     }
 
-    JavaPlatform createPlatform(H handler) {
+    JavaPlatform createPlatform(H handler) throws IOException {
         JavaPlatform p;
 
         if (handler.isDefault) {
@@ -408,7 +408,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         }
     }
 
-    private static DataObject create(final JavaPlatform plat, final DataFolder f, final String idName) throws IOException {
+    private static DataObject create(final J2SEPlatformImpl plat, final DataFolder f, final String idName) throws IOException {
         W w = new W(plat, f, idName);
         f.getPrimaryFile().getFileSystem().runAtomicAction(w);
         try {
