@@ -141,7 +141,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
                             bracketsCounter++;
                             if (formatFlag) {
                                 paramBuf.append(token.text());
-                                if (paramOffset == -1 && paramBuf.length() == 0) {
+                                if (paramOffset == -1) {
                                     paramOffset = docTokenSequence.offset();
                                 }
                             }
@@ -149,7 +149,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
                             bracketsCounter++;
                             if (formatFlag) {
                                 paramBuf.append(token.text());
-                                if (paramOffset == -1 && paramBuf.length() == 0) {
+                                if (paramOffset == -1) {
                                     paramOffset = docTokenSequence.offset();
                                 }
                             }
@@ -160,13 +160,14 @@ public class FormatStringAudit extends AbstractCodeAudit {
                             }
                             if (formatFlag) {
                                 paramBuf.append(token.text());
-                                if (paramOffset == -1 && paramBuf.length() == 0) {
+                                if (paramOffset == -1) {
                                     paramOffset = docTokenSequence.offset();
                                 }
                             }
                         } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
                             if (paramBuf.length() > 0) {
                                 params.add(new Parameter(paramBuf.toString(), paramOffset));
+                                paramOffset = -1;
                             }
                             result.add(new FormattedPrintFunction(file, formatStringOffset, formatString, params));
                             state = State.DEFAULT;
@@ -180,13 +181,14 @@ public class FormatStringAudit extends AbstractCodeAudit {
                         } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
                             if (paramBuf.length() > 0) {
                                 params.add(new Parameter(paramBuf.toString(), paramOffset));
+                                paramOffset = -1;
                             }
                             paramBuf = new StringBuilder();
                         } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
                                 && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
                                 && formatFlag) {
                             paramBuf.append(token.text());
-                            if (paramOffset == -1 && paramBuf.length() == 0) {
+                            if (paramOffset == -1) {
                                 paramOffset = docTokenSequence.offset();
                             }
                         }
