@@ -121,17 +121,15 @@ public class MemoryFileManager implements JavaFileManager {
     }
 
     public JavaFileObject getJavaFileForInput(Location location, String className, Kind kind) throws IOException {
-        if (location == StandardLocation.SOURCE_PATH) {            
+        if (location == StandardLocation.SOURCE_PATH) {
             final String[] namePair = FileObjects.getPackageAndName (className);
-            if (namePair != null) {
-                final List<Integer> pkglst = this.packages.get(namePair[0]);
-                if (pkglst != null) {
-                    for (Integer id : pkglst) {
-                        final InferableJavaFileObject jfo = this.content.get (id);
-                        assert jfo != null;
-                        if (className.equals(jfo.inferBinaryName())) {
-                            return jfo;
-                        }
+            final List<Integer> pkglst = this.packages.get(namePair[0]);
+            if (pkglst != null) {
+                for (Integer id : pkglst) {
+                    final InferableJavaFileObject jfo = this.content.get (id);
+                    assert jfo != null;
+                    if (className.equals(jfo.inferBinaryName())) {
+                        return jfo;
                     }
                 }
             }
