@@ -45,11 +45,17 @@ package org.netbeans.modules.profiler.loadgen;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.loadgenerator.api.EngineManager;
+import org.netbeans.modules.loadgenerator.spi.Engine;
 import org.netbeans.modules.profiler.spi.LoadGenPlugin;
 import org.netbeans.modules.profiler.v2.ProfilerPlugin;
 import org.netbeans.modules.profiler.v2.SessionStorage;
@@ -68,26 +74,27 @@ import org.openide.util.lookup.ServiceProvider;
 @NbBundle.Messages({
     "LoadGenerator_name=Load Generator",
     "LoadGenerator_enabled=&Enabled",
-    "LoadGenerator_noProjectScripts=No scripts found in project folder",
-    "LoadGenerator_noServicesScripts=No scripts found in Services | Load Generators",
-    "LoadGenerator_currentlyRunning=Currently running {0}",
-    "LoadGenerator_selectedScript=&Script: {0}"
+    "LoadGenerator_configure=&Configure..."
 })
 final class LoadGenProfilerPlugin extends ProfilerPlugin {
     
     private static final String PREFIX = "LoadGenerator."; // NOI18N
     private static final String PROP_ENABLED = PREFIX + "PROP_ENABLED"; // NOI18N
     private static final String PROP_SELECTED = PREFIX + "PROP_SELECTED"; // NOI18N
+    private static final String PROP_CUSTOM = PREFIX + "PROP_CUSTOM"; // NOI18N
+    private static final String PROP_MODE = PREFIX + "PROP_MODE"; // NOI18N
     
     private final LoadGenPlugin plugin;
     private final SessionStorage storage;
+    private final Lookup.Provider project;
     
     private final boolean global;
     
-    private final String[] scripts;
+    private int mode;
+    private String[] scripts;
     private String selectedScript;
     
-    private final int commonPathLength;
+    private int commonPathLength;
     
     private boolean sessionRunning;
     
@@ -97,82 +104,192 @@ final class LoadGenProfilerPlugin extends ProfilerPlugin {
         
         this.plugin = plugin;
         this.storage = storage;
+        this.project = project;
         
         this.global = project == null;
         
+        mode = readMode();
+        
+        if (!global && (mode == 0 || mode == -1)) { 
+            scripts = readProjectScripts();
+            if (scripts.length > 0) mode = 0;
+        }
+        
+        if (mode == 1 || mode == -1) { 
+            scripts = readGlobalScripts();
+            if (scripts.length > 0) mode = 1;
+        }
+        
+        if (mode == 2 || mode == -1) { 
+            scripts = readCustomScripts();
+            if (scripts.length > 0) mode = 2;
+        }
+        
+        if (scripts.length == 0) {
+            mode = 2;
+            commonPathLength = -1;
+            selectedScript = null;
+        } else {
+            commonPathLength = mode == 0 ? commonPathLength(scripts) : -1;
+            selectedScript = readSelected();
+            if (selectedScript == null || !new File(selectedScript).isFile())
+                selectedScript = scripts[0];
+        }
+        storeSelected(selectedScript);
+    }
+    
+    
+    private String[] readProjectScripts() {
         Collection<FileObject> scriptsFo = plugin.listScripts(project);
-        scripts = new String[scriptsFo.size()];
+        String[] projectScripts = new String[scriptsFo.size()];
         int idx = 0;
         for (FileObject script : scriptsFo) {
             File scriptFile = FileUtil.normalizeFile(FileUtil.toFile(script));
             try {
-                scripts[idx] = scriptFile.getCanonicalPath();
+                projectScripts[idx] = scriptFile.getCanonicalPath();
             } catch (IOException ex) {
-                scripts[idx] = scriptFile.getAbsolutePath();
+                projectScripts[idx] = scriptFile.getAbsolutePath();
             }
             idx++;
         }
-        
-        if (scripts.length > 0) {
-            selectedScript = readSelected();
-            if (selectedScript == null || !new File(selectedScript).isFile())
-                selectedScript = scripts[0];
-            commonPathLength = commonPathLength(scripts);
-        } else {
-            commonPathLength = 0;
-        }
+        Arrays.sort(projectScripts);
+        return projectScripts;
     }
+    
+    private String[] readGlobalScripts() {
+        Collection<FileObject> scriptsFo = plugin.listScripts(null);
+        String[] globalScripts = new String[scriptsFo.size()];
+        int idx = 0;
+        for (FileObject script : scriptsFo) {
+            File scriptFile = FileUtil.normalizeFile(FileUtil.toFile(script));
+            try {
+                globalScripts[idx] = scriptFile.getCanonicalPath();
+            } catch (IOException ex) {
+                globalScripts[idx] = scriptFile.getAbsolutePath();
+            }
+            idx++;
+        }
+        Arrays.sort(globalScripts);
+        return globalScripts;
+    }
+    
+    private String[] readCustomScripts() {
+        String custom = readCustom();
+        return custom == null ? new String[0] : new String[] { custom };
+    }
+    
+    private Set<String> readSupportedExtensions() {
+        EngineManager manager = Lookup.getDefault().lookup(EngineManager.class);
+        Collection<Engine> engines = manager.findEngines();
+        Set<String> extensions = new HashSet();
+        for (Engine engine : engines)
+            for (String ext : engine.getSupportedExtensions())
+                extensions.add(ext.trim().toLowerCase());
+        return extensions;
+    }
+    
 
     public void createMenu(JMenu menu) {
-        if (scripts.length == 0) {
-            String msg = global ? Bundle.LoadGenerator_noServicesScripts() :
-                                  Bundle.LoadGenerator_noProjectScripts();
-            JMenuItem noItems = new JMenuItem(msg);
-            noItems.setEnabled(false);
-            menu.add(noItems);
-        } else if (sessionRunning) {
-            JMenuItem noItems = new JMenuItem(Bundle.LoadGenerator_currentlyRunning(scriptName(selectedScript)));
-            noItems.setEnabled(false);
-            menu.add(noItems);
-        } else {
+        if (scripts.length > 0) {
             JCheckBoxMenuItem enabledItem = new JCheckBoxMenuItem() {
+                {
+                    setEnabled(!sessionRunning && scripts.length > 0);
+                    setSelected(scripts.length > 0 && readEnabled());
+                }
                 protected void fireActionPerformed(ActionEvent e) {
                     super.fireActionPerformed(e);
                     storeEnabled(isSelected());
                 }
             };
             Mnemonics.setLocalizedText(enabledItem, Bundle.LoadGenerator_enabled());
-            enabledItem.setSelected(readEnabled());
-            enabledItem.setEnabled(scripts.length > 0);
             menu.add(enabledItem);
 
             menu.addSeparator();
             
-            if (scripts.length == 1) {
-                JMenuItem oneItem = new JMenuItem();
-                Mnemonics.setLocalizedText(oneItem, Bundle.LoadGenerator_selectedScript(scriptName(selectedScript)));
-                oneItem.setEnabled(false);
-                menu.add(oneItem);
-            } else {
-                JMenu scriptsMenu = new JMenu();
-                Mnemonics.setLocalizedText(scriptsMenu, Bundle.LoadGenerator_selectedScript(scriptName(selectedScript)) + "  "); // NOI18N
-                for (final String script : scripts) scriptsMenu.add(new JRadioButtonMenuItem(scriptName(script)) {
-                    {
-                        setSelected(script.equals(selectedScript));
-                    }
-                    protected void fireActionPerformed(ActionEvent e) {
-                        selectedScript = script;
-                        storeSelected(selectedScript);
-                    }
-                });
-                menu.add(scriptsMenu);
-            }
+            for (final String script : scripts) menu.add(new JRadioButtonMenuItem(scriptName(script)) {
+                {
+                    setEnabled(!sessionRunning);
+                    setSelected(script.equals(selectedScript));
+                    setToolTipText(script);
+                }
+                protected void fireActionPerformed(ActionEvent e) {
+                    selectedScript = script;
+                    storeSelected(selectedScript);
+                }
+            });
+            
+            menu.addSeparator();
         }
+        
+        JMenuItem configureItem = new JMenuItem() {
+            {
+                setEnabled(!sessionRunning);
+            }
+            protected void fireActionPerformed(ActionEvent e) {
+                super.fireActionPerformed(e);
+                configureScripts();
+            }
+        };
+        Mnemonics.setLocalizedText(configureItem, Bundle.LoadGenerator_configure());
+        menu.add(configureItem);
+        
+        menu.add(configureItem);
+    }
+    
+    private void configureScripts() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                LoadGenConfig config = new LoadGenConfig() {
+                    int readMode() { return mode; }
+                    String[] readProjectScripts() { return LoadGenProfilerPlugin.this.readProjectScripts(); }
+                    String[] readGlobalScripts()  { return LoadGenProfilerPlugin.this.readGlobalScripts(); }
+                    String[] readCustomScripts()  { return LoadGenProfilerPlugin.this.readCustomScripts(); }
+                    Set<String> readSupportedExtensions() { return LoadGenProfilerPlugin.this.readSupportedExtensions(); }
+                };
+                boolean configured = config.configure(global);
+                
+                if (configured) {
+                    // Use selected mode
+                    mode = config.getMode();
+                    storeMode(mode);
+                }
+                
+                if (mode == 0) {
+                    // Use refreshed project scripts
+                    String[] newScripts = config.getProjectScripts();
+                    if (newScripts != null) scripts = newScripts;
+                } else if (mode == 1) {
+                    // Use refreshed global scripts
+                    String[] newScripts = config.getGlobalScripts();
+                    if (newScripts != null) scripts = newScripts;
+                } else if (mode == 2) {
+                    // Set new custom script if submitted or clear invalid custom script
+                    String[] newScripts = config.getCustomScripts();
+                    if (newScripts != null && (configured || newScripts.length == 0)) {
+                        scripts = newScripts;
+                        storeCustom(scripts.length == 0 ? null : scripts[0]);
+                    }
+                }
+                commonPathLength = mode == 0 ? commonPathLength(scripts) : -1;
+                
+                boolean selectedFound = false;
+                for (String script : scripts)
+                    if (script.equals(selectedScript)) {
+                        selectedFound = true;
+                        break;
+                    }
+                if (!selectedFound && scripts.length > 0) {
+                    selectedScript = scripts[0];
+                    storeSelected(selectedScript);
+                }
+            }
+        });
     }
     
     
     private String scriptName(String script) {
-        return script.substring(commonPathLength);
+        return commonPathLength == -1 ? new File(script).getName() :
+                                   script.substring(commonPathLength);
     }
     
     private static int commonPathLength(String[] paths) {
@@ -185,46 +302,50 @@ final class LoadGenProfilerPlugin extends ProfilerPlugin {
         String common = paths[0].substring(0, commonIdx);
         if (plength == 1) return common.length() + 1;
         
-        while (true) {
+        boolean cycle = true;
+        while (cycle) {
+            cycle = false;
             for (int i = 1; i < plength; i++) {
                 if (!paths[i].startsWith(common)) {
                     commonIdx = common.lastIndexOf(File.separatorChar);
                     if (commonIdx == -1) return 0;
                     common = common.substring(0, commonIdx);
+                    cycle = true;
+                    break;
                 }
             }
-            return common.length() + 1;
         }
+        return common.length() + 1;
     }
     
     
-    protected void sessionStarted()  {
-        if (!readEnabled()) return;
+    protected void sessionStarting() {
         sessionRunning = true;
-        processor().post(new Runnable() {
-            public void run() {
-                plugin.start(selectedScript, LoadGenPlugin.Callback.NULL);
-            }
+    }
+    
+    protected void sessionStarted()  {
+        if (scripts.length > 0 && readEnabled()) processor().post(new Runnable() {
+            public void run() { plugin.start(selectedScript, LoadGenPlugin.Callback.NULL); }
         });
     }
     
     protected void sessionStopping() {
-        if (!readEnabled()) return;
-        sessionRunning = false;
-        processor().post(new Runnable() {
-            public void run() {
-                if (selectedScript != null) plugin.stop(selectedScript);
-            }
+        if (scripts.length > 0 && readEnabled()) processor().post(new Runnable() {
+            public void run() { if (selectedScript != null) plugin.stop(selectedScript); }
         });
+    }
+    
+    protected void sessionStopped() {
+        sessionRunning = false;
     }
     
     
     private void storeEnabled(boolean enabled) {
-        storage.storeFlag(PROP_ENABLED, enabled ? null : Boolean.FALSE.toString());
+        storage.storeFlag(PROP_ENABLED, enabled ? Boolean.TRUE.toString() : null);
     }
     
     private boolean readEnabled() {
-        return scripts.length > 0 && Boolean.parseBoolean(storage.readFlag(PROP_ENABLED, Boolean.TRUE.toString()));
+        return Boolean.parseBoolean(storage.readFlag(PROP_ENABLED, Boolean.FALSE.toString()));
     }
     
     private void storeSelected(String selected) {
@@ -233,6 +354,22 @@ final class LoadGenProfilerPlugin extends ProfilerPlugin {
     
     private String readSelected() {
         return storage.readFlag(PROP_SELECTED, null);
+    }
+    
+    private void storeCustom(String custom) {
+        storage.storeFlag(PROP_CUSTOM, custom);
+    }
+    
+    private String readCustom() {
+        return storage.readFlag(PROP_CUSTOM, null);
+    }
+    
+    private void storeMode(int mode) {
+        storage.storeFlag(PROP_MODE, mode == -1 ? null : Integer.toString(mode));
+    }
+    
+    private int readMode() {
+        return Integer.parseInt(storage.readFlag(PROP_MODE, "-1")); // NOI18N
     }
     
     
