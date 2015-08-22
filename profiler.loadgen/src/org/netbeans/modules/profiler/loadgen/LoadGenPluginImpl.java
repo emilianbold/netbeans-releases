@@ -131,7 +131,8 @@ public class LoadGenPluginImpl implements LoadGenPlugin {
             List<? extends ProcessInstance> processes = engine.getProcesses();
             for (ProcessInstance process : processes) {
                 String script = process.getCurrentScript();
-                FileObject fo = FileUtil.toFileObject(new File(script));
+                File f = script == null ? null : new File(script);
+                FileObject fo = f == null ? null : FileUtil.toFileObject(f);
                 if (fo != null) scripts.add(fo);
             }
         }
