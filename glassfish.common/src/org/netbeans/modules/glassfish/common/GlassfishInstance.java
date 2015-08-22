@@ -727,7 +727,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
       * <p/>
       * This is always version of local GlassFish related to JavaEE platform,
       * even when registered domain is remote. */
-    private transient volatile GlassFishVersion version;
+    private final GlassFishVersion version;
 
     /** Process information of local running server started from IDE.
      *  <p/>

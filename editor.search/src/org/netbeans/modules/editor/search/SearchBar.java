@@ -763,6 +763,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         String lastSearch = "";
         if (!isClosingSearchType()) {
             lastSearch = incSearchTextField.getText();
+            Object findWhat = searchProps.getProperty(EditorFindSupport.FIND_WHAT);
+            if (findWhat instanceof String) {
+                lastSearch = (String) findWhat;
+            }
         }
         incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
         SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) incSearchTextField);

@@ -47,9 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -110,7 +108,7 @@ public final class KarmaServer implements PropertyChangeListener {
     private volatile KarmaRunInfo karmaRunInfo = null;
 
     // @GuardedBy("this")
-    private List<String> scriptFiles = null;
+    private String debugPageContent = null;
 
 
     KarmaServer(int port, Project project) {
@@ -240,19 +238,20 @@ public final class KarmaServer implements PropertyChangeListener {
         if (externalForm.startsWith(serverUrl)) {
             externalForm = externalForm.substring(serverUrl.length() - 1); // keep the leading "/"
         }
-        for (String scriptFile : getScriptFiles()) {
-            if (scriptFile.contains(externalForm)) {
-                return true;
-            }
+        // first, try karma.files object
+        if (getDebugPageContent().contains("'" + externalForm + "'")) { // NOI18N
+            return true;
         }
-        return false;
+        // now, try <script> tag
+        return getDebugPageContent().contains("\"" + externalForm + "\""); // NOI18N
     }
 
-    private synchronized List<String> getScriptFiles() {
-        if (scriptFiles == null) {
-            scriptFiles = KarmaUtils.readScriptFiles(getDebugUrl());
+    private synchronized String getDebugPageContent() {
+        if (debugPageContent == null) {
+            debugPageContent = KarmaUtils.readContent(getDebugUrl());
+            assert debugPageContent != null;
         }
-        return Collections.unmodifiableList(scriptFiles);
+        return debugPageContent;
     }
 
     private synchronized void openDebugUrl() {

@@ -74,6 +74,8 @@ public class AutomaticRegistration {
 
     private static final Logger LOGGER = Logger.getLogger(AutomaticRegistration.class.getName());
 
+    private static Version JDK8_ONLY_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.2.1"); // NOI18N
+
     /**
      * Performs registration/uregistration of server instance. May also list
      * existing weblogic instances.
@@ -224,7 +226,7 @@ public class AutomaticRegistration {
         String displayName = generateUniqueDisplayName(serverInstanceDir, version);
         boolean ok = registerServerInstanceFO(serverInstanceDir, url, displayName,
                 serverDir.getAbsolutePath(), domainDir.getAbsolutePath(), domainName,
-                Integer.toString(port), username, password, javaOpts);
+                Integer.toString(port), username, password, javaOpts, version);
         if (ok) {
             return 0;
         } else {
@@ -336,7 +338,7 @@ public class AutomaticRegistration {
      */
     private static boolean registerServerInstanceFO(FileObject serverInstanceDir, String url,
             String displayName, String serverRoot, String domainRoot, String domainName,
-            String port, String username, String password, String javaOpts) {
+            String port, String username, String password, String javaOpts, Version version) {
 
         String name = FileUtil.findFreeFileName(serverInstanceDir, "weblogic_autoregistered_instance", null); // NOI18N
         FileObject instanceFO;
@@ -359,8 +361,12 @@ public class AutomaticRegistration {
                 instanceFO.setAttribute(WLPluginProperties.JAVA_OPTS, javaOpts);
             }
             if (Utilities.isMac()) {
-                instanceFO.setAttribute(WLPluginProperties.MEM_OPTS,
-                        WLInstantiatingIterator.DEFAULT_MAC_MEM_OPTS);
+                StringBuilder memOpts = new StringBuilder(WLInstantiatingIterator.DEFAULT_MAC_MEM_OPTS_HEAP);
+                if (version != null && !JDK8_ONLY_SERVER_VERSION.isBelowOrEqual(version)) {
+                    memOpts.append(' '); // NOI18N
+                    memOpts.append(WLInstantiatingIterator.DEFAULT_MAC_MEM_OPTS_PERM);
+                }
+                instanceFO.setAttribute(WLPluginProperties.MEM_OPTS, memOpts.toString());
             }
             return true;
         } catch (IOException e) {

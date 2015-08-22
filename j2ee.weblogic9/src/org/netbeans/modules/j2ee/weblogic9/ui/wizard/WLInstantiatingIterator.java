@@ -44,6 +44,7 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
@@ -64,7 +65,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLTrustHandler;
 import org.openide.WizardDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -93,10 +93,12 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
     public static final String DEFAULT_PROXY_ENABLED = "true"; // NOI18N
 
-    public static final String DEFAULT_MAC_MEM_OPTS = "-Xmx1024m -XX:PermSize=256m"; // NOI18N
+    public static final String DEFAULT_MAC_MEM_OPTS_HEAP = "-Xmx1024m"; // NOI18N
 
-    public static final String DEFAULT_DWP_MEM_OPTS = "-Xmx512m -XX:PermSize=128m"; // NOI18N
-    
+    public static final String DEFAULT_MAC_MEM_OPTS_PERM = "-XX:PermSize=256m"; // NOI18N
+
+    private static final Version JDK8_ONLY_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.2.1"); // NOI18N
+
     /**
      * The parent wizard descriptor
      */
@@ -171,7 +173,13 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         }
 
         if (Utilities.isMac()) {
-            props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
+            StringBuilder memOpts = new StringBuilder(DEFAULT_MAC_MEM_OPTS_HEAP);
+            Version version = WLPluginProperties.getServerVersion(new File(serverRoot));
+            if (version != null && !JDK8_ONLY_SERVER_VERSION.isBelowOrEqual(version)) {
+                memOpts.append(' '); // NOI18N
+                memOpts.append(DEFAULT_MAC_MEM_OPTS_PERM);
+            }
+            props.put(WLPluginProperties.MEM_OPTS, memOpts.toString());
         }
 
         try {
