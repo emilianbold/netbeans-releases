@@ -170,23 +170,18 @@ public class OutputFileManager extends CachingFileManager {
                 throw new InvalidSourcePath ();
             }
         }
-        if (File.separatorChar != '/') {    //NOI18N
-            relativeName = relativeName.replace('/', File.separatorChar);   //NOI18N
-        }
-        final StringBuilder  path = new StringBuilder();
-        if (pkgName.length() > 0) {
-            path.append(FileObjects.convertPackage2Folder(pkgName, File.separatorChar));
-            path.append(File.separatorChar);
-        }
-        path.append(relativeName);
-        final File file = FileUtil.normalizeFile(new File (activeRoot,path.toString()));
+        final String path = FileObjects.resolveRelativePath(pkgName, relativeName);
+        final File file = FileUtil.normalizeFile(new File (activeRoot,path.replace(FileObjects.NBFS_SEPARATOR_CHAR, File.separatorChar)));
         return tx.createFileObject(l, file, activeRoot,null,null);
     }
 
-    
+
     @Override
     public javax.tools.FileObject getFileForInput(Location l, String pkgName, String relativeName) {
-        javax.tools.FileObject fo = tx.readFileObject(l, pkgName, relativeName);
+        final String[] names = FileObjects.getFolderAndBaseName(
+            FileObjects.resolveRelativePath(pkgName, relativeName),
+            FileObjects.NBFS_SEPARATOR_CHAR);
+        javax.tools.FileObject fo = tx.readFileObject(l, names[0], names[1]);
         if (fo != null) {
             return fo;
         }
