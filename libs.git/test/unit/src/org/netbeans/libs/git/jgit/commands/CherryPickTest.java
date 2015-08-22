@@ -44,11 +44,13 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryState;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.netbeans.libs.git.ApiUtils;
 import org.netbeans.libs.git.GitCherryPickResult;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitRevisionInfo;
@@ -150,27 +152,42 @@ public class CherryPickTest extends AbstractGitTestCase {
     }
     
     public void testCherryPickFailure () throws Exception {
-        File f = new File(workDir, "f");
-        write(f, "init");
-        add(f);
-        commit(f);
+        File f1 = new File(workDir, "f1");
+        File f2 = new File(workDir, "f2");
+        write(f1, "init");
+        write(f2, "init");
+        add(f1, f2);
+        commit(f1, f2);
         
-        File[] roots = new File[] { f };
+        File[] roots = new File[] { f1, f2 };
         
         GitClient client = getClient(workDir);
         client.createBranch(BRANCH, Constants.MASTER, NULL_PROGRESS_MONITOR);
         client.checkoutRevision(BRANCH, true, NULL_PROGRESS_MONITOR);
         
-        write(f, "change on branch");
-        add(f);
+        write(f1, "change on branch");
+        write(f2, "change on branch");
+        add(f1, f2);
         GitRevisionInfo c = client.commit(roots, "on branch", null, null, NULL_PROGRESS_MONITOR);
         
         client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
         // make modification so cherry-pick cannot start
-        write(f, "change in master");
+        write(f1, "change in master");
+        write(f2, "change in master");
         
-        GitCherryPickResult res = client.cherryPick(GitClient.CherryPickOperation.BEGIN, new String[] { BRANCH }, NULL_PROGRESS_MONITOR);
+        CherryPickCommand cmd = new CherryPickCommand(getRepository(client), ApiUtils.getClassFactory(),
+                new String[] { BRANCH }, GitClient.CherryPickOperation.BEGIN, NULL_PROGRESS_MONITOR, null);
+        Field f = CherryPickCommand.class.getDeclaredField("workAroundStrategyIssue");
+        f.setAccessible(true);
+        f.set(cmd, false);
+        cmd.execute();
+        GitCherryPickResult res = cmd.getResult();
+        // when starts failing, remove the WA in CherryPickCommand for recursive strategy merger.
+        assertEquals(1, res.getFailures().size());
+        
+        res = client.cherryPick(GitClient.CherryPickOperation.BEGIN, new String[] { BRANCH }, NULL_PROGRESS_MONITOR);
         assertEquals(GitCherryPickResult.CherryPickStatus.FAILED, res.getCherryPickStatus());
+        assertEquals(2, res.getFailures().size());
         assertEquals(0, res.getCurrentHead().getParents().length);
     }
     
