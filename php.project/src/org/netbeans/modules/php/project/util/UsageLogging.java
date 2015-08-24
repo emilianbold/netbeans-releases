@@ -59,10 +59,10 @@ public final class UsageLogging {
 
     private final UsageLogger testConfigUsageLogger = new UsageLogger.Builder(PhpProjectUtils.USAGE_LOGGER_NAME)
             .message(PhpProjectUtils.class, "USG_TEST_CONFIG_PHP") // NOI18N
+            .firstMessageOnly(false)
             .create();
     private final UsageLogger phpTestRunUsageLogger = new UsageLogger.Builder(PhpProjectUtils.USAGE_LOGGER_NAME)
             .message(PhpProjectUtils.class, "USG_TEST_RUN_PHP") // NOI18N
-            .unrepeated(true)
             .create();
     private final UsageLogger jsTestRunUsageLogger = UsageLogger.jsTestRunUsageLogger(PhpProjectUtils.USAGE_LOGGER_NAME);
 
