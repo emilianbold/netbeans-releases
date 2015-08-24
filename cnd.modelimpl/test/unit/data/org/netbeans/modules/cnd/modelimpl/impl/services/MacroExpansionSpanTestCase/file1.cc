@@ -29,3 +29,9 @@ int var;
 // ...
 int var2;
 #endif
+
+#define ONE 1
+#define TWO 2
+#define min(x, y) ((x) < (y)) ? (x) : (y)
+
+int a = min(ONE, TWO);

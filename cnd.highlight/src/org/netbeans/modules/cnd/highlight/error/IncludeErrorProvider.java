@@ -156,16 +156,18 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
                 if (request.isCancelled()) {
                     return;
                 }
-                CsmFile newFile = incl.getIncludeFile();
-                if (newFile != null && hasBrokenIncludes(newFile, visited)) {
-                    if (response instanceof AnalyzerResponse) {
-                        String decoratedText = getID()+"\n"+NbBundle.getMessage(IncludeErrorProvider.class, message, getIncludeText(incl)); // NOI18N
-                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), incl.getStartOffset(), incl.getEndOffset()));
-                    } else {
-                        String decoratedText = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, message, getIncludeText(incl)));
-                        response.addError(
-                                new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), incl.getStartOffset(), incl.getEndOffset()));
+                if (incl.getIncludeState() != IncludeState.Recursive) {
+                    CsmFile newFile = incl.getIncludeFile();
+                    if (newFile != null && hasBrokenIncludes(newFile, visited)) {
+                        if (response instanceof AnalyzerResponse) {
+                            String decoratedText = getID()+"\n"+NbBundle.getMessage(IncludeErrorProvider.class, message, getIncludeText(incl)); // NOI18N
+                            ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
+                                    new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), incl.getStartOffset(), incl.getEndOffset()));
+                        } else {
+                            String decoratedText = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, message, getIncludeText(incl)));
+                            response.addError(
+                                    new ErrorInfoImpl(CodeAssistanceHintProvider.NAME, getID(), decoratedText, toSeverity(minimalSeverity()), incl.getStartOffset(), incl.getEndOffset()));
+                        }
                     }
                 }
             }

@@ -203,7 +203,7 @@ public class JSFConfigModelTest extends NbTestCase {
     final String newDescription = "Some text.\n Test description\nnew line\n\nnew second line.";
     final String newFromViewID = "/haha.jsp";
     public void testChangeNavigationRuleJSFJPAExample() throws Exception {
-        JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example3.xml");
         FacesConfig facesConfig = model.getRootComponent();
         assertNotNull(facesConfig);
         Collection<NavigationRule> navigationRules = facesConfig.getNavigationRules();
@@ -249,7 +249,7 @@ public class JSFConfigModelTest extends NbTestCase {
     }
 
     public void testAddRemoveNavigationRuleJSFJPAExample() throws Exception {
-        JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example4.xml");
         FacesConfig facesConfig = model.getRootComponent();
         assertNotNull(facesConfig);
 
@@ -318,7 +318,7 @@ public class JSFConfigModelTest extends NbTestCase {
     }
 
     public void testAddRemoveNavigationCaseJSFJPAExample() throws Exception {
-        JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example5.xml");
         FacesConfig facesConfig = model.getRootComponent();
         assertNotNull(facesConfig);
 

@@ -51,6 +51,7 @@ import java.util.Map;
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.This;
@@ -73,8 +74,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/LocalsView",  types = TreeModelFilter.class),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ResultsView", types = TreeModelFilter.class),
-    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView", types = TreeModelFilter.class),
-    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types = TreeModelFilter.class),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types = TreeModelFilter.class, position = 350),
 })
 public class VariablesJSTreeModel implements TreeModelFilter {
     
@@ -91,6 +91,14 @@ public class VariablesJSTreeModel implements TreeModelFilter {
 
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
+        if (parent instanceof JSWatchVar) {
+            JSVariable jsVar = ((JSWatchVar) parent).getJSVar();
+            if (jsVar != null) {
+                parent = jsVar;
+            } else {
+                parent = ((JSWatchVar) parent).getWatch();
+            }
+        }
         if (parent instanceof JSVariable) {
             JSVariable jsVar = (JSVariable) parent;
             ObjectVariable valueObject = jsVar.getValueObject();
@@ -137,6 +145,9 @@ public class VariablesJSTreeModel implements TreeModelFilter {
                 if (ch instanceof This) {
                     jthis = (This) ch;
                 }
+                if (JSWatchVar.is(ch)) {
+                    ch = new JSWatchVar(debugger, (JPDAWatch) ch);
+                }
                 newChildren.add(ch);
             }
         }
@@ -174,6 +185,15 @@ public class VariablesJSTreeModel implements TreeModelFilter {
 
     @Override
     public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
+        if (node instanceof JSWatchVar) {
+            JSWatchVar jswv = (JSWatchVar) node;
+            JSVariable jsVar = jswv.getJSVarIfExists();
+            if (jsVar != null) {
+                node = jsVar;
+            } else {
+                node = jswv.getWatch();
+            }
+        }
         if (node instanceof JSVariable) {
             JSVariable jsVar = (JSVariable) node;
             ObjectVariable valueObject = jsVar.getValueObject();

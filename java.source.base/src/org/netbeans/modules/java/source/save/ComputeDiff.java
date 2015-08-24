@@ -301,22 +301,22 @@ class ComputeDiff<E> {
         int bPrevStart = 0;
         
         TreeMap<Integer, Integer> matches = new TreeMap<Integer, Integer>();
-        Map<E, List<Integer>> bMatches = null;
-        if (comparator == null) {
-            if (a.length > 0 && a[0] instanceof Comparable) {
-                // this uses the Comparable interface
-                bMatches = new TreeMap<E, List<Integer>>();
-            } else {
-                // this just uses hashCode()
-                bMatches = new HashMap<E, List<Integer>>();
-            }
-        } else {
-            // we don't really want them sorted, but this is the only Map
-            // implementation (as of JDK 1.4) that takes a comparator.
-            bMatches = new TreeMap<E, List<Integer>>(comparator);
-        }
         int bEndOrig;
         do {
+            Map<E, List<Integer>> bMatches = null;
+            if (comparator == null) {
+                if (a.length > 0 && a[0] instanceof Comparable) {
+                    // this uses the Comparable interface
+                    bMatches = new TreeMap<E, List<Integer>>();
+                } else {
+                    // this just uses hashCode()
+                    bMatches = new HashMap<E, List<Integer>>();
+                }
+            } else {
+                // we don't really want them sorted, but this is the only Map
+                // implementation (as of JDK 1.4) that takes a comparator.
+                bMatches = new TreeMap<E, List<Integer>>(comparator);
+            }
             aStart = aPrevStart;
             bStart = bPrevStart;
             if (sIndex < sL) {

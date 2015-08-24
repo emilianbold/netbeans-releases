@@ -65,7 +65,6 @@ import java.beans.Customizer;
 import java.io.IOException;
 import java.io.File;
 import java.util.List;
-import java.util.Iterator;
 import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -99,7 +98,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
         VOLUME_TYPE_JAVADOC,
         VOLUME_TYPE_MAVEN_POM
     };
-    
+
     private static final Set<String> VOLUME_TYPES_REQUIRING_FOLDER = new HashSet<String>(Arrays.asList(new String[] {
         VOLUME_TYPE_CLASSPATH,
         VOLUME_TYPE_SRC,
@@ -110,7 +109,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
     public String getLibraryType() {
         return LIBRARY_TYPE;
     }
-    
+
     @Override
     public String getDisplayName () {
         return NbBundle.getMessage (J2SELibraryTypeProvider.class,"TXT_J2SELibraryType");
@@ -179,7 +178,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             return null;
         }
     }
-    
+
 
     @Override
     public Lookup getLookup() {
@@ -194,18 +193,23 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
         boolean modified = false;
         for (int i=0; i<VOLUME_TYPES.length; i++) {
             String propName = LIB_PREFIX + impl.getName() + '.' + VOLUME_TYPES[i];     //NOI18N
-            List roots = impl.getContent (VOLUME_TYPES[i]);
+            final List<URL> roots = impl.getContent (VOLUME_TYPES[i]);
             if (roots == null) {
                 //Non valid library, but try to recover
                 continue;
             }
-            StringBuffer propValue = new StringBuffer();
+            final StringBuilder propValue = new StringBuilder();
             boolean first = true;
-            for (Iterator rootsIt=roots.iterator(); rootsIt.hasNext();) {
-                URL url = (URL) rootsIt.next();
+            for (URL url : roots) {
                 if ("jar".equals(url.getProtocol())) {  //NOI18N
                     url = FileUtil.getArchiveFile (url);
-                    // XXX check whether this is really the root
+                    if (url == null) {
+                        LOG.log(
+                            Level.WARNING,
+                            "Ignoring wrong jar protocol URL: {0}",
+                            url);
+                        continue;
+                    }
                 }
                 File f = null;
                 FileObject fo = URLMapper.findFileObject(url);
@@ -255,7 +259,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
         }
         return modified;
     }
-    
+
     //Like DefaultLibraryTypeProvider but in addition checks '/' on the end of folder URLs.
     private static class J2SELibraryImpl implements LibraryImplementation3 {
         private String description;
@@ -438,5 +442,5 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             this.firePropertyChange(PROP_CONTENT,null,null);
         }
     }
-    
+
 }

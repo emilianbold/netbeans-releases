@@ -56,6 +56,12 @@ public abstract class DataProvider {
     public abstract Collection<DataItem> getComponents();
 
     public abstract Collection<DataItem> getComponentOptions(String compName);
+    
+    public abstract Collection<String> getAvailableVersions();
+    
+    public abstract String getCurrentVersion();
+    
+    public abstract void setCurrentVersion(String version);
 
     public static Collection<DataItem> filterByPrefix(Collection<? extends DataItem> data, String prefix) {
         List<DataItem> result = new ArrayList<>();

@@ -163,8 +163,12 @@ public class PUDataObject extends XmlMultiViewDataObject {
     public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
         return new XmlMultiViewElement(lookup.lookup(XmlMultiViewDataObject.class));
     }
-        
-    
+
+    @Override
+    protected int associateLookup() {
+        return 1;
+    }
+
     /**
      * Saves the document.
      * @see EditorCookie#saveDocument

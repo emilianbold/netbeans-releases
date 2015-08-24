@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.api.editor.PhpClass;
@@ -148,7 +149,7 @@ public class TestSessionImplTest extends PhpTestCase {
         }
 
         @Override
-        public CreateTestsResult createTests(PhpModule phpModule, List<FileObject> files) {
+        public CreateTestsResult createTests(PhpModule phpModule, List<FileObject> files, Map<String, Object> configurationPanelProperties) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

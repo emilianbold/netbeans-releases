@@ -1066,6 +1066,14 @@ public class Folder implements FileChangeListener, ChangeListener {
                 for (int i = 0; i < configurations.length; i++) {
                     configurations[i].removeAuxObject(folder.getId());
                 }
+            } else if (isTestLogicalFolder() && folder.isProjectFiles()) {
+                // Test folder in logical tests folder
+                // should be removed from configuration
+                // Is it right that logical tests folder is not project folder?
+                Configuration[] configurations = configurationDescriptor.getConfs().toArray();
+                for (int i = 0; i < configurations.length; i++) {
+                    configurations[i].removeAuxObject(folder.getId());
+                }
             }
         }
         if (ret) {

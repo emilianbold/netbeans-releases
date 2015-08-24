@@ -51,6 +51,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -341,9 +343,32 @@ public class ProjectUtilitiesTest extends NbTestCase {
     public void testNavigatorIsNotClosed() throws Exception {
         closeProjectWithOpenedFiles ();
         
-        assertFalse(tc1_1.isOpened());
-        assertFalse(tc1_2.isOpened());
-        assertTrue(tc1_1_navigator.isOpened());
+        final boolean[] tc1_1isOpened = new boolean[] {true};
+        final boolean[] tc1_2isOpened = new boolean[] {true};
+        final boolean[] tc1_1_navigatorisOpened = new boolean[] {false};
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                tc1_1isOpened[0] = tc1_1.isOpened();
+                tc1_2isOpened[0] = tc1_2.isOpened();
+                tc1_1_navigatorisOpened[0] = tc1_1_navigator.isOpened();
+            }
+        };
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
+        long l = System.currentTimeMillis();
+        while(!tc1_1_navigatorisOpened[0]) {
+            Thread.sleep(200);
+            if(System.currentTimeMillis() - l > 10000) {
+                fail("testNavigatorIsNotClosed timeout");
+            }
+        }
+        assertFalse(tc1_1isOpened[0]);
+        assertFalse(tc1_2isOpened[0]);
+        assertTrue(tc1_1_navigatorisOpened[0]);
     }
 
     private static class SimpleTopComponent extends CloneableTopComponent {

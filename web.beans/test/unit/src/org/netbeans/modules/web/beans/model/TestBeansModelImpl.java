@@ -182,4 +182,9 @@ class TestBeansModelImpl implements BeansModel {
     public BeanArchiveType getBeanArchiveType() {
         return BeanArchiveType.EXPLICIT;
     }
+
+    @Override
+    public boolean isCdi11OrLater() {
+        return true;
+    }
 }

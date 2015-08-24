@@ -844,6 +844,7 @@ pseudo
                         ws? LPAREN ws? ( (expression ws?) | STAR )? RPAREN
                     )?
                 )
+                | {isScssSource()}? sass_interpolation_expression_var
                 |
                 ( NOT ws? LPAREN ws? simpleSelectorSequence? RPAREN )
                 | 

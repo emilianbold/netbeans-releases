@@ -69,25 +69,40 @@ final class MatcherUtils {
 
     /**
      * Create new text detail object for current match in the matcher.
+     *
+     * @param multiline True for multi-line mode (single shared matcher for all
+     * lines), false for single-line mode (each line has dedicated matcher).
+     * @param offset If multi-line, the value represents column in the current
+     * line where the match starts. If single-line, it represent offset of the
+     * matcher (= position of start of current line) in the whole file.
      */
-    static TextDetail createTextDetail(Matcher matcher, DataObject dataObject,
-            int lineNumber, String lineText, int matcherOffset,
-            SearchPattern searchPattern) {
+    static TextDetail createTextDetail(boolean multiline, Matcher matcher,
+            DataObject dataObject, int lineNumber, String lineText,
+            int offset, SearchPattern searchPattern) {
 
         String group = matcher.group();
         int start = matcher.start();
         int end = matcher.end();
         int countCR = countCR(group);
         int markLength = end - start - countCR;
+        int matcherOffset;
+        int column;
+        if (multiline) {
+            matcherOffset = 0;
+            column = offset;
+        } else /* single-line mode */ {
+            matcherOffset = offset;
+            column = start + 1;
+        }
         assert dataObject != null;
         TextDetail det = new TextDetail(dataObject, searchPattern);
         det.setMatchedText(group);
         det.setStartOffset(start + matcherOffset);
         det.setEndOffset(end + matcherOffset);
         det.setMarkLength(markLength);
-        det.setLineText(lineText);
         det.setLine(lineNumber);
-        det.setColumn(start + 1);
+        det.setColumn(column);
+        det.setLineText(lineText);
         return det;
     }
 

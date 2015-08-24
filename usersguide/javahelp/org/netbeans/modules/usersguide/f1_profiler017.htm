@@ -2,79 +2,107 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>OQL Console: Save Query Dialog Box</title>
+<title>New Profiling Point Wizard: Stopwatch</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="OQLQueryCustomizer.SaveQuery.HelpCtx" name="OQLQueryCustomizer.SaveQuery.HelpCtx"></a></p>
-<div id="NBCSH3171"><!-- infolevel="all" infotype="General" --><a id="sthref405" name="sthref405"></a>
-<h1>OQL Console: Save Query Dialog Box</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="StopwatchCustomizer.HelpCtx" name="StopwatchCustomizer.HelpCtx"></a></p>
+<div id="NBCSH3189"><!-- infolevel="all" infotype="General" --><a id="sthref408" name="sthref408"></a>
+<h1>New Profiling Point Wizard: Stopwatch</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to save an OQL query and to assign a name and description to the query. Saved queries are listed in the Saved Queries pane of the OQL Console tab in the Heap window. 
+<p>Use to obtain a timestamp each time that the profiling point is hit. You can obtain the length of time between two locations by selecting Timestamp and Duration and setting a start and a stop profiling point. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG793">
-<param name="text" value="<html><u>How</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG745">
+<param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-?</p>
+</p>
 
-<table summary="Descriptions of Save Query options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
+<table summary="Descriptions of Stopwatch dialog box elements." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t19">Element</th>
-<th align="left" valign="bottom" id="r1c2-t19">Description</th>
+<th align="left" valign="bottom" id="r1c1-t18">Element</th>
+<th align="left" valign="bottom" id="r1c2-t18">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t19" headers="r1c1-t19">
-<p>Create a New Query.</p>
-</td>
-<td align="left" headers="r2c1-t19 r1c2-t19">Saves the query in the Query Editor pane as a new named query and enter the following details about the query.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t19" headers="r1c1-t19">
+<td align="left" id="r2c1-t18" headers="r1c1-t18">
 <p>Name</p>
 </td>
-<td align="left" headers="r3c1-t19 r1c2-t19">Specifies a name to identify the query.</td>
+<td align="left" headers="r2c1-t18 r1c2-t18">Specifies the name that you want to use to identify the profiling point.
+<p>This name is used to identify the profiling point in the Profiling Points window.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t19" headers="r1c1-t19">
-<p>Description</p>
+<td align="left" id="r3c1-t18" headers="r1c1-t18">
+<p>Settings</p>
 </td>
-<td align="left" headers="r4c1-t19 r1c2-t19">(Optional) Enables you to provide a short description of the query.</td>
+<td align="left" headers="r3c1-t18 r1c2-t18">Snapshot setting</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t19" headers="r1c1-t19">
-<p>Use Existing Query</p>
+<td align="left" id="r4c1-t18" headers="r1c1-t18">
+<p>Timestamp</p>
 </td>
-<td align="left" headers="r5c1-t19 r1c2-t19">Modifies an existing custom saved query. When you select this option you must select a custom query from the list. The query in the Query Editor pane replaces the query associated with the custom query that you select.
-<p>This option is only available if custom queries exist.</p>
+<td align="left" headers="r4c1-t18 r1c2-t18">Retrieves a timestamp when the profiling point is hit.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t18" headers="r1c1-t18">
+<p>Timestamp and Duration</p>
+</td>
+<td align="left" headers="r5c1-t18 r1c2-t18">Finds the length of time between two paired timestamps.
+<p>If you select this option, you must specify the location for a starting point for the stopwatch and the location for the stopping point.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t18" headers="r1c1-t18">
+<p>Location</p>
+</td>
+<td align="left" headers="r6c1-t18 r1c2-t18">Specifies the name of the file and the line in the source code where you want to place the profiling point.
+<p>Click <b>Browse</b> to locate the file in your project.</p>
+<p>Select <b>Begin</b> or <b>End</b> to specify if the profiling point is hit when a thread hits the beginning of the line or reaches the end of the line.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3176" name="NBCSH3176"></a>
+<p>If you opened the New Profiling Point wizard by clicking in a line in a source file, the file and line are automatically set for you but you can modify the settings as needed.</p>
+<a id="NBCSH3195" name="NBCSH3195"></a>
 <hr><p><b>Related Topics</b></p>
-<p>Developing Applications with NetBeans IDE, 
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG783">
-<param name="text" value="<html><u>&quot;Working with Captured Profiling Results&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
+<param name="text" value="<html><u>&quot;Setting a Profiling Point&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>Developing Applications with NetBeans IDE, 
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG733">
-<param name="text" value="<html><u>&quot;Taking a Heap Dump&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
+<param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -2,59 +2,59 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Web Service Attributes Editor: Quality of Service: Input Message</title>
+<title>Web Service Attributes Editor: Quality of Service: Operation</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode" name="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode"></a></p>
-<div id="NBCSH4957"><!-- infolevel="all" infotype="General" --><a id="sthref663" name="sthref663"></a>
-<h1>Web Service Attributes Editor: Quality of Service: Input Message</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode" name="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode"></a></p>
+<div id="NBCSH4954"><!-- infolevel="all" infotype="General" --><a id="sthref700" name="sthref700"></a>
+<h1>Web Service Attributes Editor: Quality of Service: Operation</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In the Input Message section of the WSIT configuration editor, you can select the following options for securing an input message. 
+<p>In the Quality of Service tab's Operations section, on the service side, you can add Quality of Service security to a specific web service operation. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2874">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2873">
 <param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
+<p>In the Operation section of the Quality of Service configuration editor, you can select the following options for securing a web service operation:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t92">Element</th>
-<th align="left" valign="bottom" id="r1c2-t92">Description</th>
+<th align="left" valign="bottom" id="r1c1-t93">Element</th>
+<th align="left" valign="bottom" id="r1c2-t93">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t92" headers="r1c1-t92">
-<p>Authentication Token</p>
+<td align="left" id="r2c1-t93" headers="r1c1-t93">
+<p>Transaction</p>
 </td>
-<td align="left" headers="r2c1-t92 r1c2-t92">Select a supporting token that will be used to sign and/or encrypt the specified message parts. Options include Username, X509, SAML, Issued, or None.</td>
+<td align="left" headers="r2c1-t93 r1c2-t93">Select an option from the Transactions list to specify a level at which transactions will be secured. For this release, transactions will only use SSL for security.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t92" headers="r1c1-t92">Signed</td>
-<td align="left" headers="r3c1-t92 r1c2-t92">Specifies that the authentication token must be a signed, supporting token. A signed supporting token is also signed by the primary message signature.</td>
+<td align="left" id="r3c1-t93" headers="r1c1-t93">Secure This Operation</td>
+<td align="left" headers="r3c1-t93 r1c2-t93">Select this option to secure the web service operation. This option will be grayed out if Secure All Service Operations (in the PortBinding section) is selected because it would be redundant. Once selected, the list of security mechanisms is enabled.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t92" headers="r1c1-t92">Endorsing</td>
-<td align="left" headers="r4c1-t92 r1c2-t92">Specifies that the authentication token must be endorsed. With an endorsing supporting token, the key represented by the token is used to endorse/sign the primary message signature.</td>
+<td align="left" id="r4c1-t93" headers="r1c1-t93">Security Mechanism</td>
+<td align="left" headers="r4c1-t93 r1c2-t93">Select a security mechanism from the list. The security mechanisms are fully functional as selected. To customize the security mechanism, select the Configure button.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Click Message Parts to specify which parts of the message need to be encrypted, signed, and/or required.</p>
-<a id="NBCSH4959" name="NBCSH4959"></a>
+<a id="NBCSH4956" name="NBCSH4956"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1842">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1842">
 <param name="text" value="<html><u>&quot;Developing and Securing Web Services&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

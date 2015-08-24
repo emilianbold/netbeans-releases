@@ -75,6 +75,8 @@ import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.document.AtomicLockDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -175,7 +177,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new TypeParameterItem(elem, substitutionOffset);
     }
 
-    public static JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean smartType, int assignToVarOffset, WhiteListQuery.WhiteList whiteList) {
+    public static JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, TypeMirror castType, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean smartType, int assignToVarOffset, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
@@ -184,7 +186,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 return new VariableItem(info, type, elem.getSimpleName().toString(), substitutionOffset, false, smartType, assignToVarOffset);
             case ENUM_CONSTANT:
             case FIELD:
-                return new FieldItem(info, elem, type, substitutionOffset, referencesCount, isInherited, isDeprecated, smartType, assignToVarOffset, whiteList);
+                return new FieldItem(info, elem, type, castType, substitutionOffset, referencesCount, isInherited, isDeprecated, smartType, assignToVarOffset, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
@@ -194,10 +196,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new VariableItem(info, null, varName, substitutionOffset, newVarName, smartType, -1);
     }
 
-    public static JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, boolean memberRef, WhiteListQuery.WhiteList whiteList) {
+    public static JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, TypeMirror castType, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, boolean memberRef, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case METHOD:
-                return new MethodItem(info, elem, type, substitutionOffset, referencesCount, isInherited, isDeprecated, inImport, addSemicolon, smartType, assignToVarOffset, memberRef, whiteList);
+                return new MethodItem(info, elem, type, castType, substitutionOffset, referencesCount, isInherited, isDeprecated, inImport, addSemicolon, smartType, assignToVarOffset, memberRef, whiteList);
             case CONSTRUCTOR:
                 return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, smartType, null, whiteList);
             default:
@@ -288,6 +290,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public static final String BOLD_END = "</b>"; //NOI18N
 
     protected int substitutionOffset;
+    protected boolean showTooltip;
 
     protected JavaCompletionItem(int substitutionOffset) {
         this.substitutionOffset = substitutionOffset;
@@ -329,19 +332,29 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
         } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.CTRL_MASK) > 0) {
             JTextComponent component = (JTextComponent)evt.getSource();
-            int caretOffset = component.getSelectionEnd();
-            Document doc = component.getDocument();
-            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), caretOffset);
-            if (ts != null && (ts.moveNext() || ts.movePrevious())) {
-                if (ts.token().id() == JavaTokenId.IDENTIFIER
-                        || ts.token().id().primaryCategory().startsWith("keyword") //NOI18N
-                        || ts.token().id().primaryCategory().startsWith("string")) { //NOI18N
-                    try {
-                        doc.remove(caretOffset, ts.offset() + ts.token().length() - caretOffset);
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+            final int caretOffset = component.getSelectionEnd();
+            final Document doc = component.getDocument();
+            Runnable r = new Runnable() {
+                public void run() {
+                    TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), caretOffset);
+                    if (ts != null && (ts.moveNext() || ts.movePrevious())) {
+                        if (ts.token().id() == JavaTokenId.IDENTIFIER
+                                || ts.token().id().primaryCategory().startsWith("keyword") //NOI18N
+                                || ts.token().id().primaryCategory().startsWith("string")) { //NOI18N
+                            try {
+                                doc.remove(caretOffset, ts.offset() + ts.token().length() - caretOffset);
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
                     }
                 }
+            };
+            AtomicLockDocument ald = LineDocumentUtils.as(doc, AtomicLockDocument.class);
+            if (ald != null) {
+                ald.runAtomic(r);
+            } else {
+                r.run();
             }
         } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0) {
             JTextComponent component = (JTextComponent)evt.getSource();
@@ -406,6 +419,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return null;
     }
 
+    protected CharSequence getCastText() {
+        return null;
+    }
+
+    protected int getCastEndOffset() {
+        return -1;
+    }
+
     protected int getAssignToVarOffset() {
         return -1;
     }
@@ -428,15 +449,27 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
         }
         int caretOffset = c.getSelectionEnd();
-        Position assignToVarStartPos = null;
-        Position assignToVarEndPos = null;
-        if (assignToVar && getAssignToVarOffset() >= 0) {
+        Position startPos = null;
+        if (getAssignToVarOffset() >= 0) {
             try {
-                assignToVarStartPos = doc.createPosition(getAssignToVarOffset(), Position.Bias.Backward);
+                startPos = doc.createPosition(getAssignToVarOffset(), Position.Bias.Backward);
+            } catch (BadLocationException e) {
+            }
+        }
+        Position assignToVarEndPos = null;
+        if (assignToVar) {
+            try {
                 assignToVarEndPos = doc.createPosition(caretOffset);
                 if (toAdd.length() == 0 || ';' != toAdd.charAt(toAdd.length() - 1)) {
                     toAdd.append(';');
                 }
+            } catch (BadLocationException e) {
+            }
+        }
+        Position castEndPos = null;
+        if (getCastEndOffset() >= 0) {
+            try {
+                castEndPos = doc.createPosition(getCastEndOffset());
             } catch (BadLocationException e) {
             }
         }
@@ -512,10 +545,25 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             });
         }
+        if (startPos != null && castEndPos != null) {
+            final Position finalStartPos = startPos;
+            final Position finalEndPos = castEndPos;
+            doc.runAtomic(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doc.insertString(finalStartPos.getOffset(), "(" + getCastText(), null); //NOI18N
+                        doc.insertString(finalEndPos.getOffset(), ")", null); //NOI18N
+                    } catch (BadLocationException e) {
+                    }
+                }
+            });
+            
+        }
         final StringBuilder sb = new StringBuilder();
-        if (assignToVarStartPos != null && assignToVarEndPos != null) {
+        if (startPos != null && assignToVarEndPos != null) {
             sb.append(getAssignToVarText());
-            final Position finalStartPos = assignToVarStartPos;
+            final Position finalStartPos = startPos;
             final Position finalEndPos = assignToVarEndPos;
             doc.runAtomic(new Runnable() {
                 @Override
@@ -527,13 +575,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }
             });
-            c.setCaretPosition(assignToVarStartPos.getOffset());
+            c.setCaretPosition(startPos.getOffset());
         }
         if (template != null) {
             sb.append(template);
         }
         if (sb.length() > 0) {
             CodeTemplateManager.get(doc).createTemporary(sb.toString()).insert(c);
+        }
+        if (showTooltip) {
+            Completion.get().showToolTip();
         }
     }
 
@@ -1420,10 +1471,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String rightText;
         private boolean autoImportEnclosingType;
         private CharSequence enclSortText;
-        private int assignToVarOffset;
+        private int castEndOffset;
+        private CharSequence castText;
+        private int startOffset;
         private CharSequence assignToVarText;
 
-        private FieldItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean smartType, int assignToVarOffset, WhiteListQuery.WhiteList whiteList) {
+        private FieldItem(CompilationInfo info, VariableElement elem, TypeMirror type, TypeMirror castType, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean smartType, int assignToVarOffset, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, ElementHandle.create(elem), whiteList);
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
@@ -1437,8 +1490,23 @@ public abstract class JavaCompletionItem implements CompletionItem {
             } else {
                 this.enclSortText = ""; //NOI18N
             }
-            this.assignToVarOffset = assignToVarOffset;
+            this.startOffset = assignToVarOffset;
             this.assignToVarText = assignToVarOffset < 0 ? null : createAssignToVarText(info, type, this.simpleName);
+            if (castType != null) {
+                try {
+                    if (this.startOffset < 0) {
+                        TreePath tp = info.getTreeUtilities().pathFor(substitutionOffset);
+                        if (tp != null && tp.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT) {
+                            this.startOffset = (int)info.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tp.getLeaf());
+                        }
+                    }
+                    this.castText = "(" + Utilities.getTypeName(info, castType, false) + (CodeStyle.getDefault(info.getDocument()).spaceAfterTypeCast() ? ") " : ")"); //NOI18N
+                    this.castEndOffset = findCastEndPosition(info.getTokenHierarchy().tokenSequence(JavaTokenId.language()), startOffset, substitutionOffset);
+                } catch (IOException ex) {
+                }
+            } else {
+                this.castEndOffset = -1;
+            }           
         }
 
         @Override
@@ -1539,8 +1607,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         @Override
+        public CharSequence getCastText() {
+            return castText;
+        }
+
+        @Override
+        protected int getCastEndOffset() {
+            return castEndOffset;
+        }
+
+        @Override
         protected int getAssignToVarOffset() {
-            return assignToVarOffset;
+            return startOffset;
         }
 
         @Override
@@ -1550,7 +1628,51 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
-            CharSequence cs = super.substituteText(c, offset, length, text, toAdd);
+            final AtomicBoolean findPrefix = new AtomicBoolean();
+            Runnable r = new Runnable() {
+                public void run() {
+                    TokenSequence<JavaTokenId> t = findLastNonWhitespaceToken(SourceUtils.getJavaTokenSequence(TokenHierarchy.get(c.getDocument()), offset), 0, offset);
+                    findPrefix.set(t == null || t.token().id() != JavaTokenId.DOT);
+                }
+            };
+            AtomicLockDocument ald = LineDocumentUtils.as(c.getDocument(), AtomicLockDocument.class);
+            if (ald != null) {
+                ald.runAtomic(r);
+            } else {
+                r.run();
+            }
+            final String[] prefix = {""}; //NOI18N
+            if (findPrefix.get()) {
+                final AtomicBoolean cancel = new AtomicBoolean();
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ParserManager.parse(Collections.singletonList(Source.create(c.getDocument())), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    if (cancel.get()) {
+                                        return;
+                                    }
+                                    final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                    controller.toPhase(Phase.RESOLVED);
+                                    if (cancel.get()) {
+                                        return;
+                                    }
+                                    Scope scope = controller.getTreeUtilities().scopeFor(offset);
+                                    for (Element localElement : scope.getLocalElements()) {
+                                        if (!localElement.getKind().isField() && localElement.getSimpleName().contentEquals(text)) {
+                                            prefix[0] = modifiers.contains(Modifier.STATIC) ? scope.getEnclosingClass().getSimpleName() + "." : "this."; //NOI18N
+                                        }
+                                    }
+                                }
+                            });
+                        } catch (ParseException pe) {
+                        }
+                    }
+                }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-find_prefix_if_necessary"), cancel, false); //NOI18N
+            }
+            CharSequence cs = super.substituteText(c, offset, length, prefix[0] + text, toAdd);
             if (autoImportEnclosingType) {
                 final AtomicBoolean cancel = new AtomicBoolean();
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
@@ -1625,10 +1747,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String rightText;
         private boolean autoImportEnclosingType;
         private CharSequence enclSortText;
-        private int assignToVarOffset;
+        private int castEndOffset;
+        private CharSequence castText;
+        private int startOffset;
         private CharSequence assignToVarText;
 
-        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, boolean memberRef, WhiteListQuery.WhiteList whiteList) {
+        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, TypeMirror castType, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, boolean memberRef, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, ElementHandle.create(elem), whiteList);
             Color c = LFCustoms.getTextFgColor();
             this.isInherited = isInherited;
@@ -1657,8 +1781,23 @@ public abstract class JavaCompletionItem implements CompletionItem {
             } else {
                 this.enclSortText = ""; //NOI18N
             }
-            this.assignToVarOffset = type.getReturnType().getKind() == TypeKind.VOID ? -1 : assignToVarOffset;
-            this.assignToVarText = this.assignToVarOffset < 0 ? null : createAssignToVarText(info, type.getReturnType(), this.simpleName);
+            this.startOffset = type.getReturnType().getKind() == TypeKind.VOID ? -1 : assignToVarOffset;
+            this.assignToVarText = this.startOffset < 0 ? null : createAssignToVarText(info, type.getReturnType(), this.simpleName);
+            if (castType != null) {
+                try {
+                    if (this.startOffset < 0) {
+                        TreePath tp = info.getTreeUtilities().pathFor(substitutionOffset);
+                        if (tp != null && tp.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT) {
+                            this.startOffset = (int)info.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tp.getLeaf());
+                        }
+                    }
+                    this.castText = "(" + Utilities.getTypeName(info, castType, false) + (CodeStyle.getDefault(info.getDocument()).spaceAfterTypeCast() ? ") " : ")"); //NOI18N
+                    this.castEndOffset = findCastEndPosition(info.getTokenHierarchy().tokenSequence(JavaTokenId.language()), startOffset, substitutionOffset);
+                } catch (IOException ex) {
+                }
+            } else {
+                this.castEndOffset = -1;
+            }           
         }
 
         @Override
@@ -1803,8 +1942,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         @Override
+        public CharSequence getCastText() {
+            return castText;
+        }
+
+        @Override
+        protected int getCastEndOffset() {
+            return castEndOffset;
+        }
+
+        @Override
         protected int getAssignToVarOffset() {
-            return assignToVarOffset;
+            return startOffset;
         }
 
         @Override
@@ -1889,7 +2038,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
             }
-            Completion.get().showToolTip();
+            showTooltip = true;
             return sb;
         }
 
@@ -1934,7 +2083,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
 
         private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement, WhiteListQuery.WhiteList whiteList) {
-            super(info, elem, type, substitutionOffset, null, false, false, false, false, false, -1, false, whiteList);
+            super(info, elem, type, null, substitutionOffset, null, false, false, false, false, false, -1, false, whiteList);
             CodeStyle cs = null;
             try {
                 cs = CodeStyle.getDefault(info.getDocument());
@@ -2442,7 +2591,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (sb.length() == 0) {
                 return cs;
             }
-            Completion.get().showToolTip();
+            showTooltip = true;
             return sb;
         }
 
@@ -2733,7 +2882,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             sb.append(toAdd);
-            Completion.get().showToolTip();
+            showTooltip = true;
             return sb;
         }
 
@@ -3469,7 +3618,25 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return (getElementHandle().getKind().isField() ? 710 : 740) - SMART_TYPE;
+            int i = 0;
+            for (MemberDesc member : members) {
+                i *= 3;
+                switch (member.kind) {
+                    case LOCAL_VARIABLE:
+                    case PARAMETER:
+                    case RESOURCE_VARIABLE:
+                    case EXCEPTION_PARAMETER:
+                        i += 1;
+                        break;
+                    case FIELD:
+                    case ENUM_CONSTANT:
+                        i += 2;
+                        break;
+                    default:
+                        i += 3;
+                }                
+            }
+            return 700 + Math.min(i, 99) - SMART_TYPE;
         }
 
         @Override
@@ -4049,7 +4216,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             if (t != null) {
                                 SourcePositions sp = controller.getTrees().getSourcePositions();
                                 int endPos = (int)sp.getEndPosition(controller.getCompilationUnit(), t);
-                                TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller, embeddedOffset, endPos);
+                                TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller.getTokenHierarchy().tokenSequence(JavaTokenId.language()), embeddedOffset, endPos);
                                 if (ts != null) {
                                     if (ts.token().id() == JavaTokenId.SEMICOLON) {
                                         ret[0] = -1;
@@ -4074,9 +4241,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-find_semicolon_pos"), cancel, false); //NOI18N
         return ret[0];
     }
+    
+    private static int findCastEndPosition(TokenSequence<JavaTokenId> ts, int startPos, int endPos) {
+        TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(ts, startPos, endPos);
+        if (last != null && last.token().id() == JavaTokenId.DOT) {
+            last = findLastNonWhitespaceToken(ts, startPos, last.offset());
+            if (last != null) {
+                return last.offset() + last.token().length();
+            }
+        }
+        return -1;
+    }
 
-    private static TokenSequence<JavaTokenId> findLastNonWhitespaceToken(CompilationInfo info, int startPos, int endPos) {
-        TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+    private static TokenSequence<JavaTokenId> findLastNonWhitespaceToken(TokenSequence<JavaTokenId> ts, int startPos, int endPos) {
         ts.move(endPos);
         while(ts.movePrevious()) {
             int offset = ts.offset();

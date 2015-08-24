@@ -386,6 +386,21 @@
                         <file name="editorPreferences.xml" url="makefileEditorPreferences.xml"/>
                     </folder>
                 </folder>
+
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="Separator-before-comment-make.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19110"/>
+                        </file>
+                        <file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+                        <file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>
+                    </folder>
+                </folder>
             </folder>
 
             <folder name="x-cmake">
@@ -450,6 +465,21 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.script.editor.ShellKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit"/>
                 </file>
+
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="Separator-before-comment-sh.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19110"/>
+                        </file>
+                        <file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+                        <file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>
+                    </folder>
+                </folder>
             </folder>
 
             <folder name="bat">

@@ -196,7 +196,7 @@ public final class ProjectPropertiesSupport {
         BrowseTestSources panel = Mutex.EVENT.readAccess(new Mutex.Action<BrowseTestSources>() {
             @Override
             public BrowseTestSources run() {
-                return new BrowseTestSources(project, Bundle.ProjectPropertiesSupport_browse_tests(),
+                return new BrowseTestSources(project, Bundle.ProjectPropertiesSupport_browse_selenium_test(),
                         Bundle.ProjectPropertiesSupport_browse_tests_info());
             }
         });
@@ -329,7 +329,7 @@ public final class ProjectPropertiesSupport {
         if (value != null) {
             try {
                 return PhpVersion.valueOf(value);
-            } catch (IllegalArgumentException iae) {
+            } catch (Exception iae) {
                 // ignored
             }
         }
@@ -345,7 +345,7 @@ public final class ProjectPropertiesSupport {
         if (runAs != null) {
             try {
                 runAsType = PhpProjectProperties.RunAsType.valueOf(runAs);
-            } catch (IllegalArgumentException iae) {
+            } catch (Exception iae) {
                 // ignored
             }
         }
@@ -424,7 +424,7 @@ public final class ProjectPropertiesSupport {
         assert remoteUpload != null;
         try {
             uploadFiles = PhpProjectProperties.UploadFiles.valueOf(remoteUpload);
-        } catch (IllegalArgumentException iae) {
+        } catch (Exception iae) {
             // ignored
         }
         return uploadFiles;

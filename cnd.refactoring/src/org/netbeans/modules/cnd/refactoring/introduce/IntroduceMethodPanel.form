@@ -87,7 +87,7 @@
         <Component class="javax.swing.JLabel" name="returnTypeLabel">
           <Properties>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-              <ComponentRef name="returnTypeLabel"/>
+              <ComponentRef name="returnTypeTextField"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/cnd/refactoring/introduce/Bundle.properties" key="IntroduceMethodPanel.returnTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

@@ -88,7 +88,7 @@ public final class Utils {
     }
     
     /** Return true if a Tomcat server is running on the specifed port */
-    public static boolean pingTomcat(int port, int timeout) {
+    public static boolean pingTomcat(int port, int timeout, String serverHeader) {
         // checking whether a socket can be created is not reliable enough, see #47048
         Socket socket = new Socket();
         try {
@@ -125,11 +125,12 @@ public final class Utils {
                         }
                         List/*<String>*/ server = (List/*<String>*/)headerFileds.get("Server"); // NIO18N
                         if (server != null) {
-                            if (server.contains("Apache-Coyote/1.1")) { // NOI18N
-                                if (headerFileds.get("X-Powered-By") == null) { // NIO18N
+                            if (server.contains(serverHeader)) { // NOI18N
+// in recent JBoss version there is no X-Powered-By anyway
+//                                if (headerFileds.get("X-Powered-By") == null) { // NIO18N
                                     // if X-Powered-By header is set, it is probably jboss
                                     return true;
-                                }
+//                                }
                             } else if (server.contains("Sun-Java-System/Web-Services-Pack-1.4")) {  // NOI18N
                                 // it is probably Tomcat with JWSDP installed
                                 return true;

@@ -2,68 +2,93 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>New Profiling Point Wizard: Reset Results</title>
+<title>New Profiling Point Wizard: Triggered Take Snapshot</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="ResetResultsCustomizer.HelpCtx" name="ResetResultsCustomizer.HelpCtx"></a></p>
-<div id="NBCSH3185"><!-- infolevel="all" infotype="General" --><a id="sthref408" name="sthref408"></a>
-<h1>New Profiling Point Wizard: Reset Results</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="TriggeredTakeSnapshotCustomizer.HelpCtx" name="TriggeredTakeSnapshotCustomizer.HelpCtx"></a></p>
+<div id="NBCSH3212"><!-- infolevel="all" infotype="General" --><a id="sthref411" name="sthref411"></a>
+<h1>New Profiling Point Wizard: Triggered Take Snapshot</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to reset the collected profiling results each time that a thread in the application hits the profiling point. 
+<p>Use to take profiling snapshots or heap dumps when specific conditions are met. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG745">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG728">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of triggered snapshot options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t22">Element</th>
-<th align="left" valign="bottom" id="r1c2-t22">Description</th>
+<th align="left" valign="bottom" id="r1c1-t21">Element</th>
+<th align="left" valign="bottom" id="r1c2-t21">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t22" headers="r1c1-t22">
+<td align="left" id="r2c1-t21" headers="r1c1-t21">
 <p>Name</p>
 </td>
-<td align="left" headers="r2c1-t22 r1c2-t22">Specifies the name that you want to use to identify the profiling point.
+<td align="left" headers="r2c1-t21 r1c2-t21">Specifies the name that you want to use to identify the profiling point.
 <p>This name is used to identify the profiling point in the Profiling Points window.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t22" headers="r1c1-t22">
-<p>Location</p>
+<td align="left" id="r3c1-t21" headers="r1c1-t21">
+<p>Settings</p>
 </td>
-<td align="left" headers="r3c1-t22 r1c2-t22">Specifies the name of the file and the line in the source code where you want to place the profiling point. Click <b>Browse</b> to locate the file in your project.
-<p>Select <b>Begin</b> or <b>End</b> to specify if the profiling point is hit when a thread hits the beginning of the specified line or reaches the end of the line.</p>
+<td align="left" headers="r3c1-t21 r1c2-t21">Snapshot options</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t21" headers="r1c1-t21">
+<p>Take</p>
+</td>
+<td align="left" headers="r4c1-t21 r1c2-t21">Specifies the type of snapshot that you want to take.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t21" headers="r1c1-t21">
+<p>Save</p>
+</td>
+<td align="left" headers="r5c1-t21 r1c2-t21">Specifies the location for the saved snapshots. You can save snapshots to the default directory in your project or you can specify a location on your local system.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t21" headers="r1c1-t21">
+<p>Reset results after taking snapshot</p>
+</td>
+<td align="left" headers="r6c1-t21 r1c2-t21">Resets the collected profiling results after each snapshot is taken.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t21" headers="r1c1-t21">
+<p>Time</p>
+</td>
+<td align="left" headers="r7c1-t21 r1c2-t21">Specifies the conditions that trigger the IDE to take the snapshot. Select a condition from the <b>Take When</b> drop-down list and select a value according to the type of condition that you select.
+<p>If you select <b>Take Once</b>, the IDE only takes the snapshot the first time that the selected condition is met.</p>
+<p>If you select <b>Take Every</b>, the IDE takes a snapshot each time that the selected condition is met.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3188" name="NBCSH3188"></a>
+<a id="NBCSH3219" name="NBCSH3219"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
-<param name="text" value="<html><u>&quot;Setting a Profiling Point&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG733">
+<param name="text" value="<html><u>&quot;Taking a Heap Dump&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
 <param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -71,7 +96,7 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
 <param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -79,7 +104,7 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
 <param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

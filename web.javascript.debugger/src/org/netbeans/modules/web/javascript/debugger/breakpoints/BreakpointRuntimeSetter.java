@@ -88,21 +88,25 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     private final WebKitDebugging wd;
     private final ProjectContext pc;
     private final List<FileObject> projectSourceRoots;
-    private final Map<Breakpoint, WebKitBreakpointManager> breakpointImpls =
-            new HashMap<Breakpoint, WebKitBreakpointManager>();
+    private final Map<Breakpoint, WebKitBreakpointManager> breakpointImpls = new HashMap<>();
     
     public BreakpointRuntimeSetter(ContextProvider lookupProvider) {
         d = lookupProvider.lookupFirst(null, Debugger.class);
         wd = lookupProvider.lookupFirst(null, WebKitDebugging.class);
         pc = lookupProvider.lookupFirst(null, ProjectContext.class);
-        projectSourceRoots = getProjectSourceRoots(pc.getProject());
+        Project prj = pc.getProject();
+        if (prj == null) {
+            projectSourceRoots = null;
+        } else {
+            projectSourceRoots = getProjectSourceRoots(prj);
+        }
         DebuggerManager.getDebuggerManager().addDebuggerListener(this);
         createBreakpointImpls();
     }
     
     private void createBreakpointImpls() {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
-        List<WebKitBreakpointManager> toAdd = new ArrayList<WebKitBreakpointManager>();
+        List<WebKitBreakpointManager> toAdd = new ArrayList<>();
         synchronized (breakpointImpls) {
             for (Breakpoint breakpoint : breakpoints) {
                 if (breakpoint instanceof JSLineBreakpoint) {
@@ -228,7 +232,7 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
         DebuggerManager.getDebuggerManager().removeDebuggerListener(this);
         List<WebKitBreakpointManager> toDestroy;
         synchronized (breakpointImpls) {
-            toDestroy = new ArrayList<WebKitBreakpointManager>(breakpointImpls.values());
+            toDestroy = new ArrayList<>(breakpointImpls.values());
             breakpointImpls.clear();
         }
         for (WebKitBreakpointManager bm : toDestroy) {
@@ -258,16 +262,16 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     public void propertyChange(PropertyChangeEvent evt) {}
     
     private static List<FileObject> getProjectSourceRoots(Project project) {
-        Set<FileObject> sources = new LinkedHashSet<FileObject>();
+        Set<FileObject> sources = new LinkedHashSet<>();
         sources.addAll(getProjectSourceRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT));
         sources.addAll(getProjectSourceRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST));
         sources.addAll(getProjectSourceRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST_SELENIUM));
-        return new ArrayList<FileObject>(sources);
+        return new ArrayList<>(sources);
     }
     
     private static List<FileObject> getProjectSourceRoots(Project project, String type) {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(type);
-        List<FileObject> roots = new ArrayList<FileObject>(sourceGroups.length);
+        List<FileObject> roots = new ArrayList<>(sourceGroups.length);
         for (SourceGroup sourceGroup : sourceGroups) {
             FileObject rootFolder = sourceGroup.getRootFolder();
             roots.add(rootFolder);
@@ -287,6 +291,9 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             return true;
         }
         if (FileUtil.toFile(fo) == null) {
+            return true;
+        }
+        if (projectSourceRoots == null) {
             return true;
         }
         boolean isInPrjSources = false;

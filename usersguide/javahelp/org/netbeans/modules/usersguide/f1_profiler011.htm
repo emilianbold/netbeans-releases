@@ -2,60 +2,80 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Select Profiling Task: Filter Value Dialog Box</title>
+<title>Monitor Application: Basic Options</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="PreferredInstrFilterPanel.HelpCtx" name="PreferredInstrFilterPanel.HelpCtx"></a></p>
-<div id="NBCSH3139"><!-- infolevel="all" infotype="General" --><a id="sthref399" name="sthref399"></a>
-<h1>Select Profiling Task: Filter Value Dialog Box</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="MonitorSettings.Basic.HelpCtx" name="MonitorSettings.Basic.HelpCtx"></a></p>
+<div id="NBCSH3163"><!-- infolevel="all" infotype="General" --><a id="sthref402" name="sthref402"></a>
+<h1>Monitor Application: Basic Options</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to view the classes that are to be profiled when you run the profiling session with the selected filter. 
+<p>Use to configure basic and advanced options for the session. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG752">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Description of Filter Value dialog box command." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="31%" />
+<table summary="Description of basic option for thread monitoring." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t13">Element</th>
-<th align="left" valign="bottom" id="r1c2-t13">Description</th>
+<th align="left" valign="bottom" id="r1c1-t12">Element</th>
+<th align="left" valign="bottom" id="r1c2-t12">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t13" headers="r1c1-t13">
-<p>To QuickFilter</p>
+<td align="left" id="r2c1-t12" headers="r1c1-t12">
+<p>Enable Threads Monitoring</p>
 </td>
-<td align="left" headers="r2c1-t13 r1c2-t13">Adds all listed classes to the QuickFilter and the Set Quick Filter dialog box open.</td>
+<td align="left" headers="r2c1-t12 r1c2-t12">When selected, application threads are monitored from application startup.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t12" headers="r1c1-t12">Sample Threads States</td>
+<td align="left" headers="r3c1-t12 r1c2-t12">When selected, thread states are updated periodically.
+<p>This option is selected by default.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t12" headers="r1c1-t12">
+<p>Enable Lock Contention Monitoring</p>
+</td>
+<td align="left" headers="r4c1-t12 r1c2-t12">When selected, application threads are monitored for lock contentions.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Create a custom QuickFilter of specific classes by clicking <b>To QuickFilter</b>. The listed classes are added to the QuickFilter. In the Set Quick Filter dialog box that opens, you can choose the filter type and modify the list of filtered classes by entering the class or package names in the Filter Value text box. Choose <b>Quick filter</b> in the Filter drop-down list in the Basic settings pane of the Select Profiling Task window to apply the filter to the profiling session.</p>
-<a id="NBCSH3141" name="NBCSH3141"></a>
+<p>The Overhead bar graph provides you with a rough indication of the overhead that is incurred when you profile the application with the current settings.</p>
+<a id="NBCSH3166" name="NBCSH3166"></a>
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
+<p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
-<param name="text" value="<html><u>&quot;Setting Profiling Filters&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
+<p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1133">
-<param name="text" value="<html><u>&quot;Profiling a Web Application&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG689">
+<param name="text" value="<html><u>&quot;Starting a Profiling Session&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
+<param name="text" value="<html><u>&quot;Setting Profiling Points&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

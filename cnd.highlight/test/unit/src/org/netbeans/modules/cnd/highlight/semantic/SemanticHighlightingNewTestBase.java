@@ -89,7 +89,7 @@ public class SemanticHighlightingNewTestBase extends ProjectBasedTestCase{
         });
         int i = 1;
         for (Highlight b : sorted) {
-            ref( "Block " + (i++) + ":\tPosition " +  // NOI18N
+            ref( "Block:\tPosition " +  // NOI18N
                     b.getStartPosition() + "-" +  // NOI18N
                     b.getEndPosition() + "\t" +  // NOI18N
                     b.getType());

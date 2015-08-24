@@ -187,7 +187,6 @@ org.netbeans.modules.websvc.jaxwsmodel.project.J2seJaxWsOpenHook
 
 #200047
 org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase
-org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper
 org.netbeans.modules.cnd.api.project.NativeProjectType
 org.netbeans.modules.cnd.asm.core.assistance.CodeHighlightFactory
 org.netbeans.modules.cnd.editor.cplusplus.CppDTIFactory

@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import static org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit.toSeverity;
@@ -68,7 +69,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.highlight.error.CodeAssistanceHintProvider;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.NbBundle;
@@ -135,7 +135,10 @@ class NoMatchingConstructor extends AbstractCodeAudit {
                     if (CsmKindUtilities.isConstructor(member)) {
                         CsmConstructor testedCtor = (CsmConstructor) member;
                         if (testedCtor.getParameters().isEmpty()) {
-                            flag = (testedCtor.getDefinition().getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.DELETE);
+                            CsmFunctionDefinition definition = testedCtor.getDefinition();
+                            if (definition != null) {
+                                flag = (definition.getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.DELETE);
+                            }
                             break;
                         } else {
                             flag = true;
@@ -154,14 +157,14 @@ class NoMatchingConstructor extends AbstractCodeAudit {
             CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
             if (response instanceof AnalyzerResponse) {
                 ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, csmClass.getContainingFile().getFileObject(),
-                    new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CodeAssistanceHintProvider.NAME, getID(), getName()+"\n"+message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));  // NOI18N
+                    new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));  // NOI18N
             } else {
-                response.addError(new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CodeAssistanceHintProvider.NAME, getID(), message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));
+                response.addError(new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CsmHintProvider.NAME, getID(), message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));
             }
         }
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 1300)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 6000)
     public static final class Factory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
@@ -182,7 +185,7 @@ class NoMatchingConstructor extends AbstractCodeAudit {
         }
     } 
     
-    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1100)
+    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1300)
     public static final class NoMatchingConstructorFixProvider extends CsmErrorInfoHintProvider {
 
         @Override
@@ -238,7 +241,9 @@ class NoMatchingConstructor extends AbstractCodeAudit {
             ic.add(EditorRegistry.lastFocusedComponent());
             Lookup lookup = new AbstractLookup(ic);
             
+            CsmCacheManager.enter();
             CsmRefactoringActionsFactory.showConstructorsGenerator(lookup);
+            CsmCacheManager.leave();
             return null;
         }
     }

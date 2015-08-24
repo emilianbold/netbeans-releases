@@ -120,6 +120,11 @@ public final class CoverageWatcher {
             processFile(fe.getFile());
         }
 
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            processFile(fe.getFile());
+        }
+
         private void processFolder(FileObject folder) {
             assert folder.isFolder() : folder;
             // folder newly created -> try to locate any clover.xml in it

@@ -42,10 +42,14 @@
 package org.netbeans.modules.maven.queries;
 
 import java.io.File;
+import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
@@ -77,6 +81,14 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider (service=ClassPathProvider.class, position=11)
 public class RepositoryMavenCPProvider implements ClassPathProvider {
     private static final Logger LOG = Logger.getLogger(RepositoryMavenCPProvider.class.getName());
+    
+    private static final int CACHE_MAX_SIZE = Integer.getInteger("RepositoryMavenCPProvider.cacheMaxSize", 10); // NOI18N
+    private final Map<FileObject, SoftReference<MavenProject>> cache = new LinkedHashMap<FileObject, SoftReference<MavenProject>>() {
+        @Override
+        protected boolean removeEldestEntry(Entry<FileObject, SoftReference<MavenProject>> eldest) {
+            return size() > CACHE_MAX_SIZE;
+        }
+    };
     
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
@@ -121,11 +133,11 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
                                         return JavaPlatform.getDefault().getBootstrapLibraries();
                                     }
                                     if (ClassPath.COMPILE.equals(type)) {
-                                        MavenProject mp = loadMavenProject(pom, groupId, artifact, version);
+                                        MavenProject mp = getMavenProject(archive, pom, groupId, artifact, version);
                                         return ClassPathFactory.createClassPath(createCompileCPI(mp, bin));
                                     }
                                     if (ClassPath.EXECUTE.equals(type)) {
-                                        MavenProject mp = loadMavenProject(pom, groupId, artifact, version);
+                                        MavenProject mp = getMavenProject(archive, pom, groupId, artifact, version);                                        
                                         return ClassPathFactory.createClassPath(createExecuteCPI(mp, bin));
                                     }
                                 } else {
@@ -141,6 +153,16 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
             
         }
         return null;
+    }
+
+    private MavenProject getMavenProject(FileObject archive, File pom, String groupId, String artifact, String version) {
+        SoftReference<MavenProject> ref = cache.get(archive);
+        MavenProject mp = ref != null ? ref.get() : null;
+        if(mp == null) {
+            mp = loadMavenProject(pom, groupId, artifact, version);
+            cache.put(archive, new SoftReference<>(mp));
+        } 
+        return mp;
     }
     
     private MavenProject loadMavenProject(File pom, String groupId, String artifactId, String version) {

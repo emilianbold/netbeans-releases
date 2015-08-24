@@ -234,11 +234,12 @@ public final class RuleEditorController {
     
     /**
      * Sets the {@link ViewMode} of the rule editor. 
+     * 
+     * @param viewMode view mode.
      * @see ViewMode
-     * @param viewMode 
      */
-    public void setViewMode(ViewMode sortMode) {
-        getRuleEditorPanel().setViewMode(sortMode);
+    public void setViewMode(ViewMode viewMode) {
+        getRuleEditorPanel().setViewMode(viewMode);
     }
     
     /**

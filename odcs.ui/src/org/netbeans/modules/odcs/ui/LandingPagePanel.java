@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.odcs.ui;
 
+import java.net.URL;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
@@ -60,23 +61,29 @@ public class LandingPagePanel extends javax.swing.JPanel {
     private String projectName;
     private String repoPath;
 
-    @Messages({ "# {0} - local path", "LandingPagePanel.messageEditorPane.repoMessage=<p>Local Repository has been created at:<br>{0}</p>",
+    @Messages({ 
+        "# {0} - local path", "LandingPagePanel.messageEditorPane.repoMessage=<p>Local Repository has been created at:<br>{0}</p>",
+        "# {0} - icon url", "# {1} - server name",
+        "LandingPagePanel.creatingSCMRepository.failed=<p><img src=''{0}''>&nbsp;Failed to create a SCM repository. Please use the {1} web interface.</p>",
         "# {0} - project name", "# {1} - detailed message", "# {2} - server name",
         "LandingPagePanel.messageEditorPane.message=<html>\n<body>\n<p style=\"margin-top: 20\">\n<b>Project {0} was successfully created on {2}</b></p>\n{1}\n<p>To add or remove features go to {2}</p>\n<p>To <b>create a new source code project</b> (such as Java, C/C++, PHP, etc.) in the local repository, click the Create New Project button.</p>\n<p>To <b>import existing source code projects</b> into repository on {2}, just copy them into your local repository folder.</p>\n</body>\n</html>\n"})
-    public LandingPagePanel(String prjName, String path, String kenaiName) {
+    public LandingPagePanel(String prjName, String path, String serverName) {
 
         projectName = prjName;
         repoPath = path;
 
-        initComponents();
 
         String repoMessage = "";
-        if (repoPath != null || !"".equals(repoPath)) {
+        if (repoPath == null || repoPath.isEmpty()) {
+            URL p = getClass().getResource("/org/netbeans/modules/odcs/ui/resources/warning.gif" );
+            repoMessage = LandingPagePanel_creatingSCMRepository_failed(p.toString(), serverName);            
+        } else {
             repoMessage = LandingPagePanel_messageEditorPane_repoMessage(repoPath);
         }
 
-        String message = LandingPagePanel_messageEditorPane_message(projectName, repoMessage, kenaiName);
-        messageEditorPane.setText(message);
+        initComponents();
+        String message = LandingPagePanel_messageEditorPane_message(projectName, repoMessage, serverName);
+        messageEditorPane.setText(message);        
         
     }
 

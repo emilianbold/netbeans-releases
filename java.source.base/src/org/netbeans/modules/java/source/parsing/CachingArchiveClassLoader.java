@@ -104,7 +104,13 @@ public final class CachingArchiveClassLoader extends ClassLoader {
                                     definePackage(pack, null, null, null, null, null, null, null);
                                 }
                             }
-                            return defineClass(name, buffer, 0, len);
+                            return defineClass(
+                                    name,
+                                    //todo: not in JDK9 javac
+                                    //com.sun.tools.hc.LambdaMetafactory.translateClassFile(buffer,0,len),
+                                    buffer,
+                                    0,
+                                    len);
                         } catch (FileNotFoundException fnf) {
                             LOG.log(Level.FINE, "Resource: {0} does not exist.", file.toUri()); //NOI18N
                         } catch (IOException ioe) {

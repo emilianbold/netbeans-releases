@@ -50,6 +50,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
@@ -392,16 +393,23 @@ public final class DashboardTopComponent extends TopComponent {
     private class FilterTimerListener implements ActionListener {
 
         private final RequestProcessor RP = new RequestProcessor(FilterTimerListener.class.getName());
+        private boolean wasEmpty = true;
 
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == filterTimer) {
+                final boolean isEmpty = filterPanel.getFilterText().isEmpty();
+                if(wasEmpty && !isEmpty) {
+                    dashboard.saveExpandedState();
+                    wasEmpty = false;
+                } else if(isEmpty) {
+                    wasEmpty = true;
+                }
                 filterTimer.stop();
-                RP.post(new Runnable() {
-
+                RP.schedule(new Runnable() {
                     @Override
                     public void run() {
-                        if (!filterPanel.getFilterText().isEmpty()) {
+                        if (!isEmpty) {
                             DisplayTextTaskFilter newTaskFilter = new DisplayTextTaskFilter(filterPanel.getFilterText());
                             int hits = dashboard.updateTaskFilter(displayTextTaskFilter, newTaskFilter);
                             displayTextTaskFilter = newTaskFilter;
@@ -414,7 +422,7 @@ public final class DashboardTopComponent extends TopComponent {
                             filterPanel.clear();
                         }
                     }
-                });
+                }, 100, TimeUnit.MILLISECONDS);
             }
         }
     }

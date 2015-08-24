@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
@@ -103,7 +104,10 @@ import org.openide.util.Lookup;
  */
 public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
-    private static final boolean TRACE_START_STOP = false;
+    private static final boolean TRACE_START_STOP = Boolean.getBoolean("cnd.test.trace.start.stop");
+    private static final int PAUSE_ON_FIRST_RUN = Integer.getInteger("cnd.test.pause.on.first.run", 0);
+
+    private static final AtomicBoolean first = (PAUSE_ON_FIRST_RUN > 0) ? new AtomicBoolean(true) : null;
 
     private MimePath mimePath1;
     private MimePath mimePath2;
@@ -140,6 +144,12 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         super.setUp();
         if (TRACE_START_STOP) {
             System.err.println("Start " + name);
+        }
+        if (PAUSE_ON_FIRST_RUN > 0) {
+            if( first.compareAndSet(true, false) ) {
+                System.out.println("Pausiong for " + PAUSE_ON_FIRST_RUN + " seconds on first run");
+                Thread.sleep(PAUSE_ON_FIRST_RUN * 1000);
+            }
         }
         
         logger1 = Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils");

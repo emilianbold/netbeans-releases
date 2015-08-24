@@ -65,6 +65,28 @@ public final class UiUtils {
         return new UserInputFilter();
     }
 
+    @NonNull
+    public static String htmlize(@NonNull final CharSequence input) {
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            final char c = input.charAt(i);
+            switch (c) {
+                case '&':   //NOI18N
+                    sb.append("&amp;"); //NOI18N
+                    break;
+                case '<':   //NOI18N
+                    sb.append("&lt;");  //NOI18N
+                    break;
+                case '>':   //NOI18N
+                    sb.append("&gt;");  //NOI18N
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
 
     private static final class UserInputFilter extends DocumentFilter {
 

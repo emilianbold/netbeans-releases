@@ -119,7 +119,7 @@ public final class SuggestionProvider implements CodeAuditProvider {
     public synchronized Collection<CodeAudit> getAudits() {
         if (audits == null) {
             List<CodeAudit> res = new ArrayList<>();
-            for(CodeAuditFactory factory : Lookups.forPath(CodeAuditFactory.REGISTRATION_PATH+NAME).lookupAll(CodeAuditFactory.class)) {
+            for(CodeAuditFactory factory : Lookups.forPath(CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME).lookupAll(CodeAuditFactory.class)) {
                 res.add(factory.create(myPreferences));
             }
             Collections.sort(res, new Comparator<CodeAudit>(){

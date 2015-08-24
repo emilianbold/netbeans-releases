@@ -550,6 +550,10 @@ public class Generate {
             }
         }
         w.write(" {\n");
+        String preCode = methodPreCode(className, mName);
+        if (preCode != null) {
+            w.write(preCode);
+        }
         w.write("        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {\n");
         w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(\n"+
                 "                    \""+className+"\",\n"+
@@ -1115,6 +1119,23 @@ public class Generate {
         }
         if (index < l) return index;
         else return -1;
+    }
+    
+    private static String methodPreCode(String className, String methodName) {
+        if (com.sun.jdi.ThreadReference.class.getName().equals(className)) {
+            if (methodName.equals("currentContendedMonitor")) {
+                String statusCheck        = "        int status = status0(a);\n"+
+                                            "        if (status == com.sun.jdi.ThreadReference.THREAD_STATUS_NOT_STARTED ||\n" +
+                                            "            status == com.sun.jdi.ThreadReference.THREAD_STATUS_ZOMBIE ||\n" +
+                                            "            status == com.sun.jdi.ThreadReference.THREAD_STATUS_UNKNOWN) {\n" +
+                                            "            \n" +
+                                            "            // #253058, JDWP Error: 15\n" +
+                                            "            return null;\n" +
+                                            "        }\n";
+                return statusCheck;
+            }
+        }
+        return null;
     }
 
     // Custom code can be provided here to override the original invocation

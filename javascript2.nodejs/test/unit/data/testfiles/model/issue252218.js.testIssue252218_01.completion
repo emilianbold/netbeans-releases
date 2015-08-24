@@ -5,6 +5,7 @@ re|;
 CLASS      require                         [PUBLIC]   <font color=#999999>NodeJS</font>
 METHOD     require()                                  NodeJS
 METHOD     require(): Module complexModul  [PUBLIC]   issue249626.js
+METHOD     require(): Module insref|Modul  [PUBLIC]   maingt.js
 METHOD     require(): Module simpleModule  [PUBLIC]   testcc01.js
 VARIABLE   result                          [PRIVATE]  issue252218.js
 KEYWORD    return                                     null

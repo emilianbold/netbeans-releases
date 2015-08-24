@@ -77,6 +77,7 @@ import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -784,6 +785,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
          */
         private transient static Set<FileObject> warnedFiles = new HashSet<FileObject>();
 
+        private transient static boolean sentBigFileInfo;
+
         /** Atomic action used to ignore fileChange event from FileObject.refresh */
         private transient FileSystem.AtomicAction action = null;
 
@@ -869,17 +872,22 @@ public class DataEditorSupport extends CloneableEditorSupport {
         }
         
         /**
-         * default threshold for big file to warn user (default is 1Mb)
+         * default threshold for big file to warn user (default is 1MB)
          */
-        private final int BIG_FILE_THRESHOLD_MB = Integer.getInteger("org.openide.text.big.file.size", 1);
+        private transient final long BIG_FILE_THRESHOLD_MB = Integer.getInteger("org.openide.text.big.file.size", 1) * 1024 * 1024;
         
         /** Obtains the input stream.
         * @exception IOException if an I/O error occurs
         */
         public InputStream inputStream() throws IOException {
             final FileObject fo = getFileImpl ();
-            if (!warnedFiles.contains(fo) && fo.getSize () > BIG_FILE_THRESHOLD_MB * 1024 * 1024) {
-                throw new ME (fo.getSize ());
+            boolean warned = warnedFiles.contains(fo);
+            long size = -1;
+            if (!warned && (size = fo.getSize ()) > BIG_FILE_THRESHOLD_MB) {
+                throw new ME (size);
+            } else if (!sentBigFileInfo && ((size >= 0) ? size : fo.getSize()) > BIG_FILE_THRESHOLD_MB) {
+                // warned can contain any file after deserialization
+                notifyBigFileLoaded();
             }
             initCanWrite(false);
             InputStream is = getFileImpl ().getInputStream ();
@@ -1126,6 +1134,13 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 }
             }
         }
+        
+        private static void notifyBigFileLoaded() {
+            if (!sentBigFileInfo) {
+                ERR.info("UIHANDLER_TOO_BIG_FILE_LOADED");
+                sentBigFileInfo = true;
+            }
+        }
 
         class ME extends org.openide.util.UserQuestionException {
             static final long serialVersionUID = 1L;
@@ -1152,6 +1167,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             
             public void confirmed () {
                 warnedFiles.add(getFileImpl());
+                notifyBigFileLoaded();
             }
         } // end of ME
     } // end of Env

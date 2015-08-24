@@ -307,7 +307,9 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                                 JSONObject profile = (JSONObject)localStateContent.get("profile");
                                 if (profile != null) {
                                     String prof = (String)profile.get("last_used");
-                                    if (prof != null) {
+                                    if (prof == null) {
+                                        guessDefault = true;
+                                    } else {
                                         prof = Utils.unquote(prof);
                                         File[] listFiles = dir.listFiles( new FileFinder(
                                                 prof , true));

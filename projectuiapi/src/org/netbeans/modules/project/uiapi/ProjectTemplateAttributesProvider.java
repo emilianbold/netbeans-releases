@@ -45,8 +45,6 @@
 package org.netbeans.modules.project.uiapi;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collection;
@@ -88,25 +86,29 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
         String name = desc.getProposedName();
         Project prj = FileOwnerQuery.getOwner(targetF);
         Map<String, Object> all = new HashMap();
+        boolean needFill = true;
         if (prj != null) {
             // call old providers
-            Collection<? extends CreateFromTemplateAttributesProvider> oldProvs = prj.getLookup().lookupAll(CreateFromTemplateAttributesProvider.class);
-            if (!oldProvs.isEmpty()) {
-                try {
-                    DataObject t = DataObject.find(targetF);
-                    if (t instanceof DataFolder) {
-                        DataFolder target = (DataFolder)t;
-                        DataObject template = DataObject.find(templateF);
-                        for (CreateFromTemplateAttributesProvider attrs : oldProvs) {
-                            Map<String, ? extends Object> m = attrs.attributesFor(template, target, name);
-                            if (m != null) {
-                                all.putAll(m);
+            needFill = desc.getValue(ProjectTemplateAttributesLegacy.class.getName()) == null;
+            if (needFill) {
+                Collection<? extends CreateFromTemplateAttributesProvider> oldProvs = prj.getLookup().lookupAll(CreateFromTemplateAttributesProvider.class);
+                if (!oldProvs.isEmpty()) {
+                    try {
+                        DataObject t = DataObject.find(targetF);
+                        if (t instanceof DataFolder) {
+                            DataFolder target = (DataFolder)t;
+                            DataObject template = DataObject.find(templateF);
+                            for (CreateFromTemplateAttributesProvider attrs : oldProvs) {
+                                Map<String, ? extends Object> m = attrs.attributesFor(template, target, name);
+                                if (m != null) {
+                                    all.putAll(m);
+                                }
                             }
                         }
+                    } catch (IOException ex) {
+                        // an unexpected error
+                        Exceptions.printStackTrace(ex);
                     }
-                } catch (IOException ex) {
-                    // an unexpected error
-                    Exceptions.printStackTrace(ex);
                 }
             }
             // call new providers last, so they can override anything old providers could screw up.
@@ -118,15 +120,25 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
                 CreateDescriptor childDesc = bld.withParameters(all).createDescriptor(false);
                 Map<String, ? extends Object> m = attrs.attributesFor(childDesc);
                 if (m != null) {
+                    if (m.containsKey(ATTR_PROJECT)) {
+                        needFill = true;
+                    }
                     all.putAll(m);
                 }
             }
         }
-        return checkProjectAttrs(all, targetF);
+        if (needFill) {
+            Map<String, Object> check = new HashMap<String, Object>(desc.getParameters());
+            check.putAll(all);
+            return checkProjectAttrs(check, all, targetF);
+        } else {
+            // ProjectTemplateAttributesLegacy already run, so project properties are filled in.
+            return all;
+        }
     }
     
-    static Map<String, ? extends Object> checkProjectAttrs(Map<String, Object> m, FileObject parent) {
-        Object prjAttrObj = m != null? m.get(ATTR_PROJECT): null;
+    static Map<String, ? extends Object> checkProjectAttrs(Map<String, Object>  check, Map<String, Object> m, FileObject parent) {
+        Object prjAttrObj = check != null ? check.get(ATTR_PROJECT) : null;
         if (prjAttrObj instanceof Map) {
             Map<String, Object> prjAttrs = NbCollections.checkedMapByFilter((Map) prjAttrObj, String.class, Object.class, false);
             Map<String, Object> newPrjAttrs = new HashMap<String, Object>(prjAttrs);

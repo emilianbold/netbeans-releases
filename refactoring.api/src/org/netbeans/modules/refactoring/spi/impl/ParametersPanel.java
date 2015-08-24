@@ -426,8 +426,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         result = null;
                         setVisibleLater(false);
                     }
-                    return;
                 }
+                return;
             } else if (currentState != POST_CHECK && currentState != CHECK_PARAMETERS) {
                 putResult(RefactoringSession.create(rui.getName()));
                 //setParameters and prepare is done asynchronously

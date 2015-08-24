@@ -53,6 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -100,14 +101,33 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         this.projectDir = suite.getProjectDirectory();
     }
     
+    @Override
     public void notifyDeleting() throws IOException {
+        this.notifyDeleting(false);
+    }
+    
+    private void notifyDeleting (boolean temporary) throws IOException {
         FileObject buildXML = projectDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
         
         // remove all suite components from the suite - i.e. make them standalone
-        SubprojectProvider spp = suite.getLookup().lookup(SubprojectProvider.class);
-        for (Project suiteComponent : spp.getSubprojects()) {
-            SuiteUtils.removeModuleFromSuite((NbModuleProject) suiteComponent);
+        final SubprojectProvider spp = suite.getLookup().lookup(SubprojectProvider.class);
+        if (temporary) {
+            SuiteUtils.moving(new Callable<Void>() {
+
+                @Override
+                public Void call () throws Exception {
+                    for (Project suiteComponent : spp.getSubprojects()) {
+                        SuiteUtils.removeModuleFromSuite((NbModuleProject) suiteComponent);
+                    }
+                    return null;
+                }
+
+            });
+        } else {
+            for (Project suiteComponent : spp.getSubprojects()) {
+                SuiteUtils.removeModuleFromSuite((NbModuleProject) suiteComponent);
+            }
         }
     }
     
@@ -125,34 +145,53 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         // this will temporarily remove all suite components - this is needed
         // to prevent infrastructure confusion about lost suite. They will be
         // readded in the notifyMoved.
-        notifyDeleting();
+        notifyDeleting(true);
     }
     
-    public void notifyMoved(Project original, File originalPath, String nueName) throws IOException {
+    @Override
+    public void notifyMoved (final Project original, File originalPath, String nueName) throws IOException {
         if (original == null) { // called on the original project
             suite.getHelper().notifyDeleted();
         } else { // called on the new project
             String name = ProjectUtils.getInformation(suite).getName();
-            Set<NbModuleProject> subprojects = TEMPORARY_CACHE.remove(name);
+            final Set<NbModuleProject> subprojects = TEMPORARY_CACHE.remove(name);
             if (subprojects != null) {
-                Set<Project> toOpen = new HashSet<Project>();
-                for (Project _originalComp : subprojects) {
-                    NbModuleProject originalComp = (NbModuleProject) _originalComp;
-                    
-                    boolean directoryChanged = !original.getProjectDirectory().
-                            equals(suite.getProjectDirectory());
-                    if (directoryChanged && FileUtil.isParentOf( // wasRelative
-                            original.getProjectDirectory(), originalComp.getProjectDirectory())) {
-                        boolean isOpened = SuiteOperations.isOpened(originalComp);
-                        Project nueComp = SuiteOperations.moveModule(originalComp, suite.getProjectDirectory());
-                        SuiteUtils.addModule(suite, (NbModuleProject) nueComp);
-                        if (isOpened) {
-                            toOpen.add(nueComp);
+                final Set<Project> toOpen = new HashSet<Project>();
+                SuiteUtils.moving(new Callable<Void>() {
+
+                    @Override
+                    public Void call () throws Exception {
+                        for (Project _originalComp : subprojects) {
+                            NbModuleProject originalComp = (NbModuleProject) _originalComp;
+
+                            boolean directoryChanged = !original.getProjectDirectory().
+                                    equals(suite.getProjectDirectory());
+                            if (directoryChanged && FileUtil.isParentOf( // wasRelative
+                                    original.getProjectDirectory(), originalComp.getProjectDirectory())) {
+                                boolean isOpened = SuiteOperations.isOpened(originalComp);
+                                Project nueComp;
+                                if (originalComp.getProjectDirectory().isValid()) {
+                                    nueComp = SuiteOperations.moveModule(originalComp, suite.getProjectDirectory());
+                                } else {
+                                    FileObject componentFolder = suite.getProjectDirectory().getFileObject(
+                                            FileUtil.getRelativePath(original.getProjectDirectory(),
+                                                    originalComp.getProjectDirectory()));
+                                    assert componentFolder != null;
+                                    nueComp = ProjectManager.getDefault().findProject(componentFolder);
+                                    assert nueComp != null;
+                                }
+                                SuiteUtils.addModule(suite, (NbModuleProject) nueComp);
+                                if (isOpened) {
+                                    toOpen.add(nueComp);
+                                }
+                            } else {
+                                SuiteUtils.addModule(suite, originalComp);
+                            }
                         }
-                    } else {
-                        SuiteUtils.addModule(suite, originalComp);
+                        return null;
                     }
-                }
+
+                });
                 OpenProjects.getDefault().open(toOpen.toArray(new Project[toOpen.size()]), false);
             }
             boolean isRename = original.getProjectDirectory().getParent().equals(

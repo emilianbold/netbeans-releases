@@ -249,12 +249,13 @@ public class MultiLineMappedMatcherSmall extends AbstractMatcher {
          */
         private void setTextDetailInfo(TextDetail textDetail, int startPos,
                 int endPos, String text) {
-            textDetail.associate(currentLineNumber,
-                    startPos - currentLineStart + 1, lastLine);
+            textDetail.setLine(currentLineNumber);
             textDetail.setStartOffset(startPos);
             textDetail.setEndOffset(endPos);
             textDetail.setMarkLength(endPos - startPos);
             textDetail.setMatchedText(text);
+            textDetail.setColumn(startPos - currentLineStart + 1);
+            textDetail.setLineText(lastLine);
         }
 
         /**

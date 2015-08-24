@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.v8debug;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,6 +78,7 @@ public class ScriptsHandler {
     private static final Logger LOG = Logger.getLogger(ScriptsHandler.class.getName());
 
     private final Map<Long, V8Script> scriptsById = new HashMap<>();
+    private final Map<URL, V8Script> scriptsByURL = new HashMap<>();
 
     private final boolean doPathTranslation;
     private final int numPrefixes;
@@ -90,12 +92,19 @@ public class ScriptsHandler {
     @NullAllowed
     private final String[] serverPathPrefixes;
     private final char serverPathSeparator;
+    private final String remotePathPrefix;
     private final V8Debugger dbg;
     
     ScriptsHandler(@NullAllowed List<String> localPaths,
                    @NullAllowed List<String> serverPaths,
                    Collection<String> localPathExclusionFilters,
-                   V8Debugger dbg) {
+                   @NullAllowed V8Debugger dbg) {
+        if (dbg != null) {
+            this.remotePathPrefix = dbg.getHost()+"_"+dbg.getPort()+"/";
+        } else {
+            // dbg can be null in tests
+            this.remotePathPrefix = "";
+        }
         if (!localPaths.isEmpty() && !serverPaths.isEmpty()) {
             this.doPathTranslation = true;
             int n = localPaths.size();
@@ -136,7 +145,7 @@ public class ScriptsHandler {
                 if (localRoot != null) {
                     lpefs[i++] = localRoot;
                 } else {
-                    Arrays.copyOf(lpefs, lpefs.length - 1);
+                    lpefs = Arrays.copyOf(lpefs, lpefs.length - 1);
                 }
             }
             this.localPathExclusionFilters = (lpefs.length > 0) ? lpefs : null;
@@ -169,8 +178,19 @@ public class ScriptsHandler {
     }
     
     void remove(long scriptId) {
+        V8Script removed;
         synchronized (scriptsById) {
-            V8Script removed = scriptsById.remove(scriptId);
+            removed = scriptsById.remove(scriptId);
+        }
+        if (removed != null) {
+            synchronized (scriptsByURL) {
+                for (Map.Entry<URL, V8Script> entry : scriptsByURL.entrySet()) {
+                    if (removed == entry.getValue()) {
+                        scriptsByURL.remove(entry.getKey());
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -214,6 +234,31 @@ public class ScriptsHandler {
         return false;
     }
     
+    public boolean containsRemoteFile(URL url) {
+        if (!SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
+            return false;
+        }
+        String path;
+        try {
+            path = url.toURI().getPath();
+        } catch (URISyntaxException usex) {
+            return false;
+        }
+
+        int l = path.length();
+        int index = 0;
+        while (index < l && path.charAt(index) == '/') {
+            index++;
+        }
+        int begin = path.indexOf('/', index);
+        if (begin > 0) {
+            // path.substring(begin + 1).startsWith(remotePathPrefix)
+            return path.regionMatches(begin + 1, remotePathPrefix, 0, remotePathPrefix.length());
+        } else {
+            return false;
+        }
+    }
+    
     @CheckForNull
     public FileObject getFile(long scriptId) {
         V8Script script = getScript(scriptId);
@@ -244,6 +289,9 @@ public class ScriptsHandler {
             if (localFile != null) {
                 FileObject fo = FileUtil.toFileObject(localFile);
                 if (fo != null) {
+                    synchronized (scriptsByURL) {
+                        scriptsByURL.put(fo.toURL(), script);
+                    }
                     return fo;
                 }
             }
@@ -251,6 +299,8 @@ public class ScriptsHandler {
         if (name == null) {
             name = "unknown.js";
         }
+        // prepend <host>_<port>/ to the name.
+        name = remotePathPrefix + name;
         String content = script.getSource();
         URL sourceURL;
         if (content != null) {
@@ -258,7 +308,90 @@ public class ScriptsHandler {
         } else {
             sourceURL = SourceFilesCache.getDefault().getSourceFile(name, 1234, new ScriptContentLoader(script, dbg));
         }
+        synchronized (scriptsByURL) {
+            scriptsByURL.put(sourceURL, script);
+        }
         return URLMapper.findFileObject(sourceURL);
+    }
+    
+    /**
+     * Find a known script by it's actual URL.
+     * @param scriptURL Script's URL returned by {@link #getFile(org.netbeans.lib.v8debug.V8Script)}
+     * @return the script or <code>null</code> when not found.
+     */
+    @CheckForNull
+    public V8Script findScript(@NonNull URL scriptURL) {
+        synchronized (scriptsByURL) {
+            return scriptsByURL.get(scriptURL);
+        }
+    }
+    
+    @CheckForNull
+    public String getServerPath(@NonNull FileObject fo) {
+        String serverPath;
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            String localPath = file.getAbsolutePath();
+            try {
+                serverPath = getServerPath(localPath);
+            } catch (ScriptsHandler.OutOfScope oos) {
+                serverPath = null;
+            }
+        } else {
+            URL url = fo.toURL();
+            V8Script script = findScript(url);
+            if (script != null) {
+                serverPath = script.getName();
+            } else if (SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
+                String path = fo.getPath();
+                int begin = path.indexOf('/');
+                if (begin > 0) {
+                    path = path.substring(begin + 1);
+                    // subtract <host>_<port>/ :
+                    if (path.startsWith(remotePathPrefix)) {
+                        serverPath = path.substring(remotePathPrefix.length());
+                    } else {
+                        serverPath = null;
+                    }
+                } else {
+                    serverPath = null;
+                }
+            } else {
+                serverPath = null;
+            }
+        }
+        return serverPath;
+    }
+    
+    @CheckForNull
+    public String getServerPath(@NonNull URL url) {
+        if (!SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
+            return null;
+        }
+        String path;
+        try {
+            path = url.toURI().getPath();
+        } catch (URISyntaxException usex) {
+            return null;
+        }
+        int l = path.length();
+        int index = 0;
+        while (index < l && path.charAt(index) == '/') {
+            index++;
+        }
+        int begin = path.indexOf('/', index);
+        if (begin > 0) {
+            // path.substring(begin + 1).startsWith(remotePathPrefix)
+            if (path.regionMatches(begin + 1, remotePathPrefix, 0, remotePathPrefix.length())) {
+                path = path.substring(begin + 1 + remotePathPrefix.length());
+                return path;
+            } else {
+                // Path with a different prefix
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
     
     public String getLocalPath(@NonNull String serverPath) throws OutOfScope {

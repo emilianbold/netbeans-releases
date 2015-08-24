@@ -256,8 +256,18 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml</code-name-base>
+                        <recursive/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.xml.text</code-name-base>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+                        <recursive/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.loaders</code-name-base>

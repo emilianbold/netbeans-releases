@@ -2,27 +2,27 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Profiling Points Window</title>
+<title>Profiling Threads Window</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="ProfilingPointsWindow.HelpCtx" name="ProfilingPointsWindow.HelpCtx"></a></p>
-<div id="NBCSH3346"><!-- infolevel="all" infotype="General" --><a id="sthref432" name="sthref432"></a>
-<h1>Profiling Points Window</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="ThreadsWindow.HelpCtx" name="ThreadsWindow.HelpCtx"></a></p>
+<div id="NBCSH3416"><!-- infolevel="all" infotype="General" --><a id="sthref435" name="sthref435"></a>
+<h1>Profiling Threads Window</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to manage the profiling points in your projects. The Profiling Points Window is typically located below the editing area and sharing the space with the Output window. 
+<p>Use to view detailed information about application thread activity during a profiling session. The Threads window is typically located in the main editor window of the IDE. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG745">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG773">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>Right-click a profiling point and select the following commands:</p>
+<p>The Profiling Threads window contains the following toolbar commands:</p>
 
-<table summary="Descriptions of elements of Profiling Points window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of Profiling Threads window toolbar commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="34%" />
 <col width="*" />
 <thead>
@@ -34,44 +34,109 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t47" headers="r1c1-t47">
-<p>Show in Source</p>
+<p>Save Current View</p>
+<p><img width="16" height="16" src="img/saveview.png" alt="Save Current View icon." title="Save Current View icon." /></p>
 </td>
-<td align="left" headers="r2c1-t47 r1c2-t47">Open the source file in the editor at the location of the profiling point</td>
+<td align="left" headers="r2c1-t47 r1c2-t47">Saves the results as a <code dir="ltr">.png</code> image file.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t47" headers="r1c1-t47">
-<p>Show Report</p>
+<p>Zoom In</p>
+<p><img width="16" height="16" src="img/zoomin.png" alt="Zoom In icon." title="Zoom In icon." /></p>
 </td>
-<td align="left" headers="r3c1-t47 r1c2-t47">Open the Profiling Points Report window that contains additional details about the selected profiling point</td>
+<td align="left" headers="r3c1-t47 r1c2-t47">Increases the detail of the graph.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t47" headers="r1c1-t47">
-<p>Edit</p>
+<p>Zoom Out</p>
+<p><img width="16" height="16" src="img/zoomout.png" alt="Zoom Out icon." title="Zoom Out icon." /></p>
 </td>
-<td align="left" headers="r4c1-t47 r1c2-t47">Modifies the profiling point.</td>
+<td align="left" headers="r4c1-t47 r1c2-t47">Decreases the detail of the graph.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t47" headers="r1c1-t47">
-<p>Enable/Disable</p>
+<p>Scale To Fit</p>
+<p><img width="16" height="16" src="img/scaletofit.png" alt="Scale to Fit icon." title="Scale to Fit icon." /></p>
 </td>
-<td align="left" headers="r5c1-t47 r1c2-t47">Enables the profiling point (toggles to Disable)</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t47" headers="r1c1-t47">
-<p>Delete</p>
-</td>
-<td align="left" headers="r6c1-t47 r1c2-t47">Deletes the profiling point (toggles to Enable).</td>
+<td align="left" headers="r5c1-t47 r1c2-t47">Toggles between a scalable view and a fixed-scale view.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3352" name="NBCSH3352"></a>
+<p>The table in the Threads window contains columns that provide details about thread states and statistics about each thread. You can click the triangle in the far right column to invoke a menu to hide or display table columns. The following columns are available in the menu:</p>
+
+<table summary="Descriptions of Profiling Threads window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t48">Element</th>
+<th align="left" valign="bottom" id="r1c2-t48">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t48" headers="r1c1-t48">
+<p>Name</p>
+</td>
+<td align="left" headers="r2c1-t48 r1c2-t48">Name of thread.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t48" headers="r1c1-t48">
+<p>Thread States Timeline</p>
+</td>
+<td align="left" headers="r3c1-t48 r1c2-t48">Displays thread states over time.
+<p>States can be displayed for all threads, all live threads, or all finished threads according to the option that is selected in the View drop-down list in the toolbar.</p>
+<p>The status of each thread is represented by a color. The legend for the colors is located at the bottom of the Threads window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t48" headers="r1c1-t48">
+<p>Running</p>
+</td>
+<td align="left" headers="r4c1-t48 r1c2-t48">Time spent in running state. The data is presented as total time and as a percentage of the total time.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t48" headers="r1c1-t48">
+<p>Sleeping</p>
+</td>
+<td align="left" headers="r5c1-t48 r1c2-t48">Time spent in sleeping state. The data is presented as total time and as a percentage of the total time.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t48" headers="r1c1-t48">
+<p>Wait</p>
+</td>
+<td align="left" headers="r6c1-t48 r1c2-t48">Time spent in waiting state. The data is presented as total time and as a percentage of the total time.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t48" headers="r1c1-t48">
+<p>Park</p>
+</td>
+<td align="left" headers="r7c1-t48 r1c2-t48">Time spent in parked state. The data is presented as total time and as a percentage of the total time.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t48" headers="r1c1-t48">
+<p>Monitor</p>
+</td>
+<td align="left" headers="r8c1-t48 r1c2-t48">Time spent in monitor state. The data is presented as total time and as a percentage of the total time.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t48" headers="r1c1-t48">
+<p>Total</p>
+</td>
+<td align="left" headers="r9c1-t48 r1c2-t48">Total of time spent in all states.</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="NBCSH3433" name="NBCSH3433"></a>
 <hr><p><b>Related Topics</b></p>
-<p>Developing Applications with NetBeans IDE, 
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
-<param name="text" value="<html><u>&quot;Setting a Profiling Point&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
+<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -92,7 +92,6 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTest.SFBQImpl;
 import org.netbeans.modules.parsing.spi.indexing.support.EmbeddedPathRecognizer;
 import org.netbeans.spi.editor.document.DocumentFactory;
 import org.openide.cookies.EditorCookie;
@@ -102,7 +101,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
 
 /**
  *

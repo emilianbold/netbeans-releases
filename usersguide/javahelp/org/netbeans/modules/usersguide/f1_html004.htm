@@ -2,78 +2,65 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>New HTML5 Application Wizard: JavaScript Files</title>
+<title>New HTML5/JS Application With Existing Sources Wizard: Name and Location</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelectionPanel" name="org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelectionPanel"></a></p>
-<div id="NBCSH4323"><!-- infolevel="all" infotype="General" --><a id="sthref549" name="sthref549"></a>
-<h1>New HTML5 Application Wizard: JavaScript Files</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="org.netbeans.modules.web.clientproject.ui.wizard.ExistingClientSideProjectPanel" name="org.netbeans.modules.web.clientproject.ui.wizard.ExistingClientSideProjectPanel"></a></p>
+<div id="NBCSH4330"><!-- infolevel="all" infotype="General" --><a id="sthref574" name="sthref574"></a>
+<h1>New HTML5/JS Application With Existing Sources Wizard: Name and Location</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The New HTML5 Application wizard creates a new project for developing an HTML5 application with HTML, CSS and JavaScript. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1950">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>In the JavaScript Files page you can add JavaScript libraries to your project. To add the JavaScript file, select the file that you want to add from the list of available files and click the right-arrow button (&gt;) to add the file to the list of selected files.</p>
+<p>The New HTML5/JS Application With Existing Sources wizard enables you to create a new project by importing the sources of an existing project into an HTML5 application. You open the New HTML5/JS Application With Existing Sources wizard by opening the New Project wizard and selecting the HTML5/JS Application With Existing Sources template from the HTML5/JS category.</p>
+<p>In the Name and Location page you set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t5">Option</th>
+<th align="left" valign="bottom" id="r1c1-t5">Property</th>
 <th align="left" valign="bottom" id="r1c2-t5">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t5" headers="r1c1-t5">
-<p>Available</p>
+<p>Site Root</p>
 </td>
-<td align="left" headers="r2c1-t5 r1c2-t5">Displays a list of available JavaScript libraries that you can select to the project.
-<p>You can type a string in the text field to filter the list of available libraries</p>
-</td>
+<td align="left" headers="r2c1-t5 r1c2-t5">Specifies the directory that contains the site root and sources. Click Browse to locate the directory on your local system.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t5" headers="r1c1-t5">
-<p>&gt;</p>
-</td>
-<td align="left" headers="r3c1-t5 r1c2-t5">Click to move the JavaScript file that is selected in the Available list to the Selected list.</td>
+<td align="left" id="r3c1-t5" headers="r1c1-t5">Source Folder</td>
+<td align="left" headers="r3c1-t5 r1c2-t5"></td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t5" headers="r1c1-t5">
-<p>&lt;</p></td>
-<td align="left" headers="r4c1-t5 r1c2-t5">Click to remove the JavaScript file that is selected in the Selected list.</td>
+<p>Project Name</p>
+</td>
+<td align="left" headers="r4c1-t5 r1c2-t5">Specifies the display name of the project.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t5" headers="r1c1-t5">
-<p>Selected</p>
+<p>Project Directory</p>
 </td>
-<td align="left" headers="r5c1-t5 r1c2-t5">Displays a list of JavaScript files that you want to add to the project.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t5" headers="r1c1-t5">
-<p>Libraries Folder</p>
+<td align="left" headers="r5c1-t5 r1c2-t5">Specifies the folder where you want to create the project. You can use the existing location that you specified in the Site Root field or click Browse to specify a different directory.
+<p>If you use the Site Root directory as your project directory, the wizard creates the <code dir="ltr">nbproject</code> directory and private metadata files in the Site Root directory. By default this directory will be accessible via the web server if you do modify the configuration of the web server.</p>
+<p>If you specify a different directory, the wizard does not automatically create a new directory in the specified location for the project and does not copy the sources from the Site Root directory to the Project Directory. The wizard will create metadata files in the Project Directory that reference the existing sources in the Site Root location.</p>
 </td>
-<td align="left" headers="r6c1-t5 r1c2-t5">Specifies the location for the JavaScript files.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>If you are using a site template, the list of Selected files will automatically contain any JavaScript files that are specified by the template. You can select the version of the JavaScript file that you want to add to the project by clicking the version in the Version column.</p>
-<a id="NBCSH4329" name="NBCSH4329"></a>
+<p>Click Finish to create the project.</p>
+<a id="NBCSH4334" name="NBCSH4334"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2272">
-<param name="text" value="<html><u>&quot;Creating JavaScript Files&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1966">
+<param name="text" value="<html><u>&quot;Creating HTML5 Templates&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

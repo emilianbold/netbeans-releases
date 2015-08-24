@@ -395,6 +395,26 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
         checkCompletion("testfiles/completion/general/issue251821.js", "var res = a1.aproperty.to^LocaleString(); ", false);
     }
     
+    public void testIssue205127_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue205127.js", "document.getElementById(\"in1\").va^;", false);
+    }
+    
+    public void testIssue205127_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue205127.js", "elem.st^yle.color = \"FFFFF\";", false);
+    }
+    
+    public void testIssue237421_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue237421.js", "var foo = this.g^ ;", false);
+    }
+    
+    public void testIssue237421_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue237421.js", "var foo2 = this.getTest().m^;", false);
+    }
+    
+    public void testIssue237421_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue237421.js", "var foo3 = this.getTest().property1.a^;", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

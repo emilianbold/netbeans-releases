@@ -49,6 +49,20 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="CancelSuppport">
+        <api name="csl.api"/>
+        <summary>Added <code>CancelSupport</code> to allow scanners and other CSL services to check task cancelling</summary>
+        <version major="2" minor="50"/>
+        <date day="26" month="6" year="2015"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible" deprecation="no"/>
+        <description>
+            <p>
+                Added <code>CancelSupport</code> to allow scanners and other CSL services to check task cancelling.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.spi.support" name="CancelSupport"/>
+    </change>
     <change id="CodeCompletionHandler2.documentElement-cancelable">
         <api name="csl.api"/>
         <summary>Provide information that the calling task was canceled.</summary>

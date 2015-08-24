@@ -2,84 +2,98 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>New JDBC Connection Pool: Add Connection Pool Properties</title>
+<title>New JDBC Connection Pool: Choose Database Connection</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="AS_Wiz_ConnPool_props" name="AS_Wiz_ConnPool_props"></a></p>
-<div id="NBCSH4808"><!-- infolevel="all" infotype="General" --><a id="sthref637" name="sthref637"></a>
-<h1>New JDBC Connection Pool: Add Connection Pool Properties</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="AS_Wiz_ConnPool_chooseDB" name="AS_Wiz_ConnPool_chooseDB"></a></p>
+<div id="NBCSH4804"><!-- infolevel="all" infotype="General" --><a id="sthref674" name="sthref674"></a>
+<h1>New JDBC Connection Pool: Choose Database Connection</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You see this page of the New File wizard when you are defining a connection pool and you have already named the connection pool and selected the database connection.</p>
-<p>On this (and the Connection Pool Optional Settings page) you specify the properties of the connection pool. After entering the property values, you can do one of the following:</p>
-<ul>
-<li>Click <b>Next</b> if you want to further customize the optional pool properties such as pool size and connection validation.</li>
-<li>Click <b>Finish</b> to create the connection pool, leaving the optional settings at their default values.</li>
-</ul>
-<p>The connection pool properties are added to glassfish-resources.xml. If you want to modify connection pool properties you can open glassfish-resources.xml in the Source Editor by locating the file in your project in the Projects window and double-clicking the file.</p>
+<p>You see this page of the New File wizard when you are defining a connection pool. On this page you name the connection pool and specify the database connection to use. You can choose an existing database connection or enter the configuration information. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1700">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="19%" />
+<col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t66">Element</th>
-<th align="left" valign="bottom" id="r1c2-t66">Description</th>
+<th align="left" valign="bottom" id="r1c1-t67">Element</th>
+<th align="left" valign="bottom" id="r1c2-t67">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t66" headers="r1c1-t66">
-<p>Datasource classname</p>
-</td>
-<td align="left" headers="r2c1-t66 r1c2-t66">The datasource class name is the JDBC driver that implements the APIs for the datasource. This name is provided according to the database connection selected in the previous screen. If you selected Other as the connection in the previous screen, you may need to add the datasource classname manually.</td>
+<td align="left" id="r2c1-t67" headers="r1c1-t67">JDBC Connection Pool Name</td>
+<td align="left" headers="r2c1-t67 r1c2-t67">Enter the Connection Pool name.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t66" headers="r1c1-t66">
-<p>Resource type</p>
+<td align="left" id="r3c1-t67" headers="r1c1-t67">
+<p>Extract from existing connection</p>
 </td>
-<td align="left" headers="r3c1-t66 r1c2-t66">The resource type reflects whether the connection pool enables XA global transactions or is restricted to local transactions. Return to the previous screen to change the resource type.</td>
+<td align="left" headers="r3c1-t67 r1c2-t67">Choose this option if the database connection for the database you want to use already exists. The drop-down list contains connections that have already been created. When you select this option, the configuration information, including the complete URL, user name, and password, is extracted from the selected connection. To add a new connection to the list, see: 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1702">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t66" headers="r1c1-t66">
-<p>Description</p>
+<td align="left" id="r4c1-t67" headers="r1c1-t67">
+<p>New configuration using database</p>
 </td>
-<td align="left" headers="r4c1-t66 r1c2-t66">You can enter a description of this connection pool.</td>
+<td align="left" headers="r4c1-t67 r1c2-t67">If there is no suitable existing connection, you can select a driver from the list of databases with known JDBC drivers. If you would like to use a datasource that is not listed you need to first register the database driver with the IDE. To add to the list of drivers, see: 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1821">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+
+<p><b>Note</b>: If you select this option you will need to provide the connection information in the next page.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t66" headers="r1c1-t66">
-<p>Properties</p>
-</td>
-<td align="left" headers="r5c1-t66 r1c2-t66">Connection pool properties may vary according to the database vendor. Common properties include the datasource URL, user name, and password, but other properties may be suggested or required depending on the database connection. If you selected an existing source in the previous screen, some of the property values may already be provided.
-<p>Properties may be changed or removed and additional properties may be added, but each property in the Properties area must have a value entered before you can proceed to the next screen or finish the connection pool configuration.</p>
-<ul>
-<li>To change a property, click a box in the Properties Name column, select a new property from the dropdown list and add a value for that property.</li>
-<li>To add a new property, click the Add button. A new row appears in the properties box. In the new row, click the box in the Properties Name column and select a property from the dropdown list, and add a value for that property.</li>
-<li>To remove a property click the row containing the propertyanc click the Remove button.</li>
-</ul>
-<p><b>Note</b>: To complete the wizard you might need to supply the password for your database if the property field is empty. Use the character sequence open-parenthesis close-parenthesis, "()", to denote an empty string or blank password.</p>
-</td>
+<td align="left" id="r5c1-t67" headers="r1c1-t67">XA (Global Transaction)</td>
+<td align="left" headers="r5c1-t67 r1c2-t67">Select the <b>XA</b> (Global Transaction) radio button if using XA transactions.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH4813" name="NBCSH4813"></a>
+<p>Click <b>Next</b> to add connection pool properties.</p>
+<a id="NBCSH4807" name="NBCSH4807"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1651">
-<param name="text" value="<html><u>&quot;About Working with Web Application Servers&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1821">
+<param name="text" value="<html><u>&quot;Setting Up a Database Connection&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1681">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1681">
 <param name="text" value="<html><u>&quot;Working with Glassfish Application Servers&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1651">
+<param name="text" value="<html><u>&quot;About Working with Web Application Servers&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

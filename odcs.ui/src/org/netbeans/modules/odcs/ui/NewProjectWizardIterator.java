@@ -43,6 +43,7 @@ package org.netbeans.modules.odcs.ui;
 
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
@@ -65,9 +66,13 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
+import org.netbeans.modules.odcs.ui.dashboard.ProjectHandleImpl;
 import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -113,7 +118,6 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
         "NewProject.progress.projectCreationFailed=Project creation failed: {0}",
         "NewProject.progress.creatingProject=Creating project...",
         "NewProject.progress.creatingSCMRepository=Creating SCM repository...",
-        "NewProject.creatingSCMRepository.failed=Failed to create a SCM repository",
         "NewProject.progress.repositoryCheckout=Initializing local repository..."})
     @Override
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
@@ -153,18 +157,17 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
                 Thread.sleep(2000); // any other way, is there a blocking call in the API?
             } catch (InterruptedException ex) {
             }
-            project = server.getProject(project.getId(), true);
+            project = server.getProject(project.getId(), true);        
         }
-        if (!project.hasScm()) {
-            String errorMessage = Bundle.NewProject_creatingSCMRepository_failed();
-            ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG, errorMessage);
-            throw new IOException(errorMessage);
-        }
-
-        String repositoryUrl = null;
-        Collection<ScmRepository> repositories = project.getRepositories();
-        VCSAccessor.RepositoryInitializer repoInitializer = null;
-        if (repositories != null && !repositories.isEmpty()) {
+        
+        Collection<ScmRepository> repositories = null;
+        if (project.hasScm()) {
+            repositories = project.getRepositories();           
+        }        
+        
+        if (repositories != null && !repositories.isEmpty()) {            
+            String repositoryUrl = null;
+            VCSAccessor.RepositoryInitializer repoInitializer = null;
             for (ScmRepository repo : repositories) {
                 repositoryUrl = repo.getUrl();
                 repoInitializer = VCSAccessor.getDefault().getRepositoryInitializer(newPrjScmType, repositoryUrl);
@@ -172,59 +175,62 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
                     break;
                 }
             }
-        }
-         
-        if (repoInitializer == null) {
-            // git unavailable
-            ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG,
-                    NewProjectWizardIterator_NoGitClient());
-            throw new IOException("Git client is not available"); //NOI18N
-        }
-        
-        // After the repository is created it must be checked out
-        try {
 
-            if (repositoryUrl != null) {
-                handle.progress(NewProject_progress_repositoryCheckout(), 3);
-                logger.log(Level.FINE, "Checking out repository - Repository URL: {0}, Local Folder: {1}, Service: Git", //NOI18N
-                        new Object[]{repositoryUrl, newPrjScmLocal});
-                PasswordAuthentication passwdAuth = server.getPasswordAuthentication();
-                if (passwdAuth != null) {
-                    final File localScmRoot = new File(newPrjScmLocal);
-                    boolean inPlaceRepository = sharedItems.isEmpty() || isCommonParent(sharedItems, newPrjScmLocal);
-                    repoInitializer.initialize(localScmRoot, repositoryUrl, passwdAuth);
-                    if (!inPlaceRepository) {
-                        copySharedItems(sharedItems, localScmRoot);
-                        // if shared items contain projects, those projects need to be closed and open from new location
-                        File[] oldLoc = new File[sharedItems.size()];
-                        File[] newLoc = new File[sharedItems.size()];
-                        i = 0;
-                        for (SharedItem item : sharedItems) {
-                            oldLoc[i] = item.getRoot();
-                            newLoc[i] = new File(localScmRoot, item.getRoot().getName());
-                            i++;
-                        }
-                        ProjectServices projects  = Lookup.getDefault().lookup(ProjectServices.class);
-                        projects.reopenProjectsFromNewLocation(oldLoc, newLoc);
-                    }
-                } else {
-                    // user not logged in, do nothing
-                }
+            if (repoInitializer == null) {
+                // git unavailable
+                ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG,
+                        NewProjectWizardIterator_NoGitClient());
+                throw new IOException("Git client is not available"); //NOI18N
             }
-        } catch (ODCSException ex) {
-            Exceptions.printStackTrace(ex);
-        }
 
-        Set<CreatedProjectInfo> set = new HashSet<CreatedProjectInfo>();
+            // After the repository is created it must be checked out
+            try {
+
+                if (repositoryUrl != null) {
+                    handle.progress(NewProject_progress_repositoryCheckout(), 3);
+                    logger.log(Level.FINE, "Checking out repository - Repository URL: {0}, Local Folder: {1}, Service: Git", //NOI18N
+                            new Object[]{repositoryUrl, newPrjScmLocal});
+                    PasswordAuthentication passwdAuth = server.getPasswordAuthentication();
+                    if (passwdAuth != null) {
+                        final File localScmRoot = new File(newPrjScmLocal);
+                        boolean inPlaceRepository = sharedItems.isEmpty() || isCommonParent(sharedItems, newPrjScmLocal);
+                        repoInitializer.initialize(localScmRoot, repositoryUrl, passwdAuth);
+                        if (!inPlaceRepository) {
+                            copySharedItems(sharedItems, localScmRoot);
+                            // if shared items contain projects, those projects need to be closed and open from new location
+                            File[] oldLoc = new File[sharedItems.size()];
+                            File[] newLoc = new File[sharedItems.size()];
+                            i = 0;
+                            for (SharedItem item : sharedItems) {
+                                oldLoc[i] = item.getRoot();
+                                newLoc[i] = new File(localScmRoot, item.getRoot().getName());
+                                i++;
+                            }
+                            ProjectServices projects  = Lookup.getDefault().lookup(ProjectServices.class);
+                            projects.reopenProjectsFromNewLocation(oldLoc, newLoc);
+                        }
+                    } else {
+                        // user not logged in, do nothing
+                    }
+                }
+            } catch (ODCSException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            newPrjScmLocal = null; // indicates in CreatedProjectInfo that local repo wasn't created
+        }
+        Set<CreatedProjectInfo> set = new HashSet<>();
         set.add(new CreatedProjectInfo(project, newPrjScmLocal));
-//        // Open the project in Dashboard
-//        EventQueue.invokeLater(new Runnable() {
-//            @Override
-//            public void run () {
-//                TeamUIUtils.activateTeamDashboard();
-//                uiServer.getDashboard().addProject(projectHandle, true, true);
-//            }
-//        });
+        // Open the project in Dashboard
+        final ODCSUiServer uiServer = ODCSUiServer.forServer(server);
+        final ProjectHandle<ODCSProject>[] projectHandle = new ProjectHandle[] {new ProjectHandleImpl(uiServer, project)};
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                TeamUIUtils.activateTeamDashboard();                
+                uiServer.getDashboard().addProjects(projectHandle, true, true);
+            }
+        });
 
         handle.finish();
 

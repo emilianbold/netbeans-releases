@@ -43,9 +43,6 @@ package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,8 +52,6 @@ import org.clang.tools.services.ClankPreprocessorServices;
 import org.clang.tools.services.ClankRunPreprocessorSettings;
 import org.clang.tools.services.support.ClangFileSystemProvider;
 import org.clang.tools.services.support.PrintWriter_ostream;
-import org.clank.support.NativePointer;
-import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringRef;
 import org.llvm.support.MemoryBuffer;
 import org.llvm.support.llvm;
@@ -68,9 +63,11 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
-import org.netbeans.modules.cnd.apt.support.spi.APTUnsavedBuffersProvider;
+import org.netbeans.modules.cnd.apt.support.spi.APTBufferProvider;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -91,20 +88,24 @@ public class ClankDriverImpl {
         ClangFileSystemProvider.setImplementation(new ClankFileSystemProviderImpl());
     }
 
-    public static void invalidateImpl(CharSequence absPath) {
+    public static void invalidateImpl(FileSystem fs, CharSequence absPath) {
         if (APTTraceFlags.USE_CLANK) {
-            ClankPreprocessorServices.invalidate(absPath);
+            ClankPreprocessorServices.invalidate(CndFileSystemProvider.toUrl(fs, absPath));
         }
     }
 
     public static void invalidateImpl(APTFileBuffer buffer) {
-        // TODO: split by file system?
-        invalidateImpl(buffer.getAbsolutePath());
+        if (APTTraceFlags.USE_CLANK) {
+            // TODO: split by file system?
+            invalidateImpl(buffer.getFileSystem(), buffer.getAbsolutePath());
+        }
     }
 
     public static void invalidateAllImpl() {
-        // TODO: split by file system?
-        ClankPreprocessorServices.invalidateAll();
+        if (APTTraceFlags.USE_CLANK) {
+            // TODO: split by file system?
+            ClankPreprocessorServices.invalidateAll();
+        }
     }
 
     public static boolean preprocessImpl(APTFileBuffer buffer,
@@ -113,11 +114,8 @@ public class ClankDriverImpl {
             final org.netbeans.modules.cnd.support.Interrupter interrupter) {
         try {
             // TODO: prepare buffers mapping
-            CharSequence path = buffer.getAbsolutePath();
-            if (CndUtils.isDebugMode()) {
-                byte[] bytes = toBytes(path, buffer.getCharBuffer());
-                assert bytes != null;
-            }
+            // note that for local files no "file://" prefix is added
+            CharSequence path = CndFileSystemProvider.toUrl(buffer.getFileSystem(), buffer.getAbsolutePath());
             // prepare params to run preprocessor
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
             settings.WorkName = path;
@@ -145,10 +143,10 @@ public class ClankDriverImpl {
             StringRef file = new StringRef(path);
             if (fortranFlavor) {
                 char[] chars = fixFortranTokens(buffer);
-                fileContent = MemoryBufferImpl.create(chars);
+                fileContent = ClankMemoryBufferImpl.create(chars);
             } else {
                 char[] chars = buffer.getCharBuffer();
-                fileContent = MemoryBufferImpl.create(chars);
+                fileContent = ClankMemoryBufferImpl.create(chars);
             }
             remappedBuffers = new HashMap<StringRef, MemoryBuffer>(remappedBuffers);
             remappedBuffers.put(file, fileContent);
@@ -292,83 +290,9 @@ public class ClankDriverImpl {
         return chars;
     }
 
-    private static class MemoryBufferImpl extends MemoryBuffer {
-    
-        
-        public static MemoryBufferImpl create(APTFileBuffer aptBuf) throws IOException {
-            char[] chars = aptBuf.getCharBuffer();
-            return create(chars);
-        }
-
-        public static MemoryBufferImpl create(char[] chars) throws IOException {
-//            String s = new String(chars); // TODO: should it be optimized?
-//            char$ptr start = NativePointer.create_char$ptr(s);
-//            char$ptr end = start.$add(s.length());
-
-            CharBuffer cb = CharBuffer.wrap(chars);
-            ByteBuffer bb = getUTF8Charset().encode(cb);
-            // we need to add a trailing zero
-            byte[] array;
-            int nullTermIndex = bb.limit();
-            if (bb.limit() < bb.capacity()) {
-                // expand existing to keep \0
-                bb.limit(bb.limit() + 1);
-                bb.position(nullTermIndex);
-                bb.put((byte) '\0');
-                array = bb.array();
-            } else {
-                // have to create new to keep \0
-                array = new byte[nullTermIndex + 1];
-                System.arraycopy(bb.array(), 0, array, 0, nullTermIndex);
-                array[nullTermIndex] = (byte) '\0';
-            }
-            // NB: the above adds a treailing zero. If you don't want this, use Arrays.copyOfRange instead
-            //byte[] res = copyOfRange(bb.array(), bb.position(), bb.limit());
-            //return res;    
-            char$ptr start = NativePointer.create_char$ptr(array);
-            char$ptr end = start.$add(nullTermIndex);
-            return new MemoryBufferImpl(start, end, true);
-        }
-
-        private MemoryBufferImpl(char$ptr start, char$ptr end, boolean RequiresNullTerminator) {
-            super();
-            init(start, end, RequiresNullTerminator);
-        }
-
-        @Override
-        public BufferKind getBufferKind() {        
-            return BufferKind.MemoryBuffer_Malloc;
-        }        
-        
-        private static volatile Charset UTF8Charset = null;
-
-        private static Charset getUTF8Charset() {
-            if (UTF8Charset == null) {
-                UTF8Charset = Charset.forName("UTF-8"); //NOI18N
-            }
-            return UTF8Charset;
-        }
-
-//        /**
-//         * The same as Arrays.copyOfRange, but adds a trailing zero
-//         */
-//        public static byte[] copyOfRange(byte[] original, int from, int to) {
-//            int newLength = to - from;
-//            if (newLength < 0) {
-//                throw new IllegalArgumentException(from + " > " + to);
-//            }
-//            newLength++; // reserve space for '\0'
-//            byte[] copy = new byte[newLength];
-//            System.arraycopy(original, from, copy, 0,
-//                    Math.min(original.length - from, newLength));
-//            copy[newLength - 1] = 0;
-//            return copy;
-//        }        
-    }
-    
     private static Map<StringRef, MemoryBuffer> getRemappedBuffers() {
         Map<StringRef, MemoryBuffer> result = Collections.<StringRef, MemoryBuffer>emptyMap();
-        APTUnsavedBuffersProvider provider = Lookup.getDefault().lookup(APTUnsavedBuffersProvider.class);
+        APTBufferProvider provider = Lookup.getDefault().lookup(APTBufferProvider.class);
         if (provider != null) {
             Collection<APTFileBuffer> buffers = provider.getUnsavedBuffers();
             if (buffers != null && !buffers.isEmpty()) {
@@ -386,20 +310,6 @@ public class ClankDriverImpl {
             }
         }
         return result;
-    }
-
-    private static byte[] toBytes(CharSequence path, char[] chars) {
-        byte[] asciis = new byte[chars.length];
-        for (int i = 0; i < asciis.length; i++) {
-            char c = chars[i];
-            if (c >= 256) {
-                CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), path.toString(), ":could be problematic char[" + i + "] [" + c + "] " + (int)c);
-            } else if (c >= 128) {
-                CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), path.toString(), ":could be problematic non-ANSII " + c);
-            }
-            asciis[i] = (byte)(c);
-        }
-        return asciis;
     }
 
     public static ClankDriverImpl.APTTokenStreamCacheImplementation extractTokenStream(PreprocHandler ppHandler) {

@@ -225,7 +225,7 @@ public final class ImportClass implements ErrorRule<Void> {
             Set<String> uniq = new HashSet<>();
             
             for (Element element : unfiltered) {
-                String fqn = imps.displayNameForImport(info, element);
+                String fqn = imps.displayNameForImport(element);
                 if (!uniq.add(fqn)) {
                     continue;
                 }
@@ -302,12 +302,12 @@ public final class ImportClass implements ErrorRule<Void> {
     
     public ComputeImports getCandidateFQNs(CompilationInfo info, FileObject file, String simpleName, Data<Void> data) {
             //compute imports:
-            ComputeImports imp = new ComputeImports();
+            ComputeImports imp = new ComputeImports(info);
             setComputeImports(imp);
             
             ComputeImports.Pair<Map<String, List<Element>>, Map<String, List<Element>>> rawCandidates;
             try {
-                imp = imp.computeCandidatesEx(info);
+                imp = imp.computeCandidatesEx();
             } finally {
                 setComputeImports(null);
             }

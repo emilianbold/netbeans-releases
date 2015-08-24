@@ -296,6 +296,11 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
     public BeanArchiveType getBeanArchiveType() {
         return getModel().getBeansModel().getBeanArchiveType();
     }
+
+    @Override
+    public boolean isCdi11OrLater() {
+        return getModel().getBeansModel().isCdi11OrLater();
+    }
     
     public static List<AnnotationMirror> getAllStereotypes( Element element ,
             AnnotationHelper helper  ) 
@@ -512,7 +517,14 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
         if ( element instanceof TypeElement ){
             String name = element.getSimpleName().toString();
             if ( name.length() >0 ){
-                return Character.toLowerCase(name.charAt( 0 ))+name.substring(1);
+                // XXX we may use Introspector.decapitalize
+                String withoutPrefix = name.substring(1);
+                // #249438
+                if (!withoutPrefix.isEmpty() && Character.isUpperCase(withoutPrefix.charAt(0))) {
+                    return name;
+                } else {
+                    return Character.toLowerCase(name.charAt(0)) + withoutPrefix;
+                }
             }
             else {
                 return name;

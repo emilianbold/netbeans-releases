@@ -130,7 +130,8 @@ public class JiraStorageManager {
 
     private JiraQuery createQuery(JiraRepository repository, JiraQueryData2 data) {
         assert data != null;
-        return repository.createPersistentQuery(data.queryName, getFilterDefinition(repository, data));
+        FilterDefinition filterDefinition = getFilterDefinition(repository, data);
+        return filterDefinition != null ? repository.createPersistentQuery(data.queryName, filterDefinition) : null;
     }
 
     private Map<String, JiraQueryData2> getCachedQueries () {
@@ -170,7 +171,10 @@ public class JiraStorageManager {
         HashSet<JiraQuery> queries = new HashSet<>(10);
         for (Entry<String, JiraQueryData2> e : getCachedQueries().entrySet()) {
             if (e.getKey().startsWith(repository.getID() + QUERY_DELIMITER)) {
-                queries.add(createQuery(repository, e.getValue()));
+                JiraQuery q = createQuery(repository, e.getValue());
+                if(q != null) {
+                    queries.add(q);
+                }
             }
         }
         return queries;
@@ -472,10 +476,13 @@ public class JiraStorageManager {
         JiraConnectorProvider connectorProvider = JiraConnectorSupport.getInstance().getConnector();
         FilterDefinition fd =  connectorProvider.createFilterDefinition();
         
-        JiraConfiguration conf = repository.getConfiguration();
-        
         if(jqd.assignedToFilterData != null) {
             fd.setAssignedToFilter(createUserFilter(jqd.assignedToFilterData, connectorProvider));
+        }
+        
+        JiraConfiguration conf = repository.getConfiguration();
+        if(conf == null) {
+            return null;
         }
         
         if(jqd.componentsData != null) {

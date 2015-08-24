@@ -23,15 +23,23 @@
                     <type>0</type>
                 </confElem>
                 <confElem>
-                    <name>Release32</name>
-                    <type>0</type>
-                </confElem>
-                <confElem>
-                    <name>Release64</name>
-                    <type>0</type>
-                </confElem>
-                <confElem>
                     <name>Test_filedata_32</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Solaris-x86</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Linux-x86</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Solaris-SPARC</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Linux-SPARC</name>
                     <type>0</type>
                 </confElem>
             </confList>

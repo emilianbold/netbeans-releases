@@ -230,8 +230,10 @@ public abstract class TreeListNode extends ListNode {
     }
 
     public final void setListener(TreeListListener listener) {
-        super.setListener(listener);
-        this.listener = listener;
+        synchronized(LOCK) {
+            super.setListener(listener);
+            this.listener = listener;
+        }
     }
 
     /**

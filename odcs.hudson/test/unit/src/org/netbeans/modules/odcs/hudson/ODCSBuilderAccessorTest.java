@@ -42,7 +42,6 @@
 package org.netbeans.modules.odcs.hudson;
 
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
 import com.tasktop.c2c.server.profile.domain.build.BuildSummary;
 import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
@@ -68,6 +67,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -520,13 +520,7 @@ public class ODCSBuilderAccessorTest {
                 }
 
                 @Override
-                public List<ProjectActivity> getRecentActivities(
-                        String projectId) throws ODCSException {
-                    throw unsupportedByMock();
-                }
-
-                @Override
-                public List<ProjectActivity> getRecentShortActivities(
+                public List<Activity> getRecentActivities(
                         String projectId) throws ODCSException {
                     throw unsupportedByMock();
                 }

@@ -487,4 +487,44 @@ public class RenameTest extends AbstractGitTestCase {
         assertStatus(status, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, false);
         assertStatus(status, workDir, new File(target, file.getName()), true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
     }
+    
+    public void testRenameToIgnored () throws Exception {
+        final File folder = new File(workDir, "folder");
+        folder.mkdirs();
+        File file = new File(folder, "file");
+        file.createNewFile();
+        File file2 = new File(folder, "file2");
+        file2.createNewFile();
+        
+        File ignored = new File(workDir, "ignored");
+        GitClient client = getClient(workDir);
+        client.ignore(new File[] { ignored }, NULL_PROGRESS_MONITOR);
+        client.add(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        
+        File target = new File(ignored, "folder");
+        file = new File(target, "file");
+        file2 = new File(target, "file2");
+        client.rename(folder, target, false, NULL_PROGRESS_MONITOR);
+        
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { file, file2 }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_IGNORED, GitStatus.Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, file2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_IGNORED, GitStatus.Status.STATUS_ADDED, false);
+    }
+    
+    public void testRenameToIgnoredFile () throws Exception {
+        File file = new File(workDir, "test.global.php");
+        file.createNewFile();
+        File ignore = new File(workDir, ".gitignore");
+        write(ignore, "*.local.php");
+        
+        GitClient client = getClient(workDir);
+        client.add(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { workDir }, "message", null, null, NULL_PROGRESS_MONITOR);
+        
+        File rename = new File(workDir, "test.local.php");
+        client.rename(file, rename, false, NULL_PROGRESS_MONITOR);
+        
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { rename }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, rename, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_IGNORED, GitStatus.Status.STATUS_ADDED, false);
+    }
 }

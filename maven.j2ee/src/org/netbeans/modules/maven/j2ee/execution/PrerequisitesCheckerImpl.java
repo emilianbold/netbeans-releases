@@ -42,22 +42,29 @@
 
 package org.netbeans.modules.maven.j2ee.execution;
 
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.DeploymentException;
-import org.netbeans.modules.maven.api.execute.ExecutionContext;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.DeploymentException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
+import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 import static org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb.PROP_ALWAYS_BUILD_BEFORE_RUNNING;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 
 @ProjectServiceProvider(service = {PrerequisitesChecker.class, LateBoundPrerequisitesChecker.class}, projectType={
@@ -88,6 +95,34 @@ public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBound
     @Override
     public boolean checkRunConfig(RunConfig config) {
         String actionName = config.getActionName();
+        if (ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName)) {
+            StartupExtender.StartMode mode = StartupExtender.StartMode.TEST_PROFILE;
+            for (Map.Entry<? extends String, ? extends String> entry : config.getProperties().entrySet()) {
+                if (entry.getKey().equals("exec.args")) {
+                    List<String> args = new ArrayList<String>();
+                    InstanceContent ic = new InstanceContent();
+                    Project p = config.getProject();
+                    if (p != null) {
+                        ic.add(p);
+                        ActiveJ2SEPlatformProvider pp = p.getLookup().lookup(ActiveJ2SEPlatformProvider.class);
+                        if (pp != null) {
+                            ic.add(pp.getJavaPlatform());
+                        }
+                    }
+                    for (StartupExtender group : StartupExtender.getExtenders(new AbstractLookup(ic), mode)) {
+                        args.addAll(group.getArguments());
+                    }
+                    if (!args.isEmpty()) {
+                        StringBuilder b = new StringBuilder();
+                        for (String arg : args) {
+                            b.append(arg).append(' ');
+                        }
+                        b.append(entry.getValue());
+                        config.setProperty(entry.getKey(), b.toString());
+                    }
+                }
+            }            
+        }    
 
         // To be able to skip standard run behavior we need to set this property
         // with respect to the current CoS/DoS setting --> See issue 230565

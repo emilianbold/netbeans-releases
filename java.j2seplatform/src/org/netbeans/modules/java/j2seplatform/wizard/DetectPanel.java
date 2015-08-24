@@ -585,12 +585,12 @@ public class DetectPanel extends javax.swing.JPanel {
             final NewJ2SEPlatform platform = iterator.getPlatform();
             List<URL> jdoc = platform.getJavadocFolders();
             if (jdoc.isEmpty()) {
-                jdoc = J2SEPlatformImpl.defaultJavadoc(platform);
+                jdoc = platform.defaultJavadoc();
             }
             final String jdocStr = urlsToString(jdoc);
             List<URL> src = cpToUrls(platform.getSourceFolders());
             if (src.isEmpty()) {
-                src = J2SEPlatformImpl.defaultSources(platform);
+                src = platform.defaultSources();
             }
             final String srcStr = urlsToString(src);
             detected.set(

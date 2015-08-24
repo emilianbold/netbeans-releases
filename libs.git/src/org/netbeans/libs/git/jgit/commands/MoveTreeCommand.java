@@ -45,8 +45,13 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
@@ -58,10 +63,13 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.StatusListener;
 
 /**
  *
@@ -96,6 +104,7 @@ abstract class MoveTreeCommand extends GitCommand {
         try {
             DirCache cache = repository.lockDirCache();
             try {
+                List<String> ignoredTargets = getIgnores(targetFile);
                 boolean retried = false;
                 DirCacheBuilder builder = cache.builder();
                 TreeWalk treeWalk = new TreeWalk(repository);
@@ -144,11 +153,13 @@ abstract class MoveTreeCommand extends GitCommand {
                                 throw ex;
                             }
                         }
-                        DirCacheEntry copied = new DirCacheEntry(newPath);
-                        copied.copyMetaData(e);
-                        File newFile = new File(repository.getWorkTree().getAbsolutePath() + File.separator + newPath);
-                        listener.notifyFile(newFile, treeWalk.getPathString());
-                        builder.add(copied);
+                        if (!isIgnored(ignoredTargets, newPath)) {
+                            DirCacheEntry copied = new DirCacheEntry(newPath);
+                            copied.copyMetaData(e);
+                            File newFile = new File(repository.getWorkTree().getAbsolutePath() + File.separator + newPath);
+                            listener.notifyFile(newFile, treeWalk.getPathString());
+                            builder.add(copied);
+                        }
                         if (keepSourceTree) {
                             builder.add(e);
                         }
@@ -205,5 +216,35 @@ abstract class MoveTreeCommand extends GitCommand {
             relativePathToSource.append(relativePathToAncestor);
         }
         return relativePathToSource.toString();
+    }
+
+    private List<String> getIgnores (File targetFile) throws GitException {
+        StatusCommand cmd = new StatusCommand(getRepository(), "HEAD", new File[] { targetFile }, getClassFactory(), new DelegatingGitProgressMonitor(monitor), new StatusListener() {
+
+            @Override
+            public void notifyStatus (GitStatus status) {
+                
+            }
+        });
+        cmd.run();
+        List<String> ignores = new ArrayList<>();
+        Map<File, GitStatus> statuses = cmd.getStatuses();
+        for (Map.Entry<File, GitStatus> e : statuses.entrySet()) {
+            GitStatus status = e.getValue();
+            if (status.getStatusIndexWC() == GitStatus.Status.STATUS_IGNORED) {
+                ignores.add(status.getRelativePath());
+            }
+        }
+        return ignores;
+    }
+
+    private boolean isIgnored (List<String> ignores, String path) {
+        boolean ignored = false;
+        for (String ignore : ignores) {
+            if (path.equals(ignore) || path.startsWith(ignore + '/')) {
+                ignored = true;
+            }
+        }
+        return ignored;
     }
 }

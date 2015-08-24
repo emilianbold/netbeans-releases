@@ -84,6 +84,12 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
         delegateSelector.getExplorerManager().addPropertyChangeListener(this);
         
         methodSelector = new ElementSelectorPanel(null, false);
+        methodSelector.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;

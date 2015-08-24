@@ -445,11 +445,12 @@ public final class ElementUtilities {
             if (hider == member)
                 return true;
             if (hider.getSimpleName().contentEquals(member.getSimpleName())) {
-                if (member instanceof VariableElement && hider instanceof VariableElement)
-                    return true;
                 if (elements.hides(member, hider)) {
                     it.remove();
                 } else {
+                    if (member instanceof VariableElement && hider instanceof VariableElement
+                            && (!member.getKind().isField() || hider.getKind().isField()))
+                        return true;
                     TypeMirror memberType = member.asType();
                     TypeMirror hiderType = hider.asType();
                     if (memberType.getKind() == TypeKind.EXECUTABLE && hiderType.getKind() == TypeKind.EXECUTABLE) {
@@ -496,6 +497,18 @@ public final class ElementUtilities {
             }
         }
 
+        @Override
+        public StringBuilder visitVariable(VariableElement e, Boolean p) {
+            if (p != Boolean.TRUE || e.getEnclosingElement() == null) {
+                return DEFAULT_VALUE.append(e.getSimpleName());
+            } else {
+                return e.getEnclosingElement().accept(this, p).
+                    append(".").
+                    append(e.getSimpleName());
+            }
+        }
+
+        
         @Override
         public StringBuilder visitPackage(PackageElement e, Boolean p) {
             return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());

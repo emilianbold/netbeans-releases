@@ -47,8 +47,8 @@ package org.netbeans.modules.mercurial.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
+import org.netbeans.modules.mercurial.ui.diff.ApplyDiffPatchAction;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.ui.diff.ExportBundleAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
@@ -68,8 +68,7 @@ import org.openide.util.actions.SystemAction;
  */
 @NbBundle.Messages({
     "CTL_MenuItem_PatchesMenu=&Patches",
-    "CTL_MenuItem_PatchesMenu.popupName=Patches",
-    "CTL_PopupMenuItem_PatchAction=Apply Diff Patch..."
+    "CTL_MenuItem_PatchesMenu.popupName=Patches"
 })
 public final class PatchesMenu extends DynamicMenu implements Presenter.Popup {
 
@@ -107,7 +106,8 @@ public final class PatchesMenu extends DynamicMenu implements Presenter.Popup {
             menu.addSeparator();
             
             item = new JMenuItem();
-            action = SystemAction.get(PatchAction.class);
+            action = SystemAction.get(ApplyDiffPatchAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
             
@@ -128,7 +128,7 @@ public final class PatchesMenu extends DynamicMenu implements Presenter.Popup {
             
             menu.addSeparator();
             
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(PatchAction.class), NbBundle.getMessage(PatchesMenu.class, "CTL_PopupMenuItem_PatchAction"), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(ApplyDiffPatchAction.class), NbBundle.getMessage(ApplyDiffPatchAction.class, "CTL_PopupMenuItem_ApplyDiffPatch"), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(ImportDiffAction.class), NbBundle.getMessage(ImportDiffAction.class, "CTL_PopupMenuItem_ImportDiff"), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N

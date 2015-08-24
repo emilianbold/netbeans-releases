@@ -169,6 +169,10 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
                     workDir = file.getAbsolutePath(); //NOI18N
                 }
             }
+        } else if (!new File(workDir).isDirectory()) {
+            IllegalArgumentException iae = new IllegalArgumentException("The work dir is not a folder.");
+            Exceptions.attachLocalizedMessage(iae, NbBundle.getMessage(ProjectRunnerImpl.class, "ERR_NoWorkDir"));
+            throw iae;
         }
         if (className == null) {
             Parameters.notNull(PROP_EXECUTE_FILE + " or " + PROP_CLASSNAME, toRun);

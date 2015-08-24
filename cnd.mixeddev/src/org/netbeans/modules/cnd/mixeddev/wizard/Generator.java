@@ -83,6 +83,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
+import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -96,6 +98,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -174,51 +177,13 @@ public class Generator implements PropertyChangeListener {
         J2SEProjectPlatform pp = javaProject.getLookup().lookup(J2SEProjectPlatform.class);
         JavaPlatform jp = pp.getProjectPlatform();
         final FileObject binFO = jp.findTool("javah"); // NOI18N
-        File javah = FileUtil.toFile(binFO); //NOI18N
-        String className = FileUtil.getRelativePath(sr, fileObject);
-        if (className.endsWith(".java")) { // NOI18N
-            className = className.substring(0, className.length() - 5).replace('/', '.').replace('\\', '.');
+        final String headerName = fileObject.getName() + ".h"; // NOI18N
+        header = JNISupport.generateJNIHeader(binFO, sr, fileObject, headerName, sourceCP, compileCP);
+        if (header != null) {
+            include = binFO.getParent().getParent().getFileObject("include"); // NOI18N
+            return true;
         }
-
-        File workingDir = new File(FileUtil.toFile(sr.getParent()), "build/classes"); // NOI18N
-        List<String> args = new ArrayList<String>();
-        args.add("-o"); // NOI18N
-        args.add(fileObject.getName() + ".h"); // NOI18N
-        String argCP = "";
-        boolean needed = false;
-        if (sourceCP != null) {
-            String source = sourceCP.toString();
-            if (!source.isEmpty()) {
-                needed = true;
-                argCP = argCP.concat(source.toString() + File.pathSeparator);
-            }
-        }
-        if (compileCP != null) {
-            String compile = compileCP.toString();
-            if (!compile.isEmpty()) {
-                needed = true;
-                argCP = argCP.concat(compileCP.toString());
-            }
-        }
-        if (needed) {
-            args.add("-classpath"); // NOI18N
-            args.add(argCP);
-        }
-        args.add(className);
-
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal());
-        npb.setWorkingDirectory(workingDir.getAbsolutePath());
-        npb.setExecutable(javah.getAbsolutePath());
-        npb.setArguments(args.toArray(new String[args.size()]));
-        ProcessUtils.ExitStatus javahStatus = ProcessUtils.execute(npb);
-
-        if (!javahStatus.isOK()) {
-            LOG.log(Level.WARNING, "javah failed {0}; args={1}", new Object[]{javahStatus, args});
-            return false;
-        }
-        header = FileUtil.toFileObject(new File(workingDir,fileObject.getName() + ".h")); // NOI18N
-        include = binFO.getParent().getParent().getFileObject("include"); // NOI18N
-        return true;
+        return false;
     }
     
     private Project instantiateImpl() throws IOException {
@@ -354,7 +319,7 @@ public class Generator implements PropertyChangeListener {
         }
     }
 
-    private void createStub(FileObject newHeader, FileObject newSource, StringBuilder buf) throws IOException {
+    public static void createStub(FileObject newHeader, FileObject newSource, StringBuilder buf) throws IOException {
         CsmFile includeFile = CsmUtilities.getCsmFile(newHeader, true, false);
         if (includeFile != null) {
             for(CsmOffsetableDeclaration declaration : includeFile.getDeclarations()) {
@@ -391,7 +356,7 @@ public class Generator implements PropertyChangeListener {
 
     private FileObject createSource(final MakeConfigurationDescriptor configurationDescriptor, StringBuilder buf) throws IOException {
         FileObject newSource;
-        Folder sourceFolder = this.getRootSource(configurationDescriptor);
+        Folder sourceFolder = getRootSource(configurationDescriptor);
         FileObject folder;
         if (sourceFolder.isDiskFolder()) {
             folder = RemoteFileUtil.getFileObject(sourceFolder.getAbsolutePath(), makeProject);
@@ -427,7 +392,7 @@ public class Generator implements PropertyChangeListener {
     }
     
     private FileObject createHeader(final MakeConfigurationDescriptor configurationDescriptor) throws IOException {
-        Folder headersFolder = this.getRootHeader(configurationDescriptor);
+        Folder headersFolder = getRootHeader(configurationDescriptor);
         FileObject folder;
         if (headersFolder.isDiskFolder()) {
             folder = RemoteFileUtil.getFileObject(headersFolder.getAbsolutePath(), makeProject);
@@ -440,7 +405,7 @@ public class Generator implements PropertyChangeListener {
         return newHeader;
     }
     
-    private Folder getRootHeader(MakeConfigurationDescriptor configurationDescriptor) {
+    public static Folder getRootHeader(MakeConfigurationDescriptor configurationDescriptor) {
         Folder folder = configurationDescriptor.getLogicalFolders();
         List<Folder> sources = folder.getFolders();
         for (Folder sub : sources){
@@ -453,7 +418,7 @@ public class Generator implements PropertyChangeListener {
         return folder;
     }
 
-    private Folder getRootSource(MakeConfigurationDescriptor configurationDescriptor) {
+    public static Folder getRootSource(MakeConfigurationDescriptor configurationDescriptor) {
         Folder folder = configurationDescriptor.getLogicalFolders();
         List<Folder> sources = folder.getFolders();
         for (Folder sub : sources){

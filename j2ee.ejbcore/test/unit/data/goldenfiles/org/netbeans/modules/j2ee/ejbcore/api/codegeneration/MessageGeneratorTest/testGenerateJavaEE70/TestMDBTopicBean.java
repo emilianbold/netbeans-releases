@@ -18,7 +18,7 @@ import javax.jms.MessageListener;
 @MessageDriven(activationConfig =  {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
         @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "TestMessageDestination"),
-        @ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "durable"),
+        @ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable"),
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge"),
         @ActivationConfigProperty(propertyName = "connectionFactoryLookup", propertyValue = "factoryLookup"),
         @ActivationConfigProperty(propertyName = "clientId", propertyValue = "TestMessageDestination"),

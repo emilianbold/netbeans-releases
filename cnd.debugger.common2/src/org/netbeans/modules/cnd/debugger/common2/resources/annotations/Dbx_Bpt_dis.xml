@@ -44,8 +44,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.net
-beans.org/dtds/annotation-type-1_0.dtd">
+<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 
 <type name="Dbx_Bpt_dis"
       description_key="HINT_BREAKPOINT"

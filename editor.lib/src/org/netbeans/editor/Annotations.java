@@ -51,7 +51,6 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.EventListenerList;
 import java.util.EventListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -65,7 +64,7 @@ import java.util.TreeSet;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
+import javax.swing.event.EventListenerList;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.lib.drawing.ChainDrawMark;
 import org.netbeans.modules.editor.lib.drawing.MarkChain;
@@ -111,6 +110,8 @@ public class Annotations implements DocumentListener {
 
     /** List of listeners on AnnotationsListener*/
     private final EventListenerList listenerList;
+    
+    private final WeakEventListenerList weakListenerList;
 
     /** Property change listener on annotation type changes */
     private final PropertyChangeListener l;
@@ -135,6 +136,7 @@ public class Annotations implements DocumentListener {
         lineAnnotationsByMark = new HashMap<Mark, LineAnnotations>(30);
         lineAnnotationsArray = new ArrayList<LineAnnotations>(20);
         listenerList =  new EventListenerList();
+        weakListenerList = new WeakEventListenerList();
         
         this.doc = doc;
         this.markChain = new MarkChain(doc, null);
@@ -631,44 +633,60 @@ public class Annotations implements DocumentListener {
     
     /** Add AnnotationsListener listener */
     public void addAnnotationsListener(AnnotationsListener listener) {
-	listenerList.add(AnnotationsListener.class, listener);
+        if (listener instanceof GlyphGutter) {
+            weakListenerList.add(AnnotationsListener.class, listener);
+        } else {
+            listenerList.add(AnnotationsListener.class, listener);
+        }
     }
 
     /** Remove AnnotationsListener listener */
     public void removeAnnotationsListener(AnnotationsListener listener) {
-	listenerList.remove(AnnotationsListener.class, listener);
+        if (listener instanceof GlyphGutter) {
+            weakListenerList.remove(AnnotationsListener.class, listener);
+        } else {
+            listenerList.remove(AnnotationsListener.class, listener);
+        }
     }
 
     /** Fire AnnotationsListener.ChangedLine change*/
     protected void fireChangedLine(int line) {
 	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
+	Object[][] listeners2 = new Object[][]{listenerList.getListenerList(), weakListenerList.getListenerList()};
+        
 	// Process the listeners last to first, notifying
 	// those that are interested in this event
-	for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==AnnotationsListener.class) {
+        for (int j = 0; j < listeners2.length; j++) {
+            Object[] listeners = listeners2[j];
+        
+	    for (int i = listeners.length - 2; i >= 0; i -= 2) {
+                if (listeners[i] == AnnotationsListener.class) {
 		// Lazily create the event:
-		// if (e == null)
-		// e = new ListSelectionEvent(this, firstIndex, lastIndex);
-		((AnnotationsListener)listeners[i+1]).changedLine(line);
-	    }	       
-	}
+                    // if (e == null)
+                    // e = new ListSelectionEvent(this, firstIndex, lastIndex);
+                    ((AnnotationsListener) listeners[i + 1]).changedLine(line);
+                }
+            }
+        }
     }
    
     /** Fire AnnotationsListener.ChangedAll change*/
     protected void fireChangedAll() {
 	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
+	Object[][] listeners2 = new Object[][]{listenerList.getListenerList(), weakListenerList.getListenerList()};
 	// Process the listeners last to first, notifying
 	// those that are interested in this event
-	for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==AnnotationsListener.class) {
+        for (int j = 0; j < listeners2.length; j++) {
+            Object[] listeners = listeners2[j];
+            for (int i = listeners.length - 2; i >= 0; i -= 2) {
+                if (listeners[i] == AnnotationsListener.class) {
 		// Lazily create the event:
-		// if (e == null)
-		// e = new ListSelectionEvent(this, firstIndex, lastIndex);
-		((AnnotationsListener)listeners[i+1]).changedAll();
-	    }	       
-	}
+                    // if (e == null)
+                    // e = new ListSelectionEvent(this, firstIndex, lastIndex);
+                    ((AnnotationsListener) listeners[i + 1]).changedAll();
+                }
+            }
+        }
     }
 
     /** Return whether this document has or had any glyph icon attached.

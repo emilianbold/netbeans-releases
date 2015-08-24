@@ -49,8 +49,10 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Set;
 import java.util.Vector;
-
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -58,8 +60,8 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.WeakListeners;
 
@@ -73,10 +75,11 @@ public class BreakpointsTreeModel implements TreeModel {
 
     private Listener listener;
     private Vector listeners = new Vector ();
-    private Properties bpProperties = Properties.getDefault().getProperties("Breakpoints");
+    private static final Properties bpProperties = Properties.getDefault().getProperties("Breakpoints");
     private PropertyChangeListener pchl, oppchl;
     private Reference<Object[]> lastGroupsAndBreakpoints = new SoftReference<Object[]>(null);
     private final Object lastGroupsAndBreakpointsLock = new Object();
+    private final Set<Breakpoint> closedProjectsBreakpoints = new IdentityHashSet<>();
     
     /** 
      *
@@ -119,9 +122,12 @@ public class BreakpointsTreeModel implements TreeModel {
                 groupsAndBreakpoints = lastGroupsAndBreakpoints.get();
             }
             if (groupsAndBreakpoints == null) {
-                groupsAndBreakpoints = BreakpointGroup.createGroups(bpProperties);
+                Set<Breakpoint> cpb = new IdentityHashSet<>();
+                groupsAndBreakpoints = BreakpointGroup.createGroups(bpProperties, cpb);
                 synchronized (lastGroupsAndBreakpointsLock) {
                     lastGroupsAndBreakpoints = new SoftReference<Object[]>(groupsAndBreakpoints);
+                    closedProjectsBreakpoints.clear();
+                    closedProjectsBreakpoints.addAll(cpb);
                 }
             }
             if (to == 0 || to >= groupsAndBreakpoints.length && from == 0) {
@@ -195,6 +201,12 @@ public class BreakpointsTreeModel implements TreeModel {
         int i, k = v.size ();
         for (i = 0; i < k; i++)
             ((ModelListener) v.get (i)).modelChanged (me);
+    }
+    
+    private boolean isClosedProjectBreakpoint(Breakpoint b) {
+        synchronized (lastGroupsAndBreakpointsLock) {
+            return closedProjectsBreakpoints.contains(b);
+        }
     }
     
     
@@ -273,6 +285,14 @@ public class BreakpointsTreeModel implements TreeModel {
             if (propertyName == Breakpoint.PROP_GROUP_NAME) {
                 m.fireTreeChanged ();
             } else {
+                if (propertyName == Breakpoint.PROP_VALIDITY) {
+                    Breakpoint b = (Breakpoint) evt.getSource();
+                    if (m.isClosedProjectBreakpoint(b)) {
+                        m.fireTreeChanged ();
+                        return ;
+                    }
+                }
+
                 m.fireTreeChanged (new ModelEvent.NodeChanged(
                         m, evt.getSource ()));
                 if (propertyName == Breakpoint.PROP_ENABLED) {

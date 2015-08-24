@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -60,6 +61,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
@@ -100,6 +102,9 @@ public class OptionsPanel extends JPanel {
     volatile boolean configured = false;
     volatile boolean enabled;
     volatile String compilerOptions;
+    // #253814
+    // @GuardedBy("EDT")
+    private boolean recompileButtonDisabled = false;
 
 
     public OptionsPanel(CssPreprocessorType type, Project project, boolean initialEnabled, List<Pair<String, String>> initialMappings, String initialCompilerOptions) {
@@ -133,6 +138,7 @@ public class OptionsPanel extends JPanel {
         // ui
         enablePanel(initialEnabled);
         enableRemoveButton();
+        enableMoveButtons();
         if ("Mac OS X".equals(UIManager.getLookAndFeel().getName())) { //NOI18N
             mappingsTable.setShowGrid(true);
             mappingsTable.setGridColor(Color.GRAY);
@@ -144,14 +150,13 @@ public class OptionsPanel extends JPanel {
                 enabled = e.getStateChange() == ItemEvent.SELECTED;
                 configured = true;
                 enablePanel(enabled);
-                fireChange();
+                fireChange(false);
             }
         });
         mappingsTableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
-                enableRecompileButton();
-                fireChange();
+                fireChange(true);
             }
         });
         mappingsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -161,6 +166,7 @@ public class OptionsPanel extends JPanel {
                     return;
                 }
                 enableRemoveButton();
+                enableMoveButtons();
             }
         });
         compilerOptionsTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -178,7 +184,7 @@ public class OptionsPanel extends JPanel {
             }
             private void processChange() {
                 compilerOptions = compilerOptionsTextField.getText();
-                fireChange();
+                fireChange(true);
             }
         });
     }
@@ -229,8 +235,16 @@ public class OptionsPanel extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
-    void fireChange() {
+    void fireChange(boolean disableRecompile) {
+        assert EventQueue.isDispatchThread();
         changeSupport.fireChange();
+        if (disableRecompile) {
+            boolean refresh = !recompileButtonDisabled;
+            recompileButtonDisabled = true;
+            if (refresh) {
+                enableRecompileButton();
+            }
+        }
     }
 
     void enablePanel(boolean enabled) {
@@ -246,28 +260,62 @@ public class OptionsPanel extends JPanel {
         configureExecutablesButton.setEnabled(enabled);
         if (enabled) {
             enableRemoveButton();
+            enableMoveButtons();
         } else {
             removeButton.setEnabled(false);
+            moveDownButton.setEnabled(false);
+            moveUpButton.setEnabled(false);
         }
         compilerOptionsLabel.setEnabled(enabled);
         compilerOptionsTextField.setEnabled(enabled);
         compilerOptionsInfoLabel.setEnabled(enabled);
     }
 
+    @NbBundle.Messages({
+        "OptionsPanel.recompile.error.noWebRoot=No web root is set.",
+        "OptionsPanel.recompile.error.changeDetected=Save and reopen this dialog first.",
+    })
     void enableRecompileButton() {
+        assert EventQueue.isDispatchThread();
         FileObject webRoot = CssPreprocessorUtils.getWebRoot(project);
         if (webRoot == null) {
             recompileButton.setEnabled(false);
+            recompileButton.setToolTipText(Bundle.OptionsPanel_recompile_error_noWebRoot());
+            return;
+        }
+        if (recompileButtonDisabled) {
+            recompileButton.setEnabled(false);
+            recompileButton.setToolTipText(Bundle.OptionsPanel_recompile_error_changeDetected());
             return;
         }
         ValidationResult result = type.getPreferencesValidator()
                 .validateMappings(webRoot, true, mappings)
                 .getResult();
         recompileButton.setEnabled(result.isFaultless());
+        recompileButton.setToolTipText(null);
     }
 
     void enableRemoveButton() {
         removeButton.setEnabled(mappingsTable.getSelectedRowCount() > 0);
+    }
+
+    void enableMoveButtons() {
+        int[] selectedRows = mappingsTable.getSelectedRows();
+        if (selectedRows.length == 0) {
+            moveDownButton.setEnabled(false);
+            moveUpButton.setEnabled(false);
+            return;
+        }
+        moveDownButton.setEnabled(Arrays.binarySearch(selectedRows, mappingsTable.getRowCount() - 1) < 0);
+        moveUpButton.setEnabled(Arrays.binarySearch(selectedRows, 0) < 0);
+    }
+
+    private void selectRows(int[] selectedRows, int delta) {
+        ListSelectionModel listSelectionModel = mappingsTable.getSelectionModel();
+        listSelectionModel.clearSelection();
+        for (int selectedRow : selectedRows) {
+            listSelectionModel.addSelectionInterval(selectedRow + delta, selectedRow + delta);
+        }
     }
 
     /**
@@ -286,6 +334,8 @@ public class OptionsPanel extends JPanel {
         mappingsTable = new JTable();
         addButton = new JButton();
         removeButton = new JButton();
+        moveUpButton = new JButton();
+        moveDownButton = new JButton();
         mappingsInfoLabel = new JLabel();
         compilerOptionsLabel = new JLabel();
         compilerOptionsTextField = new JTextField();
@@ -326,6 +376,20 @@ public class OptionsPanel extends JPanel {
             }
         });
 
+        Mnemonics.setLocalizedText(moveUpButton, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.moveUpButton.text")); // NOI18N
+        moveUpButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                moveUpButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(moveDownButton, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.moveDownButton.text")); // NOI18N
+        moveDownButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                moveDownButtonActionPerformed(evt);
+            }
+        });
+
         Mnemonics.setLocalizedText(mappingsInfoLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.mappingsInfoLabel.text")); // NOI18N
 
         compilerOptionsLabel.setLabelFor(compilerOptionsTextField);
@@ -347,7 +411,9 @@ public class OptionsPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                     .addComponent(addButton)
-                    .addComponent(removeButton)))
+                    .addComponent(removeButton)
+                    .addComponent(moveDownButton, GroupLayout.Alignment.LEADING)
+                    .addComponent(moveUpButton)))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(compilerOptionsLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -357,15 +423,15 @@ public class OptionsPanel extends JPanel {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(compilerOptionsTextField)))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(mappingsInfoLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addComponent(watchLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(recompileButton))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(mappingsInfoLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, removeButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, moveDownButton, moveUpButton, removeButton});
 
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -378,11 +444,16 @@ public class OptionsPanel extends JPanel {
                     .addComponent(recompileButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(mappingsScrollPane, GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
+                    .addComponent(mappingsScrollPane, GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeButton)))
+                        .addComponent(removeButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(moveUpButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(moveDownButton)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(mappingsInfoLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
@@ -430,6 +501,33 @@ public class OptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_recompileButtonActionPerformed
 
+    private void moveUpButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
+        assert EventQueue.isDispatchThread();
+        int[] selectedRows = mappingsTable.getSelectedRows();
+        for (int selectedRow : selectedRows) {
+            Pair<String, String> up = mappings.get(selectedRow);
+            Pair<String, String> down = mappings.get(selectedRow - 1);
+            mappings.set(selectedRow - 1, up);
+            mappings.set(selectedRow, down);
+        }
+        mappingsTableModel.fireMappingsChange();
+        selectRows(selectedRows, -1);
+    }//GEN-LAST:event_moveUpButtonActionPerformed
+
+    private void moveDownButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
+        assert EventQueue.isDispatchThread();
+        int[] selectedRows = mappingsTable.getSelectedRows();
+        for (int i = selectedRows.length - 1; i >= 0; --i) {
+            int selectedRow = selectedRows[i];
+            Pair<String, String> down = mappings.get(selectedRow);
+            Pair<String, String> up = mappings.get(selectedRow + 1);
+            mappings.set(selectedRow + 1, down);
+            mappings.set(selectedRow, up);
+        }
+        mappingsTableModel.fireMappingsChange();
+        selectRows(selectedRows, 1);
+    }//GEN-LAST:event_moveDownButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton addButton;
     private JLabel compilerOptionsInfoLabel;
@@ -440,6 +538,8 @@ public class OptionsPanel extends JPanel {
     private JLabel mappingsInfoLabel;
     private JScrollPane mappingsScrollPane;
     private JTable mappingsTable;
+    private JButton moveDownButton;
+    private JButton moveUpButton;
     private JButton recompileButton;
     private JButton removeButton;
     private JLabel watchLabel;

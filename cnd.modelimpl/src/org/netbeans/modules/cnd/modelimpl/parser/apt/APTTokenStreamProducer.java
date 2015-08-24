@@ -44,15 +44,12 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -62,11 +59,8 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
-import org.netbeans.modules.cnd.apt.support.spi.APTIndexFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.debug.DebugUtils;
-import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -77,10 +71,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Lookup;
 import org.openide.util.Pair;
 
 /**
@@ -93,31 +85,17 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
     private APTBasedPCStateBuilder pcBuilder;
     private Pair<PreprocHandler.State, APTFileCacheEntry> cachePair;
     
-    private APTTokenStreamProducer(FileImpl file, FileContent newFileContent, APTFile fullAPT) {
-        super(file, newFileContent);
+    private APTTokenStreamProducer(FileImpl file, FileContent newFileContent, APTFile fullAPT, boolean fromEnsureParsed) {
+        super(file, newFileContent, fromEnsureParsed);
         this.fullAPT = fullAPT;
     }
 
-    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean index) {
+    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean fromEnsureParsed) {
         APTFile fullAPT = getFileAPT(file, true);
         if (fullAPT == null) {
             return null;
         }
-        if (index) {
-            if (CndTraceFlags.TEXT_INDEX) {
-                Collection<? extends APTIndexFilter> indexFilters = Collections.emptyList();
-                Object pp = file.getProject().getPlatformProject();
-                if (pp instanceof NativeProject) {
-                    final Lookup.Provider project = ((NativeProject) pp).getProject();
-                    if (project != null) {
-                        indexFilters = project.getLookup().lookupAll(APTIndexFilter.class);
-                    }
-                }
-                APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, file.getTextIndexKey(), indexFilters);
-                aptIndexingWalker.index();
-            }  
-        }
-        return new APTTokenStreamProducer(file, newFileContent, fullAPT);
+        return new APTTokenStreamProducer(file, newFileContent, fullAPT, fromEnsureParsed);
     }
 
     @Override

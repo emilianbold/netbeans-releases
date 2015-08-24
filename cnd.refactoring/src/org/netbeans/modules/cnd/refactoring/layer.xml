@@ -34,7 +34,6 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
                     </file>                      
                     <file name="InlineAction.instance">
-                        <!-- <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.actions.InlineRefactoringAction.inlineMacro"/> -->
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.inlineAction"/>
                     </file>
                 </folder>
@@ -152,7 +151,6 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
                     </file>                    
                     <file name="InlineAction.instance">
-                        <!-- <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.actions.InlineRefactoringAction.inlineMacro"/> -->
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.inlineAction"/>
                     </file>
                 </folder>
@@ -288,7 +286,6 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
                     </file>                      
                     <file name="InlineAction.instance">
-                        <!-- <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.actions.InlineRefactoringAction.inlineMacro"/> -->
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.inlineAction"/>
                     </file>
                 </folder>

@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.spi.StrataProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
@@ -63,7 +64,8 @@ public class TruffleStrataProvider implements StrataProvider {
 
     @Override
     public String getDefaultStratum(CallStackFrameImpl csf) {
-        if (TruffleAccess.BASIC_CLASS_NAME.equals(csf.getClassName())) {
+        //if (TruffleAccess.BASIC_CLASS_NAME.equals(csf.getClassName())) {
+        if ("com.oracle.truffle.api.vm.TruffleVM".equals(csf.getClassName())) {
             return TRUFFLE_STRATUM;
         }
         return null;
@@ -71,7 +73,8 @@ public class TruffleStrataProvider implements StrataProvider {
 
     @Override
     public List<String> getAvailableStrata(CallStackFrameImpl csf) {
-        if (TruffleAccess.BASIC_CLASS_NAME.equals(csf.getClassName())) {
+        //if (TruffleAccess.BASIC_CLASS_NAME.equals(csf.getClassName())) {
+        if ("com.oracle.truffle.api.vm.TruffleVM".equals(csf.getClassName())) {
             return Collections.singletonList(TRUFFLE_STRATUM);
         }
         return null;
@@ -80,6 +83,11 @@ public class TruffleStrataProvider implements StrataProvider {
     @Override
     public int getStrataLineNumber(CallStackFrameImpl csf, String stratum) {
         if (TRUFFLE_STRATUM.equals(stratum)) {
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(((JPDAThreadImpl) csf.getThread()).getDebugger());
+            if (currentPCInfo != null) {
+                return currentPCInfo.getSourcePosition().getLine();
+            }
+            /*
             try {
                 LocalVariable[] methodArguments = csf.getLocalVariables();
                 for (LocalVariable lv : methodArguments) {
@@ -93,6 +101,7 @@ public class TruffleStrataProvider implements StrataProvider {
             } catch (AbsentInformationException aiex) {
                 
             }
+            */
         }
         return csf.getLineNumber(stratum);
     }

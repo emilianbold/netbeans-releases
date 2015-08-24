@@ -96,12 +96,14 @@ public class MatchedPropertyNode extends AbstractNode {
             sourceURL = rule.getSourceURL();
         }
         String stylesheet = Utilities.relativeResourceName(sourceURL, ruleOrigin.getProject());
-        if (stylesheet.isEmpty()) {
-            stylesheet = Bundle.CSSStylesSelectionPanel_generatedStylesheet();
+        if (stylesheet != null) {
+            if (stylesheet.isEmpty()) {
+                stylesheet = Bundle.CSSStylesSelectionPanel_generatedStylesheet();
+            }
+            String description = NbBundle.getMessage(MatchedPropertyNode.class,
+                "MatchedPropertyNode.description", rule.getSelector(), stylesheet); // NOI18N
+            setShortDescription(description);
         }
-        String description = NbBundle.getMessage(MatchedPropertyNode.class,
-            "MatchedPropertyNode.description", rule.getSelector(), stylesheet); // NOI18N
-        setShortDescription(description);
     }
 
     /**

@@ -42,10 +42,15 @@
 
 package org.netbeans.modules.parsing.lucene;
 
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
@@ -99,6 +104,22 @@ final class LRUCache<K,V extends Evictable> {
         } finally {
             this.lock.writeLock().unlock();
         }
+    }
+
+    @NonNull
+    public Collection<? extends V> clear() {
+        final Collection<V> res = new ArrayDeque<>();
+        this.lock.writeLock().lock();
+        try {
+            for (Iterator<Entry<K, V>> it = this.cache.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<K,V> e = it.next();
+                res.add(e.getValue());
+                it.remove();
+            }
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+        return res;
     }
 
     @Override

@@ -157,6 +157,9 @@
     "_SelectMode": {
         "message": "Inspect in NetBeans Mode"
     },
+    "_DebugInNetBeans": {
+        "message": "Debug in NetBeans"
+    },
     "_PresetTitle": {
         "message": "$PRESET$ ($WIDTH$ x $HEIGHT$)",
         "placeholders": {

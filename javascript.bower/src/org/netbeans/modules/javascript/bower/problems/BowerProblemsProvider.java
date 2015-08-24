@@ -161,29 +161,21 @@ public final class BowerProblemsProvider implements ProjectProblemsProvider, Pro
         if (!bowerJson.exists()) {
             return false;
         }
-        if (getBowerComponentsDir().isDirectory()) {
+        if (bowerrcJson.getBowerComponentsDir().isDirectory()) {
             return false;
         }
         return !bowerJson.getDependencies().isEmpty();
     }
 
-    File getBowerComponentsDir() {
-        String directory = bowerrcJson.getContentValue(String.class, BowerrcJson.FIELD_DIRECTORY);
-        if (directory == null) {
-            directory = "bower_components"; // NOI18N
-        }
-        return new File(bowerrcJson.getFile().getParentFile(), directory);
-    }
-
     void listenOnBowerComponentsDir() {
         File projectDir = bowerJson.getFile().getParentFile();
-        File bowerComponents = getBowerComponentsDir();
+        File bowerComponents = bowerrcJson.getBowerComponentsDir();
         if (bowerComponents.getParentFile().equals(projectDir)) {
             // we already listen on project directory
             return;
         }
         try {
-            FileUtil.addFileChangeListener(fileChangeListener, bowerComponents.getParentFile());
+            FileUtil.addFileChangeListener(fileChangeListener, FileUtil.normalizeFile(bowerComponents.getParentFile()));
         } catch (IllegalArgumentException exc) {
             // already listening
             LOGGER.log(Level.FINE, null, exc);
@@ -244,7 +236,7 @@ public final class BowerProblemsProvider implements ProjectProblemsProvider, Pro
         }
 
         private void processFolderChange(String folderName) {
-            if (getBowerComponentsDir().getName().equals(folderName)) {
+            if (bowerrcJson.getBowerComponentsDir().getName().equals(folderName)) {
                 listenOnBowerComponentsDir();
                 fireProblemsChanged();
             }

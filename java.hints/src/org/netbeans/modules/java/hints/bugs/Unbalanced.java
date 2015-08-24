@@ -46,17 +46,12 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -72,30 +67,27 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.Hint.Options;
 import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerOptions;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author lahvac
  */
 public class Unbalanced {
-
-    private static final Map<CompilationInfo, Map<Element, Set<State>>> seen = new WeakHashMap<CompilationInfo, Map<Element, Set<State>>>();
-    private static final Set<Reference<CompilationInfo>> cleaning = Collections.newSetFromMap(new IdentityHashMap<Reference<CompilationInfo>, Boolean>());
-
+    private static final String SEEN_KEY = Unbalanced.class.getName() + ".seen"; // NOI18N
+    
     private static boolean isAcceptable(Element el) {
         return el != null && (el.getKind() == ElementKind.LOCAL_VARIABLE || (el.getKind() == ElementKind.FIELD && el.getModifiers().contains(Modifier.PRIVATE)));
     }
     
     private static void record(CompilationInfo info, VariableElement el, State... states) {
-        Map<Element, Set<State>> cache = seen.get(info);
+        Map<Element, Set<State>> cache = (Map<Element, Set<State>>)info.getCachedValue(SEEN_KEY);
 
         if (cache == null) {
-            seen.put(info, cache = new HashMap<Element, Set<State>>());
-            cleaning.add(new CleaningReference(info));
+            info.putCachedValue(SEEN_KEY, cache = new HashMap<>(), CompilationInfo.CacheClearPolicy.ON_CHANGE);
         }
 
         Set<State> state = cache.get(el);
@@ -112,7 +104,7 @@ public class Unbalanced {
 
         if (el == null) return null;
 
-        Map<Element, Set<State>> cache = seen.get(ctx.getInfo());
+        Map<Element, Set<State>> cache = (Map<Element, Set<State>>)ctx.getInfo().getCachedValue(SEEN_KEY);
 
         if (cache == null) return null;
 
@@ -150,6 +142,7 @@ public class Unbalanced {
         }
 
         @TriggerTreeKind({Kind.IDENTIFIER, Kind.MEMBER_SELECT})
+        @TriggerOptions(TriggerOptions.PROCESS_GUARDED)
         public static ErrorDescription before(HintContext ctx) {
             VariableElement var = testElement(ctx);
 
@@ -258,6 +251,7 @@ public class Unbalanced {
         }
 
         @TriggerTreeKind({Kind.IDENTIFIER, Kind.MEMBER_SELECT})
+        @TriggerOptions(TriggerOptions.PROCESS_GUARDED)
         public static ErrorDescription before(HintContext ctx) {
             TreePath tp = ctx.getPath();
             VariableElement var = testElement(ctx);
@@ -317,15 +311,5 @@ public class Unbalanced {
 
     public enum State {
         READ, WRITE;
-    }
-
-    private static class CleaningReference extends WeakReference<CompilationInfo> implements Runnable {
-        public CleaningReference(CompilationInfo referent) {
-            super(referent, Utilities.activeReferenceQueue());
-        }
-        @Override public void run() {
-            seen.size();
-            cleaning.remove(this);
-        }
     }
 }

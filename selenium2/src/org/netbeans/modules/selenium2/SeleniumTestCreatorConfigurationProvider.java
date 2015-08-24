@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.selenium2;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
+import org.netbeans.modules.gsf.testrunner.ui.spi.TestCreatorConfiguration;
 import org.netbeans.modules.gsf.testrunner.ui.spi.TestCreatorConfigurationProvider;
-import org.netbeans.modules.selenium2.api.Selenium2Support;
-import org.netbeans.modules.selenium2.spi.Selenium2SupportImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -58,51 +50,12 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Theofanis Oikonomou
  */
-@ServiceProvider(service=TestCreatorConfigurationProvider.class, position=10)
-public class SeleniumTestCreatorConfigurationProvider extends TestCreatorConfigurationProvider {
-    
-    
-    /**
-     *
-     * @param framework the value of framework
-     * @return the boolean
-     */
-    @Override
-    public boolean canHandleProject(String framework) {
-        return framework.equals(TestCreatorProvider.FRAMEWORK_SELENIUM);
-    }
+@ServiceProvider(service = TestCreatorConfigurationProvider.class, position = 10)
+public class SeleniumTestCreatorConfigurationProvider implements TestCreatorConfigurationProvider {
 
     @Override
-    public void persistConfigurationPanel(Context context) {
-        
+    public TestCreatorConfiguration createTestCreatorConfiguration(FileObject[] activatedFileObjects) {
+        return new SeleniumTestCreatorConfiguration(activatedFileObjects);
     }
 
-    @Override
-    public String[] getSourceAndTestClassNames(FileObject fileObj, boolean isTestNG, boolean isSelenium) {
-        String[] result = {"", ""};
-        Project p = FileOwnerQuery.getOwner(fileObj);
-        if (p != null) {
-            Selenium2SupportImpl selenium2Support = Selenium2Support.findSelenium2Support(p);
-            if(selenium2Support != null) {
-                result = selenium2Support.getSourceAndTestClassNames(fileObj, isTestNG, isSelenium);
-            }
-        }
-        return result;
-    }
-
-    
-
-    @Override
-    public Object[] getTestSourceRoots(Collection<SourceGroup> createdSourceRoots, FileObject fo) {
-        List<Object> folders = new ArrayList<Object>();
-        Project p = FileOwnerQuery.getOwner(fo);
-        if (p != null) {
-            Selenium2SupportImpl selenium2Support = Selenium2Support.findSelenium2Support(p);
-            if(selenium2Support != null) {
-                folders = selenium2Support.getTestSourceRoots(createdSourceRoots, fo);
-            }
-        }
-        return folders.toArray();
-    }
-    
 }

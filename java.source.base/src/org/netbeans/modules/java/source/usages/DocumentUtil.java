@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -69,11 +72,13 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Convertors;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -84,11 +89,11 @@ import org.openide.util.Pair;
  * @author Tomas Zezula
  */
 public class DocumentUtil {
-    
+
 
     static final String FIELD_PACKAGE_NAME = "packageName";     //NOI18N
     static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
-    static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N    
+    static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N
     static final String FIELD_IDENTS = "ids";                           //NOI18N
     static final String FIELD_FEATURE_IDENTS = "fids";                  //NOI18N
     static final String FIELD_CASE_INSENSITIVE_FEATURE_IDENTS = "cifids"; //NOI18N
@@ -106,11 +111,11 @@ public class DocumentUtil {
     private static final char EK_INTERFACE = 'I';                       //NOI18N
     private static final char EK_ENUM = 'E';                            //NOI18N
     private static final char EK_ANNOTATION = 'A';                      //NOI18N
-    private static final int SIZE = ClassIndexImpl.UsageType.values().length;    
+    private static final int SIZE = ClassIndexImpl.UsageType.values().length;
 
     private DocumentUtil () {
     }
-    
+
     public static Analyzer createAnalyzer() {
         final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer());
         analyzer.addAnalyzer(DocumentUtil.FIELD_IDENTS, new WhitespaceAnalyzer());
@@ -118,42 +123,46 @@ public class DocumentUtil {
         analyzer.addAnalyzer(DocumentUtil.FIELD_CASE_INSENSITIVE_FEATURE_IDENTS, new DocumentUtil.LCWhitespaceAnalyzer());
         return analyzer;
     }
-    
+
     //Convertor factories
-    public static Convertor<Document,FileObject> fileObjectConvertor (final FileObject... roots) {
+    @NonNull
+    public static Convertor<Document,FileObject> fileObjectConvertor (
+            @NonNull final ClassIndex.ResourceType resourceType,
+            @NonNull final FileObject... roots) {
+        assert resourceType != null;
         assert roots != null;
-        return new FileObjectConvertor (roots);
+        return new FileObjectConvertor (resourceType, roots);
     }
-    
+
     public static Convertor<Document,ElementHandle<TypeElement>> elementHandleConvertor () {
         return new ElementHandleConvertor ();
     }
-    
+
     public static Convertor<Document,String> binaryNameConvertor () {
         return new BinaryNameConvertor ();
     }
-    
+
     public static Convertor<Document,String> sourceNameConvertor () {
         return new SourceNameConvertor();
     }
-    
+
     static Convertor<Pair<Pair<String,String>,Object[]>,Document> documentConvertor() {
         return new DocumentConvertor();
     }
-    
+
     static Convertor<Pair<String,String>,Query> queryClassWithEncConvertor(final boolean fileBased) {
         return new QueryClassesWithEncConvertor(fileBased);
     }
-    
+
     static Convertor<Pair<String,String>,Query> queryClassConvertor() {
         return new QueryClassConvertor();
     }
-    
+
     //Document field getters
     static String getBinaryName (final Document doc) {
         return getBinaryName(doc, null);
     }
-    
+
     static String getBinaryName (final Document doc, final ElementKind[] kind) {
         assert doc != null;
         final Field pkgField = doc.getField(FIELD_PACKAGE_NAME);
@@ -172,14 +181,14 @@ public class DocumentUtil {
         }
         if (pkgField == null) {
             return snName;
-        }        
+        }
         String pkg = pkgField.stringValue();
         if (pkg.length() == 0) {
             return snName;
         }
         return  pkg + PKG_SEPARATOR + snName;   //NO I18N
     }
-    
+
     public static String getSimpleBinaryName (final Document doc) {
         assert doc != null;
         Field field = doc.getField(FIELD_BINARY_NAME);
@@ -190,14 +199,14 @@ public class DocumentUtil {
             return field.stringValue();
         }
     }
-        
+
     static String getPackageName (final Document doc) {
         assert doc != null;
         Field field = doc.getField(FIELD_PACKAGE_NAME);
         return field == null ? null : field.stringValue();
     }
-                
-    
+
+
     //Term and query factories
     static Query binaryNameQuery (final String resourceName) {
         final BooleanQuery query = new BooleanQuery ();
@@ -216,7 +225,7 @@ public class DocumentUtil {
         query.add (new WildcardQuery (new Term (FIELD_BINARY_NAME, sName)),BooleanClause.Occur.MUST);
         return query;
     }
-                                    
+
     static Term referencesTerm (
         String resourceName,
         final Set<? extends ClassIndexImpl.UsageType> usageType,
@@ -237,7 +246,7 @@ public class DocumentUtil {
         }
         return new Term (FIELD_REFERENCES, resourceName);
     }
-        
+
     //Factories for lucene document
     private static Document createDocument (final String binaryName,
             List<String> references,
@@ -269,7 +278,7 @@ public class DocumentUtil {
             simpleName = fileName.substring(index+1,fileName.length()-1);
         }
         final String caseInsensitiveName = simpleName.toLowerCase();         //XXX: I18N, Locale
-        Document doc = new Document ();        
+        Document doc = new Document ();
         Field field = new Field (FIELD_BINARY_NAME,fileName,Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
         doc.add (field);
         field = new Field (FIELD_PACKAGE_NAME,pkgName,Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
@@ -298,12 +307,12 @@ public class DocumentUtil {
         }
         return doc;
     }
-        
-    // Functions for encoding and decoding of UsageType    
+
+    // Functions for encoding and decoding of UsageType
     static String encodeUsage (final String className, final Set<ClassIndexImpl.UsageType> usageTypes) {
         return encodeUsage (className, usageTypes, NO, new char[] {YES}).toString();
     }
-    
+
     private static StringBuilder encodeUsage (
         final String className,
         final Set<? extends ClassIndexImpl.UsageType> usageTypes,
@@ -322,7 +331,7 @@ public class DocumentUtil {
         }
         return builder;
     }
-            
+
     static String decodeUsage (final String rawUsage, final Set<ClassIndexImpl.UsageType> usageTypes) {
         assert rawUsage != null;
         assert usageTypes != null;
@@ -340,7 +349,7 @@ public class DocumentUtil {
         }
         return className;
     }
-    
+
     static ElementKind decodeKind (char kind) {
         switch (kind) {
             case EK_CLASS:
@@ -355,7 +364,7 @@ public class DocumentUtil {
                 throw new IllegalArgumentException ();
         }
     }
-    
+
     static char encodeKind (ElementKind kind) {
         switch (kind) {
             case CLASS:
@@ -369,19 +378,19 @@ public class DocumentUtil {
             default:
                 throw new IllegalArgumentException ();
         }
-    }       
-    
-    
+    }
+
+
     public static FieldSelector declaredTypesFieldSelector (final boolean includeSource) {
         return includeSource ?
             Queries.createFieldSelector(FIELD_PACKAGE_NAME, FIELD_BINARY_NAME, FIELD_SOURCE) :
             Queries.createFieldSelector(FIELD_PACKAGE_NAME,FIELD_BINARY_NAME);
     }
-    
+
     static FieldSelector sourceNameFieldSelector () {
         return Queries.createFieldSelector(FIELD_SOURCE);
     }
-    
+
     static Queries.QueryKind translateQueryKind(final ClassIndex.NameKind kind) {
         switch (kind) {
             case SIMPLE_NAME: return Queries.QueryKind.EXACT;
@@ -394,8 +403,8 @@ public class DocumentUtil {
             default: throw new IllegalArgumentException();
         }
     }
-         
-    //<editor-fold defaultstate="collapsed" desc="Analyzers Implementation">      
+
+    //<editor-fold defaultstate="collapsed" desc="Analyzers Implementation">
     // in Lucene 3.5, WhitespaceTokenizer became final class; isTokenChar was copied.
     private static class LCWhitespaceTokenizer extends CharTokenizer {
         LCWhitespaceTokenizer (final Reader r) {
@@ -406,36 +415,42 @@ public class DocumentUtil {
         protected boolean isTokenChar(int c) {
             return !Character.isWhitespace(c);
         }
-        
+
         protected char normalize(char c) {
             return Character.toLowerCase(c);
-        }        
+        }
     }
-    
+
     static final class LCWhitespaceAnalyzer extends Analyzer {
         public TokenStream tokenStream(String fieldName, Reader reader) {
             return new LCWhitespaceTokenizer(reader);
         }
     }
-    
+
     //</editor-fold>
-    
-    
+
+
     // <editor-fold defaultstate="collapsed" desc="Result Convertors Implementation">
-    private static class FileObjectConvertor implements Convertor<Document,FileObject> {                
-        
-        private FileObject[] roots;
-        
-        private FileObjectConvertor (final FileObject... roots) {
+    private static class FileObjectConvertor implements Convertor<Document,FileObject> {
+
+        private final Convertor<String,String> nameFactory;
+        private final Convertor<FileObject,Boolean> filter;
+        private final FileObject[] roots;
+
+        private FileObjectConvertor (
+                @NonNull final ClassIndex.ResourceType type,
+                @NonNull final FileObject... roots) {
+            this.nameFactory = createNameFactory(type);
+            this.filter = createFilter(type);
             this.roots = roots;
         }
-        
+
         @Override
         public FileObject convert (final Document doc) {
             final String binaryName = getBinaryName(doc, null);
             return binaryName == null ? null : convert(binaryName);
         }
-        
+
         private FileObject convert(String value) {
             for (FileObject root : roots) {
                 FileObject result = resolveFile (root, value);
@@ -460,12 +475,14 @@ public class DocumentUtil {
                     Exceptions.printStackTrace(e);
                 } catch (InterruptedException ie) {
                     //Safe to ingnore
-                }               
+                }
             }
             return null;
         }
-        
-        private static FileObject resolveFile (final FileObject root, String classBinaryName) {
+
+        private FileObject resolveFile (
+                final FileObject root,
+                String classBinaryName) {
             assert classBinaryName != null;
             classBinaryName = classBinaryName.replace('.', '/');    //NOI18N
             int index = classBinaryName.lastIndexOf('/');           //NOI18N
@@ -484,21 +501,61 @@ public class DocumentUtil {
             if (folder == null) {
                 return null;
             }
-            index = name.indexOf('$');                              //NOI18N
-            if (index>0) {
-                name = name.substring(0, index);
-            }
+            name = nameFactory.convert(name);
             for (FileObject child : folder.getChildren()) {
-                if (FileObjects.JAVA.equalsIgnoreCase(child.getExt()) && name.equals(child.getName())) {
+                if (name.equals(child.getName()) && filter.convert(child)) {
                     return child;
                 }
             }
             return null;
         }
+
+        @NonNull
+        private static Convertor<FileObject,Boolean> createFilter(@NonNull final ClassIndex.ResourceType type) {
+            switch (type) {
+                case SOURCE:
+                    return new Convertor<FileObject,Boolean>() {
+                        @Override
+                        public Boolean convert(FileObject p) {
+                            return FileObjects.JAVA.equalsIgnoreCase(p.getExt());
+                        }
+                    };
+                case BINARY:
+                    return new Convertor<FileObject,Boolean>() {
+                        @Override
+                        public Boolean convert(FileObject p) {
+                            return FileObjects.CLASS.equalsIgnoreCase(p.getExt());
+                        }
+                    };
+                default:
+                    throw new IllegalArgumentException(String.valueOf(type));
+            }
+        }
+
+        @NonNull
+        private static Convertor<String,String> createNameFactory(@NonNull final ClassIndex.ResourceType type) {
+            switch (type) {
+                case SOURCE:
+                    return new Convertor<String,String>() {
+                        @Override
+                        public String convert(String p) {
+                            final int index = p.indexOf('$');                              //NOI18N
+                            if (index > 0) {
+                                p = p.substring(0, index);
+                            }
+                            return p;
+                        }
+                    };
+                case BINARY:
+                    return Convertors.<String>identity();
+                default:
+                    throw new IllegalArgumentException(String.valueOf(type));
+            }
+        }
     }
-    
+
     private static class ElementHandleConvertor implements Convertor<Document,ElementHandle<TypeElement>> {
-        
+
         private final ElementKind[] kindHolder = new ElementKind[1];
 
         @Override
@@ -511,15 +568,15 @@ public class DocumentUtil {
             return ElementHandleAccessor.getInstance().create(kind, value);
         }
     }
-    
+
     private static class BinaryNameConvertor implements Convertor<Document,String> {
-        
+
         @Override
         public String convert (final Document doc) {
             return getBinaryName(doc, null);
         }
     }
-    
+
     private static class SourceNameConvertor implements Convertor<Document,String> {
 
         @Override
@@ -528,7 +585,7 @@ public class DocumentUtil {
             return field == null ? null : field.stringValue();
         }
     }
-    
+
     private static class DocumentConvertor implements Convertor<Pair<Pair<String,String>,Object[]>,Document> {
         @Override
         public Document convert(Pair<Pair<String, String>, Object[]> entry) {
@@ -542,7 +599,7 @@ public class DocumentUtil {
             return DocumentUtil.createDocument(cn,cr,fids,ids,srcName);
         }
     }
-    
+
     private static class QueryClassesWithEncConvertor implements Convertor<Pair<String,String>,Query> {
 
         private final boolean fileBased;
@@ -557,8 +614,8 @@ public class DocumentUtil {
             final String sourceName = p.second();
             return fileBased ? createClassesInFileQuery(resourceName,sourceName) : createClassWithEnclosedQuery(resourceName, sourceName);
         }
-        
-        private static Query createClassWithEnclosedQuery (final String resourceName, final String sourceName) {            
+
+        private static Query createClassWithEnclosedQuery (final String resourceName, final String sourceName) {
             final BooleanQuery query = createFQNQuery(resourceName);
             if (sourceName != null) {
                 query.add (new TermQuery(new Term (DocumentUtil.FIELD_SOURCE,sourceName)), Occur.MUST);
@@ -605,15 +662,15 @@ public class DocumentUtil {
             fqnQuery.add(snQuery, Occur.MUST);
             return fqnQuery;
         }
-        
+
     }
-    
+
     private static class QueryClassConvertor implements Convertor<Pair<String,String>,Query> {
         @Override
         public Query convert(Pair<String, String> p) {
             return binaryNameSourceNamePairQuery(p);
         }
-        
+
         private static Query binaryNameSourceNamePairQuery (final Pair<String,String> binaryNameSourceNamePair) {
             assert binaryNameSourceNamePair != null;
             final String binaryName = binaryNameSourceNamePair.first();
@@ -627,6 +684,6 @@ public class DocumentUtil {
             return query;
         }
     }
-    
+
     //</editor-fold>
 }

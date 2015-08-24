@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl.FileNameSortedKey;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentDeclarations.OffsetSortedKey;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentMacros.NameSortedKey;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences.ReferenceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.SystemMacroImpl.BuiltInMacroUID;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ForwardClassUID;
@@ -386,6 +387,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aHandler = UID_UNNAMED_CLASSIFIER_UID;
         } else if (object instanceof MacroUID) {
             aHandler = UID_MACRO_UID;
+        } else if (object instanceof BuiltInMacroUID) {
+            aHandler = UID_BUILT_IN_MACRO_UID;
         } else if (object instanceof IncludeUID) {
             aHandler = UID_INCLUDE_UID;
         } else if (object instanceof UIDUtilities.InheritanceUID) {
@@ -453,6 +456,11 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             case UID_MACRO_UID:
                 share = true;
                 anUID = new MacroUID(aStream);
+                break;
+
+            case UID_BUILT_IN_MACRO_UID:
+                share = true;
+                anUID = new BuiltInMacroUID(aStream);
                 break;
 
             case UID_INCLUDE_UID:
@@ -525,7 +533,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static final short UID_FORWARD_CLASS_UID = UID_CLASSIFIER_UID + 1;
     private static final short UID_UNNAMED_CLASSIFIER_UID = UID_FORWARD_CLASS_UID + 1;
     private static final short UID_MACRO_UID = UID_UNNAMED_CLASSIFIER_UID + 1;
-    private static final short UID_INCLUDE_UID = UID_MACRO_UID + 1;
+    private static final short UID_BUILT_IN_MACRO_UID = UID_MACRO_UID + 1;
+    private static final short UID_INCLUDE_UID = UID_BUILT_IN_MACRO_UID + 1;
     private static final short UID_INHERITANCE_UID = UID_INCLUDE_UID + 1;
     private static final short UID_UNNAMED_OFFSETABLE_DECLARATION_UID = UID_INHERITANCE_UID + 1;
     private static final short UID_DECLARATION_UID = UID_UNNAMED_OFFSETABLE_DECLARATION_UID + 1;

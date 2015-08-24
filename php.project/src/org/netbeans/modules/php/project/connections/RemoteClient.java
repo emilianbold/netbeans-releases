@@ -62,6 +62,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
@@ -70,7 +71,6 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -963,7 +963,7 @@ public final class RemoteClient implements Cancellable {
             return fo.lock();
         } catch (FileAlreadyLockedException lockedException) {
             if (warnChangedFile(fo)) {
-                PhpProjectUtils.saveFile(fo);
+                FileUtils.saveFile(fo);
                 // XXX remove once #213141 is fixed
                 try {
                     Thread.sleep(1000);

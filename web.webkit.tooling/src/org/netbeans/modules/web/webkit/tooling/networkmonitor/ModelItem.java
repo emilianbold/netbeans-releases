@@ -59,6 +59,7 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.EditorKit;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
@@ -556,6 +557,11 @@ class ModelItem implements PropertyChangeListener {
     }
 
     private static void reformatAndUseRightEditor(JEditorPane pane, String data, String contentType) {
+        if (contentType == null) {
+            contentType = "text/plain"; // NOI18N
+        } else {
+            contentType = contentType.trim();
+        }
         if ("application/javascript".equals(contentType)) {
             // check whether this JSONP response, that is a JS method call returning JSON:
             String json = getJSONPResponse(data);
@@ -571,10 +577,14 @@ class ModelItem implements PropertyChangeListener {
         if ("application/xml".equals(contentType)) {
             contentType = "text/xml";
         }
-        if (contentType == null) {
-            contentType = "text/plain";
+        EditorKit editorKit;
+        try {
+            editorKit = CloneableEditorSupport.getEditorKit(contentType);
+        } catch (IllegalArgumentException iaex) {
+            contentType = "text/plain"; // NOI18N
+            editorKit = CloneableEditorSupport.getEditorKit(contentType);
         }
-        pane.setEditorKit(CloneableEditorSupport.getEditorKit(contentType));
+        pane.setEditorKit(editorKit);
         pane.setText(data);
     }
 

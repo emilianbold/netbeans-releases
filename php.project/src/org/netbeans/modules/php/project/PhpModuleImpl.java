@@ -51,6 +51,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.spi.testing.PhpTestingProviders;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileObject;
@@ -120,6 +121,7 @@ public class PhpModuleImpl implements PhpModule {
             lookup = Lookups.fixed(
                     projectLookup.lookup(CustomizerProvider2.class),
                     projectLookup.lookup(org.netbeans.modules.php.api.queries.PhpVisibilityQuery.class),
+                    projectLookup.lookup(PhpTestingProviders.class),
                     new PhpModulePropertiesFactory(phpProject)
             );
         }

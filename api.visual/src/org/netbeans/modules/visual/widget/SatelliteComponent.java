@@ -49,6 +49,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.event.*;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 /**
  * @author David Kaspar
@@ -118,7 +119,7 @@ public final class SatelliteComponent extends JComponent implements MouseListene
 //            area.subtract (new Area (window));
             gr.setColor (new Color (200, 200, 200, 128));
             gr.fill (window);
-            gr.setColor (Color.BLACK);
+            gr.setColor ((new DefaultLookFeel()).getForeground()/*Color.BLACK*/);
             gr.drawRect (window.x, window.y, window.width - 1, window.height - 1);
         }
     }

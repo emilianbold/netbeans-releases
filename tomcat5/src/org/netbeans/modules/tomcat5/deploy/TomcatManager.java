@@ -238,7 +238,7 @@ public class TomcatManager implements DeploymentManager {
             }
         }
         if (checkResponse) {
-            return Utils.pingTomcat(getServerPort(), timeout); // is tomcat responding?
+            return Utils.pingTomcat(getServerPort(), timeout, getServerHeader()); // is tomcat responding?
         } else {
             return false; // cannot resolve the state
         }
@@ -769,16 +769,21 @@ public class TomcatManager implements DeploymentManager {
     /** Return server port defined in the server.xml file, this value may differ
      * from the actual port Tomcat is currently running on @see #getCurrentServerPort(). */
     public int getServerPort() {
-        ensurePortsUptodate();
+        ensureConnectionInfoUptodate();
         return tp.getServerPort();
     }
 
     public int getShutdownPort() {
-        ensurePortsUptodate();
+        ensureConnectionInfoUptodate();
         return tp.getShutdownPort();
     }
+
+    public String getServerHeader() {
+        ensureConnectionInfoUptodate();
+        return tp.getServerHeader();
+    }
     
-    private void ensurePortsUptodate() {
+    private void ensureConnectionInfoUptodate() {
         File serverXml = tp.getServerXml();
         long timestamp = -1;
         if (serverXml.exists()) {
@@ -798,6 +803,7 @@ public class TomcatManager implements DeploymentManager {
                     tp.setTimestamp(timestamp);
                     tp.setServerPort(Integer.parseInt(TomcatInstallUtil.getPort(server)));
                     tp.setShutdownPort(Integer.parseInt(TomcatInstallUtil.getShutdownPort(server)));
+                    tp.setServerHeader(TomcatInstallUtil.getServerHeader(server));
                 } catch (IOException ioe) {
                     LOGGER.log(Level.INFO, null, ioe);
                 } catch (NumberFormatException nfe) {

@@ -42,21 +42,28 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.clang.basic.FileEntry;
 import org.clang.basic.IdentifierInfo;
+import org.clang.basic.SourceManager;
 import org.clang.basic.SrcMgr;
 import org.clang.lex.Preprocessor;
+import org.clang.lex.Token;
 import org.clang.tools.services.support.FileInfo;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
+import static org.clank.java.std.$second_uint;
 import org.clank.support.Casts;
 import static org.clank.support.Casts.toJavaString;
 import org.clank.support.Native;
 import org.clank.support.NativePointer;
+import org.clank.support.Unsigned;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVector;
@@ -64,20 +71,30 @@ import org.llvm.adt.aliases.SmallVectorChar;
 import org.llvm.adt.aliases.SmallVectorImplChar;
 import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl.ArrayBasedAPTTokenStream;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
+import org.netbeans.modules.cnd.apt.support.ClankDriver.FileGuard;
+import org.netbeans.modules.cnd.apt.support.ClankDriver.MacroExpansion;
+import org.netbeans.modules.cnd.apt.support.ClankDriver.MacroUsage;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -167,20 +184,35 @@ public final class ClankPPCallback extends FileInfoCallback {
             // unresolved #include
             return null;
         }
-        // FIXME: get correct file system
-        FileSystem fs = includeHandler.getStartEntry().getFileSystem();
-        String strFileEntryPath = Casts.toCharSequence(fileEntry.getName()).toString();
+        FileSystem fs;
+        String searchPath = Casts.toCharSequence(directive.getSearchPath().data(), directive.getSearchPath().size()).toString();
+        if (searchPath.startsWith(ClankFileSystemProviderImpl.RFS_PREFIX)) {            
+            FileObject fo = CndFileSystemProvider.urlToFileObject(searchPath); //TODO: optimize!
+            searchPath = fo.getPath();
+            try {
+                fs = fo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                fs = CndFileSystemProvider.urlToFileSystem(searchPath);
+                Exceptions.printStackTrace(ex); // should never be the case
+            }
+        } else {
+            fs = includeHandler.getStartEntry().getFileSystem();
+        }
+        char$ptr fleEntryName = fileEntry.getName();
+        String strFileEntryPath = Casts.toCharSequence(fleEntryName).toString();
         strFileEntryPath = CndFileUtils.normalizeAbsolutePath(fs, strFileEntryPath);
         if (directive.getSearchPath().empty()) {
             // was resolved as absolute path (i.e -include directive)
-            String parent = CndPathUtilities.getDirName(strFileEntryPath);
+            CharSequence parent = CndPathUtilities.getDirName(strFileEntryPath);
+            parent = ClankFileSystemProviderImpl.getPathFromUrl(parent);
             return new ResolvedPath(fs, FilePathCache.getManager().getString(parent), strFileEntryPath, false, 0);
         } else {
-            CharSequence pathCharSeq = CharSequences.create(strFileEntryPath);
-            SrcMgr.CharacteristicKind fileDirFlavor = PP.getHeaderSearchInfo().getFileDirFlavor(fileEntry);
-            String searchPath = Casts.toCharSequence(directive.getSearchPath().data(), directive.getSearchPath().size()).toString();
+            CharSequence pathCharSeq = ClankFileSystemProviderImpl.getPathFromUrl(strFileEntryPath);
+            pathCharSeq = CharSequences.create(pathCharSeq);
+            SrcMgr.CharacteristicKind fileDirFlavor = PP.getHeaderSearchInfo().getFileDirFlavor(fileEntry);            
             assert CndPathUtilities.isPathAbsolute(searchPath) : "expected to be abs path [" + searchPath + "]";
             CharSequence folder = CndFileUtils.normalizeAbsolutePath(fs, searchPath);
+            folder = ClankFileSystemProviderImpl.getPathFromUrl(folder);
             folder = FilePathCache.getManager().getString(CharSequences.create(folder));
             // FIXME: for now consider user path as isDefaultSearchPath
             boolean isDefaultSearchPath = (fileDirFlavor == SrcMgr.CharacteristicKind.C_User);
@@ -197,8 +229,8 @@ public final class ClankPPCallback extends FileInfoCallback {
     protected boolean onNotFoundInclusionDirective(FileInfo curFile, StringRef FileName, SmallVectorImplChar RecoveryPath) {
         APTFileSearch fileSearch = includeHandler.getFileSearch();
         if (fileSearch != null) {
-            String headerPath = fileSearch.searchInclude(
-                    Native.$toString(FileName.data(), FileName.size()), Native.$toString(curFile.getName()));
+            char$ptr curFilePath = curFile.getName();
+            String headerPath = fileSearch.searchInclude(Native.$toString(FileName.data(), FileName.size()), Native.$toString(curFilePath));
             if (headerPath != null) {
                 headerPath = CndPathUtilities.getDirName(headerPath);
                 if (headerPath == null) {
@@ -225,8 +257,18 @@ public final class ClankPPCallback extends FileInfoCallback {
             ClankFileInfoWrapper enteredToWrapper = new ClankFileInfoWrapper(enteredTo, ppHandler);
             // main file is not pushed as include, all others are
             if (includeStack.isEmpty()) {
-                assert includeHandler.getStartEntry().getStartFile().toString().contentEquals(Casts.toCharSequence(enteredTo.getName())) :
-                        includeHandler.getStartEntry() + " vs. " + enteredTo; // NOI18N
+//                assert includeHandler.getStartEntry().getStartFile().toString().contentEquals(Casts.toCharSequence(enteredTo.getName())) :
+//                        includeHandler.getStartEntry() + " vs. " + enteredTo; // NOI18N
+                if (CndUtils.isDebugMode()) {
+                    CharSequence startUrl;
+                    if (APTTraceFlags.USE_CLANK) {
+                        startUrl = CndFileSystemProvider.toUrl(includeHandler.getStartEntry().getFileSystem(), includeHandler.getStartEntry().getStartFile());
+                    } else {
+                        startUrl = includeHandler.getStartEntry().getStartFile();
+                    }
+                    CndUtils.assertPathsEqualInConsole(startUrl, Casts.toCharSequence(enteredTo.getName()), "{0} vs. {1}", //NOI18N
+                            includeHandler.getStartEntry(), enteredTo);
+                }
                 assert includeHandler.getInclStackIndex() == 0 : " expected zero: " + includeHandler.getInclStackIndex();
                 assert enteredToWrapper.getFileIndex() == 0 : " expected zero: " + enteredToWrapper.getFileIndex();
                 enteredFromWrapper = null;
@@ -236,6 +278,7 @@ public final class ClankPPCallback extends FileInfoCallback {
                         0/*should not be used by client*/, enteredTo.getIncludeStartOffset(), resolvedPath.getIndex());
                 includeHandler.cacheTokens(enteredToWrapper);
                 enteredFromWrapper = includeStack.get(includeStack.size() - 1);
+                enteredToWrapper.setMacroDefinitions(((ClankFileInfoWrapper)enteredFromWrapper).getMacroDefinitions());
             }
             // keep stack of active files
             includeStack.add(enteredToWrapper);
@@ -315,6 +358,32 @@ public final class ClankPPCallback extends FileInfoCallback {
         return delegate.needMacroExpansion();
     }
 
+    @Override
+    protected void onMacroDefineDirective(FileInfo curStackElement, MacroDirectiveInfo macroDirective) {
+        SmallVectorChar spell = new SmallVectorChar(1024);
+        // old model tracked only #define and not #undef
+        CharSequence macroName = ClankToAPTUtils.getTokenText(macroDirective.getMacroNameToken(), curStackElement.getPreprocessor(), spell);
+        List<CharSequence> params = null;
+        if (macroDirective.isDefined()) {
+            if (macroDirective.isFunctionLike()) {
+                IdentifierInfo[] arguments = macroDirective.getArguments();
+                params = new ArrayList<CharSequence>(arguments.length);
+                for (IdentifierInfo arg : arguments) {
+                    CharSequence argName = ClankToAPTUtils.getIdentifierText(arg);
+                    params.add(argName);
+                }
+                if (macroDirective.isVariadic()) {
+                    // replace the last param name by variadic marker
+                    assert params.size() > 0;
+                    params.set(params.size() - 1, APTUtils.VA_ARGS_TOKEN.getTextID());
+                }
+            }
+        }
+        ClankMacroDirectiveWrapper wrapper = new ClankMacroDirectiveWrapper(macroName, params, macroDirective, macroDirective.getMacroNameToken());
+        ClankFileInfoWrapper currentFileWrapper = includeStack.get(0);
+        delegate.onMacroDefineDirective(currentFileWrapper, wrapper);
+    }
+
     private static abstract class ClankPreprocessorDirectiveWrapper implements ClankDriver.ClankPreprocessorDirective {
 
         private Object externalAnnotation;
@@ -358,13 +427,32 @@ public final class ClankPPCallback extends FileInfoCallback {
         private final List<CharSequence> params;
         private final CharSequence macroName;
         private final boolean isDefined;
+        private final /*SourceLocation*/int macroNameTokenSourceLocation;
+        private final int macroNameOffset;
+        private final CharSequence fileOwnerName;
 
         public ClankMacroDirectiveWrapper(CharSequence macroName,
-                List<CharSequence> params, MacroDirectiveInfo clankDelegate) {
+                List<CharSequence> params, MacroDirectiveInfo clankDelegate, Token macroNameToken) {
             super(clankDelegate);
             this.params = params;
             this.macroName = macroName;
             this.isDefined = clankDelegate.isDefined();
+            this.macroNameTokenSourceLocation = macroNameToken.getRawLocation();
+            macroNameOffset = clankDelegate.getMacroNameOffset();
+            FileInfo fileOwner = clankDelegate.getFileOwner();
+            if (fileOwner.isFile()) {
+                this.fileOwnerName = ClankFileSystemProviderImpl.getPathFromUrl(toJavaString(fileOwner.getName()));
+                if(CharSequenceUtils.startsWith(this.fileOwnerName, ClankFileSystemProviderImpl.RFS_PREFIX)) {
+                    Exceptions.printStackTrace(new IllegalArgumentException("File owner name should not contain protocol: " + this.fileOwnerName)); //NOI18N
+                }
+            } else {
+                this.fileOwnerName = BUILD_IN_FILE;
+            }
+        }
+
+        @Override
+        public CharSequence getFile() {
+            return fileOwnerName;
         }
 
         @Override
@@ -378,8 +466,24 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
 
         @Override
+        public int getMacroNameOffset() {
+            return macroNameOffset;
+        }
+
+        @Override
         public List<CharSequence> getParameters() {
             return this.params == null ? null : Collections.unmodifiableList(this.params);
+        }
+        
+        @Override
+        public /*SourceLocation*/int getMacroNameLocation() {
+            return macroNameTokenSourceLocation;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + this.fileOwnerName + (this.isDefined ? " #define " : " #undef ") + this.macroName + // NOI18N
+                    (this.params == null ? "" : ("(" + this.params + ")")); // NOI18N
         }
     }
 
@@ -462,9 +566,13 @@ public final class ClankPPCallback extends FileInfoCallback {
         private final int includeIndex;
         private APTToken[] convertedTokens;
         private List<ClankDriver.ClankPreprocessorDirective> convertedPPDirectives;
+        private List<MacroExpansion> convertedMacroExpansions;
+        private List<MacroUsage> convertedMacroUsages;
+        private FileGuard convertedGuard;
         private boolean hasTokenStream = false;
         private int[] skippedRanges = null;
         private boolean convertedToAPT = false;
+        private Map<Integer, ClankDriver.ClankMacroDirective> macroDeclarations = new ConcurrentHashMap<Integer, ClankDriver.ClankMacroDirective>();
 
         public ClankFileInfoWrapper(FileInfo current,
                 PreprocHandler ppHandler) {
@@ -489,6 +597,41 @@ public final class ClankPPCallback extends FileInfoCallback {
             assert convertedToAPT : "was not prepared yet";
             assert (convertedTokens != null);
             return convertedTokens;
+        }
+
+        private void prepareConvertedMacroExpansions() {
+            {
+                SmallVector<FileInfoCallback.MacroExpansionInfo> macroExpansions = current.getMacroExpansions();
+                int size = macroExpansions.size();
+                Object[] expansions = macroExpansions.$array();
+                convertedMacroExpansions = new ArrayList<MacroExpansion>(size);
+                for (int i = 0; i < size; i++) {
+                    FileInfoCallback.MacroExpansionInfo e = (FileInfoCallback.MacroExpansionInfo)expansions[i];
+                    convertedMacroExpansions.add(new MacroExpansion(e));
+                }
+            }
+            {
+                SmallVector<FileInfoCallback.MacroUsageInfo> macroUsages = current.getMacroUsages();
+                int size = macroUsages.size();
+                Object[] expansions = macroUsages.$array();
+                convertedMacroUsages = new ArrayList<MacroUsage>(size);
+                for (int i = 0; i < size; i++) {
+                    FileInfoCallback.MacroUsageInfo e = (FileInfoCallback.MacroUsageInfo)expansions[i];
+                    convertedMacroUsages.add(new MacroUsage(e));
+                }
+            }
+        }
+
+        private void prepareConvertedGuard() {
+            SmallVector<FileGuardInfo> guards = current.getFileGuardsInfo();
+            if (guards != null) {
+                assert !guards.empty();
+                // TODO: use the last for now
+                FileGuardInfo fileGuardInfo = guards.$at(guards.size()-1);
+                SourceManager srcMgr = current.getSourceManager();
+                int start = Unsigned.long2uint($second_uint(srcMgr.getDecomposedLoc(fileGuardInfo.getIfDefMacroLocation())));
+                convertedGuard = new FileGuard(start, start+fileGuardInfo.getIfDefMacro().getLength());
+            }
         }
 
         private void prepareConvertedPPDirectives() {
@@ -532,7 +675,7 @@ public final class ClankPPCallback extends FileInfoCallback {
                                 params.set(params.size() - 1, APTUtils.VA_ARGS_TOKEN.getTextID());
                             }
                         }
-                        ClankMacroDirectiveWrapper wrapper = new ClankMacroDirectiveWrapper(macroName, params, macroDirective);
+                        ClankMacroDirectiveWrapper wrapper = new ClankMacroDirectiveWrapper(macroName, params, macroDirective, macroDirective.getMacroNameToken());
                         this.convertedPPDirectives.add(wrapper);
                     }
                 }
@@ -548,7 +691,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public CharSequence getFilePath() {
-            return this.filePath;
+            return ClankFileSystemProviderImpl.getPathFromUrl(filePath);
         }
 
         @Override
@@ -556,6 +699,30 @@ public final class ClankPPCallback extends FileInfoCallback {
             assert convertedToAPT : "was not prepared yet";
             assert convertedPPDirectives != null;
             return Collections.unmodifiableList(convertedPPDirectives);
+        }
+
+        @Override
+        public Collection<MacroExpansion> getMacroExpansions() {
+            return Collections.unmodifiableList(convertedMacroExpansions);
+        }
+
+        @Override
+        public Collection<MacroUsage> getMacroUsages() {
+            return Collections.unmodifiableList(convertedMacroUsages);
+        }
+
+        void setMacroDefinitions(Map<Integer, ClankDriver.ClankMacroDirective> macroDeclarations) {
+            this.macroDeclarations = macroDeclarations;
+        }
+
+        @Override
+        public FileGuard getFileGuard() {
+            return convertedGuard;
+        }
+
+        @Override
+        public Map<Integer, ClankDriver.ClankMacroDirective> getMacroDefinitions() {
+            return macroDeclarations;
         }
 
         @Override
@@ -589,6 +756,8 @@ public final class ClankPPCallback extends FileInfoCallback {
             if (!convertedToAPT) {
                 prepareConvertedTokensIfAny();
                 prepareConvertedPPDirectives();
+                prepareConvertedMacroExpansions();
+                prepareConvertedGuard();
                 convertedToAPT = true;
             }
             return this;

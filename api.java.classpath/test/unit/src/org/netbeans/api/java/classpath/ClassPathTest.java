@@ -889,4 +889,34 @@ public class ClassPathTest extends NbTestCase {
         assertEquals(Collections.singletonList(test2),Arrays.asList(cp.getRoots()));
     }
 
+    public void testGC() throws Exception {
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        final FileObject root1 = FileUtil.createFolder(wd, "src1"); //NOI18N
+        assertNotNull(root1);
+        FileObject root2 = FileUtil.createFolder(wd, "src2"); //NOI18N
+        assertNotNull(root2);
+        final MockPropertyChangeListener l = new MockPropertyChangeListener(ClassPath.PROP_ROOTS);
+        ClassPath cp = ClassPathSupport.createClassPath(root1, root2);
+        cp.addPropertyChangeListener(l);
+        assertNotNull(cp);
+        FileObject[] roots = cp.getRoots();
+        assertEquals(2, roots.length);
+        assertEquals(root1, roots[0]);
+        assertEquals(root2, roots[1]);
+        root2.delete();
+        l.assertEventCount(1);
+        roots = cp.getRoots();
+        assertEquals(1, roots.length);
+        assertEquals(root1, roots[0]);
+        root2 = FileUtil.createFolder(wd, "src2"); //NOI18N
+        l.assertEventCount(1);
+        roots = cp.getRoots();
+        assertEquals(2, roots.length);
+        assertEquals(root1, roots[0]);
+        assertEquals(root2, roots[1]);
+        final Reference<ClassPath> cpRef = new WeakReference<>(cp);
+        cp = null;
+        assertGC("ClassPath freed", cpRef);
+    }
+
 }

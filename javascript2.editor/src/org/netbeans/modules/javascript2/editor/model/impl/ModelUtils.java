@@ -100,6 +100,8 @@ public class ModelUtils {
     
     private static final List<String> KNOWN_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER, Type.UNDEFINED);
     
+    private static final int MAX_RECURSION_DEEP_RESOLVING_ASSIGNMENTS = 10;
+    
     public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName, boolean isLHS) {
         JsObject result = builder.getCurrentObject();
         JsObject tmpObject = null;
@@ -768,7 +770,7 @@ public class ModelUtils {
                 if ("this".equals(name)) {
                     JsObject thisObject = ModelUtils.findJsObject(model, offset);
                     JsObject first = thisObject;
-                    while (thisObject != null && thisObject.getParent() != null
+                    while (thisObject != null && thisObject.getParent() != null && thisObject.getParent().getJSKind() != JsElement.Kind.FILE
                             && thisObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
                             && thisObject.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
                             && thisObject.getJSKind() != JsElement.Kind.OBJECT_LITERAL) {
@@ -815,11 +817,19 @@ public class ModelUtils {
                             localObjects.add(localObject);
                         }
                     } else {
+                        boolean canBeWindowsProp = true;
                         for (JsObject object : model.getVariables(offset)) {
                             if (object.getName().equals(name)) {
                                 localObjects.add(object);
                                 localObject = object;
                                 break;
+                            }
+                        }
+                        if (localObject != null && localObject.getJSKind().isFunction() && i - 2 > -1) {
+                            JsFunction localFunc = (JsFunction)localObject;
+                            String paramName = exp.get(i - 2);
+                            if (localFunc.getParameter(paramName) != null) {
+                                canBeWindowsProp = false;
                             }
                         }
 
@@ -833,7 +843,7 @@ public class ModelUtils {
                                 }
                             }
                         }
-                        if (jsIndex != null) {
+                        if (jsIndex != null && canBeWindowsProp) {
                             Collection<TypeUsage> windowProperty = tryResolveWindowProperty(model, jsIndex, name);
                             if (windowProperty != null && !windowProperty.isEmpty()) {
                                 lastResolvedTypes.addAll(windowProperty);
@@ -1208,8 +1218,10 @@ public class ModelUtils {
         }
     }
     
+    private static int deepRA = 0;
     private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, int offset, List<TypeUsage> resolved) {
         Set<String> alreadyProcessed = new HashSet<String>();
+        deepRA = 0;
         for(TypeUsage type : resolved) {
             alreadyProcessed.add(type.getType());
         }
@@ -1219,6 +1231,7 @@ public class ModelUtils {
     private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, int offset,  List<TypeUsage> resolved, Set<String> alreadyProcessed) {
         if (!alreadyProcessed.contains(fqn)) {
             alreadyProcessed.add(fqn);
+            deepRA++;
             String fqnCorrected = fqn;
             if (fqnCorrected.startsWith(SemiTypeResolverVisitor.ST_EXP) && !fqnCorrected.contains(SemiTypeResolverVisitor.ST_CALL)) {
                 fqnCorrected = fqnCorrected.substring(fqnCorrected.indexOf(SemiTypeResolverVisitor.ST_EXP) + SemiTypeResolverVisitor.ST_EXP.length());
@@ -1238,7 +1251,7 @@ public class ModelUtils {
                                     resolved.clear();
                                     break;
                                 }
-                                if (!alreadyProcessed.contains(type.getType())) {
+                                if (!alreadyProcessed.contains(type.getType()) && deepRA < MAX_RECURSION_DEEP_RESOLVING_ASSIGNMENTS) {
                                     resolveAssignments(model, jsIndex, type.getType(), type.getOffset(), resolved, alreadyProcessed);
                                 }
                             }
@@ -1261,7 +1274,7 @@ public class ModelUtils {
                                     }
                                 }
                                 for (TypeUsage type : toProcess) {
-                                    if (!alreadyProcessed.contains(type.getType())) {
+                                    if (!alreadyProcessed.contains(type.getType()) && deepRA < MAX_RECURSION_DEEP_RESOLVING_ASSIGNMENTS) {
                                         resolveAssignments(model, jsIndex, type.getType(), type.getOffset(), resolved, alreadyProcessed);
                                     }
                                 }

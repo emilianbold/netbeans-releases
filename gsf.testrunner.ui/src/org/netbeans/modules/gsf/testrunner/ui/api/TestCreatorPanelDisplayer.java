@@ -118,6 +118,7 @@ public final class TestCreatorPanelDisplayer {
 		context.setTargetFolder(cfg.getTargetFolder());
 		context.setTestClassName(cfg.getTestClassName());
                 context.setIntegrationTests(cfg.isIntegrationTests());
+                context.setConfigurationPanelProperties(cfg.getConfigurationPanelProperties());
                 final Collection<? extends SourceGroup> createdSourceRoots = cfg.getCreatedSourceRoots();
                 RP.execute(new Runnable() {
                     @Override

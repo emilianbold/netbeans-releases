@@ -2,120 +2,80 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>VM Telemetry Window</title>
+<title>Snapshot Window</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="TelemetryWindow.HelpCtx" name="TelemetryWindow.HelpCtx"></a></p>
-<div id="NBCSH3396"><!-- infolevel="all" infotype="General" --><a id="sthref438" name="sthref438"></a>
-<h1>VM Telemetry Window</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="SnapshotsWindow.HelpCtx" name="SnapshotsWindow.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref445" name="sthref445"></a>
+<h1>Snapshot Window</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to view high-level data on thread activity and memory heap and garbage collection in the VM. The VM Telemetry window typically opens in the editor area. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG770">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Use to manage your profiler snapshots.</p>
 
-<table summary="Descriptions of VM Telemetry window toolbar commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t56">Element</th>
-<th align="left" valign="bottom" id="r1c2-t56">Description</th>
+<th align="left" valign="bottom" id="r1c1-t53">Element</th>
+<th align="left" valign="bottom" id="r1c2-t53">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t56" headers="r1c1-t56">
-<p>Export</p>
-<p><img width="16" height="16" src="img/saveas.png" alt="Export icon." title="Export icon." /></p>
+<td align="left" id="r2c1-t53" headers="r1c1-t53">
+<p>Project</p>
 </td>
-<td align="left" headers="r2c1-t56 r1c2-t56">Exports the results as a text file.</td>
+<td align="left" headers="r2c1-t53 r1c2-t53">Select project from the drop down menu</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t56" headers="r1c1-t56">
-<p>Save Current View</p>
-<p><img width="16" height="16" src="img/saveview.png" alt="Save Current View icon." title="Save Current View icon." /></p>
+<td align="left" id="r3c1-t53" headers="r1c1-t53">
+<p>Snapshot</p>
 </td>
-<td align="left" headers="r3c1-t56 r1c2-t56">Saves the results as a <code dir="ltr">.png</code> image file.</td>
+<td align="left" headers="r3c1-t53 r1c2-t53">Displays snapshots</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t56" headers="r1c1-t56">
-<p>Zoom In</p>
-<p><img width="16" height="16" src="img/zoomin.png" alt="Zoom In icon." title="Zoom In icon." /></p>
+<td align="left" id="r4c1-t53" headers="r1c1-t53">
+<p><img width="20" height="20" src="img/open_snapshot.png" alt="Open snapshot icon" title="Open snapshot icon" />Open Selected Snapshot</p>
 </td>
-<td align="left" headers="r4c1-t56 r1c2-t56">Increases the detail of the graph.</td>
+<td align="left" headers="r4c1-t53 r1c2-t53">Use to open the snapshot selected in the Snapshot table.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t56" headers="r1c1-t56">
-<p>Zoom Out</p>
-<p><img width="16" height="16" src="img/zoomout.png" alt="Zoom Out icon." title="Zoom Out icon." /></p>
+<td align="left" id="r5c1-t53" headers="r1c1-t53">
+<p><img width="20" height="20" src="img/export_snapshot.png" alt="Export snapshot icon" title="Export snapshot icon" />Export Selected Snapshot</p>
 </td>
-<td align="left" headers="r5c1-t56 r1c2-t56">Decreases the detail of the graph.</td>
+<td align="left" headers="r5c1-t53 r1c2-t53">Use to export the snapshot selected in the Snapshot table. A dialog appears to browse your system for the target export location.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t56" headers="r1c1-t56">
-<p>Scale To Fit</p>
-<p><img width="16" height="16" src="img/scaletofit.png" alt="Scale to Fit icon." title="Scale to Fit icon." /></p>
+<td align="left" id="r6c1-t53" headers="r1c1-t53">
+<p><img width="17" height="18" src="img/compare_snapshot.png" alt="Compare snapshots icon" title="Compare snapshots icon" />Compare Selected Snapshots</p>
 </td>
-<td align="left" headers="r6c1-t56 r1c2-t56">Toggles between a scalable view and a fixed-scale view.</td>
+<td align="left" headers="r6c1-t53 r1c2-t53">Use to compare to snapshots. This icon is active only when two snapshots are selected in the Snapshot table.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t53" headers="r1c1-t53">
+<p><img width="18" height="19" src="img/rename_snapshot.png" alt="Rename snapshot icon" title="Rename snapshot icon" />Rename Selected Snapshot</p>
+</td>
+<td align="left" headers="r7c1-t53 r1c2-t53">Use to rename the snapshot selected in the Snapshot table.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t53" headers="r1c1-t53">
+<p><img width="18" height="20" src="img/delete_snapshot.png" alt="Delete snapshot icon" title="Delete snapshot icon" />Delete Selected Snapshot</p>
+</td>
+<td align="left" headers="r8c1-t53 r1c2-t53">Use to delete the snapshot selected in the Snapshot table.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>The VM Telemetry window contains tabs with graphs displaying data on the following processes:</p>
-
-<table summary="Descriptions of VM Telemetry window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t57">Element</th>
-<th align="left" valign="bottom" id="r1c2-t57">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t57" headers="r1c1-t57">
-<p>Threads / Loaded Classes</p>
-</td>
-<td align="left" headers="r2c1-t57 r1c2-t57">Displays the total number of threads in the profiled application JVM.
-<p>Place your cursor over the graph to display a tooltip with information about the current and maximum number of threads.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t57" headers="r1c1-t57">
-<p>Memory (Heap)</p>
-</td>
-<td align="left" headers="r3c1-t57 r1c2-t57">Displays the total and used size. These are the figures that a Java application can obtain using the <code dir="ltr">java.lang.Runtime.totalMemory()</code> and <code dir="ltr">java.lang.Runtime.freeMemory()</code> calls.
-<p>Place your cursor over the graph to view more detailed information about memory usage at that point in time.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t57" headers="r1c1-t57">
-<p>Memory (GC)</p>
-</td>
-<td align="left" headers="r4c1-t57 r1c2-t57">Displays displays the relative time spent in garbage collection and the number of surviving generations.
-<p>Place your cursor over the graph to view more detailed information about garbage collection statistics at that point in time.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<a id="NBCSH3410" name="NBCSH3410"></a>
+<a id="sthref446" name="sthref446"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
-<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG659">
+<param name="text" value="<html><u>&quot;Testing and Profiling Java Application Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

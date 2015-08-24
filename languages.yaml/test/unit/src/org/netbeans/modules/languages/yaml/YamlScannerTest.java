@@ -47,6 +47,16 @@ package org.netbeans.modules.languages.yaml;
  */
 public class YamlScannerTest extends YamlTestBase {
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
     public YamlScannerTest(String testName) {
         super(testName);
     }

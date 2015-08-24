@@ -49,6 +49,7 @@ import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.laf.LookFeel;
 
 import java.awt.*;
+import javax.swing.UIManager;
 
 /**
  * @author David Kaspar
@@ -71,11 +72,13 @@ public class DefaultLookFeel extends LookFeel {
     private static final Border MINI_BORDER_SELECTED = BorderFactory.createRoundedBorder (MINI_THICKNESS, MINI_THICKNESS, MINI_THICKNESS, MINI_THICKNESS, COLOR_SELECTED, COLOR_SELECTED.darker ());
 
     public Paint getBackground () {
-        return Color.WHITE;
+        return UIManager.getColor("Label.background");
+        //return Color.WHITE;
     }
 
     public Color getForeground () {
-        return Color.BLACK;
+        return UIManager.getColor("Label.foreground");
+        //return Color.BLACK;
     }
 
     public Border getBorder (ObjectState state) {
@@ -109,7 +112,7 @@ public class DefaultLookFeel extends LookFeel {
             return COLOR_SELECTED;
         if (state.isHighlighted ()  || state.isFocused ())
             return COLOR_HIGHLIGHTED;
-        return Color.BLACK;
+        return getForeground ();//Color.BLACK;
     }
 
     public Paint getBackground (ObjectState state) {
@@ -119,11 +122,11 @@ public class DefaultLookFeel extends LookFeel {
             return COLOR_SELECTED;
         if (state.isHighlighted ()  || state.isFocused ())
             return COLOR_HIGHLIGHTED;
-        return Color.WHITE;
+        return getBackground ();//Color.WHITE;
     }
 
     public Color getForeground (ObjectState state) {
-        return state.isSelected () ? Color.WHITE : Color.BLACK;
+        return state.isSelected () ? (Color)getBackground () : getForeground ();//Color.WHITE : Color.BLACK;
     }
 
     public int getMargin () {

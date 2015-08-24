@@ -96,6 +96,7 @@ import org.openide.ErrorManager;
 import org.openide.awt.AcceleratorBinding;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -1706,6 +1707,54 @@ public final class Utils {
             AcceleratorBinding.setAccelerator(a, fo);
         }
         return a;
+    }
+    
+    /**
+     * Guesses 
+     * @param fo
+     * @return 
+     */
+    public static String getLineEnding (FileObject fo, FileLock lock) {
+        if (!lock.isValid()) {
+            throw new IllegalStateException();
+        }
+        String newLineStr = (String) fo.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
+        if (newLineStr == null || newLineStr.isEmpty()) {
+            newLineStr = System.getProperty("line.separator"); //NOI18N
+        }
+        
+        try (InputStream is = new BufferedInputStream(fo.getInputStream())) {
+            String lineEnding = getLineEnding(is);
+            if (!lineEnding.isEmpty()) {
+                newLineStr = lineEnding;
+            }
+        } catch (IOException ex) {
+            
+        }
+        
+        return newLineStr;
+    }
+    
+    static String getLineEnding (InputStream is) throws IOException {
+        String newLineStr = "";
+        
+        byte [] buffer = new byte[1024];
+        int n;
+        boolean finished = false;
+        List<String> allowed = Arrays.asList(new String[] { "\n", "\r", "\r\n" });
+        while (!finished && (n = is.read(buffer)) != -1) {
+            for (int i = 0; i < n; ++i) {
+                byte c = buffer[i];
+                if ((c == '\n' || c == '\r') && allowed.contains(newLineStr + (char) c)) {
+                    newLineStr += (char) c;
+                } else if (!newLineStr.isEmpty()) {
+                    finished = true;
+                    break;
+                }
+            }
+        }
+        
+        return newLineStr.isEmpty() ? null : newLineStr;
     }
 
 }

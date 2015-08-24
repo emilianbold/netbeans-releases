@@ -69,6 +69,19 @@ public class ReplaceConstructorWithBuilderTest extends RefTestBase {
         super(name);
     }
     
+    public void testReplaceWithBuilderImports() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("test/Test.java", "package test;\n import java.util.List;\n public class Test {\n public Test(List<String> i) {}\n private void t() {\n Test t = new Test(null);\n }\n }\n"),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new Test(ll); } }"));
+
+        performTest("test.TestBuilder", new ReplaceConstructorWithBuilderRefactoring.Setter("setI", "java.util.List<java.lang.String>", null, "i", false));
+
+        assertContent(src,
+                new File("test/Test.java", "package test;\n import java.util.List;\n public class Test {\n public Test(List<String> i) {}\n private void t() {\n Test t = new TestBuilder().setI(null).createTest();\n }\n }\n"),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new TestBuilder().setI(ll).createTest(); } }"),
+                new File("test/TestBuilder.java", "package test; import java.util.List; public class TestBuilder { private List<String> i; public TestBuilder() { } public TestBuilder setI(List<String> i) { this.i = i; return this; } public Test createTest() { return new Test(i); } } "));
+    }
+    
     public void test231638() throws Exception { // #231638 - [Replace constructor with builder] Refactoring produces non-compilable code when original constructor is private
         writeFilesAndWaitForScan(src,
                 new File("test/Test.java", "package test;\n public class Test {\n private Test() {}\n }\n"));

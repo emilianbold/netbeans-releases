@@ -99,6 +99,7 @@ import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
 import org.netbeans.modules.subversion.ui.status.OpenInEditorAction;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
 import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.diff.DiffViewModeSwitcher;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
@@ -192,6 +193,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private boolean internalChange;
     private boolean propertiesVisible;
     private int lastDividerLoc;
+    private DiffViewModeSwitcher diffViewModeSwitcher;
     
     /**
      * Creates diff panel and immediatelly starts loading...
@@ -423,6 +425,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         prevAction.setEnabled(false);
         nextAction.setEnabled(false);
         cancelBackgroundTasks();
+        dpt = null;
+        DiffViewModeSwitcher.release(this);
+        diffViewModeSwitcher = null;
     }
 
     public void requestActive() {
@@ -715,6 +720,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     fileTable.setSelectedIndex(currentIndex);
                     fileTableSetSelectedIndexContext = false;
                 }
+                getDiffViewModeSwitcher().setupMode(view);
                 diffView = view.getJComponent();
                 diffView.getActionMap().put("jumpNext", nextAction);  // NOI18N
                 diffView.getActionMap().put("jumpPrev", prevAction);  // NOI18N
@@ -738,6 +744,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         delegatingUndoRedo.setDiffView(diffView);
 
         refreshComponents();
+    }
+
+    private DiffViewModeSwitcher getDiffViewModeSwitcher () {
+        if (diffViewModeSwitcher == null) {
+            diffViewModeSwitcher = DiffViewModeSwitcher.get(this);
+        }
+        return diffViewModeSwitcher;
     }
 
     private boolean showingFileTable() {

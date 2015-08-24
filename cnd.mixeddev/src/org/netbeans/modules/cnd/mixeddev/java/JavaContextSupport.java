@@ -49,12 +49,14 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -62,8 +64,13 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.swing.text.Document;
@@ -75,10 +82,13 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
-import org.netbeans.modules.cnd.mixeddev.java.model.QualifiedNamePart;
-import org.netbeans.modules.cnd.mixeddev.java.model.QualifiedNamePart.Kind;
+import org.netbeans.modules.cnd.mixeddev.java.QualifiedNamePart.Kind;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaClassInfo;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaFieldInfo;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaParameterInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -91,7 +101,7 @@ import org.openide.util.Pair;
 public final class JavaContextSupport {
     
     public static <T> T resolveContext(FileObject fObj, ResolveJavaContextTask<T> task) {
-        if (fObj != null) {
+        if (fObj != null && fObj.isValid() && fObj.isData()) {
             JavaSource js = JavaSource.forFileObject(fObj);
             if (js == null) {
                 return null;
@@ -167,13 +177,48 @@ public final class JavaContextSupport {
         return ret[0];
     }    
     
+    public static boolean isMethod(TreePath path) {
+        return path != null &&
+            path.getLeaf().getKind() == Tree.Kind.METHOD;
+    }
+    
+    public static boolean isClass(TreePath path) {
+        return path != null && 
+               path.getLeaf() != null &&
+               path.getLeaf().getKind() == Tree.Kind.CLASS;
+    }
+    
+    public static boolean isInterface(TreePath path) {
+        return path != null && 
+               path.getLeaf() != null &&
+               path.getLeaf().getKind() == Tree.Kind.INTERFACE;
+    }    
+    
+    public static boolean isClassOrInterface(TreePath path) {
+        return isClass(path) || isInterface(path);
+    }
+    
+    public static boolean isField(TreePath path) {
+        return path != null &&
+            path.getLeaf() != null &&
+            path.getLeaf().getKind() == Tree.Kind.VARIABLE &&
+            isClassOrInterface(path.getParentPath());
+    }
+    
+    public static JavaClassInfo createClassInfo(CompilationController controller, TreePath clsTreePath) {
+        assert isClassOrInterface(clsTreePath);
+        List<QualifiedNamePart> qualifiedName = getQualifiedName(clsTreePath);
+        String simpleName = qualifiedName.size() > 0 ? qualifiedName.get(qualifiedName.size() - 1).getText().toString() : "<not_initialized>"; // NOI18N
+        return new JavaClassInfo(simpleName, qualifiedName);
+    }
+    
     public static JavaMethodInfo createMethodInfo(CompilationController controller, TreePath mtdTreePath) {
-        assert mtdTreePath.getLeaf().getKind() == Tree.Kind.METHOD;            
+        assert mtdTreePath.getLeaf().getKind() == Tree.Kind.METHOD;
 
-        List<JavaTypeInfo> parameters = new ArrayList<JavaTypeInfo>();
+        List<JavaParameterInfo> parameters = new ArrayList();
         MethodTree mtdTree = (MethodTree) mtdTreePath.getLeaf();
         for (VariableTree param : mtdTree.getParameters()) {
-            parameters.add(createTypeInfo(controller, param.getType()));
+            parameters.add(createParameterInfo(controller, param));
         }
 
         List<QualifiedNamePart> qualifiedName = getQualifiedName(mtdTreePath);
@@ -184,42 +229,115 @@ public final class JavaContextSupport {
             qualifiedName, 
             parameters, 
             createTypeInfo(controller, mtdTree.getReturnType()), 
-            isOverloaded(mtdTreePath, simpleName)
+            isOverloaded(mtdTreePath, simpleName),
+            isFinal(mtdTreePath),
+            isStatic(mtdTreePath),
+            isNative(mtdTreePath)
         );
-    }    
+    }
+    
+    public static JavaFieldInfo createFieldInfo(CompilationController controller, TreePath fieldTreePath) {
+        assert fieldTreePath.getLeaf().getKind() == Tree.Kind.VARIABLE;
+        VariableTree varTree = (VariableTree) fieldTreePath.getLeaf();
+        List<QualifiedNamePart> qualifiedName = getQualifiedName(fieldTreePath);
+        String simpleName = qualifiedName.size() > 0 ? qualifiedName.get(qualifiedName.size() - 1).getText().toString() : "<not_initialized>"; // NOI18N
+        return new JavaFieldInfo(
+            simpleName, 
+            qualifiedName, 
+            createTypeInfo(controller, varTree.getType()),
+            isFinal(fieldTreePath),
+            isStatic(fieldTreePath)
+        );
+    }
+    
+    public static JavaParameterInfo createParameterInfo(CompilationController controller, VariableTree paramTree) {
+        return new JavaParameterInfo(
+            paramTree.getName(), 
+            createTypeInfo(controller, paramTree.getType()), 
+            isFinal(paramTree.getModifiers())
+        );
+    }
 
     public static JavaTypeInfo createTypeInfo(CompilationController controller, Tree type) {
-        TreePath typePath = controller.getTrees().getPath(controller.getCompilationUnit(), type);
-        switch (type.getKind()) {
-            case CLASS: {
-                TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
-            }
+        if (type != null) { 
+            // TODO: handle TypeParameterElement nodes
+            TreePath typePath = controller.getTrees().getPath(controller.getCompilationUnit(), type);
+            switch (type.getKind()) {
+                case CLASS: {
+                    Element elem = controller.getTrees().getElement(typePath);
+                    if (elem instanceof TypeElement) {
+                        TypeElement typeElem = (TypeElement) elem;
+                        return new JavaTypeInfo(typeElem.getSimpleName(), getQualifiedName(typeElem), 0);
+                    }
+                    break;
+                }
+
+                case IDENTIFIER: {
+                    Element elem = controller.getTrees().getElement(typePath);
+                    if (elem instanceof TypeElement) {
+                        TypeElement typeElem = (TypeElement) elem;
+                        return new JavaTypeInfo(typeElem.getSimpleName(), getQualifiedName(typeElem), 0);
+                    }
+                    break;
+                }
+
+                case MEMBER_SELECT: {
+                    Element elem = controller.getTrees().getElement(typePath);
+                    if (elem instanceof TypeElement) {
+                        TypeElement typeElem = (TypeElement) elem;
+                        return new JavaTypeInfo(typeElem.getSimpleName(), getQualifiedName(typeElem), 0);
+                    }
+                    break;
+                }
+
+                case ARRAY_TYPE: {
+                    ArrayTypeTree arrayType = (ArrayTypeTree) type;
+                    JavaTypeInfo inner = createTypeInfo(controller, arrayType.getType());
+                    if (inner != null) {
+                        return new JavaTypeInfo(inner.getName(), inner.getQualifiedName(), inner.getArrayDepth() + 1);
+                    }
+                    break;
+                }
                 
-            case IDENTIFIER: {
-                TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
-            }
-                
-            case MEMBER_SELECT: {
-                TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
-            }
+                case PRIMITIVE_TYPE: {
+                    CharSequence primitiveName = convertKind(((PrimitiveTypeTree) type).getPrimitiveTypeKind());
+                    return new JavaTypeInfo(primitiveName, Arrays.asList(new QualifiedNamePart(primitiveName, Kind.PRIMITIVE)), 0);
+                }
 
-            case PRIMITIVE_TYPE: {
-                CharSequence primitiveName = convertKind(((PrimitiveTypeTree) type).getPrimitiveTypeKind());
-                return new JavaTypeInfo(primitiveName, primitiveName, 0);
+                default:
+                    return new JavaTypeInfo("<NOT_SUPPORTED_KIND_" + type.getKind() + ">", Collections.<QualifiedNamePart>emptyList(), 0); // NOI18N
+            }        
+        }
+        return null;
+    }
+    
+    public static String renderQualifiedName(List<QualifiedNamePart> qualName) {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (QualifiedNamePart part : qualName) {
+            if (!first) {
+                switch (part.getKind()) {
+                    case PACKAGE:
+                        sb.append("/"); // NOI18N
+                        break;
+                    case CLASS:
+                    case INTERFACE:
+                        sb.append("/"); // NOI18N
+                        break;
+                    case VARIABLE:
+                    case METHOD:
+                        sb.append("/"); // NOI18N
+                        break;
+                    case NESTED_CLASS:
+                    case NESTED_INTERFACE:
+                        sb.append("$"); // NOI18N
+                        break;
+                }
             }
-
-            case ARRAY_TYPE: {
-                ArrayTypeTree arrayType = (ArrayTypeTree) type;
-                JavaTypeInfo inner = createTypeInfo(controller, arrayType.getType());
-                return new JavaTypeInfo(inner.getFullQualifiedName(), inner.getName(), inner.getArrayDepth() + 1);
-            }
-
-            default:
-                return new JavaTypeInfo("<NOT_SUPPORTED_KIND_" + type.getKind() + ">", "<NOT_SUPPORTED_KIND_" + type.getKind() + ">", 0); // NOI18N
-        }        
+            sb.append(part.getText());
+            first = false;
+        }
+        return sb.toString();
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -232,12 +350,24 @@ public final class JavaContextSupport {
     }    
         
     /*package*/ static List<QualifiedNamePart> getQualifiedName(TreePath treePath) {
-        List<QualifiedNamePart> qualifiedName = new ArrayList<QualifiedNamePart>();
+        List<QualifiedNamePart> qualifiedName = new ArrayList();
         TreePath currentPath = treePath;
         do {
             switch (currentPath.getLeaf().getKind()) {
                 case METHOD:
                     qualifiedName.add(0, new QualifiedNamePart(((MethodTree) currentPath.getLeaf()).getName(), Kind.METHOD));
+                    break;
+                    
+                case VARIABLE:
+                    qualifiedName.add(0, new QualifiedNamePart(((VariableTree) currentPath.getLeaf()).getName(), Kind.VARIABLE));
+                    break;
+                    
+                case INTERFACE:
+                    if (currentPath.getParentPath() != null && currentPath.getParentPath().getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT) {
+                        qualifiedName.add(0, new QualifiedNamePart(((ClassTree) currentPath.getLeaf()).getSimpleName(), Kind.NESTED_INTERFACE));
+                    } else {
+                        qualifiedName.add(0, new QualifiedNamePart(((ClassTree) currentPath.getLeaf()).getSimpleName(), Kind.INTERFACE));
+                    }
                     break;
 
                 case CLASS: {
@@ -251,14 +381,41 @@ public final class JavaContextSupport {
                     
                 case COMPILATION_UNIT: {
                     List<CharSequence> dotExpression = renderExpression(((CompilationUnitTree) currentPath.getLeaf()).getPackageName());
-                    ListIterator<CharSequence> iter = dotExpression.listIterator(dotExpression.size());
-                    while (iter.hasPrevious()) {
-                        qualifiedName.add(0, new QualifiedNamePart(iter.previous(), Kind.PACKAGE));
-                    }
+                    qualifiedName.add(0, new QualifiedNamePart(MixedDevUtils.stringize(dotExpression, "/"), Kind.PACKAGE)); // NOI18N
                     break;
                 }
             }
         } while ((currentPath = currentPath.getParentPath()) != null);
+        return qualifiedName;
+    }
+    
+    /*package*/ static List<QualifiedNamePart> getQualifiedName(TypeElement typeElement) {
+        List<QualifiedNamePart> qualifiedName = new ArrayList();
+        Element current = typeElement;
+        while (current != null) {
+            switch (current.getKind()) {
+                case CLASS:
+                    if (((TypeElement) current).getNestingKind().isNested()) {
+                        qualifiedName.add(0, new QualifiedNamePart(current.getSimpleName(), Kind.NESTED_CLASS));
+                    } else {
+                        qualifiedName.add(0, new QualifiedNamePart(current.getSimpleName(), Kind.CLASS));
+                    }
+                    break;
+                case INTERFACE:
+                    if (((TypeElement) current).getNestingKind().isNested()) {
+                        qualifiedName.add(0, new QualifiedNamePart(current.getSimpleName(), Kind.NESTED_INTERFACE));
+                    } else {
+                        qualifiedName.add(0, new QualifiedNamePart(current.getSimpleName(), Kind.INTERFACE));
+                    }
+                    break;
+                case PACKAGE:
+                    PackageElement pkgElem = (PackageElement) current;
+                    String packageName = pkgElem.getQualifiedName().toString();
+                    qualifiedName.add(0, new QualifiedNamePart(packageName.replaceAll("\\.", "/"), Kind.PACKAGE)); // NOI18N
+                    break;
+            }
+            current = current.getEnclosingElement();
+        }
         return qualifiedName;
     }
 
@@ -349,6 +506,46 @@ public final class JavaContextSupport {
                     return true;
                 }
             }           
+        }
+        return false;
+    }
+    
+    private static boolean isFinal(TreePath tp) {
+        ModifiersTree mt = null;
+        if (Tree.Kind.METHOD.equals(tp.getLeaf().getKind())) {
+            MethodTree method = (MethodTree) tp.getLeaf();
+            mt = method.getModifiers();
+        } else if (Tree.Kind.VARIABLE.equals(tp.getLeaf().getKind())) {
+            VariableTree var = (VariableTree) tp.getLeaf();
+            mt = var.getModifiers();
+        }
+        return isFinal(mt);
+    }
+    
+    private static boolean isFinal(ModifiersTree mt) {
+        return mt != null ? mt.getFlags().contains(Modifier.FINAL) : false;
+    }
+    
+    private static boolean isStatic(TreePath tp) {
+        ModifiersTree mt = null;
+        if (Tree.Kind.METHOD.equals(tp.getLeaf().getKind())) {
+            MethodTree method = (MethodTree) tp.getLeaf();
+            mt = method.getModifiers();
+        } else if (Tree.Kind.VARIABLE.equals(tp.getLeaf().getKind())) {
+            VariableTree var = (VariableTree) tp.getLeaf();
+            mt = var.getModifiers();
+        }
+        return isStatic(mt);
+    }
+    
+    private static boolean isStatic(ModifiersTree mt) {
+        return mt != null ? mt.getFlags().contains(Modifier.STATIC) : false;
+    }
+    
+    private static boolean isNative(TreePath tp) {
+        if (Tree.Kind.METHOD.equals(tp.getLeaf().getKind())) {
+            MethodTree method = (MethodTree) tp.getLeaf();
+            return method.getModifiers().getFlags().contains(Modifier.NATIVE);
         }
         return false;
     }

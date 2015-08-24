@@ -243,8 +243,11 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
         if (evt.getSource () == cbEffects) {
-            if (cbEffects.getSelectedIndex () == 0)
-                cbEffectColor.setSelectedItem( null );
+            if (cbEffects.getSelectedIndex () == 0) {
+                cbEffectColor.setSelectedItem(null);
+            } else if (cbEffectColor.getSelectedItem() == null) {
+                cbEffectColor.setSelectedIndex(0);
+            }
 	    cbEffectColor.setEnabled (cbEffects.getSelectedIndex () > 0);
             updateData ();
 	}
@@ -317,16 +320,15 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     
     public void deleteProfile (String scheme) {
         if (colorModel.isCustomProfile (scheme)) {
-            schemes.remove (scheme);
-            toBeSaved.remove(scheme); // duplicated profile deleted before saving options
+            schemes.put(scheme,null);
         } else {
             schemes.put (scheme, getDefaults (scheme));
             lCategories.setListData (getAnnotations(scheme).toArray(new AttributeSet[]{}));
             lCategories.repaint();
             lCategories.setSelectedIndex (0);   
             refreshUI ();
-            toBeSaved.add(scheme); // 'default' profile restored
         }
+        toBeSaved.add(scheme); // 'default' profile restored
         fireChanged();
     }
 
@@ -390,7 +392,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         boolean isChanged = false;
         for (String profile : toBeSaved) {
             List<AttributeSet> attributeSet = getAnnotations(profile);
-            Map<String, AttributeSet> savedAnnotations = toMap(getDefaults(profile));
+            Map<String, AttributeSet> savedAnnotations = toMap(colorModel.getAnnotations(profile));
             Map<String, AttributeSet> currentAnnotations = toMap(attributeSet);
             if (savedAnnotations != null && currentAnnotations != null) {
                 if (savedAnnotations.size() >= currentAnnotations.size()) {
@@ -398,10 +400,12 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
                 } else {
                     isChanged |= checkMaps(currentAnnotations, savedAnnotations);
                 }
-                if(isChanged) { // no need to iterate further
-                    changed = true;
-                    return;
-                }
+            } else if (savedAnnotations != null && currentAnnotations == null) {
+                isChanged = true;
+            }
+            if (isChanged) { // no need to iterate further
+                changed = true;
+                return;
             }
         }
         changed = isChanged;

@@ -2,10 +2,10 @@ Code completion result for source line:
 |jQuery.event.customEvent.test();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO $()                             [PUBLIC]   <font color=#999999>jquery-api.xml</font>
-CONSTRUCTO jQuery()                        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
 CLASS      formatter                       [PUBLIC]   jQueryFragment01.js
 CLASS      jQuery                          [PRIVATE]  jQueryFragment01.js
+METHOD     $()                             [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     jQuery()                        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
 VARIABLE   arguments: Arguments            [PRIVATE]  jQueryFragment01.js
 VARIABLE   functionVar: String             [PRIVATE]  jQueryFragment01.js
 VARIABLE   globalProperty: String          [PUBLIC]   jQueryFragment01.js

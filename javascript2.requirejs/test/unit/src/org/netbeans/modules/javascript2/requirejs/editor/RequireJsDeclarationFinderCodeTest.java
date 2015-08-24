@@ -115,10 +115,10 @@ public class RequireJsDeclarationFinderCodeTest extends JsTestBase {
     // TODO the test are randomly failing. Needs to be corrected. Time issue. 
     
     
-//    @Test
-//    public void testIssue245034_01() throws Exception {    
+    @Test
+    public void testIssue245034_01() throws Exception {    
 //        checkDeclaration("SimpleRequire/public_html/js/bbb/def.js", "newFunc.an^atomy;", "newFunction.js", 962); 
-//    }
+    }
     
 //    @Test
 //    public void testIssue245034_02() throws Exception {

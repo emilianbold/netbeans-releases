@@ -55,6 +55,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 /**
  * This class represents a node widget in the VMD visualization style. It implements the minimize ability.
@@ -128,7 +129,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         header.addChild (nameWidget);
 
         typeWidget = new LabelWidget (scene);
-        typeWidget.setForeground (Color.BLACK);
+        typeWidget.setForeground ((new DefaultLookFeel()).getForeground()/*Color.BLACK*/);
         header.addChild (typeWidget);
 
         glyphSetWidget = new VMDGlyphSetWidget (scene);

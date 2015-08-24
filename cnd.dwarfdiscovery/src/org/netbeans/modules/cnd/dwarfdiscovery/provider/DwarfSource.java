@@ -102,7 +102,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
 
     private String sourceName;
     private final ItemProperties.LanguageKind language;
-    private final ItemProperties.LanguageStandard standard;
+    private ItemProperties.LanguageStandard standard;
     private List<String> systemIncludes;
     private boolean haveSystemIncludes;
     private Map<String, String> userMacros;
@@ -532,6 +532,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
                         if (!artifacts.getImportantFlags().isEmpty()) {
                             importantFlags = DriverFactory.importantFlagsToString(artifacts);
                         }
+                        standard = DriverFactory.getLanguageStandard(standard, artifacts);
                     }
                 }
             } else if (cu instanceof SourceFile) {
@@ -642,7 +643,8 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         for(Map.Entry<String, String> entry : artifacts.getUserMacros().entrySet()) {
             userMacros.put(PathCache.getString(entry.getKey()), entry.getValue());
         }
-        importantFlags = DriverFactory.importantFlagsToString(artifacts);;
+        importantFlags = DriverFactory.importantFlagsToString(artifacts);
+        standard = DriverFactory.getLanguageStandard(standard, artifacts);
     }
 
     private String fixCygwinPath(String path){

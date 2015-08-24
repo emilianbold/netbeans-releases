@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -96,7 +97,15 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         SuiteProject suite = SuiteUtils.findSuite(project);
         if (suite != null) {
             if (temporary) {
-                SuiteUtils.removeModuleFromSuite(project);
+                SuiteUtils.moving(new Callable<Void>() {
+
+                    @Override
+                    public Void call () throws Exception {
+                        SuiteUtils.removeModuleFromSuite(project);
+                        return null;
+                    }
+                    
+                });
             } else {
                 // XXX we should ask the user in the same way as when we removing the
                 // module in suite logical view. But it is not possible with the
@@ -124,9 +133,17 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         if (original == null) { // called on the original project
             project.getHelper().notifyDeleted();
         } else { // called on the new project
-            SuiteProject suite = TEMPORARY_CACHE.remove(project.getCodeNameBase());
+            final SuiteProject suite = TEMPORARY_CACHE.remove(project.getCodeNameBase());
             if (suite != null) {
-                SuiteUtils.addModule(suite, project);
+                SuiteUtils.moving(new Callable<Void>() {
+
+                    @Override
+                    public Void call () throws Exception {
+                        SuiteUtils.addModule(suite, project);
+                        return null;
+                    }
+                    
+                });
             }
             boolean isRename = original.getProjectDirectory().getParent().equals(
                     project.getProjectDirectory().getParent());

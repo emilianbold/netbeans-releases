@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.odcs.client.api;
 
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
 import java.util.List;
 
 /**
@@ -63,9 +63,7 @@ public interface ODCSClient {
 
     Project getProjectById(final String projectId) throws ODCSException;
 
-    List<ProjectActivity> getRecentActivities(final String projectId) throws ODCSException;
-
-    List<ProjectActivity> getRecentShortActivities(final String projectId) throws ODCSException;
+    List<Activity> getRecentActivities(String projectId) throws ODCSException;
 
     List<ScmRepository> getScmRepositories(String projectId) throws ODCSException;
 

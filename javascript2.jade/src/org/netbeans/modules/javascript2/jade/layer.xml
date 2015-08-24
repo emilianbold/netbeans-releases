@@ -79,9 +79,9 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.jade.resources.Bundle"/>
-                <attr name="templateCategory" stringvalue="simple-files"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/jade/resources/jadeTemplate.html"/>
                 <attr name="requireProject" boolvalue="false"/>
+                <attr name="templateCategory" stringvalue="html5"/>
             </file>
         </folder>
     </folder>

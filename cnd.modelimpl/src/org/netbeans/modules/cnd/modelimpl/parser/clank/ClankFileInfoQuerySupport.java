@@ -42,13 +42,12 @@
 package org.netbeans.modules.cnd.modelimpl.parser.clank;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.TreeSet;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -57,9 +56,7 @@ import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -67,37 +64,31 @@ import org.openide.util.Exceptions;
  * @author Vladimir Voskresensky
  */
 public class ClankFileInfoQuerySupport {
+
     public static List<CsmReference> getMacroUsages(FileImpl fileImpl, Interrupter interrupter) {
-        List<CsmReference> out = Collections.<CsmReference>emptyList();
-        //FileBuffer buffer = fileImpl.getBuffer();
-        Collection<PreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
-        if (interrupter.cancelled()) {
-          return out;
-        }
-        CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), "getClankMacroUsages Not yet implemented");
-        if (handlers.isEmpty()) {
-          DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + fileImpl.getAbsolutePath())); //NOI18N
-          return Collections.<CsmReference>emptyList();
-        } else if (handlers.size() == 1) {
-          PreprocHandler handler = handlers.iterator().next();
-          /*PreprocHandler.State state =*/ handler.getState();
-        } else {
-          TreeSet<CsmReference> result = new TreeSet<>(CsmOffsetable.OFFSET_COMPARATOR);
-          for (PreprocHandler handler : handlers) {
-            // ask for concurrent entry if absent
-            /*PreprocHandler.State state =*/ handler.getState();
-          }
-          out = new ArrayList<>(result);
+        List<CsmReference> out = new ArrayList<>();
+        for(CsmReference reference : fileImpl.getReferences()) {
+            if (interrupter.cancelled()) {
+                return out;
+            }
+            CsmObject referencedObject = reference.getReferencedObject();
+            if (CsmKindUtilities.isMacro(referencedObject)) {
+                out.add(reference);
+            }
         }
         return out;
     }
 
     public static CsmOffsetable getGuardOffset(FileImpl fileImpl) {
         assert APTTraceFlags.USE_CLANK;
-        CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), "getGuardOffset not yet implemented");
-        return null;
+        return fileImpl.getFileGuard();
     }
 
+    public static boolean hasGuardBlock(FileImpl fileImpl) {
+        assert APTTraceFlags.USE_CLANK;
+        return fileImpl.hasFileGuard();
+    }
+        
     public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
         assert APTTraceFlags.USE_CLANK;
         TokenStream ts = fileImpl.getTokenStream(offset, offset, code, true);

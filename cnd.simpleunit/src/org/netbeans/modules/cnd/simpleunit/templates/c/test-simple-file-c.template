@@ -7,7 +7,7 @@
  * File:   ${nameAndExt}
  * Author: ${user}
  *
- * Created on ${date}, ${time}
+ * Created on ${DATE}, ${TIME}
  */
 
 #include <stdio.h>

@@ -132,6 +132,18 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         return new LuceneIndex (cacheRoot, analyzer);
     }
 
+    static boolean awaitPendingEvictors() throws InterruptedException {
+        try {
+            return DirCache.EVICTOR_RP.submit(new Runnable() {
+                @Override
+                public void run() {
+                }
+            }, Boolean.TRUE).get();
+        } catch (ExecutionException e) {
+            return false;
+        }
+    }
+
     /** Creates a new instance of LuceneIndex */
     private LuceneIndex (final File refCacheRoot, final Analyzer analyzer) throws IOException {
         assert refCacheRoot != null;

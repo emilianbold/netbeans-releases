@@ -2,166 +2,30 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>CPU Snapshot</title>
+<title>Details of &lt;Process&gt; Dialog</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="CpuSnapshot.HelpCtx" name="CpuSnapshot.HelpCtx"></a></p>
-<div id="NBCSH3355"><!-- infolevel="all" infotype="General" --><a id="sthref434" name="sthref434"></a>
-<h1>CPU Snapshot</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="ProcessDetails.HelpCtx" name="ProcessDetails.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref437" name="sthref437"></a>
+<h1>Details of &lt;Process&gt; Dialog</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to view data on method call chains, times, and invocations. You take a CPU snapshot when you are analyzing application performance. The snapshot is displayed in the main editor window. You can use the dropdown list in the toolbar to change the granularity of the displayed results. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG728">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>The drop-down list provides the following views:</p>
-
-<table summary="Descriptions of cpu snapshot views." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="33%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t48">Element</th>
-<th align="left" valign="bottom" id="r1c2-t48">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t48" headers="r1c1-t48">
-<p>Method Level View (default)</p>
-</td>
-<td align="left" headers="r2c1-t48 r1c2-t48">Displays results according to the fully-qualified method names.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t48" headers="r1c1-t48">
-<p>Class Level View</p>
-</td>
-<td align="left" headers="r3c1-t48 r1c2-t48">Aggregates in a single entry the results for all methods of the same class.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t48" headers="r1c1-t48">
-<p>Package Level View</p>
-</td>
-<td align="left" headers="r4c1-t48 r1c2-t48">Aggregates all methods of classes that belong to the same package.</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>The tabs display following data:</p>
-
-<table summary="Descriptions of CPU Snapshot window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="33%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t49">Element</th>
-<th align="left" valign="bottom" id="r1c2-t49">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t49" headers="r1c1-t49">
-<p>Call Tree</p>
-</td>
-<td align="left" headers="r2c1-t49 r1c2-t49">Displays a call tree showing the method call chain and the time/number of invocations for executing threads and methods in each context. (A context is a unique chain of method calls leading to the method's invocation.)</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t49" headers="r1c1-t49">
-<p>Hot Spots</p>
-</td>
-<td align="left" headers="r3c1-t49 r1c2-t49">Displays the total execution time and number of invocations for each method, irrespective of the context.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t49" headers="r1c1-t49">
-<p>Combined</p>
-</td>
-<td align="left" headers="r4c1-t49 r1c2-t49">Displays the Call Tree information in the upper part of the window and the Hot Spot data in the lower part.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t49" headers="r1c1-t49">
-<p>Info</p>
-</td>
-<td align="left" headers="r5c1-t49 r1c2-t49">Displays data on when the snapshot was taken, where it is saved, and the configuration of the profiling session.</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>Depending on the currently selected view, right-click a profiling result to access the following commands:</p>
-
-<table summary="Descriptions of context menu commands of CPU Snapshot window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="33%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t50">Element</th>
-<th align="left" valign="bottom" id="r1c2-t50">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t50" headers="r1c1-t50">
-<p>Go To Source</p>
-</td>
-<td align="left" headers="r2c1-t50 r1c2-t50">Loads the source <code dir="ltr">.java</code> file containing the class or method.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t50" headers="r1c1-t50">
-<p>Show Subtree</p>
-</td>
-<td align="left" headers="r3c1-t50 r1c2-t50">Displays the subtree for the selected method.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t50" headers="r1c1-t50">
-<p>Show Back Traces</p>
-</td>
-<td align="left" headers="r4c1-t50 r1c2-t50">Displays the back traces for the selected method.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t50" headers="r1c1-t50">
-<p>Find in Hot Spots</p>
-</td>
-<td align="left" headers="r5c1-t50 r1c2-t50">Displays the selected class or method in the Hot Spots tab.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t50" headers="r1c1-t50">
-<p>Find in Call Tree</p>
-</td>
-<td align="left" headers="r6c1-t50 r1c2-t50">Displays the selected class or method in the Call Tree tab.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t50" headers="r1c1-t50">
-<p>Find in Hot Spots</p>
-</td>
-<td align="left" headers="r7c1-t50 r1c2-t50">Adds the selected method to the list of roots available when analyzing application performance.
-<p>This command is only available when viewing results in method view.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<a id="NBCSH3369" name="NBCSH3369"></a>
+<p>Provides metadata for the selected external process. It includes the following sections:</p>
+<ul>
+<li><b>PID</b>&mdash;process ID.</li>
+<li><b>Main Class</b>&mdash;the main class to be executed.</li>
+<li><b>Arguments</b>&mdash;the arguments of the main class to be executed</li>
+<li><b>JVM</b> <b>Arguments</b>&mdash;Java Virtual Machine arguments, if any</li>
+<li><b>JVM</b> <b>Flags</b>&mdash;Java Virtual Machine Flags, if any</li>
+</ul>
+<a id="sthref438" name="sthref438"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
-<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
-<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG706">
+<param name="text" value="<html><u>&quot;Attaching a Profiler&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

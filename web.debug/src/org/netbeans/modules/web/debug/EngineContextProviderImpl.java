@@ -49,12 +49,11 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 
 
@@ -77,6 +76,12 @@ public class EngineContextProviderImpl extends SourcePathProvider {
             "jsp_servlet"
         }
     ));
+    
+    private final ContextProvider contextProvider;
+    
+    public EngineContextProviderImpl(ContextProvider contextProvider) {
+        this.contextProvider = contextProvider;
+    }
 
     
     /**
@@ -145,11 +150,9 @@ public class EngineContextProviderImpl extends SourcePathProvider {
         return null;
     }
 
-    private static SourcePathProvider getDefaultContext() {
-        List providers = DebuggerManager.getDebuggerManager().
-                lookup("netbeans-JPDASession", SourcePathProvider.class);
-        for (Iterator it = providers.iterator(); it.hasNext(); ) {
-            Object provider = it.next();
+    private SourcePathProvider getDefaultContext() {
+        List<? extends SourcePathProvider> providers = contextProvider.lookup(null, SourcePathProvider.class);
+        for (SourcePathProvider provider : providers) {
             // Hack - find our provider:
             if (provider != null &&
                 provider.getClass().getName().equals("org.netbeans.modules.debugger.jpda.projects.SourcePathProviderImpl")) {

@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
@@ -406,14 +407,16 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void initProjectCombo() {
-        Project[] projects = issue.getRepository().getConfiguration().getProjects();
+        JiraConfiguration rc = issue.getRepository().getConfiguration();
+        Project[] projects = rc != null ? rc.getProjects() : new Project[0];
         DefaultComboBoxModel model = new DefaultComboBoxModel(projects);
         model.setSelectedItem(null); // Make sure nothing is pre-selected
         projectCombo.setModel(model);
     }
 
     private void initPriorityCombo() {
-        Priority[] priority = issue.getRepository().getConfiguration().getPriorities();
+        JiraConfiguration rc = issue.getRepository().getConfiguration();        
+        Priority[] priority = rc != null ? rc.getPriorities() : new Priority[0];
         DefaultComboBoxModel model = new DefaultComboBoxModel(priority);
         priorityCombo.setModel(model);
     }
@@ -426,7 +429,8 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void initResolutionCombo() {
-        Resolution[] resolution = issue.getRepository().getConfiguration().getResolutions();
+        JiraConfiguration rc = issue.getRepository().getConfiguration();
+        Resolution[] resolution = rc != null ? rc.getResolutions() : new Resolution[0];
         DefaultComboBoxModel model = new DefaultComboBoxModel(resolution);
         resolutionCombo.setModel(model);
     }
@@ -748,6 +752,9 @@ public class IssuePanel extends javax.swing.JPanel {
         }
 
         JiraConfiguration config = issue.getRepository().getConfiguration();
+        if(config == null) {
+            return;
+        }
         ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
         String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
         Project project = config.getProjectById(projectId);
@@ -1299,12 +1306,18 @@ public class IssuePanel extends javax.swing.JPanel {
                 return;
             }
             if (IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
-                Mutex.EVENT.readAccess(new Runnable() {
+                RP.post(new Runnable() { 
+                    // HACK! see issue #253592                    
                     @Override
-                    public void run () {
-                        updateFieldStatuses();
+                    public void run() {
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run () {
+                                updateFieldStatuses();
+                            }
+                        });
                     }
-                });
+                }, 500);
             }
         }
     };
@@ -2425,6 +2438,9 @@ public class IssuePanel extends javax.swing.JPanel {
                         boolean subtask = issue.isSubtask();
                         boolean anySubtaskType = false;
                         IssueType[] issueTypes = config.getIssueTypes(project);
+                        if(issueTypes == null) {
+                            issueTypes = new IssueType[0];
+                        }
                         List<IssueType> types = new ArrayList<IssueType>(issueTypes.length);
                         for (IssueType issueType : issueTypes) {
                             if (issueType.isSubTaskType() == subtask) {

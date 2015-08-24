@@ -2,33 +2,90 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Project Properties Window: JavaScript Files</title>
+<title>Project Properties Window: Run</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="org.netbeans.modules.web.clientproject.ui.customizer.JavaScriptFilesPanel" name="org.netbeans.modules.web.clientproject.ui.customizer.JavaScriptFilesPanel"></a></p>
-<div id="NBCSH4347"><!-- infolevel="all" infotype="General" --><a id="sthref553" name="sthref553"></a>
-<h1>Project Properties Window: JavaScript Files</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="org.netbeans.modules.web.clientproject.ui.customizer.RunPanel" name="org.netbeans.modules.web.clientproject.ui.customizer.RunPanel"></a></p>
+<div id="NBCSH4349"><!-- infolevel="all" infotype="General" --><a id="sthref578" name="sthref578"></a>
+<h1>Project Properties Window: Run</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The JavaScript Files page in the Project Properties window enables you to add JavaScript libraries to your project. To add the JavaScript file, select the file that you want to add from the list of available files and click the right-arrow button (&gt;) to add the file to the list of selected files. 
+<p>You open the HTML5/JS Project Properties dialog box by right-clicking any HTML5/JS project node in the Projects window and choosing Properties.</p>
+<p>The Run page enables you to specify the target browser and the page that opens in the browser when you run the project. In this page you can specify the following options. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG3009">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1953">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>You can filter the list of available files by typing in the text field above the list of available files.</p>
-<p>You can select the version of the JavaScript file that you want to add to the project by clicking the version in the Version column.</p>
-<p>You cannot use this dialog box to remove the JavaScript files from the project.</p>
-<a id="NBCSH4348" name="NBCSH4348"></a>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t8">Element</th>
+<th align="left" valign="bottom" id="r1c2-t8">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t8" headers="r1c1-t8">
+<p>Browser</p>
+</td>
+<td align="left" headers="r2c1-t8 r1c2-t8">Select the browser that the IDE uses to run the application.
+<p>The following options are available when Chrome with NetBeans Integration or Embedded WebKit Browser are selected.</p>
+<ul>
+<li>Auto-refresh. When selected, the browser page is automatically reloaded when the HTML file or any files that are used by the HTML file are saved.</li>
+<li>Synchronize Navigator and browser element highlighting. When selected, when your cursor hovers over an element in the Navigator of the IDE the corresponding element is highlighted in the browser. When deselected the element in the browser is not highlighted when the element in the Navigator is selected.</li>
+</ul>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t8" headers="r1c1-t8">
+<p>Start File</p>
+</td>
+<td align="left" headers="r3c1-t8 r1c2-t8">The file that is displayed in the browser when you run the application. The default page is typically <code dir="ltr">index.html</code>.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t8" headers="r1c1-t8">
+<p>Web Server</p>
+</td>
+<td align="left" headers="r4c1-t8 r1c2-t8">Select one of the following server options from the drop-down list.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t8" headers="r1c1-t8">
+<p>Lightweight Embedded</p>
+</td>
+<td align="left" headers="r5c1-t8 r1c2-t8">Select this option to use the lightweight embedded web server. When you run the project the IDE will open the browser to the application index page on localhost.
+<p>This option is the default.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t8" headers="r1c1-t8">
+<p>External</p>
+</td>
+<td align="left" headers="r6c1-t8 r1c2-t8">Select this option to use a server installation that is hosting the application. If you select this option you need to specify the URL for the application. When you run the project the IDE will attempt to open the specified URL in the browser. It is not possible to manage the external server from the IDE.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t8" headers="r1c1-t8">
+<p>Web Root</p>
+</td>
+<td align="left" headers="r7c1-t8 r1c2-t8">This option is only available when you use the Embedded Lightweight web server. If no web root is specified the URL for the project will be http://localhost:&lt;PORT_NUMBER&gt;. You should specify a web root property if you want to run multiple projects simultaneously.</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="NBCSH4356" name="NBCSH4356"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2272">
-<param name="text" value="<html><u>&quot;Creating JavaScript Files&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1952">
+<param name="text" value="<html><u>&quot;Running an HTML5 Application&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -249,7 +249,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
         try {
             URI uri = new URI(comboEditor.getText());
             file = new File(uri);
-        } catch (URISyntaxException ex) {
+        } catch (URISyntaxException | IllegalArgumentException ex) {
             //
         }
         JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.FileChooser.Descritpion"), //NOI18N

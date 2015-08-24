@@ -47,7 +47,6 @@ package org.openide.util.lookup;
 import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.implspi.ActiveQueue;
 
@@ -58,14 +57,10 @@ public class AbstractLookupMemoryTest extends NbTestCase {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite(AbstractLookupMemoryTest.class));
-    }
-
     public void testEmptySize () {
         AbstractLookup instanceLookup = new AbstractLookup ();
         assertSize ("Empty lookup should be small", 16, instanceLookup);
-        
+
         InstanceContent ic = new InstanceContent ();
         instanceLookup = new AbstractLookup (ic);
         assertSize ("Lookup with InstanceContent should be small as well", 16, instanceLookup);
@@ -75,12 +70,12 @@ public class AbstractLookupMemoryTest extends NbTestCase {
         AbstractLookup.Pair pair = new EmptyPair ();
         assertSize ("Pair occupies only 16 bytes", 16, pair);
     }
-    
+
     public void testPairWithOnePointerSize () {
         AbstractLookup.Pair pair = new OneItemPair ();
         assertSize ("Pair occupies only 16 bytes", 16, pair);
     }
-    
+
     public void testLookupWithPairs () {
         Lookup.Template<Object> t = new Lookup.Template<Object>(Object.class);
         class L implements org.openide.util.LookupListener {
@@ -109,39 +104,39 @@ public class AbstractLookupMemoryTest extends NbTestCase {
             listener2,
             new Integer (11) // trashhold is shared
         };
-        
+
         AbstractLookup.Content c = new AbstractLookup.Content ();
         AbstractLookup l = new AbstractLookup (c, (Integer)ignore[ignore.length - 1]);
 
         c.addPair ((EmptyPair)ignore[0]);
         assertSize ("Should be really small (not counting the pair sizes)", Collections.singleton (l), 56, ignore);
-        
+
         c.addPair ((EmptyPair)ignore[1]);
         assertSize ("Is bigger I guess (not counting the pair sizes)", Collections.singleton (l), 56, ignore);
-        
+
         c.setPairs(Arrays.asList(pairs).subList(0, 3));
         assertSize ("Even bigger (not counting the pair sizes)", Collections.singleton (l), 64, ignore);
-        
+
         c.setPairs(Arrays.asList(pairs).subList(0, 4));
         assertSize ("Now not that much(not counting the pair sizes)", Collections.singleton (l), 64, ignore);
-        
+
         Lookup.Result res = l.lookup (t);
-        
+
         assertSize ("After creating a result", Collections.singleton (l), 120, ignore);
-        
+
         res.addLookupListener (listener);
-        
+
         assertSize ("And attaching one listener", Collections.singleton (l), 120, ignore);
 
         res.addLookupListener (listener2);
         assertSize ("Second listener makes the situation much worse", Collections.singleton (l), 200, ignore);
         res.removeLookupListener(listener2);
         assertSize ("But removing it returns us back to original size", Collections.singleton (l), 120, ignore);
-        
-        
+
+
         assertEquals ("Current for pairs are in", res.allItems ().size (), 4); // also activates the listener
         assertSize ("and making the listener to work", Collections.singleton (l), 120, ignore);
-        
+
         c.removePair ((EmptyPair)ignore[0]);
         assertEquals ("A changes has been delivered", 1, listener.cnt);
     }
@@ -155,7 +150,7 @@ public class AbstractLookupMemoryTest extends NbTestCase {
         public Class getType() { return Object.class; }
         protected boolean instanceOf(Class c) { return c == getType (); }
     } // end of EmptyPair
-    
+
     /** Pair with one item (like InstanceContent.Pair) */
     private static class OneItemPair extends EmptyPair {
         private Object pointer;

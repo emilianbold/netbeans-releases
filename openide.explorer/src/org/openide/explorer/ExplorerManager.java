@@ -56,6 +56,8 @@ import java.io.*;
 
 import java.util.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import static org.openide.explorer.Bundle.*;
 import org.openide.util.NbBundle.Messages;
@@ -602,6 +604,9 @@ bigloop:
     @Messages({"# {0} - name of node to be selected", "# {1} - name of node at root", "EXC_ContextMustBeWithinRootContext=An explored context ({0}) must be within the root context ({1})."})
     private void checkUnderRoot(Node value) {
         if ((value != null) && !isUnderRoot(value)) {
+            Logger.getLogger(ExplorerManager.class.getName()).log(Level.WARNING, "Explored context not under root: {0}---{1}; ROOT: {2}---{3}", new Object[] {
+                value.getDisplayName(), value, rootContext.getDisplayName(), rootContext
+            });
             throw new IllegalArgumentException(
                 EXC_ContextMustBeWithinRootContext(
                     value.getDisplayName(), rootContext.getDisplayName()

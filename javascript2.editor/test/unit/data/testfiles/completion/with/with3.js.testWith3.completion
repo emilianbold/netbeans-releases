@@ -14,6 +14,9 @@ CONSTRUCTO RangeError                      [PUBLIC]   JS Platform
 CONSTRUCTO ReferenceError                  [PUBLIC]   JS Platform
 CONSTRUCTO RegExp                          [PUBLIC]   JS Platform
 CONSTRUCTO String                          [PUBLIC]   JS Platform
+CONSTRUCTO SyntaxError                     [PUBLIC]   JS Platform
+CONSTRUCTO TypeError                       [PUBLIC]   JS Platform
+CONSTRUCTO URIError                        [PUBLIC]   JS Platform
 CONSTRUCTO XMLHttpRequest                  [PUBLIC]   JS Platform
 CLASS      AbstractView                    [PUBLIC]   JS Platform
 CLASS      AbstractWorker                  [PUBLIC]   JS Platform
@@ -167,9 +170,6 @@ CLASS      b                               [PUBLIC]   with3.js
 CLASS      z                               [PUBLIC]   with3.js
 METHOD     Image                           [PUBLIC,   JS Platform
 METHOD     Option                          [PUBLIC,   JS Platform
-METHOD     SyntaxError                     [PUBLIC]   JS Platform
-METHOD     TypeError                       [PUBLIC]   JS Platform
-METHOD     URIError                        [PUBLIC]   JS Platform
 METHOD     Worker                          [PUBLIC,   JS Platform
 METHOD     addEventListener(type: String,  [PUBLIC,   JS Platform
 METHOD     alert(): undefined              [PUBLIC,   JS Platform

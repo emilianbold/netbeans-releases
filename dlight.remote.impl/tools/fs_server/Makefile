@@ -99,7 +99,11 @@ LF_Linux-arm      = $(LF_COMMON) -static
 CFLAGS=$(CF_$(CONF))
 LDFLAGS=$(LF_$(CONF))
 
-all: $(EXEC)
+all: $(EXEC) strip summarise
+
+all-debug: $(EXEC) summarise
+
+summarise:
 	@$(LINE) =
 	@(cd `dirname $(EXEC)`; echo "`pwd`/`basename $(EXEC)`"); echo
 	@#echo $(EXEC); echo
@@ -107,6 +111,9 @@ all: $(EXEC)
 	@FILE=`(ls /bin/file || ls /usr/bin/file) 2>/dev/null`; \
 	   if [ -n "$${FILE}" ]; then $${FILE} ${EXEC} | sed "s#$(EXEC):.##"; fi
 	@$(LINE) =
+
+strip:
+	strip $(EXEC)
 
 parfait: all
 	@echo Processing parfait output. This can take a while...

@@ -1213,7 +1213,7 @@ public class Reformatter implements ReformatTask {
                         if (cs.placeNewLineAfterModifiers())
                             newline();
                         else
-                            spaces(1, true);
+                            space();
                     } else {
                         newline();
                     }
@@ -4415,8 +4415,10 @@ public class Reformatter implements ReformatTask {
                                 }
                                 identStart = -1;
                             }
-                            if (insideTagEndOffset >= 0)
+                            if (insideTagEndOffset >= 0) {
                                 addMark(Pair.of(insideTagEndOffset, 6), marks, state);
+                                currWSOffset = -1;
+                            }
                             cseq = null;
                             break;
                         default:
@@ -4681,6 +4683,14 @@ public class Reformatter implements ReformatTask {
                                                     }
                                                 }
                                                 pendingDiff = new Diff(offset + currWSPos, offset + i, javadocTokens != null && lastNWSPos >= 0 && cs.generateParagraphTagOnBlankLines() ? SPACE + P_TAG : EMPTY);
+                                            } else if (javadocTokens != null && lastNWSPos >= 0 && cs.generateParagraphTagOnBlankLines()) {
+                                                if (pendingDiff != null) {
+                                                    String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
+                                                    if (!sub.equals(pendingDiff.text)) {
+                                                        addDiff(pendingDiff);
+                                                    }
+                                                }
+                                                pendingDiff = new Diff(offset + i, offset + i, SPACE + P_TAG);
                                             }
                                             currWSPos = -1;
                                             lastNewLinePos = i;

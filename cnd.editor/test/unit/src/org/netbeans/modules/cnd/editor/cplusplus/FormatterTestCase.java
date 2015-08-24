@@ -950,9 +950,9 @@ public class FormatterTestCase extends EditorBase {
             "int\n" +
             "main() {\n" +
             "int z;\n" +
-            "#define X \\\n" +
-            "        a+\\\n" +
-            "        b+ \\\n" +
+            "#define\tX \\\n" +
+            "\ta+\\\n" +
+            "\t    b+ \\\n" +
             "        c \n" +
             "z++;\n" +
             "}\n"
@@ -968,7 +968,7 @@ public class FormatterTestCase extends EditorBase {
             "    int z;\n" +
             "#define X \\\n" +
             "        a+\\\n" +
-            "        b+ \\\n" +
+            "            b+ \\\n" +
             "        c \n" +
             "    z++;\n" +
             "}\n"

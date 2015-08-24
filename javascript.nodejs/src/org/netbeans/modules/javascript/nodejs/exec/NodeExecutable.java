@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
@@ -569,6 +570,8 @@ public class NodeExecutable {
                     public void run() {
                         debugging = false;
                         assert debugInfo != null;
+                        assert debugInfo.project != null;
+                        assert debugInfo.taskRef != null;
                         Future<Integer> task = debugInfo.taskRef.get();
                         assert task != null : debugInfo.project.getProjectDirectory();
                         task.cancel(true);
@@ -686,7 +689,9 @@ public class NodeExecutable {
 
     private static final class DebugInfo {
 
+        @NonNull
         public final Project project;
+        @NonNull
         public final AtomicReference<Future<Integer>> taskRef;
         public final int port;
 

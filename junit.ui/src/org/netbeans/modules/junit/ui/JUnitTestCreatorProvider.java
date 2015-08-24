@@ -74,12 +74,12 @@ import org.openide.util.RequestProcessor;
  *
  * @author Theofanis Oikonomou
  */
-@Registration(displayName=GuiUtils.JUNIT_TEST_FRAMEWORK)
+@Registration(displayName=GuiUtils.JUNIT_TEST_FRAMEWORK, identifier = TestCreatorProvider.IDENTIFIER_JUNIT)
 public class JUnitTestCreatorProvider extends TestCreatorProvider {
 
     @Override
     public boolean enable(FileObject[] activatedFOs) {
-        if (activatedFOs.length == 0) {
+        if (activatedFOs == null || activatedFOs.length == 0) {
             return false;
         }
         /*
@@ -93,10 +93,10 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
             Project project;
             if ((fileObj != null)
                 && fileObj.isValid()
-                && ((project = FileOwnerQuery.getOwner(fileObj)) != null)
-                && (getSourceGroup(fileObj, project) != null)
                 // selected FO might be folder or java file
-                && (fileObj.isFolder() || JUnitTestUtil.isJavaFile(fileObj))) {
+                && (fileObj.isFolder() || JUnitTestUtil.isJavaFile(fileObj))
+                && ((project = FileOwnerQuery.getOwner(fileObj)) != null)
+                && (getSourceGroup(fileObj, project) != null)) {
 
                 JUnitPlugin plugin = JUnitTestUtil.getPluginForProject(project);
                 return JUnitTestUtil.canCreateTests(plugin,
@@ -111,7 +111,9 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
         Project theProject = null;
         boolean result = false;
         for (FileObject fileObj : activatedFOs) {
-            if ((fileObj == null) || !fileObj.isValid()) {
+            if ((fileObj == null) || !fileObj.isValid()
+                // selected FO might be folder or java file
+                && (fileObj.isFolder() || JUnitTestUtil.isJavaFile(fileObj))) {
                 continue;
             }
 
@@ -127,9 +129,7 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
 
                 }
 
-                if ((getSourceGroup(fileObj, prj) != null)
-                        // selected FO might be folder or java file
-                        && (fileObj.isFolder() || JUnitTestUtil.isJavaFile(fileObj))) {
+                if (getSourceGroup(fileObj, prj) != null) {
                     result = true;
                 }
             }

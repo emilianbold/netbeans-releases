@@ -361,10 +361,8 @@
             <preprocessorList>
               <Elem>LINUX</Elem>
               <Elem>_GNU_SOURCE</Elem>
-              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
-              <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -409,7 +407,7 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <buildCommand>${MAKE} -f Makefile all-debug</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath>../../release/bin/Linux-x86/fs_server</executablePath>
           <cTool>
@@ -456,7 +454,7 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile 64BITS=1 </buildCommand>
+          <buildCommand>${MAKE} -f Makefile 64BITS=1 all-debug</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean 64BITS=1</cleanCommand>
           <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
           <cTool>
@@ -515,7 +513,7 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <buildCommand>${MAKE} -f Makefile all-debug</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath>../../release/bin/SunOS-x86/fs_server</executablePath>
           <cTool>

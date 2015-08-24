@@ -563,10 +563,15 @@ public final class EditorFindSupport {
             int blockSearchStart = (blockStartPos != null) ? blockStartPos.getOffset() : -1;
             int blockSearchEnd = getBlockEndOffset();
 
+            boolean backSearch = Boolean.TRUE.equals(props.get(FIND_BACKWARD_SEARCH));
+            if (backSearch) {
+                blockSearchEnd = dotPos;
+                dotPos = 0;
+            }
             try {
                 FindReplaceResult result = findReplaceInBlock(replaceExp, c, dotPos, 
                         (blockSearch && blockSearchStart > -1) ? blockSearchStart : 0, 
-                        (blockSearch && blockSearchEnd > 0) ? blockSearchEnd : -1, 
+                        (blockSearch && blockSearchEnd > 0) ? blockSearchEnd : backSearch ? blockSearchEnd : -1, 
                         props, oppositeDir);
                 
                 if (result != null && result.hasErrorMsg()) {
@@ -646,7 +651,7 @@ public final class EditorFindSupport {
             while (true) {
                 //pos = doc.find(sf, startPos, back ? blockStartPos : blockEndPos);
                 final int off1 = startPos;
-                final int off2 = back ? blockStartPos : blockEndPos;
+                final int off2 = oppositeDir ? blockStartPos : blockEndPos;
                 currentResult = null;
                 try {
                     executor.submit(new Runnable() {
@@ -695,6 +700,7 @@ public final class EditorFindSupport {
 
                         //blockStartPos = startPos;
                         startPos = blockEndPos;
+                        blockEndPos = docLen;
                     } else {
                         //blockEndPos = startPos;
                         startPos = blockStartPos;
@@ -872,14 +878,13 @@ public final class EditorFindSupport {
 
                 int actualPos = wrapSearch ? 0 : c.getCaret().getDot();
 
-                int pos = (blockSearch && blockSearchStartOffset > -1) ? ( backSearch ? blockSearchEndOffset : blockSearchStartOffset) : (backSearch? 0 : actualPos); // actual position
-
+                int pos = (blockSearch && blockSearchStartOffset > -1) ?  blockSearchStartOffset : (backSearch? 0 : actualPos); // actual position
+                blockSearchEndOffset = getBlockEndOffset();
                 while (true) {
-                    blockSearchEndOffset = getBlockEndOffset();
                     FindReplaceResult result = findReplaceInBlock(replaceWithOriginal, c, pos,
                             (blockSearch && blockSearchStartOffset > -1) ? blockSearchStartOffset : startPosWholeSearch,
                             (blockSearch && blockSearchEndOffset > 0) ? blockSearchEndOffset : endPosWholeSearch,
-                            localProps, backSearch);
+                            localProps, false);
                     if (result == null){
                         break;
                     }
@@ -920,6 +925,11 @@ public final class EditorFindSupport {
                             }
                         }
                         pos = backSearch ? blk[0] : blk[0] + ((replaceWith != null) ? replaceWith.length() : 0);
+                        if (!wrapSearch && backSearch) {
+                            endPosWholeSearch = endPosWholeSearch < blk[0] ? endPosWholeSearch : blk[0];
+                            blockSearchEndOffset = blockSearchEndOffset < blk[0] ? blockSearchEndOffset : blk[0];
+                            pos = (blockSearch && blockSearchStartOffset > -1) ?  blockSearchStartOffset : 0;
+                        }
                         replacedCnt++;
                     }
                     // The following is lame attempt to break the loop: if

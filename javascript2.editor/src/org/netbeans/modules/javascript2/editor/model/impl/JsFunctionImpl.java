@@ -131,7 +131,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                 if (property.isDeclared() 
                         && (property.getModifiers().contains(Modifier.PROTECTED)
                         || (property.getModifiers().contains(Modifier.PUBLIC) &&  !property.getModifiers().contains(Modifier.STATIC)))
-                        && !isAnonymous() && !property.isAnonymous()) {
+                        && !isAnonymous() && !property.isAnonymous()
+                        && (property.getDeclarationName() != null && property.getDeclarationName().getOffsetRange().getStart() < property.getDeclarationName().getOffsetRange().getEnd())) {
                     if(!ModelUtils.PROTOTYPE.equals(getParent().getName())) {
                         return JsElement.Kind.CONSTRUCTOR;
                     }
@@ -140,7 +141,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                     prototype = property;
                 }
             }
-            if (prototype != null && !prototype.getProperties().isEmpty()) {
+            if (prototype != null /*&& !prototype.getProperties().isEmpty()*/) {
                 return JsElement.Kind.CONSTRUCTOR;
             }
         }
@@ -277,15 +278,35 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         
         for (TypeUsage type : resolved) {
             if (type.getOffset() > 0) {
-                JsObject jsObject = ModelUtils.findJsObjectByName(this, type.getType());
-                if (jsObject == null) {
-                    JsObject global = ModelUtils.getGlobalObject(this);
-                    jsObject = ModelUtils.findJsObjectByName(global, type.getType());
+                String typeName = type.getType();
+                JsObject jsObject = null;
+                // at first check whether is not a parameter
+                if (typeName.indexOf('.') == -1) {
+                    JsObject parameter = null;
+                    JsFunction scope = this;
+                    while (scope != null && parameter == null && jsObject == null) {
+                        parameter = scope.getParameter(typeName);
+                        jsObject = scope.getProperty(typeName);
+                        scope = (JsFunction)((DeclarationScope)scope).getParentScope();
+                    }
+                    if (jsObject == null && parameter != null) {
+                        jsObject = parameter;
+                    }
+                    if (jsObject != null) {
+                        jsObject.addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + typeName.length()));
+                    }
                 }
-                if (jsObject != null && containsOffset(type.getOffset()) && !getJSKind().equals(JsElement.Kind.FILE)) {
-                    int index = type.getType().lastIndexOf('.');
-                    int typeLength = (index > -1) ? type.getType().length() - index - 1 : type.getType().length();
-                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), jsObject.isAnonymous() ? type.getOffset() : type.getOffset() + typeLength));
+                if (jsObject == null) {
+                    jsObject = ModelUtils.findJsObjectByName(this, typeName);
+                    if (jsObject == null) {
+                        JsObject global = ModelUtils.getGlobalObject(this);
+                        jsObject = ModelUtils.findJsObjectByName(global, typeName);
+                    }
+                    if (jsObject != null && containsOffset(type.getOffset()) && !getJSKind().equals(JsElement.Kind.FILE)) {
+                        int index = typeName.lastIndexOf('.');
+                        int typeLength = (index > -1) ? typeName.length() - index - 1 : typeName.length();
+                        ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), jsObject.isAnonymous() ? type.getOffset() : type.getOffset() + typeLength));
+                    }
                 }
             }
         }

@@ -70,10 +70,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,7 +84,9 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.classfile.Access;
 import org.netbeans.modules.classfile.Annotation;
@@ -99,6 +103,7 @@ import org.netbeans.modules.classfile.Code;
 import org.netbeans.modules.classfile.ConstantPool;
 import org.netbeans.modules.classfile.ElementValue;
 import org.netbeans.modules.classfile.EnumElementValue;
+import org.netbeans.modules.classfile.Field;
 import org.netbeans.modules.classfile.InvalidClassFormatException;
 import org.netbeans.modules.classfile.LocalVariableTableEntry;
 import org.netbeans.modules.classfile.LocalVariableTypeTableEntry;
@@ -121,6 +126,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Lookup;
 
 
 
@@ -169,6 +175,162 @@ public class BinaryAnalyser {
 
     }
 
+    public static abstract class Config {
+
+        public enum UsagesLevel {
+            BASIC("basic"), //NOI18N
+            EXEC_VAR_REFS("refs"), //NOI18N
+            ALL("all"); //NOI18N
+
+            private static final Map<String,UsagesLevel> byName = new HashMap<>();
+            static {
+                for (UsagesLevel lvl : values()) {
+                    byName.put(lvl.getName(), lvl);
+                }
+            }
+            private final String name;
+            UsagesLevel(@NonNull final String name) {
+                this.name = name;
+            }
+            @NonNull
+            public final String getName() {
+                return this.name;
+            }
+            @CheckForNull
+            public static UsagesLevel forName(@NullAllowed final String name) {
+                return name == null ?
+                    null :
+                    byName.get(name);
+            }
+        }
+
+        public enum IdentLevel {
+            NONE ("none") { //NOI18N
+                @Override
+                boolean accepts(final Field f) {
+                    return false;
+                }
+            },
+            VISIBLE("exported") { //NOI18N
+                @Override
+                boolean accepts(final Field f) {
+                    return !f.isPrivate();
+                }
+            },
+            ALL("all") {    //NOI18N
+                @Override
+                boolean accepts(final Field f) {
+                    return true;
+                }
+            };
+
+            private static final Map<String,IdentLevel> byName = new HashMap<>();
+            static {
+                for (IdentLevel lvl : values()) {
+                    byName.put(lvl.getName(), lvl);
+                }
+            }
+            private final String name;
+            IdentLevel(@NonNull final String name) {
+                this.name = name;
+            }
+            @NonNull
+            public final String getName() {
+                return name;
+            }
+            @CheckForNull
+            public static IdentLevel forName(@NullAllowed final String name) {
+                return name == null ?
+                    null :
+                    byName.get(name);
+            }
+            abstract boolean accepts(@NonNull Field f);
+        }
+
+        @NonNull
+        protected abstract UsagesLevel getUsagesLevel();
+
+        @NonNull
+        protected abstract IdentLevel getIdentLevel();
+
+        @NonNull
+        final ClassFileProcessor createProcessor(@NonNull final ClassFile cf) {
+            final UsagesLevel ul = getUsagesLevel();
+            switch (ul) {
+                case BASIC:
+                    return new ClassSignatureProcessor(cf, getIdentLevel());
+                case EXEC_VAR_REFS:
+                    return new ExecVarRefsProcessor(cf, getIdentLevel());
+                case ALL:
+                    return new FullIndexProcessor(cf, getIdentLevel());
+                default:
+                    throw new IllegalStateException(String.valueOf(ul));
+            }
+        }
+
+        @NonNull
+        static Config getDefault() {
+            Config res = Lookup.getDefault().lookup(Config.class);
+            if (res == null) {
+                res = new DefaultConfig();
+            }
+            return res;
+        }
+
+        private static final class DefaultConfig extends Config {
+            private static final String PROP_FULL_INDEX = "org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex";   //NOI18N
+            private static final String PROP_USG_LVL = "org.netbeans.modules.java.source.usages.BinaryAnalyser.usages"; //NOI18N
+            private static final String PROP_ID_LVL = "org.netbeans.modules.java.source.usages.BinaryAnalyser.idents"; //NOI18N
+
+            private static final UsagesLevel DEFAULT_USAGES_LEVEL = UsagesLevel.EXEC_VAR_REFS;
+            private static final IdentLevel DEFAULT_IDENT_LEVEL = IdentLevel.VISIBLE;
+
+            private final UsagesLevel usgLvl;
+            private final IdentLevel idLvl;
+
+            public DefaultConfig() {
+                usgLvl = resolveUsagesLevel();
+                idLvl = resolveIdentLevel();
+            }
+
+            @Override
+            @NonNull
+            public UsagesLevel getUsagesLevel() {
+                return usgLvl;
+            }
+
+            @Override
+            @NonNull
+            public IdentLevel getIdentLevel() {
+                return idLvl;
+            }
+
+            @NonNull
+            private static UsagesLevel resolveUsagesLevel() {
+                UsagesLevel lvl = Boolean.getBoolean(PROP_FULL_INDEX) ?
+                        UsagesLevel.ALL:
+                        null;
+                if (lvl == null) {
+                    lvl = UsagesLevel.forName(System.getProperty(PROP_USG_LVL));
+                    if (lvl == null) {
+                        lvl = DEFAULT_USAGES_LEVEL;
+                    }
+                }
+                return lvl;
+            }
+
+            @NonNull
+            private static IdentLevel resolveIdentLevel() {
+                IdentLevel lvl = IdentLevel.forName(System.getProperty(PROP_ID_LVL));
+                if (lvl == null) {
+                    lvl = DEFAULT_IDENT_LEVEL;
+                }
+                return lvl;
+            }
+
+        }
+    }
+
     private static final String INIT ="<init>"; //NOI18N
     private static final String CLINIT ="<clinit>"; //NOI18N
     private static final String OUTHER_THIS_PREFIX = "this$"; //NOI18N
@@ -181,13 +343,12 @@ public class BinaryAnalyser {
     private static final String JCOMPONENT = javax.swing.JComponent.class.getName();
     static final String OBJECT = Object.class.getName();
 
-    private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
-
     private final ClassIndexImpl.Writer writer;
     private final File cacheRoot;
     private final List<Pair<Pair<String,String>,Object[]>> refs = new ArrayList<Pair<Pair<String, String>, Object[]>>();
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private final LowMemoryWatcher lmListener;
+    private final Config cfg;
     //@NotThreadSafe
     private Pair<LongHashMap<String>,Set<String>> timeStamps;
 
@@ -197,6 +358,7 @@ public class BinaryAnalyser {
        this.writer = writer;
        this.cacheRoot = cacheRoot;
        this.lmListener = LowMemoryWatcher.getInstance();
+       this.cfg = Config.getDefault();
     }
 
 
@@ -221,6 +383,7 @@ public class BinaryAnalyser {
             storeTimeStamps();
             return diff(oldState,newState, preBuildArgs);
         } else {
+            writer.rollback();
             return Changes.FAILURE;
         }
     }
@@ -502,10 +665,7 @@ public class BinaryAnalyser {
 
     private void analyse (final InputStream inputStream) throws IOException {
         final ClassFile classFile = new ClassFile(inputStream);
-        final ClassFileProcessor cfp =
-            FULL_INDEX ?
-                new FullIndexProcessor(classFile) :
-                new ClassSignatureProcessor(classFile);
+        final ClassFileProcessor cfp = cfg.createProcessor(classFile);
         this.delete (cfp.getClassName());
         final UsagesData<ClassName> usages = cfp.analyse();
         final String classNameType = cfp.getClassName() + DocumentUtil.encodeKind(getElementKind(classFile));
@@ -551,18 +711,25 @@ public class BinaryAnalyser {
                 };
 
         private final ClassFile classFile;
+        private final Config.IdentLevel idLvl;
         private final String className;
-        private final UsagesData<ClassName> usages =
-                new UsagesData<ClassName>(CONVERTOR);
+        private final UsagesData<ClassName> usages = new UsagesData<>(CONVERTOR);
 
         ClassFileProcessor(
-                @NonNull final ClassFile classFile) {
+                @NonNull final ClassFile classFile,
+                @NonNull final Config.IdentLevel idLvl) {
             this.classFile = classFile;
             this.className = CONVERTOR.convert(classFile.getName ());
+            this.idLvl = idLvl;
         }
 
         final String getClassName() {
             return this.className;
+        }
+
+        @NonNull
+        final Config.IdentLevel getIdentLevel() {
+            return this.idLvl;
         }
 
         final UsagesData analyse() {
@@ -649,8 +816,10 @@ public class BinaryAnalyser {
 
     private static class ClassSignatureProcessor extends ClassFileProcessor {
 
-        ClassSignatureProcessor(@NonNull final ClassFile classFile) {
-            super(classFile);
+        ClassSignatureProcessor(
+                @NonNull final ClassFile classFile,
+                @NonNull final Config.IdentLevel idLvl) {
+            super(classFile, idLvl);
         }
 
         @Override
@@ -693,7 +862,8 @@ public class BinaryAnalyser {
         @Override
         void visit(@NonNull final Method m) {
             final String name = m.getName();
-            if (!m.isSynthetic() &&
+            if (getIdentLevel().accepts(m) &&
+                !m.isSynthetic() &&
                 !isInit(name) &&
                 !isAccessorMethod(name)) {
                 addIdent(name);
@@ -704,7 +874,8 @@ public class BinaryAnalyser {
         @Override
         void visit(@NonNull final Variable v) {
             final String name = v.getName();
-            if (!v.isSynthetic() &&
+            if (getIdentLevel().accepts(v) &&
+                !v.isSynthetic() &&
                 !isOutherThis(name) &&
                 !isDisableAssertions(name)) {
                 addIdent(name);
@@ -729,10 +900,46 @@ public class BinaryAnalyser {
         }
     }
 
+    private static final class ExecVarRefsProcessor extends ClassSignatureProcessor {
+        ExecVarRefsProcessor(
+                @NonNull final ClassFile classFile,
+                @NonNull final Config.IdentLevel idLvl) {
+            super(classFile, idLvl);
+        }
+
+        @Override
+        void visit(@NonNull final ClassFile cf) {
+            final ConstantPool constantPool = cf.getConstantPool();
+            //2. Add field usages
+            for (CPFieldInfo field : constantPool.getAllConstants(CPFieldInfo.class)) {
+                ClassName name = ClassFileUtil.getType(constantPool.getClass(field.getClassID()));
+                if (name != null) {
+                    addUsage (name, ClassIndexImpl.UsageType.FIELD_REFERENCE);
+                }
+            }
+            //3. Add method usages
+            for (CPMethodInfo method : constantPool.getAllConstants(CPMethodInfo.class)) {
+                ClassName name = ClassFileUtil.getType(constantPool.getClass(method.getClassID()));
+                if (name != null) {
+                    addUsage (name, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                }
+            }
+            for (CPMethodInfo method : constantPool.getAllConstants(CPInterfaceMethodInfo.class)) {
+                ClassName name = ClassFileUtil.getType(constantPool.getClass(method.getClassID()));
+                if (name != null) {
+                    addUsage (name, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                }
+            }
+            super.visit(cf);
+        }
+    }
+
     private static final class FullIndexProcessor extends ClassSignatureProcessor {
 
-        FullIndexProcessor(@NonNull final ClassFile classFile) {
-            super(classFile);
+        FullIndexProcessor(
+                @NonNull final ClassFile classFile,
+                @NonNull final Config.IdentLevel idLvl) {
+            super(classFile, idLvl);
         }
 
         @Override
@@ -958,6 +1165,7 @@ public class BinaryAnalyser {
 
         private final ZipFile zipFile;
         private final Enumeration<? extends ZipEntry> entries;
+        private boolean brokenLogged;
 
         ArchiveProcessor (
                 final @NonNull File file,
@@ -978,10 +1186,28 @@ public class BinaryAnalyser {
                 while(entries.hasMoreElements()) {
                     final ZipEntry ze;
                     try {
-                        ze = (ZipEntry)entries.nextElement();
+                        ze = entries.nextElement();
                     } catch (InternalError err) {
-                        LOGGER.log(Level.INFO, "Broken zip file: " + zipFile.getName(), err);
+                        LOGGER.log(
+                                Level.INFO,
+                                "Broken zip file: {0}, reason: {1}",    //NOI18N
+                                new Object[] {
+                                    zipFile.getName(),
+                                    err.getMessage()
+                                });
                         return true;
+                    } catch (IllegalArgumentException iae) {
+                        if (!brokenLogged) {
+                            LOGGER.log(
+                                    Level.INFO,
+                                    "Broken zip file: {0}, reason: {1}",    //NOI18N
+                                    new Object[]{
+                                        zipFile.getName(),
+                                        iae.getMessage()
+                                    });
+                            brokenLogged = true;
+                        }
+                        continue;
                     }
                     if (!ze.isDirectory()  && accepts(ze.getName()))  {
                         report (

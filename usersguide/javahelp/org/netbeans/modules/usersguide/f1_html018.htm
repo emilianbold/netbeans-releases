@@ -2,80 +2,96 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>New HTML5 Application Wizard: Cordova Support</title>
+<title>Options Window: HTML/JS: Node.js</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="org.netbeans.modules.cordova.template.CordovaTemplate$CordovaWizardPanel" name="org.netbeans.modules.cordova.template.CordovaTemplate$CordovaWizardPanel"></a></p>
-<div id="NBCSH4400"><!-- infolevel="all" infotype="General" --><a id="sthref563" name="sthref563"></a>
-<h1>New HTML5 Application Wizard: Cordova Support</h1>
+<p>Beta Draft: 2015-08-07</p>
+<!-- infolevel="all" infotype="General" --><a id="sthref588" name="sthref588"></a>
+<h1>Options Window: HTML/JS: Node.js</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The New HTML5 Application wizard creates a new project for developing an HTML5 application with HTML, CSS and JavaScript. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1950">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>In the Cordova Support page you can specify the details that are saved in the <code dir="ltr">config.xml</code> file of the project. You can edit the <code dir="ltr">config.xml</code> details later in the source editor or in the Cordova category of the Project Properties window. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2504">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>This panel contains the following elements:</p>
+<p>You use this panel in the Options window to configure the IDE to run Node.js executable files.</p>
+<p>This panel contains the following elements.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t18">Option</th>
+<th align="left" valign="bottom" id="r1c1-t18">Element</th>
 <th align="left" valign="bottom" id="r1c2-t18">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t18" headers="r1c1-t18">
-<p>Application ID</p>
+<p>Node Path</p>
 </td>
-<td align="left" headers="r2c1-t18 r1c2-t18">Type the the unique identifier for the application.
-<p>Use reverse domain syntax (<code dir="ltr">com.coolappz.HTML5Application</code>) to ensure the widest possible platform support.</p>
-</td>
+<td align="left" headers="r2c1-t18 r1c2-t18">Specify the path to the Node.js launch command (node.exe for Windows).</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t18" headers="r1c1-t18">
-<p>Application Name</p>
-</td>
-<td align="left" headers="r3c1-t18 r1c2-t18">Type the name of the application.</td>
+<td align="left" id="r3c1-t18" headers="r1c1-t18">&nbsp;&nbsp;&nbsp;&nbsp;Install Node.js</td>
+<td align="left" headers="r3c1-t18 r1c2-t18">Click to display 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="https://nodejs.org/">
+<param name="text" value="<html><u>the Node.js download page</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+ and install Node.js on your machine.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t18" headers="r1c1-t18">
-<p>Version</p>
+<p>Sources</p>
 </td>
-<td align="left" headers="r4c1-t18 r1c2-t18">Specify the version of the application.</td>
+<td align="left" headers="r4c1-t18 r1c2-t18">Click Download or Browse to specify the path to Node.js core sources to configure them as a JavaScript library and associate it with your project.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t18" headers="r1c1-t18">
+<p>Apply Code Changes On Save (Live Edit)</p>
+</td>
+<td align="left" headers="r5c1-t18 r1c2-t18">When selected the IDE automatically updates your Node.js application when saving.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t18" headers="r1c1-t18">
+<p>npm</p>
+</td>
+<td align="left" headers="r6c1-t18 r1c2-t18"></td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t18" headers="r1c1-t18">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;npm Path</p>
+</td>
+<td align="left" headers="r7c1-t18 r1c2-t18">Click Browse or Search to add the Node Package Manager (npm) to your system path.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t18" headers="r1c1-t18">Express Generator</td>
+<td align="left" headers="r8c1-t18 r1c2-t18"></td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t18" headers="r1c1-t18">&nbsp;&nbsp;&nbsp;&nbsp;Express</td>
+<td align="left" headers="r9c1-t18 r1c2-t18">Click Browse or Search to add express file to your system path.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t18" headers="r1c1-t18">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Install Generator</td>
+<td align="left" headers="r10c1-t18 r1c2-t18">Click to display the Express application generator page with details on how to install Express Generator on your machine.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH4404" name="NBCSH4404"></a>
+<a id="sthref589" name="sthref589"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1950">
-<param name="text" value="<html><u>&quot;Creating an HTML5 Application Project&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG117">
+<param name="text" value="<html><u>&quot;Working with the Options Window&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<!-- -->
 <!-- -->
 <!-- Start Footer -->
 

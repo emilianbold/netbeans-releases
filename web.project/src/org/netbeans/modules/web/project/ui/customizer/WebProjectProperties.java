@@ -47,6 +47,7 @@ package org.netbeans.modules.web.project.ui.customizer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOError;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,6 +56,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
@@ -933,25 +935,38 @@ final public class WebProjectProperties {
     public void store() {
         save();
     }
-    
-    public static void setServerInstance(final WebProject project, final UpdateHelper helper, final String serverInstanceID) {
+
+    public static void setServerInstanceInner(final WebProject project, final UpdateHelper helper, final String serverInstanceID) throws IOException {
+        final AtomicReference<IOException> exRef = new AtomicReference<>();
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             @Override
             public void run() {
+                EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                J2EEProjectProperties.updateServerProperties(projectProps, privateProps, serverInstanceID,
+                        null, null, new CallbackImpl(project), project,
+                        project.getAPIWebModule().getJ2eeProfile(), J2eeModule.Type.WAR);
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                 try {
-                    EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    J2EEProjectProperties.updateServerProperties(projectProps, privateProps, serverInstanceID, 
-                            null, null, new CallbackImpl(project), project,
-                            project.getAPIWebModule().getJ2eeProfile(), J2eeModule.Type.WAR);
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
+                } catch (IOException ex) {
+                    exRef.set(ex);
                 }
+
             }
         });
+        if (exRef.get() != null) {
+            throw exRef.get();
+        }
+    }
+
+    public static void setServerInstance(final WebProject project, final UpdateHelper helper, final String serverInstanceID) {
+        try {
+            setServerInstanceInner(project, helper, serverInstanceID);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     /* This is used by CustomizerWSServiceHost */

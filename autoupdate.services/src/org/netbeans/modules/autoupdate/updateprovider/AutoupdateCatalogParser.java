@@ -535,7 +535,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
         private URI base;
         private String catalogDate;
         
-        private boolean forceRestart = false;
+        private boolean isFragment = false;
         
         private static ModuleDescriptor md = null;
         
@@ -570,7 +570,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             String autoload = module.getValue (MODULE_ATTR_AUTOLOAD);
             String preferred = module.getValue(MODULE_ATTR_IS_PREFERRED_UPDATE);
                         
-            needsRestart = forceRestart || needsrestart == null || needsrestart.trim ().length () == 0 ? null : Boolean.valueOf (needsrestart);
+            needsRestart = isFragment || needsrestart == null || needsrestart.trim ().length () == 0 ? null : Boolean.valueOf (needsrestart);
             isGlobal = global == null || global.trim ().length () == 0 ? null : Boolean.valueOf (global);
             isEager = Boolean.parseBoolean (eager);
             isAutoload = Boolean.parseBoolean (autoload);
@@ -586,9 +586,9 @@ public class AutoupdateCatalogParser extends DefaultHandler {
         
         public void appendManifest (Attributes manifest) {
             specVersion = manifest.getValue (MANIFEST_ATTR_SPECIFICATION_VERSION);
-            String fragmentHost = manifest.getValue(MANIFEST_ATTR_FRAGMENT_HOST);
-            forceRestart = fragmentHost != null && !fragmentHost.isEmpty();
-            if (forceRestart) {
+            String fragmentHost = manifest.getValue(MANIFEST_ATTR_FRAGMENT_HOST);            
+            isFragment = fragmentHost != null && !fragmentHost.isEmpty();
+            if (isFragment) {
                 needsRestart = true;
             }
             mf = getManifest (manifest);

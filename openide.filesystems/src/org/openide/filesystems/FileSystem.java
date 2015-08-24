@@ -308,18 +308,38 @@ public abstract class FileSystem implements Serializable {
          * PROP_DISPLAY_NAME*/
         firePropertyChange(PROP_DISPLAY_NAME, null, null);
     }
+    
+    /**
+     * Caches the value of 'default' flag. It is extremely costly to call to FileUtil.getConfigRoot()
+     * during startup, as the getter for repository waits for the rapidly changing default Lookup. 
+     * In a multi-context environment, the flag <b>might</b> be inappropriate for the current execution context;
+     * an execution "A" could possibly reach an instance of default FS for execution "B". But as the two execution
+     * should each operate with a different Repository with distinct instances of FileSystems, such condition
+     * should be treated as an error.
+     */
+    private volatile Boolean defFS;
 
     /** Returns <code>true</code> if the filesystem is default.
      * @return true if this is {@link Repository#getDefaultFileSystem}
     */
     public final boolean isDefault() {
+        boolean check = false;
+        // XXX hotfix
+        //	assert check = true;
+        if (defFS != null && !check) {
+            return defFS;
+        }
         FileSystem fs = null;
         try {
             fs = FileUtil.getConfigRoot().getFileSystem();
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return this == fs;
+        if (defFS != null) {
+            // XXX hotfix 
+            //	    assert defFS == (this == fs) : "Default filesystem used in foreign execution";
+        }
+        return defFS = (this == fs);
     }
 
     /** Test if the filesystem is read-only or not.

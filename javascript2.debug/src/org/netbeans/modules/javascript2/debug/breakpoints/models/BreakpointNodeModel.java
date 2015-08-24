@@ -43,7 +43,11 @@
 package org.netbeans.modules.javascript2.debug.breakpoints.models;
 
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.javascript2.debug.JSUtils;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
@@ -51,6 +55,7 @@ import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfoManag
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -83,8 +88,19 @@ public class BreakpointNodeModel implements ExtendedNodeModel {
         "org/netbeans/modules/debugger/resources/editor/Breakpoint_stroke.png";                     // NOI18N
     public static final String DEACTIVATED_DISABLED_LINE_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/editor/DisabledBreakpoint_stroke.png";             // NOI18N
+    
+    private List<ModelListener> listeners = new CopyOnWriteArrayList<>();
 
     public BreakpointNodeModel() {
+        JSBreakpointsInfoManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                ModelEvent.NodeChanged nch = new ModelEvent.NodeChanged(BreakpointNodeModel.this, null);
+                for (ModelListener ml : listeners) {
+                    ml.modelChanged(nch);
+                }
+            }
+        });
     }
     
     @NbBundle.Messages({
@@ -212,10 +228,12 @@ public class BreakpointNodeModel implements ExtendedNodeModel {
     
     @Override
     public void addModelListener(ModelListener l) {
+        listeners.add(l);
     }
 
     @Override
     public void removeModelListener(ModelListener l) {
+        listeners.remove(l);
     }
 
 }

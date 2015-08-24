@@ -47,6 +47,8 @@ package org.netbeans.modules.target.iterator.api;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,7 +76,11 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 // XXX I18N
 
@@ -82,14 +88,17 @@ import org.openide.util.NbCollections;
  *
  * @author  phrebejk, mkuchtiak
  */
-public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
+public class BrowseFolders extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
     
     private ExplorerManager manager;
     private SourceGroup[] folders;
     private Class target;
     BeanTreeView btv;
     
+    private final InstanceContent selectionContent = new InstanceContent();
+    
     private static JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
+    private final AbstractLookup lookup;
     
     /** Creates new form BrowseFolders */
     public BrowseFolders( SourceGroup[] folders, Class target, 
@@ -111,8 +120,34 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         btv.setRootVisible( false );
         btv.setSelectionMode( javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION );
         btv.setBorder( SAMPLE_SCROLL_PANE.getBorder() );
+        manager.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
+                    Node[] oldnodes = (Node[]) evt.getOldValue();
+                    if(oldnodes != null) {
+                        for (Node oldnode : oldnodes) {
+                            DataObject dobj = oldnode.getLookup().lookup(DataObject.class);
+                            if(dobj != null) {
+                                selectionContent.remove(dobj.getPrimaryFile());
+                            }
+                        }
+                    }
+                    Node[] newnodes = (Node[]) evt.getNewValue();
+                    if(newnodes != null) {
+                        for (Node newnode : newnodes) {
+                            DataObject dobj = newnode.getLookup().lookup(DataObject.class);
+                            if(dobj != null) {
+                                selectionContent.add(dobj.getPrimaryFile());
+                            }
+                        }
+                    }
+                }
+            }
+        });
         expandSelection( preselectedFileName );
         folderPanel.add( btv, java.awt.BorderLayout.CENTER );
+        lookup = new AbstractLookup(selectionContent);
     }
         
     // ExplorerManager.Provider implementation ---------------------------------
@@ -258,6 +293,10 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         return optionsListener.getResult();
     }
     
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
     
     // Innerclasses ------------------------------------------------------------
     

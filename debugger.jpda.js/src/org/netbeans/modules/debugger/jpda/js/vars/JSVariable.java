@@ -119,6 +119,22 @@ public class JSVariable {
         return new JSVariable(debugger, valueInfoDesc);
     }
     
+    public static JSVariable createIfScriptObject(JPDADebugger debugger, ObjectVariable ov, String name) {
+        JPDAClassType classType = ov.getClassType();
+        if (classType == null) {
+            return null;
+        }
+        boolean isScript = classType.isInstanceOf("jdk.nashorn.internal.runtime.ScriptObject"); // NOI18N
+        if (!isScript) {
+            return null;
+        }
+        Variable valueInfoDesc = DebuggerSupport.getValueInfoDesc(debugger, name, ov, false);
+        if (valueInfoDesc == null) {
+            return null;
+        }
+        return new JSVariable(debugger, valueInfoDesc);
+    }
+
     public String getKey() {
         return key;
     }

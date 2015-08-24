@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -57,6 +56,7 @@ import java.util.logging.Logger;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
+import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
@@ -73,7 +73,6 @@ import org.openide.util.BaseUtilities;
  */
 public class OutputFileManager extends CachingFileManager {
 
-    static final String OUTPUT_ROOT = "output-root";   //NOI18N
     private static final Logger LOG = Logger.getLogger(OutputFileManager.class.getName());
     /**
      * Exception used to signal that the sourcepath is broken (project is deleted)
@@ -83,7 +82,6 @@ public class OutputFileManager extends CachingFileManager {
 
     private ClassPath scp;
     private ClassPath apt;
-    private String outputRoot;
     private  Pair<URI,File> cachedClassFolder;
     private final SiblingProvider siblings;
     private final FileManagerTransaction tx;
@@ -118,34 +116,29 @@ public class OutputFileManager extends CachingFileManager {
         if (kind != JavaFileObject.Kind.CLASS) {
             throw new IllegalArgumentException ();
         } else {
-            File activeRoot = null;
-            if (outputRoot != null) {
-                activeRoot = new File(outputRoot);
-            } else {
-                final String baseName = FileObjects.convertPackage2Folder(className);
-                activeRoot = getClassFolderForSource(sibling, baseName);
+            String baseName = FileObjects.convertPackage2Folder(className);     //Todo: Use File.separatorChar and remove below baseName = ...
+            File activeRoot = getClassFolderForSource(sibling, baseName);
+            if (activeRoot == null) {
+                activeRoot = getClassFolderForApt(sibling, baseName);
                 if (activeRoot == null) {
-                    activeRoot = getClassFolderForApt(sibling, baseName);
-                    if (activeRoot == null) {
-                        //Deleted project
-                        if (this.scp.getRoots().length > 0) {
-                            LOG.log(
-                                Level.WARNING,
-                                "No output for class: {0} sibling: {1} srcRoots: {2}",    //NOI18N
-                                new Object[]{
-                                    className,
-                                    sibling,
-                                    this.scp
-                                });
-                        }
-                        throw new InvalidSourcePath ();
+                    //Deleted project
+                    if (this.scp.getRoots().length > 0) {
+                        LOG.log(
+                            Level.WARNING,
+                            "No output for class: {0} sibling: {1} srcRoots: {2}",    //NOI18N
+                            new Object[]{
+                                className,
+                                sibling,
+                                this.scp
+                            });
                     }
+                    throw new InvalidSourcePath ();
                 }
             }
-            String baseName = className.replace('.', File.separatorChar);       //NOI18N
-            String nameStr = baseName + '.' + FileObjects.SIG;            
+            baseName = className.replace('.', File.separatorChar);       //NOI18N
+            String nameStr = baseName + '.' + FileObjects.SIG;
             final File f = new File (activeRoot, nameStr);
-            if (isValidClassName(className)) {
+            if (FileObjects.isValidFileName(className)) {
                 return tx.createFileObject(l, f, activeRoot, null, null);
             } else {
                 LOG.log(
@@ -176,23 +169,18 @@ public class OutputFileManager extends CachingFileManager {
                 throw new InvalidSourcePath ();
             }
         }
-        if (File.separatorChar != '/') {    //NOI18N
-            relativeName = relativeName.replace('/', File.separatorChar);   //NOI18N
-        }
-        final StringBuilder  path = new StringBuilder();
-        if (pkgName.length() > 0) {
-            path.append(FileObjects.convertPackage2Folder(pkgName, File.separatorChar));
-            path.append(File.separatorChar);
-        }
-        path.append(relativeName);
-        final File file = FileUtil.normalizeFile(new File (activeRoot,path.toString()));
+        final String path = FileObjects.resolveRelativePath(pkgName, relativeName);
+        final File file = FileUtil.normalizeFile(new File (activeRoot,path.replace(FileObjects.NBFS_SEPARATOR_CHAR, File.separatorChar)));
         return tx.createFileObject(l, file, activeRoot,null,null);
     }
 
-    
+
     @Override
     public javax.tools.FileObject getFileForInput(Location l, String pkgName, String relativeName) {
-        javax.tools.FileObject fo = tx.readFileObject(l, pkgName, relativeName);
+        final String[] names = FileObjects.getFolderAndBaseName(
+            FileObjects.resolveRelativePath(pkgName, relativeName),
+            FileObjects.NBFS_SEPARATOR_CHAR);
+        javax.tools.FileObject fo = tx.readFileObject(l, names[0], names[1]);
         if (fo != null) {
             return fo;
         }
@@ -212,13 +200,9 @@ public class OutputFileManager extends CachingFileManager {
         return super.getJavaFileForInput(l, className, kind);
     }
 
-    /**
-     * Prevents <error>, <any> from being generated.
-     * @param fqn to check
-     * @return true if the fqn does not contain '<'
-     */
-    private static boolean isValidClassName(@NonNull final String fqn) {
-        return fqn.indexOf('<') < 0;    //NOI18N
+    @Override
+    public boolean hasLocation(Location location) {
+        return location == StandardLocation.CLASS_OUTPUT;
     }
 
     private File getClassFolderForSource (final javax.tools.FileObject sibling, final String baseName) throws IOException {
@@ -356,19 +340,5 @@ public class OutputFileManager extends CachingFileManager {
                 result);
         }
         return result;
-    }
-    
-    @Override
-    public boolean handleOption(String head, Iterator<String> tail) {
-        if (OUTPUT_ROOT.equals(head)) { //NOI18N
-            if (!tail.hasNext())
-                throw new IllegalArgumentException();
-            outputRoot = tail.next();
-            if (outputRoot.length() <= 0)
-                outputRoot = null;
-            return true;
-        } else {
-            return super.handleOption(head, tail);
-        }
     }
 }

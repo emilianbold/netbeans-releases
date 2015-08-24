@@ -57,6 +57,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -148,7 +149,7 @@ public class DirectoryGroup extends Group {
                     }
                 }
                 Project p = ProjectManager.getDefault().findProject(em);
-                if (p != null) {
+                if (p != null && !ProjectConvertors.isConvertorProject(p)) {
                     projects.add(p);
                     if (h != null) {
                         h.progress(progressMessage(p), Math.min(++counter.start, counter.end));

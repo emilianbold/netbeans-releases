@@ -45,6 +45,7 @@
 package org.netbeans.api.debugger;
 
 import java.beans.*;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -769,8 +770,9 @@ public final class ActionsManager {
         public boolean cancel() {
             for (Iterator it = postedActions.iterator(); it.hasNext(); ) {
                 Object action = it.next();
-                if (action instanceof Cancellable) {
-                    if (!((Cancellable) action).cancel()) {
+                Cancellable c = getCancellable(action);
+                if (c != null) {
+                    if (!c.cancel()) {
                         return false;
                     }
                 } else {
@@ -778,6 +780,22 @@ public final class ActionsManager {
                 }
             }
             return true;
+        }
+        
+        private Cancellable getCancellable(Object action) {
+            if (action instanceof Cancellable) {
+                return (Cancellable) action;
+            }
+            try {
+                // Hack because of ActionsProvider$ContextAware:
+                Field delegateField = action.getClass().getDeclaredField("delegate");   // NOI18N
+                delegateField.setAccessible(true);
+                action = delegateField.get(action);
+                if (action instanceof Cancellable) {
+                    return (Cancellable) action;
+                }
+            } catch (Exception ex) {}
+            return null;
         }
     }
     

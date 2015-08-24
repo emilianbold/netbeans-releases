@@ -55,6 +55,10 @@ public interface BreakpointProvider {
 
     public void postEnableHandler(int rt, int hid, boolean enable);
     public void postEnableAllHandlersImpl(boolean enable);
+    
+    public boolean areBreakpointsActivated();
+    public void postActivateBreakpoints();
+    public void postDeactivateBreakpoints();
 
     public void postDeleteHandlerImpl(int rt, int hid);
     public void postDeleteAllHandlersImpl();

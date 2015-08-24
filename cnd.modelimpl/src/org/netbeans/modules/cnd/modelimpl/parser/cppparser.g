@@ -494,15 +494,11 @@ tokens {
                 if (TraceFlags.DEBUG) {
                     e.printStackTrace(System.err);
                 } else {
-                    doReportError(e);
+                    super.reportError(e);
                 }
 	    }
 	    errorCount++;
 	}
-
-	public void doReportError(RecognitionException e) {
-            super.reportError(e);
-        }
 
 	public void reportError(String s) {
 	    if (reportErrors) {
@@ -510,6 +506,10 @@ tokens {
 	    }
 	    errorCount++;
 	}
+
+        protected boolean hasReportErrors() {
+            return reportErrors;
+        }
 
         // Set of tokens stopping recovery
         private static final BitSet stopSet = new BitSet();
@@ -2121,6 +2121,15 @@ cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifie
 	|  LITERAL__TYPE_QUALIFIER__    {tq = tqOTHER;}
 	;
 
+// C11 rule
+type_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid]
+    :
+	   literal_const                {tq = tqCONST;} 
+	|  literal_volatile             {tq = tqVOLATILE;}
+    |  literal_restrict             {tq = tqOTHER;}
+	|  LITERAL__TYPE_QUALIFIER__    {tq = tqOTHER;}
+    ;
+
 ref_qualifier
     :
         AMPERSAND | AND
@@ -2799,7 +2808,7 @@ direct_declarator[int kind, int level]
                  is_address = false; is_pointer = false;
             }
             (options {warnWhenFollowAmbig = false;}:
-             LSQUARE (constant_expression)? RSQUARE)+
+             LSQUARE ({isC()}? (options {greedy=true;} : tq=type_qualifier)*)? (constant_expression)? RSQUARE)+
             {declaratorArray();}
             {
                 if (_td==true) {

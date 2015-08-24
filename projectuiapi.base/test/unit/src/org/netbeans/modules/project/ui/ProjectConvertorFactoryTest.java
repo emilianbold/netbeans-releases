@@ -42,6 +42,7 @@
 package org.netbeans.modules.project.ui;
 
 import java.beans.PropertyChangeListener;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -52,6 +53,8 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -97,8 +100,8 @@ public class ProjectConvertorFactoryTest extends NbTestCase {
             }
         };
         final Lookup clp = Lookups.singleton(new ConvertorAdditionalServicePermanent());
-        final Lookup clt = Lookups.singleton(new ConvertorAdditionalServiceTransient());
-        final PL cl = new PL(clp, clt);
+        final Lookup clt = ProjectConvertors.createProjectConvertorLookup(new ConvertorAdditionalServiceTransient());
+        final Lookup cl = new ProxyLookup(clp, clt);
         TestProject.Convertor.LOOKUP_FACTORY = new Callable<Lookup>() {
             @Override
             public Lookup call() throws Exception {
@@ -108,7 +111,11 @@ public class ProjectConvertorFactoryTest extends NbTestCase {
         TestProject.Convertor.CALLBACK = new Runnable() {
             @Override
             public void run() {
-                cl.update(clp);
+                try {
+                    ((Closeable)clt).close();
+                } catch (IOException ioe) {
+                    throw new RuntimeException(ioe);
+                }
             }
         };
         final Project artPrj = ProjectManager.getDefault().findProject(projectDir);
@@ -194,6 +201,18 @@ public class ProjectConvertorFactoryTest extends NbTestCase {
         assertNotNull(realPrj.getLookup().lookup(ProjectAdditionalService.class));
     }
 
+    public void testIsConvertorProject() throws IOException {
+        final Project artPrj = ProjectManager.getDefault().findProject(projectDir);
+        assertNotNull(artPrj);
+        assertTrue(ProjectConvertorFactory.isConvertorProject(artPrj));
+        OpenProjects.getDefault().open(new Project[]{artPrj}, false);
+        assertTrue(OpenProjects.getDefault().isProjectOpen(artPrj));
+        assertFalse(ProjectConvertorFactory.isConvertorProject(artPrj));
+        final Project newPrj = ProjectManager.getDefault().findProject(projectDir);
+        assertNotSame(newPrj, artPrj);
+        assertFalse(ProjectConvertorFactory.isConvertorProject(newPrj));
+    }
+
     @NonNull
     private static FileObject createCheckout(@NonNull final File workDir) throws IOException {
         final FileObject projectDir = FileUtil.createFolder(
@@ -245,16 +264,6 @@ public class ProjectConvertorFactoryTest extends NbTestCase {
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
-        }
-    }
-
-    private static final class PL extends ProxyLookup {
-        PL(@NonNull final Lookup... lkps) {
-            super(lkps);
-        }
-
-        void update(@NonNull final Lookup... lkps) {
-            setLookups(lkps);
         }
     }
 }

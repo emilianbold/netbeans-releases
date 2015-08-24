@@ -126,8 +126,10 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.javaee.project.api.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.javaee.project.api.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectConstants;
 import org.netbeans.modules.j2ee.common.ProjectUtil;
@@ -148,6 +150,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
+import org.netbeans.modules.javaee.project.api.problems.PlatformUpdatedCallBackImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -420,6 +423,7 @@ public class EjbJarProject implements Project, FileChangeListener {
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), EjbJarProjectProperties.SOURCE_ENCODING);
+        final EjbJarLogicalViewProvider lvp = new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper, ejbModule);
         Lookup base = Lookups.fixed(new Object[] {
                 EjbJarProject.this, // never cast an externally obtained Project to EjbJarProject - use lookup instead
                 buildExtender,
@@ -436,7 +440,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 // FIXME this is just fallback for code searching for the old SPI in lookup
                 // remove in next release
                 new EjbJarImpl(apiEjbJar),
-                new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper, ejbModule),
+                lvp,
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),
                 QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
@@ -480,6 +484,9 @@ public class EjbJarProject implements Project, FileChangeListener {
                 LookupMergerSupport.createJFBLookupMerger(),
                 QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
                 new JavaEEProjectSettingsImpl(this),
+                BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
+                BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, PlatformUpdatedCallBackImpl.create(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, updateHelper), JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
+                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
         lookup = base;
@@ -892,8 +899,7 @@ public class EjbJarProject implements Project, FileChangeListener {
             artifactSupport.enableArtifactSynchronization(true);
             
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
-                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
+                ProjectProblems.showAlert(EjbJarProject.this);
             }
             if(apiWebServicesSupport.isBroken(EjbJarProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(EjbJarProject.this);

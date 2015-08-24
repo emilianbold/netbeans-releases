@@ -54,10 +54,12 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.UIManager;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
@@ -118,8 +120,7 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
             org.openide.nodes.Children children,
             final MatchingObject matchingObject,
             ReplaceCheckableNode checkableNode) {
-        super(children, Lookups.fixed(matchingObject, checkableNode,
-                matchingObject.getFileObject(), matchingObject.getDataObject()));
+        super(children, createLookup(matchingObject, checkableNode));
         replacing = checkableNode.isCheckable();
         Parameters.notNull("original", original);                       //NOI18N
         this.matchingObject = matchingObject;
@@ -139,6 +140,26 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
         matchingObject.addPropertyChangeListener(selectionListener);
     }
 
+    private static Lookup createLookup(MatchingObject mo,
+            ReplaceCheckableNode checkableNode) {
+
+        // TODO consider using new ProxyLookup(fixedLookup,
+        // mo.getDataObject().getLookup()).
+        // It could be reasonable, but current solution is simpler and thus
+        // should perform better.
+
+        ArrayList<Object> items = new ArrayList<Object>();
+        items.add(mo);
+        items.add(checkableNode);
+        items.add(mo.getFileObject());
+        items.add(mo.getDataObject());
+        Openable openable = mo.getDataObject().getLookup().lookup(Openable.class);
+        if (openable != null) {
+            items.add(openable);
+        }
+        return Lookups.fixed(items.toArray());
+    }
+
     @Override
     public PasteType getDropType(Transferable t, int action, int index) {
         return null;
@@ -146,6 +167,41 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
 
     @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
+    }
+
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        return original.clipboardCopy();
+    }
+
+    @Override
+    public Transferable clipboardCut() throws IOException {
+        return original.clipboardCut();
+    }
+
+    @Override
+    public boolean canCopy() {
+        return original.canCopy();
+    }
+
+    @Override
+    public boolean canCut() {
+        return original.canCut();
+    }
+
+    @Override
+    public boolean canRename() {
+        return original.canRename();
+    }
+
+    @Override
+    public void setName(String s) {
+        original.setName(s);
+    }
+
+    @Override
+    public String getName() {
+        return original.getName();
     }
 
     @Override
@@ -310,12 +366,12 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
 
     @Override
     public boolean canDestroy() {
-        return true;
+        return original.canDestroy();
     }
 
     @Override
     public void destroy() throws IOException {
-        remove();
+        original.destroy();
     }
 
     /**

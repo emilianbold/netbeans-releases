@@ -386,8 +386,11 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
 	if (evt.getSource () == cbEffects) {
-            if (cbEffects.getSelectedIndex () == 0)
-                cbEffectColor.setSelectedItem( null );
+            if (cbEffects.getSelectedIndex () == 0) {
+                cbEffectColor.setSelectedItem(null);
+            } else if (cbEffectColor.getSelectedItem() == null) {
+                cbEffectColor.setSelectedIndex(0);
+            }
 	    cbEffectColor.setEnabled (cbEffects.getSelectedIndex () > 0);
             updateData ();
 	} else
@@ -881,6 +884,12 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                         } else {
                             isChanged |= checkMaps(languageName, currentSyntax, savedSyntax);
                         }
+                    } else if (savedSyntax != null && currentSyntax == null) {
+                        isChanged = true;
+                    }
+                    if (isChanged) { // no need to iterate further
+                        changed = true;
+                        return;
                     }
                 }
             }

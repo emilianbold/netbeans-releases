@@ -79,7 +79,7 @@ public class JPDAJSDebugProber implements NodeVisitor, ASTProber {
             if (jsNode instanceof JSFunctionCallNode) {
                 // ? ((JSFunctionCallNode) jsNode).getFunction().getDescription();
                 // TODO
-                jsNode.probe().tagAs(CALL, null);
+                //jsNode.probe().tagAs(CALL, null);
 
             } else if (jsNode instanceof ThrowNode) {
                 jsNode.probe().tagAs(THROW, null);

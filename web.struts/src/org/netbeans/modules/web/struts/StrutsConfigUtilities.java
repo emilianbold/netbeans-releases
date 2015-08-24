@@ -286,7 +286,7 @@ public class StrutsConfigUtilities {
                             if (servletElement != null 
                                     && cc.getTypes().isSubtype(servletElement.asType(),strutsServletElement.asType())){
                                 index[0] = i;
-                                continue;
+                                break;
                             }
                         }
                     }

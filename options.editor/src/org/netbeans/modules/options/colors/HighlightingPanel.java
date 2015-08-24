@@ -243,8 +243,11 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
         if (evt.getSource () == cbEffects) {
-            if (cbEffects.getSelectedIndex () == 0)
-                cbEffectColor.setSelectedItem( null );
+            if (cbEffects.getSelectedIndex () == 0) {
+                cbEffectColor.setSelectedItem(null);
+            } else if (cbEffectColor.getSelectedItem() == null) {
+                cbEffectColor.setSelectedIndex(0);
+            }
 	    cbEffectColor.setEnabled (cbEffects.getSelectedIndex () > 0);
             updateData ();
 	}
@@ -419,7 +422,16 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
                     } else {
                         isChanged |= checkMaps(currentHighlightings, savedHighlightings);
                     }
+                } else if (savedHighlightings != null && currentHighlightings == null) {
+                    isChanged = true;
                 }
+                if (isChanged) { // no need to iterate further
+                    changed = true;
+                    return;
+                }
+            } else {
+                changed = true;
+                return;
             }
         }
         changed = isChanged;

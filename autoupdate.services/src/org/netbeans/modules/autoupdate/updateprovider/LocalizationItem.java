@@ -149,4 +149,8 @@ public class LocalizationItem extends UpdateItemImpl {
         this.licenseImpl = licenseImpl;
     }
 
+    @Override
+    public void setNeedsRestart(Boolean needsRestart) {
+        deployImpl.needsRestart();
+    }
 }

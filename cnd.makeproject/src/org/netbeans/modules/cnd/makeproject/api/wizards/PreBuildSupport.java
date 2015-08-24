@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -128,6 +129,21 @@ public final class PreBuildSupport {
         return command;
     }
     
+    public static String expandMacrosCygwin(String command, CompilerSet cs) {
+        if (command.contains(C_COMPILER_MACRO)) {
+            String path = getDefaultC(cs);
+            command = command.replace(C_COMPILER_MACRO, WindowsSupport.getInstance().convertToCygwinPath(path));
+        }
+        if (command.contains(CPP_COMPILER_MACRO)) {
+            String path = getDefaultCpp(cs);
+            command = command.replace(CPP_COMPILER_MACRO, WindowsSupport.getInstance().convertToCygwinPath(path));
+        }
+        return command;
+    }
+    
+    public static String getCmakePath(CompilerSet cs) {
+        return getToolPath(cs, PredefinedToolKind.CMakeTool);
+    }
     
     private static String getDefaultC(CompilerSet compilerSet){
         String cCompiler = getToolPath(compilerSet, PredefinedToolKind.CCompiler);

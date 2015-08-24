@@ -93,7 +93,7 @@ import org.openide.util.RequestProcessor;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.symbol.SymbolProvider.class)
 public class CppSymbolProvider implements SymbolProvider {
 
-    private static final boolean TRACE = true;//Boolean.getBoolean("cnd.gotosymbol.trace");
+    private static final boolean TRACE = Boolean.getBoolean("cnd.gotosymbol.trace");
     private static final Logger LOG = TRACE ? Logger.getLogger("cnd.symbol.provider.trace") : null; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(CppSymbolProvider.class.getName(), 1);
     private static final Object resultLock = new Object();

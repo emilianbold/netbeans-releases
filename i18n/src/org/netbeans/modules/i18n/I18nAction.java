@@ -45,7 +45,10 @@
 
 package org.netbeans.modules.i18n;
 
+import java.util.concurrent.Future;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -82,6 +85,10 @@ public class I18nAction extends NodeAction {
         final Node node = activatedNodes[0];
         DataObject dataObject = node.getCookie(DataObject.class);
         if (dataObject == null) {
+            return;
+        }
+
+        if (FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) == null) {
             return;
         }
 
@@ -128,6 +135,10 @@ public class I18nAction extends NodeAction {
         }
 
 	// check that the node has project
+        Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
+        if(!openProjects.isDone()) {
+            return true;
+        }
 	if (FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) == null) {
             return false;
         }

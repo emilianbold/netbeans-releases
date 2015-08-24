@@ -43,7 +43,10 @@ package org.netbeans.modules.javascript2.requirejs.editor;
 
 import java.beans.BeanInfo;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.CompletionProposal;
@@ -173,9 +176,12 @@ public class FSCompletionItem implements CompletionProposal {
     public static class FSElementHandle implements ElementHandle {
         
         private final FileObject fo;
+        private final Set<FileObject> representedFiles;
 
         public FSElementHandle(FileObject fo) {
             this.fo = fo;
+            this.representedFiles = new HashSet(1);
+            representedFiles.add(fo);
         }
 
         
@@ -218,6 +224,18 @@ public class FSCompletionItem implements CompletionProposal {
         public OffsetRange getOffsetRange(ParserResult result) {
             return OffsetRange.NONE;
         }
+        
+        public void addRepresentedFile(FileObject fo) {
+            if (!representedFiles.contains(fo)) {
+                representedFiles.add(fo);
+            }
+        }
+
+        public Set<FileObject> getRepresentedFiles() {
+            return representedFiles;
+        }
+        
+        
         
     }
 

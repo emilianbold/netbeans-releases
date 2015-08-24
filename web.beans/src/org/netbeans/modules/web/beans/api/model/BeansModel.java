@@ -81,4 +81,6 @@ public interface BeansModel {
      */
     BeanArchiveType getBeanArchiveType();
 
+    boolean isCdi11OrLater();
+
 }

@@ -2,28 +2,20 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Deployment Descriptor Visual Editor: Messaging</title>
+<title>glassfish-web.xml Visual Editor: General</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView"></a></p>
-<div id="NBCSH4728"><!-- infolevel="all" infotype="General" --><a id="sthref629" name="sthref629"></a>
-<h1>Deployment Descriptor Visual Editor: Messaging</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"></a></p>
+<div id="NBCSH4717"><!-- infolevel="all" infotype="General" --><a id="sthref666" name="sthref666"></a>
+<h1>glassfish-web.xml Visual Editor: General</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to edit the platform-specific deployment descriptors for GlassFish application server. 
+<p>Use to set the context root, additional classpath, the servlet security provider, and configure the class loader for the web application. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2677">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1114">
 <param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>This pane lists the JMS message destinations in the project and enables you to provide a reference to any resource from which the application is going to send or receive messages. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2846">
-<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
@@ -34,49 +26,96 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t49">Element</th>
-<th align="left" valign="bottom" id="r1c2-t49">Description</th>
+<th align="left" valign="bottom" id="r1c1-t50">Element</th>
+<th align="left" valign="bottom" id="r1c2-t50">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t49" headers="r1c1-t49">
-<p>Add Message Destination</p>
+<td align="left" id="r2c1-t50" headers="r1c1-t50">
+<p>Module</p>
 </td>
-<td align="left" headers="r2c1-t49 r1c2-t49">Adds descriptor properties for a message destination.
-<p>Each message destination has the following properties: Message Destination Name and JNDI Name.</p>
+<td align="left" headers="r2c1-t50 r1c2-t50">Sets the properties for the module.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t50" headers="r1c1-t50">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Context Root</p>
+</td>
+<td align="left" headers="r3c1-t50 r1c2-t50">Select the platform folder. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2195">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+
+<p>The context root is the base directory of the WAR file. The Servlet Context uses the context root to resolve the path to the WAR file. The URL to a JSP page or servlet takes this form:</p>
+<p><code dir="ltr">hostname:port/contextRoot/relative_URLs_in_WAR_file</code></p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t49" headers="r1c1-t49">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Message Destination Name</p>
+<td align="left" id="r4c1-t50" headers="r1c1-t50">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Error Url</p>
 </td>
-<td align="left" headers="r3c1-t49 r1c2-t49">Specifies the name of a logical message destination defined within the corresponding deployment descriptor file (<code dir="ltr">web.xml</code> or <code dir="ltr">ejb-jar.xml</code>).</td>
+<td align="left" headers="r4c1-t50 r1c2-t50">Specifies a redirect URL in case of an error.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t49" headers="r1c1-t49">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;JNDI Name</p>
+<td align="left" id="r5c1-t50" headers="r1c1-t50">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;HTTP Servlet Security Provider</p>
 </td>
-<td align="left" headers="r4c1-t49 r1c2-t49">Displays the JNDI name of the message destination.</td>
+<td align="left" headers="r5c1-t50 r1c2-t50">Specifies the security provider.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t50" headers="r1c1-t50">
+<p>Class Loader</p>
+</td>
+<td align="left" headers="r6c1-t50 r1c2-t50">Sets the properties for a class loader configuration.
+<p>Use the class loader settings to specify additional classes that are to be loaded by the Web module.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t50" headers="r1c1-t50">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Enable Class Loader Configuration</p>
+</td>
+<td align="left" headers="r7c1-t50 r1c2-t50">When selected, the Web module loads the additional classes in the Extra Class Path field.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t50" headers="r1c1-t50">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Extra Class Path</p>
+</td>
+<td align="left" headers="r8c1-t50 r1c2-t50">Specifies the classpath for the additional classes to be loaded by the Web module.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t50" headers="r1c1-t50">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Dynamic Reload Interval</p>
+</td>
+<td align="left" headers="r9c1-t50 r1c2-t50">Specifies the interval (in seconds) after which the deployed application is checked for modifications and reloaded if necessary.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t50" headers="r1c1-t50">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Delegate Class Loader</p>
+</td>
+<td align="left" headers="r10c1-t50 r1c2-t50">When selected, the Web module follows the standard classloader delegation model and delegates to its parent classloader first before looking in the local classloader.
+<p>If not selected, the Web module follows the delegation model specified in the Servlet specification and looks in its classloader before looking in the parent classloader.</p>
+</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p><b>Note:</b> The message destination name must match the corresponding message destination name in the <code dir="ltr">web.xml</code> file.</p>
-<a id="NBCSH4732" name="NBCSH4732"></a>
+<a id="NBCSH4727" name="NBCSH4727"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2812">
-<param name="text" value="<html><u>&quot;About Deployment Descriptors&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2805">
+<param name="text" value="<html><u>&quot;Configuring Web Services&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1111">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1111">
 <param name="text" value="<html><u>&quot;Configuring a Web Application&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -84,8 +123,8 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2700">
-<param name="text" value="<html><u>&quot;Creating an Enterprise Bean&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1651">
+<param name="text" value="<html><u>&quot;About Working with Web and Application Servers&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

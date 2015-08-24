@@ -2,79 +2,76 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Live Results Window - Profiling Application Performance</title>
+<title>Memory Snapshot</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="CpuLiveResultsWindow.HelpCtx" name="CpuLiveResultsWindow.HelpCtx"></a></p>
-<div id="NBCSH3321"><!-- infolevel="all" infotype="General" --><a id="sthref430" name="sthref430"></a>
-<h1>Live Results Window - Profiling Application Performance</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="MemorySnapshot.HelpCtx" name="MemorySnapshot.HelpCtx"></a></p>
+<div id="NBCSH3374"><!-- infolevel="all" infotype="General" --><a id="sthref433" name="sthref433"></a>
+<h1>Memory Snapshot</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to display data on the time and number of invocations for executing each method. The results that are displayed in the Live Results window depend upon which profiling task is in progress. 
+<p>Use to capture data on live objects, object allocation and liveness. The data captured in the snapshot depends upon the options that were selected for the profiling session. You can take a memory snapshot when you are analyzing memory usage. The snapshot is displayed in the main editor window. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG728">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>The following context commands are available when you right-click a method:</p>
 
-<table summary="Descriptions of Live Results window context menu commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of Memory Snapshot window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="34%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t42">Element</th>
-<th align="left" valign="bottom" id="r1c2-t42">Description</th>
+<th align="left" valign="bottom" id="r1c1-t43">Element</th>
+<th align="left" valign="bottom" id="r1c2-t43">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t42" headers="r1c1-t42">
-<p>Self time</p>
+<td align="left" id="r2c1-t43" headers="r1c1-t43">
+<p>Memory Results</p>
 </td>
-<td align="left" headers="r2c1-t42 r1c2-t42">Displays the time spent in all the invocations of the method. This data is displayed graphically as a percentage of the total time and as the actual amount of time.</td>
+<td align="left" headers="r2c1-t43 r1c2-t43">Displays a list of classes (including array classes), with the total size and number of instances allocated at the time you took the snapshot.
+<p>If Record Stack Trace for Allocations was selected as a profiling option, you can display the stack traces for a specific class by right-clicking the name of the class and selecting <b>Show Allocation Stack Traces</b>. The stack traces are displayed in the <b>Allocation Stack Traces</b> tab.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t42" headers="r1c1-t42">
-<p>Invocations</p>
+<td align="left" id="r3c1-t43" headers="r1c1-t43">
+<p>Info</p>
 </td>
-<td align="left" headers="r3c1-t42 r1c2-t42">Displays the number of times that the method was invoked.</td>
+<td align="left" headers="r3c1-t43 r1c2-t43">Displays data on when the snapshot was taken, where it is saved, and the configuration of the profiling session.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t42" headers="r1c1-t42">
-<p>Go To Source</p>
+<td align="left" id="r4c1-t43" headers="r1c1-t43">
+<p>Allocation Stack Traces</p>
 </td>
-<td align="left" headers="r4c1-t42 r1c2-t42">Displays the source <code dir="ltr">.java</code> file for the selected method in the Source Editor. The cursor is placed at this method's location in the code.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t42" headers="r1c1-t42">
-<p>Add to Instrumentation Roots</p>
+<td align="left" headers="r4c1-t43 r1c2-t43">Displays a reverse call graph with all call paths leading to object allocations for the given class.
+<p>This tab is only available if <b>Record Stack Trace for Allocations</b> was selected as a profiling option.</p>
 </td>
-<td align="left" headers="r5c1-t42 r1c2-t42">Adds the selected method to the list of root methods available when profiling part of an application.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Click <b>Method Name Filter</b> ( <img width="18" height="16" src="img/filter.png" alt="Filter icon." title="Filter icon." />) at the bottom of the Live Results window to filter the list of methods that are displayed.</p>
-<a id="NBCSH3326" name="NBCSH3326"></a>
+<p>Right-click any class in the Memory Results tab or the Allocation Stack Traces tab and select Go To Source to load the source <code dir="ltr">.java</code> file of a class.</p>
+<a id="NBCSH3378" name="NBCSH3378"></a>
 <hr><p><b>Related Topics</b></p>
-<p>Developing Applications with NetBeans IDE, 
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
-<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>Developing Applications with NetBeans IDE, 
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
-<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

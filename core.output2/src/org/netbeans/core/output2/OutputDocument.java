@@ -728,14 +728,18 @@ public class OutputDocument implements Document, Element, ChangeListener {
             assert SwingUtilities.isEventDispatchThread() : "Should be accessed from AWT only or we have a synchronization problem"; //NOI18N
             if (!consumed) {
                 consumed = true;
-                
+
+                int lineStartFirst; // read this value under lock, #252025
                 // update lastFired info
-                lastFiredLineCount = getLines().getLineCount();
-                lastFiredLength = getLines().getCharCount() + inBuffer.length();
+                synchronized (getLines().readLock()) {
+                    lastFiredLineCount = getLines().getLineCount();
+                    lastFiredLength = getLines().getCharCount() + inBuffer.length();
+                    lineStartFirst = getLines().getLineStart(first);
+                }
 
                 // fill event info
                 if (first < lastFiredLineCount) {
-                    offset = getLines().getLineStart(first);
+                    offset = lineStartFirst;
                     lineCount = lastFiredLineCount - first;
                     length = lastFiredLength - offset;
                 } else {

@@ -188,7 +188,7 @@ class ComponentLayer extends JPanel
             try {
                 FormLAF.setUseDesignerDefaults(formModel);
                 super.paint(g);
-            } catch (Exception ex) {
+            } catch (Exception | Error ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 // Issue 68776
                 String msg = NbBundle.getMessage(ComponentLayer.class, "MSG_Paiting_Exception"); // NOI18N

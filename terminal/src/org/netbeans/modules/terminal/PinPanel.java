@@ -105,6 +105,7 @@ public class PinPanel extends javax.swing.JPanel {
         directoryLabel = new javax.swing.JLabel();
         directoryField = new javax.swing.JTextField();
 
+        envLabel.setLabelFor(envField);
         org.openide.awt.Mnemonics.setLocalizedText(envLabel, org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.envLabel.text")); // NOI18N
 
         envField.setEditable(false);
@@ -116,6 +117,7 @@ public class PinPanel extends javax.swing.JPanel {
             }
         });
 
+        titleLabel.setLabelFor(titleField);
         org.openide.awt.Mnemonics.setLocalizedText(titleLabel, org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.titleLabel.text")); // NOI18N
 
         titleField.setText(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.titleField.text")); // NOI18N
@@ -128,6 +130,7 @@ public class PinPanel extends javax.swing.JPanel {
             }
         });
 
+        directoryLabel.setLabelFor(directoryField);
         org.openide.awt.Mnemonics.setLocalizedText(directoryLabel, org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.directoryLabel.text")); // NOI18N
 
         directoryField.setText(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.directoryField.text")); // NOI18N
@@ -170,6 +173,17 @@ public class PinPanel extends javax.swing.JPanel {
                     .addComponent(directoryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        envLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.envLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        envField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.envField.AccessibleContext.accessibleName")); // NOI18N
+        envField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.envField.AccessibleContext.accessibleDescription")); // NOI18N
+        titleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.titleLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        titleField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.titleField.AccessibleContext.accessibleName")); // NOI18N
+        titleField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.titleField.AccessibleContext.accessibleDescription")); // NOI18N
+        customCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.customCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        directoryLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.directoryLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        directoryField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.directoryField.AccessibleContext.accessibleName")); // NOI18N
+        directoryField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.directoryField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void envFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_envFieldActionPerformed

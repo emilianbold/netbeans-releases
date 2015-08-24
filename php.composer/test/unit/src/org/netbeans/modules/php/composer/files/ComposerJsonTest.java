@@ -41,12 +41,11 @@
  */
 package org.netbeans.modules.php.composer.files;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
-
-import static junit.framework.Assert.assertTrue;
 
 public class ComposerJsonTest extends NbTestCase {
 
@@ -79,6 +78,24 @@ public class ComposerJsonTest extends NbTestCase {
         expectedDevDependencies.put("kk/ll", "{myver=123}");
         expectedDevDependencies.put("mm/nn", "[1, 2]");
         assertEquals(expectedDevDependencies, dependencies.devDependencies);
+    }
+
+    public void testVendorDir() {
+        ComposerJson composerJson = new ComposerJson(FileUtil.toFileObject(getDataDir()), "composer-vendor.json");
+        assertTrue(composerJson.getFile().getAbsolutePath(), composerJson.exists());
+        assertEquals(new File(getDataDir(), ComposerJson.DEFAULT_VENDOR_DIR), composerJson.getVendorDir());
+    }
+
+    public void testLibsDir() {
+        ComposerJson composerJson = new ComposerJson(FileUtil.toFileObject(getDataDir()), "composer-libs.json");
+        assertTrue(composerJson.getFile().getAbsolutePath(), composerJson.exists());
+        assertEquals(new File(getDataDir(), "libs"), composerJson.getVendorDir());
+    }
+
+    public void testDefaultVendorDir() {
+        ComposerJson composerJson = new ComposerJson(FileUtil.toFileObject(getDataDir()), "nonexisting-composer.json");
+        assertFalse(composerJson.getFile().getAbsolutePath(), composerJson.exists());
+        assertEquals(new File(getDataDir(), ComposerJson.DEFAULT_VENDOR_DIR), composerJson.getVendorDir());
     }
 
 }

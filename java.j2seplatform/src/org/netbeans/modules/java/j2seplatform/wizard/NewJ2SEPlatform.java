@@ -49,6 +49,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -62,7 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
-import org.openide.ErrorManager;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -73,26 +74,15 @@ import org.openide.util.Utilities;
  * inside the Wizard.
  */
 public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable {
-    
+
     private static final Logger LOGGER = Logger.getLogger(NewJ2SEPlatform.class.getName());
-    
-    private static Set<String> propertiesToFix = new HashSet<String> ();
-    
-    //Properties used by IDE which should be fixed not to use resolved symlink
-    static {
-        propertiesToFix.add ("sun.boot.class.path");    //NOI18N
-        propertiesToFix.add ("sun.boot.library.path");  //NOI18N
-        propertiesToFix.add ("java.library.path");      //NOI18N
-        propertiesToFix.add ("java.ext.dirs");          //NOI18N
-        propertiesToFix.add ("java.home");              //NOI18N       
-    }
-    
+
     private boolean valid;
 
     public static NewJ2SEPlatform create (FileObject installFolder) throws IOException {
         assert installFolder != null;
-        Map<String,String> platformProperties = new HashMap<String,String> ();
-        return new NewJ2SEPlatform (null,Collections.singletonList(installFolder.getURL()),platformProperties,Collections.<String,String>emptyMap());
+        Map<String,String> platformProperties = new HashMap<> ();
+        return new NewJ2SEPlatform (null,Collections.singletonList(installFolder.toURL()),platformProperties,Collections.<String,String>emptyMap());
     }
 
     private NewJ2SEPlatform (String name, List<URL> installFolders, Map<String,String> platformProperties, Map<String,String> systemProperties) {
@@ -107,6 +97,7 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
      * Actually performs the detection and stores relevant information
      * in this Iterator
      */
+    @Override
     public void run() {
         try {
             //Verify all needed tools
@@ -115,86 +106,43 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
                     return;
                 }
             }
-            FileObject java = findTool("java");
-            if (java == null)
+            FileObject java = findTool("java"); //NOI18N
+            if (java == null) {
                 return;
+            }
             File javaFile = FileUtil.toFile (java);
-            if (javaFile == null)
+            if (javaFile == null) {
                 return;
+            }
             String javapath = javaFile.getAbsolutePath();
-            String filePath = File.createTempFile("nb-platformdetect", "properties").getAbsolutePath();
+            String filePath = File.createTempFile("nb-platformdetect", "properties").getAbsolutePath(); //NOI18N
             final String probePath = getSDKProperties(javapath, filePath);
             File f = new File(filePath);
             Properties p = new Properties();
-            InputStream is = new FileInputStream(f);
-            p.load(is);
-            Map<String,String> m = new HashMap<String,String>(p.size());
+            try (InputStream is = new FileInputStream(f)) {
+                p.load(is);
+            }
+            final Collection<? extends FileObject> instFolders = getInstallFolders();
+            final Map<String,String> m = new HashMap<>(p.size());
             for (Enumeration en = p.keys(); en.hasMoreElements(); ) {
                 String k = (String)en.nextElement();
-                String v = p.getProperty(k);                
+                String v = p.getProperty(k);
                 if (J2SEPlatformImpl.SYSPROP_JAVA_CLASS_PATH.equals(k)) {
                     v = filterProbe (v, probePath);
-                }
-                else if (J2SEPlatformImpl.SYSPROP_USER_DIR.equals(k)) {
+                } else if (J2SEPlatformImpl.SYSPROP_USER_DIR.equals(k)) {
                     v = ""; //NOI18N
                 }
-                v = fixSymLinks (k,v);
+                v = Util.fixSymLinks (k,v, instFolders);
                 m.put(k, v);
-            }   
+            }
             this.setSystemProperties(m);
             this.valid = true;
-            is.close();
             f.delete();
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Cannot execute probe process", ex);
             this.valid = false;
         }
     }
-    
-    
-    /**
-     * Fixes sun.boot.class.path property if it contains resolved
-     * symbolic link. On Suse the jdk is symlinked and during update
-     * the link is changed
-     *
-     */
-    private String fixSymLinks (String key, String value) {
-        if (Utilities.isUnix() && propertiesToFix.contains (key)) {
-            try {
-                String[] pathElements = value.split(File.pathSeparator);
-                boolean changed = false;
-                for (Iterator it = this.getInstallFolders().iterator(); it.hasNext();) {
-                    File f = FileUtil.toFile ((FileObject) it.next());
-                    if (f != null) {
-                        String path = f.getAbsolutePath();
-                        String canonicalPath = f.getCanonicalPath();
-                        if (!path.equals(canonicalPath)) {
-                            for (int i=0; i<pathElements.length; i++) {
-                                if (pathElements[i].startsWith(canonicalPath)) {
-                                    pathElements[i] = path + pathElements[i].substring(canonicalPath.length());
-                                    changed = true;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (changed) {
-                    StringBuffer sb = new StringBuffer ();
-                    for (int i = 0; i<pathElements.length; i++) {
-                        if (i > 0) {
-                            sb.append(File.pathSeparatorChar);
-                        }
-                        sb.append(pathElements[i]);                
-                    }
-                    return sb.toString();
-                }
-            } catch (IOException ioe) {
-                //Return the original value
-            }
-        }
-        return value;
-    }
-
 
     private String getSDKProperties(String javaPath, String path) throws IOException {
         Runtime runtime = Runtime.getRuntime();
@@ -213,12 +161,12 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
             // it produces a cancellable task.
             process.waitFor();
             int exitValue = process.exitValue();
-            if (exitValue != 0)
-                throw new IOException();
+            if (exitValue != 0) {
+                throw new IOException(String.format("Java process exit code: %d", exitValue));  //NOI18N
+            }
             return command[2];
         } catch (InterruptedException ex) {
-            IOException e = new IOException();
-            ErrorManager.getDefault().annotate(e,ex);
+            IOException e = new IOException(ex);
             throw e;
         }
     }

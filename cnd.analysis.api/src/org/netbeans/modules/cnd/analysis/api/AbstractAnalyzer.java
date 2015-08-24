@@ -8,11 +8,14 @@ package org.netbeans.modules.cnd.analysis.api;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.analysis.api.options.HintsPanel;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
@@ -30,10 +33,12 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -54,14 +59,15 @@ public abstract class AbstractAnalyzer implements Analyzer {
     @Override
     public Iterable<? extends ErrorDescription> analyze() {
         WorkSet set = new WorkSet();
+        Set<String> antiLoop = new HashSet<String>();
         for (FileObject sr : ctx.getScope().getSourceRoots()) {
-            doDryRun(sr, set);
+            doDryRun(sr, set, antiLoop);
         }
         for (NonRecursiveFolder nrf : ctx.getScope().getFolders()) {
             doDryRun(nrf, set);
         }
         for (FileObject file : ctx.getScope().getFiles()) {
-            doDryRun(file, set);
+            doDryRun(file, set, antiLoop);
         }
         set.processHeaders(cancel, isCompileUnitBased());
         total = set.compileUnits.size();
@@ -105,15 +111,24 @@ public abstract class AbstractAnalyzer implements Analyzer {
         }
     }
 
-    private void doDryRun(final FileObject sr, WorkSet set) {
+    private void doDryRun(final FileObject sr, WorkSet set, Set<String> antiLoop) {
         if (sr.isData()) {
             set.add(sr);
         } else {
-            for (FileObject fo : sr.getChildren()) {
-                if (cancel.get()) {
-                    break;
+            String canonicalPath;
+            try {
+                canonicalPath = FileSystemProvider.getCanonicalPath(sr);
+                if (!antiLoop.contains(canonicalPath)) {
+                    antiLoop.add(canonicalPath);
+                    for (FileObject fo : sr.getChildren()) {
+                        if (cancel.get()) {
+                            break;
+                        }
+                        doDryRun(fo, set, antiLoop);
+                    }
                 }
-                doDryRun(fo, set);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -261,11 +276,13 @@ public abstract class AbstractAnalyzer implements Analyzer {
             String mimeType = fo.getMIMEType();
             if (MIMENames.isCppOrC(mimeType)) {
                 final Project project = FileOwnerQuery.getOwner(fo);
-                NativeProject np = project.getLookup().lookup(NativeProject.class);
-                if (np != null) {
-                    NativeFileItem item = np.findFileItem(fo);
-                    if (item != null && !item.isExcluded()) {
-                        compileUnits.add(item);
+                if (project != null) {
+                    NativeProject np = project.getLookup().lookup(NativeProject.class);
+                    if (np != null) {
+                        NativeFileItem item = np.findFileItem(fo);
+                        if (item != null && !item.isExcluded()) {
+                            compileUnits.add(item);
+                        }
                     }
                 }
             } else if (MIMENames.isHeader(mimeType)) {

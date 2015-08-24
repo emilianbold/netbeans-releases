@@ -51,40 +51,27 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.php.api.PhpConstants;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.classpath.CommonPhpSourcePath;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.SaveCookie;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.text.Line;
-import org.openide.text.Line.Set;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
-import org.openide.util.UserQuestionException;
 
 /**
  * Utility methods.
@@ -123,62 +110,34 @@ public final class PhpProjectUtils {
         return project.getLookup().lookup(PhpProject.class);
     }
 
-    public static void openFile(File file) {
-        openFile(file, -1);
-    }
-
+    // #137230, #165918
     /**
-     * Opens the file and optionally set cursor to the line. This action is always run in AWT thread.
-     * @param file path of a file to open
-     * @param line line of a file to set cursor to, {@code -1} if no specific line is needed
+     * Checks whether the given folder is already a project.
+     * <p>
+     * This method ignores ProjectConvertor projects.
+     * @param folder folder to be checked
+     * @return {@code true} if the given folder is already a project, {@code false} otherwise
      */
-    public static void openFile(File file, int line) {
-        assert file != null;
-
-        FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-        if (fileObject == null) {
-            LOGGER.log(Level.INFO, "FileObject not found for {0}", file);
-            return;
-        }
-
-        DataObject dataObject;
+    public static boolean isProject(File folder) {
+        Project prj = null;
+        boolean foundButBroken = false;
         try {
-            dataObject = DataObject.find(fileObject);
-        } catch (DataObjectNotFoundException ex) {
-            LOGGER.log(Level.INFO, "DataObject not found for {0}", file);
-            return;
+            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(FileUtil.normalizeFile(folder)));
+        } catch (IOException ex) {
+            foundButBroken = true;
+        } catch (IllegalArgumentException ex) {
+            // noop
         }
-
-        if (line == -1) {
-            // simply open file
-            EditorCookie ec = dataObject.getCookie(EditorCookie.class);
-            ec.open();
-            return;
+        if (prj != null
+                && !ProjectConvertors.isConvertorProject(prj)) {
+            return true;
         }
-
-        // open at specific line
-        LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
-        if (lineCookie == null) {
-            LOGGER.log(Level.INFO, "LineCookie not found for {0}", file);
-            return;
-        }
-        Set lineSet = lineCookie.getLineSet();
-        try {
-            final Line currentLine = lineSet.getCurrent(line - 1);
-            Mutex.EVENT.readAccess(new Runnable() {
-                @Override
-                public void run() {
-                    currentLine.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                }
-            });
-        } catch (IndexOutOfBoundsException exc) {
-            LOGGER.log(Level.FINE, null, exc);
-        }
+        return foundButBroken;
     }
 
     public static SourceGroup[] getSourceGroups(Project phpProject) {
         Sources sources = ProjectUtils.getSources(phpProject);
-        return sources.getSourceGroups(PhpSources.SOURCES_TYPE_PHP);
+        return sources.getSourceGroups(PhpConstants.SOURCES_TYPE_PHP);
     }
 
     public static FileObject[] getSourceObjects(Project phpProject) {
@@ -189,95 +148,6 @@ public final class PhpProjectUtils {
             fileObjects[i] = groups[i].getRootFolder();
         }
         return fileObjects;
-    }
-
-    /**
-     * Reformat the file.
-     * @param file file to reformat.
-     */
-    public static void reformatFile(final File file) throws IOException {
-        FileObject fileObject = FileUtil.toFileObject(file);
-        assert fileObject != null : "No fileobject for " + file + " (file exists: " + file.exists() + ")";
-
-        reformatFile(DataObject.find(fileObject));
-    }
-
-    // XXX see AssertionError at HtmlIndenter.java:68
-    // NbReaderProvider.setupReaders(); cannot be called because of deps
-    public static void reformatFile(final DataObject dataObject) throws IOException {
-        assert dataObject != null;
-
-        EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
-        assert ec != null : "No editorcookie for " + dataObject;
-
-        Document doc = ec.openDocument();
-        assert doc instanceof BaseDocument;
-
-        // reformat
-        final BaseDocument baseDoc = (BaseDocument) doc;
-        final Reformat reformat = Reformat.get(baseDoc);
-        reformat.lock();
-        try {
-            // seems to be synchronous but no info in javadoc
-            baseDoc.runAtomic(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        reformat.reformat(0, baseDoc.getLength());
-                    } catch (BadLocationException ex) {
-                        LOGGER.log(Level.INFO, "Cannot reformat file " + dataObject.getName(), ex);
-                    }
-                }
-            });
-        } finally {
-            reformat.unlock();
-        }
-
-        // save
-        saveFile(dataObject);
-    }
-
-    /**
-     * Save a file.
-     * @param dataObject file to save
-     */
-    public static void saveFile(DataObject dataObject) {
-        assert dataObject != null;
-
-        SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
-        if (saveCookie != null) {
-            try {
-                try {
-                    saveCookie.save();
-                } catch (UserQuestionException uqe) {
-                    // #216194
-                    NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION);
-                    if (DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION)) {
-                        uqe.confirmed();
-                        saveCookie.save();
-                    }
-                }
-            } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, ioe.getLocalizedMessage(), ioe);
-            }
-        }
-    }
-
-    /**
-     * Save a file.
-     * @param fileObject file to save
-     */
-    public static void saveFile(FileObject fileObject) {
-        assert fileObject != null;
-
-        try {
-            DataObject dobj = DataObject.find(fileObject);
-            if (dobj != null) {
-                saveFile(dobj);
-            }
-        } catch (DataObjectNotFoundException donfe) {
-            LOGGER.log(Level.SEVERE, donfe.getLocalizedMessage(), donfe);
-        }
     }
 
     /**

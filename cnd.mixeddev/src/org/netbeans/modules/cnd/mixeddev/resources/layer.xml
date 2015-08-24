@@ -4,6 +4,12 @@
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
+                <folder name="Popup">
+                    <folder name="MixedDevelopment">
+                        <attr name="position" intvalue="0"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.mixeddev.Bundle"/>
+                    </folder>
+                </folder>
                 <folder name="HyperlinkProviders">
                     <!--<attr name="JavaToCppHyperlinkProvider.instance/JavaHyperlinkProvider.instance" boolvalue="true"/>-->
                     <file name="JavaToCppHyperlinkProvider.instance">

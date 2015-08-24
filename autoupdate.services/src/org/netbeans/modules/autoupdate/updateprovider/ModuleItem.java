@@ -212,5 +212,9 @@ public class ModuleItem extends UpdateItemImpl {
     public void setUpdateLicenseImpl (UpdateLicenseImpl licenseImpl) {
         this.licenseImpl = licenseImpl;
     }
-    
+        
+    @Override
+    public void setNeedsRestart(Boolean needsRestart) {
+        deployImpl.setNeedsRestart(needsRestart);
+    }
 }

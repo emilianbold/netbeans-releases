@@ -126,6 +126,7 @@ import javax.swing.JTextArea;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
@@ -133,7 +134,9 @@ import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -1235,7 +1238,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
      * Start debugging by attaching to pid.
      */
     public void attach(DebugTarget dt) {
-        Configuration conf = dt.getConfig();
+        final Configuration conf = dt.getConfig();
 
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(dt.getEngine());
         ndi.setDebugTarget(dt);
@@ -1254,7 +1257,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
                 execPath = executor.readlsof(dt.getPid());
             } else if (host.getPlatform() == Platform.Windows_x86) {
                 // omit arguments (IZ 230518)
-                execPath = execPath.split(" ")[0]; // NOI18N
+                //execPath = execPath.split(" ")[0]; // NOI18N
             } else {
                 execPath = executor.readlink(dt.getPid());
             }
@@ -1279,10 +1282,29 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
                 symbolFile = ((MakeConfiguration) conf).getBaseDir() + "/" + symbolFile; // NOI18N
                 symbolFile = CndPathUtilities.normalizeSlashes(symbolFile);
                 symbolFile = CndPathUtilities.normalizeUnixPath(symbolFile);
+                // The below is a partial fix of the issue #252827 - Remote Attach doesn't work
+                // The changesets 6ec8ff163ad7 and a459d48725b5 don't seem correct,
+                // but their motivation need to be thoroughly investigated for the new fix not to break old ones.
+                // In any case, if the path is not absolute, then project will return LOCAL path,
+                // so we need to map it to remote one
+                MakeConfiguration makeConf = (MakeConfiguration) conf;
+                ExecutionEnvironment execEnv = makeConf.getDevelopmentHost().getExecutionEnvironment();
+                if (execEnv.isRemote()) {
+                    RemoteSyncFactory syncFactory = makeConf.getRemoteSyncFactory();
+                    if (syncFactory != null) {
+                        PathMap pathMap = syncFactory.getPathMap(execEnv);
+                        if (pathMap != null) {
+                            String remoteSymbolFile = pathMap.getRemotePath(symbolFile, false);
+                            if (remoteSymbolFile != null) {
+                                symbolFile = remoteSymbolFile;
+                            }
+                        }
+                    }
+                }
+                // end of the partial fix of the issue #252827
             }
             ndi.setTarget(symbolFile);
         }
-
         if (isStandalone()) {
             startDebugger(getExistingDebugger(ndi), ndi);
         } else {

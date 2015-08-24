@@ -85,7 +85,7 @@ public class GdbProfileXMLCodec extends DbgProfileXMLCodec {
 
     static final String TAG_SIGNALS = "gdb_signals";	// NOI18N
     static final String TAG_SIGNAL = "gdb_signal";	// NOI18N
-    static final String ATTR_SIGNAL_SIGNO = "gdb_signo";	// NOI18N
+    static final String ATTR_SIGNAL_SIGNAME = "gdb_signame";	// NOI18N
     static final String ATTR_SIGNAL_CAUGHT = "gdb_caught";	// NOI18N
     static final String ATTR_SIGNAL_CAUGHT_BY_DEFAULT = "gdb_caught_by_default"; // NOI18N
 
@@ -160,8 +160,8 @@ public class GdbProfileXMLCodec extends DbgProfileXMLCodec {
 	}
 	if (element.equals(TAG_SIGNAL)) {
 	    Signals.InitialSignalInfo signal = new Signals.InitialSignalInfo(
-		Integer.parseInt(atts.getValue(ATTR_SIGNAL_SIGNO)),
-		null,		    // name
+		0,                                  // no
+		atts.getValue(ATTR_SIGNAL_SIGNAME),		    // name
 		null,		    // description
 		atts.getValue(ATTR_SIGNAL_CAUGHT_BY_DEFAULT).equals("true"), // NOI18N
 		atts.getValue(ATTR_SIGNAL_CAUGHT).equals("true")); // NOI18N
@@ -352,8 +352,8 @@ public class GdbProfileXMLCodec extends DbgProfileXMLCodec {
 	  */
 	  if (sig.isCaught() != sig.isCaughtByDefault()) {
 	    AttrValuePair signalAttrs[] = new AttrValuePair[] {
-	        new AttrValuePair(ATTR_SIGNAL_SIGNO, 
-			Integer.toString(sig.signo())),
+	        new AttrValuePair(ATTR_SIGNAL_SIGNAME, 
+			sig.name()),
 	        new AttrValuePair(ATTR_SIGNAL_CAUGHT, 
 			Boolean.toString(sig.isCaught())),
 	        new AttrValuePair(ATTR_SIGNAL_CAUGHT_BY_DEFAULT, 

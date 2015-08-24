@@ -63,6 +63,7 @@ import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.symfony2.options.Symfony2Options;
 import org.netbeans.modules.php.symfony2.options.Symfony2OptionsValidator;
 import org.netbeans.modules.php.symfony2.ui.options.Symfony2OptionsPanelController;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public final class InstallerExecutable {
@@ -106,15 +107,10 @@ public final class InstallerExecutable {
         return new InstallerExecutable(Symfony2Options.getInstance().getInstaller(), phpModule);
     }
 
-    @NbBundle.Messages({
-        "# {0} - project name",
-        "InstallerExecutable.run=Symfony Installer ({0})",
-    })
     public Future<Integer> run(boolean lts) {
         assert !EventQueue.isDispatchThread();
         resetWorkDir();
-        String projectName = phpModule.getDisplayName();
-        Future<Integer> task = getExecutable(Bundle.InstallerExecutable_run(projectName))
+        Future<Integer> task = getExecutable()
                 .additionalParameters(getRunParams(lts))
                 .run(getDescriptor());
         assert task != null : installerPath;
@@ -142,11 +138,14 @@ public final class InstallerExecutable {
         return phpModule.getName();
     }
 
-    private PhpExecutable getExecutable(String title) {
-        assert title != null;
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "InstallerExecutable.run.title=Symfony2 ({0})",
+    })
+    private PhpExecutable getExecutable() {
         return new PhpExecutable(installerPath)
                 .workDir(getWorkDir())
-                .displayName(title)
+                .displayName(Bundle.InstallerExecutable_run_title(phpModule.getDisplayName()))
                 .optionsSubcategory(Symfony2OptionsPanelController.OPTIONS_SUBPATH);
     }
 
@@ -182,6 +181,7 @@ public final class InstallerExecutable {
                     LOGGER.log(Level.INFO, "Cannot create TMP dir {0}", workDir);
                 }
             }
+            FileUtil.refreshFor(workDir);
         }
         return workDir;
     }

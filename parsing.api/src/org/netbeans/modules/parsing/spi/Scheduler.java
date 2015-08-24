@@ -62,8 +62,8 @@ import org.openide.util.RequestProcessor.Task;
  * Other tasks may listen on different events. Implementation of Scheduler
  * just listens on various IDE events, and call one of schedule() methods
  * when something interesting happens. Implementation of Parsing API just finds
- * all {@link SchedulerTask}s registerred for this Scheduler and reschedules them.
- * Implementation of this class should be registerred in your manifest.xml file
+ * all {@link SchedulerTask}s registered for this Scheduler and reschedules them.
+ * Implementation of this class should be registered in your manifest.xml file
  * in "Editors/your mime type" folder.
  * 
  * @author Jan Jancura

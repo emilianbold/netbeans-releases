@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.spi.utils;
 
+import org.openide.filesystems.FileSystem;
+
 /**
  * service which is sensitive to file existence cache
  * @author Vladimir Voskresensky
@@ -54,7 +56,8 @@ public interface CndFileExistSensitiveCache {
     
     /**
      * notification that information about file existence of input file is no more invalid
-     * @param file invalidated file
+     * @param fileSystem  file system
+     * @param file invalidated file path
      */
-    public void invalidateFile(String file);
+    public void invalidateFile(FileSystem fileSystem, String file);
 }

@@ -86,7 +86,7 @@ public class ServerRemotePropertiesPanel implements WizardDescriptor.Panel, Chan
 
     @Override
     public HelpCtx getHelp() {
-         return new HelpCtx("j2eeplugins_registering_app_server_weblogic_properties"); // NOI18N
+         return new HelpCtx("j2eeplugins_registering_app_server_weblogic_properties_remote"); // NOI18N
     }
 
     @Override

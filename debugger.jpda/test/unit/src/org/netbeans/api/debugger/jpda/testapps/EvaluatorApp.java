@@ -973,6 +973,10 @@ public class EvaluatorApp extends BaseClass {
         return count(new String[] { "A " }, new String[] { "B" });
     }
     
+    public static double testVarArgs9() {
+        return sum(new Double(2), new Double(3));
+    }
+    
     public static String testConversion1() {
         return "a"+10;
     }
@@ -1195,6 +1199,14 @@ public class EvaluatorApp extends BaseClass {
             c += s.length;
         }
         return -c;
+    }
+    
+    public static double sum(double... numbers) {
+        double d = 0;
+        for(int i = 0; i < numbers.length; i++) {
+            d += numbers[i];
+        }
+        return d;
     }
     
     public static class Inner1 {

@@ -865,7 +865,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         logger.log(Level.FINE, "Have evaluator {0} for language {1}", new Object[]{e, s.getCurrentLanguage()});   // NOI18N
 
         if (e == null) {
-            e = new JavaEvaluator(s);
+            e = s.lookupFirst("Java", Evaluator.class);
+            if (e == null) {
+                Exceptions.printStackTrace(new IllegalStateException("No evaluator registered for Java language!"));
+                e = new JavaEvaluator(s);
+            }
         }
 
         CallStackFrameImpl csf;

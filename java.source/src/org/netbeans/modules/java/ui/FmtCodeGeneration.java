@@ -443,12 +443,12 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
         Object[] values;
         Object toSelect = insertionPointComboBox.getSelectedItem();
         if (sortMembersAlphaCheckBox.isSelected()) {
-            if (toSelect != ipModel.getElementAt(3)) {
+            if (toSelect == ipModel.getElementAt(0) || toSelect == ipModel.getElementAt(1)) {
                 toSelect = ipModel.getElementAt(2);
             }
             values = new Object[] {ipModel.getElementAt(2), ipModel.getElementAt(3)};
         } else {
-            if (toSelect != ipModel.getElementAt(3)) {
+            if (toSelect == ipModel.getElementAt(2)) {
                 toSelect = ipModel.getElementAt(0);
             }
             values = new Object[] {ipModel.getElementAt(0), ipModel.getElementAt(1), ipModel.getElementAt(3)};

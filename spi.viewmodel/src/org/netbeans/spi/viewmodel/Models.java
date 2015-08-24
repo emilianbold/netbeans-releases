@@ -752,7 +752,7 @@ public final class Models {
                 if (popupMenu != null) {
                     c = popupMenu.getInvoker();
                     while (c != null) {
-                        if (c instanceof OutlineView) {
+                        if (c instanceof OutlineView || c instanceof TreeView) {
                             ExplorerManager manager = ExplorerManager.find(c);
                             return manager.getSelectedNodes();
                         }

@@ -534,6 +534,12 @@ public final class FileSystemProvider {
         }
     }
     
+    public static void addFileSystemProblemListener(FileSystemProblemListener listener) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            provider.addFileSystemProblemListener(listener);
+        }
+    }
+
     public static void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileSystem)) {

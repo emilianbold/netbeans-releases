@@ -51,7 +51,10 @@ import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
 import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -70,10 +73,10 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public class SelectionHintsTask extends ParserResultTask<ParserResult> {
+public final class SelectionHintsTask extends ParserResultTask<ParserResult> {
     
     private static final Logger LOG = Logger.getLogger(SelectionHintsTask.class.getName());
-    private volatile boolean cancelled = false;
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
     
     /**
      * Tracks the HintsProvider being executed, so it can be cancelled.
@@ -84,88 +87,92 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
     }
     
     public @Override void run(ParserResult result, SchedulerEvent event) {
-        resume();
 
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
-        if (fileObject == null || isCancelled()) {
+        if (fileObject == null || cancel.isCancelled()) {
             return;
         }
 
-        if (!(event instanceof CursorMovedSchedulerEvent) || isCancelled()) {
+        if (!(event instanceof CursorMovedSchedulerEvent) || cancel.isCancelled()) {
             return;
         }
 
-        // Do we have a selection? If so, don't do suggestions
-        CursorMovedSchedulerEvent evt = (CursorMovedSchedulerEvent) event;
-        final int[] range = new int [] {
-            Math.min(evt.getMarkOffset(), evt.getCaretOffset()),
-            Math.max(evt.getMarkOffset(), evt.getCaretOffset())
-        };
-        if (range == null || range.length != 2 || range[0] == -1 || range[1] == -1 || range[0] == range[1]) {
-            HintsController.setErrors(fileObject, SelectionHintsTask.class.getName(), Collections.<ErrorDescription>emptyList());
-            return;
-        }
-
+        SpiSupportAccessor.getInstance().setCancelSupport(cancel);
         try {
-            ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
-                public @Override void run(ResultIterator resultIterator) throws Exception {
-                    Parser.Result r = resultIterator.getParserResult(range[0]);
-                    if(!(r instanceof ParserResult)) {
-                        return ;
-                    }
-                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(r.getSnapshot().getMimeType());
-                    if (language == null || isCancelled()) {
-                        return;
-                    }
+            // Do we have a selection? If so, don't do suggestions
+            CursorMovedSchedulerEvent evt = (CursorMovedSchedulerEvent) event;
+            final int[] range = new int [] {
+                Math.min(evt.getMarkOffset(), evt.getCaretOffset()),
+                Math.max(evt.getMarkOffset(), evt.getCaretOffset())
+            };
+            if (range == null || range.length != 2 || range[0] == -1 || range[1] == -1 || range[0] == range[1]) {
+                HintsController.setErrors(fileObject, SelectionHintsTask.class.getName(), Collections.<ErrorDescription>emptyList());
+                return;
+            }
 
-                    HintsProvider provider = language.getHintsProvider();
-                    if (provider == null || isCancelled()) {
-                        return;
-                    }
+            try {
+                ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
+                    public @Override void run(ResultIterator resultIterator) throws Exception {
+                        Parser.Result r = resultIterator.getParserResult(range[0]);
+                        if(!(r instanceof ParserResult)) {
+                            return ;
+                        }
+                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(r.getSnapshot().getMimeType());
+                        if (language == null || cancel.isCancelled()) {
+                            return;
+                        }
 
-                    GsfHintsManager manager = language.getHintsManager();
-                    if (manager == null || isCancelled()) {
-                        return;
-                    }
+                        HintsProvider provider = language.getHintsProvider();
+                        if (provider == null || cancel.isCancelled()) {
+                            return;
+                        }
 
-                    List<ErrorDescription> description = new ArrayList<ErrorDescription>();
-                    List<Hint> hints = new ArrayList<Hint>();
+                        GsfHintsManager manager = language.getHintsManager();
+                        if (manager == null || cancel.isCancelled()) {
+                            return;
+                        }
 
-                    RuleContext ruleContext = manager.createRuleContext((ParserResult) r, language, -1, range[0], range[1]);
-                    if (ruleContext != null) {
-                        try {
-                            synchronized (this) {
-                                pendingProvider = provider;
-                                if (isCancelled()) {
+                        List<ErrorDescription> description = new ArrayList<ErrorDescription>();
+                        List<Hint> hints = new ArrayList<Hint>();
+
+                        RuleContext ruleContext = manager.createRuleContext((ParserResult) r, language, -1, range[0], range[1]);
+                        if (ruleContext != null) {
+                            try {
+                                synchronized (this) {
+                                    pendingProvider = provider;
+                                    if (cancel.isCancelled()) {
+                                        return;
+                                    }
+                                }
+                                provider.computeSelectionHints(manager, ruleContext, hints, range[0], range[1]);
+                            } finally {
+                                pendingProvider = null;
+                            }
+
+                            for (int i = 0; i < hints.size(); i++) {
+                                Hint hint= hints.get(i);
+
+                                if (cancel.isCancelled()) {
                                     return;
                                 }
+
+                                ErrorDescription desc = manager.createDescription(hint, ruleContext, false, i == hints.size()-1);
+                                description.add(desc);
                             }
-                            provider.computeSelectionHints(manager, ruleContext, hints, range[0], range[1]);
-                        } finally {
-                            pendingProvider = null;
                         }
 
-                        for (int i = 0; i < hints.size(); i++) {
-                            Hint hint= hints.get(i);
-
-                            if (isCancelled()) {
-                                return;
-                            }
-                            
-                            ErrorDescription desc = manager.createDescription(hint, ruleContext, false, i == hints.size()-1);
-                            description.add(desc);
+                        if (cancel.isCancelled()) {
+                            return;
                         }
-                    }
 
-                    if (isCancelled()) {
-                        return;
+                        HintsController.setErrors(fileObject, SelectionHintsTask.class.getName(), description);
                     }
-
-                    HintsController.setErrors(fileObject, SelectionHintsTask.class.getName(), description);
-                }
-            });
-        } catch (ParseException e) {
-            LOG.log(Level.WARNING, null, e);
+                });
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
+            }
+        } finally {
+            SpiSupportAccessor.getInstance().removeCancelSupport(cancel);
         }
     }
 
@@ -180,20 +187,9 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
     }
 
     public @Override void cancel() {
-        synchronized (this) {
-            cancelled = true;
-        }
-        HintsProvider p = pendingProvider;
+        final HintsProvider p = pendingProvider;
         if (p != null) {
             p.cancel();
         }
-    }
-
-    private synchronized void resume() {
-        cancelled = false;
-    }
-
-    private synchronized boolean isCancelled() {
-        return cancelled;
     }
 }

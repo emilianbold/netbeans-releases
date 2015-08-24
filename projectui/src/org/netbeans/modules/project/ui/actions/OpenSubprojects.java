@@ -45,11 +45,11 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -62,7 +62,9 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.Presenter;
 
@@ -72,7 +74,9 @@ import org.openide.util.actions.Presenter;
 @ActionRegistration(displayName="#LBL_OpenSubprojectsAction_Name", lazy=/* SubprojectProvider check */false)
 @Messages("LBL_OpenSubprojectsAction_Name=Open Required Projects")
 public class OpenSubprojects extends NodeAction implements Presenter.Popup{
-
+    
+    private static final RequestProcessor RP = new RequestProcessor("OpenSubprojects", 1);
+    
     @StaticResource private static final String ICON = "org/netbeans/modules/project/ui/resources/openProject.png";
 
     @Override public String getName() {
@@ -128,59 +132,9 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
         "OpenProjectMenu.Open_All_Projects=&Open All Projects",
         "OpenProjectMenu.Nothing=Nothing"
     })
-    @Override public JMenuItem getPopupPresenter() {
-        
-        final JMenu menu = new JMenu(LBL_OpenSubprojectsAction_Name());
+    @Override public JMenuItem getPopupPresenter() {        
         Node [] activatedNodes = getActivatedNodes();
-        Set<? extends Project> subProjects = null;
-        if(activatedNodes != null) {
-            for( int i = 0; i < activatedNodes.length; i++ ) {
-                Project p = activatedNodes[i].getLookup().lookup(Project.class);
-                if ( p != null ) {
-                    ProjectContainerProvider pcp = p.getLookup().lookup(ProjectContainerProvider.class);
-                    if (pcp != null) {
-                        subProjects = pcp.getContainedProjects().getProjects();
-                    } else {
-                        SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
-                        if(spp != null) {
-                            subProjects = spp.getSubprojects();
-                        }
-                    }
-                }
-            }
-        }
-        if(subProjects != null && !subProjects.isEmpty()) {
-            menu.getPopupMenu().setLayout(new VerticalGridLayout());
-            final JMenuItem openAllProjectsItem = new JMenuItem(new AbstractAction() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    openAllRequiredProjects(getActivatedNodes());
-                }
-            });
-            Mnemonics.setLocalizedText(openAllProjectsItem, OpenProjectMenu_Open_All_Projects());
-            menu.add(openAllProjectsItem);
-            menu.addSeparator();
-        } else {
-            JMenuItem nothingItem = new JMenuItem(OpenProjectMenu_Nothing());
-            nothingItem.setEnabled(false);
-            menu.add(nothingItem);
-        }
-        if(subProjects != null && !subProjects.isEmpty()) {
-            for(final Project prjIter:subProjects) {
-                JMenuItem selectPrjAction = new JMenuItem(new AbstractAction() {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        OpenProjectList.getDefault().open(new Project[] {prjIter}, true, true);
-                    }
-                });
-                selectPrjAction.setText(ProjectUtils.getInformation(prjIter).getDisplayName());
-                menu.add(selectPrjAction);
-            }
-        }
-        
-        return menu;
+        return new LazyMenu(activatedNodes);
     }
     
     private void openAllRequiredProjects(Node [] activatedNodes) {
@@ -205,5 +159,89 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
             fillRecursiveSubProjects(prjIter, subProjects);
         }
     }*/
+    
+    private class LazyMenu extends JMenu {
+        private final Node[] activatedNodes;
+        boolean initialized; // create only once, prevents recreating items when user repeatedly expends and collapses the menu
+        private Set<? extends Project> subProjects;
+
+        @NbBundle.Messages("LBL_SubProjectPopupMenu_Initializing=Initializing...")
+        private LazyMenu(Node[] nodes) {
+            super(LBL_OpenSubprojectsAction_Name());
+            this.activatedNodes = nodes;
+            JMenuItem item = new JMenuItem(Bundle.LBL_SubProjectPopupMenu_Initializing());
+            item.setEnabled(false);
+            add(item);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    getSubProjects();
+                }
+            });
+        }
+
+        @Override
+        public JPopupMenu getPopupMenu() {
+            if(initialized) {
+                createSubMenu();
+            }
+            return super.getPopupMenu(); 
+        }
+        
+        private void createSubMenu() {
+            removeAll();
+            if(subProjects != null && !subProjects.isEmpty()) {
+                super.getPopupMenu().setLayout(new VerticalGridLayout());
+                final JMenuItem openAllProjectsItem = new JMenuItem(new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        openAllRequiredProjects(getActivatedNodes());
+                    }
+                });
+                Mnemonics.setLocalizedText(openAllProjectsItem, OpenProjectMenu_Open_All_Projects());
+                add(openAllProjectsItem);
+                addSeparator();
+            } else {
+                JMenuItem nothingItem = new JMenuItem(OpenProjectMenu_Nothing());
+                nothingItem.setEnabled(false);
+                add(nothingItem);
+            }
+            if(subProjects != null && !subProjects.isEmpty()) {
+                for(final Project prjIter:subProjects) {
+                    JMenuItem selectPrjAction = new JMenuItem(new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            OpenProjectList.getDefault().open(new Project[] {prjIter}, true, true);
+                        }
+                    });
+                    selectPrjAction.setText(ProjectUtils.getInformation(prjIter).getDisplayName());
+                    add(selectPrjAction);
+                }
+            }
+        }
+
+        private void getSubProjects() {
+            try {
+                if(activatedNodes != null) {
+                    for( int i = 0; i < activatedNodes.length; i++ ) {
+                        Project p = activatedNodes[i].getLookup().lookup(Project.class);
+                        if ( p != null ) {
+                            ProjectContainerProvider pcp = p.getLookup().lookup(ProjectContainerProvider.class);
+                            if (pcp != null) {
+                                subProjects = pcp.getContainedProjects().getProjects();
+                            } else {
+                                SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+                                if(spp != null) {
+                                    subProjects = spp.getSubprojects();
+                                }
+                            }
+                        }
+                    }
+                }
+            } finally {
+                initialized = true;
+            }
+        }
+    }
     
 }

@@ -10,7 +10,7 @@ FILE       api
 FILE       config                                     
 FILE       folder1                                    
 FILE       js                                         
-FILE       lib                                        
 FILE       lib/api                                    
+FILE       lib2                                       
 FILE       utils                                      
 FILE       v0.1                                       

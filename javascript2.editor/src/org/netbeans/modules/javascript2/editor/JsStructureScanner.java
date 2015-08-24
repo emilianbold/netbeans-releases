@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -53,6 +54,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
@@ -87,18 +89,21 @@ public class JsStructureScanner implements StructureScanner {
         final Model model = result.getModel();
         model.resolve();
         JsObject globalObject = model.getGlobalObject();
-        
-        getEmbededItems(result, globalObject, items, new ArrayList<String>());
+        final CancelSupport cancel = CancelSupport.getDefault();
+        getEmbededItems(result, globalObject, items, new ArrayList<String>(), cancel);
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Creating structure took {0} ms", new Object[]{(end - start)});
         return items;
     }
-    
-    private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> processedObjects) {
+
+    private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> processedObjects, CancelSupport cancel) {
         if (ModelUtils.wasProcessed(jsObject, processedObjects)) {
             return collectedItems;
         }
         if (jsObject.isVirtual()) {
+            return collectedItems;
+        }
+        if (cancel.isCancelled()) {
             return collectedItems;
         }
         Collection<? extends JsObject> properties = new ArrayList(jsObject.getProperties().values());
@@ -108,6 +113,9 @@ public class JsStructureScanner implements StructureScanner {
         
         
         for (JsObject child : properties) {
+            if (cancel.isCancelled()) {
+                return collectedItems;
+            }
             // we do not want to show items from virtual source
             if (result.getSnapshot().getOriginalOffset(child.getOffset()) < 0 && !ModelUtils.PROTOTYPE.equals(child.getName())) {
                 continue;
@@ -128,7 +136,7 @@ public class JsStructureScanner implements StructureScanner {
                 continue;
             }
             if (!(child instanceof JsObjectReference && ModelUtils.isDescendant(child, ((JsObjectReference)child).getOriginal()))) {
-                children = getEmbededItems(result, child, children, processedObjects);
+                children = getEmbededItems(result, child, children, processedObjects, cancel);
             }
             if ((child.hasExactName() || child.isAnonymous() || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) && child.getJSKind().isFunction()) {
                 JsFunction function = (JsFunction)child;
@@ -166,7 +174,7 @@ public class JsStructureScanner implements StructureScanner {
             for (JsObject param: jsFunction.getParameters()) {
                 if (hasDeclaredProperty(param) && !(jsObject instanceof JsObjectReference && !((JsObjectReference)jsObject).getOriginal().isAnonymous())) { 
                     final List<StructureItem> items = new ArrayList<StructureItem>();
-                    getEmbededItems(result, param, items, processedObjects);
+                    getEmbededItems(result, param, items, processedObjects, cancel);
                     collectedItems.add(new JsObjectStructureItem(param, items, result));
                 }
             }
@@ -176,7 +184,7 @@ public class JsStructureScanner implements StructureScanner {
                 if(returnObject != null && returnObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                      for (JsObject property: returnObject.getProperties().values()) {
                         final List<StructureItem> items = new ArrayList<StructureItem>();
-                        getEmbededItems(result, property, items, processedObjects);
+                        getEmbededItems(result, property, items, processedObjects, cancel);
                         collectedItems.add(new JsObjectStructureItem(property, items, result));
                     }
                 } 
@@ -190,7 +198,7 @@ public class JsStructureScanner implements StructureScanner {
                 if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                     for (JsObject property : assignedObject.getProperties().values()) {
                         final List<StructureItem> items = new ArrayList<StructureItem>();
-                        getEmbededItems(result, property, items, processedObjects);
+                        getEmbededItems(result, property, items, processedObjects, cancel);
                         collectedItems.add(new JsObjectStructureItem(property, items, result));
                     }
                 }
@@ -454,7 +462,12 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public Set<Modifier> getModifiers() {
-            return modelElement.getModifiers();
+            Set<Modifier> modifiers = modelElement.getModifiers().isEmpty() ? Collections.EMPTY_SET : EnumSet.copyOf(modelElement.getModifiers());
+            if (modifiers.contains(Modifier.PRIVATE) && (modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED))) {
+                modifiers.remove(Modifier.PUBLIC);
+                modifiers.remove(Modifier.PROTECTED);
+            }
+            return modifiers;
         }
 
         @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,13 +37,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.bower.file;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.web.clientproject.api.json.JsonFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -55,23 +54,38 @@ public final class BowerrcJson {
     public static final String PROP_DIRECTORY = "DIRECTORY"; // NOI18N
     // file content
     public static final String FIELD_DIRECTORY = "directory"; // NOI18N
+    // default values
+    static final String DEFAULT_BOWER_COMPONENTS_DIR = "bower_components"; // NOI18N
 
     private final JsonFile bowerrcJson;
 
 
     public BowerrcJson(FileObject directory) {
+        this(directory, FILE_NAME);
+    }
+
+    // for unit tests
+    BowerrcJson(FileObject directory, String filename) {
         assert directory != null;
-        bowerrcJson = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.create()
+        assert filename != null;
+        bowerrcJson = new JsonFile(filename, directory, JsonFile.WatchedFields.create()
                 .add(PROP_DIRECTORY, FIELD_DIRECTORY));
+    }
+
+    public boolean exists() {
+        return bowerrcJson.exists();
     }
 
     public File getFile() {
         return bowerrcJson.getFile();
     }
 
-    @CheckForNull
-    public <T> T getContentValue(Class<T> valueType, String... fieldHierarchy) {
-        return bowerrcJson.getContentValue(valueType, fieldHierarchy);
+    public File getBowerComponentsDir() {
+        String directory = bowerrcJson.getContentValue(String.class, BowerrcJson.FIELD_DIRECTORY);
+        if (directory == null) {
+            directory = DEFAULT_BOWER_COMPONENTS_DIR;
+        }
+        return new File(bowerrcJson.getFile().getParentFile(), directory);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

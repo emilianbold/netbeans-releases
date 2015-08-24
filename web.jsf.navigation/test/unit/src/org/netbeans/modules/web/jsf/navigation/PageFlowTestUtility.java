@@ -46,14 +46,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.text.EditorKit;
-import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
@@ -65,7 +67,6 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +74,9 @@ import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -89,17 +92,6 @@ public class PageFlowTestUtility {
     private WeakReference<PageFlowController> refController;
     NbTestCase nbTestCase;
 
-    private static final Lookup PROJECTS;
-
-    static {
-        TestUtilities.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("org.openide.util.Lookup", TestUtilities.class.getName());
-        Assert.assertEquals(TestUtilities.class, Lookup.getDefault().getClass());
-        Lookup p = Lookups.forPath("Services/AntBasedProjectTypes/");
-        p.lookupAll(AntBasedProjectType.class);
-        PROJECTS = p;
-    }
-
     public PageFlowTestUtility(NbTestCase nbTestCase) {
         this.nbTestCase = nbTestCase;
     }
@@ -112,12 +104,41 @@ public class PageFlowTestUtility {
         setFacesConfig(initFacesConfig());
         setPageFlowView(initPageFlowView());
         setScene(getPageFlowView().getScene());
+        waitForPageFlowController();
         setController(getPageFlowView().getPageFlowController());
     }
 
     public void tearDown() throws Exception {
         destroyProject();
         
+    }
+
+    private void waitForPageFlowController() throws Exception {
+        Field RP = PageFlowView.class.getDeclaredField("RP");
+        RP.setAccessible(true);
+        final CountDownLatch latch = new CountDownLatch(1);
+        RequestProcessor rp = (RequestProcessor) RP.get(null);
+        // fill in the RP - it's 2 ours + 1 PFC initialization
+        for (int i = 0; i < 2; i++) {
+            rp.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        latch.await();
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            });
+        }
+        // now submit one to slot after PFC init and wait for it
+        rp.post(new Runnable() {
+
+            @Override
+            public void run() {
+            }
+        }).waitFinished();
+        latch.countDown();
     }
 
     private void destroyProject() throws IOException {
@@ -224,7 +245,13 @@ public class PageFlowTestUtility {
         EditorKit kit = JSFConfigEditorSupport.getEditorKit("text/x-jsf+xml");
         assert (kit instanceof XMLKit);
         editorSupport.edit();
-       
+
+//        MultiViewHandler h = MultiViews.findMultiViewHandler(TopComponent.getRegistry().getActivated());
+//        h.requestVisible(h.getPerspectives()[2]);
+
+        ((MultiViewCloneableTopComponent) TopComponent.getRegistry().getActivated()).getSubComponents()[1].activate();
+        ((PageFlowView) TopComponent.getRegistry().getActivated()).getMultiview().getEditorPane();
+
         JSFConfigModel model = ConfigurationUtils.getConfigModel(getJsfDO().getPrimaryFile(), true);
         assertNotNull(model);
         FacesConfig myFacesConfig = model.getRootComponent();

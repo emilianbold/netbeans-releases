@@ -51,8 +51,10 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.modules.javascript.v8debug.ScriptsHandler;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript2.debug.breakpoints.FutureLine;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -91,7 +93,12 @@ public class JSBreakpointsManager extends DebuggerManagerAdapter {
         }
         JSLineBreakpoint lb = (JSLineBreakpoint) breakpoint;
         for (V8Debugger dbg : activeDebuggers) {
-            if (dbg.getScriptsHandler().containsLocalFile(lb.getFileObject())) {
+            ScriptsHandler scriptsHandler = dbg.getScriptsHandler();
+            FileObject fo = lb.getFileObject();
+            if (fo == null && lb.getLine() instanceof FutureLine &&
+                              scriptsHandler.containsRemoteFile(((FutureLine) lb.getLine()).getURL()) ||
+                scriptsHandler.containsLocalFile(fo)) {
+
                 submit(lb, dbg);
             }
         }
@@ -124,7 +131,11 @@ public class JSBreakpointsManager extends DebuggerManagerAdapter {
                 continue;
             }
             JSLineBreakpoint lb = (JSLineBreakpoint) b;
-            if (scriptsHandler.containsLocalFile(lb.getFileObject())) {
+            FileObject fo = lb.getFileObject();
+            if (fo == null && lb.getLine() instanceof FutureLine &&
+                              scriptsHandler.containsRemoteFile(((FutureLine) lb.getLine()).getURL()) ||
+                scriptsHandler.containsLocalFile(fo)) {
+
                 submit(lb, dbg);
             }
         }

@@ -42,7 +42,6 @@
 package org.netbeans.modules.odcs.ui.project;
 
 import org.netbeans.modules.odcs.ui.utils.Utils;
-import com.tasktop.c2c.server.profile.domain.activity.*;
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -51,9 +50,14 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.project.activity.ActivityDisplayer;
+import org.netbeans.modules.odcs.ui.project.activity.ActivityTypes;
 import org.netbeans.modules.odcs.ui.project.activity.BuildActivityDisplayer;
+import org.netbeans.modules.odcs.ui.project.activity.DeploymentActivityDisplayer;
+import org.netbeans.modules.odcs.ui.project.activity.GenericActivityDisplayer;
+import org.netbeans.modules.odcs.ui.project.activity.ReviewActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.RssActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.ScmActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.TaskActivityDisplayer;
@@ -64,7 +68,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
  *
  * @author jpeska
  */
-public class ActivityPanel extends javax.swing.JPanel implements Expandable {
+public class ActivityPanel extends javax.swing.JPanel implements Expandable, ActivityTypes {
 
     private static final Border NORMAL_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(153, 153, 153));
     private static final Border EXPAND_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 255));
@@ -74,19 +78,34 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable {
     /**
      * Creates new form ActivityPanel
      */
-    public ActivityPanel(ProjectActivity activity, ProjectHandle<ODCSProject> projectHandle, int maxWidth) {
-        if (activity instanceof TaskActivity) {
-            activityAccessor = new TaskActivityDisplayer((TaskActivity) activity, projectHandle, maxWidth);
-        } else if (activity instanceof BuildActivity) {
-            activityAccessor = new BuildActivityDisplayer((BuildActivity) activity, projectHandle, maxWidth);
-        } else if (activity instanceof ScmActivity) {
-            ProjectDetailsTopComponent tc = ProjectDetailsTopComponent.findInstance(activity.getProjectIdentifier());
-            activityAccessor = new ScmActivityDisplayer((ScmActivity) activity, projectHandle, tc.getProject().getScmUrl(), maxWidth);
-        } else if (activity instanceof WikiActivity) {
-            activityAccessor = new WikiActivityDisplayer((WikiActivity) activity, maxWidth);
-        } else if (activity instanceof RssActivity) {
-            activityAccessor = new RssActivityDisplayer((RssActivity) activity, maxWidth);
+    public ActivityPanel(Activity activity, ProjectHandle<ODCSProject> projectHandle, int maxWidth) {
+        switch (activity.getType()) {
+            case TASK:
+                activityAccessor = new TaskActivityDisplayer(activity, projectHandle, maxWidth);
+                break;
+            case SCM_COMMIT:
+            case SCM_REPO:
+                activityAccessor = new ScmActivityDisplayer(activity, projectHandle, projectHandle.getTeamProject().getScmUrl(), maxWidth);
+                break;
+            case REVIEW:
+                activityAccessor = new ReviewActivityDisplayer(activity, projectHandle, maxWidth);
+                break;
+            case WIKI:
+                activityAccessor = new WikiActivityDisplayer(activity, projectHandle, maxWidth);
+                break;
+            case BUILD:
+                activityAccessor = new BuildActivityDisplayer(activity, projectHandle, maxWidth);
+                break;
+            case DEPLOYMENT:
+                activityAccessor = new DeploymentActivityDisplayer(activity, projectHandle, maxWidth);
+                break;
+            case RSS:
+                activityAccessor = new RssActivityDisplayer(activity, maxWidth);
+                break;
+            default:
+                activityAccessor = new GenericActivityDisplayer(activity, maxWidth);
         }
+        
         initComponents();
         lblIcon.setIcon(activityAccessor.getActivityIcon());
         SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm a");

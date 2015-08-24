@@ -120,7 +120,16 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     @Override
     @NonNull
     public BinaryAnalyser getBinaryAnalyser () {
-        return new BinaryAnalyser (new PIWriter(), this.cacheRoot);
+        final TransactionContext txCtx = TransactionContext.get();
+        assert  txCtx != null;
+        final PersistentIndexTransaction pit = txCtx.get(PersistentIndexTransaction.class);
+        assert pit != null;
+        Writer writer = pit.getIndexWriter();
+        if (writer == null) {
+            writer = new PIWriter();
+            pit.setIndexWriter(writer);
+        }
+        return new BinaryAnalyser (writer, this.cacheRoot);
     }
 
     @Override
@@ -155,6 +164,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     }
 
     @Override
+    @NonNull
     public FileObject[] getSourceRoots () {
         if (getType() == Type.SOURCE) {
             final FileObject rootFo = getRoot();
@@ -179,6 +189,18 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         } else {
             return SourceForBinaryQuery.findSourceRoots(this.root).getRoots();
         }
+    }
+
+    @Override
+    public FileObject[] getBinaryRoots() {
+        final Queue<FileObject> res = new ArrayDeque<>();
+        if(getType() == Type.BINARY) {
+            final FileObject fo = URLMapper.findFileObject (this.root);
+            if (fo != null) {
+                res.offer(fo);
+            }
+        }
+        return res.toArray(new FileObject[res.size()]);
     }
 
     @Override

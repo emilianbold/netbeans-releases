@@ -53,8 +53,11 @@ import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
@@ -87,6 +90,8 @@ public class RenameTransformer extends RefactoringVisitor {
     private final boolean renameInComments;
     private final RenameRefactoring refactoring;
     private Iterable<? extends Element> shadowed;
+    private Map<ImportTree, ImportTree> imports;
+    private List<ImportTree> newImports;
 
     public RenameTransformer(TreePathHandle handle, DocTreePathHandle docHandle, RenameRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
         super(true);
@@ -109,29 +114,42 @@ public class RenameTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
-        GeneratorUtilities.get(workingCopy).importComments(node, node);
-        if (!renameInComments) {
-            return super.visitCompilationUnit(node, p);
-        }
+        GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+        genUtils.importComments(node, node);
+        if (renameInComments) {
+            if (p.getKind() == ElementKind.PARAMETER) {
+                renameParameterInMethodComments(p);
 
-        if (p.getKind() == ElementKind.PARAMETER) {
-            renameParameterInMethodComments(p);
+            } else {
+                String originalName = getOldSimpleName(p);
+                if (originalName!=null) {
+                    TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
 
-        } else {
-            String originalName = getOldSimpleName(p);
-            if (originalName!=null) {
-                TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                    while (ts.moveNext()) {
+                        Token<JavaTokenId> t = ts.token();
 
-                while (ts.moveNext()) {
-                    Token<JavaTokenId> t = ts.token();
-                    
-                    if (isComment(t)) {
-                        rewriteAllInComment(t.text().toString(), ts.offset(), originalName);
+                        if (isComment(t)) {
+                            rewriteAllInComment(t.text().toString(), ts.offset(), originalName);
+                        }
                     }
                 }
             }
         }
-        return super.visitCompilationUnit(node, p);
+        imports = new HashMap<>();
+        newImports = new LinkedList<>();
+        Tree value = super.visitCompilationUnit(node, p);
+        if(!imports.isEmpty() || !newImports.isEmpty()) {
+            CompilationUnitTree newNode = node;
+            for (Map.Entry<ImportTree, ImportTree> entry : imports.entrySet()) {
+                newNode = make.removeCompUnitImport(newNode, entry.getKey());
+                newNode = make.addCompUnitImport(newNode, entry.getValue());
+            }
+            for (ImportTree newImport : newImports) {
+                newNode = make.addCompUnitImport(newNode, newImport);
+            }
+            rewrite(node, newNode);
+        }
+        return value;
     }
 
     @Override
@@ -238,9 +256,19 @@ public class RenameTransformer extends RefactoringVisitor {
                 }).iterator();
                 if (iter.hasNext()) {
                     el = (Element) iter.next();
-                }
-                if (iter.hasNext()) {
-                    return;
+                    if(iter.hasNext()) {
+                        if(el.equals(elementToFind) || isMethodMatch(el)) {
+                            newImports.add(make.Import(make.QualIdent((Element) iter.next()), true));
+                        } else {
+                            newImports.add(make.Import(make.QualIdent(el), true));
+                            do {
+                                el = (Element) iter.next();
+                            } while (iter.hasNext() && el != null && !(el.equals(elementToFind) || isMethodMatch(el)));
+                            if(el == null) {
+                                return;
+                            }
+                        }
+                    }
                 }
             } else {
                 return;
@@ -345,7 +373,13 @@ public class RenameTransformer extends RefactoringVisitor {
                     }
                 }
             } else {
-                nju = make.setLabel(tree, newName);
+                final TreePath parentPath = path.getParentPath();
+                if(parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.IMPORT) {
+                    ImportTree importTree = (ImportTree) parentPath.getLeaf();
+                    imports.put(importTree, make.Import(make.setLabel(tree, newName), importTree.isStatic()));
+                } else {
+                    nju = make.setLabel(tree, newName);
+                }
             }
             if(nju != null) {
                 rewrite(tree, nju);

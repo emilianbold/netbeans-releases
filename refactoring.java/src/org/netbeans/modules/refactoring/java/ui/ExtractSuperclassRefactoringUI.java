@@ -44,6 +44,7 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.util.TreePath;
+import javax.lang.model.element.Element;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -63,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Matula, Jan Pokorsky
  */
-public class ExtractSuperclassRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
+public class ExtractSuperclassRefactoringUI implements RefactoringUI {
     // reference to refactoring this UI object corresponds to
     private ExtractSuperclassRefactoring refactoring;
     // source type
@@ -71,28 +72,13 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI, JavaRefact
     // UI panel for collecting parameters
     private ExtractSuperclassPanel panel;
     private String name;
+    private final TreePathHandle[] selected;
 
-    private ExtractSuperclassRefactoringUI() {
-    }
-
-    @Override
-    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
-        assert handles.length == 1;
-        TreePath path = handles[0].resolve(info);
-
-        path = JavaRefactoringUtils.findEnclosingClass(info, path, true, false, false, false, false);
-
-        if (path != null) {
-            return new ExtractSuperclassRefactoringUI(path, info);
-        }
-
-        return null;
-    }
-
-    private ExtractSuperclassRefactoringUI(TreePath path, CompilationInfo info) {
+    private ExtractSuperclassRefactoringUI(TreePath path, TreePathHandle[] selected, CompilationInfo info) {
         this.name = ElementHeaders.getHeader(path, info, ElementHeaders.NAME);
         this.sourceType = TreePathHandle.create(path, info);
         this.refactoring = new ExtractSuperclassRefactoring(sourceType);
+        this.selected = selected;
     }
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
@@ -105,7 +91,7 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI, JavaRefact
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new ExtractSuperclassPanel(refactoring, parent);
+            panel = new ExtractSuperclassPanel(refactoring, selected, parent);
         }
         return panel;
     }
@@ -158,6 +144,42 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI, JavaRefact
     }
     
     public static JavaRefactoringUIFactory factory() {
-        return new ExtractSuperclassRefactoringUI();
+        return new ExtractSuperclassRefactoringUIFactory();
+    }
+    
+    public static class ExtractSuperclassRefactoringUIFactory implements JavaRefactoringUIFactory {
+
+        @Override
+        public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+            assert handles.length > 0;
+            for (int i = 0; i < handles.length; i++) {
+                handles[i] = resolveSelection(handles[i], info);
+            }
+            TreePath path = handles[0].resolve(info);
+
+            path = JavaRefactoringUtils.findEnclosingClass(info, path, true, false, false, false, false);
+
+            if (path != null) {
+                return new ExtractSuperclassRefactoringUI(path, handles, info);
+            }
+
+            return null;
+        }
+
+    }
+    
+    static TreePathHandle resolveSelection(TreePathHandle source, CompilationInfo javac) {
+        TreePath resolvedPath = source.resolve(javac);
+        TreePath path = resolvedPath;
+        Element resolvedElement = source.resolveElement(javac);
+        while (path != null && resolvedElement == null) {
+            path = path.getParentPath();
+            if (path == null) {
+                return null;
+            }
+            resolvedElement = javac.getTrees().getElement(path);
+        }
+
+        return path == resolvedPath ? source : TreePathHandle.create(path, javac);
     }
 }

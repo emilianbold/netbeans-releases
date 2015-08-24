@@ -150,9 +150,43 @@ public final class TreeUtils {
         }
         return false;
     }
-
+    
+    /**
+     * Finds an enclosing statement which is a part of block or a body.
+     * Unlike {@link #findStatement}, if the enclosing statement is not itself
+     * directly a member of a block or case, returns a parent statement which is. In example
+     * <code>if (cond) y = 1;</code>, expression statement <code>y + 1</code> will not be returned
+     * because it's nested in <code>if</code> rather than in block/body
+     * @param statementPath path
+     * @return enclosing statement whose parent is a block, case, lambda or initializer.
+     */
+    static TreePath findStatementInBlock(TreePath statementPath) {
+        return findBlockOrStatement(statementPath, false);
+    }
+    
+    /**
+     * Finds the enclosing statement.
+     * @param statementPath path
+     * @return the enclosing statement or null.
+     */
     static TreePath findStatement(TreePath statementPath) {
-        while (statementPath != null && (!StatementTree.class.isAssignableFrom(statementPath.getLeaf().getKind().asInterface()) || (statementPath.getParentPath() != null && statementPath.getParentPath().getLeaf().getKind() != Tree.Kind.BLOCK && statementPath.getParentPath().getLeaf().getKind() != Tree.Kind.CASE))) {
+        return findBlockOrStatement(statementPath, true);
+    }
+
+    static TreePath findBlockOrStatement(TreePath statementPath, boolean statement) {
+        CYCLE: while (statementPath != null) {
+            Tree leaf = statementPath.getLeaf();
+            if (statement && StatementTree.class.isAssignableFrom(leaf.getKind().asInterface())) {
+                break;
+            }
+            if (statementPath.getParentPath() != null) {
+                switch (statementPath.getParentPath().getLeaf().getKind()) {
+                    case BLOCK:
+                    case CASE:
+                    case LAMBDA_EXPRESSION:
+                        break CYCLE;
+                }
+            }
             if (TreeUtilities.CLASS_TREE_KINDS.contains(statementPath.getLeaf().getKind())) {
                 return null;
             }
@@ -162,17 +196,24 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns a path to the immediate enclosing method or initializer block
+     * Returns a path to the immediate enclosing method, lambda body or initializer block
      * @param path start of the search
      * @return path to the nearest enclosing executable or {@code null} in case of error.
      */
     static TreePath findMethod(TreePath path) {
         while (path != null) {
-            if (path.getLeaf().getKind() == Tree.Kind.METHOD) {
-                return path;
-            }
-            if (path.getLeaf().getKind() == Tree.Kind.BLOCK && path.getParentPath() != null && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
-                return path;
+            Tree leaf = path.getLeaf();
+            switch (leaf.getKind()) {
+                case BLOCK:
+                    if (path.getParentPath() != null && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
+                        return path;
+                    }
+                    break;
+                case METHOD:
+                case LAMBDA_EXPRESSION:
+                    return path;
+                default:
+                    break;
             }
             path = path.getParentPath();
         }

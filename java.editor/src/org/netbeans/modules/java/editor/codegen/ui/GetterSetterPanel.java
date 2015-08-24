@@ -141,6 +141,7 @@ public class GetterSetterPanel extends JPanel implements PropertyChangeListener 
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_NODE_CHANGE.equals(evt.getPropertyName()))
             updateEncapsulateCheckBox();
+        firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }
 
     private void updateEncapsulateCheckBox() {

@@ -41,18 +41,14 @@
  */
 package org.netbeans.modules.odcs.ui.project.activity;
 
-import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
-import com.tasktop.c2c.server.tasks.domain.Comment;
-import com.tasktop.c2c.server.tasks.domain.TaskActivity.FieldUpdate;
-import com.tasktop.c2c.server.tasks.domain.TaskActivity.Type;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -61,6 +57,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.odcs.api.ODCSProject;
@@ -69,61 +66,67 @@ import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryAccessor;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
-public class TaskActivityDisplayer extends ActivityDisplayer {
+public final class TaskActivityDisplayer extends ActivityDisplayer {
 
-    private TaskActivity activity;
+    private final Activity activity;
     private final ProjectHandle<ODCSProject> projectHandle;
     private Action openIDEAction;
 
-    public TaskActivityDisplayer(TaskActivity activity, ProjectHandle<ODCSProject> projectHandle, int maxWidth) {
-        super(activity.getActivityDate(), maxWidth);
+    private static final String PROP_ACTIVITY_TYPE = "activityType"; // NOI18N
+    private static final String PROP_TASK_TYPE = "taskType"; // NOI18N
+    private static final String PROP_TASK_ID = "taskId"; // NOI18N
+    private static final String PROP_TASK_TITLE = "taskTitle"; // NOI18N
+    private static final String PROP_COMMENT = "comment"; // NOI18N
+    private static final String TYPE_COMMENTED = "COMMENTED"; // NOI18N
+    private static final String TYPE_UPDATED = "UPDATED"; // NOI18N
+
+    private static final String OLD_VALUE_FIELD_PREFIX = "previous_"; // NOI18N
+    private static final String FIELD_PREFIX = "field_"; // NOI18N
+    private static final String NO_VALUE = "DELETED"; // NOI18N
+
+    public TaskActivityDisplayer(Activity activity, ProjectHandle<ODCSProject> projectHandle, int maxWidth) {
+        super(activity.getTimestamp(), maxWidth);
         this.activity = activity;
         this.projectHandle = projectHandle;
     }
 
     @Override
     public JComponent getShortDescriptionComponent() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 0, 5);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-        JLabel lblType = new JLabel(Utils.getActivityName(activity.getActivity().getActivityType()));
-        panel.add(lblType, gbc);
-
+        final String taskId = activity.getProperty(PROP_TASK_ID);
         LinkLabel linkDisplayName = new LinkLabel() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 Action openAction = getOpenIDEAction();
                 if (openAction == null || !openAction.isEnabled()) {
-                    openAction = getOpenBrowserAction(getTaskUrl());
+                    openAction = getOpenBrowserAction(getTaskUrl(taskId));
                 }
                 openAction.actionPerformed(new ActionEvent(TaskActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
             }
         };
-        linkDisplayName.setPopupActions(getOpenIDEAction(), getOpenBrowserAction(getTaskUrl()));
-        String taskName = Utils.computeFitText(linkDisplayName, maxWidth, getTaskDisplayName(), false);
+        linkDisplayName.setPopupActions(getOpenIDEAction(), getOpenBrowserAction(getTaskUrl(taskId)));
+        String taskName = NbBundle.getMessage(TaskActivityDisplayer.class, "FMT_TaskDisplayName", // NOI18N
+                   activity.getProperty(PROP_TASK_TYPE), taskId, activity.getProperty(PROP_TASK_TITLE));
+        taskName = Utils.computeFitText(linkDisplayName, maxWidth, taskName, false);
         linkDisplayName.setText(taskName);
-        panel.add(linkDisplayName, gbc);
 
-        gbc = new GridBagConstraints();
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(), gbc);
-        return panel;
+        String bundleKey = "FMT_Task_" + activity.getProperty(PROP_ACTIVITY_TYPE); // NOI18N
+        try {
+            return createMultipartTextComponent(bundleKey, linkDisplayName);
+        } catch (MissingResourceException ex) {
+            return createMultipartTextComponent("FMT_Task_Other", linkDisplayName); // NOI18N
+        }
     }
 
     @Override
     public JComponent getDetailsComponent() {
-        Type activityType = activity.getActivity().getActivityType();
-        if (activityType.equals(Type.COMMENTED)) {
-            return commentDetailsPanel(activity.getActivity().getComment());
-        } else if (activityType.equals(Type.UPDATED)) {
-            return updateDetailsPanel(activity.getActivity().getFieldUpdates());
+        String activityType = activity.getProperty(PROP_ACTIVITY_TYPE);
+        if (TYPE_COMMENTED.equals(activityType)) {
+            return commentDetailsPanel(activity.getProperty(PROP_COMMENT));
+        } else if (TYPE_UPDATED.equals(activityType)) {
+            return updateDetailsPanel(activity.getProperties());
         } else {
             return null;
         }
@@ -131,13 +134,12 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
 
     @Override
     String getUserName() {
-        return activity.getActivity().getAuthor().getRealname();
+        return activity.getAuthor().getFullname();
     }
 
     @Override
     public Icon getActivityIcon() {
-        String activityType = Utils.getActivityName(activity.getActivity().getActivityType()).toLowerCase();
-        String iconSuffix = activityType.split(" ")[0]; //NOI18N
+        String iconSuffix = activity.getProperty(PROP_ACTIVITY_TYPE).toLowerCase();
         ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/activity_task_" + iconSuffix + ".png", true); //NOI18N
         if (icon == null) {
             icon = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/activity_task.png", true); //NOI18N
@@ -145,73 +147,74 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         return icon;
     }
 
-    private String getTaskDisplayName() {
-        return activity.getActivity().getTask().getTaskType() + " "
-                + activity.getActivity().getTask().getId() + ": " //NOI18N
-                + activity.getActivity().getTask().getShortDescription();
-    }
-
-    private JComponent updateDetailsPanel(List<FieldUpdate> fieldUpdates) {
-        String wikiLanguage = projectHandle.getTeamProject().getWikiLanguage();
+    private JComponent updateDetailsPanel(Map<String,String> properties) {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(3, 0, 3, 10);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weighty = 1.0;
-
+        gbc.insets = new Insets(3, 2, 3, 10);
+        gbc.anchor = GridBagConstraints.LINE_START;
         gbc.gridy = 0;
-
         gbc.gridx = 0;
-        JLabel lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_FieldName"));
+        JLabel lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_FieldName")); // NOI18N
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
         panel.add(lbl, gbc);
 
         gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OldValue"));
+        lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OldValue")); // NOI18N
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
         panel.add(lbl, gbc);
 
         gbc.gridx = 2;
-        gbc.weightx = 1.0;
-        lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_NewValue"));
+        lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_NewValue")); // NOI18N
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
         panel.add(lbl, gbc);
 
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(new JLabel(), gbc);
+
         gbc.weightx = 0.0;
-        for (int i = 0; i < fieldUpdates.size(); i++) {
+        gbc.fill = GridBagConstraints.BOTH;
+
+        int i = 0;
+        for (Map.Entry<String,String> e : properties.entrySet()) {
+            String key = e.getKey();
+            if (!key.startsWith(OLD_VALUE_FIELD_PREFIX)) {
+                continue;
+            }
+            String fieldName = key.substring(OLD_VALUE_FIELD_PREFIX.length());
+            String oldText = e.getValue();
+            String newText = properties.get(FIELD_PREFIX + fieldName);
+
             gbc.gridy = i + 1;
-            FieldUpdate update = fieldUpdates.get(i);
             gbc.gridx = 0;
-            JLabel lblField = new JLabel(update.getFieldDescription());
+            JLabel lblField = new JLabel(fieldName); // TODO need display names for the field names
             lblField.setVerticalAlignment(SwingConstants.TOP);
             panel.add(lblField, gbc);
 
             gbc.gridx = 1;
-            WikiPanel lblOldValue = WikiUtils.getWikiPanel(wikiLanguage, false, false);
-            String oldText = update.getOldValue();
-            if (oldText.isEmpty()) {
-                oldText = NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Empty");
+            if (oldText == null || oldText.isEmpty() || oldText.equals(NO_VALUE)) {
+                oldText = NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Empty"); // NOI18N
             }
-            lblOldValue.setWikiFormatText(oldText);
+            JLabel lblOldValue = new JLabel(oldText);
             panel.add(lblOldValue, gbc);
 
             gbc.gridx = 2;
-            WikiPanel lblNewValue = WikiUtils.getWikiPanel(wikiLanguage, false, false);
-            String newText = update.getOldValue();
-            if (newText.isEmpty()) {
-                newText = NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Empty");
+            if (newText == null || newText.isEmpty() || newText.equals(NO_VALUE)) {
+                newText = NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Empty"); // NOI18N
             }
-            lblNewValue.setWikiFormatText(newText);
+            JLabel lblNewValue = new JLabel(newText);
             panel.add(lblNewValue, gbc);
+            i++;
         }
 
         return panel;
     }
 
-    private JComponent commentDetailsPanel(Comment comment) {
+    private JComponent commentDetailsPanel(String comment) {
+        if(comment == null) {
+            return null;
+        }
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -221,31 +224,27 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         gbc.weightx = 1.0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
 
-        JLabel lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Comment"));
+        JLabel lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Comment")); // NOI18N
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
         panel.add(lbl, gbc);
 
-        String formatedText = comment.getWikiRenderedText();
-        formatedText = "<html>" + formatedText + "</html>";
-        JLabel lblComment = new JLabel(formatedText);
-        panel.add(lblComment, gbc);
+        String wikiLanguage = projectHandle.getTeamProject().getWikiLanguage();
+        WikiPanel commentPanel = WikiUtils.getWikiPanel(wikiLanguage, false, false);
+        commentPanel.setWikiFormatText(comment);
+        panel.add(commentPanel, gbc);
         return panel;
     }
 
     private Action getOpenIDEAction() {
         if (openIDEAction == null) {
             final Action action;
-            if ("Review".equals(activity.getActivity().getTask().getTaskType())) { // NOI18N
-                action = null;
+            QueryAccessor<ODCSProject> queryAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODCSProject.class);
+            if (queryAccessor != null) {
+                action = queryAccessor.getOpenTaskAction(projectHandle, activity.getProperty(PROP_TASK_ID));
             } else {
-                QueryAccessor<ODCSProject> queryAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODCSProject.class);
-                if (queryAccessor != null) {
-                    action = queryAccessor.getOpenTaskAction(projectHandle, activity.getActivity().getTask().getId().toString());
-                } else {
-                    action = null;
-                }
+                action = null;
             }
-            openIDEAction = new AbstractAction(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OpenIDE")) {
+            openIDEAction = new AbstractAction(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OpenIDE")) { // NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (isEnabled()) {
@@ -262,7 +261,7 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         return openIDEAction;
     }
 
-    private String getTaskUrl() {
-        return activity.getActivity().getTask().getUrl();
+    private String getTaskUrl(String taskId) {
+        return projectHandle.getTeamProject().getWebUrl() + "/task/" + taskId; // NOI18N
     }
 }

@@ -51,8 +51,10 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -61,6 +63,8 @@ import org.openide.util.lookup.Lookups;
  */
 public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
+    private static final RequestProcessor RP
+            = new RequestProcessor(RenameRefactoringUI.class);
     private final AbstractRefactoring refactoring;
     private RenamePanel panel;
     private final FileObject file;
@@ -140,10 +144,18 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     @Override
     public void doRefactoringBypass() throws IOException {
-        DataObject dob  = DataObject.find(file);
-        if (dob!=null) {
-            dob.rename(panel.getNameValue());
-        }
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DataObject dob = DataObject.find(file);
+                    if (dob != null) {
+                        dob.rename(panel.getNameValue());
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
-
 }

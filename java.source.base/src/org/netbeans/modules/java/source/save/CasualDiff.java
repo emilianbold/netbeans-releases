@@ -374,7 +374,7 @@ public class CasualDiff {
             try {
                 String toParse = origText.substring(0, start) + resultSrc + origText.substring(end);
                 
-                Document doc = LineDocumentUtils.createDocument("text/x-java");
+                final Document doc = LineDocumentUtils.createDocument("text/x-java");
                 doc.insertString(0, toParse, null);
                 doc.putProperty(Language.class, JavaTokenId.language());
                 doc.putProperty(Document.StreamDescriptionProperty, diffContext.file);
@@ -394,12 +394,19 @@ public class CasualDiff {
                 try {
                     Runnable r = new Runnable() {
                         @Override public void run() {
-                            for (int[] region : td.printer.reindentRegions) {
-                                try {
-                                    i.reindent(region[0], region[1]);
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
+                            try {
+                                javax.swing.text.Position[] regions = new javax.swing.text.Position[td.printer.reindentRegions.size() * 2];
+                                int idx = 0;
+                                for (int[] region : td.printer.reindentRegions) {
+                                    regions[idx] = doc.createPosition(region[0]);
+                                    regions[idx + 1] = doc.createPosition(region[1]);
+                                    idx += 2;
                                 }
+                                for (int j = 0; j < regions.length; j += 2) {
+                                    i.reindent(regions[j].getOffset(), regions[j + 1].getOffset());
+                                }
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
                         }
                     };
@@ -3386,7 +3393,9 @@ public class CasualDiff {
                             printer.print(" ");
                         }
                         printer.print(decl.name);
-                        printer.printVarInit(decl);
+                        if (decl.init != null) {
+                            printer.printVarInit(decl);
+                        }
                     }
                     skipWhitespaces = false;
                     break;

@@ -2,75 +2,99 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Select Profiling Task: Duplicate Configuration Dialog Box</title>
+<title>Select Profiling Task: Customize Filter Sets Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="DuplicateConfiguration.HelpCtx" name="DuplicateConfiguration.HelpCtx"></a></p>
-<div id="NBCSH3114"><!-- infolevel="all" infotype="General" --><a id="sthref394" name="sthref394"></a>
-<h1>Select Profiling Task: Duplicate Configuration Dialog Box</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="FilterSetsPanel.HelpCtx" name="FilterSetsPanel.HelpCtx"></a></p>
+<div id="NBCSH3120"><!-- infolevel="all" infotype="General" --><a id="sthref397" name="sthref397"></a>
+<h1>Select Profiling Task: Customize Filter Sets Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to create a copy of an existing configuration for a profiling task. You can duplicate one of the default configurations or a custom configuration. 
+<p>Use to customize existing filter sets and to create new custom filter sets. You use a filter set to limit the classes that are instrumented when analyzing application performance. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG757">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG740">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Description of duplicate configuration name field." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="33%" />
+<table summary="Descriptions of custom filter set options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t8">Element</th>
-<th align="left" valign="bottom" id="r1c2-t8">Description</th>
+<th align="left" valign="bottom" id="r1c1-t7">Element</th>
+<th align="left" valign="bottom" id="r1c2-t7">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t8" headers="r1c1-t8">
-<p>Name</p>
+<td align="left" id="r2c1-t7" headers="r1c1-t7">
+<p>Defined Filter Sets.</p>
 </td>
-<td align="left" headers="r2c1-t8 r1c2-t8">Specifies the name for the duplicate copy of the selected configuration.</td>
+<td align="left" headers="r2c1-t7 r1c2-t7">Displays the filter sets that are available when profiling an application. Use the buttons to the right of the list to add and remove filter sets and to change the order that the filter sets are displayed in the Filter drop-down list in the configuration pane.
+<p>Select a filter set in the list to see the set name, type, and global filters included in the filter set displayed in the Filter Set Properties section. A filter set can include more than one global filter.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t7" headers="r1c1-t7">
+<p>Filter Set Properties.</p>
+</td>
+<td align="left" headers="r3c1-t7 r1c2-t7">Displays the properties of the selected filter set. Filter sets have the following properties: F<b>ilter Set Name</b>, <b>Filter Set Type</b>, and <b>Global Filters</b>.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t7" headers="r1c1-t7">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Filter Set Name</p>
+</td>
+<td align="left" headers="r4c1-t7 r1c2-t7">Specifies the name used to identify the filter set in the Filter drop-down list in the configuration pane.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t7" headers="r1c1-t7">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Filter Set Type</p>
+</td>
+<td align="left" headers="r5c1-t7 r1c2-t7">Displays the filter set types: Exclusive and Inclusive.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t7" headers="r1c1-t7">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exclusive</p>
+</td>
+<td align="left" headers="r6c1-t7 r1c2-t7">Excludes and does not instrument classes meeting the criteria of the selected filters. Profiling results for these classes do not appear in the collected results.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t7" headers="r1c1-t7">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inclusive</p>
+</td>
+<td align="left" headers="r7c1-t7 r1c2-t7">Includes in the instrumentation only the classes meeting the criteria of the selected filters. Profiling results are collected only for these classes.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t7" headers="r1c1-t7">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Global Filters.</p>
+</td>
+<td align="left" headers="r8c1-t7 r1c2-t7">Displays global filters. Each global filter in the list represents groups of patterns that are typically related to one application. For example, <code dir="ltr">org.netbeans</code> is a pattern. A filter can contain more than one pattern. Patterns can be separated by a comma and/or space.
+<p>Select the global filters that you want to exclude or include. To modify or create global filters, click <b>Edit Global Filters</b>.</p>
+</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3116" name="NBCSH3116"></a>
+<a id="NBCSH3128" name="NBCSH3128"></a>
 <hr><p><b>Related Topics</b></p>
-<p>Developing Applications with NetBeans IDE, 
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG752">
-<param name="text" value="<html><u>&quot;Monitoring an Application&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
+<param name="text" value="<html><u>&quot;Setting Profiling Filters&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
 <param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
-<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
-<param name="text" value="<html><u>&quot;Setting Profiling Point&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

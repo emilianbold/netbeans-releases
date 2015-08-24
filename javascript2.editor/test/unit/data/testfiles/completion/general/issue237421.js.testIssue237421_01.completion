@@ -1,0 +1,5 @@
+Code completion result for source line:
+var foo = this.g| ;
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     getTest()                       [PRIVATE]  issue237421.js

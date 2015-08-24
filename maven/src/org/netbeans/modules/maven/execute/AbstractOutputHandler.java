@@ -58,7 +58,10 @@ import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputProcessorFactory;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.ActionProviderImpl;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.project.indexingbridge.IndexingBridge;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -88,7 +91,7 @@ public abstract class AbstractOutputHandler {
     private RequestProcessor.Task sleepTask;
     private static final int SLEEP_DELAY = 5000;
 
-    protected AbstractOutputHandler(final ProgressHandle hand, OutputVisitor visitor) {
+    protected AbstractOutputHandler(Project proj, final ProgressHandle hand, RunConfig config, OutputVisitor visitor) {
         processors = new HashMap<String, Set<OutputProcessor>>();
         currentProcessors = new HashSet<OutputProcessor>();
         this.visitor = visitor;
@@ -99,7 +102,7 @@ public abstract class AbstractOutputHandler {
                 exitProtectedMode();
             }
         });
-        enterProtectedMode(true);
+        enterProtectedMode(isProtectedWait(proj, config));
     }
 
     private void enterProtectedMode(boolean wait) {
@@ -118,6 +121,24 @@ public abstract class AbstractOutputHandler {
         }
     }
 
+    private boolean isProtectedWait(Project proj, RunConfig config) {
+        String action = config.getActionName();
+        if(action == null || proj == null || !RunUtils.isCompileOnSaveEnabled(proj)) {
+            return false;
+        }
+        switch(action) {
+            case ActionProvider.COMMAND_RUN: 
+            case ActionProvider.COMMAND_RUN_SINGLE:
+            case ActionProvider.COMMAND_DEBUG:
+            case ActionProvider.COMMAND_DEBUG_SINGLE:
+            case ActionProviderImpl.DEBUG_MAIN:
+            case ActionProviderImpl.RUN_MAIN:
+                return true;
+            default:
+                return false;
+        }
+    }
+    
     protected abstract InputOutput getIO();
 
     protected void checkSleepiness() {

@@ -83,7 +83,7 @@ public class AnnotateAction extends GitAction {
     }
     
     @Override
-    protected boolean enable (Node[] nodes) {
+    protected boolean enableFull (Node[] nodes) {
         VCSContext context = getCurrentContext(nodes);
         if (context.getRootFiles().size() > 0 && activatedEditorCookie(nodes) != null) {
             FileStatusCache cache = Git.getInstance().getFileStatusCache();

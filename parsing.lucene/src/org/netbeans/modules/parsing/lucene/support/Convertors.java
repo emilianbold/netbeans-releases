@@ -93,6 +93,17 @@ public final class Convertors {
         return new CompositeConvertor<P,I,R> (first, second);
     }
 
+    /**
+     * Returns a {@link Convertor} returning the first non null result of its delegates.
+     * @param convertors the delegates
+     * @return the {@link Convertor}
+     * @since 2.33
+     */
+    @NonNull
+    public static <P,R> Convertor<P,R> firstNonNull(@NonNull Iterable<? extends Convertor<? super P, ? extends R>> convertors) {
+        Parameters.notNull("convertors", convertors);   //NOI18N
+        return new FirstNonNull<>(convertors);
+    }
 
 
     private static final class CompositeConvertor<P,I,R> implements Convertor<P, R> {
@@ -114,6 +125,26 @@ public final class Convertors {
             return second.convert(first.convert(p));
         }
 
+    }
+
+    private static final class FirstNonNull<P,R> implements Convertor<P,R> {
+
+        private final Iterable<? extends Convertor<? super P, ? extends R>> delegates;
+
+        FirstNonNull(Iterable<? extends Convertor<? super P, ? extends R>> delegates) {
+            this.delegates = delegates;
+        }
+
+        @Override
+        public R convert(P p) {
+            for (Convertor<? super P, ? extends R> c : delegates) {
+                final R r = c.convert(p);
+                if (r != null) {
+                    return r;
+                }
+            }
+            return null;
+        }
     }
 
 }

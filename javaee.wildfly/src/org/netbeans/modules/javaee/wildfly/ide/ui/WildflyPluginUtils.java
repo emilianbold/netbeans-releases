@@ -87,6 +87,8 @@ public class WildflyPluginUtils {
     public static final Version WILDFLY_8_2_0 = new Version("8.2.0"); // NOI18N
 
     public static final Version WILDFLY_9_0_0 = new Version("9.0.0"); // NOI18N
+    
+    public static final Version WILDFLY_10_0_0 = new Version("10.0.0"); // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WildflyPluginUtils.class.getName());
 
@@ -364,6 +366,40 @@ public class WildflyPluginUtils {
             }
         }
         return true;
+    }
+
+    /**
+     * Check the product name of the server located at the given path. If the server
+     * version can't be determined returns <code>null</code>.
+     *
+     * @param serverPath path to the server directory
+     * @return specification version of the server using product.conf.
+     */
+    @CheckForNull
+    public static boolean isWildFlyServlet(File serverPath) {
+        assert serverPath != null : "Can't determine version with null server path"; // NOI18N
+        String productConf = getProductConf(serverPath);
+        if(productConf != null) {
+            try (FileReader reader = new FileReader(productConf)) {
+                Properties props = new Properties();
+                props.load(reader);
+                String slot = props.getProperty("slot");
+                if (slot != null) {
+                    File manifestFile = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org.jboss.as.product".replace('.', separatorChar) + separatorChar + slot + separatorChar + "dir" + separatorChar + "META-INF" + separatorChar + "MANIFEST.MF");
+                    InputStream stream = new FileInputStream(manifestFile);
+                    Manifest manifest = new Manifest(stream);
+                    String productName = manifest.getMainAttributes().getValue("JBoss-Product-Release-Name");
+                    if(productName == null || productName.isEmpty()) {
+                        productName = manifest.getMainAttributes().getValue("JBoss-Project-Release-Name");
+                    }
+                    return productName != null && (productName.contains("WildFly Web Lite") || productName.contains("WildFly Servlet"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Don't care
+            }
+        }
+        return false;
     }
 
     private static class VersionJarFileFilter implements FilenameFilter {

@@ -164,4 +164,10 @@ Contributor(s):
         </folder>
     </folder>
    
+    <folder name="CND">
+        <folder name="SecurityChecks">
+            <file name="C_Lib_Functions" url="../security/resources/C_Lib_Functions.xml"/>
+        </folder>
+    </folder>
+    
 </filesystem>

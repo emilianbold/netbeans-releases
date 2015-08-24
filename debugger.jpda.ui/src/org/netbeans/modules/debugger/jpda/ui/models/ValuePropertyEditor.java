@@ -370,13 +370,9 @@ class ValuePropertyEditor implements ExPropertyEditor {
     public Component getCustomEditor() {
         //System.err.println("ValuePropertyEditor.getCustomEditor() delegateValue = "+delegateValue);
         if (delegateValue instanceof String) {
-            ShortenedStrings.StringInfo shortenedInfo = ShortenedStrings.getShortenedInfo((String) delegateValue);
-            //System.err.println("  shortenedInfo = "+shortenedInfo);
-            if (shortenedInfo != null) {
-                // There is a risk that the String and it's UI does not fit into the memory,
-                // or that it'd be too sluggish.
-                Component delegateCustomEditor = delegatePropertyEditor.getCustomEditor();
-                return new BigStringCustomEditor(delegateCustomEditor, shortenedInfo);
+            BigStringCustomEditor bsce = BigStringCustomEditor.createIfBig(delegatePropertyEditor, (String) delegateValue);
+            if (bsce != null) {
+                return bsce;
             }
         }
         return delegatePropertyEditor.getCustomEditor();

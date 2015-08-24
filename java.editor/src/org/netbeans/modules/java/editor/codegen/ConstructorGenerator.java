@@ -236,28 +236,36 @@ public class ConstructorGenerator implements CodeGenerator {
             String message = NbBundle.getMessage(ConstructorGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
             org.netbeans.editor.Utilities.setStatusBoldText(component, message);
         } else {
-            ArrayList<VariableElement> variableElements = new ArrayList<>();
-            if (fieldHandles != null) {
-                for (ElementHandle<? extends Element> elementHandle : fieldHandles) {
-                    VariableElement field = (VariableElement) elementHandle.resolve(copy);
-                    if (field == null) {
-                        return;
+            try {
+                ArrayList<VariableElement> variableElements = new ArrayList<>();
+                if (fieldHandles != null) {
+                    for (ElementHandle<? extends Element> elementHandle : fieldHandles) {
+                        VariableElement field = (VariableElement) elementHandle.resolve(copy);
+                        if (field == null) {
+                            return;
+                        }
+                        variableElements.add(field);
                     }
-                    variableElements.add(field);
                 }
-            }
-            if (constrHandles != null && !constrHandles.isEmpty()) {
-                ArrayList<ExecutableElement> constrElements = new ArrayList<>();
-                for (ElementHandle<? extends Element> elementHandle : constrHandles) {
-                    ExecutableElement constr = (ExecutableElement) elementHandle.resolve(copy);
-                    if (constr == null) {
-                        return;
+                if (constrHandles != null && !constrHandles.isEmpty()) {
+                    ArrayList<ExecutableElement> constrElements = new ArrayList<>();
+                    for (ElementHandle<? extends Element> elementHandle : constrHandles) {
+                        ExecutableElement constr = (ExecutableElement) elementHandle.resolve(copy);
+                        if (constr == null) {
+                            return;
+                        }
+                        constrElements.add(constr);
                     }
-                    constrElements.add(constr);
+                    GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, caretOffset);
+                } else {
+                    GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement) constructorHandle.resolve(copy) : null, caretOffset);
                 }
-                GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, caretOffset);
-            } else {
-                GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement) constructorHandle.resolve(copy) : null, caretOffset);
+            } catch (GeneratorUtils.DuplicateMemberException dme) {
+                if (dme.getPos() >= 0) {
+                    component.setCaretPosition(dme.getPos());
+                }
+                String message = NbBundle.getMessage(ConstructorGenerator.class, "ERR_ConstructorAlreadyExists"); //NOI18N
+                org.netbeans.editor.Utilities.setStatusBoldText(component, message);
             }
         }
     }

@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
@@ -60,6 +61,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.java.navigation.base.Utils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -167,7 +169,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         }
         
         // Don't update when element is the same
-        if ( lastEh != null && lastEh.signatureEquals(element) && !inJavadoc ) {
+        if (Utils.signatureEquals(lastEh, element) && !inJavadoc) {
             // System.out.println("  stoped because os same eh");
             return;
         }
@@ -184,14 +186,14 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             case STATIC_INIT:
             case FIELD:
             case ENUM_CONSTANT:
-                lastEh = ElementHandle.create(element);
+                lastEh = Utils.createElementHandle(element);
                 // Different element clear data
                 setJavadoc(null, null); // NOI18N
                 break;
             case PARAMETER:
                 element = element.getEnclosingElement(); // Take the enclosing method
                 if (element != null && element.asType() != null) {
-                    lastEh = ElementHandle.create(element);
+                    lastEh = Utils.createElementHandle(element);
                 } else {
                     lastEh = null;
                 }
@@ -277,7 +279,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         }
         // Try to find the declaration we are in
         final Element e = outerElement(ci, tp);
-        if ( e != null ) {
+        if ( e != null && e.getKind() != ElementKind.OTHER) {
             final ElementHandle<Element> eh = ElementHandle.create(e);
             if ( lastEhForNavigator != null && eh.signatureEquals(lastEhForNavigator)) {
                 return;

@@ -70,7 +70,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -382,7 +382,8 @@ public class JFXActionProvider implements ActionProvider {
         } else {
             final AtomicBoolean cancel = new AtomicBoolean();
             final AtomicReference<Set<String>> result = new AtomicReference<>(Collections.<String>emptySet());
-            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            try {
+            BaseProgressUtils.runOffEventDispatchThread(new Runnable() {
                 @Override
                 public void run() {
                     if (!cancel.get()) {
@@ -391,6 +392,9 @@ public class JFXActionProvider implements ActionProvider {
                     }
                 }
             }, NbBundle.getMessage(JFXActionProvider.class, "TXT_ActionInProgress"), cancel, true); //NOI18N
+            } catch (IllegalStateException ex) {
+                LOG.log(Level.INFO, "Canceled operation did not finish in time.", ex); //NOI18N
+            }
             appClassNames = result.get();
         }
         final PropertyEvaluator eval = prj.getLookup().lookup(J2SEPropertyEvaluator.class).evaluator();

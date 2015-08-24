@@ -1228,25 +1228,26 @@ public class CPPParserEx extends CPPParser {
     @Override
     protected void onError(RecognitionException e) {
         CsmParserProvider.ParserErrorDelegate delegate = errorDelegate;
+        updateExceptionIfNeeded(e, (delegate != null) || super.hasReportErrors());
         if (delegate != null) {
             delegate.onError(new CsmParserProvider.ParserError(e.getMessage(), e.getLine(), e.getColumn(), e.getTokenText(), e instanceof NoViableAltException && APTUtils.isEOF(((NoViableAltException)e).token)));
         }
     }
 
-    @Override
-    public void doReportError(RecognitionException e) {
-        if (e.line == FAKE_LINE && e.column == FAKE_COLUMN &&
-           (e instanceof NoViableAltException)) {
-            NoViableAltException ex = (NoViableAltException)e;
-            if ((ex.token instanceof APTToken) &&
-                (action.getCurrentFile() instanceof FileImpl)) {
-                FileImpl impl = (FileImpl)action.getCurrentFile();
-                int[] lineColumn = impl.getLineColumn(((APTToken)ex.token).getOffset());
-                ex.line = lineColumn[0];
-                ex.column = lineColumn[1];
-            }
+    private void updateExceptionIfNeeded(RecognitionException e, boolean updateLineColumn) {
+        if (updateLineColumn) {
+            if (e.line == FAKE_LINE && e.column == FAKE_COLUMN
+                    && (e instanceof NoViableAltException)) {
+                NoViableAltException ex = (NoViableAltException) e;
+                if ((ex.token instanceof APTToken)
+                        && (action.getCurrentFile() instanceof FileImpl)) {
+                    FileImpl impl = (FileImpl) action.getCurrentFile();
+                    int[] lineColumn = impl.getLineColumn(((APTToken) ex.token).getOffset());
+                    ex.line = lineColumn[0];
+                    ex.column = lineColumn[1];
+                }
+            }            
         }
-        super.doReportError(e);
     }
 }
 

@@ -140,6 +140,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 import org.openide.util.Task;
@@ -155,6 +156,7 @@ import org.openide.util.lookup.Lookups;
 public abstract class BaseActionProvider implements ActionProvider {
     public static final String AUTOMATIC_BUILD_TAG = ".netbeans_automatic_build";
 
+    private static final String PROP_JAVA_MAIN_ACTION = "java.main.action"; //NOI18N
     private static final Logger LOG = Logger.getLogger(BaseActionProvider.class.getName());
 
     public static final String PROPERTY_RUN_SINGLE_ON_SERVER = "run.single.on.server";
@@ -199,6 +201,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     private SourceRoots projectTestRoots;
 
     private boolean serverExecution = false;
+    private UserPropertiesPolicy userPropertiesPolicy;
 
     public BaseActionProvider(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, 
             SourceRoots sourceRoots, SourceRoots testRoots, AntProjectHelper antProjectHelper, Callback callback) {
@@ -424,6 +427,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
         }
+        final String[] userPropertiesFile = new String[]{verifyUserPropertiesFile()};
 
         final boolean isCompileOnSaveEnabled = isCompileOnSaveEnabled();
         final AtomicReference<Thread> caller = new AtomicReference<Thread>(Thread.currentThread());
@@ -468,7 +472,10 @@ public abstract class BaseActionProvider implements ActionProvider {
 
             void doRun() {
                 Properties p = new Properties();
-                p.put("nb.internal.action.name", command);
+                p.put("nb.internal.action.name", command);                  //NOI18N
+                if (userPropertiesFile[0] != null) {
+                    p.put("user.properties.file", userPropertiesFile[0]);   //NOI18N
+                }
                 String[] targetNames;
 
                 targetNames = getTargetNames(command, context, p, doJavaChecks);
@@ -664,8 +671,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        }
-        else {
+        } else {
             //Does not need java model
             action.run();
         }
@@ -806,7 +812,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             }
             if(files.length == 1 && files[0].isData()) {
                 //one file or a package containing one file selected
-            targetNames = setupTestSingle(p, files);            
+            targetNames = setupTestSingle(p, files, projectTestRoots);
             } else {
                 //multiple files or package(s) selected
                 targetNames = setupTestFilesOrPackages(p, files);
@@ -816,13 +822,13 @@ public abstract class BaseActionProvider implements ActionProvider {
             if (files == null) {
                 return null;
             }
-            targetNames = setupDebugTestSingle(p, files);
+            targetNames = setupDebugTestSingle(p, files, projectTestRoots);
         } else if ( command.equals( COMMAND_PROFILE_TEST_SINGLE ) ) {
             final FileObject[] files = findTestSources(context, true);
             if (files == null) {
                 return null;
             }
-            targetNames = setupProfileTestSingle(p, files);
+            targetNames = setupProfileTestSingle(p, files, projectTestRoots);
         } else if ( command.equals( SingleMethod.COMMAND_RUN_SINGLE_METHOD ) ) {
             SingleMethod[] methodSpecs = findTestMethods(context);
             if ((methodSpecs == null) || (methodSpecs.length != 1)) {
@@ -865,8 +871,9 @@ public abstract class BaseActionProvider implements ActionProvider {
             // XXX would ideally check that that config in fact had a main class.
             // But then evaluator.getProperty(MAIN_CLASS) would be inaccurate.
             // Solvable but punt on it for now.
-            boolean hasCfg = context.lookup(ProjectConfiguration.class) != null;
-            String mainClass = getProjectMainClass(doJavaChecks && !hasCfg);
+            final boolean hasCfg = context.lookup(ProjectConfiguration.class) != null;
+            final boolean verifyMain = doJavaChecks && !hasCfg && getJavaMainAction() == null;
+            String mainClass = getProjectMainClass(verifyMain);
             if (mainClass == null) {
                 do {
                     // show warning, if cancel then return
@@ -875,7 +882,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                     }
                     // No longer use the evaluator: have not called putProperties yet so it would not work.
                     mainClass = evaluator.getProperty(ProjectProperties.MAIN_CLASS);
-                    mainClass = getProjectMainClass(doJavaChecks && !hasCfg);
+                    mainClass = getProjectMainClass(verifyMain);
                 } while (mainClass == null);
             }
             if (!command.equals(COMMAND_RUN) && /* XXX should ideally look up proper mainClass in evaluator x config */ mainClass != null) {
@@ -977,15 +984,15 @@ public abstract class BaseActionProvider implements ActionProvider {
                             targetNames = new String[]{"profile-applet"}; // NOI18N
                         }
                     } else {
-                        List<String> alternativeTargetNames = new ArrayList<String>();
+                        List<String> alternativeTargetNames = new ArrayList<>();
                         if (isTest) {
                             //Fallback to normal (non-main-method-based) unit test run
                             if (command.equals(COMMAND_RUN_SINGLE)) {
-                                targetNames = setupTestSingle(p, files);
+                                targetNames = setupTestSingle(p, files, projectTestRoots);
                             } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
-                                targetNames = setupDebugTestSingle(p, files);
+                                targetNames = setupDebugTestSingle(p, files, projectTestRoots);
                             } else {
-                                targetNames = setupProfileTestSingle(p, files);
+                                targetNames = setupProfileTestSingle(p, files, projectTestRoots);
                             }
                         } else if (handleJavaClass(p, file, command, alternativeTargetNames)) {
                             if (alternativeTargetNames.size() > 0) {
@@ -994,9 +1001,39 @@ public abstract class BaseActionProvider implements ActionProvider {
                                 return null;
                             }
                         } else {
-                            NotifyDescriptor nd = new NotifyDescriptor.Message(LBL_No_Main_Class_Found(clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                            DialogDisplayer.getDefault().notify(nd);
-                            return null;
+                            final JavaMainAction javaMainAction = getJavaMainAction();
+                            if (javaMainAction == null) {
+                                NotifyDescriptor nd = new NotifyDescriptor.Message(LBL_No_Main_Class_Found(clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                                DialogDisplayer.getDefault().notify(nd);
+                                return null;
+                            } else if (javaMainAction == JavaMainAction.RUN) {
+                                String prop;
+                                switch (command) {
+                                    case COMMAND_RUN_SINGLE:
+                                        prop = "run.class"; //NOI18N
+                                        break;
+                                    case COMMAND_DEBUG_SINGLE:
+                                        prop = "debug.class";   //NOI18N
+                                        break;
+                                    default:
+                                        prop = "run.class"; //NOI18N
+                                }
+                                p.setProperty(prop, clazz);
+                                final String[] targets = targetsFromConfig.get(command);
+                                targetNames = targets != null ? targets : getCommands().get(command);
+                            } else if (javaMainAction == JavaMainAction.TEST) {
+                                switch (command) {
+                                    case COMMAND_RUN_SINGLE:
+                                        targetNames = setupTestSingle(p, files, projectSourceRoots);
+                                        break;
+                                    case COMMAND_DEBUG_SINGLE:
+                                        targetNames = setupDebugTestSingle(p, files, projectSourceRoots);
+                                        break;
+                                    default:
+                                        targetNames = setupProfileTestSingle(p, files, projectSourceRoots);
+                                        break;
+                                }
+                            }
                         }
                     }
                 } else {
@@ -1026,8 +1063,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         targetNames = (targets != null) ? targets : (isTest ? new String[] {"profile-test-with-main"} : getCommands().get(COMMAND_PROFILE_SINGLE));
                     }
                 }
-            }
-            else {
+            } else {
                 //The Java model is not ready, we cannot determine if the file is applet or main class or unit test
                 //Acts like everything is main class, maybe for test folder junit is better default?
                 if (command.equals (COMMAND_RUN_SINGLE)) {
@@ -1372,14 +1408,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         return targets;
     }
 
-    private String[] setupTestSingle(Properties p, FileObject[] files) {
-        FileObject[] testSrcPath = projectTestRoots.getRoots();
-        FileObject root = getRoot(testSrcPath, files[0]);
-        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[] {"test-single"}; // NOI18N
-    }
-
     private String[] setupTestFilesOrPackages(Properties p, FileObject[] files) {
         if (files != null) {
             FileObject root = getRoot(projectTestRoots.getRoots(), files[0]);
@@ -1389,21 +1417,28 @@ public abstract class BaseActionProvider implements ActionProvider {
         return new String[]{"test"}; // NOI18N
     }
 
-    private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
-        FileObject[] testSrcPath = projectTestRoots.getRoots();
-        FileObject root = getRoot(testSrcPath, files[0]);
-        String path = FileUtil.getRelativePath(root, files[0]);
+    private void setupTestSingleCommon(Properties p, FileObject[] files, SourceRoots sourceRoots) {
+        final FileObject[] srcPath = sourceRoots.getRoots();
+        final FileObject root = getRoot(srcPath, files[0]);
         // Convert foo/FooTest.java -> foo.FooTest
+        final String path = FileUtil.getRelativePath(root, files[0]);
         p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[] {"debug-test"}; // NOI18N
-    }
-    
-    private String[] setupProfileTestSingle(Properties p, FileObject[] files) {
-        FileObject[] testSrcPath = projectTestRoots.getRoots();
-        FileObject root = getRoot(testSrcPath, files[0]);
         p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
         p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+    }
+
+    private String[] setupTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
+        setupTestSingleCommon(p, files, sourceRoots);
+        return new String[] {"test-single"}; // NOI18N
+    }
+
+    private String[] setupDebugTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
+        setupTestSingleCommon(p, files, sourceRoots);
+        return new String[] {"debug-test"}; // NOI18N
+    }
+
+    private String[] setupProfileTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
+        setupTestSingleCommon(p, files, sourceRoots);
         return new String[] {"profile-test"}; // NOI18N
     }
 
@@ -1790,8 +1825,9 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     private void bypassAntBuildScript(String command, Lookup context, Map<String, Object> p, AtomicReference<ExecutorTask> task) throws IllegalArgumentException {
-        boolean run = true;
-        boolean hasMainMethod = true;
+        final JavaMainAction javaMainAction = getJavaMainAction();
+        boolean run = javaMainAction != JavaMainAction.TEST;
+        boolean hasMainMethod = run;
 
         if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command)) {
             final String mainClass = evaluator.getProperty(ProjectProperties.MAIN_CLASS);
@@ -1812,6 +1848,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                     hasMainMethod = CommonProjectUtils.hasMainMethod(files[0]);
                     run = false;
                 }
+            } else if (!hasMainMethod) {
+                hasMainMethod = CommonProjectUtils.hasMainMethod(files[0]);
             }
 
             if (files == null || files.length != 1) {
@@ -2215,5 +2253,96 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
         return result;
     }
-    
+
+    private static enum JavaMainAction {
+        RUN("run"),     //NOI18N
+        TEST("test");   //NOI18N
+
+        private final String name;
+        JavaMainAction(@NonNull final String name) {
+            assert name != null;
+            this.name = name;
+        }
+        @CheckForNull
+        static JavaMainAction forName(@NullAllowed final String name) {
+            if (RUN.name.equals(name)) {
+                return RUN;
+            } else if (TEST.name.equals(name)) {
+                return TEST;
+            }
+            return null;
+        }
+    }
+
+    private JavaMainAction getJavaMainAction() {
+        return JavaMainAction.forName(evaluator.getProperty(PROP_JAVA_MAIN_ACTION));
+    }
+
+    private static enum UserPropertiesPolicy {
+        RUN_ANYWAY(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_Anyway")),
+        RUN_WITH(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_With")),
+        RUN_UPDATE(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_Update"));
+
+        private final String displayName;
+
+        UserPropertiesPolicy(@NonNull final String displayName) {
+            this.displayName = displayName;
+        }
+
+        @NonNull
+        public String getDisplayName() {
+            return this.displayName;
+        }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+    }
+
+    @CheckForNull
+    private String verifyUserPropertiesFile() {
+        final String currentPath = evaluator.getProperty("user.properties.file");      //NOI18N
+        final File current = currentPath == null ? null : FileUtil.normalizeFile(antProjectHelper.resolveFile(currentPath));
+        final File expected = FileUtil.normalizeFile(new File(System.getProperty("netbeans.user"), "build.properties")); // NOI18N
+        if (!expected.equals(current)) {
+            if (userPropertiesPolicy == null) {
+                final Object option = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                        NbBundle.getMessage(BaseActionProvider.class, "MSG_InvalidBuildPropertiesPath", ProjectUtils.getInformation(project).getDisplayName()),
+                        NbBundle.getMessage(BaseActionProvider.class, "TITLE_InvalidBuildPropertiesPath"),
+                        0,
+                        NotifyDescriptor.QUESTION_MESSAGE,
+                        UserPropertiesPolicy.values(),
+                        UserPropertiesPolicy.RUN_ANYWAY));
+                userPropertiesPolicy = option instanceof UserPropertiesPolicy ?
+                        (UserPropertiesPolicy) option :
+                        null;
+            }
+            if (null != userPropertiesPolicy) {
+                switch (userPropertiesPolicy) {
+                    case RUN_ANYWAY:
+                        return null;
+                    case RUN_WITH:
+                        return expected.getAbsolutePath();
+                    case RUN_UPDATE:
+                        ProjectManager.mutex().writeAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                final EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                                ep.setProperty("user.properties.file", expected.getAbsolutePath()); //NOI18N
+                                updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                                try {
+                                    ProjectManager.getDefault().saveProject(project);
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
+                                }
+                            }
+                        });
+                        return null;
+                    default:
+                }
+            }
+        }
+        return null;
+    }
 }

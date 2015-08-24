@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -72,6 +71,7 @@ import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntry;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2;
@@ -87,8 +87,6 @@ import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.netbeans.modules.maven.j2ee.EjbChangeDescriptorImpl;
 import org.netbeans.modules.maven.j2ee.ear.model.ApplicationMetadataModelImpl;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
@@ -135,15 +133,12 @@ public class EarImpl implements EarImplementation, EarImplementation2,
             // the default version in maven plugin is also 1.3
             //TODO what if the default changes?
             if (version != null) {
-                // 5 is not valid value in netbeans, it's 1.5
-                if ("5".equals(version)) {
-                    return Profile.JAVA_EE_5;
+                version = version.trim();
+                // 5, 6, 7 are not valid versions in NB it is 1.5, 1.6, 1.7
+                if (!version.startsWith("1.")) { // NOI18N
+                    version = "1." + version; // NOI18N
                 }
-                // 6 is not valid value in netbeans, it's 1.6
-                if ("6".equals(version)) {
-                    return Profile.JAVA_EE_6_FULL;
-                }
-                return Profile.fromPropertiesString(version.trim());
+                return Profile.fromPropertiesString(version);
             }
         } else {
             DDProvider prov = DDProvider.getDefault();
@@ -152,6 +147,11 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                 try {
                     Application app = prov.getDDRoot(dd);
                     String appVersion = app.getVersion().toString();
+                    appVersion = appVersion.trim();
+                    // 5, 6, 7 are not valid versions in NB it is 1.5, 1.6, 1.7
+                    if (!appVersion.startsWith("1.")) { // NOI18N
+                        appVersion = "1." + appVersion; // NOI18N
+                    }
                     return Profile.fromPropertiesString(appVersion);
                 } catch (IOException exc) {
                     ErrorManager.getDefault().notify(exc);

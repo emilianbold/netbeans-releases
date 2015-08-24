@@ -634,7 +634,12 @@ public final class IgnoreListPanel extends javax.swing.JPanel {
 
             @Override
             boolean isIgnored(FileObject obj) {
-                return p.matcher(obj.getPath()).find();
+                File file = FileUtil.toFile(obj);
+                if (file != null) {
+                    return p.matcher(file.getPath()).find();
+                } else {
+                    return p.matcher(obj.getPath()).find();
+                }
             }
         }
 

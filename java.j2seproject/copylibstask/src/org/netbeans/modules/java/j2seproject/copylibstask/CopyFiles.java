@@ -65,7 +65,7 @@ public class CopyFiles extends Task {
      * Destination directory to which files should be copied. Mandatory.
      */
     private File todir;
-    
+
     /**
      * Special case for WAR file deployed within EAR: if file contains any files matching
      * META-INF/*.tld or META-INF/tlds/*.tld then jar file will be
@@ -73,23 +73,24 @@ public class CopyFiles extends Task {
      * be copied to <code>${iftldtodir}/classes</code>. See issue #58167 for more details.
      */
     private File iftldtodir;
-    
+
     /**
-     * Files to copy; can be Ant path property with entries separated by ":" 
+     * Files to copy; can be Ant path property with entries separated by ":"
      * or ";". Mandatory.
      */
     private String files;
-    
+
     /**
-     * Name of property to set. Value is list of file names (no path; 
-     * separated by space) which were copied to todir folder. If a file was 
-     * copied to iftldtodir folder it is not included in the list. If file 
+     * Name of property to set. Value is list of file names (no path;
+     * separated by space) which were copied to todir folder. If a file was
+     * copied to iftldtodir folder it is not included in the list. If file
      * was actaully folder then "." will be used instead. The value is used
      * for example when WAR is build from several JARs and these need to be
      * listed in WAR's manifest in classpath entry.
      */
     private String manifestproperty;
 
+    @Override
     public void execute() throws BuildException {
         if (files == null) {
             throw new BuildException ("files must be set.");
@@ -138,7 +139,7 @@ public class CopyFiles extends Task {
             getProject().setProperty(manifestproperty, sb.toString());
         }
     }
-    
+
     private boolean containsTLD(File f) {
         FileSet fs;
         if (f.isFile()) {
@@ -160,25 +161,25 @@ public class CopyFiles extends Task {
     public String getFiles() {
         return this.files;
     }
-    
+
     public void setFiles (String files) {
         assert files != null;
         this.files = files;
     }
-    
+
     public File getToDir() {
         return this.todir;
     }
-    
+
     public void setToDir (File todir) {
         assert todir != null;
         this.todir = todir;
     }
-    
+
     public File getIfTLDToDir() {
         return this.iftldtodir;
     }
-    
+
     public void setIfTLDToDir(File iftldtodir) {
         this.iftldtodir = iftldtodir;
     }
@@ -190,5 +191,5 @@ public class CopyFiles extends Task {
     public void setManifestProperty(String manifestproperty) {
         this.manifestproperty = manifestproperty;
     }
-    
+
 }

@@ -2,76 +2,98 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Memory Snapshot</title>
+<title>Select Class Dialog</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="MemorySnapshot.HelpCtx" name="MemorySnapshot.HelpCtx"></a></p>
-<div id="NBCSH3374"><!-- infolevel="all" infotype="General" --><a id="sthref436" name="sthref436"></a>
-<h1>Memory Snapshot</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="SelectClassDialog.HelpCtx" name="SelectClassDialog.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref441" name="sthref441"></a>
+<h1>Select Class Dialog</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to capture data on live objects, object allocation and liveness. The data captured in the snapshot depends upon the options that were selected for the profiling session. You can take a memory snapshot when you are analyzing memory usage. The snapshot is displayed in the main editor window. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG728">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Use to identify the classes to be profiled from the available project packages. The options are:</p>
 
-<table summary="Descriptions of Memory Snapshot window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t52">Element</th>
-<th align="left" valign="bottom" id="r1c2-t52">Description</th>
+<th align="left" valign="bottom" id="r1c1-t51">Element</th>
+<th align="left" valign="bottom" id="r1c2-t51">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t52" headers="r1c1-t52">
-<p>Memory Results</p>
+<td align="left" id="r2c1-t51" headers="r1c1-t51">
+<p>Project</p>
 </td>
-<td align="left" headers="r2c1-t52 r1c2-t52">Displays a list of classes (including array classes), with the total size and number of instances allocated at the time you took the snapshot.
-<p>If Record Stack Trace for Allocations was selected as a profiling option, you can display the stack traces for a specific class by right-clicking the name of the class and selecting <b>Show Allocation Stack Traces</b>. The stack traces are displayed in the <b>Allocation Stack Traces</b> tab.</p>
-</td>
+<td align="left" headers="r2c1-t51 r1c2-t51"></td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t52" headers="r1c1-t52">
-<p>Info</p>
+<td align="left" id="r3c1-t51" headers="r1c1-t51">
+<p><img width="18" height="16" src="img/filter.png" alt="Filter items icon" title="Filter items icon" />Filter items</p>
 </td>
-<td align="left" headers="r3c1-t52 r1c2-t52">Displays data on when the snapshot was taken, where it is saved, and the configuration of the profiling session.</td>
+<td align="left" headers="r3c1-t51 r1c2-t51">Click on the arrow next to this icon to type the name of a project. As you type, the list is filtered to display the projects that match your filter criteria.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t52" headers="r1c1-t52">
-<p>Allocation Stack Traces</p>
+<td align="left" id="r4c1-t51" headers="r1c1-t51">
+<p>Packages</p>
 </td>
-<td align="left" headers="r4c1-t52 r1c2-t52">Displays a reverse call graph with all call paths leading to object allocations for the given class.
-<p>This tab is only available if <b>Record Stack Trace for Allocations</b> was selected as a profiling option.</p>
+<td align="left" headers="r4c1-t51 r1c2-t51"></td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t51" headers="r1c1-t51">
+<p><img width="18" height="16" src="img/filter.png" alt="Filter items icon" title="Filter items icon" />Filter items</p>
 </td>
+<td align="left" headers="r5c1-t51 r1c2-t51">Click on the arrow next to this icon to type the name of a package. As you type, the list is filtered to display the packages that match your filter criteria.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t51" headers="r1c1-t51">
+<p><img width="18" height="17" src="img/show_project_packages.png" alt="Show project packages icon" title="Show project packages icon" />Show project packages</p>
+</td>
+<td align="left" headers="r6c1-t51 r1c2-t51">Use to hide/show project packages.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t51" headers="r1c1-t51">
+<p><img width="16" height="19" src="img/show_dependies_packages.png" alt="Show dependencies packages icon" title="Show dependencies packages icon" />Show dependencies packages</p>
+</td>
+<td align="left" headers="r7c1-t51 r1c2-t51">Use to filter the list by packages that have dependencies.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t51" headers="r1c1-t51">
+<p>Classes</p>
+</td>
+<td align="left" headers="r8c1-t51 r1c2-t51"></td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t51" headers="r1c1-t51">
+<p><img width="18" height="16" src="img/filter.png" alt="Filter items icon" title="Filter items icon" />Filter items</p>
+</td>
+<td align="left" headers="r9c1-t51 r1c2-t51">Click on the arrow next to this icon to type the name of a class. As you type, the list is filtered to display the classes that match your filter criteria.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t51" headers="r1c1-t51">
+<p><img width="18" height="18" src="img/show_inner_class.png" alt="Show inner classes icon" title="Show inner classes icon" />Show inner classes</p>
+</td>
+<td align="left" headers="r10c1-t51 r1c2-t51">Use to filter the list by inner classes.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t51" headers="r1c1-t51">
+<p><img width="20" height="19" src="img/show_anonymous_classes.png" alt="Show anonymous classes icon" title="Show anonymous classes icon" />Show anonymous classes</p>
+</td>
+<td align="left" headers="r11c1-t51 r1c2-t51">Use to filter the list by anonymous classes.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Right-click any class in the Memory Results tab or the Allocation Stack Traces tab and select Go To Source to load the source <code dir="ltr">.java</code> file of a class.</p>
-<a id="NBCSH3378" name="NBCSH3378"></a>
+<a id="sthref442" name="sthref442"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
-<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
-<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG659">
+<param name="text" value="<html><u>&quot;Testing and Profiling Java Application Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -240,6 +240,44 @@ public class CndUtils {
         }
     }
 
+    private static boolean pathsEqual(CharSequence path1, CharSequence path2) {
+        if (path1 == null) {
+            return (path2 == null);
+        } else if (path2 == null) {
+            return false;
+        } else {
+            if (path1 == path2) {
+                return true;
+            }
+            int len = path1.length();
+            if (len == path2.length()) {
+                for (int i = len - 1; i >= 0; i--) {
+                    char c1 = path1.charAt(i);
+                    char c2 = path2.charAt(i);
+                    if (c1 == '/' || c1 == '\\') {
+                        if (c2 != '/' && c2 != '\\') {
+                            return false;
+                        }
+                    } else {
+                        if (c1 != c2) {
+                            return false;
+                        }
+                    }
+
+                }
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public static void assertPathsEqualInConsole(CharSequence path1, CharSequence path2, String format, Object... args) {
+        if (isDebugMode() && ! pathsEqual(path1, path2)) {
+            String text = java.text.MessageFormat.format(format, args);
+            assertTrueInConsole(false, text);
+        }
+    }
+
     public static void assertTrueInConsole(boolean value, String prefix, Object message) {
         if (isDebugMode() && !value && LOG.isLoggable(Level.INFO)) {
             assertTrueInConsole(value, prefix + message);

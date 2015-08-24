@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.projectapi;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -63,6 +65,10 @@ public class ProjectFileEncodingQueryImplementation extends FileEncodingQueryImp
     public ProjectFileEncodingQueryImplementation() {}
 
     public Charset getEncoding(FileObject file) {
+        if (isSystemFS(file)) {
+            LOG.log(Level.FINER, "{0}: on system filesystem", file);    //NOI18N
+            return null;
+        }
         Project p = FileOwnerQuery.getOwner(file);
         if (p == null) {
             LOG.log(Level.FINER, "{0}: no owner", file);
@@ -80,6 +86,14 @@ public class ProjectFileEncodingQueryImplementation extends FileEncodingQueryImp
            LOG.log(Level.FINE, "{0}: got {1} from {2}", new Object[] {file, encoding, delegate});
         }
         return encoding;
+    }
+
+    private static boolean isSystemFS(@NonNull final FileObject file) {
+        try {
+            return file.getFileSystem().isDefault();
+        } catch (IOException ioe) {
+            return false;
+        }
     }
 
 }

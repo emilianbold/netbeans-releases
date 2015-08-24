@@ -113,6 +113,7 @@ import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.php.spi.testing.PhpTestingProviders;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
@@ -751,6 +752,7 @@ public final class PhpProject implements Project {
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
                 PhpSharabilityQuery.create(helper, getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
+                LookupProviderSupport.createSharabilityQueryMerger(),
                 new PhpProjectOperations(this) ,
                 phpProjectEncodingQueryImpl,
                 new CreateFromTemplateAttributesImpl(getHelper(), phpProjectEncodingQueryImpl),
@@ -760,6 +762,7 @@ public final class PhpProject implements Project {
                 getEvaluator(),
                 PhpSearchInfo.create(this),
                 new PhpSubTreeSearchOptions(),
+                new PhpTestingProvidersImpl(testingProviders),
                 InternalWebServer.createForProject(this),
                 CssPreprocessors.getDefault().createProjectProblemsProvider(this),
                 ProjectPropertiesProblemProvider.createForProject(this),
@@ -1651,6 +1654,23 @@ public final class PhpProject implements Project {
                 return null;
             }
             return BrowserUISupport.getBrowser(browserId);
+        }
+
+    }
+
+    private static final class PhpTestingProvidersImpl implements PhpTestingProviders {
+
+        private final TestingProviders testingProviders;
+
+
+        public PhpTestingProvidersImpl(TestingProviders testingProviders) {
+            assert testingProviders != null;
+            this.testingProviders = testingProviders;
+        }
+
+        @Override
+        public List<PhpTestingProvider> getEnabledTestingProviders() {
+            return testingProviders.getTestingProviders();
         }
 
     }

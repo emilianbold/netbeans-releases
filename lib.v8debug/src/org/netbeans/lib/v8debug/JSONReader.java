@@ -196,7 +196,7 @@ public class JSONReader {
         if (argsObj != null) {
             args = getArguments(command, argsObj);
         } else {
-            args = null;
+            args = getSpecialArguments(command, obj);
         }
         return new V8Request(sequence, command, args);
     }
@@ -486,6 +486,19 @@ public class JSONReader {
                         getLongOrNull(obj, TO_LINE));
             case V8flags:
                 return new V8Flags.Arguments(getString(obj, FLAGS));
+            default:
+                return null;
+        }
+    }
+    
+    private static V8Arguments getSpecialArguments(V8Command command, JSONObject obj) {
+        // Arguments that are directly on the command request:
+        switch (command) {
+            case Source:
+                return new Source.Arguments(
+                        getLongOrNull(obj, FRAME),
+                        getLongOrNull(obj, FROM_LINE),
+                        getLongOrNull(obj, TO_LINE));
             default:
                 return null;
         }

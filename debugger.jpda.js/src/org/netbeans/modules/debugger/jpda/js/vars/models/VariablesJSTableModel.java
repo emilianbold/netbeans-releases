@@ -67,8 +67,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/LocalsView",  types = TableModelFilter.class),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ResultsView", types = TableModelFilter.class),
-    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView", types = TableModelFilter.class),
-    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types = TableModelFilter.class)
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView", types = TableModelFilter.class, position = 850),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types = TableModelFilter.class, position = 850)
 })
 public class VariablesJSTableModel implements TableModelFilter {
     
@@ -83,13 +83,25 @@ public class VariablesJSTableModel implements TableModelFilter {
         if (node instanceof JPDAWatch && !isEnabled((JPDAWatch) node)) {
             return original.getValueAt(node, columnID);
         }
+        if (node instanceof JSWatchVar) {
+            JSWatchVar jswv = (JSWatchVar) node;
+            JSVariable jsVar = jswv.getJSVar();
+            if (jsVar != null) {
+                node = jsVar;
+            } else {
+                node = jswv.getWatch();
+            }
+        }
         if (node instanceof JSVariable) {
             JSVariable jsVar = (JSVariable) node;
             switch (columnID) {
                 case LOCALS_TYPE_COLUMN_ID:
+                case WATCH_TYPE_COLUMN_ID:
                     return "";
                 case LOCALS_VALUE_COLUMN_ID:
+                case WATCH_VALUE_COLUMN_ID:
                 case LOCALS_TO_STRING_COLUMN_ID:
+                case WATCH_TO_STRING_COLUMN_ID:
                     return jsVar.getValue();
             }
         } else if (node instanceof ScopeVariable) {
@@ -103,6 +115,16 @@ public class VariablesJSTableModel implements TableModelFilter {
                 case WATCH_VALUE_COLUMN_ID:
                 case LOCALS_TO_STRING_COLUMN_ID:
                 case WATCH_TO_STRING_COLUMN_ID:
+                    if (node instanceof JPDAWatch) {
+                        String excDescr = ((JPDAWatch) node).getExceptionDescription();
+                        if (excDescr != null) {
+                            int i = excDescr.indexOf('\n');
+                            if (i > 0) {
+                                excDescr = excDescr.substring(0, i);
+                            }
+                            return excDescr;
+                        }
+                    }
                     return DebuggerSupport.getVarValue(debugger, (ObjectVariable) node);
             }
         }
@@ -123,7 +145,7 @@ public class VariablesJSTableModel implements TableModelFilter {
 
     @Override
     public boolean isReadOnly(TableModel original, Object node, String columnID) throws UnknownTypeException {
-        if (node instanceof JSVariable || node instanceof ScopeVariable) {
+        if (node instanceof JSVariable || node instanceof ScopeVariable || node instanceof JSWatchVar) {
             return true;
         }
         return original.isReadOnly(node, columnID);
@@ -131,7 +153,7 @@ public class VariablesJSTableModel implements TableModelFilter {
 
     @Override
     public void setValueAt(TableModel original, Object node, String columnID, Object value) throws UnknownTypeException {
-        if (node instanceof JSVariable) {
+        if (node instanceof JSVariable || node instanceof JSWatchVar) {
             return ;
         }
         original.setValueAt(node, columnID, value);

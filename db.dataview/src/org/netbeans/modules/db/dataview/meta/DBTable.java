@@ -72,8 +72,8 @@ public final class DBTable extends DBObject<DBModel> {
     private Quoter quoter;
 
     public DBTable(String aName, String aSchema, String aCatalog) {
-        columns = new LinkedHashMap<String, DBColumn>();
-        foreignKeys = new HashMap<String, DBForeignKey>();
+        columns = new LinkedHashMap<>();
+        foreignKeys = new HashMap<>();
 
         name = (aName != null) ? aName.trim() : null;
         schema = (aSchema != null) ? aSchema.trim() : null;
@@ -166,7 +166,7 @@ public final class DBTable extends DBObject<DBModel> {
     }
 
     public List<DBColumn> getColumnList() {
-        List<DBColumn> list = new ArrayList<DBColumn>();
+        List<DBColumn> list = new ArrayList<>();
         list.addAll(columns.values());
         Collections.sort(list, new ColumnOrderComparator());
         return list;
@@ -290,11 +290,12 @@ public final class DBTable extends DBObject<DBModel> {
         return getFullyQualifiedName(false);
     }
 
-    final class ColumnOrderComparator implements Comparator<DBColumn> {
+    private final class ColumnOrderComparator implements Comparator<DBColumn> {
 
         private ColumnOrderComparator() {
         }
 
+        @Override
         public int compare(DBColumn col1, DBColumn col2) {
             return col1.getOrdinalPosition() - col2.getOrdinalPosition();
         }

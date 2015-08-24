@@ -52,6 +52,7 @@ import java.awt.Container;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.Future;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -74,6 +75,8 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 
 /**
  * Bundle access, ...
@@ -227,6 +230,11 @@ final class Util extends org.netbeans.modules.i18n.Util {
                 return false;
             }
 	    
+            Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
+            if(!openProjects.isDone()) {
+                return false;
+            }
+            
 	    // check that the node has project
 	    if (FileOwnerQuery.getOwner(dobj.getPrimaryFile()) == null) {
                 return false;

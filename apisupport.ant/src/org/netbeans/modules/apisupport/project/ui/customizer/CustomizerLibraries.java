@@ -46,6 +46,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -739,8 +740,9 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
             @Override
             public void run() {
                 ModuleDependency[] newDeps = AddModulePanel.selectDependencies(getProperties());
+                ModuleDependency dep = null;
                 for (int i = 0; i < newDeps.length; i++) {
-                    ModuleDependency dep = newDeps[i];
+                    dep = newDeps[i];
                     if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDependency()) { // #72216 NOI18N
                         dep = new ModuleDependency(
                                     dep.getModuleEntry(), "0-1", dep.getSpecificationVersion(), // NOI18N
@@ -750,12 +752,21 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
                     if (warn != null) {
                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(warn, NotifyDescriptor.WARNING_MESSAGE);
                         DialogDisplayer.getDefault().notify(msg);
-                        return;
+                        break;
                     }
                     getDepListModel().addDependency(dep);
-                    dependencyList.setSelectedValue(dep, true);
                 }
-                dependencyList.requestFocusInWindow();
+                if (dep != null) {
+                    final ModuleDependency fDep = dep;
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run () {
+                            dependencyList.setSelectedValue(fDep, true);
+                            dependencyList.requestFocusInWindow();
+                        }
+                    });
+                }
            }
         });
     }//GEN-LAST:event_addModuleDependency

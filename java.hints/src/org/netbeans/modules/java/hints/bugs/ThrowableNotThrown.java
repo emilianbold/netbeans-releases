@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
-import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -57,7 +57,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -280,8 +279,17 @@ public class ThrowableNotThrown {
                     case THROW:
                         // OK, exception used.
                         return true;
+                        
+                    case FOR_LOOP:
+                        if (prevLeaf == ((ForLoopTree)leaf).getCondition()) {
+                            // ok, guards a loop
+                            return true;
+                        }
+                        break;
 
                     case IF:
+                    case WHILE_LOOP:
+                    case DO_WHILE_LOOP:
                     case RETURN:
                         return true;
                         

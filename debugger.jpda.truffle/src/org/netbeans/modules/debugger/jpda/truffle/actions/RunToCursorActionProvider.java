@@ -94,7 +94,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     
     private static final String ACCESSOR_SET_ONE_SHOT_LINE_BREAKPOINT = "setOneShotLineBreakpoint"; // NOI18N
     private static final String ACCESSOR_SET_ONE_SHOT_LINE_BREAKPOINT_SIGNAT =
-            "(L"+String.class.getName().replace('.', '/')+";I)Lcom/oracle/truffle/debug/LineBreakpoint;";   // NOI18N
+            "(L"+String.class.getName().replace('.', '/')+";I)Lcom/oracle/truffle/api/debug/Breakpoint;";   // NOI18N
     
     private final JPDADebugger debugger;
     private final Session session;

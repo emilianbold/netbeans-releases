@@ -98,6 +98,7 @@ public interface FileSystemProviderImplementation {
     public void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path);
     public char getFileSeparatorChar();
     void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
+    void addFileSystemProblemListener(FileSystemProblemListener listener);
     void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
     void warmup(WarmupMode mode, ExecutionEnvironment env, Collection<String> paths, Collection<String> extensions);
     boolean isLink(FileSystem fileSystem, String path);

@@ -57,6 +57,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 /**
  * This class specifies look and feel of vmd widgets. There are predefined schemes in VMDFactory class.
@@ -66,7 +67,7 @@ import java.awt.*;
 public class VMDOriginalColorScheme extends VMDColorScheme {
 
     static final Color COLOR_NORMAL = new Color (0xBACDF0);
-    private static final Color COLOR_HOVERED = Color.BLACK;
+    private static final Color COLOR_HOVERED = (new DefaultLookFeel()).getForeground()/*Color.BLACK*/;
     private static final Color COLOR_SELECTED = new Color (0x748CC0);
     static final Color COLOR_HIGHLIGHTED = new Color (0x316AC5);
 
@@ -82,7 +83,7 @@ public class VMDOriginalColorScheme extends VMDColorScheme {
     static final Color BORDER_CATEGORY_BACKGROUND = new Color (0xCDDDF8);
     static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder (2, 2, null, COLOR_NORMAL);
     static final Border BORDER_PIN = BorderFactory.createOpaqueBorder (2, 8, 2, 8);
-    private static final Border BORDER_PIN_HOVERED = BorderFactory.createLineBorder (2, 8, 2, 8, Color.BLACK);
+    private static final Border BORDER_PIN_HOVERED = BorderFactory.createLineBorder (2, 8, 2, 8, (new DefaultLookFeel()).getForeground()/*Color.BLACK*/);
 
     static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape (ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin.png")); // NOI18N
 

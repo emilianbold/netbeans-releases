@@ -56,6 +56,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -65,6 +66,9 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.navigation.ElementNode.Description;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -77,7 +81,6 @@ import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
-import org.openide.util.RequestProcessor;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -94,14 +97,13 @@ import org.openide.util.RequestProcessor;
 public abstract class ElementScanningTask extends IndexingAwareParserResultTask<ParserResult> {
 
     private static final Logger LOG = Logger.getLogger(ElementScanningTask.class.getName());
-    
-    private boolean canceled;
+
+    private volatile boolean canceled;
     
     /**
      * Reference to the last result of parsing processed into structure.
      */
-    private static final Map<Snapshot, Reference<ResultStructure>> lastResults = 
-            new WeakHashMap<Snapshot, Reference<ResultStructure>>();
+    private static final Map<Snapshot, Reference<ResultStructure>> lastResults = new WeakHashMap<>();
 
     /**
      * Cache the parser result and the resulting structure.
@@ -177,6 +179,10 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
                                 if (children.size() > 0) {
                                     mimetypesWithElements[0]++;
                                 }
+                                if (isCancelled()) {
+                                    //Don't cache if cancelled
+                                    return;
+                                }
                                 markProcessed(r, children);
                                 roots.add(new MimetypeRootNode(language, children, resultIterator.getSnapshot().getMimePath()));
                             }
@@ -184,6 +190,9 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
                     }
 
                     for(Embedding e : resultIterator.getEmbeddings()) {
+                        if (isCancelled()) {
+                            return;
+                        }
                         run(resultIterator.getResultIterator(e));
                     }
                 }
@@ -191,7 +200,9 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
         } catch (ParseException e) {
             LOG.log(Level.WARNING, null, e);
         }
-
+        if (isCancelled()) {
+            return null;
+        }
         //ensure we do display a language structure items only once per mimetype.
         //there is a problem that a language may be embedded in various mimepaths.
         //For example javascript virtual source is provided for both text/html
@@ -204,7 +215,6 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
         //...which results in multiple javascript nodes in the navigator
         //
         //So the solution is to use the shortest mimepath per mimetype only
-
         HashMap<String, MimetypeRootNode> map = new HashMap<String, MimetypeRootNode>();
         for(MimetypeRootNode mtRootNode : roots) {
             MimePath path = mtRootNode.getMimePath();
@@ -249,18 +259,28 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
         return new RootStructureItem(items);
     }
 
-    public @Override synchronized void cancel() {
+    @Override
+    public void cancel() {
         canceled = true;
     }
 
-    public synchronized void resume() {
+    protected final void resume() {
         canceled = false;
     }
 
-    public synchronized boolean isCancelled() {
+    protected final boolean isCancelled() {
         return canceled;
     }
-    
+
+    protected final void runWithCancelService(@NonNull final Runnable r) {
+        final CancelSupportImplementation cs = SchedulerTaskCancelSupportImpl.create(this);
+        SpiSupportAccessor.getInstance().setCancelSupport(cs);
+        try {
+            r.run();
+        } finally {
+            SpiSupportAccessor.getInstance().removeCancelSupport(cs);
+        }
+    }
     private static final class RootStructureItem implements StructureItem {
 
         private final List<? extends StructureItem> items;

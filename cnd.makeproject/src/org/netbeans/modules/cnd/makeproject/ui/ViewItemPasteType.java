@@ -213,7 +213,7 @@ final class ViewItemPasteType extends PasteType {
         } else if (type == DnDConstants.ACTION_COPY || type == DnDConstants.ACTION_NONE) {
             // Copy&Paste
             if (toFolder.getProject() == fromFolder.getProject()) {
-                if ((CndPathUtilities.isPathAbsolute(fromItem.getPath()) || fromItem.getPath().startsWith("..")) && !toFolder.isDiskFolder()) { // NOI18N
+                if (CndPathUtilities.isPathAbsolute(fromItem.getPath())) { 
                     Toolkit.getDefaultToolkit().beep();
                 } else {
                     String ext = itemFO.getExt();

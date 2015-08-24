@@ -49,6 +49,7 @@ import java.awt.event.HierarchyListener;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -103,7 +104,8 @@ public class ConnectionStatusAction  extends AbstractAction implements Presenter
         assert SwingUtilities.isEventDispatchThread();
         if (performer == null) {
             performer = Lookups.forPath("CND/Toobar/Services/ConnectionStatus").lookup(ActionListener.class); // NOI18N
-            performer.actionPerformed(new ActionEvent(ConnectionStatusAction.this, 0, "performerActivated")); // NOI18N
+            performer.actionPerformed(new ActionEvent(ConnectionStatusAction.this, 0, 
+                    RemoteOpenActionBase.ACTIVATED_PSEUDO_ACTION_COMAND));
         }
     }
 }

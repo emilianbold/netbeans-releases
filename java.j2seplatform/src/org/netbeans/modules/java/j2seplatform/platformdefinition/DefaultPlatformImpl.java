@@ -81,16 +81,23 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         } else {
             javaHome = FileUtil.normalizeFile(new File(jdkHome));
         }
-        List<URL> installFolders = new ArrayList<URL> ();
+        List<URL> installFolders = new ArrayList<> ();
         try {
             installFolders.add (Utilities.toURI(javaHome).toURL());
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
         }
+        final Map<String,String> systemProperties = new HashMap<>();
         final Properties p = System.getProperties();
-        final Map<String,String> systemProperties;
         synchronized (p) {
-            systemProperties = new HashMap(p);
+            for (Map.Entry<Object,Object> e : p.entrySet()) {
+                final String key = (String) e.getKey();
+                final String value = Util.fixSymLinks(
+                        key,
+                        (String) e.getValue(),
+                        Util.toFileObjects(installFolders));
+                systemProperties.put(key, value);
+            }
         }
         return new DefaultPlatformImpl(installFolders, properties, systemProperties, sources, javadoc);
     }
@@ -123,8 +130,9 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
 
     @Override
     public ClassPath getStandardLibraries() {
-        if (standardLibs != null)
+        if (standardLibs != null) {
             return standardLibs;
+        }
         String s = System.getProperty(SYSPROP_JAVA_CLASS_PATH);       //NOI18N
         if (s == null) {
             s = ""; // NOI18N

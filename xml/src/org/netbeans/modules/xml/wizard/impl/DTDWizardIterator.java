@@ -92,10 +92,10 @@ public class DTDWizardIterator extends Object implements TemplateWizard.Iterator
     protected WizardDescriptor.Panel[] createPanels (Project project,
 						     final TemplateWizard wizard) {
             DataFolder df = null;
-            Sources sources = ProjectUtils.getSources(project);
-            SourceGroup[] folders = sources.getSourceGroups("java"); //NOI18N
+            Sources sources = project == null ? null : ProjectUtils.getSources(project);
+            SourceGroup[] folders = sources == null ? null : sources.getSourceGroups("java"); //NOI18N
             if (folders == null || folders.length == 0) {
-                folders = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                folders = sources == null ? new SourceGroup[0] : sources.getSourceGroups(Sources.TYPE_GENERIC);
             }
             try {
                 df = wizard.getTargetFolder();

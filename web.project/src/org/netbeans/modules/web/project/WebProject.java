@@ -68,6 +68,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -112,6 +113,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
@@ -166,6 +168,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
+import org.netbeans.modules.javaee.project.api.problems.PlatformUpdatedCallBackImpl;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
@@ -592,7 +595,7 @@ public final class WebProject implements Project {
 
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
-
+        final WebLogicalViewProvider lvp = new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper, webModule);
         Lookup base = Lookups.fixed(new Object[] {
             QuerySupport.createProjectInformation(updateHelper, this, WEB_PROJECT_ICON),
             aux,
@@ -606,7 +609,7 @@ public final class WebProject implements Project {
             // remove in next release
             new WebModuleImpl(apiWebModule),
             enterpriseResourceSupport,
-            new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper, webModule),
+            lvp,
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
@@ -625,8 +628,9 @@ public final class WebProject implements Project {
                     Roots.propertyBased(new String[] {WebProjectProperties.WEB_DOCBASE_DIR}, new String[] {NbBundle.getMessage(WebProject.class, "LBL_Node_DocBase")}, true, WebProjectConstants.TYPE_DOC_ROOT, null),
                     Roots.propertyBased(new String[] {WebProjectProperties.WEBINF_DIR}, new String[] {NbBundle.getMessage(WebProject.class, "LBL_Node_WebInf")}, false, WebProjectConstants.TYPE_WEB_INF, null),
                     Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, WebProjectProperties.DIST_DIR)),
-            QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(),
+            QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(),
                 getTestSourceRoots(), WebProjectProperties.WEB_DOCBASE_DIR),
+            LookupProviderSupport.createSharabilityQueryMerger(),
             new RecommendedTemplatesImpl(this),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             ProjectClassPathModifier.extenderForModifier(cpMod),
@@ -658,8 +662,11 @@ public final class WebProject implements Project {
             QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
             new ProjectWebRootProviderImpl(this),
             easelSupport,
-            CssPreprocessors.getDefault().createProjectProblemsProvider(this),
             new JavaEEProjectSettingsImpl(this),
+            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
+            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, PlatformUpdatedCallBackImpl.create(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, updateHelper), JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
+            CssPreprocessors.getDefault().createProjectProblemsProvider(this),
+            UILookupMergerSupport.createProjectProblemsProviderMerger(),
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -1002,7 +1009,7 @@ public final class WebProject implements Project {
                         if (serverType != null) {
                             String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, Type.WAR, WebProject.this.getWebModule().getJ2eeProfile());
                             if (instanceID != null) {
-                                WebProjectProperties.setServerInstance(WebProject.this, WebProject.this.updateHelper, instanceID);
+                                WebProjectProperties.setServerInstanceInner(WebProject.this, WebProject.this.updateHelper, instanceID);
                                 platform = Deployment.getDefault().getJ2eePlatform(instanceID);
                             }
                         }
@@ -1098,8 +1105,7 @@ public final class WebProject implements Project {
             artifactSupport.enableArtifactSynchronization(true);
 
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert(helper, refHelper, eval,
-                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
+                ProjectProblems.showAlert(WebProject.this);
             }
             if(apiWebServicesSupport.isBroken(WebProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(WebProject.this);

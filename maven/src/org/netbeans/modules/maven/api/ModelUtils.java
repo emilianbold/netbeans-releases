@@ -52,8 +52,10 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
+import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.annotations.common.NonNull;
@@ -71,6 +73,7 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.model.pom.Repository;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.cookies.EditCookie;
@@ -231,6 +234,27 @@ public final class ModelUtils {
         return ret;
     }
 
+    public static boolean checkByCLIMavenValidationLevel(ModelProblem problem) {
+        // XXX HACK - this should be properly solved by upgrading the embeded maven
+        String version = MavenSettings.getCommandLineMavenVersion();        
+        try {
+            if ( version != null && !"".equals(version.trim()) && 
+                 new DefaultArtifactVersion(version).compareTo(new DefaultArtifactVersion("3.2.1")) > 0) 
+            {
+                if ( (problem.getMessage().startsWith("'dependencies.dependency.exclusions.exclusion.groupId' for ") ||
+                      problem.getMessage().startsWith("'dependencies.dependency.exclusions.exclusion.artifactId' for "))
+                        && problem.getMessage().contains(" with value '*' does not match a valid id pattern")) 
+                {
+                    return false;
+                }
+            }
+        } catch (Throwable e) {
+            // ignore and be optimistic about the hint
+            LOG.log(Level.INFO, version, e);
+        }
+        return true;
+    }
+    
     /**
      * Sets the Java source level of a project.
      * Use {@link PluginPropertyUtils#getPluginProperty(Project,String,String,String,String)} first

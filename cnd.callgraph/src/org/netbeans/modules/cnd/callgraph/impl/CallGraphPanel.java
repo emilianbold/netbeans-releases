@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
 import org.netbeans.modules.cnd.callgraph.api.ui.Catalog;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphActionEDTRunnable;
 import org.netbeans.modules.cnd.callgraph.impl.CallGraphScene.LayoutKind;
+import org.netbeans.modules.cnd.callgraph.support.ExportXmlAction;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -152,8 +153,11 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         if (showGraph) {
             scene = new CallGraphScene();
             ExportAction exportAction = new ExportAction(scene, this);
+            ExportXmlAction exportXmlAction = new ExportXmlAction(scene, this);
             actions.add(exportAction);
+            actions.add(exportXmlAction);
             scene.setExportAction(exportAction);
+            scene.setExportXmlAction(exportXmlAction);
         }
         actions.add(null);
         actions.add(new ExpandAction());
@@ -268,10 +272,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         refresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/refresh.png"))); // NOI18N
         refresh.setToolTipText(getMessage("RefreshActionTooltip"));
         refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        refresh.setMaximumSize(new java.awt.Dimension(28, 28));
-        refresh.setMinimumSize(new java.awt.Dimension(28, 28));
         refresh.setName("refresh"); // NOI18N
-        refresh.setPreferredSize(new java.awt.Dimension(28, 28));
         refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         refresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -283,10 +284,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         focusOn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/focus_on.png"))); // NOI18N
         focusOn.setToolTipText(getMessage("FocusOnActionTooltip"));
         focusOn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        focusOn.setMaximumSize(new java.awt.Dimension(28, 28));
-        focusOn.setMinimumSize(new java.awt.Dimension(28, 28));
         focusOn.setName("focusOn"); // NOI18N
-        focusOn.setPreferredSize(new java.awt.Dimension(28, 28));
         focusOn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         focusOn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -357,8 +355,8 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         graphView.setFocusable(false);
         graphView.setName(""); // NOI18N
         jSplitPane1.setRightComponent(graphView);
-        graphView.getAccessibleContext().setAccessibleName(null);
-        graphView.getAccessibleContext().setAccessibleDescription(null);
+        graphView.getAccessibleContext().setAccessibleName("getMessage(\"pictorial.part\")");
+        graphView.getAccessibleContext().setAccessibleDescription("getMessage(\"pictorial.part\")");
 
         jSplitPane2.setDividerLocation(-10);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -371,7 +369,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         treeView.getAccessibleContext().setAccessibleName(getMessage("CGP_TreeView_AN"));
         treeView.getAccessibleContext().setAccessibleDescription(getMessage("CGP_TreeView_AD"));
 
+        contextPanel.setMinimumSize(new java.awt.Dimension(10, 35));
         contextPanel.setName("contextPanel"); // NOI18N
+        contextPanel.setPreferredSize(new java.awt.Dimension(10, 35));
         jSplitPane2.setRightComponent(contextPanel);
         contextPanel.getAccessibleContext().setAccessibleName(getMessage("CGP_ListView_AM"));
         contextPanel.getAccessibleContext().setAccessibleDescription(getMessage("CGP_ListView_AD"));
@@ -469,8 +469,15 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     public void setModel(CallModel model) {
         this.model = model;
+        if (!model.getRoot().kind().equals(Function.Kind.FUNCTION)) {
+            isCalls = false;
+        }
         updateButtons();
         update();
+    }
+    
+    public CallModel getModel() {
+        return model;
     }
            
     private synchronized void update() {
@@ -992,7 +999,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             }
             @Override
             public Action getPreferredAction() {
-                return null;
+                return new GoToOccurrenceAction(occurrence);
             }
 
             @Override

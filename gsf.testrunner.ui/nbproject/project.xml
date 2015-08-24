@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.gsf.testrunner.ui</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.26</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -55,7 +64,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -141,14 +150,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -162,6 +163,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.25</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -184,6 +193,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.tuxedo.testrunner</friend>
+                <friend>org.netbeans.gradle.project</friend>
                 <friend>org.netbeans.modules.android.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
@@ -196,6 +206,11 @@
                 <friend>org.netbeans.modules.junit.ant.ui</friend>
                 <friend>org.netbeans.modules.junit.ui</friend>
                 <friend>org.netbeans.modules.maven.junit.ui</friend>
+                <friend>org.netbeans.modules.php.api.testing</friend>
+                <friend>org.netbeans.modules.php.atoum</friend>
+                <friend>org.netbeans.modules.php.codeception</friend>
+                <friend>org.netbeans.modules.php.nette.tester</friend>
+                <friend>org.netbeans.modules.php.phpunit</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.testrunner</friend>
                 <friend>org.netbeans.modules.ruby.testrunner</friend>

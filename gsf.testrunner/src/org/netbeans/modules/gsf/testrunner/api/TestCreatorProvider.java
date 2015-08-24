@@ -46,6 +46,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -64,7 +66,19 @@ public abstract class TestCreatorProvider {
     public static final String FRAMEWORK_JUNIT = "JUnit";
     public static final String FRAMEWORK_TESTNG = "TestNG";
     public static final String FRAMEWORK_SELENIUM = "Selenium";
-    public static final String FRAMEWORK_PHPUNIT = "PHPUnit";
+    /**
+     * @since 2.4
+     */
+    public static final String FRAMEWORK_PHP = "PHP";
+    
+    /**
+     * @since 2.6
+     */
+    public static final String IDENTIFIER_JUNIT = "junit";
+    public static final String IDENTIFIER_TESTNG = "testng";
+    public static final String IDENTIFIER_SELENIUM = "selenium";
+    public static final String IDENTIFIER_PHP = "php";
+    
     /** suffix of test classes */
     public static final String TEST_CLASS_SUFFIX = "Test"; //NOI18N
     /** suffix of integration test classes */
@@ -78,6 +92,14 @@ public abstract class TestCreatorProvider {
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.SOURCE)
     public @interface Registration {
+
+        /**
+         * Identifier of the TestCreatorProvider. 
+         * This should never change to facilitate e.g. usage statistics.
+         * @return 
+         * @since 2.6
+         */
+        String identifier();
 
         /**
          * Display name of the TestCreatorProvider.
@@ -134,6 +156,7 @@ public abstract class TestCreatorProvider {
         private FileObject targetFolder;
         private final FileObject[] activatedFOs;
         private boolean integrationTests;
+        private Map<String, Object> configurationPanelProperties;
         
         /**
          *
@@ -213,6 +236,27 @@ public abstract class TestCreatorProvider {
          */
         public void setIntegrationTests(boolean integrationTests) {
             this.integrationTests = integrationTests;
+        }
+        
+        /**
+         * Set properties from configuration panel inside "Create Tests" dialog. 
+         * These properties will be available whenever 
+         * {@link TestCreatorProvider#createTests(org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider.Context)}
+         * is called.
+         *
+         * @param configurationPanelProperties map of properties from configuration panel inside "Create Tests" dialog
+         */
+        public void setConfigurationPanelProperties(Map<String, Object> configurationPanelProperties) {
+            this.configurationPanelProperties = configurationPanelProperties;
+        }
+    
+        /**
+         * Get properties from configuration panel inside "Create Tests" dialog.
+         *
+         * @return map of properties from configuration panel inside "Create Tests" dialog
+         */
+        public Map<String, Object> getConfigurationPanelProperties() {
+            return Collections.unmodifiableMap(configurationPanelProperties);
         }
         
     }

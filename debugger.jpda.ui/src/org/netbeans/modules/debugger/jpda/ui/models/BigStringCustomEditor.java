@@ -46,15 +46,19 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyEditor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
+import org.netbeans.modules.debugger.jpda.models.ShortenedStrings;
 import org.netbeans.modules.debugger.jpda.models.ShortenedStrings.StringInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -70,13 +74,75 @@ import org.openide.util.RequestProcessor;
  */
 class BigStringCustomEditor extends JPanel implements ActionListener {
     
-    private final StringInfo shortenedInfo;
+    static final int MAX_STRING_LENGTH;
 
-    public BigStringCustomEditor(Component delegateCustomEditor, StringInfo shortenedInfo) {
+    private final StringInfo shortenedInfo;
+    private final String fullString;
+
+    static {
+        int maxStringLength = AbstractObjectVariable.MAX_STRING_LENGTH;
+        String javaV = System.getProperty("java.version");
+        if (javaV.startsWith("1.8.0")) {
+            String update = "";
+            for (int i = "1.8.0_".length(); i < javaV.length(); i++) {
+                char c = javaV.charAt(i);
+                if (Character.isDigit(c)) {
+                    update += c;
+                } else {
+                    break;
+                }
+            }
+            int updateNo = 0;
+            if (!update.isEmpty()) {
+                try {
+                    updateNo = Integer.parseInt(update);
+                } catch (NumberFormatException nfex) {}
+            }
+            if (updateNo < 60) {
+                // Memory problem on JDK 8, fixed in update 60 (https://bugs.openjdk.java.net/browse/JDK-8072775):
+                maxStringLength = 1000;
+            }
+        }
+        MAX_STRING_LENGTH = maxStringLength;
+    }
+    
+    private BigStringCustomEditor(Component delegateCustomEditor, StringInfo shortenedInfo, int preferredShortLength) {
         this.shortenedInfo = shortenedInfo;
-        int shortLength = shortenedInfo.getShortLength();
+        this.fullString = null;
+        int shortLength;
+        if (preferredShortLength >= 0) {
+            shortLength = preferredShortLength;
+        } else {
+            shortLength = shortenedInfo.getShortLength();
+        }
         int fullLength = shortenedInfo.getLength();
         init(delegateCustomEditor, shortLength, fullLength);
+    }
+    
+    private BigStringCustomEditor(Component delegateCustomEditor,
+                                  String shortString, String fullString) {
+        this.shortenedInfo = null;
+        this.fullString = fullString;
+        init(delegateCustomEditor, shortString.length(), fullString.length());
+    }
+    
+    static BigStringCustomEditor createIfBig(PropertyEditor propertyEditor, String value) {
+        ShortenedStrings.StringInfo shortenedInfo = ShortenedStrings.getShortenedInfo(value);
+        if (shortenedInfo != null) {
+            if (!(shortenedInfo.getShortLength() > MAX_STRING_LENGTH)) {
+                return new BigStringCustomEditor(propertyEditor.getCustomEditor(), shortenedInfo, -1);
+            } else {
+                String shortText = value.substring(0, MAX_STRING_LENGTH) + "...";
+                propertyEditor.setValue(shortText);
+                return new BigStringCustomEditor(propertyEditor.getCustomEditor(), shortenedInfo, shortText.length() - 3);
+            }
+        } else if (value.length() > MAX_STRING_LENGTH) {
+            String shortText = value.substring(0, MAX_STRING_LENGTH) + "...";
+            propertyEditor.setValue(shortText);
+            return new BigStringCustomEditor(propertyEditor.getCustomEditor(), shortText, value);
+        } else {
+            return null;
+        }
     }
     
     private void init(Component contentComponent, int shortLength, int fullLength) {
@@ -123,7 +189,12 @@ class BigStringCustomEditor extends JPanel implements ActionListener {
     }
     
     private void save(File f) {
-        Reader r = shortenedInfo.getContent();
+        Reader r;
+        if (shortenedInfo != null) {
+            r = shortenedInfo.getContent();
+        } else {
+            r = new StringReader(fullString);
+        }
         Writer w = null;
         try {
             w = new FileWriter(f);

@@ -50,6 +50,7 @@ import javax.swing.Icon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.openide.util.Lookup;
 
@@ -111,6 +112,19 @@ public abstract class ScopeProvider {
      */
     @CheckForNull
     public String getDetail() {
+        return null;
+    }
+    
+    /**
+     * Override this method if a problem can occur when the user selects this
+     * scope. This is used for scopes like "- Open Projects with Dependencies",
+     * when searching for constants.
+     *
+     * @return a problem with an explaining string, or null of nothing should be displayed.
+     * @since 1.44
+     */
+    @CheckForNull
+    public Problem getProblem() {
         return null;
     }
 

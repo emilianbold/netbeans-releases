@@ -252,6 +252,13 @@ public final class HostInfoUtils {
      * @see #isHostInfoAvailable(org.netbeans.modules.nativeexecution.api.ExecutionEnvironment)
      */
     public static HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException, CancellationException {
+        return getHostInfo(execEnv, false);
+    }
+
+    /**
+     * @param connecting is true if called from ConnectionManager that is is process of initiating connection right now
+     */
+    /*package*/ static HostInfo getHostInfo(final ExecutionEnvironment execEnv, boolean connecting) throws IOException, CancellationException {
         if (execEnv == null) {
             throw new IllegalArgumentException("ExecutionEnvironment should not be null"); //NOI18N
         }
@@ -269,7 +276,12 @@ public final class HostInfoUtils {
                 try {
                     // Must be sure that host is connected.
                     // It will throw an exception in case if fails to connect
-                    if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                    
+                    // There was a very small time frame when host was in fact connected,
+                    // but host info was not yet put into cache (issue #252922)
+                    // Due to the issue #252922 we make ConnectionManager.isConnected() return FALSE while in this period.
+                    // But here we need to check "real" connection status
+                    if (!ConnectionManager.getInstance().isConnectedTo(execEnv, !connecting)) {
                         ConnectionManager.getInstance().connectTo(execEnv);
                         // connect will recursively call getHostInfo...
                         // so result will be available already.

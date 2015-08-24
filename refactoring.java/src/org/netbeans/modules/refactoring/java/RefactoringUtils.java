@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -195,7 +196,27 @@ public class RefactoringUtils {
 //                    throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file + " Classpath: " + info.getClasspathInfo());
 //                }
             }
-            for (ExecutableElement method : ElementFilter.methodsIn(type.getEnclosedElements())) {
+            List<ExecutableElement> methods = new LinkedList<>(ElementFilter.methodsIn(type.getEnclosedElements()));
+            // #253063 - Anonymous classes of enum constants are not returned by index, need to get them manually
+            if(type.getKind() == ElementKind.ENUM) {
+                for (VariableElement variableElement : ElementFilter.fieldsIn(type.getEnclosedElements())) {
+                    TreePath varPath = info.getTrees().getPath(variableElement);
+                    if(varPath != null && varPath.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                        ExpressionTree initializer = ((VariableTree)varPath.getLeaf()).getInitializer();
+                        if(initializer != null && initializer.getKind() == Tree.Kind.NEW_CLASS) {
+                            NewClassTree ncTree = (NewClassTree) initializer;
+                            ClassTree classBody = ncTree.getClassBody();
+                            if(classBody != null) {
+                                Element anonEl = info.getTrees().getElement(new TreePath(varPath, classBody));
+                                if(anonEl != null) {
+                                    methods.addAll(ElementFilter.methodsIn(anonEl.getEnclosedElements()));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for (ExecutableElement method : methods) {
                 if (info.getElements().overrides(method, e, type)) {
                     result.add(method);
                 }
@@ -283,6 +304,11 @@ public class RefactoringUtils {
      */
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
+        // Future<Project[]> o.n.api.project.ui.OpenProjects.openProjects()
+        Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
+        if(!openProjects.isDone()) {
+            return false;
+        }
         Project p = FileOwnerQuery.getOwner(file);
         if (p == null) {
             return false;
@@ -595,6 +621,9 @@ public class RefactoringUtils {
         assert files.length > 0;
         Set<URL> dependentSourceRoots = new HashSet();
         Set<URL> dependentCompileRoots = new HashSet();
+        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
+        ClassPath boot = null;
+        ClassPath compile = null;
         for (FileObject fo : files) {
             ClassPath cp = null;
             FileObject ownerRoot = null;
@@ -616,11 +645,11 @@ public class RefactoringUtils {
                             toRetain.add(e.getURL());
                         }
                     }
-                    Set<URL> compile = new HashSet<URL>(urls);
+                    Set<URL> compileUrls = new HashSet<URL>(urls);
                     urls.retainAll(toRetain);
-                    compile.removeAll(toRetain);
+                    compileUrls.removeAll(toRetain);
                     dependentSourceRoots.addAll(urls);
-                    dependentCompileRoots.addAll(compile);
+                    dependentCompileRoots.addAll(compileUrls);
                 } else {
                     dependentSourceRoots.add(sourceRoot);
                 }
@@ -635,6 +664,27 @@ public class RefactoringUtils {
                     for (FileObject root : scp.getRoots()) {
                         dependentSourceRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
                     }
+                }
+            }
+            
+            if(fo != null) {
+                ClassPath fboot = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                ClassPath fcompile = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                //When file[0] is a class file, there is no compile cp but execute cp
+                //try to get it
+                if (fcompile == null) {
+                    fcompile = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
+                }
+                //If no cp found at all log the file and use nullPath since the ClasspathInfo.create
+                //doesn't accept null compile or boot cp.
+                if (fcompile == null) {
+                    LOG.log(Level.WARNING, "No classpath for: {0} {1}", new Object[]{FileUtil.getFileDisplayName(fo), FileOwnerQuery.getOwner(fo)}); //NOI18N
+                } else {
+                    compile = compile != null ? merge(compile, fcompile) : fcompile;
+                }
+                
+                if (fboot != null) {
+                    boot = boot != null ? merge(boot, fboot) : fboot;
                 }
             }
         }
@@ -654,18 +704,7 @@ public class RefactoringUtils {
         }
 
         ClassPath rcp = ClassPathSupport.createClassPath(dependentSourceRoots.toArray(new URL[dependentSourceRoots.size()]));
-        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath boot = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.BOOT) : nullPath;
-        ClassPath compile = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.COMPILE) : nullPath;
-        //When file[0] is a class file, there is no compile cp but execute cp
-        //try to get it
         if (compile == null) {
-            compile = ClassPath.getClassPath(files[0], ClassPath.EXECUTE);
-        }
-        //If no cp found at all log the file and use nullPath since the ClasspathInfo.create
-        //doesn't accept null compile or boot cp.
-        if (compile == null) {
-            LOG.log(Level.WARNING, "No classpath for: {0} {1}", new Object[]{FileUtil.getFileDisplayName(files[0]), FileOwnerQuery.getOwner(files[0])}); //NOI18N
             compile = nullPath;
         }
         compile = merge(compile, ClassPathSupport.createClassPath(dependentCompileRoots.toArray(new URL[dependentCompileRoots.size()])));
@@ -1013,7 +1052,7 @@ public class RefactoringUtils {
         boolean inTest = false;
         if (cp != null) {
             FileObject root = cp.findOwnerRoot(file);
-            if (UnitTestForSourceQuery.findSources(root).length > 0) {
+            if (root != null && UnitTestForSourceQuery.findSources(root).length > 0) {
                 inTest = true;
             }
         }

@@ -72,12 +72,9 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     private static final Map<String, String> propertyNamesTranslationTable = 
             new HashMap<>();
     static {
-        propertyNamesTranslationTable.put("transform", "effects"); //NOI18N
+//        propertyNamesTranslationTable.put("transform", "effects"); //NOI18N
+        propertyNamesTranslationTable.put("line-break", "line-break0");
         
-        propertyNamesTranslationTable.put("ruby-overhang", "rubyover"); //NOI18N
-        propertyNamesTranslationTable.put("ruby-align", "rubyalign"); //NOI18N
-        propertyNamesTranslationTable.put("ruby-span", "rubyspan"); //NOI18N
-        propertyNamesTranslationTable.put("ruby-position", "rubypos"); //NOI18N
     }
     
     private static final Logger LOGGER = Logger.getLogger(HelpResolver.class.getName());
@@ -132,17 +129,26 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
                 //<dfn id="property"> 
                 //<dfn id="property0"> ... sometimes the property is referred with a number suffix
                 
-                String elementName = "ruby".equals(cssModule.getName()) 
-                        ? "a" 
-                        : "dfn";
+                String elementName = "dfn";
                 
-                String patternImg = String.format("(?s)<%s\\s+id=['\"]?\\w*-??%s\\d?['\"]?>", elementName, propertyName);
-
+                String patternImg = String.format("(?s)<%s[^>]*id=['\"]?\\w*-??propdef-%s\\d?['\"]?[^>]*>", elementName, propertyName);
+                
                 Pattern pattern = Pattern.compile(patternImg); //DOTALL mode
                 Matcher matcher = pattern.matcher(urlContent);
-
+                if (!matcher.find(0)){
+                    patternImg = String.format("(?s)<%s[^>]*id=['\"]?\\w*-??%s\\d?['\"]?>", elementName, propertyName);
+                    pattern = Pattern.compile(patternImg); //DOTALL mode
+                    matcher = pattern.matcher(urlContent);
+                }
+                if (!matcher.find(0)){
+                    patternImg = String.format("(?s)<%s[^>]*id=['\"]?\\w*-??%s\\d?['\"]?[^>]*>", elementName, propertyName);
+                    pattern = Pattern.compile(patternImg); //DOTALL mode
+                    matcher = pattern.matcher(urlContent);
+                }
+                
+                
                 //2. go backward and find h3 or h2 section start
-                if (matcher.find()) {
+                if (matcher.find(0)) {
                     int sectionStart = -1;
                     int from = matcher.start();
 
@@ -152,7 +158,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
                         char c = urlContent.charAt(i);
                         switch (state) {
                             case 0:
-                                if (c == '2' || c == '3') {
+                                if (c == '2' || c == '3' || c == '4') {
                                     state = 1;
                                 }
                                 break;
@@ -180,10 +186,12 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
                     //level than was the opening heading!
                     if (sectionStart >= 0) {
                         //find next section
-                        Pattern sectionEndFinder = Pattern.compile("(?s)<h[23]"); //NOI18N
+                        Pattern sectionEndFinder = Pattern.compile("(?s)<h[234]"); //NOI18N
                         Matcher findSectionEnd = sectionEndFinder.matcher(urlContent.subSequence(from, urlContent.length()));
                         if (findSectionEnd.find()) {
-                            return urlContent.substring(sectionStart, from + findSectionEnd.start());
+                            String help = urlContent.substring(sectionStart, from + findSectionEnd.start());
+                            help = help.replaceAll("[A-Za-z-]+\\.(png|jpg)\"",getSpecURL() + MODULE_ARCHIVE_PATH + moduleFolderName + "/" + "$0");
+                            return help;                      
                         }
                     }
 

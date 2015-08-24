@@ -105,7 +105,6 @@ final class OnePassCompileWorker extends CompileWorker {
         final Set<javax.tools.FileObject> aptGenerated = previous != null ? previous.aptGenerated : new HashSet<javax.tools.FileObject>();
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(file2FQNs);
 
-        final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
         final DiagnosticListenerImpl dc = new DiagnosticListenerImpl();
         final HashMap<JavaFileObject, Pair<CompilationUnitTree, CompileTuple>> jfo2units = new HashMap<JavaFileObject, Pair<CompilationUnitTree, CompileTuple>>();
         LinkedList<Pair<CompilationUnitTree, CompileTuple>> units = new LinkedList<Pair<CompilationUnitTree, CompileTuple>>();
@@ -124,11 +123,11 @@ final class OnePassCompileWorker extends CompileWorker {
                             return null;
                         }
                         try {
-                            if (mem.isLowMemory()) {
+                            if (isLowMemory(null)) {
                                 jt = null;
                                 units = null;
                                 dc.cleanDiagnostics();
-                                mem.free();
+                                freeMemory(false);
                             }
                             if (jt == null) {
                                 jt = JavacParser.createJavacTask(
@@ -140,7 +139,7 @@ final class OnePassCompileWorker extends CompileWorker {
                                     javaContext.getFQNs(),
                                     new CancelService() {
                                         public @Override boolean isCanceled() {
-                                            return context.isCancelled() || mem.isLowMemory();
+                                            return context.isCancelled() || isLowMemory(null);
                                         }
                                     },
                                     tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
@@ -174,12 +173,11 @@ final class OnePassCompileWorker extends CompileWorker {
                             }
                             if (t instanceof ThreadDeath) {
                                 throw (ThreadDeath) t;
-                            }
-                            else {
+                            } else {
                                 jt = null;
                                 units = null;
                                 dc.cleanDiagnostics();
-                                mem.free();
+                                freeMemory(false);
                             }
                         }
                     }
@@ -206,6 +204,7 @@ final class OnePassCompileWorker extends CompileWorker {
         CompileTuple active = null;
         Iterable<? extends Processor> processors = jt != null ? jt.getProcessors() : null;
         boolean aptEnabled = processors != null && processors.iterator().hasNext();
+        final boolean[] flm = {true};
         try {
             final Queue<Future<Void>> barriers = new ArrayDeque<>();
             while(!units.isEmpty()) {
@@ -217,9 +216,9 @@ final class OnePassCompileWorker extends CompileWorker {
                 if (finished.contains(active.indexable)) {
                     continue;
                 }
-                if (mem.isLowMemory()) {
+                if (isLowMemory(flm)) {
                     units = null;
-                    mem.free();
+                    freeMemory(false);
                     return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 final Iterable<? extends TypeElement> types = jt.enterTrees(Collections.singletonList(unit.first()));
@@ -258,18 +257,18 @@ final class OnePassCompileWorker extends CompileWorker {
                         continue;
                     }
                 }
-                if (mem.isLowMemory()) {
+                if (isLowMemory(flm)) {
                     units = null;
-                    mem.free();
+                    freeMemory(false);
                     return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 jt.analyze(types);
                 if (aptEnabled) {
                     JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
-                if (mem.isLowMemory()) {
+                if (isLowMemory(flm)) {
                     units = null;
-                    mem.free();
+                    freeMemory(false);
                     return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 javaContext.getFQNs().set(types, active.indexable.getURL());
@@ -343,9 +342,9 @@ final class OnePassCompileWorker extends CompileWorker {
             }
             JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
         } catch (CancelAbort ca) {
-            if (mem.isLowMemory()) {
+            if (isLowMemory(flm)) {
                 units = null;
-                mem.free();
+                freeMemory(false);
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N

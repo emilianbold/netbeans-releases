@@ -307,7 +307,7 @@ public final class FormattingPanelController extends OptionsPanelController {
     public HelpCtx getHelpCtx() {
         PreferencesCustomizer c = selector == null ? null : selector.getSelectedCustomizer();
         HelpCtx ctx = c == null ? null : c.getHelpCtx();
-	return ctx != null ? ctx : new HelpCtx("netbeans.optionsDialog.editor.formatting"); //NOI18N
+	return ctx != null ? ctx : new HelpCtx("netbeans.optionsDialog.editor.identation"); //NOI18N
     }
     
     public synchronized JComponent getComponent(Lookup masterLookup) {

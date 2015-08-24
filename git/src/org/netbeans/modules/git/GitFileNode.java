@@ -107,7 +107,7 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
                 if(getInformation().containsStatus(FileInformation.STATUS_REMOVED)) {
                     return VCSCommitOptions.COMMIT_REMOVE;
                 } else if(getInformation().containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
-                    return GitModuleConfig.getDefault().getExludeNewFiles() ? 
+                    return withExclusions && GitModuleConfig.getDefault().getExludeNewFiles() ? 
                                         VCSCommitOptions.EXCLUDE : 
                                         VCSCommitOptions.COMMIT;
                 } else {

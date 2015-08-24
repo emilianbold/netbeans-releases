@@ -343,11 +343,11 @@ public class UnnecessaryBoxing {
         if (!Utilities.isValidType(m) || m.getKind() != TypeKind.EXECUTABLE) {
             return false;
         }
+        ExecutableType execType = (ExecutableType)m;
         int idx = arguments.indexOf(ctx.getPath().getLeaf());
-        if (idx < 0) {
+        if (idx < 0 || idx >= execType.getParameterTypes().size()) {
             return false;
         }
-        ExecutableType execType = (ExecutableType)m;
         TypeMirror paramType = execType.getParameterTypes().get(idx);
         TypeMirror curType = trees.getTypeMirror(ctx.getPath());
         TypeMirror valType = trees.getTypeMirror(valPath);

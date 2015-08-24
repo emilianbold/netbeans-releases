@@ -197,11 +197,11 @@ public class TextDetailTest extends NbTestCase {
             td.setLine(1);
             int col0 = line.indexOf(match) + 1;
             td.setColumn(col0);
-            td.setLineText(line);
             td.setMatchedText(match);
             td.setMarkLength(match.length());
             td.setStartOffset(col0);
             td.setEndOffset(col0 + match.length());
+            td.setLineText(line);
             return td;
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
@@ -225,5 +225,34 @@ public class TextDetailTest extends NbTestCase {
             sb.append(suffix);
         }
         return sb.toString();
+    }
+
+    public void testOptimizeLineText() {
+        assertEquals(
+                "Hel????ver?????",
+                TextDetail.optimizeText("Hello everybody", 3, 7, 10).toString());
+        assertEquals(
+                "Hel????????????",
+                TextDetail.optimizeText("Hello everybody", 3, 0, 2).toString());
+        assertEquals(
+                "Hello ?????????",
+                TextDetail.optimizeText("Hello everybody", 3, 2, 6).toString());
+
+        assertEquals(
+                "ver",
+                TextDetail.optimizeText("Hello everybody", 3, 7, 10)
+                .subSequence(7, 10).toString());
+        assertEquals(
+                "ver",
+                TextDetail.optimizeText("Hello everybody", 3, 7, 10)
+                .subSequence(7, 10).toString());
+        assertEquals(
+                "Hel",
+                TextDetail.optimizeText("Hello everybody", 3, 7, 10)
+                .subSequence(0, 3).toString());
+        assertEquals(
+                "l????v",
+                TextDetail.optimizeText("Hello everybody", 3, 7, 10)
+                .subSequence(2, 8).toString());
     }
 }

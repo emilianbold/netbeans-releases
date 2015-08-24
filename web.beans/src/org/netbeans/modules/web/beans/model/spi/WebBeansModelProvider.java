@@ -104,4 +104,6 @@ public interface WebBeansModelProvider {
     Collection<AnnotationMirror> getInterceptorBindings( Element element );
 
     BeanArchiveType getBeanArchiveType();
+
+    boolean isCdi11OrLater();
 }

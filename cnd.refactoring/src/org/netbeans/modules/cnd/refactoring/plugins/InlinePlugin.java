@@ -48,13 +48,10 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -129,17 +126,17 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
     private void processRefactoredReferences(List<CsmReference> sortedRefs, CsmFile file, ModificationResult mr) {
         for (CsmReference ref : sortedRefs) {
             CsmObject obj = ref.getReferencedObject();
-            if (CsmKindUtilities.isMacro(obj)) {
+            if (CsmKindUtilities.isMacro(obj) && (!isInMacro(file, ref))) {
                 CsmMacro macro = (CsmMacro) obj;
                 int refLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, ref.getStartOffset())[0];
                 int objLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, macro.getStartOffset())[0];
                 if (!(refLine == objLine && (ref.getContainingFile().equals(macro.getContainingFile())))) {
-                    String oldText = ref.getText().toString();
+                    String oldText = macro.getName().toString();
 
                     CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
                     Document doc = CsmUtilities.openDocument(ces);
-                    String newText = CsmMacroExpansion.expand(doc, ref.getStartOffset(), ref.getEndOffset());
-                    if (newText != null) {
+                    String newText = CsmMacroExpansion.expand(doc, file, ref.getStartOffset(), ref.getEndOffset(), true);
+                    if (newText != null && (!newText.isEmpty())) {
                         String descr = NbBundle.getMessage(InlinePlugin.class, "TXT_Preview_Entity_escription") + " " +oldText;  // NOI18N
                         ModificationResult.Difference diff = CsmRefactoringUtils.rename(  ref.getStartOffset()
                                                                                         , ref.getEndOffset() + getMacroParametersEndOffset(file, macro, ref.getEndOffset())
@@ -155,7 +152,26 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
         }
     }
     
-    private int getMacroParametersEndOffset(CsmFile file, CsmMacro macro, int pos) {
+    private boolean isInMacro(CsmFile file, CsmReference reference) {
+        CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
+        int stopOffset = reference.getStartOffset();
+        int line = fiq.getLineColumnByOffset(file, stopOffset)[0];
+        int offset = (int) fiq.getOffset(file, line, 1);
+        CharSequence codeLine = file.getText(offset, stopOffset);
+        for (int i = 0, fin = codeLine.length(); i < fin; i++) {
+            char character = codeLine.charAt(i);
+            if (character == '#') {
+                return true;
+            } else if (Character.isWhitespace(character)) {
+                continue;
+            } else {
+                break;
+            }
+        }
+        return false;
+    }
+    
+    public static int getMacroParametersEndOffset(CsmFile file, CsmMacro macro, int pos) {
         if (macro.getParameters() != null && (!macro.getParameters().isEmpty())) {
             int offset = 0;
             int bracketCount = 0;
@@ -202,10 +218,6 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
             if (preCheckProblem != null) {
                 return preCheckProblem;
             }
-            CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
-            // check read-only elements
-            preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject);
-            fireProgressListenerStop();
             return preCheckProblem;
         } finally {
             CsmCacheManager.leave();

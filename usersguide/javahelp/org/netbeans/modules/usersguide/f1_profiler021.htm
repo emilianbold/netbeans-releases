@@ -2,82 +2,52 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>New Profiling Point Wizard: Stopwatch</title>
+<title>Active Profiling Points Window</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-05-13</p>
-<p><a id="StopwatchCustomizer.HelpCtx" name="StopwatchCustomizer.HelpCtx"></a></p>
-<div id="NBCSH3189"><!-- infolevel="all" infotype="General" --><a id="sthref409" name="sthref409"></a>
-<h1>New Profiling Point Wizard: Stopwatch</h1>
+<p>Beta Draft: 2015-08-07</p>
+<p><a id="ProfilingPointsDisplayer.HelpCtx" name="ProfilingPointsDisplayer.HelpCtx"></a></p>
+<div id="NBCSH3220"><!-- infolevel="all" infotype="General" --><a id="sthref412" name="sthref412"></a>
+<h1>Active Profiling Points Window</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to obtain a timestamp each time that the profiling point is hit. You can obtain the length of time between two locations by selecting Timestamp and Duration and setting a start and a stop profiling point. 
+<p>Use to view a list of the profiling points that are currently active for the profiling session. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG745">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG745">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Descriptions of Stopwatch dialog box elements." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of elements in Define New Profiling Root dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t23">Element</th>
-<th align="left" valign="bottom" id="r1c2-t23">Description</th>
+<th align="left" valign="bottom" id="r1c1-t22">Element</th>
+<th align="left" valign="bottom" id="r1c2-t22">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t23" headers="r1c1-t23">
-<p>Name</p>
+<td align="left" id="r2c1-t22" headers="r1c1-t22">
+<p>Profiling Points Active in Analyze Performance</p>
 </td>
-<td align="left" headers="r2c1-t23 r1c2-t23">Specifies the name that you want to use to identify the profiling point.
-<p>This name is used to identify the profiling point in the Profiling Points window.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t23" headers="r1c1-t23">
-<p>Settings</p>
-</td>
-<td align="left" headers="r3c1-t23 r1c2-t23">Snapshot setting</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t23" headers="r1c1-t23">
-<p>Timestamp</p>
-</td>
-<td align="left" headers="r4c1-t23 r1c2-t23">Retrieves a timestamp when the profiling point is hit.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t23" headers="r1c1-t23">
-<p>Timestamp and Duration</p>
-</td>
-<td align="left" headers="r5c1-t23 r1c2-t23">Finds the length of time between two paired timestamps.
-<p>If you select this option, you must specify the location for a starting point for the stopwatch and the location for the stopping point.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t23" headers="r1c1-t23">
-<p>Location</p>
-</td>
-<td align="left" headers="r6c1-t23 r1c2-t23">Specifies the name of the file and the line in the source code where you want to place the profiling point.
-<p>Click <b>Browse</b> to locate the file in your project.</p>
-<p>Select <b>Begin</b> or <b>End</b> to specify if the profiling point is hit when a thread hits the beginning of the line or reaches the end of the line.</p>
+<td align="left" headers="r2c1-t22 r1c2-t22">Displays the profiling points that are set in the project.
+<p>Disabled points are grayed out.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>If you opened the New Profiling Point wizard by clicking in a line in a source file, the file and line are automatically set for you but you can modify the settings as needed.</p>
-<a id="NBCSH3195" name="NBCSH3195"></a>
+<a id="NBCSH3222" name="NBCSH3222"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
 <param name="text" value="<html><u>&quot;Setting a Profiling Point&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -85,15 +55,7 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
-<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
 <param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -101,7 +63,7 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
 <param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

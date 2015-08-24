@@ -99,15 +99,11 @@ public final class IncludeDirEntry {
         CndUtils.assertAbsolutePathInConsole(dir);
         CharSequence key = FilePathCache.getManager().getString(CndFileSystemProvider.toUrl(fs, dir));
         Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
-        boolean create = false;
         IncludeDirEntry out;
         synchronized (delegate) {
             out = delegate.get(key);
-            if (out == null) {
-                create = true;
-            }
         }
-        if (create) {
+        if (out == null) {
             // #196267 -  slow parsing in Full Remote
             // do expensive work out of sync block
             boolean framework = dir.endsWith("/Frameworks"); // NOI18N
@@ -132,17 +128,31 @@ public final class IncludeDirEntry {
             }
             CharSequence asCharSeq = FilePathCache.getManager().getString(dir);
             // then go into sync block again
+            boolean resetNonExistanceFlag = false;
             synchronized (delegate) {
                 out = delegate.get(key);
                 if (out == null) {
                     out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq, key.hashCode());
                     delegate.put(key, out);
+                } else {
+                    resetNonExistanceFlag = true;
                 }
             }
+            if (resetNonExistanceFlag) {
+                out.resetNonExistanceFlag();
+            }
+        } else {
+            out.resetNonExistanceFlag();
         }
         return out;
     }
 
+    /*package*/ void resetNonExistanceFlag() {
+        if (exists == Boolean.FALSE) { // perhaps && !CndFileUtils.isLocalFileSystem(fileSystem) ??
+            exists = CndFileUtils.isExistingDirectory(fileSystem, getPath());
+        }
+    }
+    
     @Override
     public int hashCode() {
         return hashCode;

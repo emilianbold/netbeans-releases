@@ -100,15 +100,15 @@ public class BusinessMethodExposed {
         final List<ErrorDescription> problems = new ArrayList<>();
         final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
         if (ctx != null && ctx.getEjb() instanceof Session) {
-            final Collection<TypeElement> localInterfaces = new ArrayList<>();
-            final Collection<TypeElement> remoteInterfaces = new ArrayList<>();
+            Collection<TypeElement> localInterfaces = null;
+            Collection<TypeElement> remoteInterfaces = null;
 
             EjbJar ejbModule = ctx.getEjbModule();
             Profile profile = ejbModule.getJ2eeProfile();
             if (profile != null && profile.isAtLeast(Profile.JAVA_EE_6_WEB)) {
                 int intfCount = ctx.getEjbData().getBusinessLocal().length + ctx.getEjbData().getBusinessRemote().length;
-                localInterfaces.addAll(resolveClasses(hintContext.getInfo(), ctx.getEjbData().getBusinessLocal()));
-                remoteInterfaces.addAll(resolveClasses(hintContext.getInfo(), ctx.getEjbData().getBusinessRemote()));
+                localInterfaces = new ArrayList(resolveClasses(hintContext.getInfo(), ctx.getEjbData().getBusinessLocal()));
+                remoteInterfaces = new ArrayList(resolveClasses(hintContext.getInfo(), ctx.getEjbData().getBusinessRemote()));
                 if (intfCount == 0 || JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.LOCAL_BEAN)) {
                     return null;
                 }
@@ -117,6 +117,13 @@ public class BusinessMethodExposed {
             // then no business interface is needed, see issue #147512
             if (JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.WEB_SERVICE)) {
                 return null;
+            }
+
+            if (localInterfaces == null) {
+                localInterfaces = new ArrayList(resolveClasses(hintContext.getInfo(), ctx.getEjbData().getBusinessLocal()));
+            }
+            if (remoteInterfaces == null) {
+                remoteInterfaces = new ArrayList(resolveClasses(hintContext.getInfo(), ctx.getEjbData().getBusinessRemote()));
             }
 
             Collection<ExecutableElement> definedMethods = new ArrayList<>();

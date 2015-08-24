@@ -135,9 +135,7 @@ public final class ApiGenScript {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "ApiGenScript.api.generating=Generating API documentation for {0}",
-        "# {0} - project name",
-        "ApiGenScript.error.generating=Generating API documentation for {0} failed, review Output window for details."
+        "ApiGenScript.api.generating=ApiGen ({0})",
     })
     public void generateDocumentation(PhpModule phpModule) {
         assert !EventQueue.isDispatchThread();

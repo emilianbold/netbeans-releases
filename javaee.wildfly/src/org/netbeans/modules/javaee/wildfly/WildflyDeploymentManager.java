@@ -120,17 +120,18 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
         this.df = df;
         this.realUri = realUri;
         this.instanceProperties = InstanceProperties.getInstanceProperties(realUri);
-        version = WildflyPluginUtils.getServerVersion(new File(this.instanceProperties.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR)));
-        isWildfly = (version != null && WildflyPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0);
+        File serverPath = new File(this.instanceProperties.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
+        version = WildflyPluginUtils.getServerVersion(serverPath);
+        isWildfly = WildflyPluginUtils.isWildFly(serverPath);
         int controllerPort = CONTROLLER_PORT;
         String adminPort = this.instanceProperties.getProperty(PROPERTY_ADMIN_PORT);
         if(adminPort != null) {
             controllerPort = Integer.parseInt(this.instanceProperties.getProperty(PROPERTY_ADMIN_PORT));
         }
         if (username != null && password != null) {
-            this.client = new WildflyClient(instanceProperties, getHost(), controllerPort, username, password);
+            this.client = new WildflyClient(instanceProperties, version, getHost(), controllerPort, username, password);
         } else {
-            this.client = new WildflyClient(instanceProperties, getHost(), controllerPort);
+            this.client = new WildflyClient(instanceProperties, version, getHost(), controllerPort);
         }
         ChangelogWildflyPlugin.showChangelog();
     }
@@ -403,6 +404,7 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
     public WildFlyProperties getProperties() {
         return new WildFlyProperties(this);
     }
+
     public boolean isWildfly() {
         return isWildfly;
     }

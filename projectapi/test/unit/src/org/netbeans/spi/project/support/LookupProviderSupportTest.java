@@ -45,6 +45,9 @@
 package org.netbeans.spi.project.support;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,12 +58,15 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -252,6 +258,47 @@ public class LookupProviderSupportTest extends NbTestCase {
         assertEquals("[group1, group2, group3]", names.toString());
     }
 
+
+
+    public void testSharabilityQueryMerger() throws IOException {
+        final File wd = getWorkDir();
+        final File f1 = new File (wd, "f1");    //NOI18N
+        final File f2 = new File (wd, "f2");    //NOI18N
+        final File f3 = new File (wd, "f3");    //NOI18N
+        final File f4 = new File (wd, "f4");    //NOI18N
+        final File f5 = new File (wd, "f5");    //NOI18N
+
+        final SharabilityQueryImpl impl1 = new SharabilityQueryImpl(Collections.singletonMap(f1.toURI(), SharabilityQuery.Sharability.SHARABLE));
+        final SharabilityQueryImpl impl2 = new SharabilityQueryImpl(Collections.singletonMap(f2.toURI(), SharabilityQuery.Sharability.NOT_SHARABLE));
+        final SharabilityQueryImpl impl3 = new SharabilityQueryImpl(new HashMap<URI, SharabilityQuery.Sharability>(){{
+            put(f3.toURI(),SharabilityQuery.Sharability.SHARABLE);
+            put(f4.toURI(),SharabilityQuery.Sharability.NOT_SHARABLE);
+        }});
+        final SharabilityQueryImpl impl4 = new SharabilityQueryImpl(Collections.singletonMap(f2.toURI(), SharabilityQuery.Sharability.SHARABLE));
+        Lookup base = Lookups.fixed(impl1, LookupProviderSupport.createSharabilityQueryMerger());
+        LookupProviderImpl2 pro2 = new LookupProviderImpl2();
+        LookupProviderImpl2 pro3 = new LookupProviderImpl2();
+        LookupProviderImpl2 pro4 = new LookupProviderImpl2();
+
+        InstanceContent provInst = new InstanceContent();
+        Lookup providers = new AbstractLookup(provInst);
+        provInst.add(pro2);
+        provInst.add(pro3);
+        provInst.add(pro4);
+        pro2.ic.add(impl2);
+        pro3.ic.add(impl3);
+        pro4.ic.add(impl4);
+        DelegatingLookupImpl del = new DelegatingLookupImpl(base, providers, "<irrelevant>");
+        
+        SharabilityQueryImplementation2 sharability = del.lookup(SharabilityQueryImplementation2.class);
+        assertNotNull(sharability);
+        assertEquals(SharabilityQuery.Sharability.SHARABLE, sharability.getSharability(f1.toURI()));
+        assertEquals(SharabilityQuery.Sharability.NOT_SHARABLE, sharability.getSharability(f2.toURI()));
+        assertEquals(SharabilityQuery.Sharability.SHARABLE, sharability.getSharability(f3.toURI()));
+        assertEquals(SharabilityQuery.Sharability.NOT_SHARABLE, sharability.getSharability(f4.toURI()));
+        assertEquals(SharabilityQuery.Sharability.UNKNOWN, sharability.getSharability(f5.toURI()));
+    }
+
     private class LookupProviderImpl2 implements LookupProvider {
         InstanceContent ic = new InstanceContent();
         AbstractLookup l;
@@ -347,6 +394,25 @@ public class LookupProviderSupportTest extends NbTestCase {
         String cleanInvokedTarget() {
             final String res = invokedTarget;
             invokedTarget = null;
+            return res;
+        }
+    }
+
+    private static final class SharabilityQueryImpl implements SharabilityQueryImplementation2 {
+
+        private final Map<URI,SharabilityQuery.Sharability> sharability;
+
+        SharabilityQueryImpl(@NonNull final Map<URI,SharabilityQuery.Sharability> sharability) {
+            this.sharability = sharability;
+        }
+
+        @Override
+        @NonNull
+        public SharabilityQuery.Sharability getSharability(@NonNull final URI uri) {
+            SharabilityQuery.Sharability res = sharability.get(uri);
+            if (res == null) {
+                res = SharabilityQuery.Sharability.UNKNOWN;
+            }
             return res;
         }
     }

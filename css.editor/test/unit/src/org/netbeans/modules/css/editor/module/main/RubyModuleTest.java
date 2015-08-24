@@ -59,12 +59,12 @@ public class RubyModuleTest extends CslTestBase {
     }
     
     public void testProperties() {
-        PropertyDefinition p = Properties.getPropertyDefinition( "ruby-span");
+        PropertyDefinition p = Properties.getPropertyDefinition( "ruby-align");
         
         assertNotNull(p);
         
-        assertTrue(new ResolvedProperty(p, "none").isResolved());
-        assertTrue(new ResolvedProperty(p, "attr(rbspan)").isResolved());
+        assertTrue(new ResolvedProperty(p, "start").isResolved());
+        assertTrue(new ResolvedProperty(p, "center").isResolved());
     }
     
    

@@ -65,6 +65,8 @@ import org.openide.util.lookup.Lookups;
 public abstract class RemoteOpenActionBase extends AbstractAction implements DynamicMenuContent, Presenter.Toolbar {
 
     static final String ENV_KEY = "org.netbeans.modules.cnd.remote.actions.ENV"; // NOI18N
+    public static final String ACTIVATED_PSEUDO_ACTION_COMAND = "performerActivated"; // NOI18N
+    
     private JButton lastToolbarPresenter;
     private boolean isEnabledToolbarAction = true;
     private ActionListener peformer;
@@ -118,7 +120,7 @@ public abstract class RemoteOpenActionBase extends AbstractAction implements Dyn
         assert SwingUtilities.isEventDispatchThread();
         if (peformer == null) {
             peformer = Lookups.forPath(getPerformerID()).lookup(ActionListener.class);
-            peformer.actionPerformed(new ActionEvent(RemoteOpenActionBase.this, 0, "performerActivated")); // NOI18N
+            peformer.actionPerformed(new ActionEvent(RemoteOpenActionBase.this, 0, ACTIVATED_PSEUDO_ACTION_COMAND));
         }
     }
     

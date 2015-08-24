@@ -52,6 +52,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
@@ -63,6 +65,8 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.View;
 import org.netbeans.modules.javascript.cdnjs.Library;
 import org.netbeans.modules.javascript.cdnjs.LibraryProvider;
@@ -84,6 +88,7 @@ class SearchPanel extends javax.swing.JPanel {
      */
     SearchPanel() {
         initComponents();
+        initDocumentListener();
         librariesList.setCellRenderer(new LibraryRenderer());
         libraryInfoPanel.setPreferredSize(librariesScrollPane.getPreferredSize());
         versionComboBox.setRenderer(new LibraryVersionRenderer());
@@ -105,6 +110,27 @@ class SearchPanel extends javax.swing.JPanel {
      */
     final void deactivate() {
         LibraryProvider.getInstance().removePropertyChangeListener(listener);
+    }
+
+    private void initDocumentListener() {
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                processEvent(e);
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                processEvent(e);
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                processEvent(e);
+            }
+            private void processEvent(DocumentEvent e) {
+                String text = searchField.getText();
+                searchButton.setEnabled(text != null && text.trim().length() != 0);
+            }
+        });
     }
 
     /**
@@ -148,8 +174,12 @@ class SearchPanel extends javax.swing.JPanel {
         "SearchPanel.message.searching=Looking for \"{0}\" libraries"
     })
     private void startSearch() {
+        String searchTerm = searchField.getText().trim();
+        if (searchTerm.length() == 0) {
+            return;
+        }
         librarySelected(null);
-        lastSearchTerm = searchField.getText().trim();
+        lastSearchTerm = searchTerm;
         Library[] libraries = LibraryProvider.getInstance().findLibraries(lastSearchTerm, Thread.MAX_PRIORITY);
         if (libraries == null) {
             messageLabel.setText(Bundle.SearchPanel_message_searching(lastSearchTerm));
@@ -176,10 +206,29 @@ class SearchPanel extends javax.swing.JPanel {
             messageLabel.setText(NbBundle.getMessage(SearchPanel.class, "SearchPanel.messageLabel.text")); // NOI18N
             showComponent(messageLabel);
         } else {
+            Arrays.sort(libraries, new LibraryComparator());
             librariesList.setModel(libraryListModelFor(libraries));
-            librariesList.setSelectedIndex(0);
+            preSelectSearchedLibrary(libraries);
             showComponent(searchPanel);
         }
+    }
+
+    /**
+     * Attempts to pre-select the library whose name matches the last search term.
+     * Selects the first library otherwise.
+     * 
+     * @param libraries latest search result.
+     */
+    private void preSelectSearchedLibrary(Library[] libraries) {
+        int index = 0;
+        String term = lastSearchTerm == null ? "" : lastSearchTerm.toLowerCase(); // NOI18N
+        for (int i=0; i<libraries.length; i++) {
+            if (libraries[i].getName().toLowerCase().equals(term)) {
+                index = i;
+                break;
+            }
+        }
+        librariesList.setSelectedIndex(index);
     }
 
     /**
@@ -423,8 +472,8 @@ class SearchPanel extends javax.swing.JPanel {
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(libraryInfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(searchPanelLayout.createSequentialGroup()
-                        .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(librariesScrollPane)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(homePageLabel)
                             .addComponent(homePageLinkLabel))))
@@ -440,6 +489,7 @@ class SearchPanel extends javax.swing.JPanel {
         searchField.addActionListener(formListener);
 
         org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.searchButton.text")); // NOI18N
+        searchButton.setEnabled(false);
         searchButton.addActionListener(formListener);
 
         messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -627,6 +677,18 @@ class SearchPanel extends javax.swing.JPanel {
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
+    }
+
+    /**
+     * Comparator for sorting of libraries in libraries list.
+     */
+    static class LibraryComparator implements Comparator<Library> {
+
+        @Override
+        public int compare(Library library1, Library library2) {
+            return library1.getName().toLowerCase().compareTo(library2.getName().toLowerCase());
+        }
+
     }
 
 }

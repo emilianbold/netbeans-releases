@@ -42,12 +42,35 @@
 
 package org.netbeans.modules.cnd.mixeddev;
 
+import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.services.CsmSymbolResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 
 /**
@@ -55,7 +78,7 @@ import org.openide.util.Pair;
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class MixedDevUtils {
-    
+        
     public static final String DOT = "."; // NOI18N
     
     public static final String COMMA = ","; // NOI18N
@@ -95,7 +118,7 @@ public final class MixedDevUtils {
         for (Pair<K, V> pair : pairs) {
             mapping.put(pair.first(), pair.second());
         }
-        return mapping;
+        return Collections.unmodifiableMap(mapping);
     }    
     
     public static interface Converter<F, T> {
@@ -119,6 +142,69 @@ public final class MixedDevUtils {
         }
         return to;
     }    
+    
+    public static <T> List<T> toList(Iterable<T> iterable) {
+        List<T> result = new ArrayList<>();
+        for (T t : iterable) {
+            result.add(t);
+        }
+        return result;
+    }
+    
+    public static Iterable<NativeProject> findNativeProjects() {
+        final Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        return new Iterable<NativeProject>() {
+            @Override
+            public Iterator<NativeProject> iterator() {
+                return new Iterator<NativeProject>() {
+                    
+                    private int i = 0;
+                    
+                    private NativeProject nextProject = findNext();
+
+                    @Override
+                    public boolean hasNext() {
+                        return nextProject != null;
+                    }
+
+                    @Override
+                    public NativeProject next() {
+                        NativeProject current = nextProject;
+                        nextProject = findNext();
+                        return current;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException("Not supported."); // NOI18N
+                    }
+                    
+                    private NativeProject findNext() {
+                        NativeProject nativeProject = null;
+                        while (nativeProject == null && i < projects.length) {
+                            nativeProject = projects[i].getLookup().lookup(NativeProject.class);
+                            ++i;
+                        }
+                        return nativeProject;
+                    }
+                };
+            }
+        };
+    }
+    
+    public static CsmOffsetable findCppSymbol(String cppNames[]) {
+        if (cppNames != null) {
+            for (NativeProject nativeProject : findNativeProjects()) {
+                for (String cppName : cppNames) {
+                    Collection<CsmOffsetable> candidates = CsmSymbolResolver.resolveSymbol(nativeProject, cppName);
+                    if (!candidates.isEmpty()) {
+                        return candidates.iterator().next();
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     private MixedDevUtils() {
         throw new AssertionError("Not instantiable");

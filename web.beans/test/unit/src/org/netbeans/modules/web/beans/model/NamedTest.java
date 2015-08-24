@@ -50,6 +50,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import static junit.framework.TestCase.assertEquals;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -86,6 +87,13 @@ public class NamedTest extends CommonTestCase {
                 "import javax.inject.*; "+
                 " @Named "+
                 "public interface Iface {}" );
+
+
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CApital.java",
+                "package foo; " +
+                "import javax.inject.*; "+
+                " @Named "+
+                "public class CApital {}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Tree.java",
                 "package foo; " +
@@ -128,6 +136,12 @@ public class NamedTest extends CommonTestCase {
                             iface = element;
                             String name = model.getName(element);
                             assertEquals("iface", name);
+                        }
+                        // #249438
+                        else if ("foo.CApital".equals(fqn)) {
+                            iface = element;
+                            String name = model.getName(element);
+                            assertEquals("CApital", name);
                         }
                     }
                     else if ( element instanceof VariableElement ){

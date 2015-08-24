@@ -130,7 +130,6 @@ public class WildflyExplodedDeployer implements ProgressObject, Runnable {
     public void run() {
         try {
             final String deployDir = dm.getClient().getDeploymentDirectory();
-            String msg = NbBundle.getMessage(WildflyDeploymentStatus.class, "MSG_REDEPLOYING", file.getAbsolutePath());
             String message = deployFile(file, new File(deployDir));
             if (message != null) {
                 fireHandleProgressEvent(mainModuleID, new WildflyDeploymentStatus(ActionType.EXECUTE,

@@ -250,7 +250,9 @@ final class AnalyzeStackTopComponent extends TopComponent {
             BufferedReader r = new BufferedReader (reader);
             DefaultListModel model = new DefaultListModel ();
             fillListModel(r, model);
-            list.setModel (model);
+            if (!model.isEmpty()) {
+                list.setModel (model);
+            }
         } catch (UnsupportedFlavorException ex) {
             Exceptions.printStackTrace (ex);
         } catch (IOException ex) {

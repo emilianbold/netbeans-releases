@@ -53,6 +53,9 @@ import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -71,11 +74,11 @@ import org.netbeans.spi.editor.hints.HintsController;
  * 
  * @author Tor Norbye
  */
-public class HintsTask extends ParserResultTask<ParserResult> {
+public final class HintsTask extends ParserResultTask<ParserResult> {
 
     private static final Logger LOG = Logger.getLogger(HintsTask.class.getName());
-    private volatile boolean cancelled = false;
-    
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
+
     /**
      * Tracks the HintsProvider being executed, so it can be cancelled.
      */
@@ -85,10 +88,8 @@ public class HintsTask extends ParserResultTask<ParserResult> {
     }
     
     public @Override void run(ParserResult result, SchedulerEvent event) {
-        resume();
-        
-        final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
-
+        final List<ErrorDescription> descriptions = new ArrayList<>();
+        SpiSupportAccessor.getInstance().setCancelSupport(cancel);
         try {
             ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
                 public @Override void run(ResultIterator resultIterator) throws ParseException {
@@ -131,7 +132,7 @@ public class HintsTask extends ParserResultTask<ParserResult> {
                     try {
                         synchronized (HintsTask.this) {
                             pendingProvider = provider;
-                            if (isCancelled()) {
+                            if (cancel.isCancelled()) {
                                 return;
                             }
                         }
@@ -140,7 +141,7 @@ public class HintsTask extends ParserResultTask<ParserResult> {
                         pendingProvider = null;
                     }
 
-                    if (isCancelled()) {
+                    if (cancel.isCancelled()) {
                         return;
                     }
 
@@ -153,8 +154,9 @@ public class HintsTask extends ParserResultTask<ParserResult> {
             });
         } catch (ParseException e) {
             LOG.log(Level.WARNING, null, e);
+        } finally {
+            SpiSupportAccessor.getInstance().removeCancelSupport(cancel);
         }
-
         HintsController.setErrors(result.getSnapshot().getSource().getFileObject(), HintsTask.class.getName(), descriptions);
     }
 
@@ -167,21 +169,9 @@ public class HintsTask extends ParserResultTask<ParserResult> {
     }
 
     public @Override void cancel() {
-        HintsProvider proc;
-        synchronized  (this) {
-            proc = pendingProvider;
-            cancelled = true;
-        }
+        final HintsProvider proc = pendingProvider;
         if (proc != null) {
             proc.cancel();
         }
-    }
-
-    private synchronized void resume() {
-        cancelled = false;
-    }
-
-    private synchronized boolean isCancelled() {
-        return cancelled;
     }
 }
