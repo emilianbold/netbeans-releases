@@ -287,7 +287,7 @@ final class ModuleFileManager implements JavaFileManager {
         assert ml != null;
         assert pkgName != null;
         assert relativeName != null;
-        final String resourceName = FileObjects.getRelativePath(pkgName,relativeName);
+        final String resourceName = FileObjects.resolveRelativePath(pkgName,relativeName);
         try {
             final Archive  archive = provider.getArchive (ml.getModuleRoot(), cacheFile);
             if (archive != null) {
