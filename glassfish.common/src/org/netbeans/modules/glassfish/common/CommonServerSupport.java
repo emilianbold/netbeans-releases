@@ -675,10 +675,14 @@ public class CommonServerSupport
     public Future<ResultString> deploy(final TaskStateListener stateListener,
             final File application, final String name, final String contextRoot,
             final Map<String, String> properties, final File[] libraries) {
-        return ServerAdmin.<ResultString>exec(instance, new CommandDeploy(
-                name, Util.computeTarget(instance.getProperties()),
-                application, contextRoot, properties, libraries
-                ), null, new TaskStateListener[] {stateListener});
+        try {
+            return ServerAdmin.<ResultString>exec(instance, new CommandDeploy(
+                    name, Util.computeTarget(instance.getProperties()),
+                    application, contextRoot, properties, libraries
+            ), null, new TaskStateListener[]{stateListener});
+        } finally {
+            refreshChildren();
+        }
     }
 
     @Override
@@ -717,10 +721,14 @@ public class CommonServerSupport
         if (resourcesChanged) {
             properties.put("preserveAppScopedResources", "true");
         }
-        return ServerAdmin.<ResultString>exec(instance, new CommandRedeploy(
-                name, Util.computeTarget(instance.getProperties()),
-                contextRoot, properties, libraries,
-                url != null && url.contains("ee6wc")), stateListener);
+        try {
+            return ServerAdmin.<ResultString>exec(instance, new CommandRedeploy(
+                    name, Util.computeTarget(instance.getProperties()),
+                    contextRoot, properties, libraries,
+                    url != null && url.contains("ee6wc")), stateListener);
+        } finally {
+            refreshChildren();
+        }
     }
 
     @Override
@@ -1249,6 +1257,14 @@ public class CommonServerSupport
             LOGGER.log(Level.INFO, "Could not get http host value.", gfie);
         }
         return LOCALHOST.equals(retVal) ? nameOfLocalhost : retVal; // NOI18N
+    }
+
+    private void refreshChildren() {
+        GlassfishInstance instance = getInstance();
+        RefreshModulesCookie cookie = instance.getFullNode().getLookup().lookup(RefreshModulesCookie.class);
+        if (cookie != null) {
+            cookie.refresh(null, null);
+        }
     }
 
 }
