@@ -68,7 +68,7 @@ import org.openide.util.Exceptions;
  */
 public class ClankFileInfoQuerySupport {
 
-    public static List<CsmReference> getMacroUsages(FileImpl fileImpl, final Interrupter interrupter) {
+    public static List<CsmReference> getMacroUsages(FileImpl fileImpl, Interrupter interrupter) {
         List<CsmReference> out = new ArrayList<>();
         if (APTTraceFlags.DEFERRED_MACRO_USAGES) {
             Collection<PreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
