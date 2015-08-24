@@ -60,7 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -641,7 +641,7 @@ public final class ProxyFileManager implements JavaFileManager {
             this.fmTx = fmTx;
             this.processorGeneratedFiles = processorGeneratedFiles;
             this.fileManagers = createFactories();
-            this.emitted = new JavaFileManager[7];
+            this.emitted = new JavaFileManager[MODULE_PLAT+1];
         }
 
         public void setUseModifiedFiles(final boolean useModifiedFiles) {
@@ -733,13 +733,25 @@ public final class ProxyFileManager implements JavaFileManager {
                             src,
                             mem};
             }));
-            m.put(StandardLocation.CLASS_OUTPUT, new Entry(() -> {
-                    final JavaFileManager output = createOutputFileManager();
-                    final JavaFileManager treeLoader = createTreeLoaderFileManager();
-                    return output == null ?
-                        new JavaFileManager[] {treeLoader} :
-                        new JavaFileManager[] {treeLoader, output};
-            }));
+            m.put(StandardLocation.CLASS_OUTPUT,new Entry(
+                    () -> {
+                        final JavaFileManager output = createOutputFileManager();
+                        final JavaFileManager treeLoader = createTreeLoaderFileManager();
+                        return output == null ?
+                            new JavaFileManager[] {treeLoader} :
+                            new JavaFileManager[] {treeLoader, output};
+                    },
+                    (fms) -> {
+                        JavaFileManager active = null;
+                        for (JavaFileManager fm : fms) {
+                            if (fm.hasLocation(StandardLocation.CLASS_OUTPUT)) {
+                                active = fm;
+                            }
+                        }
+                        return active == null ?
+                                EMPTY :
+                                new JavaFileManager[] {active};
+                    }));
             m.put(StandardLocation.SOURCE_OUTPUT, new Entry(() -> {
                     final JavaFileManager aptSrcOut = createAptSrcOutputFileManager();
                     return aptSrcOut == null ?
@@ -862,11 +874,10 @@ public final class ProxyFileManager implements JavaFileManager {
         }
 
         private static final class Entry {
-            private static final Predicate<JavaFileManager> ALL = (m)->true;
 
             private JavaFileManager[] fileManagers;
             private Supplier<JavaFileManager[]> factory;
-            private final Predicate<JavaFileManager> filter;
+            private final Function<JavaFileManager[],JavaFileManager[]> filter;
 
             private Entry(@NonNull final Supplier<JavaFileManager[]> factory) {
                 this(factory, null);
@@ -874,14 +885,14 @@ public final class ProxyFileManager implements JavaFileManager {
 
             private Entry(
                     @NonNull final Supplier<JavaFileManager[]> factory,
-                    @NullAllowed final Predicate<JavaFileManager> filter) {
+                    @NullAllowed final Function<JavaFileManager[],JavaFileManager[]> filter) {
                 assert factory != null;
                 this.factory = factory;
-                this.filter = filter == null ? ALL : filter;
+                this.filter = filter;
             }
 
             boolean hasLocation() {
-                if (filter == ALL) {
+                if (filter == null) {
                     return true;
                 }
                 return get().length > 0;
@@ -898,14 +909,8 @@ public final class ProxyFileManager implements JavaFileManager {
                     factory = null;
                     res = fileManagers;
                 }
-                if (filter != ALL) {
-                    final List<JavaFileManager> filtered = new ArrayList<>(res.length);
-                    for (JavaFileManager jfm : res) {
-                        if (filter.test(jfm)) {
-                            filtered.add(jfm);
-                        }
-                    }
-                    res = filtered.toArray(new JavaFileManager[filtered.size()]);
+                if (filter != null) {
+                    res = filter.apply(res);
                 }
                 return res;
             }
