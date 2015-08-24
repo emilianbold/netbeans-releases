@@ -58,18 +58,13 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.SystemMacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -108,17 +103,17 @@ public class ClankMacroUsagesProducer {
                 tokStreamCache.getFileIndex());
         FileBuffer buffer = startFile.getBuffer();
         if (ClankDriver.preprocess(buffer, curPreprocHandler, callback, interrupter)) {
-            tokStreamCache = callback.getPPOut();
-            if (tokStreamCache != null) {
-                addPreprocessorDirectives(startFile, res, tokStreamCache);
-                addMacroExpansions(startFile, res, startFile, tokStreamCache);
+            ClankDriver.ClankFileInfo foundFileInfo = callback.getFoundFileInfo();
+            if (foundFileInfo != null) {
+                addPreprocessorDirectives(startFile, res, foundFileInfo);
+                addMacroExpansions(startFile, res, startFile, foundFileInfo);
             }
         }
         return res;
     }
 
 
-    private static void addPreprocessorDirectives(FileImpl curFile, List<CsmReference> res, ClankDriver.APTTokenStreamCache cache) {
+    private static void addPreprocessorDirectives(FileImpl curFile, List<CsmReference> res, ClankDriver.ClankFileInfo cache) {
         assert res != null;
         assert curFile != null;
         assert cache != null;
@@ -129,7 +124,7 @@ public class ClankMacroUsagesProducer {
         }
     }
 
-    private static void addMacroExpansions(FileImpl curFile, List<CsmReference> res, FileImpl startFile, ClankDriver.APTTokenStreamCache cache) {
+    private static void addMacroExpansions(FileImpl curFile, List<CsmReference> res, FileImpl startFile, ClankDriver.ClankFileInfo cache) {
         Map<Integer, ClankDriver.ClankMacroDirective> macroDefinitions = cache.getMacroDefinitions();
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
             int referencedDeclaration = cur.getReferencedMacroID();
@@ -176,7 +171,7 @@ public class ClankMacroUsagesProducer {
 
         private final FileImpl stopFileImpl;
         private final int stopAtIndex;
-        private ClankDriver.APTTokenStreamCache foundTokens;
+        private ClankDriver.ClankFileInfo foundFileInfo;
 
         private enum State {
           INITIAL,
@@ -222,59 +217,14 @@ public class ClankMacroUsagesProducer {
 
         @Override
         public boolean needMacroExpansion() {
-          return this.insideInterestedFile;
+          return this.insideInterestedFile || true;
         }
 
         @Override
         public boolean needComments() {
           return false;
         }
-/*
-                ClankPreprocessorCallback callback = new ClankDriver.ClankPreprocessorCallback() {
 
-                    @Override
-                    public void onInclusionDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankInclusionDirective directive) {
-                    }
-
-                    @Override
-                    public void onEnter(ClankDriver.ClankFileInfo enteredFrom, ClankDriver.ClankFileInfo enteredTo) {
-                    }
-
-                    @Override
-                    public boolean onExit(ClankDriver.ClankFileInfo exitedFrom, ClankDriver.ClankFileInfo exitedTo) {
-                        return !interrupter.cancelled();
-                    }
-
-                    @Override
-                    public boolean needTokens() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean needSkippedRanges() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean needMacroExpansion() {
-                        return true;
-                    }
-
-                    @Override
-                    public boolean needComments() {
-                        return false;
-                    }
-
-                    @Override
-                    public void onErrorDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankErrorDirective directive) {
-                    }
-
-                    @Override
-                    public void onMacroDefineDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankMacroDirective directive) {
-                    }
-                };
-
-        */
         @Override
         public void onInclusionDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankInclusionDirective directive) {
             if ((alreadySeenInterestedFileEnter == State.SEEN) && (insideInterestedFile)) {
@@ -355,10 +305,6 @@ public class ClankMacroUsagesProducer {
           return curFile;
         }
 
-        private ProjectBase getStartProject() {
-          return startProject;
-        }
-
         @Override
         public boolean onExit(ClankDriver.ClankFileInfo exitedFrom, ClankDriver.ClankFileInfo exitedTo) {
             assert exitedFrom != null;
@@ -371,7 +317,8 @@ public class ClankMacroUsagesProducer {
             if (stopAtIndex == exitedFrom.getFileIndex()) {
               CndUtils.assertPathsEqualInConsole(exitedFrom.getFilePath(), stopFileImpl.getAbsolutePath(),
                       "{0} expected {1}", stopFileImpl.getAbsolutePath(), exitedFrom);// NOI18N
-              foundTokens = ClankDriver.extractPreparedCachedTokenStream(ppHandler);
+              exitedFrom.getFileGuard();
+              foundFileInfo = exitedFrom;
               // stop all activity
               alreadySeenInterestedFileEnter = State.EXITED;
               return false;
@@ -389,8 +336,8 @@ public class ClankMacroUsagesProducer {
             }
         }
 
-        private ClankDriver.APTTokenStreamCache getPPOut() {
-            return foundTokens;
+        private ClankDriver.ClankFileInfo getFoundFileInfo() {
+            return foundFileInfo;
         }
     }
 

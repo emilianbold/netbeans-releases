@@ -1,5 +1,5 @@
 [TAG_AND_KEYWORD]input([ATTRIBUTE]
   type='checkbox'
-[NONE]  [ATTRIBUTE]name='agreement'
-[NONE]  [ATTRIBUTE]checked
+  name='agreement'
+  checked
 [TAG_AND_KEYWORD])
