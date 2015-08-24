@@ -1,5 +1,6 @@
-#changeset:   15474:a48d19d1d689
-#user:        Alexander Simon <alexvsimon@netbeans.org>
-#date:        Mon Aug 24 11:51:09 2015 +0300
-#summary:     add macro reference in #undef directive
-5EC424368381D87858BD3547A877FF4D91556CC4 clank_0.3.6.zip
+#changeset:   15486:e2621529b8f8
+#tag:         tip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Mon Aug 24 20:18:27 2015 +0300
+#summary:     PERF: remove unused token offsets
+7142E065A342655F6E9AA9CFD049E3908C148E34 clank_0.3.6.zip
