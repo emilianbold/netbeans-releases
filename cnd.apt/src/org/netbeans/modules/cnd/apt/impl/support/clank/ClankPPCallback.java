@@ -477,7 +477,9 @@ public final class ClankPPCallback extends FileInfoCallback {
         private final boolean isDefined;
         private final /*SourceLocation*/int macroNameTokenSourceLocation;
         private final int macroNameOffset;
-        private final CharSequence fileOwnerName;
+        private final char$ptr fileOwner;
+        private CharSequence fileOwnerName; // lazy field based on fileOwner
+        private final boolean isBuiltIn;
 
         public ClankMacroDirectiveWrapper(CharSequence macroName,
                 List<CharSequence> params, MacroDirectiveInfo clankDelegate, Token macroNameToken) {
@@ -489,18 +491,21 @@ public final class ClankPPCallback extends FileInfoCallback {
             macroNameOffset = clankDelegate.getMacroNameOffset();
             FileInfo fileOwner = clankDelegate.getFileOwner();
             if (fileOwner.isFile()) {
-                this.fileOwnerName = ClankFileSystemProviderImpl.getPathFromUrl(toJavaString(fileOwner.getName()));
-                if(CharSequenceUtils.startsWith(this.fileOwnerName, ClankFileSystemProviderImpl.RFS_PREFIX)) {
-                    Exceptions.printStackTrace(new IllegalArgumentException("File owner name should not contain protocol: " + this.fileOwnerName)); //NOI18N
-                }
+                this.isBuiltIn = false;
+                this.fileOwner = fileOwner.getName();
             } else {
-                this.fileOwnerName = BUILD_IN_FILE;
+                this.isBuiltIn = true;
+                this.fileOwner = null;
             }
         }
 
         @Override
         public CharSequence getFile() {
-            return fileOwnerName;
+            return isBuiltIn ? BUILD_IN_FILE : getFileOwnerNameImpl();
+        }
+
+        public boolean isBuiltIn() {
+            return isBuiltIn;
         }
 
         @Override
@@ -532,6 +537,18 @@ public final class ClankPPCallback extends FileInfoCallback {
         public String toString() {
             return super.toString() + this.fileOwnerName + (this.isDefined ? " #define " : " #undef ") + this.macroName + // NOI18N
                     (this.params == null ? "" : ("(" + this.params + ")")); // NOI18N
+        }
+
+        private CharSequence getFileOwnerNameImpl() {
+           assert !isBuiltIn;
+           assert fileOwner != null;
+           if (fileOwnerName == null) {
+               this.fileOwnerName = ClankFileSystemProviderImpl.getPathFromUrl(toJavaString(fileOwner));
+               if (CharSequenceUtils.startsWith(this.fileOwnerName, ClankFileSystemProviderImpl.RFS_PREFIX)) {
+                   Exceptions.printStackTrace(new IllegalArgumentException("File owner name should not contain protocol: " + this.fileOwnerName)); //NOI18N
+               }
+           }
+           return fileOwnerName;
         }
     }
 
