@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.web.common.api;
 
-import junit.framework.Assert;
-import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 
-public class UsageLoggerTest {
+public class UsageLoggerTest extends NbTestCase {
 
-    @Test
-    public void testRepeated() {
-        UsageLogger logger = new UsageLogger.Builder("mylogger")
-                .create();
-        Assert.assertTrue(logger.isLoggingEnabled());
-        Assert.assertTrue(logger.isLoggingEnabled());
+    public UsageLoggerTest(String name) {
+        super(name);
     }
 
-    @Test
-    public void testUnrepeated() {
+    public void testLogAllMessages() {
         UsageLogger logger = new UsageLogger.Builder("mylogger")
-                .unrepeated(true)
+                .message(UsageLoggerTest.class, "allmessages({0})")
+                .firstMessageOnly(false)
                 .create();
-        Assert.assertTrue(logger.isLoggingEnabled());
-        Assert.assertFalse(logger.isLoggingEnabled());
+        assertTrue(logger.isLoggingEnabled());
+        logger.log(1);
+        assertTrue(logger.isLoggingEnabled());
+        logger.log(2);
+        assertTrue(logger.isLoggingEnabled());
+    }
+
+    public void testLogFirstMessageOnly() {
+        UsageLogger logger = new UsageLogger.Builder("mylogger")
+                .message(UsageLoggerTest.class, "onmessage({0})")
+                .create();
+        assertTrue(logger.isLoggingEnabled());
+        assertTrue(logger.isLoggingEnabled());
+        logger.log(1);
+        assertFalse(logger.isLoggingEnabled());
+        logger.log(2);
         logger.reset();
-        Assert.assertTrue(logger.isLoggingEnabled());
-        Assert.assertFalse(logger.isLoggingEnabled());
+        assertTrue(logger.isLoggingEnabled());
+        assertTrue(logger.isLoggingEnabled());
+        logger.log(3);
+        assertFalse(logger.isLoggingEnabled());
     }
 
-    @Test
     public void testDefaultMessage() {
         UsageLogger logger = new UsageLogger.Builder("mylogger")
-                .message(UsageLoggerTest.class, "mymessage")
+                .message(UsageLoggerTest.class, "defaultmessage")
                 .create();
-        logger.log();
-        logger.log();
+        try {
+            logger.log();
+            logger.log();
+        } catch (IllegalStateException ex) {
+            fail("Should not get here");
+        }
     }
 
-    @Test
     public void testMoreMessages() {
         UsageLogger logger = new UsageLogger.Builder("mylogger")
                 .create();
@@ -84,7 +97,7 @@ public class UsageLoggerTest {
         logger.log(UsageLoggerTest.class, "message2");
         try {
             logger.log();
-            Assert.fail("should not get here");
+            fail("should not get here");
         } catch (IllegalStateException ex) {
             // expected
         }
