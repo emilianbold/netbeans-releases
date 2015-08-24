@@ -129,6 +129,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     private final ClankIncludeHandlerImpl includeHandler;
     private final ArrayList<ClankFileInfoWrapper> includeStack = new ArrayList<ClankFileInfoWrapper>(16);
     private final CancellableInterrupter interrupter;
+    private final SmallString tokenSpellBuffer = new SmallString(1024);
 
     public ClankPPCallback(PreprocHandler ppHandler,
             raw_ostream traceOS,
@@ -384,9 +385,8 @@ public final class ClankPPCallback extends FileInfoCallback {
 
     @Override
     protected void onMacroDefineDirective(FileInfo curStackElement, MacroDirectiveInfo macroDirective) {
-        SmallString spell = new SmallString(1024);
         // old model tracked only #define and not #undef
-        CharSequence macroName = ClankToAPTUtils.getTokenText(macroDirective.getMacroNameToken(), curStackElement.getPreprocessor(), spell);
+        CharSequence macroName = ClankToAPTUtils.getTokenText(macroDirective.getMacroNameToken(), curStackElement.getPreprocessor(), tokenSpellBuffer);
         List<CharSequence> params = null;
         if (macroDirective.isDefined()) {
             if (macroDirective.isFunctionLike()) {
