@@ -71,6 +71,7 @@ public class UsageLoggerTest extends NbTestCase {
         logger.log(1);
         assertFalse(logger.isLoggingEnabled());
         logger.log(2);
+        assertFalse(logger.isLoggingEnabled());
         logger.reset();
         assertTrue(logger.isLoggingEnabled());
         assertTrue(logger.isLoggingEnabled());
