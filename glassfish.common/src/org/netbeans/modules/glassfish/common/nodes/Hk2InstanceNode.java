@@ -164,6 +164,10 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
      */
     @Override
     public Action[] getActions(boolean context) {
+        if (!isFullNode) {
+            return new Action[]{};
+        }
+
         return serverInstance.isRemote()
                 ? getRemoteActions() : getLocalActions();
     }
@@ -174,10 +178,6 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
      * @return A list of actions for local server instance.
      */
     public Action[] getLocalActions() {
-        if (!isFullNode) {
-            return new Action[]{};
-        }
-
         return new Action[] {
             SystemAction.get(StartServerAction.class),
             SystemAction.get(DebugAction.class),
