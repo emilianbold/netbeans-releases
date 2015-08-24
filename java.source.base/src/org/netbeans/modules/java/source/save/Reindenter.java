@@ -51,6 +51,7 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
@@ -289,12 +290,66 @@ public class Reindenter implements IndentTask {
         switch (last.getKind()) {
             case COMPILATION_UNIT:
                 break;
+            case MODULE:
+                TokenSequence<JavaTokenId> token = findFirstNonWhitespaceToken(startOffset, endOffset);
+                JavaTokenId nextTokenId = token != null ? token.token().id() : null;
+                if (nextTokenId != null && nextTokenId == JavaTokenId.RBRACE) {
+                    if (isLeftBraceOnNewLine(lastPos, startOffset)) {
+                        switch (cs.getModuleDeclBracePlacement()) {
+                            case NEW_LINE_INDENTED:
+                                currentIndent += cs.getIndentSize();
+                                break;
+                            case NEW_LINE_HALF_INDENTED:
+                                currentIndent += (cs.getIndentSize() / 2);
+                                break;
+                        }
+                    }
+                } else {
+                    Tree t = null;
+                    for (Tree member : ((ModuleTree)last).getDirectives()) {
+                        if (sp.getEndPosition(cut, member) > startOffset) {
+                            break;
+                        }
+                        t = member;
+                    }
+                    if (t != null) {
+                        int i = getCurrentIndent(t, path);
+                        currentIndent = i < 0 ? currentIndent + (cs.indentTopLevelClassMembers() ? cs.getIndentSize() : 0) : i;
+                    } else {
+                        token = findFirstNonWhitespaceToken(startOffset, lastPos);
+                        JavaTokenId prevTokenId = token != null ? token.token().id() : null;
+                        if (prevTokenId != null) {
+                            switch (prevTokenId) {
+                                case LBRACE:
+                                    currentIndent += cs.indentTopLevelClassMembers() ? cs.getIndentSize() : 0;
+                                    break;
+                                case IDENTIFIER:
+                                    if (nextTokenId != null && nextTokenId == JavaTokenId.LBRACE) {
+                                        switch (cs.getModuleDeclBracePlacement()) {
+                                            case NEW_LINE_INDENTED:
+                                                currentIndent += cs.getIndentSize();
+                                                break;
+                                            case NEW_LINE_HALF_INDENTED:
+                                                currentIndent += (cs.getIndentSize() / 2);
+                                                break;
+                                        }
+                                    } else {
+                                        currentIndent += cs.getContinuationIndentSize();
+                                    }
+                                    break;
+                                default:
+                                    currentIndent += cs.getContinuationIndentSize();
+                            }
+                        }
+                    }
+                }
+                break;
             case CLASS:
             case INTERFACE:
             case ENUM:
             case ANNOTATION_TYPE:
-                TokenSequence<JavaTokenId> token = findFirstNonWhitespaceToken(startOffset, endOffset);
-                JavaTokenId nextTokenId = token != null ? token.token().id() : null;
+                token = findFirstNonWhitespaceToken(startOffset, endOffset);
+                nextTokenId = token != null ? token.token().id() : null;
                 if (nextTokenId != null && nextTokenId == JavaTokenId.RBRACE) {
                     if (isLeftBraceOnNewLine(lastPos, startOffset)) {
                         switch (cs.getClassDeclBracePlacement()) {

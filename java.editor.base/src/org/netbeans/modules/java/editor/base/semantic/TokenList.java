@@ -181,6 +181,14 @@ public class TokenList {
     }
 
     public void firstIdentifier(final TreePath tp, final String name, final Map<Tree, Token> tree2Token) {
+        Token t = firstIdentifier(tp, name);
+        if (t != null) {
+            tree2Token.put(tp.getLeaf(), t);
+        }
+    }
+
+    public Token firstIdentifier(final TreePath tp, final String name) {
+        final Token[] ret = new Token[] {null};
         doc.render(new Runnable() {
             @Override
             public void run() {
@@ -204,13 +212,14 @@ public class TokenList {
 
                 if (next) {
                     if (name.equals(info.getTreeUtilities().decodeIdentifier(ts.token().text()).toString())) {
-                        tree2Token.put(tp.getLeaf(), ts.token());
+                        ret[0] = ts.token();
                     } else {
 //                            System.err.println("looking for: " + name + ", not found");
                     }
                 }
             }
         });
+        return ret[0];
     }
 
     public void identifierHere(final IdentifierTree tree, final Map<Tree, Token> tree2Token) {

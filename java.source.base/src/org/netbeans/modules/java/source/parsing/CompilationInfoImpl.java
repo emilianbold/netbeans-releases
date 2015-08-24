@@ -380,8 +380,13 @@ public final class CompilationInfoImpl {
             return currentPhase;
         }
         else {
-            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false);
-            return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
+            try {
+                JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false);
+                return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
+            } catch (Throwable t) {
+                System.out.println(t);
+                throw t;
+            }
         }
     }
 

@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,11 +63,7 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
-import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
-import org.netbeans.modules.java.source.parsing.CachingFileManager;
-import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.ProxyFileManager;
-import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.classpath.AptSourcePath;
 import org.netbeans.modules.java.source.classpath.SourcePath;
@@ -102,8 +97,6 @@ public final class ClasspathInfo {
         }
     }
 
-    private final CachingArchiveProvider archiveProvider;
-
     private final ClassPath srcClassPath;
     private final ClassPath bootClassPath;
     private final ClassPath compileClassPath;
@@ -126,8 +119,7 @@ public final class ClasspathInfo {
     private ClassIndex usagesQuery;
 
     /** Creates a new instance of ClasspathInfo (private use the factory methods) */
-    private ClasspathInfo(final @NonNull CachingArchiveProvider archiveProvider,
-                          final @NonNull ClassPath bootCp,
+    private ClasspathInfo(final @NonNull ClassPath bootCp,
                           final @NonNull ClassPath compileCp,
                           final @NullAllowed ClassPath srcCp,
                           final @NullAllowed JavaFileFilterImplementation filter,
@@ -135,11 +127,9 @@ public final class ClasspathInfo {
                           final boolean ignoreExcludes,
                           final boolean hasMemoryFileManager,
                           final boolean useModifiedFiles) {
-        assert archiveProvider != null;
         assert bootCp != null;
         assert compileCp != null;
         this.cpListener = new ClassPathListener ();
-        this.archiveProvider = archiveProvider;
         this.bootClassPath = bootCp;
         this.compileClassPath = compileCp;
         this.listenerList = new ChangeSupport(this);
@@ -150,8 +140,7 @@ public final class ClasspathInfo {
             this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
         }
         if (srcCp == null) {
-            this.cachedSrcClassPath = this.srcClassPath = this.outputClassPath = ClassPath.EMPTY;
-            this.cachedAptSrcClassPath = null;
+            this.cachedSrcClassPath = this.srcClassPath = this.outputClassPath = this.cachedAptSrcClassPath = ClassPath.EMPTY;
         } else {
             this.srcClassPath = srcCp;
             final ClassPathImplementation noApt = AptSourcePath.sources(srcCp);
@@ -313,7 +302,7 @@ public final class ClasspathInfo {
             final boolean ignoreExcludes,
             final boolean hasMemoryFileManager,
             final boolean useModifiedFiles) {
-        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath,
+        return new ClasspathInfo(bootPath, classPath, sourcePath,
                 filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
 
@@ -378,33 +367,21 @@ public final class ClasspathInfo {
 
     @NonNull
     private synchronized JavaFileManager createFileManager() {
-            final boolean hasSources = this.cachedSrcClassPath != ClassPath.EMPTY;
-            final SiblingSource siblings = SiblingSupport.create();
-            final JavaFileManager fileManager = new ProxyFileManager (
-                new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
-                new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
-                hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
-                    : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ?
-                    new AptSourceFileManager(
-                            this.cachedSrcClassPath,
-                            this.cachedAptSrcClassPath,
-                            siblings.getProvider(),
-                            fmTx
-                    ) : null,
-                hasSources ?
-                    new OutputFileManager(
-                            this.archiveProvider,
-                            this.outputClassPath,
-                            this.cachedSrcClassPath,
-                            this.cachedAptSrcClassPath,
-                            siblings.getProvider(),
-                            fmTx) : null,
-                new TreeLoaderOutputFileManager(this.archiveProvider, fmTx),
-                this.memoryFileManager,
-                this.pgTx,
-                siblings);
-        return fileManager;
+        final SiblingSource siblings = SiblingSupport.create();
+        final ProxyFileManager.Configuration cfg = ProxyFileManager.Configuration.create(
+            bootClassPath,
+            cachedBootClassPath,
+            cachedCompileClassPath,
+            cachedSrcClassPath,
+            outputClassPath,
+            cachedAptSrcClassPath,
+            siblings,
+            fmTx,
+            pgTx);
+        cfg.setFilter(filter);
+        cfg.setIgnoreExcludes(ignoreExcludes);
+        cfg.setUseModifiedFiles(useModifiedFiles);
+        return new ProxyFileManager(cfg);
     }
 
 

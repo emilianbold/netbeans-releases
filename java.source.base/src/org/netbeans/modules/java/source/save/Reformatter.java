@@ -650,6 +650,178 @@ public class Reformatter implements ReformatTask {
         }
 
         @Override
+        public Boolean visitModule(ModuleTree node, Void p) {
+            accept(IDENTIFIER);
+            boolean old = continuationIndent;
+            try {
+                continuationIndent = true;
+                space();
+                scan(node.getName(), p);
+            } finally {                
+                continuationIndent = old;
+            }
+            CodeStyle.BracePlacement bracePlacement = cs.getModuleDeclBracePlacement();
+            boolean spaceBeforeLeftBrace = cs.spaceBeforeModuleDeclLeftBrace();
+            int oldIndent = indent = lastIndent;
+            int halfIndent = lastIndent;
+            switch(bracePlacement) {
+                case SAME_LINE:
+                    spaces(spaceBeforeLeftBrace ? 1 : 0, tokens.offset() < startOffset);
+                    accept(LBRACE);
+                    indent = lastIndent + indentSize;
+                    break;
+                case NEW_LINE:
+                    newline();
+                    accept(LBRACE);
+                    indent = lastIndent + indentSize;
+                    break;
+                case NEW_LINE_HALF_INDENTED:
+                    int oldLast = lastIndent;
+                    indent = lastIndent + (indentSize >> 1);
+                    halfIndent = indent;
+                    newline();
+                    accept(LBRACE);
+                    indent = oldLast + indentSize;
+                    break;
+                case NEW_LINE_INDENTED:
+                    indent = lastIndent + indentSize;
+                    halfIndent = indent;
+                    newline();
+                    accept(LBRACE);
+                    break;
+            }
+            if (node.getDirectives().isEmpty()) {
+                newline();
+            } else {
+                if (!cs.indentTopLevelClassMembers())
+                    indent = oldIndent;
+                blankLines(cs.getBlankLinesAfterModuleHeader());
+                boolean first = true;
+                for (Tree directive : node.getDirectives()) {
+                    if (!first)
+                        blankLines(cs.getBlankLinesBeforeModuleDirectives());
+                    scan(directive, p);
+                    blankLines(cs.getBlankLinesAfterModuleDirectives());
+                }
+                if (lastBlankLinesTokenIndex < 0)
+                    newline();
+                blankLines(cs.getBlankLinesBeforeModuleClosingBrace());
+            }
+            indent = halfIndent;
+            Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
+            if (diff != null && diff.end == tokens.offset()) {
+                if (diff.text != null) {
+                    int idx = diff.text.lastIndexOf('\n'); //NOI18N
+                    if (idx < 0)
+                        diff.text = getIndent();
+                    else
+                        diff.text = diff.text.substring(0, idx + 1) + getIndent();
+                    
+                }
+                String spaces = diff.text != null ? diff.text : getIndent();
+                if (spaces.equals(fText.substring(diff.start, diff.end)))
+                    diffs.removeFirst();
+            } else if (tokens.movePrevious()) {
+                if (tokens.token().id() == WHITESPACE) {
+                    String text =  tokens.token().text().toString();
+                    int idx = text.lastIndexOf('\n'); //NOI18N
+                    if (idx >= 0) {
+                        text = text.substring(idx + 1);
+                        String ind = getIndent();
+                        if (!ind.equals(text))
+                            addDiff(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                    } else if (tokens.movePrevious()) {
+                        if (tokens.token().id() == LINE_COMMENT) {
+                            tokens.moveNext();
+                            String ind = getIndent();
+                            if (!ind.equals(text))
+                                addDiff(new Diff(tokens.offset(), tokens.offset() + tokens.token().length(), ind));
+
+                        } else {
+                            tokens.moveNext();
+                        }
+                    }
+                }
+                tokens.moveNext();
+            }
+            col = indent();
+            accept(RBRACE);
+            indent = lastIndent = oldIndent;
+            return true;
+        }
+
+        @Override
+        public Boolean visitExports(ExportsTree node, Void p) {
+            accept(IDENTIFIER);
+            boolean old = continuationIndent;
+            try {
+                continuationIndent = true;
+                space();
+                scan(node.getExportName(), p);
+                if (node.getModuleNames() != null) {
+                    wrapToken(cs.wrapExportsToKeyword(), 1, IDENTIFIER);
+                    wrapList(cs.wrapExportsToList(), cs.alignMultilineExports(), true, COMMA, node.getModuleNames());
+                }
+                accept(SEMICOLON);
+            } finally {
+                continuationIndent = old;
+            }
+            return true;
+        }
+
+        @Override
+        public Boolean visitProvides(ProvidesTree node, Void p) {
+            accept(IDENTIFIER);
+            boolean old = continuationIndent;
+            try {
+                continuationIndent = true;
+                space();
+                scan(node.getServiceName(), p);
+                wrapToken(cs.wrapProvidesWithKeyword(), 1, IDENTIFIER);
+                spaces(1, true);
+                scan(node.getImplementationName(), p);
+                accept(SEMICOLON);
+            } finally {
+                continuationIndent = old;
+            }
+            return true;
+        }
+
+        @Override
+        public Boolean visitRequires(RequiresTree node, Void p) {
+            accept(IDENTIFIER);
+            boolean old = continuationIndent;
+            try {
+                continuationIndent = true;
+                space();
+                if (node.isPublic()) {
+                    accept(PUBLIC);
+                    space();
+                }
+                scan(node.getModuleName(), p);
+                accept(SEMICOLON);
+            } finally {
+                continuationIndent = old;
+            }
+            return true;
+        }
+
+        @Override
+        public Boolean visitUses(UsesTree node, Void p) {
+            accept(IDENTIFIER);
+            boolean old = continuationIndent;
+            try {
+                continuationIndent = true;
+                space();
+                scan(node.getServiceName(), p);
+                accept(SEMICOLON);
+            } finally {
+                continuationIndent = old;
+            }
+            return true;
+        }
+
+        @Override
         public Boolean visitImport(ImportTree node, Void p) {
             accept(IMPORT);
             boolean old = continuationIndent;

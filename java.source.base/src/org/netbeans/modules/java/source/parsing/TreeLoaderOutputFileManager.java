@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,17 +61,17 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public final class TreeLoaderOutputFileManager implements JavaFileManager {
+final class TreeLoaderOutputFileManager implements JavaFileManager {
 
     private static final Logger LOG = Logger.getLogger(TreeLoaderOutputFileManager.class.getName());
-    private static final String OUTPUT_ROOT = "output-root";   //NOI18N
+    static final String OUTPUT_ROOT = "output-root";   //NOI18N
     private String outputRoot;
 
 
     private final CachingArchiveProvider provider;
     private final FileManagerTransaction tx;
 
-    public TreeLoaderOutputFileManager(
+    TreeLoaderOutputFileManager(
             @NonNull final CachingArchiveProvider provider,
             @NonNull final FileManagerTransaction tx) {
         assert provider != null;

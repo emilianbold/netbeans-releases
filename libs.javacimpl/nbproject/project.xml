@@ -16,6 +16,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.jackpot.rules</friend>
+                <friend>org.netbeans.modules.java.api.common</friend>
                 <friend>org.netbeans.modules.java.hints</friend>
                 <friend>org.netbeans.modules.java.source</friend>
                 <package>com.sun.tools.javac</package>
