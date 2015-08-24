@@ -786,6 +786,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         dialog.pack();
         if(next.isEnabled() && next.isVisible()) {
             next.requestFocusInWindow();
+        } else if(previewButton.isEnabled() && previewButton.isVisible()) {
+            previewButton.requestFocusInWindow();
         } else {
             cancel.requestFocusInWindow();
         }
