@@ -202,6 +202,9 @@ public class LibrariesPanel extends javax.swing.JPanel {
         "LibrariesPanel.updatingPackageJson=Updating package.json."
     })
     void storeChanges() {
+        if (installedLibraries == null) {
+            return; // 254260
+        }
         RP.post(new Runnable() {
             @Override
             public void run() {
