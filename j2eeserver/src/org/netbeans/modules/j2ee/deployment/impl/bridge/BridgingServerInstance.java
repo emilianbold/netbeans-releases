@@ -187,6 +187,11 @@ public class BridgingServerInstance implements ServerInstanceImplementation, Loo
                     | DELEGATE_GET_ACTIONS | DELEGATE_GET_CONTEXT_ACTIONS);
             setDisplayName(displayName);
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[]{};
+        }
     }
 
     private static class InstanceNode extends FilterNode {
