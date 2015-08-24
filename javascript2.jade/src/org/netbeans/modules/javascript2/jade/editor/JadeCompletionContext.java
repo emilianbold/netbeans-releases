@@ -97,7 +97,9 @@ public enum JadeCompletionContext {
         new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.WHITESPACE}, 
         new Object[]{JadeTokenId.BRACKET_LEFT_PAREN, JadeTokenId.EOL, JadeTokenId.WHITESPACE},
         new Object[]{JadeTokenId.JAVASCRIPT, JadeTokenId.OPERATOR_COMMA},
-        new Object[]{JadeTokenId.JAVASCRIPT, JadeTokenId.OPERATOR_COMMA, JadeTokenId.WHITESPACE}
+        new Object[]{JadeTokenId.JAVASCRIPT, JadeTokenId.OPERATOR_COMMA, JadeTokenId.WHITESPACE},
+        new Object[]{JadeTokenId.ATTRIBUTE, JadeTokenId.OPERATOR_ASSIGNMENT, JadeTokenId.JAVASCRIPT, JadeTokenId.WHITESPACE},
+        new Object[]{JadeTokenId.ATTRIBUTE, JadeTokenId.OPERATOR_ASSIGNMENT, JadeTokenId.JAVASCRIPT}
     );
     
     private static final List<Object[]> CSS_ID_POSITION = Arrays.asList(
@@ -162,7 +164,7 @@ public enum JadeCompletionContext {
             case CSS_CLASS: return CSS_CLASS;
             case TEXT: 
                 text = token.text().toString();
-                if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text) && acceptTokenChains(ts, TAG_POSITION, true)) {
+                if (JadeCodeCompletion.CSS_ID_PREFIX.equals(text) && (acceptTokenChains(ts, TAG_POSITION, true) || isEOF)) {
                     return CSS_ID;
                 }
                 break;

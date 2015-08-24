@@ -59,7 +59,6 @@ import org.clang.lex.Token;
 import org.clang.tools.services.support.FileInfo;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
-import org.clank.java.std;
 import static org.clank.java.std.$second_uint;
 import org.clank.support.Casts;
 import static org.clank.support.Casts.toJavaString;
@@ -756,18 +755,19 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public Collection<ClankDriver.ClankPreprocessorDirective> getPreprocessorDirectives() {
-            assert convertedToAPT : "was not prepared yet";
-            assert convertedPPDirectives != null;
+            prepareCachesIfPossible();
             return Collections.unmodifiableList(convertedPPDirectives);
         }
 
         @Override
         public Collection<MacroExpansion> getMacroExpansions() {
+            prepareCachesIfPossible();
             return Collections.unmodifiableList(convertedMacroExpansions);
         }
 
         @Override
         public Collection<MacroUsage> getMacroUsages() {
+            prepareCachesIfPossible();
             return Collections.unmodifiableList(convertedMacroUsages);
         }
 
@@ -777,6 +777,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public FileGuard getFileGuard() {
+            prepareCachesIfPossible();
             return convertedGuard;
         }
 
@@ -813,6 +814,11 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public synchronized ClankDriverImpl.APTTokenStreamCacheImplementation prepareCachesIfPossible() {
+            prepareCaches();
+            return this;
+        }
+
+        private void prepareCaches() {
             if (!convertedToAPT) {
                 prepareConvertedTokensIfAny();
                 prepareConvertedPPDirectives();
@@ -820,7 +826,6 @@ public final class ClankPPCallback extends FileInfoCallback {
                 prepareConvertedGuard();
                 convertedToAPT = true;
             }
-            return this;
         }
 
         @Override

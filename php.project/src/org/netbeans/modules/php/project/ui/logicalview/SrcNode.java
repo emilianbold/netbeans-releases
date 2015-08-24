@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -255,7 +256,8 @@ public class SrcNode extends FilterNode {
                 String propertyName = evt.getPropertyName();
                 if (PhpProject.PROP_WEB_ROOT.equals(propertyName)) {
                     FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
-                    if (folder.equals(evt.getOldValue()) || folder.equals(evt.getNewValue())) {
+                    if (Objects.equals(folder, evt.getOldValue())
+                            || Objects.equals(folder, evt.getNewValue())) {
                         fireIconChange();
                         fireOpenedIconChange();
                     }

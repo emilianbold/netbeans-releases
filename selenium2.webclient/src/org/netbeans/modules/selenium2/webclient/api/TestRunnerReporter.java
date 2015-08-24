@@ -145,7 +145,7 @@ public final class TestRunnerReporter {
             // in "multi capability" mode session is finished only once
             if (multiCapabilities == 0 || // capabilities is used
                     (multiCapabilities > 0 && matcher.group("CAPABILITY") == null) || // multiCapabilities is used with only one browser
-                    (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == 1)) { // multiCapabilities is used with more than one browser
+                    (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == multiCapabilities)) { // multiCapabilities is used with more than one browser
                 sessionFinished(line);
             }
             return showOutput ? "" : null;
