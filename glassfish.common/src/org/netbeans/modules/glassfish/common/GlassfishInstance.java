@@ -753,6 +753,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     // API instance
     private ServerInstance commonInstance;
     private GlassfishInstanceProvider instanceProvider;
+
+    // GuardedBy("this")
+    private Node fullNode;
     
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -1704,7 +1707,12 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     @Override
     public Node getFullNode() {
         Logger.getLogger("glassfish").finer("Creating GF Instance node [FULL]"); // NOI18N
-        return new Hk2InstanceNode(this, true);
+        synchronized (this) {
+            if (fullNode == null) {
+                fullNode = new Hk2InstanceNode(this, true);
+            }
+            return fullNode;
+        }
     }
 
     @Override
