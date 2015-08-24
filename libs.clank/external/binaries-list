@@ -1,6 +1,5 @@
-#changeset:   15460:1811ba114545
-#tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Aug 21 13:08:18 2015 +0300
-#summary:     fixed NPE
-481F3F250488F9230E076578DBDB0ED0AC5A47F9 clank_0.3.6.zip
+#changeset:   15474:a48d19d1d689
+#user:        Alexander Simon <alexvsimon@netbeans.org>
+#date:        Mon Aug 24 11:51:09 2015 +0300
+#summary:     add macro reference in #undef directive
+5EC424368381D87858BD3547A877FF4D91556CC4 clank_0.3.6.zip
