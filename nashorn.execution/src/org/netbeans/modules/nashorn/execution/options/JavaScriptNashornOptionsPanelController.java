@@ -55,10 +55,10 @@ import org.openide.util.Lookup;
  * @author Martin Entlicher
  */
 @OptionsPanelController.SubRegistration(
-    location="Html5",
+    location=JavaOptions.JAVA,
     displayName="#LBL_Nashorn",
     keywords="#KW_JavaScript",
-    keywordsCategory="Html5/JavaScript")
+    keywordsCategory=JavaOptions.JAVA+"/JavaScript")
 public final class JavaScriptNashornOptionsPanelController extends OptionsPanelController {
 
     private JavaScriptNashornPanel panel;
