@@ -596,8 +596,9 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         }
     }
 
+    private final StringBuilder idText = new StringBuilder();
     private Token<CppTokenId> keywordOrIdentifier(int c) {
-        StringBuilder idText = new StringBuilder();
+        idText.setLength(0);
         idText.append((char)c);
         while (true) {
             c = read(true);
