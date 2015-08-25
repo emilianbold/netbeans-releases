@@ -43,32 +43,31 @@ package org.netbeans.modules.java.api.common.classpath;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ModuleTree;
-import com.sun.source.util.TreeScanner;
-import com.sun.tools.javac.code.Directive;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.tools.JavaFileObject;
+import javax.lang.model.element.ModuleElement;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -142,7 +141,9 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
         }
         final Collection<File> newModuleInfos = new ArrayDeque<>();
         boolean needToFire;
-        res = getAllModules();
+        final Map<String,URL> modulesByName = getAllModules();
+        res = new ArrayList<>(modulesByName.size());
+        modulesByName.values().stream().map((url)->ClassPathSupport.createResource(url)).forEach(res::add);
         selfRes.set(new Object[]{res, Boolean.FALSE});
         try {
             boolean found = false;
@@ -159,21 +160,19 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
                                 try {
                                     final List<List<PathResourceImplementation>> resInOut = new ArrayList<>(1);
                                     resInOut.add(res);
-                                    src.runUserActionTask(new Task<CompilationController>() {
-                                        @Override
-                                        public void run(CompilationController cc) throws Exception {
-                                            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                            final CompilationUnitTree cu = cc.getCompilationUnit();
-                                            //Todo: No API in Javac yet.
-                                            final Symbol.ModuleSymbol root = cu.accept(new TreeScanner<Symbol.ModuleSymbol, Void>() {
-                                                @Override
-                                                public Symbol.ModuleSymbol visitModule(ModuleTree node, Void p) {
-                                                    return ((JCTree.JCModuleDecl)node).sym;
-                                                }
-                                            },null);
-                                            Set<URL> requires = collectRequiredModules(root, true);
-                                            resInOut.set(0, filterModules(resInOut.get(0), requires));
-                                        }
+                                    src.runUserActionTask((CompilationController cc) -> {
+                                        cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                        final Trees trees = cc.getTrees();
+                                        final TreePathScanner<ModuleElement, Void> scanner =
+                                                new TreePathScanner<ModuleElement, Void>() {
+                                                    @Override
+                                                    public ModuleElement visitModule(ModuleTree node, Void p) {
+                                                        return (ModuleElement) trees.getElement(getCurrentPath());
+                                                    }
+                                            };
+                                        final ModuleElement rootModule = scanner.scan(new TreePath(cc.getCompilationUnit()), null);
+                                        Set<URL> requires = collectRequiredModules(rootModule, true, modulesByName);
+                                        resInOut.set(0, filterModules(resInOut.get(0), requires));
                                     }, true);
                                     res = resInOut.get(0);
                                 } catch (IOException ioe) {
@@ -276,62 +275,57 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
         this.listeners.firePropertyChange(PROP_RESOURCES, null, null);
     }
 
-    private List<PathResourceImplementation> getAllModules() {
-        final List<PathResourceImplementation> res = new ArrayList<>();
+    private Map<String,URL> getAllModules() {
+        final Map<String,URL> res = new HashMap<>();
         final String platformName = eval.getProperty(PLATFORM_ACTIVE);
         if (platformName != null && !platformName.isEmpty()) {
-            for (JavaPlatform plat : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
-                if (platformName.equals(plat.getProperties().get(PLATFORM_ANT_NAME))) {
-                    for (ClassPath.Entry entry : plat.getBootstrapLibraries().entries()) {
-                        final URL root = entry.getURL();
-                        if (PROTOCOL_NBJRT.equals(root.getProtocol())) {
-                            res.add(ClassPathSupport.createResource(root));
-                        }
-                    }
-                }
-            }
+            Arrays.stream(JavaPlatformManager.getDefault().getInstalledPlatforms())
+                    .filter((plat)->platformName.equals(plat.getProperties().get(PLATFORM_ANT_NAME)))
+                    .flatMap((plat)->plat.getBootstrapLibraries().entries().stream())
+                    .map((entry) -> entry.getURL())
+                    .filter((root) -> (PROTOCOL_NBJRT.equals(root.getProtocol())))
+                    .forEach((root) -> {
+                        res.put(getModuleName(root),root);
+                    });
         }
         return res;
     }
 
     @NonNull
-    private static Set<URL> collectRequiredModules(Symbol.ModuleSymbol module, boolean transitive) {
+    private static Set<URL> collectRequiredModules(
+            @NonNull final ModuleElement module,
+            final boolean transitive,
+            @NonNull final Map<String,URL> modulesByName) {
         final Set<URL> res = new HashSet<>();
-        collectRequiredModulesImpl(module, transitive, res);
+        collectRequiredModulesImpl(module, transitive, modulesByName, res);
         return res;
     }
 
-    private static void collectRequiredModulesImpl(Symbol.ModuleSymbol module, boolean transitive, Collection<? super URL> c) {
+    private static void collectRequiredModulesImpl(
+            @NullAllowed final ModuleElement module,
+            final boolean transitive,
+            @NonNull final Map<String,URL> modulesByName,
+            @NonNull final Collection<? super URL> c) {
         if (module != null) {
-            for (Directive.RequiresDirective req : module.requires) {
+            for (ModuleElement.RequiresDirective req : module.getRequiresDirectives()) {
+                final ModuleElement dependency = req.getDependency();
                 if (transitive) {
-                    collectRequiredModulesImpl(req.module, transitive, c);
+                    collectRequiredModulesImpl(dependency, transitive, modulesByName, c);
                 }
-                final JavaFileObject jfo = req.module.module_info.classfile != null ?
-                        req.module.module_info.classfile :
-                        req.module.module_info.sourcefile;
-                if (jfo != null) {
-                    try {
-                        c.add(moduleURL(jfo));
-                    } catch (MalformedURLException e) {
-                        LOG.log(
-                            Level.WARNING,
-                            "Invalid URL: {0}, reason: {1}",    //NOI18N
-                            new Object[]{
-                                jfo.toUri(),
-                                e.getMessage()
-                            });
-                    }
+                final URL dependencyURL = modulesByName.get(dependency.getQualifiedName().toString());
+                if (dependencyURL != null) {
+                    c.add(dependencyURL);
                 }
             }
         }
     }
 
     @NonNull
-    private static URL moduleURL(@NonNull final JavaFileObject jfo) throws MalformedURLException {
-        String uri = jfo.toUri().toString();
-        uri = uri.substring(0, uri.lastIndexOf('/')+1); //NOI18N
-        return new URL(uri);
+    private static String getModuleName(@NonNull final URL moduleURL) {
+        final String path = moduleURL.getPath();
+        int endIndex = path.length() - 1;
+        int startIndex = path.lastIndexOf('/', endIndex - 1);   //NOI18N
+        return path.substring(startIndex+1, endIndex);
     }
 
     @NonNull
