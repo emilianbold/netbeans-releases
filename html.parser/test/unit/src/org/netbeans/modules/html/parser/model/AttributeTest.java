@@ -69,7 +69,7 @@ public class AttributeTest extends NbTestCase {
         ElementDescriptor div = ElementDescriptor.forName("div");
         assertNotNull(div);
         assertEquals("div", div.getName());
-        assertEquals("http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#the-div-element",
+        assertEquals("http://www.whatwg.org/specs/web-apps/current-work/multipage/" + ElementDescriptor.DIV.getHelpLink(),
                 div.getHelpUrl().toExternalForm());
 
         Collection<ContentType> cats = div.getCategoryTypes();
