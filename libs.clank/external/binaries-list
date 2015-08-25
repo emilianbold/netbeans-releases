@@ -1,6 +1,6 @@
-#changeset:   15491:635cee004666
+#changeset:   15493:c6deb2566b4d
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Aug 24 21:30:26 2015 +0300
-#summary:     PERF: reuse token spelling
-80194BE08152BF185BAB715E00E902B02FA6D82E clank_0.3.6.zip
+#date:        Tue Aug 25 13:16:42 2015 +0300
+#summary:     PERF: write directly into array
+8ED9A4B4C82B57DF7E48A1D26017D921B453DA64 clank_0.3.6.zip
