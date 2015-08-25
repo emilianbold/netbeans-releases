@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.mixeddev.java;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -585,12 +586,17 @@ public final class JNISupport {
             if (controller == null || controller.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
                 return;
             }
-            
-            List<? extends Tree> topLevelDecls = controller.getCompilationUnit().getTypeDecls();
-            for (Tree topLevelDecl : topLevelDecls) {
-                if (topLevelDecl.getKind() == Tree.Kind.CLASS) {
-                    if (hasJniMethods((ClassTree) topLevelDecl)) {
-                        result.add(JavaContextSupport.renderQualifiedName(JavaContextSupport.getQualifiedName(controller, topLevelDecl)));
+            final CompilationUnitTree compilationUnit = controller.getCompilationUnit();
+            if (compilationUnit == null) {
+                return;
+            }
+            List<? extends Tree> topLevelDecls = compilationUnit.getTypeDecls();
+            if (topLevelDecls != null && !topLevelDecls.isEmpty()) {
+                for (Tree topLevelDecl : topLevelDecls) {
+                    if (topLevelDecl.getKind() == Tree.Kind.CLASS) {
+                        if (hasJniMethods((ClassTree) topLevelDecl)) {
+                            result.add(JavaContextSupport.renderQualifiedName(JavaContextSupport.getQualifiedName(controller, topLevelDecl)));
+                        }
                     }
                 }
             }
