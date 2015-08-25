@@ -358,7 +358,8 @@ public final class TestRunnerReporter {
         // at notify (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:465:12)
         // at C:\Users\toikonom\AppData\Local\Temp\AngularJSPhoneCat\node_modules\protractor\lib\protractor.js:1041:17
         // at [object Object].webdriver.promise.ControlFlow.runInNewFrame_ (C:\Users\toikonom\AppData\Local\Temp\AngularJSPhoneCat\node_modules\protractor\node_modules\selenium-webdriver\lib\webdriver\promise.js:1539:20)
-        static final Pattern FILE_LINE_PATTERN_UNIX = Pattern.compile("^" + CAPABILITY + "(.*)at ([^/]*)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
+        // at Context.<anonymous> (test/test.js:8:24)
+        static final Pattern FILE_LINE_PATTERN_UNIX = Pattern.compile("^" + CAPABILITY + "(.*)at ([^/(]*)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
         static final Pattern FILE_LINE_PATTERN_WINDOWS = Pattern.compile("^" + CAPABILITY + "(.*)at (.*)(?<DRIVE>[a-zA-Z]:)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
 
         final Project project;
@@ -382,7 +383,9 @@ public final class TestRunnerReporter {
             }
             if (matchFound) {
                 String pathname = drive == null ? matcher.group("FILE") : drive.concat(matcher.group("FILE")); // NOI18N
-                File path = new File(pathname);
+                // mocha changed the way it might report failures' stack traces after 2.2.3
+                // This might result in pathname being '(...', so we need to ommit the starting '('
+                File path = new File(pathname.replace("(", ""));
                 File file;
                 FileObject projectDir = project.getProjectDirectory();
                 if (path.isAbsolute()) {
@@ -394,7 +397,8 @@ public final class TestRunnerReporter {
                     }
                 }
                 FileObject parent = underTestRoot ? Utilities.getTestsSeleniumFolder(project, false) : projectDir;
-                if(!FileUtil.isParentOf(parent, FileUtil.toFileObject(file))) {
+                FileObject fo = FileUtil.toFileObject(file);
+                if(fo == null || !FileUtil.isParentOf(parent, fo)) {
                     return null;
                 }
                 return Pair.of(file, new int[] {Integer.parseInt(matcher.group("LINE")), Integer.parseInt(matcher.group("COLUMN"))}); // NOI18N

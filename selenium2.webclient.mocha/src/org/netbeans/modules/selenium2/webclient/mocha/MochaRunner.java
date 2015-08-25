@@ -334,6 +334,9 @@ public class MochaRunner {
                 debuggerStartTask = null;
             }
             String output2display = testRunnerReporter.processLine(line);
+            if(output2display == null) {
+                return Collections.EMPTY_LIST;
+            }
             TestRunnerReporter.CallStackCallback callStackCallback = new TestRunnerReporter.CallStackCallback(runInfo.getProject());
             Pair<File, int[]> parsedLocation = callStackCallback.parseLocation(line, false);
             FileOutputListener fileOutputListener = parsedLocation == null ? null : new FileOutputListener(parsedLocation.first(), parsedLocation.second()[0], parsedLocation.second()[1]);
