@@ -55,6 +55,10 @@ import java.util.logging.StreamHandler;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class MessagesHandler extends StreamHandler {
+    
+    /** Do not flush repeat message when the count exceeds this number. */
+    static final int MAX_REPEAT_COUNT_FLUSH = 10;
+    
     private final File dir;
     private final File[] files;
     private final long limit;
@@ -62,6 +66,7 @@ final class MessagesHandler extends StreamHandler {
     private LogRecord lastLogRecord;
     private LogRecord repeatingRecord;
     private long repeatCounter;
+    private long lastRecordAllRepeatsCounter = 1;
     
     MessagesHandler(File dir) {
         this(dir, -1, 1024 * 1024);
@@ -114,10 +119,18 @@ final class MessagesHandler extends StreamHandler {
             if (lastLogRecord != null) {
                 if (compareRepeating(lastLogRecord, record)) {
                     repeatCounter++;
-                    repeatingRecord = createRepeatingRecord(record, repeatCounter);
+                    lastRecordAllRepeatsCounter++;
+                    LogRecord rr = createRepeatingRecord(record, repeatCounter);
+                    if (rr != null) {
+                        repeatingRecord = rr;
+                    }
                     return ;
-                } else if (repeatCounter > 0) {
+                } else if (repeatCounter > 0 || lastRecordAllRepeatsCounter > 1) {
+                    if (lastRecordAllRepeatsCounter > MAX_REPEAT_COUNT_FLUSH) {
+                        repeatingRecord = createAllRepeatsRecord(lastLogRecord, lastRecordAllRepeatsCounter);
+                    }
                     flushRepeatCounter();
+                    lastRecordAllRepeatsCounter = 1;
                 }
             }
             lastLogRecord = record;
@@ -148,11 +161,11 @@ final class MessagesHandler extends StreamHandler {
     }
 
     private synchronized void flushRepeatCounter() {
-        if (repeatCounter > 0) {
+        if (repeatingRecord != null) {
             super.publish(repeatingRecord);
             repeatingRecord = null;
-            repeatCounter = 0;
         }
+        repeatCounter = 0;
     }
 
     private boolean compareRepeating(LogRecord r1, LogRecord r2) {
@@ -183,16 +196,33 @@ final class MessagesHandler extends StreamHandler {
     }
 
     private LogRecord createRepeatingRecord(LogRecord r, long rc) {
-        return new LogRecord(r.getLevel(), getRepeatingMessage(rc));
+        if (lastRecordAllRepeatsCounter <= (MAX_REPEAT_COUNT_FLUSH+1)) {
+            return new LogRecord(r.getLevel(), getRepeatingMessage(rc, lastRecordAllRepeatsCounter));
+        } else {
+            return null;
+        }
     }
 
-    static String getRepeatingMessage(long rc) {
+    private LogRecord createAllRepeatsRecord(LogRecord r, long allRc) {
+        return new LogRecord(r.getLevel(), getAllRepeatsMessage(allRc));
+    }
+
+    static String getRepeatingMessage(long rc, long allRc) {
         String msg;
-        if (rc == 1) {
-            msg = "Last record repeated again.";
+        if (allRc > MAX_REPEAT_COUNT_FLUSH) {
+            msg = "Last record repeated more than "+MAX_REPEAT_COUNT_FLUSH+" times, "+
+                  "further logs of this record are ignored until the log record changes.";
         } else {
-            msg = "Last record repeated "+rc+" more times.";
+            if (rc == 1) {
+                msg = "Last record repeated again.";
+            } else {
+                msg = "Last record repeated "+rc+" more times.";
+            }
         }
         return msg;
+    }
+
+    static String getAllRepeatsMessage(long allRc) {
+        return "Last record repeated "+allRc+" times in total.";
     }
 }
