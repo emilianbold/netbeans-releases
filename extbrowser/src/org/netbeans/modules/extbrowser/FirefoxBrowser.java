@@ -185,7 +185,7 @@ public class FirefoxBrowser extends ExtWebBrowser {
             
             retValue = new NbProcessDescriptor(
                 prg,
-                "-remote \"openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})\"", // NOI18N
+                "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", // NOI18N
                 ExtWebBrowser.UnixBrowserFormat.getHint()
             );
         }
