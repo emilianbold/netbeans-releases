@@ -71,7 +71,7 @@ import org.openide.util.CharSequences;
  */
 public class HtmlDocumentation implements HelpResolver {
 
-    static final String SECTIONS_PATTERN_CODE = "<h\\d\\s*?id=\\\"([\\w\\d-_,:]*)\\\"[^\\>]*>";//NOI18N
+    static final String SECTIONS_PATTERN_CODE = "<h\\d\\s*?id=['\\\"]?([\\w\\d-_,:]*)['\\\"]?[^\\>]*>";//NOI18N
 //    static final String SECTIONS_PATTERN_CODE ="<[\\w\\d]*.*?id=\\\"([\\w\\d-_]*)\\\"[^\\>]*>";//NOI18N
     static final Pattern SECTIONS_PATTERN = Pattern.compile(SECTIONS_PATTERN_CODE);
     private static final String DOC_ZIP_FILE_NAME = "docs/html5doc.zip"; //NOI18N
@@ -244,8 +244,7 @@ public class HtmlDocumentation implements HelpResolver {
                     CharSequence sub = content.subSequence(lastgi, gi);
                     int index = CharSequences.indexOf(
                             sub,
-                            String.format("<dfn id=\"%s\"", sectionName)); //NOI18N
-
+                            String.format("<dfn id=%s", sectionName)); //NOI18N
                     if (index != -1) {
                         //use this section
                         return buildAndCacheHelpText(content, new OffsetRange(lastgi, gi), url);
