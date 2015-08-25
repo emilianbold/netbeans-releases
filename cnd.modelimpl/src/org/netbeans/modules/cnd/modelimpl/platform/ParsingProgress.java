@@ -48,7 +48,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver;
 import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver.ParsingProblemDetector;
 import org.openide.util.Cancellable;
@@ -59,7 +61,7 @@ import org.openide.util.NbBundle;
  * provides progress bar in status bar
  */
 final class ParsingProgress implements Cancellable {
-    
+
     private final ProgressHandle handle;
     private int curWorkedUnits = 0;
     private int maxWorkUnits = 0;
@@ -151,6 +153,15 @@ final class ParsingProgress implements Cancellable {
      * inform about starting handling next file item
      */
     public void nextCsmFile(CsmFile file) {
+        if( ! started || !determinate || cancelled) {
+            return;
+        }
+        // extract expensive line counting out of sync block;
+        // also we know it is used only when TIMING is true
+        int lineCount = 0;
+        if (problemDetector != null && TraceFlags.TIMING) {
+            lineCount = CsmFileInfoQuery.getDefault().getLineCount(file);
+        }
         synchronized (handle) {
             if( ! started || !determinate || cancelled) {
                 return;
@@ -170,7 +181,7 @@ final class ParsingProgress implements Cancellable {
                 String problem = ""; // NOI18N
                 String elapsedTime = ""; // NOI18N
                 if (problemDetector != null) {
-                    problem = problemDetector.nextCsmFile(file, curWorkedUnits, maxWorkUnits + addedAfterStartParsing);
+                    problem = problemDetector.nextCsmFile(file, lineCount, curWorkedUnits, maxWorkUnits + addedAfterStartParsing);
                     elapsedTime = problemDetector.getRemainingTime();
                 }
                 String msg = NbBundle.getMessage(ModelSupport.class, "MSG_ParsingProgressFull", ""+curWorkedUnits, ""+(maxWorkUnits + addedAfterStartParsing), file.getName().toString(), elapsedTime, problem); // NOI18N
