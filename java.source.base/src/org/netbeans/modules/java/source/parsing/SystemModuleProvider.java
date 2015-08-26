@@ -41,84 +41,63 @@
  */
 package org.netbeans.modules.java.source.parsing;
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 
 /**
  *
  * @author Tomas Zezula
  */
-final class ModuleLocation implements Location {
+final class SystemModuleProvider implements ModuleFileManager.ModuleProvider {
 
-    private final Location base;
-    private final String name;
-    private final String moduleName;
-    private final URL moduleRoot;
+    private static final Logger LOG = Logger.getLogger(SystemModuleProvider.class.getName());
 
-    ModuleLocation(
-            @NonNull final Location base,
-            @NonNull final String name,
-            @NonNull final String moduleName,
-            @NonNull final URL moduleRoot) {
-        assert base != null;
-        assert name != null;
-        assert moduleName != null;
-        assert moduleRoot != null;
-        this.base = base;
-        this.name = name;
-        this.moduleName = moduleName;
-        this.moduleRoot = moduleRoot;
+    private final ClassPath boot;
+
+    SystemModuleProvider(@NonNull final ClassPath boot) {
+        assert boot != null;
+        this.boot = boot;
     }
 
+    @NonNull
     @Override
-    @NonNull
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public boolean isOutputLocation() {
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return getName();
-    }
-
-    @NonNull
-    String getModuleName() {
-        return moduleName;
-    }
-
-    @NonNull
-    URL getModuleRoot() {
-        return moduleRoot;
-    }
-
-    @NonNull
-    Location getBaseLocation() {
-        return base;
-    }
-
-    @NonNull
-    static ModuleLocation create(
-            @NonNull final Location base,
-            @NonNull final URL moduleRoot) {
-        final String path = moduleRoot.getPath();
-        final int end = path.length()-1;
-        final int start = path.lastIndexOf('/', end - 1);   //NOI18N
-        String moduleName = path.substring(start+1, end);
-        return new ModuleLocation(base, moduleRoot.toString(), moduleName, moduleRoot);
-    }
-
-    @NonNull
-    static ModuleLocation create(
-            @NonNull final Location base,
-            @NonNull final URL moduleRoot,
-            @NonNull final String moduleName) {
-        return new ModuleLocation(base, moduleRoot.toString(), moduleName, moduleRoot);
+    public Map<URL,Set<Location>> getModulePath(@NonNull final Location baseLocation) {
+        final Map<URL,Set<Location>> moduleRoots = new HashMap<>();
+        for (ClassPath.Entry e : boot.entries()) {
+            final URL url = e.getURL();
+            if ("nbjrt".equals(url.getProtocol())) {    //NOI18N
+                final String surl = url.toString();
+                final int index = surl.lastIndexOf('/', surl.length()-2);   //NOI18N
+                try {
+                    final URL modulePathRoot = new URL (surl.substring(0, index+1));
+                    Set<Location> modules = moduleRoots.get(modulePathRoot);
+                    if (modules == null) {
+                        modules = new HashSet<>();
+                        moduleRoots.put(modulePathRoot, modules);
+                    }
+                    modules.add(ModuleLocation.create(baseLocation, url));
+                } catch (MalformedURLException ex) {
+                    LOG.log(
+                        Level.WARNING,
+                        "Invalid URL: {0}, reason: {1}",    //NOI18N
+                        new Object[]{
+                            surl,
+                            ex.getMessage()
+                        });
+                }
+            }
+        }
+        return moduleRoots;
     }
 
 }

@@ -42,26 +42,23 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -70,32 +67,28 @@ import org.openide.util.Exceptions;
  */
 final class ModuleFileManager implements JavaFileManager {
 
-    private final CachingArchiveProvider provider;
-    private final Collection<? extends URL> moduleRoots;
-    private final boolean cacheFile;
-
     private static final Logger LOG = Logger.getLogger(ModuleFileManager.class.getName());
 
+    private final CachingArchiveProvider cap;
+    private final ModuleProvider mop;
+    private final boolean cacheFile;
 
-    public ModuleFileManager(
-            @NonNull final CachingArchiveProvider provider,
-            @NonNull final ClassPath cp,
-            final boolean cacheFile) {
-        this (
-            provider,
-            getModuleRoots(cp),
-            cacheFile);
+
+
+    @FunctionalInterface
+    interface ModuleProvider {
+        Map<URL,Set<Location>> getModulePath(Location baseLocation);
     }
 
 
-    private ModuleFileManager(
-            final CachingArchiveProvider provider,
-            final Collection<? extends URL> moduleRoots,
-            boolean cacheFile) {
-        assert provider != null;
-        assert moduleRoots != null;
-        this.provider = provider;
-        this.moduleRoots = moduleRoots;
+    public ModuleFileManager(
+            @NonNull final CachingArchiveProvider cap,
+            @NonNull final ModuleProvider mop,
+            final boolean cacheFile) {
+        assert cap != null;
+        assert mop != null;
+        this.cap = cap;
+        this.mop = mop;
         this.cacheFile = cacheFile;
     }
 
@@ -113,7 +106,7 @@ final class ModuleFileManager implements JavaFileManager {
         final ModuleLocation ml = asModuleLocation(l);
         final String folderName = FileObjects.convertPackage2Folder(packageName);
         try {
-            final Archive archive = provider.getArchive(ml.getModuleRoot(), cacheFile);
+            final Archive archive = cap.getArchive(ml.getModuleRoot(), cacheFile);
             if (archive != null) {
                 final Iterable<JavaFileObject> entries = archive.getFiles(folderName, null, kinds, null);
                 if (LOG.isLoggable(Level.FINEST)) {
@@ -160,16 +153,14 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final JavaFileObject.Kind kind) {
         final ModuleLocation ml = asModuleLocation(l);
         final String[] namePair = FileObjects.getParentRelativePathAndName(className);
-        if (namePair == null) {
-            return null;
-        }
-        namePair[1] = namePair[1] + kind.extension;
         try {
-            final Archive  archive = provider.getArchive (ml.getModuleRoot(), cacheFile);
+            final Archive  archive = cap.getArchive (ml.getModuleRoot(), cacheFile);
             if (archive != null) {
                 final Iterable<JavaFileObject> files = archive.getFiles(namePair[0], null, null, null);
                 for (JavaFileObject e : files) {
-                    if (namePair[1].equals(e.getName())) {
+                    final String ename = e.getName();
+                    if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
+                        kind == FileObjects.getKind(FileObjects.getExtension(ename))) {
                         return e;
                     }
                 }
@@ -242,21 +233,7 @@ final class ModuleFileManager implements JavaFileManager {
     @Override
     @NonNull
     public Iterable<Set<Location>> listModuleLocations(@NonNull final Location location) throws IOException {
-        if (location != StandardLocation.SYSTEM_MODULE_PATH) {
-            throw new IllegalArgumentException(String.valueOf(location));
-        }
-        final Collection<Set<Location>> result = new ArrayList<>(moduleRoots.size());
-        for (URL moduleRoot : moduleRoots) {
-            final org.openide.filesystems.FileObject fo = URLMapper.findFileObject(moduleRoot);
-            if (fo != null) {
-                final Set<Location> modules = new HashSet<>();
-                for (org.openide.filesystems.FileObject module : fo.getChildren()) {
-                    modules.add(ModuleLocation.create(location, module.toURL()));
-                }
-                result.add(modules);
-            }
-        }
-        return result;
+        return mop.getModulePath(location).values();
     }
 
     @Override
@@ -289,7 +266,7 @@ final class ModuleFileManager implements JavaFileManager {
         assert relativeName != null;
         final String resourceName = FileObjects.resolveRelativePath(pkgName,relativeName);
         try {
-            final Archive  archive = provider.getArchive (ml.getModuleRoot(), cacheFile);
+            final Archive  archive = cap.getArchive (ml.getModuleRoot(), cacheFile);
             if (archive != null) {
                 final JavaFileObject file = archive.getFile(resourceName);
                 if (file != null) {
@@ -300,30 +277,6 @@ final class ModuleFileManager implements JavaFileManager {
             Exceptions.printStackTrace(e);
         }
         return null;
-    }
-
-    @NonNull
-    private static Collection<? extends URL> getModuleRoots(@NonNull final ClassPath cp) {
-        final Set<URL> moduleRoots = new HashSet<>();
-        for (ClassPath.Entry e : cp.entries()) {
-            final URL url = e.getURL();
-            if ("nbjrt".equals(url.getProtocol())) {    //NOI18N
-                final String surl = url.toString();
-                final int index = surl.lastIndexOf('/', surl.length()-2);   //NOI18N
-                try {
-                    moduleRoots.add(new URL (surl.substring(0, index+1)));
-                } catch (MalformedURLException ex) {
-                    LOG.log(
-                        Level.WARNING,
-                        "Invalid URL: {0}, reason: {1}",    //NOI18N
-                        new Object[]{
-                            surl,
-                            ex.getMessage()
-                        });
-                }
-            }
-        }
-        return moduleRoots;
     }
 
     @NonNull
