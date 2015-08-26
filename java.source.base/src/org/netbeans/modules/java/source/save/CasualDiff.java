@@ -101,6 +101,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCConditional;
 import com.sun.tools.javac.tree.JCTree.JCContinue;
+import com.sun.tools.javac.tree.JCTree.JCDirective;
 import com.sun.tools.javac.tree.JCTree.JCDoWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCErroneous;
@@ -119,6 +120,7 @@ import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCModuleDecl;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCPackageDecl;
@@ -665,6 +667,35 @@ public class CasualDiff {
         } else {
             return ChangeKind.INSERT;
         }
+    }
+
+    protected int diffModuleDef(JCModuleDecl oldT, JCModuleDecl newT, int[] bounds) {
+        int localPointer = bounds[0];
+
+        int[] qualBounds = getBounds(oldT.getName());
+        copyTo(localPointer, qualBounds[0]);
+        localPointer = diffTree(oldT.getName(), newT.getName(), qualBounds);
+
+        int insertHint = oldT.directives.isEmpty() ? endPos(oldT) - 1 : oldT.directives.get(0).getStartPosition() - 1;
+        tokenSequence.move(insertHint);
+        tokenSequence.moveNext();
+        insertHint = moveBackToToken(tokenSequence, insertHint, JavaTokenId.LBRACE) + 1;
+
+        int old = printer.indent();
+        PositionEstimator est = EstimatorFactory.members(oldT.directives, newT.directives, diffContext);
+        localPointer = copyUpTo(localPointer, insertHint);
+        // diff inner comments
+        insertHint = diffInnerComments(oldT, newT, insertHint);
+        localPointer = diffList(oldT.directives, newT.directives, insertHint, est, Measure.REAL_MEMBER, printer);
+        printer.undent(old);
+        if (localPointer != -1 && localPointer < origText.length()) {
+            if (origText.charAt(localPointer) == '}') {
+                // another stupid hack
+                printer.toLeftMargin();
+            }
+            copyTo(localPointer, bounds[1]);
+        }
+        return bounds[1];
     }
 
     protected int diffPackage(JCPackageDecl oldT, JCPackageDecl newT, int start) {
@@ -4951,6 +4982,9 @@ public class CasualDiff {
         switch (oldT.getTag()) {
           case TOPLEVEL:
               diffTopLevel((JCCompilationUnit)oldT, (JCCompilationUnit)newT, elementBounds);
+              break;
+          case MODULEDEF:
+              retVal = diffModuleDef((JCModuleDecl)oldT, (JCModuleDecl)newT, elementBounds);
               break;
           case PACKAGEDEF:
               retVal = diffPackage((JCPackageDecl)oldT, (JCPackageDecl)newT, getOldPos(oldT));

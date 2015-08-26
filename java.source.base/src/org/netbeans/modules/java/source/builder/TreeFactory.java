@@ -948,6 +948,32 @@ public class TreeFactory {
         return copy;
     }
 
+    // ModuleTree
+    public ModuleTree addModuleDirective(ModuleTree modle, DirectiveTree directive) {
+        return modifyModuleDirective(modle, -1, directive, Operation.ADD);
+    }
+    
+    public ModuleTree insertModuleDirective(ModuleTree modle, int index, DirectiveTree directive) {
+        return modifyModuleDirective(modle, index, directive, Operation.ADD);
+    }
+    
+    public ModuleTree removeModuleDirective(ModuleTree modle, DirectiveTree directive) {
+        return modifyModuleDirective(modle, -1, directive, Operation.REMOVE);
+    }
+    
+    public ModuleTree removeModuleDirective(ModuleTree modle, int index) {
+        return modifyModuleDirective(modle, index, null, Operation.REMOVE);
+    }
+    
+    private ModuleTree modifyModuleDirective(ModuleTree modle, int index, DirectiveTree directive, Operation op) {
+        ModuleTree copy = Module(
+            modle.getName(),
+            c(modle.getDirectives(), index, directive, op)
+        );
+        return copy;
+    }
+    
+    
     // ClassTree
     public ClassTree addClassMember(ClassTree clazz, Tree member) {
         return modifyClassMember(clazz, -1, member, Operation.ADD);

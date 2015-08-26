@@ -1389,6 +1389,67 @@ public final class TreeMaker {
     public CaseTree removeCaseStatement(CaseTree kejs, int index) {
         return delegate.removeCaseStatement(kejs, index);
     }
+
+    // ModuleTree
+    /**
+     * Appends specified <tt>directive</tt> to the end of directives list.
+     * 
+     * @param modle  module tree with directives list
+     * @param directive  directive to be added to the list
+     * @return module tree with modified directives.
+     * @since 2.6
+     */
+    public ModuleTree addModuleDirective(ModuleTree modle, DirectiveTree directive) {
+        return delegate.addModuleDirective(modle, directive);
+    }
+    
+    
+    /**
+     * Inserts the specified <tt>directive</tt> at the specified position
+     * in directives list.
+     *
+     * @param  modle     module tree with directives list
+     * @param  index     index at which the specified directive is to be inserted.
+     * @param  directive directive to be inserted to the list.
+     * @return module tree with modified directives.
+     *
+     * @throws    IndexOutOfBoundsException if the index is out of range
+     *		  (index &lt; 0 || index &gt; size()).
+     * @since 2.6
+     */
+    public ModuleTree insertModuleDirective(ModuleTree modle, int index, DirectiveTree directive) {
+        return delegate.insertModuleDirective(modle, index, directive);
+    }
+    
+    /**
+     * Removes the first occurrence in directives list of the specified 
+     * directive. If this list does not contain the directive, it is
+     * unchanged.
+     *
+     * @param modle   module tree with directives list
+     * @param directive  directive to be removed from this list, if present.
+     * @return  module tree with modified directives.
+     * @since 2.6
+     */
+    public ModuleTree removeModuleDirective(ModuleTree modle, DirectiveTree directive) {
+        return delegate.removeModuleDirective(modle, directive);
+    }
+    
+    /**
+     * Removes the directive at the specified position in directives list.
+     * Returns the modified module tree.
+     *
+     * @param modle  module tree with directives list.
+     * @param index  the index of the directive to be removed.
+     * @return  module tree with modified directives.
+     * 
+     * @throws IndexOutOfBoundsException if the index is out of range 
+     *         (index &lt; 0 || index &gt;= size()).
+     * @since 2.6
+     */
+    public ModuleTree removeModuleDirective(ModuleTree modle, int index) {
+        return delegate.removeModuleDirective(modle, index);
+    }
     
     // ClassTree
     /**
