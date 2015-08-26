@@ -589,7 +589,8 @@ public final class ProxyFileManager implements JavaFileManager {
         private static final int SRC = TREE_LOADER + 1;
         private static final int APT_SRC = SRC + 1;
         private static final int MEM = APT_SRC + 1;
-        private static final int MODULE_PLAT = MEM + 1;
+        private static final int SYS_MODULES = MEM + 1;
+        private static final int USER_MODULES = SYS_MODULES + 1;
 
         private static final JavaFileManager[] EMPTY = new JavaFileManager[0];
 
@@ -641,7 +642,7 @@ public final class ProxyFileManager implements JavaFileManager {
             this.fmTx = fmTx;
             this.processorGeneratedFiles = processorGeneratedFiles;
             this.fileManagers = createFactories();
-            this.emitted = new JavaFileManager[MODULE_PLAT+1];
+            this.emitted = new JavaFileManager[USER_MODULES+1];
         }
 
         public void setUseModifiedFiles(final boolean useModifiedFiles) {
@@ -765,6 +766,7 @@ public final class ProxyFileManager implements JavaFileManager {
                         new JavaFileManager[] {src};
             }));
             m.put(StandardLocation.SYSTEM_MODULE_PATH, new Entry(() -> new JavaFileManager[] {createSystemModuleFileManager()}));
+            m.put(StandardLocation.MODULE_PATH, new Entry(() -> new JavaFileManager[] {createModuleFileManager()}));
             return m;
         }
 
@@ -844,10 +846,24 @@ public final class ProxyFileManager implements JavaFileManager {
 
         @NonNull
         private JavaFileManager createSystemModuleFileManager() {
-            if (emitted[MODULE_PLAT] == null) {
-                emitted[MODULE_PLAT] = new ModuleFileManager(cap, boot, true);
+            if (emitted[SYS_MODULES] == null) {
+                emitted[SYS_MODULES] = new ModuleFileManager(
+                    cap,
+                    new  SystemModuleProvider(boot),
+                    true);
             }
-            return emitted[MODULE_PLAT];
+            return emitted[SYS_MODULES];
+        }
+
+        @NonNull
+        private JavaFileManager createModuleFileManager() {
+            if (emitted[USER_MODULES] == null) {
+                emitted[USER_MODULES] = new ModuleFileManager(
+                    cap,
+                    new UserModuleProvider(compiledCached),
+                    true);
+            }
+            return emitted[USER_MODULES];
         }
 
         @NonNull
