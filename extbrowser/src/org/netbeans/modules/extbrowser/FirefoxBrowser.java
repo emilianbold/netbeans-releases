@@ -72,7 +72,7 @@ public class FirefoxBrowser extends ExtWebBrowser {
             try {
                 detectedPath = NbDdeBrowserImpl.getBrowserPath(ExtWebBrowser.FIREFOX);      // NOI18N
             } catch (NbBrowserException e) {
-                ExtWebBrowser.getEM().log(Level.FINEST, "Cannot detect Firefox : " + e);      // NOI18N
+                ExtWebBrowser.getEM().log(Level.FINEST, "Cannot detect Firefox : {0}", e);      // NOI18N
             }
             if ((detectedPath != null) && (detectedPath.trim().length() > 0)) {
                 return Boolean.FALSE;
