@@ -869,9 +869,7 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
         }
         JViewport viewport = tView.getViewport();
         Point position = viewport.getViewPosition();
-        Dimension viewSize = viewport.getExtentSize();
-        Rectangle newRect = new Rectangle(e.getValue(), position.y, viewSize.width, viewSize.height);
-        ((JComponent)viewport.getView()).scrollRectToVisible(newRect);
+        viewport.setViewPosition(new Point(e.getValue(), position.y));
     }
     
     // **************************************************************************

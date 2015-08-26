@@ -122,7 +122,7 @@ fi
 
 #JDK_BUILDS_HOST=http://jre.us.oracle.com
 if [ -z ${JRE_BUILDS_PATH} ]; then
-    JRE_BUILDS_PATH=java/re/jdk/8u51/promoted/
+    JRE_BUILDS_PATH=java/re/jdk/8u60/promoted/
     export JRE_BUILDS_PATH
 fi
 

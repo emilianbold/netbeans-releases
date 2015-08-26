@@ -88,7 +88,15 @@ import org.openide.util.actions.SystemAction;
 final class BrokenDataShadow extends MultiDataObject {
     /** Name of original fileobject */
     private URL url;
-        
+
+    /**
+     * Check validity of data shadows only in default FS.
+     *
+     * @see #canCheckValidity(FileObject)
+     */
+    private static final boolean CHECK_ONLY_DEFAULT = Boolean.getBoolean(
+            "org.openide.loaders.BrokenDataShadow.CHECK_ONLY_DEFAULT"); //NOI18N
+
     /** Constructs new broken data shadow for given primary file.
     *
     * @param fo the primary file
@@ -194,15 +202,8 @@ final class BrokenDataShadow extends MultiDataObject {
                 return;
             }
         }
-        
-        // #43315 hotfix: disable validity checking for non-SFS filesystem
-        try {
-            if (!file.getFileSystem().isDefault()) {
-                return;
-            }
-        } catch (FileStateInvalidException e) {
-            // something wrong, exit
-            DataObject.LOG.log(Level.WARNING, e.toString(), e);
+
+        if (!canCheckValidity(file)) {
             return;
         }
 
@@ -241,6 +242,31 @@ final class BrokenDataShadow extends MultiDataObject {
         }
     }
     
+    /**
+     * Check if validity of broken data shadows can be checked for this file.
+     *
+     * See bug 43315 and bug 247812. The OS sometimes asked to insert floppy
+     * disk or CD-ROM.
+     *
+     * @param file The file that may be referenced by broken data shadow.
+     * @return True if validity of passed file can be checked.
+     */
+    private static boolean canCheckValidity(FileObject file) {
+
+        if (CHECK_ONLY_DEFAULT) {
+            // #43315 hotfix: disable validity checking for non-SFS filesystem
+            try {
+                return file.getFileSystem().isDefault();
+            } catch (FileStateInvalidException e) {
+                // something wrong, exit
+                DataObject.LOG.log(Level.WARNING, e.toString(), e);
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
     /** Constructs new broken data shadow for given primary file.
     * @param fo the primary file
     */
