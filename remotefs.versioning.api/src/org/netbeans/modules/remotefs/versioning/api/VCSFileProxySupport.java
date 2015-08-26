@@ -577,7 +577,10 @@ public final class VCSFileProxySupport {
     }
     
     public static String getFileSystemKey(FileSystem file) {
-        return RemoteVcsSupport.getFileSystemKey(file);
+        String fileSystemKey = RemoteVcsSupport.getFileSystemKey(file);
+        fileSystemKey = fileSystemKey.replace(':', '_');
+        fileSystemKey = fileSystemKey.replace('@', '_');
+        return fileSystemKey;
     }
     
     public static boolean isConnectedFileSystem(FileSystem file) {

@@ -66,9 +66,9 @@ import org.openide.util.actions.Presenter;
 public class TerminalSettingsAction extends AbstractAction implements Presenter.Toolbar {
 
     public TerminalSettingsAction() {
-        putValue(Action.NAME, "TerminalSettingsAction");
-        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(TerminalSettingsAction.class, "TerminalOptionsShortDescr"));
-        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/terminal_options.png", false));
+        putValue(Action.NAME, "TerminalSettingsAction"); //NOI18N
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(TerminalSettingsAction.class, "TerminalOptionsShortDescr")); //NOI18N
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/terminal_options.png", false)); //NOI18N
     }
 
     @Override
