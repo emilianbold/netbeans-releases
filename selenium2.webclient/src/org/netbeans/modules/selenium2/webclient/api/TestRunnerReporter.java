@@ -423,7 +423,7 @@ public final class TestRunnerReporter {
                 }
                 FileObject parent = underTestRoot ? Utilities.getTestsSeleniumFolder(project, false) : projectDir;
                 FileObject fo = FileUtil.toFileObject(file);
-                if(fo == null || !FileUtil.isParentOf(parent, fo)) {
+                if(fo == null || (underTestRoot && !FileUtil.isParentOf(parent, fo))) {
                     return null;
                 }
                 return Pair.of(file, new int[] {Integer.parseInt(matcher.group("LINE")), Integer.parseInt(matcher.group("COLUMN"))}); // NOI18N
