@@ -766,7 +766,8 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         else errorDescriptions = new ArrayList<>(errorDescriptions);
 
         Severity mostImportantSeverity = Severity.HINT;
-
+        String customType = null;
+        
         for (Iterator<ErrorDescription> it = errorDescriptions.iterator(); it.hasNext();) {
             ErrorDescription ed = it.next();
             List<Position> positions = errors2Lines.get(ed);
@@ -777,6 +778,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
                 if (mostImportantSeverity.compareTo(ed.getSeverity()) > 0) {
                     mostImportantSeverity = ed.getSeverity();
                 }
+                customType = ed.getCustomType();
             }
         }
 
@@ -791,12 +793,23 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
         Pair<FixData, String> fixData = buildUpFixDataForLine(line);
 
-        ParseErrorAnnotation pea = new ParseErrorAnnotation(
-                mostImportantSeverity,
-                fixData.first(),
-                fixData.second(),
-                line,
-                this);
+        ParseErrorAnnotation pea;
+        if (customType == null) {
+            pea = new ParseErrorAnnotation(
+                    mostImportantSeverity,
+                    fixData.first(),
+                    fixData.second(),
+                    line,
+                    this);
+        } else {
+            pea = new ParseErrorAnnotation(
+                    mostImportantSeverity,
+                    customType,
+                    fixData.first(),
+                    fixData.second(),
+                    line,
+                    this);
+        }
         ParseErrorAnnotation previous = line2Annotations.put(line, pea);
 
         if (previous != null) {

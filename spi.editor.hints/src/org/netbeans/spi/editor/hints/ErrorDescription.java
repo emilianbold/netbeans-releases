@@ -61,6 +61,7 @@ public final class ErrorDescription {
     private final String description;
     private final CharSequence details;
     private final Severity severity;
+    private final String customType;
     private final LazyFixList fixes;
     private final PositionBounds span;
     private final FileObject file;
@@ -74,6 +75,18 @@ public final class ErrorDescription {
         this.description = description;
         this.details = details;
         this.severity    = severity;
+        this.customType = null;
+        this.fixes       = fixes;
+        this.span        = span;
+        this.file        = file;
+    }
+    
+    ErrorDescription(FileObject file, String id, String description, CharSequence details, Severity severity, String customType, LazyFixList fixes, PositionBounds span) {
+        this.id = id;
+        this.description = description;
+        this.details = details;
+        this.severity    = severity;
+        this.customType = customType;
         this.fixes       = fixes;
         this.span        = span;
         this.file        = file;
@@ -110,6 +123,10 @@ public final class ErrorDescription {
      */
     public Severity getSeverity() {
         return severity;
+    }
+    
+    public String getCustomType() {
+        return customType;
     }
 
     /**
