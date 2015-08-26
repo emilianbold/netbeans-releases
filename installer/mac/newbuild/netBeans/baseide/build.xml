@@ -128,7 +128,7 @@ TOMCAT_ID="${tomcat.id}"
         <echo message="Building baseide.pkg into ${basedir}/../../build/baseide.pkg"/>        
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.baside ${sign.option} --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
+            <arg value="pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.ide.baseide.${nb.id} ${sign.option} --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
         </exec>
     </target>
     
