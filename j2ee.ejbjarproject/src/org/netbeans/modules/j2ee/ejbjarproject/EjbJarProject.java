@@ -1171,6 +1171,17 @@ public class EjbJarProject implements Project, FileChangeListener {
         }
 
         @Override
+        public void fileFolderCreated(FileEvent fe) {
+            try {
+                if (!handleResource(fe)) {
+                    handleCopyFileToDestDir(fe.getFile());
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+        }
+
+        @Override
         public void fileDataCreated(FileEvent fe) {
             try {
                 if (!handleResource(fe)) {
@@ -1319,6 +1330,11 @@ public class EjbJarProject implements Project, FileChangeListener {
                             if (file != null) {
                                 fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
                             }
+                        }
+                    } else {
+                        File file = FileUtil.toFile(destFile);
+                        if (file != null) {
+                            fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
                         }
                     }
                 }
