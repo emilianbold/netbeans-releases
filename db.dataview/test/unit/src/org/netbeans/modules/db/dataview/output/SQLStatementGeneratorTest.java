@@ -110,6 +110,7 @@ public class SQLStatementGeneratorTest extends NbTestCase {
 
         ResultSet rs = s.executeQuery(sql);
         Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, true);
+        dbMeta.postprocessTables(tables);
 
         DBTable table = tables.iterator().next();
         assertEquals(2, table.getPrimaryKey().getColumnCount());
@@ -145,6 +146,7 @@ public class SQLStatementGeneratorTest extends NbTestCase {
 
         ResultSet rs = s.executeQuery(sql);
         Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, true);
+        dbMeta.postprocessTables(tables);
 
         DBTable table = tables.iterator().next();
         assertEquals(2, table.getPrimaryKey().getColumnCount());
@@ -179,6 +181,7 @@ public class SQLStatementGeneratorTest extends NbTestCase {
 
         ResultSet rs = s.executeQuery(sql);
         Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, true);
+        dbMeta.postprocessTables(tables);
 
         DBTable table = tables.iterator().next();
         assertEquals(2, table.getPrimaryKey().getColumnCount());
@@ -218,6 +221,7 @@ public class SQLStatementGeneratorTest extends NbTestCase {
 
         ResultSet rs = s.executeQuery(sql);
         Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, true);
+        dbMeta.postprocessTables(tables);
 
         DBTable table = tables.iterator().next();
         assertEquals(2, table.getPrimaryKey().getColumnCount());

@@ -102,6 +102,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo.Stack;
 import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpointImpl;
+import org.netbeans.modules.debugger.jpda.visual.options.Options;
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
@@ -120,10 +121,6 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     private static final Map<JPDADebugger, Map<ObjectReference, Stack>> componentsAndStackTraces
             = new WeakHashMap<JPDADebugger, Map<ObjectReference, Stack>>();
     
-    private static final String PROPERTIES_VISUAL = "debugger.options.JPDA.visual"; // NOI18N
-    private static final String PROPERTIES_TCC = "TrackComponentChanges";  // NOI18N
-    private static final String PROPERTIES_UPLOAD_AGENT = "UploadAgent";  // NOI18N
-    
     private final Map<DebuggerEngine, Collection<Breakpoint>> helperComponentBreakpointsMap = new HashMap<DebuggerEngine, Collection<Breakpoint>>();
     private final Properties properties;
     private volatile Boolean isTrackComponentChanges = null;
@@ -136,13 +133,13 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     
     public VisualDebuggerListener() {
         final RequestProcessor rp = new RequestProcessor(VisualDebuggerListener.class);
-        properties = Properties.getDefault().getProperties(PROPERTIES_VISUAL);
+        properties = Options.getProperties();
         if (RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
             properties.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     String pName = evt.getPropertyName();
-                    if (PROPERTIES_TCC.equals(pName)) {
+                    if (Options.PROPERTY_TCC.equals(pName)) {
                         final Object newValue = evt.getNewValue();
                         if (isTrackComponentChanges != null && !isTrackComponentChanges.equals(newValue)) {
                             rp.post(new Runnable() {
@@ -168,7 +165,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         if (debugger == null) {
             return ;
         }
-        boolean uploadAgent = properties.getBoolean(PROPERTIES_UPLOAD_AGENT, true);
+        boolean uploadAgent = Options.isUploadAgent();
         logger.log(Level.FINE, "engineAdded({0}), debugger = {1}, uploadAgent = {2}", new Object[]{engine, debugger, uploadAgent});
         Collection<Breakpoint> helperComponentBreakpoints = new ArrayList<Breakpoint>();
         if (debugger != null && uploadAgent) {
@@ -228,7 +225,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             helperComponentBreakpoints.add(mb[1]);
         }
         if (debugger != null) {
-            boolean trackComponentChanges = properties.getBoolean(PROPERTIES_TCC, true);
+            boolean trackComponentChanges = Options.isTrackComponentChanges();
             isTrackComponentChanges = trackComponentChanges;
             if (trackComponentChanges) {
                 if (!RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
@@ -317,7 +314,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                         return RemoteServiceInit.FAIL;
                     }
                 }
-                boolean trackComponentChanges = properties.getBoolean(PROPERTIES_TCC, true);
+                boolean trackComponentChanges = Options.isTrackComponentChanges();
                 isTrackComponentChanges = trackComponentChanges;
                 if (trackComponentChanges && RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
                     Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()Ljava/lang/String;");

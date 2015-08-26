@@ -47,13 +47,23 @@ final class FrameInfo {
         slotNames = new String[slots.length];
         slotTypes = new String[slots.length];
         for (int i = 0; i < slots.length; i++) {
-            slotNames[i] = visualizer.displayIdentifier(slots[i]); // slots[i].getIdentifier().toString();
+            if (visualizer != null) {
+                slotNames[i] = visualizer.displayIdentifier(slots[i]); // slots[i].getIdentifier().toString();
+            } else {
+                slotNames[i] = slots[i].getIdentifier().toString();
+            }
             slotTypes[i] = slots[i].getKind().toString();
         }
         //System.err.println("FrameInfo: arguments = "+Arrays.toString(arguments));
         //System.err.println("           identifiers = "+frameDescriptor.getIdentifiers());
         if (frame instanceof VirtualFrame) {
-            Object thisObj = JSFrameUtil.getThisObj((VirtualFrame) frame);
+            Object thisObj;
+            try {
+                thisObj = JSFrameUtil.getThisObj((VirtualFrame) frame);
+            } catch (ArrayIndexOutOfBoundsException aioobex) {
+                aioobex.printStackTrace();
+                thisObj = null;
+            }
             //System.err.println("           this = "+thisObj);
             thisObject = thisObj;
         } else if (arguments.length > 1) {
@@ -91,7 +101,11 @@ final class FrameInfo {
         }*/
         //System.err.println("  stack trace = "+Arrays.toString(stackTrace));
         //System.err.println("  stack names = "+Arrays.toString(stackNames));
-        topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget()) + "\n" + visualizer.displayMethodName(astNode) + "\n" + visualizer.displaySourceLocation(astNode) + "\n" + position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;
+        if (visualizer != null) {
+            topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget()) + "\n" + visualizer.displayMethodName(astNode) + "\n" + visualizer.displaySourceLocation(astNode) + "\n" + position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;
+        } else {
+            topFrame = astNode.getRootNode().getCallTarget().toString() + "\n" + astNode.toString() + "\n" + astNode.getSourceSection().getShortDescription() + "\n" + position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;
+        }
         //System.err.println("  top frame = \n'"+topFrame+"'");
     }
     

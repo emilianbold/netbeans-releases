@@ -55,6 +55,7 @@ import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
+import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -78,9 +79,10 @@ import org.openide.util.WeakListeners;
 public final class FoldViewFactory extends EditorViewFactory implements FoldHierarchyListener, LookupListener, PreferenceChangeListener {
 
     /**
-     * Component's client property which can be set to view folds expanded for tooltip fold preview.
+     * Component's client property which can be set to see all folds expanded regardless 
+     * of their real state - used for tooltip fold preview pane.
      */
-    static final String VIEW_FOLDS_EXPANDED_PROPERTY = "view-folds-expanded"; // NOI18N
+    static final String DISPLAY_ALL_FOLDS_EXPANDED_PROPERTY = "display-all-folds-expanded"; // NOI18N
 
     // -J-Dorg.netbeans.editor.view.change.level=FINE
     static final Logger CHANGE_LOG = Logger.getLogger("org.netbeans.editor.view.change"); // NOI18N
@@ -105,7 +107,16 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
 
     private Iterator<Fold> collapsedFoldIterator;
 
-    private boolean viewFoldsExpanded;
+    private boolean displayAllFoldsExpanded;
+    
+    /**
+     * Quick optimization to avoid traversing through the fold hierarchy
+     * if no collapsed folds were encountered yet for the component.
+     * It scans the fold hierarchy initially and then only the changed folds
+     * upon fold changes notifications. Once the flag becomes true the regular
+     * collapsed fold iterator is used.
+     */
+    private boolean collapsedFoldEncountered;
     
     /**
      * Composite Color settings from MIME lookup
@@ -129,7 +140,17 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
         // the view factory may get eventually GCed, but the FoldHierarchy can survive, snce it is tied to the component.
         weakL = WeakListeners.create(FoldHierarchyListener.class, this, foldHierarchy);
         foldHierarchy.addFoldHierarchyListener(weakL);
-        viewFoldsExpanded = Boolean.TRUE.equals(textComponent().getClientProperty(VIEW_FOLDS_EXPANDED_PROPERTY));
+        // Go through folds and search for collapsed fold.
+        foldHierarchy.lock();
+        try {
+            @SuppressWarnings("unchecked")
+            Iterator<Fold> it = FoldUtilities.collapsedFoldIterator(foldHierarchy, 0, Integer.MAX_VALUE);
+            collapsedFoldEncountered = it.hasNext();
+        } finally {
+            foldHierarchy.unlock();
+        }
+
+        displayAllFoldsExpanded = Boolean.TRUE.equals(textComponent().getClientProperty(DISPLAY_ALL_FOLDS_EXPANDED_PROPERTY));
         
         String mime = DocumentUtilities.getMimeType(document());
         
@@ -183,17 +204,19 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
 
     @Override
     public void restart(int startOffset, int endOffset, boolean createViews) {
-        foldHierarchy.lock(); // this.finish() always called in try-finally
-        foldHierarchyLocked = true;
-        @SuppressWarnings("unchecked")
-        Iterator<Fold> it = FoldUtilities.collapsedFoldIterator(foldHierarchy, startOffset, Integer.MAX_VALUE);
-        collapsedFoldIterator = it;
-        foldStartOffset = -1; // Make a next call to updateFold() to fetch a fold
+        if (collapsedFoldEncountered) {
+            foldHierarchy.lock(); // this.finish() always called in try-finally
+            foldHierarchyLocked = true;
+            @SuppressWarnings("unchecked")
+            Iterator<Fold> it = FoldUtilities.collapsedFoldIterator(foldHierarchy, startOffset, Integer.MAX_VALUE);
+            collapsedFoldIterator = it;
+            foldStartOffset = -1; // Make a next call to updateFoldInfo() to fetch a fold
+        }
     }
 
-    private void updateFold(int offset) {
-        if (foldStartOffset < offset) {
-            while (collapsedFoldIterator.hasNext()) {
+    private void updateFoldInfo(int offset) {
+        if (foldStartOffset < offset) { // offset already inside or above current fold
+            while (collapsedFoldIterator.hasNext()) { // fetch next fold that is above (or right at) offset
                 fold = collapsedFoldIterator.next();
                 foldStartOffset = fold.getStartOffset();
                 // avoid issue #229852; the length might be 0, if text was deleted and the fold collapsed to nothing &&
@@ -210,8 +233,8 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
 
     @Override
     public int nextViewStartOffset(int offset) {
-        if (!viewFoldsExpanded) {
-            updateFold(offset);
+        if (!displayAllFoldsExpanded && collapsedFoldEncountered) {
+            updateFoldInfo(offset);
             return foldStartOffset;
         }
         return Integer.MAX_VALUE;
@@ -253,15 +276,38 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
 
     @Override
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
-        // For fold state changes use a higher priority
-        int startOffset = evt.getAffectedStartOffset();
-        int endOffset = evt.getAffectedEndOffset();
-        if (CHANGE_LOG.isLoggable(Level.FINE)) {
-            ViewUtils.log(CHANGE_LOG, "CHANGE in FoldViewFactory: <" + // NOI18N
-                    startOffset + "," + endOffset + ">\n"); // NOI18N
+        if (!collapsedFoldEncountered) {
+            // Check if any collapsed fold was added or a collapsed/expanded state changed
+            for (int i = evt.getAddedFoldCount() - 1; i >= 0; i--) {
+                if (evt.getAddedFold(i).isCollapsed()) {
+                    collapsedFoldEncountered = true;
+                    break;
+                }
+            }
+            if (!collapsedFoldEncountered) {
+                for (int i = evt.getFoldStateChangeCount() - 1; i >= 0; i--) {
+                    FoldStateChange foldStateChange = evt.getFoldStateChange(i);
+                    if (foldStateChange.isCollapsedChanged() && foldStateChange.getFold().isCollapsed()) {
+                        collapsedFoldEncountered = true;
+                        break;
+                    }
+                }
+            }
         }
-        fireEvent(EditorViewFactoryChange.createList(startOffset, endOffset,
-                EditorViewFactoryChange.Type.PARAGRAPH_CHANGE));
+
+        if (collapsedFoldEncountered) {
+            // [TODO] there could be more detailed inspection done among folds
+            // of what really changed and what are in fact the same folds as before the change
+            // possibly performed even on the Fold API level.
+            int startOffset = evt.getAffectedStartOffset();
+            int endOffset = evt.getAffectedEndOffset();
+            if (CHANGE_LOG.isLoggable(Level.FINE)) {
+                ViewUtils.log(CHANGE_LOG, "CHANGE in FoldViewFactory: <" + // NOI18N
+                        startOffset + "," + endOffset + ">\n"); // NOI18N
+            }
+            fireEvent(EditorViewFactoryChange.createList(startOffset, endOffset,
+                    EditorViewFactoryChange.Type.PARAGRAPH_CHANGE));
+        }
     }
 
     public static final class FoldFactory implements EditorViewFactory.Factory {

@@ -59,13 +59,15 @@ public final class GrailsProjectFactory implements ProjectFactory {
 
     public static final String GRAILS_APP_DIR = "grails-app"; // NOI18N
     public static final String APPLICATION_PROPERTIES = "application.properties"; // NOI18N
-
+    public static final String GRADLE_PROPERTIES = "gradle.properties"; // NOI18N
+    
     public GrailsProjectFactory() {
     }
 
     public boolean isProject(FileObject projectDirectory) {
         return projectDirectory.getFileObject(GRAILS_APP_DIR) != null &&
-                projectDirectory.getFileObject(APPLICATION_PROPERTIES) != null;
+                (   projectDirectory.getFileObject(APPLICATION_PROPERTIES) != null ||
+                    projectDirectory.getFileObject(GRADLE_PROPERTIES) != null );
     }
 
     public Project loadProject(FileObject projectDirectory, ProjectState projectState) throws IOException {

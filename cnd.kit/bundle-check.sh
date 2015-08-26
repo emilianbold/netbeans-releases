@@ -49,7 +49,6 @@ perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.discovery/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.dwarfdiscovery/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.dwarfdump/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.editor/src | tee ${LOG}
-perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.folding/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.gizmo/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.gotodeclaration/src | tee ${LOG}
 perl nbbuild/misc/bundlecheck.pl -q `pwd`/cnd.highlight/src | tee ${LOG}

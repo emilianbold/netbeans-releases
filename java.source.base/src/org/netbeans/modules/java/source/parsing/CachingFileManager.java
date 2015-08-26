@@ -160,10 +160,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
 
     @Override
     public JavaFileObject getJavaFileForInput (Location l, String className, JavaFileObject.Kind kind) {
-        String[] namePair = FileObjects.getParentRelativePathAndName(className);
-        if (namePair == null) {
-            return null;
-        }
+        final String[] namePair = FileObjects.getParentRelativePathAndName(className);
         namePair[1] = namePair[1] + kind.extension;
         for( ClassPath.Entry root : this.cp.entries()) {
             try {
@@ -194,7 +191,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         if (file == null) {
             final List<ClassPath.Entry> entries = this.cp.entries();
             if (!entries.isEmpty()) {
-                final String resourceName = FileObjects.getRelativePath(FileObjects.convertPackage2Folder(pkgName), relativeName);
+                final String resourceName = FileObjects.resolveRelativePath(pkgName, relativeName);
                 file = provider.getArchive(entries.get(0).getURL(), cacheFile).create(resourceName, filter);
             }
         }
@@ -219,7 +216,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     public int isSupportedOption(String string) {
         return -1;
     }
-    
+
     @Override
     public boolean handleOption (final String head, final Iterator<String> tail) {
         return false;
@@ -237,15 +234,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     
     @Override
     public String inferBinaryName (Location l, JavaFileObject javaFileObject) {        
-        if (javaFileObject instanceof FileObjects.Base) {
-            final FileObjects.Base base = (FileObjects.Base) javaFileObject;
-            final StringBuilder sb = new StringBuilder ();
-            sb.append (base.getPackage());
-            sb.append('.'); //NOI18N
-            sb.append(base.getNameWithoutExtension());
-            return sb.toString();
-        }
-        else if (javaFileObject instanceof InferableJavaFileObject) {
+        if (javaFileObject instanceof InferableJavaFileObject) {
             return ((InferableJavaFileObject)javaFileObject).inferBinaryName();
         }
         return null;
@@ -280,7 +269,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     private javax.tools.JavaFileObject findFile(final String pkgName, String relativeName) {
         assert pkgName != null;
         assert relativeName != null;
-        final String resourceName = FileObjects.getRelativePath(pkgName,relativeName);
+        final String resourceName = FileObjects.resolveRelativePath(pkgName,relativeName);
 
         for( ClassPath.Entry root : this.cp.entries()) {
             try {

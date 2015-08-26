@@ -58,6 +58,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.RebaseCommand.Operation;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.dircache.DirCacheBuildIterator;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
@@ -66,9 +67,15 @@ import org.eclipse.jgit.lib.RebaseTodoLine;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryState;
+import org.eclipse.jgit.merge.RecursiveMerger;
 import org.eclipse.jgit.merge.ResolveMerger;
+import org.eclipse.jgit.merge.StrategyRecursive;
+import org.eclipse.jgit.merge.ThreeWayMerger;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.WorkingTreeIterator;
 import org.eclipse.jgit.util.IO;
 import org.eclipse.jgit.util.io.SafeBufferedOutputStream;
 import org.netbeans.libs.git.GitCherryPickResult;
@@ -97,6 +104,7 @@ public class CherryPickCommand extends GitCommand {
     private static final String SEQUENCER = "sequencer";
     private static final String SEQUENCER_HEAD = "head";
     private static final String SEQUENCER_TODO = "todo";
+    private boolean workAroundStrategyIssue = true;
 
     public CherryPickCommand (Repository repository, GitClassFactory gitFactory, String[] revisions,
             GitClient.CherryPickOperation operation, ProgressMonitor monitor, FileListener listener) {
@@ -209,7 +217,7 @@ public class CherryPickCommand extends GitCommand {
         CherryPickResult res = null;
         boolean skipped = false;
         List<Ref> cherryPickedRefs = new ArrayList<>();
-        for (Iterator<RebaseTodoLine> it = steps.iterator(); it.hasNext(); ) {
+        for (Iterator<RebaseTodoLine> it = steps.iterator(); it.hasNext();) {
             RebaseTodoLine step = it.next();
             if (step.getAction() == RebaseTodoLine.Action.PICK) {
                 if (skipFirstStep && !skipped) {
@@ -224,6 +232,9 @@ public class CherryPickCommand extends GitCommand {
                 }
                 org.eclipse.jgit.api.CherryPickCommand command = new Git(repository).cherryPick();
                 command.include(ids.iterator().next());
+                if (workAroundStrategyIssue) {
+                    command.setStrategy(new FailuresDetectRecurciveStrategy());
+                }
                 res = command.call();
                 if (res.getStatus() == CherryPickResult.CherryPickStatus.OK) {
                     it.remove();
@@ -250,10 +261,10 @@ public class CherryPickCommand extends GitCommand {
     private GitCherryPickResult createResult (CherryPickResult res) {
         return createResult(res, Collections.<Ref>emptyList());
     }
-    
+
     private GitCherryPickResult createResult (CherryPickResult res, List<Ref> cherryPickedRefs) {
         GitRevisionInfo currHead = getCurrentHead();
-        
+
         GitCherryPickResult.CherryPickStatus status = GitCherryPickResult.CherryPickStatus.valueOf(res.getStatus().name());
         List<File> conflicts;
         if (res.getStatus() == CherryPickResult.CherryPickStatus.CONFLICTING) {
@@ -307,9 +318,10 @@ public class CherryPickCommand extends GitCommand {
             ConflictCommand cmd = new ConflictCommand(repository, getClassFactory(), new File[0],
                     new DelegatingGitProgressMonitor(monitor),
                     new StatusListener() {
-                        @Override
-                        public void notifyStatus (GitStatus status) { }
-                    });
+                @Override
+                public void notifyStatus (GitStatus status) {
+                }
+            });
             cmd.execute();
             Map<File, GitStatus> statuses = cmd.getStatuses();
             conflicts = new ArrayList<>(statuses.size());
@@ -362,9 +374,9 @@ public class CherryPickCommand extends GitCommand {
         return originalCommitId;
     }
 
-	private ObjectId getHead () throws GitException {
-		return Utils.findCommit(getRepository(), Constants.HEAD);
-	}
+    private ObjectId getHead () throws GitException {
+        return Utils.findCommit(getRepository(), Constants.HEAD);
+    }
 
     private List<RebaseTodoLine> prepareCommand (ObjectId head) throws GitException, IOException {
         Repository repository = getRepository();
@@ -397,7 +409,7 @@ public class CherryPickCommand extends GitCommand {
         }
         return steps;
     }
-    
+
     private void writeFile (File file, ObjectId id) throws IOException {
         try (BufferedOutputStream bos = new SafeBufferedOutputStream(new FileOutputStream(file))) {
             id.copyTo(bos);
@@ -421,5 +433,42 @@ public class CherryPickCommand extends GitCommand {
             return todoFile.readRebaseTodo(SEQUENCER + File.separator + SEQUENCER_TODO, true);
         }
         return Collections.<RebaseTodoLine>emptyList();
+    }
+
+    private class FailuresDetectRecurciveStrategy extends StrategyRecursive {
+
+        @Override
+        public ThreeWayMerger newMerger (Repository db) {
+            return newMerger(db, false);
+        }
+
+        @Override
+        public ThreeWayMerger newMerger (Repository db, boolean inCore) {
+            return new RecursiveMerger(db, inCore) {
+                protected boolean mergeTreeWalk (TreeWalk treeWalk, boolean ignoreConflicts)
+                        throws IOException {
+                    boolean ok = true;
+                    boolean hasWorkingTreeIterator = tw.getTreeCount() > T_FILE;
+                    while (treeWalk.next()) {
+                        if (!processEntry(
+                                treeWalk.getTree(T_BASE, CanonicalTreeParser.class),
+                                treeWalk.getTree(T_OURS, CanonicalTreeParser.class),
+                                treeWalk.getTree(T_THEIRS, CanonicalTreeParser.class),
+                                treeWalk.getTree(T_INDEX, DirCacheBuildIterator.class),
+                                hasWorkingTreeIterator ? treeWalk.getTree(T_FILE,
+                                                WorkingTreeIterator.class) : null, ignoreConflicts)) {
+                            ok = false;
+                        }
+                        if (treeWalk.isSubtree() && enterSubtree) {
+                            treeWalk.enterSubtree();
+                        }
+                    }
+                    if (!ok) {
+                        cleanUp();
+                    }
+                    return ok;
+                }
+            };
+        }
     }
 }

@@ -441,6 +441,10 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
+    public void addFileSystemProblemListener(FileSystemProblemListener listener) {
+    }
+
+    @Override
     public void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
     }
     

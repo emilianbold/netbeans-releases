@@ -42,11 +42,12 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.clang.basic.FileEntry;
@@ -65,9 +66,9 @@ import org.clank.support.Native;
 import org.clank.support.NativePointer;
 import org.clank.support.Unsigned;
 import org.clank.support.aliases.char$ptr;
+import org.llvm.adt.SmallString;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVector;
-import org.llvm.adt.aliases.SmallVectorChar;
 import org.llvm.adt.aliases.SmallVectorImplChar;
 import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
@@ -95,6 +96,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *
@@ -176,6 +178,28 @@ public final class ClankPPCallback extends FileInfoCallback {
             }
         }
         this.delegate.onInclusionDirective(currentFileWrapper, inclDirectiveWrapper);
+    }
+    
+    @Override
+    protected void onDeepInclusion() {
+        ClankFileInfoWrapper fileInfo = findRecursiveInclusion(includeStack);
+        if (fileInfo != null && fileInfo.getInclusionDirective() != null) {
+            CharSequence recursivePath = fileInfo.getFilePath();
+            ClankDriver.ClankInclusionDirective recursiveInclusionDirective = fileInfo.getInclusionDirective();
+            for (ClankFileInfoWrapper file : includeStack) {
+                ClankDriver.ClankInclusionDirective fileInclusionDirective = file.getInclusionDirective();
+                if (Objects.equals(file.getFilePath(), recursivePath) 
+                    && fileInclusionDirective != null 
+                    && Objects.equals(fileInclusionDirective.getResolvedPath().getPath(), recursiveInclusionDirective.getResolvedPath().getPath()) 
+                    && fileInclusionDirective.getDirectiveStartOffset() == recursiveInclusionDirective.getDirectiveStartOffset())
+                {
+                    if (fileInclusionDirective instanceof ClankInclusionDirectiveWrapper) {
+                        ClankInclusionDirectiveWrapper mutableDirective = (ClankInclusionDirectiveWrapper) fileInclusionDirective;
+                        mutableDirective.setRecursive(true);
+                    }
+                }
+            }
+        }
     }
 
     private ResolvedPath createResolvedPath(Preprocessor PP, InclusionDirectiveInfo directive) {
@@ -360,7 +384,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
     @Override
     protected void onMacroDefineDirective(FileInfo curStackElement, MacroDirectiveInfo macroDirective) {
-        SmallVectorChar spell = new SmallVectorChar(1024);
+        SmallString spell = new SmallString(1024);
         // old model tracked only #define and not #undef
         CharSequence macroName = ClankToAPTUtils.getTokenText(macroDirective.getMacroNameToken(), curStackElement.getPreprocessor(), spell);
         List<CharSequence> params = null;
@@ -382,6 +406,30 @@ public final class ClankPPCallback extends FileInfoCallback {
         ClankMacroDirectiveWrapper wrapper = new ClankMacroDirectiveWrapper(macroName, params, macroDirective, macroDirective.getMacroNameToken());
         ClankFileInfoWrapper currentFileWrapper = includeStack.get(0);
         delegate.onMacroDefineDirective(currentFileWrapper, wrapper);
+    }
+    
+    private static ClankFileInfoWrapper findRecursiveInclusion(ArrayList<ClankFileInfoWrapper> stack) {
+        if (!stack.isEmpty()) {
+            ClankFileInfoWrapper best = null;
+            int bestFrequency = 0;
+            Map<String, Pair<ClankFileInfoWrapper, Integer>> mapping = new HashMap<String, Pair<ClankFileInfoWrapper, Integer>>();
+            for (ClankFileInfoWrapper fileInfo : stack) {
+                String path = fileInfo.getFilePath().toString();
+                Pair<ClankFileInfoWrapper, Integer> pair = mapping.get(path);
+                if (pair == null) {
+                    pair = Pair.of(fileInfo, 1);
+                } else {
+                    pair = Pair.of(pair.first(), pair.second() + 1);
+                }
+                mapping.put(path, pair);
+                if (bestFrequency <= pair.second()) {
+                    best = pair.first();
+                    bestFrequency = pair.second();
+                }
+            }
+            return best;
+        }
+        return null;
     }
 
     private static abstract class ClankPreprocessorDirectiveWrapper implements ClankDriver.ClankPreprocessorDirective {
@@ -524,12 +572,14 @@ public final class ClankPPCallback extends FileInfoCallback {
         private final ResolvedPath resolvedPath;
         private final String spelling;
         private final boolean isAngled;
+        private boolean recursive;
 
         public ClankInclusionDirectiveWrapper(InclusionDirectiveInfo clankDelegate, ResolvedPath resolvedPath, String spelling) {
             super(clankDelegate);
             this.isAngled = clankDelegate.isAngled();
             this.resolvedPath = resolvedPath;
             this.spelling = spelling;
+            this.recursive = false;
         }
 
         @Override
@@ -545,6 +595,15 @@ public final class ClankPPCallback extends FileInfoCallback {
         @Override
         public boolean isAngled() {
             return isAngled;
+        }
+
+        @Override
+        public boolean isRecursive() {
+            return recursive;
+        }
+        
+        public void setRecursive(boolean recursive) {
+            this.recursive = recursive;
         }
 
         @Override
@@ -641,7 +700,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             int nrDirectives = ppDirectives.size();
             assert this.convertedPPDirectives == null;
             this.convertedPPDirectives = new ArrayList<ClankDriver.ClankPreprocessorDirective>(nrDirectives);
-            SmallVectorChar spell = new SmallVectorChar(1024);
+            SmallString spell = new SmallString(1024);
             Preprocessor PP = current.getPreprocessor();
             for (int i = 0; i < nrDirectives; i++) {
                 PreprocessorDirectiveInfo curDirective = (PreprocessorDirectiveInfo)directives[i];
@@ -696,18 +755,19 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public Collection<ClankDriver.ClankPreprocessorDirective> getPreprocessorDirectives() {
-            assert convertedToAPT : "was not prepared yet";
-            assert convertedPPDirectives != null;
+            prepareCachesIfPossible();
             return Collections.unmodifiableList(convertedPPDirectives);
         }
 
         @Override
         public Collection<MacroExpansion> getMacroExpansions() {
+            prepareCachesIfPossible();
             return Collections.unmodifiableList(convertedMacroExpansions);
         }
 
         @Override
         public Collection<MacroUsage> getMacroUsages() {
+            prepareCachesIfPossible();
             return Collections.unmodifiableList(convertedMacroUsages);
         }
 
@@ -717,6 +777,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public FileGuard getFileGuard() {
+            prepareCachesIfPossible();
             return convertedGuard;
         }
 
@@ -753,6 +814,11 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public synchronized ClankDriverImpl.APTTokenStreamCacheImplementation prepareCachesIfPossible() {
+            prepareCaches();
+            return this;
+        }
+
+        private void prepareCaches() {
             if (!convertedToAPT) {
                 prepareConvertedTokensIfAny();
                 prepareConvertedPPDirectives();
@@ -760,7 +826,6 @@ public final class ClankPPCallback extends FileInfoCallback {
                 prepareConvertedGuard();
                 convertedToAPT = true;
             }
-            return this;
         }
 
         @Override

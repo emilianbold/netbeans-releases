@@ -727,7 +727,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
       * <p/>
       * This is always version of local GlassFish related to JavaEE platform,
       * even when registered domain is remote. */
-    private transient volatile GlassFishVersion version;
+    private final GlassFishVersion version;
 
     /** Process information of local running server started from IDE.
      *  <p/>
@@ -753,6 +753,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     // API instance
     private ServerInstance commonInstance;
     private GlassfishInstanceProvider instanceProvider;
+
+    // GuardedBy("this")
+    private Node fullNode;
     
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -1704,7 +1707,12 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     @Override
     public Node getFullNode() {
         Logger.getLogger("glassfish").finer("Creating GF Instance node [FULL]"); // NOI18N
-        return new Hk2InstanceNode(this, true);
+        synchronized (this) {
+            if (fullNode == null) {
+                fullNode = new Hk2InstanceNode(this, true);
+            }
+            return fullNode;
+        }
     }
 
     @Override

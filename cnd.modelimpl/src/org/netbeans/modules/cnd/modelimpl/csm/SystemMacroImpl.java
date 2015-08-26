@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -51,10 +52,18 @@ import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
+import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducer;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 
@@ -81,9 +90,13 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
         } else {
             this.params = null;
         }
-        assert containingFile instanceof Unresolved.UnresolvedFile;
         this.containingFile = containingFile;
-        this.uid = UIDProviderIml.createSelfUID((CsmMacro)this);
+        if (APTTraceFlags.USE_CLANK) {
+            this.uid = new BuiltInMacroUID(UIDs.get(containingFile), macroName);
+        } else {
+            assert containingFile instanceof Unresolved.UnresolvedFile;
+            this.uid = UIDProviderIml.createSelfUID((CsmMacro)this);
+        }
     }
 
     public static SystemMacroImpl create(CharSequence macroName, CharSequence macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {
@@ -191,5 +204,45 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
     @Override
     public CsmUID<?> getUID() {
         return uid;
+    }
+
+    private static class FactoryBasedUID<I,T> implements CsmUID<T>, SelfPersistent {
+        private final CsmUID<I> instance;
+        private final CharSequence argument;
+
+        protected FactoryBasedUID(CsmUID<I> instance, CharSequence argument) {
+            this.instance = instance;
+            this.argument = argument;
+        }
+
+        @Override
+        public T getObject() {
+            I object = instance.getObject();
+            FileImpl file = (FileImpl)object;
+            SystemMacroImpl res = SystemMacroImpl.create(argument, ClankTokenStreamProducer.MacroReference.findBody(file, argument), null, file, ClankTokenStreamProducer.MacroReference.findType(file, argument));
+            return (T)res;
+        }
+
+        @Override
+        public void write(RepositoryDataOutput aStream) throws IOException {
+            UIDObjectFactory.getDefaultFactory().writeUID(instance, aStream);
+            aStream.writeCharSequenceUTF(argument);
+        }
+
+        public FactoryBasedUID(RepositoryDataInput aStream) throws IOException {
+            instance = UIDObjectFactory.getDefaultFactory().readUID(aStream);
+            argument = aStream.readCharSequenceUTF();
+        }
+    }
+
+    public static final class BuiltInMacroUID extends FactoryBasedUID<CsmFile, CsmMacro> {
+
+        public BuiltInMacroUID(CsmUID<CsmFile> instance, CharSequence argument) {
+            super(instance, argument);
+        }
+
+        public BuiltInMacroUID(RepositoryDataInput aStream) throws IOException {
+            super(aStream);
+        }
     }
 }

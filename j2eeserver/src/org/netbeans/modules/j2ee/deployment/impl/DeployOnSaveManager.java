@@ -92,8 +92,6 @@ public final class DeployOnSaveManager {
 
         MODULE_UPDATED,
 
-        MODULE_HOT_SWAPPED,
-
         DEPLOYMENT_FAILED,
 
         SERVER_STATE_UNSUPPORTED
@@ -555,6 +553,10 @@ public final class DeployOnSaveManager {
             // standard incremental deploy
             } else {
                 state = server.notifyArtifactsUpdated(provider, artifacts);
+                if (state == DeploymentState.SERVER_STATE_UNSUPPORTED
+                        && lastState == DeploymentState.MODULE_NOT_DEPLOYED) {
+                    state = DeploymentState.MODULE_NOT_DEPLOYED;
+                }
             }
 
             if (state == DeploymentState.MODULE_UPDATED) {
