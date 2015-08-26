@@ -571,7 +571,7 @@ public final class FileUtils {
         }
         Line.Set lineSet = lineCookie.getLineSet();
         try {
-            final Line currentLine = lineSet.getCurrent(line - 1);
+            final Line currentLine = lineSet.getOriginal(line - 1);
             Mutex.EVENT.readAccess(new Runnable() {
                 @Override
                 public void run() {
