@@ -1,6 +1,6 @@
-#changeset:   15493:c6deb2566b4d
+#changeset:   15522:39242ca004ba
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Tue Aug 25 13:16:42 2015 +0300
-#summary:     PERF: write directly into array
-8ED9A4B4C82B57DF7E48A1D26017D921B453DA64 clank_0.3.6.zip
+#date:        Thu Aug 27 01:39:42 2015 +0300
+#summary:     when clear StringMap* collection, Reset Allocator
+4B477A8C3E65D2834B4815243FFF795578823334 clank_0.3.6.zip
