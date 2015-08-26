@@ -295,6 +295,7 @@ public final class TestRunnerReporter {
         }
         getManager().sessionFinished(testSession);
         testSession = null;
+        runningSuite = null;
         hasTests = false;
     }
 
