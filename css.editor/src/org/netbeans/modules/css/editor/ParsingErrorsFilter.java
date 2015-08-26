@@ -214,18 +214,12 @@ public class ParsingErrorsFilter {
             @Override
             public void run() {
                 //refresh Action Items for this file
-                FileObject parent = fo.getParent();
-                
                 ClassPath cp = ClassPath.getClassPath(fo, "classpath/html5"); //NOI18N
                 if (cp != null) {
-                    parent = cp.findOwnerRoot(fo);
-                } else {
-                    while (!parent.isRoot() && FileOwnerQuery.getOwner(parent.getParent().getParent()) != null) {
-                        parent = parent.getParent();
-                    }
-                }
-                IndexingManager.getDefault().refreshIndexAndWait(parent.toURL(),
+                    FileObject root = cp.findOwnerRoot(fo);
+                    IndexingManager.getDefault().refreshIndexAndWait(root.toURL(),
                         Collections.singleton(fo.toURL()), true, false);
+                }   
             }
         });
     }

@@ -68,7 +68,7 @@
         <echo message="Building tomcat-${tomcat.id}.pkg into ${basedir}/../build/tomcat-${tomcat.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; pkgbuild --root ${appdir} --scripts ${scriptsdir} --identifier tomcat --install-location ${install.dir}/apache-tomcat-${tomcat.id} ${basedir}/../build/tomcat-${tomcat.id}.pkg"/>
+            <arg value="cd ${basedir} ; pkgbuild --root ${appdir} --scripts ${scriptsdir} --identifier tomcat.${tomcat.id} --install-location ${install.dir}/apache-tomcat-${tomcat.id} ${basedir}/../build/tomcat-${tomcat.id}.pkg"/>
         </exec>
     </target>
 </project>
