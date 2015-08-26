@@ -62,6 +62,7 @@ import org.openide.util.WeakListeners;
 public class ParseErrorAnnotation extends Annotation implements PropertyChangeListener {
 
     private final Severity severity;
+    private final String customType;
     private final FixData fixes;
     private final String description;
     private final String shortDescription;
@@ -71,6 +72,21 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
     /** Creates a new instance of ParseErrorAnnotation */
     public ParseErrorAnnotation(Severity severity, FixData fixes, String description, Position lineStart, AnnotationHolder holder) {
         this.severity = severity;
+        this.customType = null;
+        this.fixes = fixes;
+        this.description = description;
+        this.shortDescription = description + NbBundle.getMessage(ParseErrorAnnotation.class, "LBL_shortcut_promotion"); //NOI18N
+        this.lineStart = lineStart;
+        this.holder = holder;
+        
+        if (!fixes.isComputed()) {
+            fixes.addPropertyChangeListener(WeakListeners.propertyChange(this, fixes));
+        }
+    }
+    
+    public ParseErrorAnnotation(Severity severity, String customType, FixData fixes, String description, Position lineStart, AnnotationHolder holder) {
+        this.severity = severity;
+        this.customType = customType;
         this.fixes = fixes;
         this.description = description;
         this.shortDescription = description + NbBundle.getMessage(ParseErrorAnnotation.class, "LBL_shortcut_promotion"); //NOI18N
@@ -85,30 +101,34 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
     public String getAnnotationType() {
         boolean hasFixes = fixes.isComputed() && !fixes.getFixes().isEmpty();
         
-        switch (severity) {
-            case ERROR:
-                if (hasFixes)
-                    return "org-netbeans-spi-editor-hints-parser_annotation_err_fixable";
-                else
-                    return "org-netbeans-spi-editor-hints-parser_annotation_err";
-                
-            case WARNING:
-                if (hasFixes)
-                    return "org-netbeans-spi-editor-hints-parser_annotation_warn_fixable";
-                else
-                    return "org-netbeans-spi-editor-hints-parser_annotation_warn";
-            case VERIFIER:
-                if (hasFixes)
-                    return "org-netbeans-spi-editor-hints-parser_annotation_verifier_fixable";
-                else
-                    return "org-netbeans-spi-editor-hints-parser_annotation_verifier";
-            case HINT:
-                if (hasFixes)
-                    return "org-netbeans-spi-editor-hints-parser_annotation_hint_fixable";
-                else
-                    return "org-netbeans-spi-editor-hints-parser_annotation_hint";
-            default:
-                throw new IllegalArgumentException(String.valueOf(severity));
+        if (customType == null) {
+            switch (severity) {
+                case ERROR:
+                    if (hasFixes)
+                        return "org-netbeans-spi-editor-hints-parser_annotation_err_fixable";
+                    else
+                        return "org-netbeans-spi-editor-hints-parser_annotation_err";
+
+                case WARNING:
+                    if (hasFixes)
+                        return "org-netbeans-spi-editor-hints-parser_annotation_warn_fixable";
+                    else
+                        return "org-netbeans-spi-editor-hints-parser_annotation_warn";
+                case VERIFIER:
+                    if (hasFixes)
+                        return "org-netbeans-spi-editor-hints-parser_annotation_verifier_fixable";
+                    else
+                        return "org-netbeans-spi-editor-hints-parser_annotation_verifier";
+                case HINT:
+                    if (hasFixes)
+                        return "org-netbeans-spi-editor-hints-parser_annotation_hint_fixable";
+                    else
+                        return "org-netbeans-spi-editor-hints-parser_annotation_hint";
+                default:
+                    throw new IllegalArgumentException(String.valueOf(severity));
+            }
+        } else {
+            return customType;
         }
     }
 
@@ -140,6 +160,10 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
     
     Severity getSeverity() {
         return severity;
+    }
+    
+    String getCustomType() {
+        return customType;
     }
 
     private StyledDocument attachedTo;
