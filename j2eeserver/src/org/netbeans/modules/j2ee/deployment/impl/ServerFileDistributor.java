@@ -330,7 +330,7 @@ public class ServerFileDistributor extends ServerProgress {
                 FileObject targetFO = (FileObject) destMap.get(relativePath);
                 if (sourceFO.isFolder()) {
                     destMap.remove(relativePath);
-                    continue;
+                    //continue;
                 }
                 // refactor to make the finally easier to write and read in the
                 // future.
@@ -405,7 +405,7 @@ public class ServerFileDistributor extends ServerProgress {
                         FileObject targetFO = (FileObject) destMap.get(relative);
                         if (file.isFolder()) {
                             destMap.remove(relative);
-                            continue;
+                            //continue;
                         }
 
                         // FIXME timestamp
@@ -488,6 +488,10 @@ public class ServerFileDistributor extends ServerProgress {
             }
             mc.record(dest, relativePath);
 
+            if (sourceFO.isFolder()) {
+                FileUtil.createFolder(destFolder, sourceFO.getNameExt());
+                return;
+            }
             try {
                 if (null == destStream) {
                     FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
@@ -531,8 +535,9 @@ public class ServerFileDistributor extends ServerProgress {
      */
     public static FileObject findOrCreateParentFolder(FileObject dest, String relativePath) throws IOException {
         File parentRelativePath = (new File(relativePath)).getParentFile();
-        if (parentRelativePath == null)
+        if (parentRelativePath == null) {
             return dest;
+        }
 
         FileObject folder = FileUtil.createFolder(dest, parentRelativePath.getPath());
         if (folder.isData()) {
