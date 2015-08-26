@@ -5325,8 +5325,11 @@ public final class JavaCompletionTask<T> extends BaseTask {
             Element el = ((DeclaredType)type).asElement();
             if (el.getKind().isClass() || el.getKind().isInterface()) {
                 List<? extends TypeParameterElement> typeParams = ((TypeElement)el).getTypeParameters();
-                if (!typeParams.isEmpty()) {
+                if (!typeParams.isEmpty() && !((DeclaredType)type).getTypeArguments().isEmpty()) {
                     for (TypeMirror typeArgument : ((DeclaredType)type).getTypeArguments()) {
+                        if (typeArgument.getKind() == TypeKind.WILDCARD) {
+                            typeArgument = ((WildcardType)typeArgument).getExtendsBound();
+                        }
                         if (typeArgument.getKind() != TypeKind.TYPEVAR) {
                             return type;
                         }
