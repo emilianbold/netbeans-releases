@@ -104,14 +104,16 @@ class FormattedPrintFunction {
                         pIndex++;
                     }
                     if (pIndex < parameters.size()) {
-                        type = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
-                        if (type != null) {
-                            String fType = info.getFullType();
-                            List<String> validFlags = Utilities.typeToFormat(type);
-                            if (!validFlags.isEmpty() && !validFlags.contains(fType)) {
-                                result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
-                            } else if (validFlags.isEmpty() && !fType.equals("p") && STRICT_TYPE_CHECKS) {  // NOI18N
-                                result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
+                        if (parameters.get(pIndex).resolveType()) {
+                            type = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
+                            if (type != null) {
+                                String fType = info.getFullType();
+                                List<String> validFlags = Utilities.typeToFormat(type);
+                                if (!validFlags.isEmpty() && !validFlags.contains(fType)) {
+                                    result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
+                                } else if (validFlags.isEmpty() && !fType.equals("p") && STRICT_TYPE_CHECKS) {  // NOI18N
+                                    result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
+                                }
                             }
                         }
                     }
