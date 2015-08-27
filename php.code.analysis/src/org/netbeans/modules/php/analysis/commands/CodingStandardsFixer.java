@@ -41,14 +41,7 @@
  */
 package org.netbeans.modules.php.analysis.commands;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -117,15 +110,14 @@ public final class CodingStandardsFixer {
             "psr0", // NOI18N
             "psr1", // NOI18N
             "psr2", // NOI18N
-            "all" // NOI18N
+            "symfony" // NOI18N
     );
     // XXX get from help?
     public static final List<String> ALL_CONFIG = Arrays.asList(
             "", // NOI18N
             "default", // NOI18N
             "mangento", // NOI18N
-            "sf20", // NOI18N
-            "sf21" // NOI18N
+            "sf23" // NOI18N
     );
 
     private final String codingStandardsFixerPath;
@@ -198,45 +190,6 @@ public final class CodingStandardsFixer {
             if (result == null) {
                 return null;
             }
-            // XXX Output of psr0 is NOT XML format
-            // e.g.
-            // ! The namespace Bar in /path/to/NetBeansProjects/sample/Bar/Controller/Controller.php does not match the file path according to PSR-0 rules
-            // ! Class AppController in /path/to/NetBeansProjects/sample/Bar/Controller/AppController.php should have at least a vendor namespace according to PSR-0 rules
-            // <?xml version="1.0" encoding="UTF-8"?>
-            // ...
-            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(XML_LOG), "UTF-8"))) { // NOI18N
-                StringBuilder sb = new StringBuilder();
-                String line;
-                boolean first = true;
-                boolean hasPsr0 = true;
-                boolean isXml = false;
-                while ((line = bufferedReader.readLine()) != null) {
-                    if (first) {
-                        first = false;
-                        if (line.startsWith("<?xml")) { // NOI18N
-                            hasPsr0 = false;
-                            break;
-                        }
-                    }
-
-                    if (isXml) {
-                        sb.append(line).append("\n"); // NOI18N
-                    }
-
-                    if (line.startsWith("<?xml")) { // NOI18N
-                        isXml = true;
-                        sb.append(line).append("\n"); // NOI18N
-                    }
-                }
-
-                if (hasPsr0) {
-                    try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(XML_LOG), "UTF-8"))) { // NOI18N
-                        pw.println(sb.toString());
-                    }
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            } // XXX end
 
             return CodingStandardsFixerReportParser.parse(XML_LOG, file);
         } catch (CancellationException ex) {
