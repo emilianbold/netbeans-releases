@@ -51,6 +51,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -205,11 +206,32 @@ public final class LibraryPersistence {
             }
             AuxiliaryConfiguration config = ProjectUtils.getAuxiliaryConfiguration(project);
             config.putConfigurationFragment(librariesElement, true);
+
+            logLibraryUsage(libraries);
+
             // fire event
             libraryListenerSupport.fireLibrariesChanged(project);
         } catch (ParserConfigurationException pcex) {
             Logger.getLogger(LibraryPersistence.class.getName()).log(Level.SEVERE,
                     "Unable to store library information!", pcex); // NOI18N
+        }
+    }
+
+    /** Logger of CDNJS libraries usage. */
+    private static final UsageLogger USAGE_LOGGER = new UsageLogger.Builder("org.netbeans.ui.metrics.javascript.cdnjs")  // NOI18N
+            .message(LibraryPersistence.class, "USG_CDNJS_LIBRARY") // NOI18N
+            .create();
+
+    /**
+     * Logs the used libraries.
+     * 
+     * @param libraries used libraries. 
+     */
+    private static void logLibraryUsage(Library.Version[] libraries) {
+        for (Library.Version library : libraries) {
+            String version = library.getName();
+            String name = library.getLibrary().getName();
+            USAGE_LOGGER.log(name, version);
         }
     }
 

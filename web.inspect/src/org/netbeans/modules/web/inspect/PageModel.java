@@ -188,7 +188,7 @@ public abstract class PageModel extends Page {
      * @param listener listener to add.
      */
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public final void addPropertyChangeListener(PropertyChangeListener listener) {
         propChangeSupport.addPropertyChangeListener(listener);
     }
 
@@ -198,7 +198,7 @@ public abstract class PageModel extends Page {
      * @param listener listener to remove.
      */
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public final void removePropertyChangeListener(PropertyChangeListener listener) {
         propChangeSupport.removePropertyChangeListener(listener);
     }
 
@@ -209,7 +209,7 @@ public abstract class PageModel extends Page {
      * @param oldValue old value of the property or {@code null}.
      * @param newValue new value of the property or {@code null}.
      */
-    protected void firePropertyChange(String propName, Object oldValue, Object newValue) {
+    protected final void firePropertyChange(String propName, Object oldValue, Object newValue) {
         propChangeSupport.firePropertyChange(propName, oldValue, newValue);
     }
 
