@@ -225,12 +225,12 @@ class FormattedPrintFunction {
         if (handler.type != null) {
             if (handler.type.getClassifier().getKind().equals(CsmDeclaration.Kind.TYPEDEF)) {
                 switch (handler.type.getCanonicalText().toString()) {
-                    case "intmax_t":   // NOI18N
-                    case "uintmax_t":  // NOI18N
-                    case "size_t":     // NOI18N
-                    case "ptrdiff_t":  // NOI18N
-                    case "wint_t":     // NOI18N
-                    case "wchar_t":    // NOI18N
+                    case "intmax_t":    case "intmax_t*":   // NOI18N
+                    case "uintmax_t":   case "uintmax_t*":  // NOI18N
+                    case "size_t":      case "size_t*":     // NOI18N
+                    case "ptrdiff_t":   case "ptrdiff_t*":  // NOI18N
+                    case "wint_t":      case "wint_t*":     // NOI18N
+                    case "wchar_t":     case "wchar_t*":    // NOI18N
                         break;
                     default:
                         CsmClassifier cer = CsmClassifierResolver.getDefault().getTypeClassifier(handler.type, file, offset, true);
