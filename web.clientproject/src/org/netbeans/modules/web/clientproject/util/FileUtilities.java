@@ -146,6 +146,12 @@ public final class FileUtilities {
                 && !siteRootFolder.equals(sourcesFolder)) {
             return null;
         }
+        FileObject testsFolder = clientSideProject.getTestsFolder(false);
+        if (testsFolder != null
+                && FileUtil.isParentOf(testsFolder, fileObject)) {
+            // #254033
+            return null;
+        }
         FileObject testsSeleniumFolder = clientSideProject.getTestsSeleniumFolder(false);
         if (testsSeleniumFolder != null
                 && FileUtil.isParentOf(testsSeleniumFolder, fileObject)) {
