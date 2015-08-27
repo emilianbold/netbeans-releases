@@ -296,7 +296,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         final Pair<String,String> nameAndScope = Utils.splitNameAndScope(text.trim());
         final String name = nameAndScope.first();
         final String scope = nameAndScope.second();
-        if (name.length() == 0) {
+        if (name.isEmpty() && scope == null) {
             //Empty name, wait for next char
             currentSearch.resetFilter();
             panel.setModel(EMPTY_LIST_MODEL);
