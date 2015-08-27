@@ -134,6 +134,16 @@ public abstract class CndFileSystemProvider {
         getDefault().removeFileSystemProblemListenerImpl(listener, fileSystem);
     }
 
+    /** restricted access - in fact to kind of friend class CndFileSystemProviderHelper) */
+    protected static void addFileSystemProblemListener(CndFileSystemProblemListener listener) {
+        getDefault().addFileSystemProblemListenerImpl(listener);
+    }
+
+    /** restricted access - in fact to kind of friend class CndFileSystemProviderHelper) */
+    protected static void fireFileSystemProblemOccurred(FSPath fSPath) {
+        getDefault().fireFileSystemProblemOccurredImpl(fSPath);
+    }
+
     public static File toFile(FileObject fileObject) {
         // TODO: do we still need this?
         File file = FileUtil.toFile(fileObject);
@@ -293,6 +303,9 @@ public abstract class CndFileSystemProvider {
 
     protected abstract void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
     protected abstract void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
+    
+    protected abstract void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener);
+    protected abstract void fireFileSystemProblemOccurredImpl(FSPath fsPath);
 
     protected abstract boolean isAbsoluteImpl(FileSystem fs, String path);
 
@@ -603,6 +616,20 @@ public abstract class CndFileSystemProvider {
                 provider.removeFileSystemProblemListenerImpl(listener, fileSystem);
             }
         }        
+        
+        @Override
+        protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener) {
+            for (CndFileSystemProvider provider : cache) {
+                provider.addFileSystemProblemListenerImpl(listener);
+            }
+        }
+
+        @Override
+        protected void fireFileSystemProblemOccurredImpl(FSPath fsPath) {
+            for (CndFileSystemProvider provider : cache) {
+                provider.fireFileSystemProblemOccurredImpl(fsPath);
+            }
+        }
 
         @Override
         protected boolean isAbsoluteImpl(FileSystem fs, String path) {

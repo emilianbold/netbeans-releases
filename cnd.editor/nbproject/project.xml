@@ -343,7 +343,6 @@
             <friend-packages>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
-                <friend>org.netbeans.modules.cnd.folding</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.kit</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>

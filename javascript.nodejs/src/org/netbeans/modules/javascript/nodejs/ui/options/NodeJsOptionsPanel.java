@@ -80,9 +80,10 @@ import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
+public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, HelpCtx.Provider {
 
     private static final Logger LOGGER = Logger.getLogger(NodeJsOptionsPanel.class.getName());
 
@@ -190,6 +191,11 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         fireChange();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanel"); // NOI18N
     }
 
     /**

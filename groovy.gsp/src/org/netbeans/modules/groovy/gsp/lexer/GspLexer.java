@@ -799,7 +799,7 @@ public final class GspLexer implements Lexer<GspTokenId> {
             case LT_EM_DOUBLE_DASH: return GspTokenId.COMMENT_HTML_STYLE_START;
             case LT_PC_DOUBLE_DASH: return GspTokenId.COMMENT_JSP_STYLE_START;
             case PC_CB_DOUBLE_DASH: return GspTokenId.COMMENT_GSP_STYLE_START;
-            default: return null;
+            default: return GspTokenId.ERROR;
         }
     }
 

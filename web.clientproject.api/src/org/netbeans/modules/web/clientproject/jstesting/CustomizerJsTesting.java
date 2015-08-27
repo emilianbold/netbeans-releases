@@ -77,6 +77,7 @@ class CustomizerJsTesting extends JPanel implements ChangeListener {
     private final Map<JsTestingProvider, CustomizerPanelImplementation> providerPanels;
     private final UsageLogger usageLogger = new UsageLogger.Builder(WebCommonUtils.USAGE_LOGGER_NAME)
             .message(UsageLogger.class, "USG_TEST_CONFIG_JS") // NOI18N
+            .firstMessageOnly(false)
             .create();
 
     volatile JsTestingProvider selectedProvider;

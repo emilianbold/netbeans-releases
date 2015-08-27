@@ -354,6 +354,7 @@ public class LogViewMgr {
 
         if (force) {
             lastVisibleCheck = 0;
+            io.select();
         }
 
         // If the user happened to close the OutputWindow TopComponent, reopen it.

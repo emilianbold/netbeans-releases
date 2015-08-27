@@ -473,13 +473,13 @@ public class ASTUtils {
                 TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
                 if (ts != null) {
                     Token<GroovyTokenId> token = ts.token();
-                    if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.endsWith(identifier, token.text())) {
+                    if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.textEquals(identifier, token.text())) {
                         result[0] = computeRange(ts, token);
                         return;
                     }
                     while (ts.moveNext()) {
                         token = ts.token();
-                        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.endsWith(identifier, token.text())) {
+                        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.textEquals(identifier, token.text())) {
                             result[0] = computeRange(ts, token);
                             return;
                         }

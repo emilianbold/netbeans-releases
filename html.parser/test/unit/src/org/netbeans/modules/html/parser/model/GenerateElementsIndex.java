@@ -80,82 +80,107 @@ public class GenerateElementsIndex extends NbTestCase {
     //parsed from http://www.whatwg.org/specs/web-apps/current-work/#global-attributes
     public static final String GLOBAL_ATTRIBUTES_BASE_URL = "http://www.whatwg.org/specs/web-apps/current-work/multipage/";
     public static final String[] GLOBAL = new String[]{
-        "accesskey", "editing.html#the-accesskey-attribute",
-        "class", "elements.html#classes",
-        "contenteditable", "editing.html#attr-contenteditable",
-        "contextmenu", "interactive-elements.html#attr-contextmenu",
-        "dir", "elements.html#the-dir-attribute",
-        "draggable", "dnd.html#the-draggable-attribute",
-        "hidden", "editing.html#the-hidden-attribute",
-        "id", "elements.html#the-id-attribute",
-        "itemid", "links.html#attr-itemid",
-        "itemprop", "links.html#names:-the-itemprop-attribute",
-        "itemref", "links.html#attr-itemref",
-        "itemscope", "links.html#attr-itemscope",
-        "itemtype", "links.html#attr-itemtype",
-        "lang", "elements.html#attr-lang",
-        "spellcheck", "editing.html#attr-spellcheck",
-        "style", "elements.html#the-style-attribute",
-        "tabindex", "editing.html#attr-tabindex",
-        "title", "elements.html#the-title-attribute"};
+        "accesskey", "interaction.html#the-accesskey-attribute",
+        "class", "dom.html#classes",
+        "contenteditable", "interaction.html#attr-contenteditable",
+        "contextmenu", "forms.html#attr-contextmenu",
+        "dir", "dom.html#the-dir-attribute",
+        "draggable", "interaction.html#the-draggable-attribute",
+        "dropzone", "interaction.html#the-dropzone-attribute",
+        "hidden", "interaction.html#the-hidden-attribute",
+        "id", "dom.html#the-id-attribute",
+        "itemid", "microdata.html#attr-itemid",
+        "itemprop", "microdata.html#names:-the-itemprop-attribute",
+        "itemref", "microdata.html#attr-itemref",
+        "itemscope", "microdata.html#attr-itemscope",
+        "itemtype", "microdata.html#attr-itemtype",
+        "lang", "dom.html#attr-lang",
+        "spellcheck", "interaction.html#attr-spellcheck",
+        "style", "dom.html#the-style-attribute",
+        "tabindex", "interaction.html#attr-tabindex",
+        "title", "dom.html#attr-title",
+        "translate", "dom.html#attr-translate"
+    };
     public static final String EVENT_ATTRIBUTES_BASE_URL = "http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#handler-";
     public static final String[] GLOBAL_EVENT = new String[]{
-        "onabort",
-        "onblur",
-        "oncanplay",
-        "oncanplaythrough",
-        "onchange",
-        "onclick",
-        "oncontextmenu",
-        "ondblclick",
-        "ondrag",
-        "ondragend",
-        "ondragenter",
-        "ondragleave",
-        "ondragover",
-        "ondragstart",
-        "ondrop",
-        "ondurationchange",
-        "onemptied",
-        "onended",
-        "onerror",
-        "onfocus",
-        "onformchange",
-        "onforminput",
-        "oninput",
-        "oninvalid",
-        "onkeydown",
-        "onkeypress",
-        "onkeyup",
-        "onload",
-        "onloadeddata",
-        "onloadedmetadata",
-        "onloadstart",
-        "onmousedown",
-        "onmousemove",
-        "onmouseout",
-        "onmouseover",
-        "onmouseup",
-        "onmousewheel",
-        "onpause",
-        "onplay",
-        "onplaying",
-        "onprogress",
-        "onratechange",
-        "onreadystatechange",
-        "onscroll",
-        "onseeked",
-        "onseeking",
-        "onselect",
-        "onshow",
-        "onstalled",
-        "onsubmit",
-        "onsuspend",
-        "ontimeupdate",
-        "onvolumechange",
-        "onwaiting"
+        "onabort", "webappapis.html#handler-onabort",
+        "onautocomplete", "webappapis.html#handler-onautocomplete",
+        "onautocompleteerror", "webappapis.html#handler-onautocompleteerror",
+        "onafterprint", "webappapis.html#handler-window-onafterprint",
+        "onbeforeprint", "webappapis.html#handler-window-onbeforeprint",
+        "onbeforeunload", "webappapis.html#handler-window-onbeforeunload",
+        "onblur", "webappapis.html#handler-onblur",
+        "oncancel", "webappapis.html#handler-oncancel",
+        "oncanplay", "webappapis.html#handler-oncanplay",
+        "oncanplaythrough", "webappapis.html#handler-oncanplaythrough",
+        "onchange", "webappapis.html#handler-onchange",
+        "onclick", "webappapis.html#handler-onclick",
+        "onclose", "webappapis.html#handler-onclose",
+        "oncontextmenu", "webappapis.html#handler-oncontextmenu",
+        "oncuechange", "webappapis.html#handler-oncuechange",
+        "ondblclick", "webappapis.html#handler-ondblclick",
+        "ondrag", "webappapis.html#handler-ondrag",
+        "ondragend", "webappapis.html#handler-ondragend",
+        "ondragenter", "webappapis.html#handler-ondragenter",
+        "ondragexit", "webappapis.html#handler-ondragexit",
+        "ondragleave", "webappapis.html#handler-ondragleave",
+        "ondragover", "webappapis.html#handler-ondragover",
+        "ondragstart", "webappapis.html#handler-ondragstart",
+        "ondrop", "webappapis.html#handler-ondrop",
+        "ondurationchange", "webappapis.html#handler-ondurationchange",
+        "onemptied", "webappapis.html#handler-onemptied",
+        "onended", "webappapis.html#handler-onended",
+        "onerror", "webappapis.html#handler-onerror",
+        "onfocus", "webappapis.html#handler-onfocus",
+        "onhashchange", "webappapis.html#handler-window-onhashchange",
+        "oninput", "webappapis.html#handler-oninput",
+        "oninvalid", "webappapis.html#handler-oninvalid",
+        "onkeydown", "webappapis.html#handler-onkeydown",
+        "onkeypress", "webappapis.html#handler-onkeypress",
+        "onkeyup", "webappapis.html#handler-onkeyup",
+        "onlanguagechange", "webappapis.html#handler-window-onlanguagechange",
+        "onload", "webappapis.html#handler-onload",
+        "onloadeddata", "webappapis.html#handler-onloadeddata",
+        "onloadedmetadata", "webappapis.html#handler-onloadedmetadata",
+        "onmessage", "webappapis.html#handler-window-onmessage",
+        "onloadstart", "webappapis.html#handler-onloadstart",
+        "onmousedown", "webappapis.html#handler-onmousedown",
+        "onmouseenter", "webappapis.html#handler-onmouseenter",
+        "onmousemove", "webappapis.html#handler-onmousemove",
+        "onmouseout", "webappapis.html#handler-onmouseout",
+        "onmouseover", "webappapis.html#handler-onmouseover",
+        "onmouseup", "webappapis.html#handler-onmouseup",
+        "onmousewheel", "webappapis.html#handler-onmousewheel",
+        "onoffline", "webappapis.html#handler-window-onoffline",
+        "ononline", "webappapis.html#handler-window-ononline",
+        "onpagehide", "webappapis.html#handler-window-onpagehide",
+        "onpageshow", "webappapis.html#handler-window-onpageshow",
+        "onpause", "webappapis.html#handler-onpause",
+        "onplay", "webappapis.html#handler-onplay",
+        "onplaying", "webappapis.html#handler-onplaying",
+        "onpopstate", "webappapis.html#handler-window-onpopstate",
+        "onprogress", "webappapis.html#handler-onprogress",
+        "onratechange", "webappapis.html#handler-onratechange",
+        "onreset", "webappapis.html#handler-onreset",
+        "onresize", "webappapis.html#handler-onresize",
+        "onscroll", "webappapis.html#handler-onscroll",
+        "onseeked", "webappapis.html#handler-onseeked",
+        "onseeking", "webappapis.html#handler-onseeking",
+        "onselect", "webappapis.html#handler-onselect",
+        "onshow", "webappapis.html#handler-onshow",
+        "onstalled", "webappapis.html#handler-onstalled",
+        "onstorage", "webappapis.html#handler-window-onstorage",
+        "onsubmit", "webappapis.html#handler-onsubmit",
+        "onsuspend", "webappapis.html#handler-onsuspend",
+        "ontimeupdate", "webappapis.html#handler-ontimeupdate",
+        "ontoggle", "webappapis.html#handler-ontoggle",
+        "onunload", "webappapis.html#handler-window-onunload",
+        "onvolumechange", "webappapis.html#handler-onvolumechange",
+        "onwaiting", "webappapis.html#handler-onwaiting"
     };
-    private static final String WHATWG_SPEC_HTML5_ELEMENTS_INDEX_URL = Constants.HTML5_MULTIPAGE_SPEC_BASE_URL + "section-index.html#elements-1";
+    
+    
+    private static final String WHATWG_SPEC_HTML5_ELEMENTS_INDEX_URL = Constants.HTML5_MULTIPAGE_SPEC_BASE_URL + "indices.html#index";
     private static final String WHATWG_SPEC_HTML5_NAMED_REFS_INDEX_URL = Constants.HTML5_MULTIPAGE_SPEC_BASE_URL + "named-character-references.html";
 
     private boolean parse = true;
@@ -260,7 +285,16 @@ public class GenerateElementsIndex extends NbTestCase {
                     }
                 } else if(localName.equals("code")) {
                     if(inth_or_td) {
-                        attr_code = atts != null ? atts.getValue("title") : null;
+                        attr_code = atts != null ? atts.getValue("id") : null;
+                        if (attr_code != null) {
+                            if (attr_code.contains("elements-3")) {
+                                attr_code = attr_code.substring("elements-3:".length());
+                            }
+                            if (attr_code.length() > 2 && attr_code.charAt(attr_code.length()-2) == '-' && Character.isDigit(attr_code.charAt(attr_code.length()-1))) {
+                                attr_code = attr_code.substring(0, attr_code.length()-2);
+                            }
+                        }
+                        
                     } else {
                         attr_code = null;
                     }
@@ -287,7 +321,7 @@ public class GenerateElementsIndex extends NbTestCase {
                     //the ContentType.METADATA name
                     //needs to be matched for "metadata content" text
                     //in the link. It seems to be the only such link
-                    //in the spec's index.
+                    //in the spec's index.7
                     text = text.trim();
                     int wsIndex = text.indexOf(' ');
                     if(wsIndex != -1) {
@@ -489,20 +523,21 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("(new Link(\"");
             out.write(name);
             out.write("\", \"");
-            out.write(fullLink);
+            out.write(link);
             out.write("\")),\n");
 
         }
         out.write("\n//event attributes\n");
         for (int i = 0; i < GLOBAL_EVENT.length; i++) {
             String name = GLOBAL_EVENT[i];
-            String fullLink = EVENT_ATTRIBUTES_BASE_URL + name;
+            String link = GLOBAL_EVENT[++i];
+            String fullLink = GLOBAL_ATTRIBUTES_BASE_URL + link;
 
             out.write(Attribute.attributeId2EnumName(name));
             out.write("(new Link(\"");
             out.write(name);
             out.write("\", \"");
-            out.write(fullLink);
+            out.write(link);
             out.write("\")),\n");
 
         }
@@ -557,7 +592,7 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("\", \"");
 
             //relativize the absolute link
-            String link = e.name.getLink().substring(GLOBAL_ATTRIBUTES_BASE_URL.length());
+            String link = e.name.getLink();
             out.write(link);
             out.write("\"),\n\t \"");
             out.write(e.getDescription());
@@ -592,7 +627,7 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write(e.interfacee.getName());
             out.write("\", \"");
             //relativize the absolute link
-            link = e.interfacee.getLink().substring(GLOBAL_ATTRIBUTES_BASE_URL.length());
+            link = e.interfacee.getLink();
             out.write(link);
             out.write("\")");
 
@@ -757,7 +792,7 @@ public class GenerateElementsIndex extends NbTestCase {
             return con.getInputStream();
         } catch (IOException ex) {
             //cannot connect, use local copy
-            u = ClassLoader.getSystemResource("org/netbeans/modules/html/parser/model/section-index_2010_09_08.html");
+            u = ClassLoader.getSystemResource("org/netbeans/modules/html/parser/model/indices-index_2015.html");
             assertNotNull(u);
             try {
                 URLConnection con = u.openConnection();

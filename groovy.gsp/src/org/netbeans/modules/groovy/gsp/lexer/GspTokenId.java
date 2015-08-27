@@ -62,7 +62,8 @@ public enum GspTokenId implements TokenId {
 
     HTML("html"),
     WHITESPACE("whitespace"),
-
+    ERROR("error"),
+ 
     // GTags tokens
     GTAG_OPENING_START("gtag"),                      // <g:    ...
     GTAG_OPENING_NAME("gtag"),                       // <g:if  ...

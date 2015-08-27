@@ -49,6 +49,7 @@ import java.util.regex.Matcher;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.html.parser.model.ElementDescriptor;
 
 /**
  *  
@@ -81,7 +82,7 @@ public class DocumentationTest extends NbTestCase {
     }
 
     public void testResolveLink() throws IOException {
-        URL url = HtmlDocumentation.getDefault().resolveLink("sections.html#the-article-element");
+        URL url = HtmlDocumentation.getDefault().resolveLink(ElementDescriptor.ARTICLE.getHelpLink());
         assertNotNull(url);
 
         String content = HtmlDocumentation.getContentAsString(url, null);
@@ -114,10 +115,10 @@ public class DocumentationTest extends NbTestCase {
     }
     
     public void testSectionContent() throws IOException {
-        URL url = HtmlDocumentation.getDefault().resolveLink("sections.html#the-article-element");
+        URL url = HtmlDocumentation.getDefault().resolveLink(ElementDescriptor.ARTICLE.getHelpLink());
         assertNotNull(url);
         String content = HtmlDocumentation.getDefault().getHelpContent(url);
-        assertTrue(content.substring(0, 200).indexOf("<h4 id=\"the-article-element\">") != -1);
+        assertTrue(content.substring(0, 200).indexOf("<h4 id=the-article-element>") != -1);
 
     }
 

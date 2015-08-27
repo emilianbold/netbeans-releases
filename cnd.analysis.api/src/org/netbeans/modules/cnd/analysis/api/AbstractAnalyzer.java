@@ -32,6 +32,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -72,19 +73,25 @@ public abstract class AbstractAnalyzer implements Analyzer {
         set.processHeaders(cancel, isCompileUnitBased());
         total = set.compileUnits.size();
         ctx.start(total);
-
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        CsmErrorProvider errorProvider = getErrorProvider(ctx.getSettings());
-        for(NativeFileItem item : set.compileUnits) {
-            if (cancel.get()) {
-                break;
+        try {
+            CsmErrorProvider errorProvider = getErrorProvider(ctx.getSettings());
+            for(NativeFileItem item : set.compileUnits) {
+                if (cancel.get()) {
+                    break;
+                }
+                if (count.incrementAndGet() < total) {
+                    ctx.progress(count.get());
+                }
+                try {
+                    result.addAll(doRunImpl(item.getFileObject(), ctx, errorProvider, cancel));
+                } catch (Throwable ex){
+                    CndUtils.printStackTraceOnce(ex);
+                }
             }
-            if (count.incrementAndGet() < total) {
-                ctx.progress(count.get());
-            }
-            result.addAll(doRunImpl(item.getFileObject(), ctx, errorProvider, cancel));
+        } finally {
+            ctx.finish();
         }
-        ctx.finish();
         return result;
     }
 

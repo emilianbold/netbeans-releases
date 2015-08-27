@@ -129,6 +129,9 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
                     //} catch (IncompatibleThreadStateException | InvocationException ex) {
                     //    Exceptions.printStackTrace(ex);
                     }
+                } else {
+                    // When the service is created, perform step into...
+                    DebugManagerHandler.execStepInto(debugger, true);
                 }
             }
             if (ActionsManager.ACTION_STEP_OVER.equals(action)) {
@@ -158,6 +161,9 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
                 //} catch (IncompatibleThreadStateException | InvocationException ex) {
                 //    Exceptions.printStackTrace(ex);
                 }
+            } else {
+                // Cancel step into when the service is created
+                DebugManagerHandler.execStepInto(debugger, false);
             }
         }
     }

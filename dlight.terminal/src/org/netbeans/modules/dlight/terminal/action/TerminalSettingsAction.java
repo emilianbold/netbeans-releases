@@ -47,10 +47,12 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.dlight.terminal.ui.RemoteInfoDialog;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -62,6 +64,12 @@ import org.openide.util.actions.Presenter;
 @ActionRegistration(iconInMenu = true, displayName = "#TerminalOptionsShortDescr", iconBase = "org/netbeans/modules/dlight/terminal/action/terminal_options.png")
 @ActionReference(path = TerminalAction.TERMINAL_ACTIONS_PATH, name = "org-netbeans-modules-dlight-terminal-action-TerminalSettingsAction", position = 300)
 public class TerminalSettingsAction extends AbstractAction implements Presenter.Toolbar {
+
+    public TerminalSettingsAction() {
+        putValue(Action.NAME, "TerminalSettingsAction");
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(TerminalSettingsAction.class, "TerminalOptionsShortDescr"));
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/terminal_options.png", false));
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {

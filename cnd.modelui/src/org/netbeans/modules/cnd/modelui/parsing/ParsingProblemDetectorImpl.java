@@ -49,7 +49,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver.ParsingProblemDetector;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.NbBundle;
@@ -63,7 +62,7 @@ import org.openide.util.NbBundle;
 public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
 
     private static final Logger LOG = Logger.getLogger("cnd.parsing.problem.detector"); // NOI18N
-    public static final boolean TIMING = Boolean.getBoolean("cnd.modelimpl.timing"); // NOI18N
+    public static final boolean TIMING = /*TraceFlags.TIMING*/Boolean.getBoolean("cnd.modelimpl.timing"); // NOI18N
     private static final int Mb = 1024 * 1024;
     private static final int timeThreshold = 1000*60;
     private final Runtime runtime;
@@ -166,13 +165,13 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
      * inform about starting handling next file item
      */
     @Override
-    public String nextCsmFile(CsmFile file, int current, int allWork) {
+    public String nextCsmFile(CsmFile file, int fileLineCount, int current, int allWork) {
         String msg = "";
         int usedMemory = (int) ((runtime.totalMemory() - runtime.freeMemory()) / Mb);
         final long currentTimeMillis = System.currentTimeMillis();
         final long delta = currentTimeMillis - startTime;
         if (TIMING) {
-            lineCount += CsmFileInfoQuery.getDefault().getLineCount(file);
+            lineCount += fileLineCount;
             synchronized(measures) {
                 measures.add(new Measure(lineCount, (int)delta, usedMemory));
             }

@@ -599,7 +599,7 @@ public class ServerUtils {
                     version = GlassFishVersion.toValue(versionString);
                 } catch (IllegalAccessException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException
-                        | SecurityException ex) {
+                        | SecurityException | NoClassDefFoundError ex) {
                     Logger.log(Level.WARNING, "Cannot retrieve Glassfish version: "
                             + commonUtilJar.getAbsolutePath() + ": ", ex);
                 }
@@ -622,6 +622,11 @@ public class ServerUtils {
                 Logger.log(Level.WARNING, "Cannot retrieve Glassfish version: "
                         + commonUtilJar.getAbsolutePath() + ": ", ex);
             }
+        } else {
+            Logger.log(Level.WARNING, "Cannot retrieve Glassfish version: "
+                        + commonUtilJar.getAbsolutePath() + " is not readable:"
+                        + " Exists: " + commonUtilJar.exists()
+                        + " Can read: " + commonUtilJar.canRead(), (Throwable) null);
         }
         return version;
     }

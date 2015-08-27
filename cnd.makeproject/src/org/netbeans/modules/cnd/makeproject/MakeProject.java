@@ -97,6 +97,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.FileObjectNameMatcher;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
@@ -1680,6 +1681,14 @@ public final class MakeProject implements Project, MakeProjectListener {
                     Folder rootFolder = configurationDescriptor.getLogicalFolders();
                     Set<FileObject> res = rootFolder.getAllItemsAsFileObjectSet(false, matcher);
                     FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
+
+                    final Item[] projectItems = projectDescriptorProvider.getConfigurationDescriptor().getProjectItems();
+                    for(Item item : projectItems) {
+                        FileObject fo = item.getFileObject();
+                        if (fo != null && (matcher == null || matcher.pathMatches(fo))) {
+                            res.add(fo);
+                        }
+                    }
                     addFolder(res, baseDirFileObject.getFileObject(MakeConfiguration.NBPROJECT_FOLDER), matcher);
                     addFolder(res, baseDirFileObject.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER), matcher);
                     return res.iterator();

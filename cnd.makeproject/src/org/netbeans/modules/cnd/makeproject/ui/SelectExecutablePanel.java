@@ -89,6 +89,8 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private static final RequestProcessor RP = new RequestProcessor("SelectExecutable",1); //NOI18N
     private final AtomicBoolean canceled = new AtomicBoolean(false);
     private final Map<String,FileObject> searchResult = new TreeMap<>();
+    private final String wd;
+
     private boolean resetList = false;
 
     /** Creates new form SelectExecutable */
@@ -104,6 +106,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                 wd = aWd;
             }
         }
+        this.wd = wd;
 
         buildWorkingDirFO = RemoteFileUtil.getFileObject(wd, conf.getDevelopmentHost().getExecutionEnvironment());
         exeList = new JList();
@@ -189,19 +192,24 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             errorText = getString("NO_EXE_ERROR");
         } else {
             String executablePath = executableTextField.getText();
-            FileObject exe;
+            FileObject exe = null;
             if (!CndPathUtilities.isPathAbsolute(executablePath)) {
-                exe = buildWorkingDirFO.getFileObject(executablePath);
+                if (buildWorkingDirFO != null) {
+                    exe = buildWorkingDirFO.getFileObject(executablePath);
+                }
             } else {
                 executablePath = CndFileUtils.normalizeAbsolutePath(executablePath);
                 exe = RemoteFileUtil.getFileObject(
                         executablePath,
                         conf.getDevelopmentHost().getExecutionEnvironment());
             }
-            if (exe == null || !exe.isValid()) {
-                errorText = getString("EXE_DOESNT_EXISTS");
+            if (!CndPathUtilities.isPathAbsolute(executablePath)
+                    && (buildWorkingDirFO == null || ! buildWorkingDirFO.isValid())) {
+                errorText = NbBundle.getMessage(SelectExecutablePanel.class, "WRONG_WORKING_DIR", wd); //NOI18N
+            } else if (exe == null || !exe.isValid()) {
+                errorText = getString("EXE_DOESNT_EXISTS"); //NOI18N
             } else if (exe.isFolder() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe))) {
-                errorText = getString("FILE_NOT_AN_EXECUTABLE");
+                errorText = getString("FILE_NOT_AN_EXECUTABLE"); //NOI18N
             }
         }
         if (errorText != null) {

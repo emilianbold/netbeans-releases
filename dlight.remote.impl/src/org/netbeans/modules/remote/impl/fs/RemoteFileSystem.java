@@ -57,6 +57,7 @@ import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.net.ConnectException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -133,8 +134,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private static final Object mainLock = new Object();
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<>();
     private final AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
+    private static final List<FileSystemProblemListener> globalProblemListeners = new CopyOnWriteArrayList<>();
     private final List<FileSystemProblemListener> problemListeners =
-            new ArrayList<>();
+            new ArrayList<>(globalProblemListeners);
     transient private final StatusImpl status = new StatusImpl();
     private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<>();
     private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<>();
@@ -259,12 +261,21 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
 
     void warmup(Collection<String> paths, FileSystemProvider.WarmupMode mode, Collection<String> extensions) {
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            RemoteLogger.fine("Warmup: no connection to host {0}", execEnv); //NOI18N
+            return;
+        }
         for (String path : paths) {
             // we still do this via RemoteFileObject (and eventually via RemoteDirectory)
             // since we need its own cahche files to be created first
             RemoteFileObject fo = findResource(path);
             if (fo == null) {
-                RemoteLogger.info("Warmup: can't find file object {0} at {1}", path, execEnv); //NOI18N
+                if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                    RemoteLogger.info("Warmup: no connection to host while warmiong up {0} at {1}", path, execEnv); //NOI18N
+                    break;
+                } else {
+                    RemoteLogger.info("Warmup: can't find file object {0} at {1}", path, execEnv); //NOI18N
+                }
             } else {
                 fo.getImplementor().warmup(mode, extensions);
             }                        
@@ -774,6 +785,13 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
 
+    public static void addGlobalFileSystemProblemListener(FileSystemProblemListener listener) {
+        globalProblemListeners.add(listener);
+        for (RemoteFileSystem fs : RemoteFileSystemManager.getInstance().getAllFileSystems()) {
+            fs.addFileSystemProblemListener(listener);
+        }
+    }
+    
     public void addFileSystemProblemListener(FileSystemProblemListener listener) {
         synchronized (problemListeners) {
             problemListeners.add(listener);

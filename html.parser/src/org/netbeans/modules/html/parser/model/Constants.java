@@ -48,6 +48,6 @@ package org.netbeans.modules.html.parser.model;
  */
 public class Constants {
 
-    public static final String HTML5_MULTIPAGE_SPEC_BASE_URL = "http://www.whatwg.org/specs/web-apps/current-work/multipage/"; //NOI18N
+    public static final String HTML5_MULTIPAGE_SPEC_BASE_URL = "https://html.spec.whatwg.org/multipage/"; //NOI18N
 
 }

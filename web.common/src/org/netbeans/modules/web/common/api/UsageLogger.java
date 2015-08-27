@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.web.common.api;
@@ -46,13 +46,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
  * Helper class for <a href="http://wiki.netbeans.org/UsageLoggingSpecification">usage logging</a>.
  * <p>
+ * By default, logger logs just the first message.
+ * <p>
  * This class is thread safe.
+ * @see Builder#firstMessageOnly(boolean)
  * @since 1.59
  */
 public final class UsageLogger {
@@ -60,8 +64,9 @@ public final class UsageLogger {
     private final Logger logger;
     private final Class<?> srcClass;
     private final String message;
-    private final boolean unrepeated;
-    private final AtomicBoolean messageLogged = new AtomicBoolean();
+    // != null if one-time logger; == null if log all messages
+    @NullAllowed
+    private final AtomicBoolean firstMessageOnly;
 
 
     private UsageLogger(Builder builder) {
@@ -70,17 +75,32 @@ public final class UsageLogger {
         this.logger = Logger.getLogger(builder.loggerName);
         this.srcClass = builder.srcClass;
         this.message = builder.message;
-        this.unrepeated = builder.unrepeated;
+        this.firstMessageOnly = builder.firstMessageOnly ? new AtomicBoolean(false) : null;
+    }
+
+    /**
+     * Is logging enabled?
+     * @return {@code true} if logging is enabled, {@code false} otherwise (one-time logger with one message already logged)
+     * @see #reset()
+     * @since 1.89
+     */
+    public boolean isLoggingEnabled() {
+        if (firstMessageOnly == null) {
+            return true;
+        }
+        return !firstMessageOnly.get();
     }
 
     /**
      * Reset this logger to its initial state.
      * <p>
-     * Currently, <tt>unrepeated</tt> flag is cleared so the next
-     * message is logged.
+     * Currently, <tt>firstMessageOnly</tt> flag is cleared so the next
+     * message is always logged.
      */
     public void reset() {
-        messageLogged.set(false);
+        if (firstMessageOnly != null) {
+            firstMessageOnly.set(false);
+        }
     }
 
     /**
@@ -89,8 +109,9 @@ public final class UsageLogger {
      *        and its {@link LogRecord#setResourceBundleName(java.lang.String) name}
      * @param message message
      * @param params message parameters
+     * @since 1.89
      */
-    public void log(Class<?> srcClass, String message, String... params) {
+    public void log(Class<?> srcClass, String message, Object... params) {
         Parameters.notNull("srcClass", srcClass); // NOI18N
         Parameters.notNull("message", message); // NOI18N
         logInternal(srcClass, message, params);
@@ -99,8 +120,9 @@ public final class UsageLogger {
     /**
      * Log the default message.
      * @param params message parameters
+     * @since 1.89
      */
-    public void log(String... params) {
+    public void log(Object... params) {
         if (srcClass == null) {
             throw new IllegalStateException("No srcClass set");
         }
@@ -110,10 +132,14 @@ public final class UsageLogger {
         logInternal(srcClass, message, params);
     }
 
-    private void logInternal(Class<?> srcClass, String message, String... params) {
+    private void logInternal(Class<?> srcClass, String message, Object... params) {
         assert srcClass != null;
         assert message != null;
         if (!isLoggingEnabled()) {
+            return;
+        }
+        if (firstMessageOnly != null
+                && !firstMessageOnly.compareAndSet(false, true)) {
             return;
         }
         LogRecord logRecord = new LogRecord(Level.INFO, message);
@@ -124,37 +150,28 @@ public final class UsageLogger {
         logger.log(logRecord);
     }
 
-    boolean isLoggingEnabled() {
-        if (!unrepeated) {
-            return true;
-        }
-        return messageLogged.compareAndSet(false, true);
-    }
-
     //~ Factories
 
     /**
      * Create usage logger for project browser.
      * @param loggerName name of usage logger name, e.g. &quot;org.netbeans.ui.metrics.php"
-     * @return unrepeated usage logger for project browser.
+     * @return firstMessageOnly usage logger for project browser.
      */
     public static UsageLogger projectBrowserUsageLogger(String loggerName) {
         return new Builder(loggerName)
                 .message(UsageLogger.class, "USG_PROJECT_BROWSER") // NOI18N
-                .unrepeated(true)
                 .create();
     }
 
     /**
      * Create usage logger for JS test run.
      * @param loggerName name of usage logger name, e.g. &quot;org.netbeans.ui.metrics.php"
-     * @return unrepeated usage logger for JS test run.
+     * @return firstMessageOnly usage logger for JS test run.
      * @since 1.70
      */
     public static UsageLogger jsTestRunUsageLogger(String loggerName) {
         return new Builder(loggerName)
                 .message(UsageLogger.class, "USG_TEST_RUN_JS") // NOI18N
-                .unrepeated(true)
                 .create();
     }
 
@@ -162,14 +179,17 @@ public final class UsageLogger {
 
     /**
      * Builder for {@link UsageLogger}.
+     * <p>
+     * <b>By default, such logger logs just the first message.</b>
+     * @see #firstMessageOnly(boolean)
      */
     public static final class Builder {
 
-        private final String loggerName;
+        final String loggerName;
 
-        private Class<?> srcClass;
-        private String message;
-        private boolean unrepeated;
+        Class<?> srcClass;
+        String message;
+        boolean firstMessageOnly = true;
 
 
         /**
@@ -182,13 +202,14 @@ public final class UsageLogger {
         }
 
         /**
-         * Set usage logger to unrepeated, it means that only the first message
+         * Set usage logger to one-time only, it means that only the first message
          * will be logged until logger is {@link UsageLogger#reset() reset}.
-         * @param unrepeated {@code true} for unrepeated logger
+         * @param firstMessageOnly {@code true} for one-time logger
          * @return configured builder instance.
+         * @since 1.89
          */
-        public Builder unrepeated(boolean unrepeated) {
-            this.unrepeated = unrepeated;
+        public Builder firstMessageOnly(boolean firstMessageOnly) {
+            this.firstMessageOnly = firstMessageOnly;
             return this;
         }
 

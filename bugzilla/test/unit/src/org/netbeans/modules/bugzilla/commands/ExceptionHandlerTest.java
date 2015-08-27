@@ -105,6 +105,8 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
         f.setAccessible(true);
         f.set(Bugzilla.class, null);
         
+        brc = Bugzilla.getInstance().getRepositoryConnector();
+        
         WebUtil.init();
         
         if (defaultPS == null) {

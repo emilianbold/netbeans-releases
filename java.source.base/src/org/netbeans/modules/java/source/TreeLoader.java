@@ -109,9 +109,10 @@ import javax.swing.text.html.parser.ParserDelegator;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.indexing.JavaBinaryIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
@@ -130,6 +131,7 @@ import org.openide.util.Exceptions;
  */
 public class TreeLoader extends LazyTreeLoader {
 
+    private static final String OPTION_OUTPUT_ROOT = "output-root"; //NOI18N
     private static final Pattern ctor_summary_name = Pattern.compile("constructor[_.]summary"); //NOI18N
     private static final Pattern method_summary_name = Pattern.compile("method[_.]summary"); //NOI18N
     private static final Pattern field_detail_name = Pattern.compile("field[_.]detail"); //NOI18N
@@ -196,33 +198,47 @@ public class TreeLoader extends LazyTreeLoader {
                             jc.skipAnnotationProcessing = true;
                             jti.analyze(jti.enter(jti.parse(jfo)));
                             if (persist) {
-                                if (jfm.hasLocation(StandardLocation.CLASS_OUTPUT) && canWrite(cpInfo)) {
-                                    Env<AttrContext> env = Enter.instance(context).getEnv(clazz);
-                                    HashMap<ClassSymbol, JCClassDecl> syms2trees;
-                                    if (env != null && pruneTree(env.tree, Symtab.instance(context), syms2trees = new HashMap<>())) {
-                                        dumpSymFile(jfm, jti, clazz, syms2trees);
-                                    }
-                                } else {
-                                    final JavaFileObject cfo = clazz.classfile;
-                                    final FileObject cFileObject = URLMapper.findFileObject(cfo.toUri().toURL());
-                                    final ClassPath boot = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                                    FileObject root = boot.findOwnerRoot(cFileObject);
-                                    if (root == null) {
-                                        final ClassPath compile = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                                        root = compile.findOwnerRoot(cFileObject);
-                                    }
-                                    if (root != null) {
-                                        final FileObject rootFin = root;
-                                        IndexingUtils.runAsScanWork(new Runnable() {
-                                            @Override
-                                            public void run() {
+                                final File classFolder = getClassFolder(jfm, clazz);
+                                if (classFolder != null) {
+                                    jfm.handleOption(OPTION_OUTPUT_ROOT, Collections.singletonList(classFolder.getPath()).iterator()); //NOI18N
+                                    try {
+                                        if (jfm.hasLocation(StandardLocation.CLASS_OUTPUT) && canWrite(cpInfo)) {
+                                            Env<AttrContext> env = Enter.instance(context).getEnv(clazz);
+                                            HashMap<ClassSymbol, JCClassDecl> syms2trees;
+                                            if (env != null && pruneTree(env.tree, Symtab.instance(context), syms2trees = new HashMap<>())) {
+                                                isTreeLoading.set(Boolean.TRUE);
                                                 try {
-                                                    JavaBinaryIndexer.preBuildArgs(rootFin,cFileObject);
-                                                } catch (IOException ioe) {
-                                                    Exceptions.printStackTrace(ioe);
+                                                    dumpSymFile(jti, clazz, syms2trees);
+                                                } finally {
+                                                    isTreeLoading.remove();
                                                 }
                                             }
-                                        });
+                                        } else {
+                                            final JavaFileObject cfo = clazz.classfile;
+                                            final FileObject cFileObject = URLMapper.findFileObject(cfo.toUri().toURL());
+                                            FileObject root = null;
+                                            if (cFileObject != null) {
+                                                root = cFileObject;
+                                                for (String pathElement : ElementUtilities.getBinaryName(clazz).split("\\.")) {
+                                                    root = root.getParent();
+                                                }
+                                            }
+                                            if (root != null) {
+                                                final FileObject rootFin = root;
+                                                IndexingUtils.runAsScanWork(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        try {
+                                                            JavaBinaryIndexer.preBuildArgs(rootFin,cFileObject);
+                                                        } catch (IOException ioe) {
+                                                            Exceptions.printStackTrace(ioe);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    } finally {
+                                        jfm.handleOption(OPTION_OUTPUT_ROOT, Collections.singletonList("").iterator()); //NOI18N
                                     }
                                 }
                             }
@@ -345,51 +361,57 @@ public class TreeLoader extends LazyTreeLoader {
         return ret.get();
     }
 
-    private static void dumpSymFile(
-        JavaFileManager jfm,
-        JavacTaskImpl jti,
-        ClassSymbol clazz,
-        HashMap<ClassSymbol, JCClassDecl> syms2trees) throws IOException {
-        isTreeLoading.set(Boolean.TRUE);
-        try {
-            String binaryName = null;
-            String surl = null;
-            if (clazz.classfile != null) {
-                binaryName = jfm.inferBinaryName(StandardLocation.PLATFORM_CLASS_PATH, clazz.classfile);
-                if (binaryName == null)
-                    binaryName = jfm.inferBinaryName(StandardLocation.CLASS_PATH, clazz.classfile);
-                surl = clazz.classfile.toUri().toURL().toExternalForm();
-            } else if (clazz.sourcefile != null) {
-                binaryName = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, clazz.sourcefile);
-                surl = clazz.sourcefile.toUri().toURL().toExternalForm();
-            }
-            if (binaryName == null || surl == null) {
-                return;
-            }
-            int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
-            if (index > 0) {
-                final File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
-                dumpSymFile(jfm, jti, clazz, classes, syms2trees);
-            } else {
-                LOGGER.log(
-                   Level.INFO,
-                   "Invalid binary name when writing sym file for class: {0}, source: {1}, binary name {2}",    // NOI18N
-                   new Object[] {
-                       clazz.flatname,
-                       surl,
-                       binaryName
-                   });
-            }
-        } finally {
-            isTreeLoading.remove();
-        }
-    }
-    
     public static void dumpSymFile(
             @NonNull final JavaFileManager jfm,
             @NonNull final JavacTaskImpl jti,
             @NonNull final ClassSymbol clazz,
             @NonNull final File classFolder,
+            @NonNull final HashMap<ClassSymbol, JCClassDecl> syms2trees) throws IOException {
+        jfm.handleOption(OPTION_OUTPUT_ROOT, Collections.singletonList(classFolder.getPath()).iterator()); //NOI18N
+        try {
+            dumpSymFile(jti, clazz, syms2trees);
+        } finally {
+            jfm.handleOption(OPTION_OUTPUT_ROOT, Collections.singletonList("").iterator()); //NOI18N
+        }
+    }
+
+    @CheckForNull
+    private static File getClassFolder(
+        JavaFileManager jfm,
+        ClassSymbol clazz) throws IOException {
+        String binaryName = null;
+        String surl = null;
+        if (clazz.classfile != null) {
+            binaryName = jfm.inferBinaryName(StandardLocation.PLATFORM_CLASS_PATH, clazz.classfile);
+            if (binaryName == null)
+                binaryName = jfm.inferBinaryName(StandardLocation.CLASS_PATH, clazz.classfile);
+            surl = clazz.classfile.toUri().toURL().toExternalForm();
+        } else if (clazz.sourcefile != null) {
+            binaryName = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, clazz.sourcefile);
+            surl = clazz.sourcefile.toUri().toURL().toExternalForm();
+        }
+        if (binaryName == null || surl == null) {
+            return null;
+        }
+        int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
+        if (index > 0) {
+            return JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
+        } else {
+            LOGGER.log(
+               Level.INFO,
+               "Invalid binary name when writing sym file for class: {0}, source: {1}, binary name {2}",    // NOI18N
+               new Object[] {
+                   clazz.flatname,
+                   surl,
+                   binaryName
+               });
+            return null;
+        }
+    }
+
+    private static void dumpSymFile(
+            @NonNull final JavacTaskImpl jti,
+            @NonNull final ClassSymbol clazz,
             @NonNull final HashMap<ClassSymbol, JCClassDecl> syms2trees) throws IOException {
         Log log = Log.instance(jti.getContext());
         JavaFileObject prevLogTo = log.useSource(null);
@@ -407,15 +429,13 @@ public class TreeLoader extends LazyTreeLoader {
             public void finished(TaskEvent e) {
             }
         };
-        try {            
-            jfm.handleOption("output-root", Collections.singletonList(classFolder.getPath()).iterator()); //NOI18N
+        try {
             jti.addTaskListener(listener);
             jti.generate(Collections.singletonList(clazz));
         } catch (InvalidSourcePath isp) {
             LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {
             jti.removeTaskListener(listener);
-            jfm.handleOption("output-root", Collections.singletonList("").iterator()); //NOI18N
             log.popDiagnosticHandler(discardDiagnosticHandler);
             log.useSource(prevLogTo);
         }

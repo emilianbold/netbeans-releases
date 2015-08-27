@@ -48,7 +48,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -148,46 +147,22 @@ class SQLExecutionHelper {
                     if (Thread.interrupted()) {
                         return;
                     }
-                    boolean needReread = false;
-                    ResultSet rs = null;
+
+                    ResultSet rs;
 
                     while (true) {
                         if (isResultSet) {
                             rs = stmt.getResultSet();
 
-                            Collection<DBTable> tables = dbMeta.generateDBTables(
-                                    rs, sql, isSelect);
+                            Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, isSelect);
                             DataViewDBTable dvTable = new DataViewDBTable(tables);
-                            DataViewPageContext pageContext = dataView.addPageContext(
-                                    dvTable);
-                            needReread |= resultSetNeedsReloading(dvTable);
+                            DataViewPageContext pageContext = dataView.addPageContext(dvTable);
 
-                            if (!needReread) {
                                 loadDataFrom(pageContext, rs, useScrollableCursors);
-                            }
-                        }
-                        if (supportesMultipleResultSets) {
-                            isResultSet = stmt.getMoreResults();
-                            // @todo: Do somethink intelligent with the updatecounts
-                            int updateCount = stmt.getUpdateCount();
-                            if (isResultSet == false && updateCount == -1) {
-                                break;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
 
-                    if (needReread) {
-                        isResultSet = executeSQLStatement(stmt, sql);
-                        int res = -1;
-                        while (true) {
-                            if (isResultSet) {
-                                res++;
-                                rs = stmt.getResultSet();
-                                DataViewPageContext pageContext = dataView.getPageContext(
-                                        res);
-                                loadDataFrom(pageContext, rs, useScrollableCursors);
+                            DataViewUtils.closeResources(rs);
+                            
+                            dbMeta.postprocessTables(tables);
                             }
                             if (supportesMultipleResultSets) {
                                 isResultSet = stmt.getMoreResults();
@@ -200,13 +175,12 @@ class SQLExecutionHelper {
                                 break;
                             }
                         }
-                    }
+
                     // If total count was not retrieved using scrollable cursors,
                     // compute it now.
                     if (!useScrollableCursors && dataView.getPageContexts().size() > 0) {
                         getTotalCount(isSelect, sql, stmt, dataView.getPageContext(0));
                     }
-                    DataViewUtils.closeResources(rs);
                 } catch (SQLException sqlEx) {
                     this.ex = sqlEx;
                 } catch (InterruptedException ex) {
@@ -509,7 +483,7 @@ class SQLExecutionHelper {
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "", true) {
 
             private PreparedStatement pstmt;
-            Set<Integer> keysToRemove = new HashSet<>();
+            private final Set<Integer> keysToRemove = new HashSet<>();
 
             @Override
             public void execute() throws SQLException, DBException {
@@ -1016,33 +990,6 @@ class SQLExecutionHelper {
         NumberFormat fmt = NumberFormat.getInstance();
         fmt.setMaximumFractionDigits(3);
         return fmt.format(ms / 1000.0);
-    }
-
-    /**
-     * Check whether the result set needs reloading. Some databases close result
-     * streams when reading database metadata (e.g. Oracle DB and
-     * DatabaseMetaData.getPrimaryKeys). If there are some streamed values, the
-     * result set needs to be reloaded after meta data have been read. See
-     * #179959.
-     *
-     * @return True if and only if the result set needs to be reloaded.
-     */
-    private boolean resultSetNeedsReloading(DataViewDBTable metadata) {
-        if (!dataView.getDatabaseConnection().getDriverClass().contains(
-                "oracle")) {                                            //NOI18N
-            return false;
-        }
-        int colCnt = metadata.getColumnCount();
-        for (int i = 0; i < colCnt; i++) {
-            DBColumn column = metadata.getColumn(i);
-            int jdbcType = column.getJdbcType();
-            if (jdbcType == Types.LONGVARCHAR || jdbcType == Types.LONGNVARCHAR
-                    || jdbcType == Types.LONGVARBINARY || jdbcType == Types.BLOB
-                    || jdbcType == Types.CLOB || jdbcType == Types.NCLOB) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

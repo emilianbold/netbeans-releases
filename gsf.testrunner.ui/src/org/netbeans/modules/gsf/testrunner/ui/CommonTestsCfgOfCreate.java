@@ -52,6 +52,8 @@ import java.awt.event.ItemEvent;
 import java.io.File;
 import java.util.List;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -152,14 +154,18 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     private static final int MSG_TYPE_UPDATE_SINGLE_TEST_CLASS = 5;
     /** layer index for a message about updating all test classes */
     private static final int MSG_TYPE_UPDATE_ALL_TEST_CLASSES = 6;
+    /** layer index for a message about error/warning in the configuration panel */
+    private static final int MSG_TYPE_CONFIGURATION_PANEL_ERROR = 7;
     /** */
-    private MessageStack msgStack = new MessageStack(7);
+    private MessageStack msgStack = new MessageStack(8);
 
     private Collection<SourceGroup> createdSourceRoots = new ArrayList<SourceGroup>();
     private final JPanel jPanel = new JPanel();
     
     private TestCreatorConfiguration testCreatorConfiguration;
     private Map<String, Object> configurationPanelProperties;
+    
+    private static final Logger LOGGER = Logger.getLogger(CommonTestsCfgOfCreate.class.getName());
     
     public CommonTestsCfgOfCreate(FileObject[] activatedFOs) {
         assert (activatedFOs != null) && (activatedFOs.length != 0);
@@ -840,10 +846,33 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      */
     private void checkAcceptability() {
         final boolean wasAcceptable = isAcceptable;
-        isAcceptable = hasTargetFolders && classNameValid && !isJ2meProject;
+        isAcceptable = hasTargetFolders && classNameValid && !isJ2meProject && isConfigurationPanelValid();
         if (isAcceptable != wasAcceptable) {
             fireStateChange();
         }
+    }
+    
+    @NbBundle.Messages({"# {0} - test creator configuration", 
+        "MSG_CONFIGURATION_PANEL_INVALIDITY=The configuration panel is invalid but no error message is available for: {0}",
+        "MSG_CONFIGURATION_PANEL_INVALIDITY_SHORT=The configuration panel is invalid but no error message is available."})
+    private boolean isConfigurationPanelValid() {
+        if (testCreatorConfiguration != null) {
+            boolean valid = testCreatorConfiguration.isValid();
+            String errorMessage = testCreatorConfiguration.getErrorMessage();
+            if (valid) {
+                // if errorMessage is null currently displayed message (if any) will be removed
+                setMessage(errorMessage, MSG_TYPE_CONFIGURATION_PANEL_ERROR);
+            } else {
+                if(errorMessage == null) {
+                    LOGGER.info(Bundle.MSG_CONFIGURATION_PANEL_INVALIDITY(testCreatorConfiguration.getClass().toString()));
+                    setMessage(Bundle.MSG_CONFIGURATION_PANEL_INVALIDITY_SHORT(), MSG_TYPE_CONFIGURATION_PANEL_ERROR);
+                } else {
+                    setMessage(errorMessage, MSG_TYPE_CONFIGURATION_PANEL_ERROR);
+                }
+            }
+            return valid;
+        }
+        return true;
     }
     
     /**

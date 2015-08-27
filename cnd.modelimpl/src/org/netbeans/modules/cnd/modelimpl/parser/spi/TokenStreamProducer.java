@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.util.Lookup;
 import org.netbeans.modules.cnd.apt.support.spi.CndTextIndexFilter;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
 /**
  *
@@ -77,6 +78,7 @@ import org.netbeans.modules.cnd.apt.support.spi.CndTextIndexFilter;
  */
 public abstract class TokenStreamProducer {
     private PreprocHandler curPreprocHandler;
+    private FileImpl startFile;
     private String language = APTLanguageSupport.GNU_CPP;
     private String languageFlavor = APTLanguageSupport.FLAVOR_UNKNOWN;
     private final FileImpl fileImpl;
@@ -115,6 +117,7 @@ public abstract class TokenStreamProducer {
     public void prepare(PreprocHandler handler, String language, String languageFlavor, boolean allowToCacheOnRelease) {
         assert handler != null : "null preprocHandler is not allowed";
         curPreprocHandler = handler;
+        startFile = Utils.getStartFile(handler.getState());
         assert language != null : "null language is not allowed";
         this.language = language;
         assert languageFlavor != null : "null language flavor is not allowed";
@@ -137,6 +140,13 @@ public abstract class TokenStreamProducer {
     public FileImpl getMainFile() {
         return fileImpl;
     }    
+
+    public FileImpl getStartFile() {
+        if (startFile != null) {
+            return startFile;
+        }
+        return fileImpl;
+    }
 
     public FileContent getFileContent() {
         assert fileContent != null;

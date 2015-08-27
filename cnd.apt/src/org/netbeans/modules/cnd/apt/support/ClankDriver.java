@@ -218,6 +218,7 @@ public final class ClankDriver {
       ResolvedPath getResolvedPath();
       CharSequence getSpellingName();
       boolean isAngled();
+      boolean isRecursive();
     }
 
     public interface ClankPreprocessorCallback {
@@ -262,6 +263,16 @@ public final class ClankDriver {
       int getFileIndex();
       ClankInclusionDirective getInclusionDirective();
       int[] getSkippedRanges();
+
+      Collection<ClankPreprocessorDirective> getPreprocessorDirectives();
+
+      Collection<MacroExpansion> getMacroExpansions();
+
+      Collection<MacroUsage> getMacroUsages();
+
+      FileGuard getFileGuard();
+
+      Map<Integer, ClankMacroDirective> getMacroDefinitions();
     }
 
     ////////////////////////////////////////////////////////////////////////////
