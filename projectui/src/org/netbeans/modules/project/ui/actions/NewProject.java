@@ -65,6 +65,7 @@ import org.netbeans.modules.project.ui.ProjectsRootNode;
 import static org.netbeans.modules.project.ui.actions.Bundle.*;
 import org.netbeans.modules.project.ui.api.ProjectTemplates;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.awt.ActionID;
@@ -197,7 +198,7 @@ public class NewProject extends AbstractAction {
                             if (newFo.isFolder()) {
                                 try {
                                     Project p = ProjectManager.getDefault().findProject(newFo);
-                                    if (p != null) {
+                                    if (p != null && !ProjectConvertors.isConvertorProject(p)) {
                                         // It is a project, so schedule it to open:
                                         projectsToOpen.add(p);
                                     } else {

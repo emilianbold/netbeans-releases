@@ -48,10 +48,12 @@ package org.netbeans.modules.cnd.highlight.hints.formatstring;
 class Parameter {
     private final String value;
     private final int offset;
+    private final boolean resolveType;
 
-    Parameter(String value, int offset) {
+    Parameter(String value, int offset, boolean resolveType) {
         this.value = value;
         this.offset = offset;
+        this.resolveType = resolveType;
     }
 
     public String getValue() {
@@ -60,5 +62,9 @@ class Parameter {
 
     public int getOffset() {
         return offset;
+    }
+    
+    public boolean resolveType() {
+        return resolveType;
     }
 }

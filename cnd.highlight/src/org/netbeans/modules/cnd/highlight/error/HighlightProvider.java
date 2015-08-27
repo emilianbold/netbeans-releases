@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent;
+import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.support.Interrupter;
@@ -288,8 +289,13 @@ public final class HighlightProvider  {
             if (pb != null) {
                 try {
                     List<Fix> fixes = CsmErrorInfoHintProvider.getFixes(info);
-                    desc = ErrorDescriptionFactory.createErrorDescription(
-                            getSeverity(info), info.getMessage(), fixes, doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                    if (info instanceof ErrorInfoImpl) {
+                        desc = ErrorDescriptionFactory.createErrorDescription(
+                                null, getSeverity(info), ((ErrorInfoImpl) info).getCustomType(), info.getMessage(), null, fixes, doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                    } else {
+                        desc = ErrorDescriptionFactory.createErrorDescription(
+                                getSeverity(info), info.getMessage(), fixes, doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
