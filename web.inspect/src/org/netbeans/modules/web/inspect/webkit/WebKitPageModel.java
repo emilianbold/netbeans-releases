@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
@@ -669,6 +670,7 @@ public class WebKitPageModel extends PageModel {
             }
             selectedNodes = knownNodes(nodes);
         }
+        logPageInspectionUsage();
         firePropertyChange(PROP_SELECTED_NODES, null, null);
     }
 
@@ -689,6 +691,16 @@ public class WebKitPageModel extends PageModel {
             }
         }
         return knownNodes;
+    }
+
+    private static final UsageLogger USAGE_LOGGER = new UsageLogger.Builder("org.netbeans.ui.metrics.web.inspect")  // NOI18N
+            .firstMessageOnly(true)
+            .message(WebKitPageModel.class, "USG_PAGE_INSPECTION") // NOI18N
+            .create();
+
+    /** Logs the usage of page inspection. */
+    private void logPageInspectionUsage() {
+        USAGE_LOGGER.log();
     }
 
     @Override
