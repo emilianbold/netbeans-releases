@@ -683,7 +683,10 @@ public final class ClankPPCallback extends FileInfoCallback {
                 convertedMacroExpansions = new ArrayList<MacroExpansion>(size);
                 for (int i = 0; i < size; i++) {
                     FileInfoCallback.MacroExpansionInfo e = (FileInfoCallback.MacroExpansionInfo)expansions[i];
-                    convertedMacroExpansions.add(new MacroExpansion(e));
+                    ClankDriver.ClankMacroDirective referencedMacro = getReferencedMacro(e.getReferencedMacroLocation());
+                    // TODO: pass directly into MacroExpansion
+                    MacroExpansion macroExpansion = new MacroExpansion(e);
+                    convertedMacroExpansions.add(macroExpansion);
                 }
             }
             {
@@ -693,11 +696,24 @@ public final class ClankPPCallback extends FileInfoCallback {
                 convertedMacroUsages = new ArrayList<MacroUsage>(size);
                 for (int i = 0; i < size; i++) {
                     FileInfoCallback.MacroUsageInfo e = (FileInfoCallback.MacroUsageInfo)expansions[i];
-                    convertedMacroUsages.add(new MacroUsage(e));
+                    ClankDriver.ClankMacroDirective referencedMacro = getReferencedMacro(e.getReferencedMacroLocation());
+                    // TODO: pass directly into MacroUsage
+                    MacroUsage macroUsage = new MacroUsage(e);
+                    convertedMacroUsages.add(macroUsage);
                 }
             }
         }
 
+        private ClankDriver.ClankMacroDirective getReferencedMacro(int refID) {
+            ClankDriver.ClankMacroDirective directive = null;
+            if (refID != 0) {
+                directive = this.macroDeclarations.get(refID);
+                // need to initialize lazy file name while Preprocessor and all memory is valid
+                directive.getFile();
+            }
+            return directive;
+        }
+        
         private void prepareConvertedGuard() {
             SmallVector<FileGuardInfo> guards = current.getFileGuardsInfo();
             if (guards != null) {

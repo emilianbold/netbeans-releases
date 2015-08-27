@@ -324,7 +324,7 @@ public class FileComponentDeclarations extends FileComponent {
                     CsmUID<CsmOffsetableDeclaration> anUid = entry.getValue();
                     int start = UIDUtilities.getStartOffset(anUid);
                     int end = UIDUtilities.getEndOffset(anUid);
-                    if (start >= endOffset) {
+                    if (start >= endOffset && (start != -1 && end != -1)) { // (-1;-1) is a special case for forward classifiers
                         break;
                     }
                     if(end >= startOffset && start < endOffset) {
