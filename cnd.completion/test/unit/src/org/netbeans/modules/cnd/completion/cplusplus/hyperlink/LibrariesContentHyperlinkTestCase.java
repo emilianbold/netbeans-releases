@@ -80,6 +80,8 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         checkDir(incl2);
         List<String> sysIncludes = Arrays.asList(incl1.getAbsolutePath(), incl2.getAbsolutePath());
         super.setSysIncludes(srcDir.getAbsolutePath(), sysIncludes);
+        List<String> usrIncludes = Arrays.asList(srcDir.getAbsolutePath());
+        super.setUsrIncludes(srcDir.getAbsolutePath(), usrIncludes);
         return new File[] {srcDir};
     }
 
