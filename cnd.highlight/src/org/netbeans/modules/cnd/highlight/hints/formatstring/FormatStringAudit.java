@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.hints.CsmHintProvider;
@@ -117,14 +118,17 @@ public class FormatStringAudit extends AbstractCodeAudit {
                     docTokenSequence.moveStart();
 
                     final CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
+                    StringBuilder paramBuf = new StringBuilder();
+                    ArrayList<Parameter> params = new ArrayList<>();
+                    
                     State state = State.DEFAULT;
                     boolean formatFlag = false;  // detect was format string already processed
-                    StringBuilder paramBuf = new StringBuilder();
-                    int paramOffset = -1;
-                    ArrayList<Parameter> params = new ArrayList<>();
                     String formatString = "";  // NOI18N
+                    int paramOffset = -1;
                     int bracketsCounter = 0;
                     int formatStringOffset = -1;
+                    boolean skipMacro = false;
+                    
                     while (docTokenSequence.moveNext()) {
                         Token<TokenId> token = docTokenSequence.token();
                         TokenId tokenId = token.id();
@@ -166,12 +170,13 @@ public class FormatStringAudit extends AbstractCodeAudit {
                             }
                         } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
                             if (paramBuf.length() > 0) {
-                                params.add(new Parameter(paramBuf.toString(), paramOffset));
+                                params.add(new Parameter(paramBuf.toString(), paramOffset, !skipMacro));
                                 paramOffset = -1;
                             }
                             result.add(new FormattedPrintFunction(file, formatStringOffset, formatString, params));
                             state = State.DEFAULT;
                             formatFlag = false;
+                            skipMacro = false;
                             paramBuf = new StringBuilder();
                         } else if (state == State.IN_PARAM && tokenId.equals(CppTokenId.STRING_LITERAL) && !formatFlag) {
                             formatFlag = true;
@@ -180,17 +185,22 @@ public class FormatStringAudit extends AbstractCodeAudit {
                             formatStringOffset = docTokenSequence.offset();
                         } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
                             if (paramBuf.length() > 0) {
-                                params.add(new Parameter(paramBuf.toString(), paramOffset));
+                                params.add(new Parameter(paramBuf.toString(), paramOffset, !skipMacro));
                                 paramOffset = -1;
                             }
+                            skipMacro = false;
                             paramBuf = new StringBuilder();
                         } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
                                 && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
                                 && formatFlag) {
-                            paramBuf.append(token.text());
                             if (paramOffset == -1) {
                                 paramOffset = docTokenSequence.offset();
                             }
+                            CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
+                            if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
+                                skipMacro = true;
+                            }
+                            paramBuf.append(token.text());
                         }
                     }
                 }

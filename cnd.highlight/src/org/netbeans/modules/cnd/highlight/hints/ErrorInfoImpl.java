@@ -53,6 +53,7 @@ public class ErrorInfoImpl implements CsmErrorInfo, DisableHintFix.CodeAuditInfo
     private final String audutID;
     private final String message;
     private final Severity severity;
+    private final String customType;
     private final int startOffset;
     private final int endOffset;
 
@@ -61,6 +62,17 @@ public class ErrorInfoImpl implements CsmErrorInfo, DisableHintFix.CodeAuditInfo
         this.audutID = audutName;
         this.message = message;
         this.severity = severity;
+        this.customType = null;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+    }
+    
+    public ErrorInfoImpl(String providerName, String audutName, String message, Severity severity, String customType, int startOffset, int endOffset) {
+        this.providerID = providerName;
+        this.audutID = audutName;
+        this.message = message;
+        this.severity = severity;
+        this.customType = customType;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
     }
@@ -83,6 +95,10 @@ public class ErrorInfoImpl implements CsmErrorInfo, DisableHintFix.CodeAuditInfo
     @Override
     public Severity getSeverity() {
         return severity;
+    }
+    
+    public String getCustomType() {
+        return customType;
     }
 
     @Override

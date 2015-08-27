@@ -150,19 +150,19 @@ public final class SecurityCheckProvider extends CsmErrorProvider implements Cod
                 String id = FunctionsXmlService.Level.UNSAFE.getLevel() + category.getName(); // NOI18N
                 String name = "(" + FunctionsXmlService.Level.UNSAFE.name().toUpperCase(Locale.getDefault()) + ") " + category.getName(); // NOI18N
                 String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+category.getName()+".description"); // NOI18N
-                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.UNSAFE, category, id, name, description, "error", true, myPreferences)); // NOI18N
+                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.UNSAFE, category, id, name, description, "error", "org-netbeans-modules-cnd-highlight-security-error", true, myPreferences)); // NOI18N
             }
             for (FunctionsXmlService.Category category : service.getCategories(FunctionsXmlService.Level.AVOID)) {
                 String id = FunctionsXmlService.Level.AVOID.getLevel() + category.getName(); // NOI18N
                 String name = "(" + FunctionsXmlService.Level.AVOID.name().toUpperCase(Locale.getDefault()) + ") " + category.getName(); // NOI18N
                 String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+category.getName()+".description"); // NOI18N
-                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.AVOID, category, id, name, description, "warning", true, myPreferences)); // NOI18N
+                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.AVOID, category, id, name, description, "warning", "org-netbeans-modules-cnd-highlight-security-warning", true, myPreferences)); // NOI18N
             }
             for (FunctionsXmlService.Category category : service.getCategories(FunctionsXmlService.Level.CAUTION)) {
                 String id = FunctionsXmlService.Level.CAUTION.getLevel() + category.getName(); // NOI18N
                 String name = "(" + FunctionsXmlService.Level.CAUTION.name().toUpperCase(Locale.getDefault()) + ") " + category.getName(); // NOI18N
                 String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+category.getName()+".description"); // NOI18N
-                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.CAUTION, category, id, name, description, "warning", false, myPreferences)); // NOI18N
+                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.CAUTION, category, id, name, description, "warning", "org-netbeans-modules-cnd-highlight-security-warning", false, myPreferences)); // NOI18N
             }
             
             Collections.sort(result, new Comparator<CodeAudit>(){
