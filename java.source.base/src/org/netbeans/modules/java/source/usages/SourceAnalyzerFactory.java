@@ -628,8 +628,7 @@ public final class SourceAnalyzerFactory {
                     ClassFileUtil.encodeClassName(sym, classNameBuilder, '.');  //NOI18N
                     className = classNameBuilder.toString();
                     if (!className.isEmpty()) {
-                        ElementKind kind = sym.getKind();
-                        classNameBuilder.append(DocumentUtil.encodeKind(kind));
+                        classNameBuilder.append(DocumentUtil.encodeKind(sym.getKind(), sym.isLocal()));
                         final String classNameType = classNameBuilder.toString();
                         String resourceName = null;
                         topLevel = activeClass.isEmpty();

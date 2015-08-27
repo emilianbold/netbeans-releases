@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import com.sun.tools.javac.code.Symbol;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -64,6 +65,7 @@ import org.apache.lucene.analysis.WhitespaceTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -108,9 +110,13 @@ public class DocumentUtil {
     private static final char REGEX_QUERY_WILDCARD = '.';               //NOI18N
 
     private static final char EK_CLASS = 'C';                           //NOI18N
+    private static final char EK_LOCAL_CLASS = 'c';                     //NOI18N
     private static final char EK_INTERFACE = 'I';                       //NOI18N
+    private static final char EK_LOCAL_INTERFACE = 'i';                 //NOI18N
     private static final char EK_ENUM = 'E';                            //NOI18N
+    private static final char EK_LOCAL_ENUM = 'e';                      //NOI18N
     private static final char EK_ANNOTATION = 'A';                      //NOI18N
+    private static final char EK_LOCAL_ANNOTATION = 'a';                //NOI18N
     private static final int SIZE = ClassIndexImpl.UsageType.values().length;
 
     private DocumentUtil () {
@@ -191,12 +197,30 @@ public class DocumentUtil {
 
     public static String getSimpleBinaryName (final Document doc) {
         assert doc != null;
-        Field field = doc.getField(FIELD_BINARY_NAME);
+        Fieldable field = doc.getFieldable(FIELD_BINARY_NAME);
         if (field == null) {
             return null;
+        } else {
+            final String binName = field.stringValue();
+            return binName.substring(0, binName.length()-1);
         }
-        else {
-            return field.stringValue();
+    }
+
+    public static boolean isLocal(@NonNull final Document doc) {
+        Fieldable fld = doc.getFieldable(FIELD_BINARY_NAME);
+        if (fld == null) {
+            return false;
+        } else {
+            final String binName = fld.stringValue();
+            switch (binName.charAt(binName.length()-1)) {
+                case EK_LOCAL_ANNOTATION:
+                case EK_LOCAL_CLASS:
+                case EK_LOCAL_ENUM:
+                case EK_LOCAL_INTERFACE:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 
@@ -350,15 +374,20 @@ public class DocumentUtil {
         return className;
     }
 
+    @NonNull
     static ElementKind decodeKind (char kind) {
         switch (kind) {
             case EK_CLASS:
+            case EK_LOCAL_CLASS:
                 return ElementKind.CLASS;
             case EK_INTERFACE:
+            case EK_LOCAL_INTERFACE:
                 return ElementKind.INTERFACE;
             case EK_ENUM:
+            case EK_LOCAL_ENUM:
                 return ElementKind.ENUM;
             case EK_ANNOTATION:
+            case EK_LOCAL_ANNOTATION:
                 return ElementKind.ANNOTATION_TYPE;
             default:
                 throw new IllegalArgumentException ();
@@ -366,15 +395,21 @@ public class DocumentUtil {
     }
 
     static char encodeKind (ElementKind kind) {
+        return encodeKind(kind, false);
+    }
+
+    static char encodeKind (
+            @NonNull final ElementKind kind,
+            final boolean isLocal) {
         switch (kind) {
             case CLASS:
-                return EK_CLASS;
+                return isLocal ? EK_LOCAL_CLASS : EK_CLASS;
             case INTERFACE:
-                return EK_INTERFACE;
+                return isLocal ? EK_LOCAL_INTERFACE : EK_INTERFACE;
             case ENUM:
-                return EK_ENUM;
+                return isLocal ? EK_LOCAL_ENUM : EK_ENUM;
             case ANNOTATION_TYPE:
-                return EK_ANNOTATION;
+                return isLocal ? EK_LOCAL_ANNOTATION : EK_ANNOTATION;
             default:
                 throw new IllegalArgumentException ();
         }

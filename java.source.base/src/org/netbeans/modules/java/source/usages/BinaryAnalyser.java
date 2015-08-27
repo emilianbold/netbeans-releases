@@ -653,7 +653,7 @@ public class BinaryAnalyser {
         final ClassFileProcessor cfp = cfg.createProcessor(classFile);
         this.delete (cfp.getClassName());
         final UsagesData<ClassName> usages = cfp.analyse();
-        final String classNameType = cfp.getClassName() + DocumentUtil.encodeKind(getElementKind(classFile));
+        final String classNameType = cfp.getClassName() + DocumentUtil.encodeKind(getElementKind(classFile), isLocal(classFile));
         final Pair<String,String> pair = Pair.<String,String>of(classNameType, null);
         addReferences (pair, usages);
     }
@@ -671,7 +671,7 @@ public class BinaryAnalyser {
         this.refs.add(Pair.<Pair<String,String>,Object[]>of(name, cr));
     }
 
-    private ElementKind getElementKind(@NonNull final ClassFile cf) {
+    private static ElementKind getElementKind(@NonNull final ClassFile cf) {
         if (cf.isEnum()) {
             return ElementKind.ENUM;
         } else if (cf.isAnnotation()) {
@@ -681,6 +681,10 @@ public class BinaryAnalyser {
         } else {
             return ElementKind.CLASS;
         }
+    }
+
+    private static boolean isLocal(@NonNull final ClassFile cf) {
+        return cf.getEnclosingMethod() != null;
     }
     //</editor-fold>
 
