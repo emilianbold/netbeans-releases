@@ -44,6 +44,7 @@ package org.netbeans.core.spi.multiview.text;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.io.ByteArrayInputStream;
@@ -53,6 +54,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.swing.text.StyledDocument;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -65,6 +68,7 @@ import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -139,12 +143,25 @@ public class MultiViewEditorDiscardTest extends NbTestCase {
         
         assertEquals("Also part of the global registry", sava, Savable.REGISTRY.lookup(Savable.class));
         
+        final CountDownLatch docChanged = new CountDownLatch(1);
+        ces.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
+                    docChanged.countDown();
+                }
+            }
+        });
         EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
                 assertTrue("Can be closed without problems", tc.close());
             }
         });
+        
+        docChanged.await(5000, TimeUnit.MILLISECONDS);
+        
+        assertTrue("CES did not fire change of the document after close", docChanged.getCount() == 0);
         
         assertFalse("Not modified", ces.isModified());
         
