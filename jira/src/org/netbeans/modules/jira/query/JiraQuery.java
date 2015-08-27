@@ -191,7 +191,7 @@ public class JiraQuery {
                             }
                         }
                         JiraConnectorSupport.getInstance().getConnector().setQuery(repository.getTaskRepository(), iquery, jiraFilter);
-                        SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getCommandFactory()
+                        queryCmd = MylynSupport.getInstance().getCommandFactory()
                                 .createSynchronizeQueriesCommand(repository.getTaskRepository(), iquery);
                         QueryProgressListener list = new QueryProgressListener();
                         queryCmd.addCommandProgressListener(list);

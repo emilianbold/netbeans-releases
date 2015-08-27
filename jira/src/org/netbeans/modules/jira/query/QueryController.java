@@ -1521,9 +1521,12 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         @Override
         public boolean cancel() {
             if(task != null) {
-                task.cancel();
-                query.cancel();
-                finnishQuery();
+                try { query.cancel(); } finally { }                
+                try{
+                    task.cancel();
+                } finally {
+                    finnishQuery();
+                }
             }
             return true;
         }
