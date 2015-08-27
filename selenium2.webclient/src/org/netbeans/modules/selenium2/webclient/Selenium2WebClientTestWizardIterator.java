@@ -53,6 +53,7 @@ public class Selenium2WebClientTestWizardIterator implements WizardDescriptor.In
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private transient WizardDescriptor.Panel panel;
     private transient WizardDescriptor wiz;
+    private final String NEW_FILE_WIZARD_TITLE_PROP = "NewFileWizard_Title"; // NOI18N
 
     @Override
     public Set instantiate() throws IOException {
@@ -80,6 +81,11 @@ public class Selenium2WebClientTestWizardIterator implements WizardDescriptor.In
         this.wiz = wizard;
         Project project = Templates.getProject(wiz);
         Selenium2SupportImpl selenium2Support = Selenium2Support.findSelenium2Support(project);
+        if(wiz.getProperty(NEW_FILE_WIZARD_TITLE_PROP).toString().equals(Bundle.SeleniumMochaTestCase_displayName())) {
+            Templates.setTargetName(wizard, "newSeleneseMochaTest"); // NOI18N
+        } else if(wiz.getProperty(NEW_FILE_WIZARD_TITLE_PROP).toString().equals(Bundle.SeleniumJasmineTestCase_displayName())) {
+            Templates.setTargetName(wizard, "newSeleneseJasmineTest"); // NOI18N
+        }
         if (selenium2Support != null){
             panel = selenium2Support.createTargetChooserPanel(wiz);
             panel.getComponent();
