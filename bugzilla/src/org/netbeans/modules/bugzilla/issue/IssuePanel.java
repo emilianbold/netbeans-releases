@@ -62,6 +62,7 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -556,7 +557,11 @@ public class IssuePanel extends javax.swing.JPanel {
             } else {
                 reloadField(attachLogCheckBox, IssueField.NB_ATTACH_IDE_LOG);
             }
+            reproducibilityCombo.setVisible(true);
+            reproducibilityLabel.setVisible(true);
         } else {
+            reproducibilityCombo.setVisible(false);
+            reproducibilityLabel.setVisible(false);
             attachLogCheckBox.setVisible(false);
         }
         switchViewLog();
@@ -603,7 +608,7 @@ public class IssuePanel extends javax.swing.JPanel {
             headerField.setPreferredSize(new Dimension(0, dim.height));
             reloadField(force, summaryField, IssueField.SUMMARY);
             reloadField(force, productCombo, IssueField.PRODUCT);
-            productChanged();
+            productChanged(false);            
             reloadField(productField, IssueField.PRODUCT);
             reloadField(force, componentCombo, IssueField.COMPONENT);
             reloadField(force, versionCombo, IssueField.VERSION);
@@ -1062,6 +1067,12 @@ public class IssuePanel extends javax.swing.JPanel {
         return txt;
     }
 
+    @NbBundle.Messages({
+        "LBL_HappensAlways=Happens every time",
+        "LBL_HappensSometimes=Happens sometimes, but not always",
+        "LBL_HaventTried=Haven't tried to reproduce it",
+        "LBL_Tried=Tried, but couldn't reproduce it"
+    })
     private void initCombos() {
         BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
@@ -1086,8 +1097,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
         if (BugzillaUtil.isNbRepository(repository)) {
             issueTypeCombo.setModel(toComboModel(bc.getIssueTypes()));
+            reproducibilityCombo.setModel(toComboModel(Arrays.asList(Bundle.LBL_HappensAlways(), Bundle.LBL_HappensSometimes(), Bundle.LBL_HaventTried(), Bundle.LBL_Tried())));
+            reproducibilityCombo.setSelectedItem(null);
         }
-
         // stausCombo and resolution fields are filled in reloadForm
     }
 
@@ -1462,6 +1474,14 @@ public class IssuePanel extends javax.swing.JPanel {
             updateMessagePanel();
         }
     }
+    
+    private void updateNoReproducibility() {
+        boolean newNoReproducibility = (reproducibilityCombo.getSelectedItem() == null);
+        if (noReproducibility != newNoReproducibility) {
+            noReproducibility = newNoReproducibility;
+            updateMessagePanel();
+        }
+    }
 
     private void updateNoVersion() {
         boolean newNoVersion = (versionCombo.getSelectedItem() == null);
@@ -1483,6 +1503,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private boolean invalidKeyword = false;
     private boolean cyclicDependency = false;
     private boolean noComponent = false;
+    private boolean noReproducibility = false;
     private boolean noVersion = false;
     private boolean noTargetMilestione = false;
     private boolean noDuplicateId = false;
@@ -1502,6 +1523,9 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         if (noTargetMilestione) {
             addMessage("IssuePanel.noTargetMilestone"); // NOI18N
+        }
+        if (noReproducibility && issue.isNew()) {
+            addMessage("IssuePanel.noReproducibility"); // NOI18N
         }
         if (noSummary) {
             JLabel noSummaryLabel = new JLabel();
@@ -1528,7 +1552,7 @@ public class IssuePanel extends javax.swing.JPanel {
             noDuplicateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
             messagePanel.add(noDuplicateLabel);
         }
-        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || noDuplicateId) {
+        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || noDuplicateId || (noReproducibility && issue.isNew())) {
             submitButton.setEnabled(false);
         } else {
             submitButton.setEnabled(true);
@@ -1544,7 +1568,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 messagePanel.add(lbl);
             }
         }
-        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || noDuplicateId
+        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || noDuplicateId || (noReproducibility && issue.isNew())
                 || (fieldsConflict.size() + fieldsIncoming.size() + fieldsLocal.size() > 0)) {
             messagePanel.setVisible(true);
             messagePanel.revalidate();
@@ -1830,6 +1854,8 @@ public class IssuePanel extends javax.swing.JPanel {
         resolutionLabel = new javax.swing.JLabel();
         resolutionField = new javax.swing.JTextField();
         targetMilestoneCombo = new javax.swing.JComboBox();
+        reproducibilityLabel = new javax.swing.JLabel();
+        reproducibilityCombo = new javax.swing.JComboBox();
         statusWhiteboardField = new javax.swing.JTextField();
         priorityWarning = new javax.swing.JLabel();
         statusWhiteboardWarning = new javax.swing.JLabel();
@@ -1898,6 +1924,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 return dim;
             }
         };
+        jComboBox1 = new javax.swing.JComboBox();
         headerPanel = new javax.swing.JPanel();
         headerField = new javax.swing.JTextField();
         buttonsPanel = new javax.swing.JPanel();
@@ -2174,6 +2201,11 @@ public class IssuePanel extends javax.swing.JPanel {
 
         targetMilestoneCombo.addActionListener(formListener);
 
+        org.openide.awt.Mnemonics.setLocalizedText(reproducibilityLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reproducibilityLabel.text")); // NOI18N
+
+        reproducibilityCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        reproducibilityCombo.addActionListener(formListener);
+
         statusWhiteboardField.setColumns(15);
 
         reportedField.setEditable(false);
@@ -2213,7 +2245,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(timetrackingWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(5, 5, 5)
-                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(keywordsLabel)
                             .addComponent(statusWhiteboardLabel)
                             .addComponent(timetrackingLabel)
@@ -2224,7 +2256,10 @@ public class IssuePanel extends javax.swing.JPanel {
                             .addComponent(componentLabel)
                             .addComponent(productLabel)
                             .addComponent(targetMilestoneLabel)
-                            .addComponent(dummyLabel2, javax.swing.GroupLayout.Alignment.TRAILING)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, attributesSectionPanelLayout.createSequentialGroup()
+                                .addComponent(reproducibilityLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(dummyLabel2))))
                     .addComponent(customFieldsPanelLeft, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(attributesSectionPanelLayout.createSequentialGroup()
                         .addComponent(platformWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2244,12 +2279,12 @@ public class IssuePanel extends javax.swing.JPanel {
                                 .addComponent(keywordsField, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(keywordsButton))
-                            .addComponent(urlField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(targetMilestoneCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(issueTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(versionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(componentCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(productCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(urlField)
+                            .addComponent(targetMilestoneCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(issueTypeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(versionCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(componentCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(productCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(attributesSectionPanelLayout.createSequentialGroup()
                                 .addComponent(platformCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2257,7 +2292,8 @@ public class IssuePanel extends javax.swing.JPanel {
                             .addGroup(attributesSectionPanelLayout.createSequentialGroup()
                                 .addComponent(priorityCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(severityCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addComponent(severityCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(reproducibilityCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(assignedToWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2397,7 +2433,9 @@ public class IssuePanel extends javax.swing.JPanel {
                             .addComponent(duplicateLabel)
                             .addComponent(duplicateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(duplicateButton)
-                            .addComponent(dummyLabel2))
+                            .addComponent(dummyLabel2)
+                            .addComponent(reproducibilityLabel)
+                            .addComponent(reproducibilityCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                             .addComponent(urlWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2633,6 +2671,8 @@ public class IssuePanel extends javax.swing.JPanel {
                     .addComponent(notesLabel)
                     .addComponent(privateNotesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
+
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
@@ -2909,6 +2949,9 @@ public class IssuePanel extends javax.swing.JPanel {
             else if (evt.getSource() == viewLogButton) {
                 IssuePanel.this.viewLogButtonActionPerformed(evt);
             }
+            else if (evt.getSource() == reproducibilityCombo) {
+                IssuePanel.this.reproducibilityComboActionPerformed(evt);
+            }
         }
 
         public void focusGained(java.awt.event.FocusEvent evt) {
@@ -2922,10 +2965,10 @@ public class IssuePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void productComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productComboActionPerformed
-        productChanged();
+        productChanged(true);
     }//GEN-LAST:event_productComboActionPerformed
 
-    private boolean productChanged() {
+    private boolean productChanged(boolean reload) {
         cancelHighlight(productLabel);
         // Reload componentCombo, versionCombo and targetMilestoneCombo
         BugzillaRepository repository = issue.getRepository();
@@ -2994,16 +3037,18 @@ public class IssuePanel extends javax.swing.JPanel {
                     }
                 }
             }
-            if (reloading) {
-                // reload when current refresh of components finishes
-                EventQueue.invokeLater(new Runnable () {
-                    @Override
-                    public void run () {
-                        reloadForm(false);
-                    }
-                });
-            } else {
-                reloadForm(false);
+            if(reload) { // But the reloaders, the vile, the murderers ... and all liars—they will be consigned to the fiery lake of burning sulfur. This is the second death.
+                if (reloading) {
+                    // reload when current refresh of components finishes
+                    EventQueue.invokeLater(new Runnable () {
+                        @Override
+                        public void run () {
+                            reloadForm(false);
+                        }
+                    });
+                } else {
+                    reloadForm(false);
+                }
             }
         }
         return false;
@@ -3236,7 +3281,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             initCombos();
                             initCustomFields();
                             selectInCombo(productCombo, product, false);
-                            productChanged();
+                            productChanged(false);
                             selectInCombo(platformCombo, platform, false);
                             selectInCombo(osCombo, os, false);
                             selectInCombo(priorityCombo, priority, false);
@@ -3357,6 +3402,26 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         final boolean isNew = issue.isNew();
+        if(isNew && reproducibilityCombo.isVisible()) {
+            String repro = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reproducibilityCommitText", (String) reproducibilityCombo.getSelectedItem()); // NOI18N
+            String comment = addCommentArea.getText();
+            String nbInfo = getNetbeansInfo();
+            int idx = nbInfo.lastIndexOf("\n"); // NOI18N
+            if(idx > 0) {
+                String s = nbInfo.substring(idx, nbInfo.length() - 1);
+                idx = comment.indexOf(s);
+                if(idx > 0) {
+                    idx += s.length() + 1;
+                    comment = comment.substring(0, idx) + "\n\n" + repro + comment.substring(idx, comment.length() - 1); // NOI18N
+                } else {
+                    comment = repro + "\n\n" + comment; // NOI18N
+                }               
+            } else {
+                comment = repro + "\n\n" + comment; // NOI18N
+            }
+            issue.setFieldValue(IssueField.DESCRIPTION, comment);
+        }        
+        
         String submitMessage;
         if (isNew) {
             submitMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitNewMessage"); // NOI18N
@@ -3507,6 +3572,10 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         });
     }//GEN-LAST:event_btnDeleteTaskActionPerformed
 
+    private void reproducibilityComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reproducibilityComboActionPerformed
+        updateNoReproducibility();
+    }//GEN-LAST:event_reproducibilityComboActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField actualField;
     private javax.swing.JLabel actualLabel;
@@ -3579,6 +3648,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JComboBox issueTypeCombo;
     private javax.swing.JLabel issueTypeLabel;
     private javax.swing.JLabel issueTypeWarning;
+    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JButton keywordsButton;
@@ -3619,6 +3689,8 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JTextField reportedField;
     private javax.swing.JLabel reportedLabel;
     private javax.swing.JLabel reportedStatusLabel;
+    private javax.swing.JComboBox reproducibilityCombo;
+    private javax.swing.JLabel reproducibilityLabel;
     private javax.swing.JComboBox resolutionCombo;
     private javax.swing.JTextField resolutionField;
     private javax.swing.JLabel resolutionLabel;
@@ -3698,6 +3770,13 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     }
 
     private void addNetbeansInfo() {
+        assert issue.isNew();
+        String infoTxt = getNetbeansInfo(); 
+        addCommentArea.setText(infoTxt + "\n\n" + NbBundle.getMessage(IssuePanel.class, "IssuePanel.newIssue.netbeansDescTemplate")); // NOI18N
+        storeFieldValueForNewIssue(IssueField.DESCRIPTION, addCommentArea);
+    }
+
+    private String getNetbeansInfo() throws MissingResourceException {
         String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.newIssue.netbeansInfo"); // NOI18N
         Object[] info = new Object[] {
             getProductVersionValue(),
@@ -3708,10 +3787,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             System.getProperty("java.vm.name", "unknown"), // NOI18N
             System.getProperty("java.vm.version", "") // NOI18N
         };
-        String infoTxt = MessageFormat.format(format, info);
-        addCommentArea.setText(infoTxt);
-        assert issue.isNew();
-        storeFieldValueForNewIssue(IssueField.DESCRIPTION, addCommentArea);
+        return MessageFormat.format(format, info);
     }
 
     public static String getProductVersionValue () {
