@@ -608,7 +608,7 @@ public class IssuePanel extends javax.swing.JPanel {
             headerField.setPreferredSize(new Dimension(0, dim.height));
             reloadField(force, summaryField, IssueField.SUMMARY);
             reloadField(force, productCombo, IssueField.PRODUCT);
-            productChanged();
+            productChanged(false);            
             reloadField(productField, IssueField.PRODUCT);
             reloadField(force, componentCombo, IssueField.COMPONENT);
             reloadField(force, versionCombo, IssueField.VERSION);
@@ -2965,10 +2965,10 @@ public class IssuePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void productComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productComboActionPerformed
-        productChanged();
+        productChanged(true);
     }//GEN-LAST:event_productComboActionPerformed
 
-    private boolean productChanged() {
+    private boolean productChanged(boolean reload) {
         cancelHighlight(productLabel);
         // Reload componentCombo, versionCombo and targetMilestoneCombo
         BugzillaRepository repository = issue.getRepository();
@@ -3037,16 +3037,18 @@ public class IssuePanel extends javax.swing.JPanel {
                     }
                 }
             }
-            if (reloading) {
-                // reload when current refresh of components finishes
-                EventQueue.invokeLater(new Runnable () {
-                    @Override
-                    public void run () {
-                        reloadForm(false);
-                    }
-                });
-            } else {
-                reloadForm(false);
+            if(reload) { // But the reloaders, the vile, the murderers ... and all liars—they will be consigned to the fiery lake of burning sulfur. This is the second death.
+                if (reloading) {
+                    // reload when current refresh of components finishes
+                    EventQueue.invokeLater(new Runnable () {
+                        @Override
+                        public void run () {
+                            reloadForm(false);
+                        }
+                    });
+                } else {
+                    reloadForm(false);
+                }
             }
         }
         return false;
@@ -3279,7 +3281,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             initCombos();
                             initCustomFields();
                             selectInCombo(productCombo, product, false);
-                            productChanged();
+                            productChanged(false);
                             selectInCombo(platformCombo, platform, false);
                             selectInCombo(osCombo, os, false);
                             selectInCombo(priorityCombo, priority, false);
