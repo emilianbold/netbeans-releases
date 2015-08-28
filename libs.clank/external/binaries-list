@@ -1,6 +1,6 @@
-#changeset:   15532:8b7a00b9a7f0
+#changeset:   15563:97e22d84eecb
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Aug 27 21:56:58 2015 +0300
-#summary:     popular commands
-23BB1F2E5378CE6A1833369F9025025354302255 clank_0.3.6.zip
+#date:        Fri Aug 28 23:00:11 2015 +0300
+#summary:     PERF: use specialized path.append
+82285D0DD14A495D0A6E4E47A7C0D93E6C22D243 clank_0.3.6.zip
