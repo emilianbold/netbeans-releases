@@ -64,9 +64,12 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -118,16 +121,15 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
 
     static interface ToolTipProvider {
         JComponent getComponent();
-        
-        String getToolTipText( Point loc );
-        
         Rectangle getToolTipSourceBounds( Point loc );
-        
         Point getToolTipLocation( Point mouseLocation, Dimension toolTipSize );
-        
         void invokeUserAction( MouseEvent me );
+        @CheckForNull
+        Node findNode(@NonNull Point loc);
+        @CheckForNull
+        String getToolTipText(@NonNull Node node);
     }
-    
+
     public ToolTipManagerEx( ToolTipProvider provider ) {
         assert null != provider;
         this.provider = provider;
@@ -690,20 +692,21 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
     /** calculates tooltip and invokes tooltip refresh */
     private class TooltipCalculator implements Runnable {
         
-        private Point location;
+        private Node node;
         private Rectangle tooltipForRect;
         
         TooltipCalculator( Rectangle tooltipForRect, Point loc ) {
             this.tooltipForRect = tooltipForRect;
-            this.location = loc;
+            this.node = provider.findNode(loc);
         }
         
         /** actually calculates tooltip for given item */
+        @Override
         public void run () {
-            final String result = provider.getToolTipText( location );
-            if( null == result )
+            final String result = provider.getToolTipText(node);
+            if( null == result ) {
                 return;
-            
+            }
             synchronized (TOOLTIP_DATA_LOCK) {
                 tooltipTask = null;
                 // cancel if not needed (tooltip for another object was requested later)
@@ -714,6 +717,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
             }
             // invoke tooltip
             SwingUtilities.invokeLater(new Runnable () {
+                @Override
                 public void run () {
                     toolTipText = result;
                     if( null != tip ) {

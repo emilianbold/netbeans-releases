@@ -768,6 +768,9 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         for (String one : all) {
             File f = FileUtil.normalizeFile(new File(one));
             String oneVersion = MavenSettings.getCommandLineMavenVersion(f);
+            if(oneVersion == null) {
+                continue;
+            }
             if (ver != null && ver.equals(oneVersion)) {
                 return f;
             }

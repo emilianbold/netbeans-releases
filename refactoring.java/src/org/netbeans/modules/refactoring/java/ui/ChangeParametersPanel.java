@@ -148,7 +148,21 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         this.refactoredObj = refactoredObj;
         this.parent = parent;
         this.preConfiguration = preConfiguration;
-        model = new ParamTableModel(columnNames, 0);
+        model = new ParamTableModel(columnNames, 0) {
+
+            @Override
+            public void addRow(Object[] rowData) {
+                int row = paramTable.getRowCount();
+                super.addRow(rowData);
+                for (int i = 0; i < paramTable.getColumnCount(); i++) {
+                    TableCellEditor cellEditor = paramTable.getCellEditor(row, i);
+                    int rowHeight = cellEditor.getTableCellEditorComponent(paramTable, rowData[0], true, row, i).getPreferredSize().height;
+                    if(paramTable.getRowHeight() < rowHeight) {
+                        paramTable.setRowHeight(rowHeight);
+                    }
+                }
+            }
+        };
         this.returnTypeAction = new ReturnTypeAction();
         singleLineEditor = Utilities.createSingleLineEditor(MIME_JAVA);
         paramname = CodeStyleUtils.addPrefixSuffix("par", cs.getParameterNamePrefix(), cs.getParameterNameSuffix());

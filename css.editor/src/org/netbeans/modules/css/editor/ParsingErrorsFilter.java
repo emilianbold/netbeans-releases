@@ -49,6 +49,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.css.lib.api.FilterableError;
 import org.netbeans.modules.css.lib.api.FilterableError.SetFilterAction;
@@ -213,12 +214,12 @@ public class ParsingErrorsFilter {
             @Override
             public void run() {
                 //refresh Action Items for this file
-                FileObject parent = fo.getParent();
-                while(!parent.isRoot() && FileOwnerQuery.getOwner(parent.getParent().getParent()) != null) {
-                    parent = parent.getParent();
-                }
-                IndexingManager.getDefault().refreshIndexAndWait(parent.toURL(),
+                ClassPath cp = ClassPath.getClassPath(fo, "classpath/html5"); //NOI18N
+                if (cp != null) {
+                    FileObject root = cp.findOwnerRoot(fo);
+                    IndexingManager.getDefault().refreshIndexAndWait(root.toURL(),
                         Collections.singleton(fo.toURL()), true, false);
+                }   
             }
         });
     }

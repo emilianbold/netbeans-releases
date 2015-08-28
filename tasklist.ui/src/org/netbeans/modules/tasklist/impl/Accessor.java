@@ -62,6 +62,17 @@ import org.openide.filesystems.FileObject;
  */
 public class Accessor {
     
+    static {
+        // invokes static initializer of Task.class
+        // that will assign value to the DEFAULT field above
+        Class c = Task.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+    }
+    
     /** Creates a new instance of Accessor */
     private Accessor() {
     }

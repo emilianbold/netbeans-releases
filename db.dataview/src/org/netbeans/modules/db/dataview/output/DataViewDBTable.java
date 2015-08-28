@@ -67,7 +67,7 @@ public class DataViewDBTable {
         assert tables != null;
 
         dbTables = new DBTable[tables.size()];
-        List<DBColumn> cols = new ArrayList<DBColumn>();
+        List<DBColumn> cols = new ArrayList<>();
 
         for (DBTable tbl : tables.toArray(dbTables)) {
             cols.addAll(tbl.getColumnList());
@@ -117,14 +117,14 @@ public class DataViewDBTable {
     }
 
     public synchronized Map<String,DBColumn> getColumnMap() {
-        Map<String, DBColumn> colMap = new HashMap<String, DBColumn>();
+        Map<String, DBColumn> colMap = new HashMap<>();
         for (DBTable tbl : dbTables) {
             colMap.putAll(tbl.getColumns());
         }
         return Collections.unmodifiableMap(colMap);
     }
 
-    final class ColumnOrderComparator implements Comparator<DBColumn> {
+    private final class ColumnOrderComparator implements Comparator<DBColumn> {
 
         private ColumnOrderComparator() {
         }

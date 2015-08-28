@@ -75,6 +75,10 @@ public final class APTIncludePathStorage {
             if (old != null) {
                 list = old;
             }
+        } else {
+            for (IncludeDirEntry e : list) {
+                e.resetNonExistanceFlag();
+            }
         }
         return list;
     }

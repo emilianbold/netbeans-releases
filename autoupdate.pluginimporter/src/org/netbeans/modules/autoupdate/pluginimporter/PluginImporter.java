@@ -65,6 +65,9 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
+import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -255,8 +258,19 @@ public class PluginImporter {
             copy (path, src, dest);
         }
 
-        // 5. don't forget to call refreshModuleList - XXX
-        refreshModuleList ();
+        // #252928 (fragment modules)
+        if (getPluginsToImport().isEmpty()) {
+            refreshModuleList();
+        } else {
+            String restartMsg = NbBundle.getMessage(PluginImporter.class, "PluginImporter.Importing.RestartNeeded");//NOI18N
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(restartMsg, NotifyDescriptor.YES_NO_OPTION);
+            Object result = DialogDisplayer.getDefault().notify(nd);
+            if (result.equals(NotifyDescriptor.OK_OPTION)) {
+                LifecycleManager.getDefault().markForRestart();
+                LifecycleManager.getDefault().exit();
+            }
+        }
+
         if(handle!=null) {
             handle.finish();
         }

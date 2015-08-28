@@ -66,14 +66,13 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -105,7 +104,7 @@ public class UserAnnotationPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private void initSourceEditor() {
-        sourceEditorPane.setEditorKit(MimeLookup.getLookup(HTML_CONTENT_TYPE).lookup(EditorKit.class));
+        sourceEditorPane.setEditorKit(CloneableEditorSupport.getEditorKit(HTML_CONTENT_TYPE));
         // ui
         Font font = new JLabel().getFont();
         sourceEditorPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);

@@ -348,9 +348,9 @@ public final class CsmEventDispatcher {
     }
 
     private void dispatchAll(CsmEvent event) {
-        Collection<CsmEventListener> listenersCopy;
+        Collection<CsmEventListener> listenersCopy = new ArrayList<>();
         synchronized (listenersLock) {
-            listenersCopy = listeners.values();
+            listenersCopy.addAll(listeners.values());
         }
         for (CsmEventListener l : listenersCopy) {
             l.fireEvent(event);

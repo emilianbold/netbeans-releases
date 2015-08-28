@@ -70,7 +70,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.41.19</specification-version>
+                        <specification-version>1.42.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -96,7 +96,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.44.18</specification-version>
+                        <specification-version>1.45.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

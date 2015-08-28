@@ -333,7 +333,10 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                           out = APTFileInfoQuerySupport.getMacroUsages(fileImpl, interrupter);
                         }
                         if (lastParsedTime == fileImpl.getLastParsedTime()) {
-                            fileImpl.setLastMacroUsages(out);
+                            // cache only if calc wasn't interrupted
+                            if (!interrupter.cancelled()) {
+                                fileImpl.setLastMacroUsages(out);
+                            }
                         }
                     } catch (FileNotFoundException ex) {
                         // file could be removed

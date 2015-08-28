@@ -68,7 +68,7 @@ public abstract class CodeModelProblemResolver {
         void start();
         void switchToDeterminate(int maxWorkUnits);
         void finish();
-        String nextCsmFile(CsmFile file, int current, int allWork);
+        String nextCsmFile(CsmFile file, int fileLineCount, int current, int allWork);
         String getRemainingTime();
     }
     

@@ -603,6 +603,7 @@ public class IssuePanel extends javax.swing.JPanel {
             headerField.setPreferredSize(new Dimension(0, dim.height));
             reloadField(force, summaryField, IssueField.SUMMARY);
             reloadField(force, productCombo, IssueField.PRODUCT);
+            populateProductCombos((String)productCombo.getSelectedItem());
             reloadField(productField, IssueField.PRODUCT);
             reloadField(force, componentCombo, IssueField.COMPONENT);
             reloadField(force, versionCombo, IssueField.VERSION);
@@ -1070,7 +1071,7 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         productCombo.setModel(toComboModel(bc.getProducts()));
         // componentCombo, versionCombo, targetMilestoneCombo are filled
-        // automatically when productCombo is set/changed
+        // depending on the prodcut when productCombo is set/changed
         platformCombo.setModel(toComboModel(bc.getPlatforms()));
         osCombo.setModel(toComboModel(bc.getOSs()));
         // Do not support MOVED resolution (yet?)
@@ -2919,21 +2920,13 @@ public class IssuePanel extends javax.swing.JPanel {
     private void productComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productComboActionPerformed
         cancelHighlight(productLabel);
         // Reload componentCombo, versionCombo and targetMilestoneCombo
-        BugzillaRepository repository = issue.getRepository();
-        BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null || !bc.isValid()) {
-            // XXX nice error msg?
-            return;
-        }
         String product = productCombo.getSelectedItem().toString();
         Object component = componentCombo.getSelectedItem();
         Object version = versionCombo.getSelectedItem();
         Object targetMilestone = targetMilestoneCombo.getSelectedItem();
-        componentCombo.setModel(toComboModel(bc.getComponents(product)));
-        versionCombo.setModel(toComboModel(bc.getVersions(product)));
-        List<String> targetMilestones = bc.getTargetMilestones(product);
-        usingTargetMilestones = !targetMilestones.isEmpty();
-        targetMilestoneCombo.setModel(toComboModel(targetMilestones));
+        if(!populateProductCombos(product)) {
+            return;
+        }
         // Attempt to keep selection
         if (!selectInCombo(componentCombo, component, false)) {
             if (issue.isNew() && componentCombo.getModel().getSize() > 0
@@ -2969,6 +2962,7 @@ public class IssuePanel extends javax.swing.JPanel {
         milestoneWarning.setVisible(usingTargetMilestones);
         if (issue.isNew()) {
             issue.setFieldValue(IssueField.PRODUCT, product);
+            BugzillaRepository repository = issue.getRepository();
             if (BugzillaUtil.isNbRepository(repository)) { // IssueProvider 180467, 184412
                 // Default target milestone
                 List<String> milestones = repository.getConfiguration().getTargetMilestones(product);
@@ -2998,6 +2992,21 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_productComboActionPerformed
+
+    private boolean populateProductCombos(String product) {
+        BugzillaRepository repository = issue.getRepository();
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if(bc == null || !bc.isValid()) {
+            // XXX nice error msg?
+            return false;
+        }
+        componentCombo.setModel(toComboModel(bc.getComponents(product)));
+        versionCombo.setModel(toComboModel(bc.getVersions(product)));
+        List<String> targetMilestones = bc.getTargetMilestones(product);
+        usingTargetMilestones = !targetMilestones.isEmpty();
+        targetMilestoneCombo.setModel(toComboModel(targetMilestones));
+        return true;
+    }
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
         cancelHighlight(statusLabel);
@@ -3226,6 +3235,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             initCombos();
                             initCustomFields();
                             selectInCombo(productCombo, product, false);
+                            populateProductCombos((String)product);
                             selectInCombo(platformCombo, platform, false);
                             selectInCombo(osCombo, os, false);
                             selectInCombo(priorityCombo, priority, false);

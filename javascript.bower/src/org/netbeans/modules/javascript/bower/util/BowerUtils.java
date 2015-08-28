@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.bower.util;
 
@@ -50,7 +50,6 @@ public final class BowerUtils {
     private static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.javascript.bower"; // NOI18N
     private static final UsageLogger BOWER_INSTALL_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
             .message(BowerUtils.class, "USG_BOWER_INSTALL") // NOI18N
-            .unrepeated(true)
             .create();
 
 

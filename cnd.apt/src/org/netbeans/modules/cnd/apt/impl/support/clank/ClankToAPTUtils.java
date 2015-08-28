@@ -50,9 +50,9 @@ import org.clank.support.Native;
 import org.clank.support.aliases.char$ptr;
 import org.clank.support.aliases.char$ptr$array;
 import org.clank.support.char$ptr$CharSequence;
+import org.llvm.adt.SmallString;
 import org.llvm.adt.StringMapEntryBase;
 import org.llvm.adt.StringRef;
-import org.llvm.adt.aliases.SmallVectorChar;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.openide.util.CharSequences;
 
@@ -769,7 +769,7 @@ public final class ClankToAPTUtils {
         return CharSequences.create(new ByteBasedCharSequence(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength()));
     }
 
-    public static CharSequence getTokenText(Token token, Preprocessor PP, SmallVectorChar spell) {
+    public static CharSequence getTokenText(Token token, Preprocessor PP, SmallString spell) {
         // all remainings
         CharSequence textID;
         IdentifierInfo II = token.getIdentifierInfo();

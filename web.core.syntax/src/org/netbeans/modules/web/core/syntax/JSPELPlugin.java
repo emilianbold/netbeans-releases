@@ -229,16 +229,20 @@ public class JSPELPlugin extends ELPlugin {
                 JarFileSystem jfs = new JarFileSystem(FileUtil.normalizeFile(f));
                 tldFile = jfs.getRoot().getFileObject(tldPath);
             }
-            TldLibrary tldLib = TldLibrary.create(tldFile);
+            if (tldFile != null) {
+                TldLibrary tldLib = TldLibrary.create(tldFile);
 
-            Iterator<Entry<String, LibraryDescriptor.Function>> iterator = tldLib.getFunctions().entrySet().iterator();
-            while (iterator.hasNext()) {
-                Entry<String, LibraryDescriptor.Function> entry = iterator.next();
-                functions.add(new Function(
-                        prefix + ":" + entry.getKey(), //NOI18N
-                        getReturnTypeForSignature(entry.getValue().getSignature()),
-                        getParametersForSignature(entry.getValue().getSignature()),
-                        getDescription(entry.getValue().getDescription(), entry.getValue().getExample())));
+                Iterator<Entry<String, LibraryDescriptor.Function>> iterator = tldLib.getFunctions().entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Entry<String, LibraryDescriptor.Function> entry = iterator.next();
+                    functions.add(new Function(
+                            prefix + ":" + entry.getKey(), //NOI18N
+                            getReturnTypeForSignature(entry.getValue().getSignature()),
+                            getParametersForSignature(entry.getValue().getSignature()),
+                            getDescription(entry.getValue().getDescription(), entry.getValue().getExample())));
+                }
+            } else {
+                LOGGER.log(Level.FINE, "No FileObject for {0}:{1}", new Object[]{jarPath, tldPath});
             }
         } catch (IOException ioe) {
             LOGGER.log(Level.INFO, null, ioe);

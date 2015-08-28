@@ -260,9 +260,11 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         stack.push(openTag);
 
         //stray end tags - add them to the current node
-        ModifiableCloseTag head;
-        while ((head = physicalEndTagsQueue.poll()) != null) {
-            stack.peek().addChild(head);
+        if (!isVirtual(t)) {
+            ModifiableCloseTag head;
+            while ((head = physicalEndTagsQueue.poll()) != null) {
+                stack.peek().addChild(head);
+            }
         }
 
         super.elementPushed(namespace, name, t);

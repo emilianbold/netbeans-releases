@@ -22,51 +22,56 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="domainLocalLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="domainRemoteLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="hostLocalLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="hostRemoteLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="dasPortFieldLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="targetValueLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="userNameLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="passwordLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="hostLocalField" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="localIpCB" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="domainRemoteField" max="32767" attributes="1"/>
-                  <Component id="domainLocalField" max="32767" attributes="0"/>
-                  <Component id="hostRemoteField" alignment="0" max="32767" attributes="1"/>
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="passwordField" max="32767" attributes="0"/>
-                          <Component id="userNameField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="targetValueField" alignment="0" max="32767" attributes="1"/>
-                          <Group type="102" attributes="0">
-                              <Component id="dasPortField" pref="93" max="32767" attributes="1"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="httpPortFieldLabel" linkSize="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="httpPortField" pref="93" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="useDefaultPortsCB" min="-2" max="-2" attributes="0"/>
+                          <Component id="domainLocalLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="domainRemoteLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="hostLocalLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="hostRemoteLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="dasPortFieldLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="targetValueLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="userNameLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="passwordLabel" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="hostLocalField" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="localIpCB" min="-2" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="domainRemoteField" max="32767" attributes="1"/>
+                          <Component id="domainLocalField" max="32767" attributes="0"/>
+                          <Component id="hostRemoteField" alignment="0" max="32767" attributes="1"/>
                           <Group type="102" attributes="0">
-                              <EmptySpace min="-2" pref="112" max="-2" attributes="0"/>
-                              <Component id="remotePanel" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="passwordField" max="32767" attributes="0"/>
+                                  <Component id="userNameField" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="targetValueField" alignment="0" max="32767" attributes="1"/>
+                                  <Group type="102" attributes="0">
+                                      <Component id="dasPortField" pref="73" max="32767" attributes="1"/>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Component id="httpPortFieldLabel" linkSize="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Component id="httpPortField" pref="74" max="32767" attributes="0"/>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Component id="useDefaultPortsCB" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace min="-2" pref="112" max="-2" attributes="0"/>
+                                      <Component id="remotePanel" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
                           </Group>
                       </Group>
                   </Group>
+                  <Component id="remoteLink" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -95,37 +100,33 @@
                   <Component id="hostRemoteLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="hostRemoteField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="124" max="-2" attributes="0"/>
-                      <Component id="remotePanel" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="dasPortField" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="useDefaultPortsCB" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="dasPortFieldLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="httpPortFieldLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="httpPortField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="targetValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="targetValueField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="userNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="userNameField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="dasPortField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="useDefaultPortsCB" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dasPortFieldLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="httpPortFieldLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="httpPortField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="targetValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetValueField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="userNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="userNameField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="remoteLink" max="-2" attributes="0"/>
+              <EmptySpace pref="73" max="32767" attributes="0"/>
+              <Component id="remotePanel" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -379,6 +380,16 @@
           <Dimension value="[32767, 32767]"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="remoteLink">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/glassfish/common/wizards/Bundle.properties" key="AddDomainLocationVisualPanel.remoteLink.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="remoteLinkMouseClicked"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
