@@ -230,14 +230,10 @@ public class ConvertToLambdaPreconditionChecker {
     }
 
     private class PreconditionScanner extends TreePathScanner<Tree, Trees> {
-        private int classDepth = 0;
 
         @Override
         public Tree visitClass(ClassTree node, Trees p) {
-            classDepth++;
-            Tree t = super.visitClass(node, p);
-            classDepth--;
-            return t;
+            return null;
         }
 
         @Override
@@ -272,7 +268,7 @@ public class ConvertToLambdaPreconditionChecker {
                     if (el == createdClass) {
                         foundRefToThisOrSuper = true;
                     }
-                } else if (classDepth == 0) {
+                } else {
                     // unqualified this/super
                     foundRefToThisOrSuper = true;
                 }
