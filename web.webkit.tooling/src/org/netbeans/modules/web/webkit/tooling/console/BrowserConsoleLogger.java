@@ -62,6 +62,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebUtils;
@@ -579,8 +583,13 @@ public class BrowserConsoleLogger implements Console.Listener {
                     file = Utilities.toFile(uri);
                 } else {
                     file = new File(filePath);
+                    if (!file.isAbsolute() && project != null) {
+                        fileObject = findFileInProjecSources(project, filePath);
+                    }
                 }
-                fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                if (fileObject == null) {
+                    fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                }
             }
         } catch (IOException | URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
@@ -605,6 +614,25 @@ public class BrowserConsoleLogger implements Console.Listener {
                 return null;
             }
         }
+    }
+    
+    private static final String[] KNOWN_SOURCE_TYPES = {Sources.TYPE_GENERIC,
+                                                        WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT,
+                                                        WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST,
+                                                        WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST_SELENIUM };
+    private static FileObject findFileInProjecSources(Project project, String filePath) {
+        Sources sources = ProjectUtils.getSources(project);
+        for (String sourceType : KNOWN_SOURCE_TYPES) {
+            SourceGroup[] sourceGroups = sources.getSourceGroups(sourceType);
+            for (SourceGroup sourceGroup : sourceGroups) {
+                FileObject rootFolder = sourceGroup.getRootFolder();
+                FileObject fileObject = rootFolder.getFileObject(filePath);
+                if (fileObject != null) {
+                    return fileObject;
+                }
+            }
+        }
+        return null;
     }
 
     public static LineCookie getLineCookie(final FileObject fo) {
