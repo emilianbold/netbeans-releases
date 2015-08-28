@@ -536,37 +536,43 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         NbTaskDataModel m = getModel();
         // should not happen, setFieldValue either runs with model lock
         // or it is called from issue editor in AWT - the editor could not be closed by user in the meantime
-        assert m != null;
-        TaskData taskData = m.getLocalTaskData();
-        TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
-        if (a == null) {
-            if (f == IssueField.REASSIGN_TO_DEFAULT) {
-                setOperation(BugzillaOperation.reassignbycomponent);
-                return;
+        // (or it could. see issue #254373 -> reload attributes called setFV)
+        assert m != null || !getController().getComponent().isShowing();
+        if(m != null) {
+            TaskData taskData = m.getLocalTaskData();
+            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
+            if (a == null) {
+                if (f == IssueField.REASSIGN_TO_DEFAULT) {
+                    setOperation(BugzillaOperation.reassignbycomponent);
+                    return;
+                }
+                a = new TaskAttribute(taskData.getRoot(), f.getKey());
             }
-            a = new TaskAttribute(taskData.getRoot(), f.getKey());
-        }
-        if(f == IssueField.PRODUCT) {
-            handleProductChange(a);
-        }
-        Bugzilla.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
-        if (!value.equals(a.getValue())) {
-            setValue(m, a, value);
-        }
+            if(f == IssueField.PRODUCT) {
+                handleProductChange(a);
+            }
+            Bugzilla.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
+            if (!value.equals(a.getValue())) {
+                setValue(m, a, value);
+            }
+        } 
     }
 
     void setFieldValues(IssueField f, List<String> ccs) {
         NbTaskDataModel m = getModel();
         // should not happen, setFieldValue either runs with model lock
         // or it is called from issue editor in AWT - the editor could not be closed by user in the meantime
-        assert m != null;
-        TaskData taskData = m.getLocalTaskData();
-        TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
-        if(a == null) {
-            a = new TaskAttribute(taskData.getRoot(), f.getKey());
-        }
-        a.setValues(ccs);
-        m.attributeChanged(a);
+        // (or it could. see issue #254373 -> reload attributes called setFV)
+        assert m != null || !getController().getComponent().isShowing();
+        if(m != null) {
+            TaskData taskData = m.getLocalTaskData();
+            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
+            if(a == null) {
+                a = new TaskAttribute(taskData.getRoot(), f.getKey());
+            }
+            a.setValues(ccs);
+            m.attributeChanged(a);
+        } 
     }
 
     public List<String> getRepositoryFieldValues (IssueField f) {
