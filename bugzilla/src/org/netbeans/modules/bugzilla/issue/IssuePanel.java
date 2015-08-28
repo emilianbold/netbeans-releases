@@ -603,7 +603,7 @@ public class IssuePanel extends javax.swing.JPanel {
             headerField.setPreferredSize(new Dimension(0, dim.height));
             reloadField(force, summaryField, IssueField.SUMMARY);
             reloadField(force, productCombo, IssueField.PRODUCT);
-            populateProductCombos((String)productCombo.getSelectedItem());
+            productChanged();
             reloadField(productField, IssueField.PRODUCT);
             reloadField(force, componentCombo, IssueField.COMPONENT);
             reloadField(force, versionCombo, IssueField.VERSION);
@@ -1033,7 +1033,7 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         if (!value.equals(combo.getSelectedItem())) {
             combo.setSelectedItem(value);
-        }
+        } 
         if (forceInModel && !value.equals("") && !value.equals(combo.getSelectedItem())) { // NOI18N
             // Reload of server attributes is needed - workarounding it
             ComboBoxModel model = combo.getModel();
@@ -1071,7 +1071,7 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         productCombo.setModel(toComboModel(bc.getProducts()));
         // componentCombo, versionCombo, targetMilestoneCombo are filled
-        // depending on the prodcut when productCombo is set/changed
+        // automatically when productCombo is set/changed
         platformCombo.setModel(toComboModel(bc.getPlatforms()));
         osCombo.setModel(toComboModel(bc.getOSs()));
         // Do not support MOVED resolution (yet?)
@@ -2476,6 +2476,8 @@ public class IssuePanel extends javax.swing.JPanel {
 
         attachmentsSectionPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
+        attachmentsWarning.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
         javax.swing.GroupLayout attachmentsSectionPanelLayout = new javax.swing.GroupLayout(attachmentsSectionPanel);
         attachmentsSectionPanel.setLayout(attachmentsSectionPanelLayout);
         attachmentsSectionPanelLayout.setHorizontalGroup(
@@ -2752,6 +2754,8 @@ public class IssuePanel extends javax.swing.JPanel {
         newCommentSection.setContent(newCommentSectionPanel);
         newCommentSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.newCommentSection.label")); // NOI18N
 
+        jPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
         commentsSection.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         commentsSection.setActions(getCommentsSectionActions());
         commentsSection.setContent(commentsSectionPanel);
@@ -2918,15 +2922,27 @@ public class IssuePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void productComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productComboActionPerformed
+        productChanged();
+    }//GEN-LAST:event_productComboActionPerformed
+
+    private boolean productChanged() {
         cancelHighlight(productLabel);
         // Reload componentCombo, versionCombo and targetMilestoneCombo
+        BugzillaRepository repository = issue.getRepository();
+        BugzillaConfiguration bc = repository.getConfiguration();
+        if (bc == null || !bc.isValid()) {
+            // XXX nice error msg?
+            return true;
+        }
         String product = productCombo.getSelectedItem().toString();
         Object component = componentCombo.getSelectedItem();
         Object version = versionCombo.getSelectedItem();
         Object targetMilestone = targetMilestoneCombo.getSelectedItem();
-        if(!populateProductCombos(product)) {
-            return;
-        }
+        componentCombo.setModel(toComboModel(bc.getComponents(product)));
+        versionCombo.setModel(toComboModel(bc.getVersions(product)));
+        List<String> targetMilestones = bc.getTargetMilestones(product);
+        usingTargetMilestones = !targetMilestones.isEmpty();
+        targetMilestoneCombo.setModel(toComboModel(targetMilestones));
         // Attempt to keep selection
         if (!selectInCombo(componentCombo, component, false)) {
             if (issue.isNew() && componentCombo.getModel().getSize() > 0
@@ -2962,7 +2978,6 @@ public class IssuePanel extends javax.swing.JPanel {
         milestoneWarning.setVisible(usingTargetMilestones);
         if (issue.isNew()) {
             issue.setFieldValue(IssueField.PRODUCT, product);
-            BugzillaRepository repository = issue.getRepository();
             if (BugzillaUtil.isNbRepository(repository)) { // IssueProvider 180467, 184412
                 // Default target milestone
                 List<String> milestones = repository.getConfiguration().getTargetMilestones(product);
@@ -2976,7 +2991,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 for (String v : versions) {
                     if (v.trim().toLowerCase().equals(defaultVersion.toLowerCase())) {
                         issue.setFieldValue(IssueField.VERSION, v);
-                    }                        
+                    }
                 }
             }
             if (reloading) {
@@ -2991,23 +3006,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 reloadForm(false);
             }
         }
-    }//GEN-LAST:event_productComboActionPerformed
-
-    private boolean populateProductCombos(String product) {
-        BugzillaRepository repository = issue.getRepository();
-        BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null || !bc.isValid()) {
-            // XXX nice error msg?
-            return false;
-        }
-        componentCombo.setModel(toComboModel(bc.getComponents(product)));
-        versionCombo.setModel(toComboModel(bc.getVersions(product)));
-        List<String> targetMilestones = bc.getTargetMilestones(product);
-        usingTargetMilestones = !targetMilestones.isEmpty();
-        targetMilestoneCombo.setModel(toComboModel(targetMilestones));
-        return true;
+        return false;
     }
-
+   
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
         cancelHighlight(statusLabel);
         cancelHighlight(resolutionLabel);
@@ -3235,7 +3236,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             initCombos();
                             initCustomFields();
                             selectInCombo(productCombo, product, false);
-                            populateProductCombos((String)product);
+                            productChanged();
                             selectInCombo(platformCombo, platform, false);
                             selectInCombo(osCombo, os, false);
                             selectInCombo(priorityCombo, priority, false);

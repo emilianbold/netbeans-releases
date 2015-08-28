@@ -4282,7 +4282,6 @@ public class Reformatter implements ReformatTask {
                             }
                             if (insideTagEndOffset >= 0) {
                                 addMark(Pair.of(insideTagEndOffset, 6), marks, state);
-                                currWSOffset = -1;
                             }
                             cseq = null;
                             break;
@@ -4408,7 +4407,7 @@ public class Reformatter implements ReformatTask {
                             currNWSPos = i;
                         }
                         if (i >= checkOffset) {
-                            noFormat = false;                                    
+                            noFormat = false;
                             switch (actionType) {
                                 case 0:
                                     pendingDiff = new Diff(currWSPos >= 0 ? offset + currWSPos : offset + i, offset + i, NEWLINE + blankLineString + NEWLINE);
@@ -4516,8 +4515,6 @@ public class Reformatter implements ReformatTask {
                                     String subs = text.substring(lastNewLinePos, i);
                                     if (!s.equals(subs))
                                         pendingDiff = new Diff(offset + lastNewLinePos, offset + i, s);
-                                } else {
-                                    
                                 }
                             }
                             lastWSPos = currWSPos = -1;
@@ -4571,6 +4568,18 @@ public class Reformatter implements ReformatTask {
                                             lastNewLinePos = -1;                                            
                                             break;
                                         } else {
+                                            if (i >= checkOffset && actionType == 6) {
+                                                noFormat = false;
+                                                preserveNewLines = true;
+                                                if (it.hasNext()) {
+                                                    Pair<Integer, Integer> next = it.next();
+                                                    checkOffset = next.first();
+                                                    actionType = next.second();
+                                                } else {
+                                                    checkOffset = Integer.MAX_VALUE;
+                                                    actionType = -1;
+                                                }
+                                            }
                                             if (!cs.addLeadingStarInComment()) {
                                                 if (noFormat) {
                                                     if (pendingDiff != null) {
