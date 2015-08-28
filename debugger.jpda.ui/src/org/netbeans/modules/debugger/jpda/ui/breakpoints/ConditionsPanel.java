@@ -190,7 +190,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
     }
     
     public void setupConditionPaneContext(String url, int line) {
-        WatchPanel.setupContext(tfCondition, url, line);
+        WatchPanel.setupContext(tfCondition, url, line, 0);
     }
 
     public void setupConditionPaneContext() {
