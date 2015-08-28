@@ -43,6 +43,8 @@ package org.netbeans.modules.java.source.parsing;
 
 import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
+import java.util.ArrayList;
+import java.util.List;
 import javax.tools.Diagnostic;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl.RichDiagnostic;
 
@@ -52,12 +54,46 @@ import org.netbeans.modules.java.source.parsing.CompilationInfoImpl.RichDiagnost
  */
 public class Hacks {
     public static boolean isSyntaxError(Diagnostic<?> d) {
-        if (d instanceof JCDiagnostic) {
-            return ((JCDiagnostic) d).isFlagSet(DiagnosticFlag.SYNTAX);
-        } else if (d instanceof RichDiagnostic && ((RichDiagnostic) d).getDelegate() instanceof JCDiagnostic) {
-            return ((JCDiagnostic) ((RichDiagnostic) d).getDelegate()).isFlagSet(DiagnosticFlag.SYNTAX);
-        } else {
+        JCDiagnostic jcd = getJCDiagnostic(d);
+        if (jcd == null) {
             return false;
         }
+        return jcd.isFlagSet(DiagnosticFlag.SYNTAX);
+    }
+    
+    public static Diagnostic[] getNestedDiagnostics(Diagnostic<?> d) {
+        List<Diagnostic> diags = new ArrayList<>();
+        getNestedDiagnostics(d, diags);
+        if (diags.isEmpty()) {
+            return null;
+        }
+        return diags.toArray(new Diagnostic[diags.size()]);
+    }
+    
+    private static void getNestedDiagnostics(Diagnostic<?> d, List<Diagnostic> diags) {
+        JCDiagnostic jcd = getJCDiagnostic(d);
+        if (jcd == null) {
+            return;
+        }
+        Object[] args = jcd.getArgs();
+        if (args == null || args.length == 0) {
+            return;
+        }
+        for (Object o : args) {
+            if (o instanceof Diagnostic) {
+                diags.add((Diagnostic)o);
+                getNestedDiagnostics((Diagnostic)o, diags);
+                break;
+            }
+        }
+    }
+    
+    private static JCDiagnostic getJCDiagnostic(Diagnostic<?> d) {
+        if (d instanceof JCDiagnostic) {
+            return ((JCDiagnostic)d);
+        } else if (d instanceof RichDiagnostic && ((RichDiagnostic) d).getDelegate() instanceof JCDiagnostic) {
+            return (JCDiagnostic)((RichDiagnostic)d).getDelegate();
+        }
+        return null;
     }
 }
