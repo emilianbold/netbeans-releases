@@ -197,9 +197,15 @@ public class FormatStringAudit extends AbstractCodeAudit {
                                 } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
                                         && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
                                         && formatFlag) {
+                                    if (paramBuf.length() == 0 && tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)) {
+                                        // skip whitespoaces before the parameter
+                                        continue;
+                                    }
                                     if (paramOffset == -1) {
+                                        // save start offset of the parameter
                                         paramOffset = docTokenSequence.offset();
                                     }
+                                    // skip macro parameters
                                     CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
                                     if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
                                         skipMacro = true;
