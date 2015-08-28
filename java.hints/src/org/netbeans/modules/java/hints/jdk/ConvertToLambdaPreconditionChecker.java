@@ -95,6 +95,7 @@ public class ConvertToLambdaPreconditionChecker {
     private boolean havePreconditionsBeenChecked = false;
     private boolean foundRefToUninitializedVar = false;
     private final Element ownerClass;
+    private final Element createdClass;
 
     public ConvertToLambdaPreconditionChecker(TreePath pathToNewClassTree, CompilationInfo info) {
 
@@ -103,6 +104,12 @@ public class ConvertToLambdaPreconditionChecker {
         this.info = info;
         this.types = info.getTypes();
 
+        Element el = info.getTrees().getElement(pathToNewClassTree);
+        if (el.getKind() == ElementKind.CONSTRUCTOR) {
+            createdClass = el.getEnclosingElement();
+        } else {
+            createdClass = null;
+        }
         this.lambdaMethodTree = getMethodFromFunctionalInterface(this.newClassTree);
         this.localScope = getScopeFromTree(this.pathToNewClassTree);
         this.ownerClass = findFieldOwner();
@@ -223,6 +230,15 @@ public class ConvertToLambdaPreconditionChecker {
     }
 
     private class PreconditionScanner extends TreePathScanner<Tree, Trees> {
+        private int classDepth = 0;
+
+        @Override
+        public Tree visitClass(ClassTree node, Trees p) {
+            classDepth++;
+            Tree t = super.visitClass(node, p);
+            classDepth--;
+            return t;
+        }
 
         @Override
         public Tree visitMethod(MethodTree methodTree, Trees trees) {
@@ -248,8 +264,18 @@ public class ConvertToLambdaPreconditionChecker {
         public Tree visitIdentifier(IdentifierTree identifierTree, Trees trees) {
 
             //check for ref to 'this'
-            if (identifierTree.getName().contentEquals("this") || identifierTree.getName().contentEquals("super")) {
-                foundRefToThisOrSuper = true;
+            IDENT: if (identifierTree.getName().contentEquals("this") || identifierTree.getName().contentEquals("super")) {
+                Tree parent = getCurrentPath().getParentPath().getLeaf();
+                if (parent.getKind() == Tree.Kind.MEMBER_SELECT) {
+                    // something.this or something.super - resolve the type
+                    Element el = info.getTrees().getElement(getCurrentPath().getParentPath());
+                    if (el == createdClass) {
+                        foundRefToThisOrSuper = true;
+                    }
+                } else if (classDepth == 0) {
+                    // unqualified this/super
+                    foundRefToThisOrSuper = true;
+                }
             }
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el != null && el.getKind() == ElementKind.FIELD) {
