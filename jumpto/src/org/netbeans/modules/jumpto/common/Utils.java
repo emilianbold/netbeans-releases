@@ -219,19 +219,8 @@ public class Utils {
         final String name, scope;
         int index = text.lastIndexOf('.');    //NOI18N
         if (index >= 0) {
-            if (index == text.length()-1) {
-                index = text.lastIndexOf('.', index-1);
-                if (index >= 0) {
-                    scope = text.substring(0, index);
-                    name = text.substring(index+1, text.length()-1);
-                } else {
-                    scope = null;
-                    name = text.substring(0,text.length()-1);
-                }
-            } else {
-                scope = text.substring(0, index);
-                name = text.substring(index+1);
-            }
+            scope = index == 0 ? null : text.substring(0, index);
+            name = text.substring(index+1);
         } else {
             scope = null;
             name = text;

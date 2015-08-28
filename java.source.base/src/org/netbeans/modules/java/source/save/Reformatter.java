@@ -1418,7 +1418,6 @@ public class Reformatter implements ReformatTask {
                     break;
                 case LAMBDA_EXPRESSION:
                     bracePlacement = cs.getOtherBracePlacement();
-                    spaceBeforeLeftBrace = cs.spaceAroundLambdaArrow();
                     break;
                 case TRY:
                     bracePlacement = cs.getOtherBracePlacement();
@@ -1770,16 +1769,24 @@ public class Reformatter implements ReformatTask {
                     if (containedNewLine)
                         newline();
                 }
+                boolean old = continuationIndent;
+                int oldIndent = indent;
+                int oldLastIndent = lastIndent;
+                boolean oldLastIndentContinuation = isLastIndentContinuation;
                 if (node.getBodyKind() == BodyKind.STATEMENT) {
-                    boolean old = continuationIndent;
-                    continuationIndent = isLastIndentContinuation;
-                    try {
-                        scan(node.getBody(), p);
-                    } finally {
-                        continuationIndent = old;
+                    if (continuationIndent) {
+                        lastIndent = indent;
+                        indent += continuationIndentSize;
+                        continuationIndent = false;
                     }
-                } else {
+                }
+                try {
                     wrapTree(cs.wrapLambdaArrow(), -1, cs.spaceAroundLambdaArrow() ? 1 : 0, node.getBody());
+                } finally {
+                    continuationIndent = old;
+                    indent = oldIndent;
+                    lastIndent = oldLastIndent;
+                    isLastIndentContinuation = oldLastIndentContinuation;
                 }
             } else {
                 boolean old = continuationIndent;
@@ -1789,6 +1796,7 @@ public class Reformatter implements ReformatTask {
                 if (node.getBodyKind() == BodyKind.STATEMENT) {
                     if (continuationIndent) {
                         lastIndent = indent;
+                        indent += continuationIndentSize;
                         continuationIndent = false;
                     }
                 }
@@ -1797,7 +1805,7 @@ public class Reformatter implements ReformatTask {
                 } finally {
                     continuationIndent = old;
                     indent = oldIndent;
-                    lastIndent = oldLastIndent; 
+                    lastIndent = oldLastIndent;
                     isLastIndentContinuation = oldLastIndentContinuation;
                 }
             }
@@ -3680,7 +3688,6 @@ public class Reformatter implements ReformatTask {
                         newline();
                     } finally {
                         indent = old;
-                        lastIndent = oldLast;
                     }
                     ret = col;
                     if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
@@ -3690,16 +3697,19 @@ public class Reformatter implements ReformatTask {
                         tokens.moveNext();
                     }
                     try {
-                        if (tree.getKind() != Tree.Kind.BLOCK
-                                && (tree.getKind() != Tree.Kind.NEW_ARRAY
-                                || ((NewArrayTree)tree).getType() != null
-                                || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
+                        if (tree.getKind() == Tree.Kind.BLOCK) {
+                            spaces(spacesCntAfterOp);
+                            continuationIndent = false;
+                        } else if (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                || ((NewArrayTree) tree).getType() != null
+                                || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE) {
                             spaces(spacesCntAfterOp);
                         } else {
                             continuationIndent = false;
                         }
                         scan(tree, null);
                     } finally {
+                        lastIndent = oldLast;
                         continuationIndent = oldContinuationIndent;
                     }
                     break;
@@ -3732,10 +3742,12 @@ public class Reformatter implements ReformatTask {
                             tokens.moveNext();
                         }
                         try {
-                            if (tree.getKind() != Tree.Kind.BLOCK
-                                    && (tree.getKind() != Tree.Kind.NEW_ARRAY
-                                    || ((NewArrayTree)tree).getType() != null
-                                    || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
+                            if (tree.getKind() == Tree.Kind.BLOCK) {
+                                spaces(spacesCntAfterOp);
+                                continuationIndent = false;
+                            } else if (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                    || ((NewArrayTree) tree).getType() != null
+                                    || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE) {
                                 spaces(spacesCntAfterOp);
                             } else {
                                 continuationIndent = false;
@@ -3772,10 +3784,12 @@ public class Reformatter implements ReformatTask {
                             tokens.moveNext();
                         }
                         try {
-                            if (tree.getKind() != Tree.Kind.BLOCK
-                                    && (tree.getKind() != Tree.Kind.NEW_ARRAY
-                                    || ((NewArrayTree)tree).getType() != null
-                                    || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
+                            if (tree.getKind() == Tree.Kind.BLOCK) {
+                                spaces(spacesCntAfterOp);
+                                continuationIndent = false;
+                            } else if (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                    || ((NewArrayTree) tree).getType() != null
+                                    || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE) {
                                 spaces(spacesCntAfterOp);
                             } else {
                                 continuationIndent = false;
@@ -3810,10 +3824,33 @@ public class Reformatter implements ReformatTask {
                         tokens.moveNext();
                     }
                     try {
-                        if (tree.getKind() != Tree.Kind.BLOCK
-                                && (tree.getKind() != Tree.Kind.NEW_ARRAY
-                                || ((NewArrayTree)tree).getType() != null
-                                || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)) {
+                        if (tree.getKind() == Tree.Kind.BLOCK) {
+                            if (spaces(spacesCntAfterOp, false)) {
+                                rollback(index, c, d);
+                                old = indent;
+                                oldLast = lastIndent;
+                                try {
+                                    if (alignIndent >= 0) {
+                                        indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
+                                    }
+                                    newline();
+                                } finally {
+                                    indent = old;
+                                    lastIndent = oldLast;
+                                }
+                                ret = col;
+                                if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                                    col += tokens.token().length();
+                                    lastBlankLines = -1;
+                                    lastBlankLinesTokenIndex = -1;
+                                    tokens.moveNext();
+                                }
+                                spaces(spacesCntAfterOp);
+                            }                            
+                            continuationIndent = isLastIndentContinuation;
+                        } else if (tree.getKind() != Tree.Kind.NEW_ARRAY
+                                || ((NewArrayTree) tree).getType() != null
+                                || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE) {
                             if (spaces(spacesCntAfterOp, false)) {
                                 rollback(index, c, d);
                                 old = indent;
@@ -3843,7 +3880,7 @@ public class Reformatter implements ReformatTask {
                     } finally {
                         continuationIndent = oldContinuationIndent;
                     }
-                break;
+                    break;
             }
             return ret;
         }

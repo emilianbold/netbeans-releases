@@ -788,7 +788,7 @@ public class JavaTypeProvider implements TypeProvider {
 
         private static class JavaTypeDescriptionConvertor implements Convertor<Document, JavaTypeDescription> {
 
-            private static final Pattern ANONYMOUS = Pattern.compile(".*\\$\\d+(C|I|E|A|\\$.+)");   //NOI18N
+            private static final Pattern ANONYMOUS = Pattern.compile(".*\\$\\d+(\\$.+)?");   //NOI18N
             private static final Convertor<Document,ElementHandle<TypeElement>> HANDLE_CONVERTOR = DocumentUtil.elementHandleConvertor();
             private static final Convertor<Document,String> SOURCE_CONVERTOR = DocumentUtil.sourceNameConvertor();
 
@@ -801,7 +801,8 @@ public class JavaTypeProvider implements TypeProvider {
             @Override
             public JavaTypeDescription convert(Document p) {
                 final String binName = DocumentUtil.getSimpleBinaryName(p);
-                if (binName == null || ANONYMOUS.matcher(binName).matches()) {
+                //The regexp still needed for class files older than 1.5 which has no enclosingMethod attr
+                if (binName == null || ANONYMOUS.matcher(binName).matches() || DocumentUtil.isLocal(p)) {
                     return null;
                 }
                 final ElementHandle<TypeElement> eh = HANDLE_CONVERTOR.convert(p);
