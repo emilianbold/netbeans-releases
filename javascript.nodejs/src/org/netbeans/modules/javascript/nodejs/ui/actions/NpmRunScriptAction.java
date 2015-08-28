@@ -188,6 +188,7 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
+                            NodeJsUtils.logUsageNpmRunScript(command);
                             npm.runScript(command);
                         }
                     });

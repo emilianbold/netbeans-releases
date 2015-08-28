@@ -77,6 +77,10 @@ public final class NodeJsUtils {
     private static final UsageLogger NPM_INSTALL_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
             .message(NodeJsUtils.class, "USG_NPM_INSTALL") // NOI18N
             .create();
+    private static final UsageLogger NPM_RUN_SCRIPT_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
+            .message(NodeJsUtils.class, "USG_NPM_RUN_SCRIPT") // NOI18N
+            .firstMessageOnly(false)
+            .create();
 
 
     private NodeJsUtils() {
@@ -84,6 +88,10 @@ public final class NodeJsUtils {
 
     public static void logUsageNpmInstall() {
         NPM_INSTALL_USAGE_LOGGER.log();
+    }
+
+    public static void logUsageNpmRunScript(String script) {
+        NPM_RUN_SCRIPT_USAGE_LOGGER.log(script);
     }
 
     public static String getProjectDisplayName(Project project) {

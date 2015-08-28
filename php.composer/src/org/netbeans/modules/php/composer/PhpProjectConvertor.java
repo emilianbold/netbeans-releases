@@ -64,6 +64,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModuleGenerator;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.ProjectConvertor;
 import org.netbeans.spi.project.ui.support.ProjectConvertors;
@@ -143,6 +144,10 @@ public final class PhpProjectConvertor implements ProjectConvertor {
 
     private static final class Factory implements Callable<Project> {
 
+        private static final UsageLogger PROJECT_CONVERTOR_USAGE_LOGGER = new UsageLogger.Builder("org.netbeans.ui.metrics.php.composer") // NOI18N
+                .message(PhpProjectConvertor.class, "USG_PROJECT_CONVERTOR") // NOI18N
+                .create();
+
         private static final String[] KNOWN_SOURCE_ROOTS = new String[] {
             "src", // NOI18N
             "lib", // NOI18N
@@ -165,6 +170,7 @@ public final class PhpProjectConvertor implements ProjectConvertor {
         @Override
         public Project call() throws Exception {
             transientLkp.close();
+            PROJECT_CONVERTOR_USAGE_LOGGER.log("composer.json"); // NOI18N
             PhpModuleGenerator phpModuleGenerator = Lookup.getDefault().lookup(PhpModuleGenerator.class);
             assert phpModuleGenerator != null;
             phpModuleGenerator.createModule(new PhpModuleGenerator.CreateProperties()
