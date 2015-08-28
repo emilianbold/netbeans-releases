@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.collab.ui.actions;
 
+import java.awt.Container;
 import javax.swing.*;
 
 import org.openide.*;
@@ -66,12 +67,19 @@ public class LogoutAction extends CookieAction {
         if (menuPresenter != null) {
             menuPresenter.invalidate();
 
-            if (menuPresenter.getParent() != null) {
-                menuPresenter.getParent().validate();
+            Container parent = menuPresenter.getParent();
+            if (parent != null) {
+                parent.validate();
             }
 
-            if (menuPresenter.getParent() instanceof JPopupMenu) {
-                ((JPopupMenu) menuPresenter.getParent()).pack();
+            if (parent instanceof JPopupMenu) {
+                final JPopupMenu parentPopup = (JPopupMenu) parent;
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        parentPopup.pack();
+                    }
+                });
             }
         }
 
