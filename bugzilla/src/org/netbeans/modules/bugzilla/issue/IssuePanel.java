@@ -2476,6 +2476,8 @@ public class IssuePanel extends javax.swing.JPanel {
 
         attachmentsSectionPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
+        attachmentsWarning.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
         javax.swing.GroupLayout attachmentsSectionPanelLayout = new javax.swing.GroupLayout(attachmentsSectionPanel);
         attachmentsSectionPanel.setLayout(attachmentsSectionPanelLayout);
         attachmentsSectionPanelLayout.setHorizontalGroup(
@@ -2751,6 +2753,8 @@ public class IssuePanel extends javax.swing.JPanel {
         newCommentSection.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         newCommentSection.setContent(newCommentSectionPanel);
         newCommentSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.newCommentSection.label")); // NOI18N
+
+        jPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         commentsSection.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         commentsSection.setActions(getCommentsSectionActions());
