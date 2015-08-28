@@ -57,7 +57,7 @@
             projectType = FrameworksUtils.MAVEN_PROJECT,
             category = FrameworksUtils.CATEGORY,
             categoryLabel = "#LBL_CATEGORY_FRAMEWORKS_LABEL",
-            position = 193
+            position = 493
     )
 }
 )
