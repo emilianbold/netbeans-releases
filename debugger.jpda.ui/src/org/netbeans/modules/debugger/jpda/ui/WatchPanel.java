@@ -102,6 +102,9 @@ import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
 import com.sun.source.tree.*;
+import java.awt.Point;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.java.source.CancellableTask;
@@ -148,7 +151,7 @@ public class WatchPanel {
                     public void run() {
                         final Context c = retrieveContext(den);
                         if (c != null) {
-                            setupContext(editorPane, c.url, c.line, c.debugger);
+                            setupContext(editorPane, c.url, c.line, c.column, c.debugger);
                             if (contextSetUp != null) {
                                 SwingUtilities.invokeLater(new Runnable() {
                                     @Override
@@ -162,7 +165,7 @@ public class WatchPanel {
                 });
                 Context c = retrieveContext(null);
                 if (c != null) {
-                    setupContext(editorPane, c.url, c.line, c.debugger);
+                    setupContext(editorPane, c.url, c.line, c.column, c.debugger);
                 } else {
                     setupUI(editorPane);
                 }
@@ -173,7 +176,7 @@ public class WatchPanel {
         }
         Context c = retrieveContext(en);
         if (c != null) {
-            setupContext(editorPane, c.url, c.line, c.debugger);
+            setupContext(editorPane, c.url, c.line, c.column, c.debugger);
         } else {
             setupUI(editorPane);
         }
@@ -228,6 +231,7 @@ public class WatchPanel {
                     return null;
                 }
             }
+            c.column = getRecentColumn();
         }
         if (adjustContext && !EventQueue.isDispatchThread()) {
             // Do the adjustment only outside of AWT.
@@ -235,6 +239,21 @@ public class WatchPanel {
             adjustLine(c);
         }
         return c;
+    }
+    
+    private static int getRecentColumn() {
+        JEditorPane mostRecentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
+        if (mostRecentEditor != null) {
+            Caret caret = mostRecentEditor.getCaret();
+            if (caret != null) {
+                int offset = caret.getDot();
+                try {
+                    int rs = javax.swing.text.Utilities.getRowStart(mostRecentEditor, offset);
+                    return offset - rs;
+                } catch (BadLocationException blex) {}
+            }
+        }
+        return 0;
     }
 
     private static void adjustLine(Context c) {
@@ -263,9 +282,10 @@ public class WatchPanel {
         }
         try {
             int line = findClassLine(br);
-            line = findMethodLine(line, br);
-            if (c.line < line) {
-                c.line = line;
+            Point lc = findMethodLineColumn(line, c.column, br);
+            if (c.line < lc.x) {
+                c.line = lc.x;
+                c.column = lc.y;
             }
         } catch (IOException ioex) {
         } finally {
@@ -326,7 +346,7 @@ public class WatchPanel {
         return 1; // Did not find anything interesting
     }
     
-    private static int findMethodLine(int l, BufferedReader br) throws IOException {
+    private static Point findMethodLineColumn(int l, int col, BufferedReader br) throws IOException {
         int origLine = l;
         String line;
         boolean isParenthesis = false;
@@ -349,21 +369,21 @@ public class WatchPanel {
                 }
                 if (i < line.length()) {
                     if (line.charAt(i) == '{') {
-                        return l;
+                        return new Point(l, i+1);
                     } else {
                         isParenthesis = false;
                     }
                 }
             }
         }
-        return origLine;
+        return new Point(origLine, col);
     }
 
-    public static void setupContext(final JEditorPane editorPane, String url, int line) {
-        setupContext(editorPane, url, line, null);
+    public static void setupContext(final JEditorPane editorPane, String url, int line, int column) {
+        setupContext(editorPane, url, line, column, null);
     }
 
-    public static void setupContext(final JEditorPane editorPane, String url, final int line, final JPDADebugger debugger) {
+    public static void setupContext(final JEditorPane editorPane, String url, final int line, final int column, final JPDADebugger debugger) {
         final FileObject file;
         try {
             file = URLMapper.findFileObject (new URL (url));
@@ -381,7 +401,7 @@ public class WatchPanel {
                 @Override
                 public void run() {
                     String origText = editorPane.getText();
-                    DialogBinding.bindComponentToFile(file, (line > 0) ? (line - 1) : 0, 0, 0, editorPane);
+                    DialogBinding.bindComponentToFile(file, (line > 0) ? (line - 1) : 0, column, 0, editorPane);
                     Document editPaneDoc = editorPane.getDocument();
                     editPaneDoc.putProperty("org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck", "true");
                     editPaneDoc.putProperty(WrapperFactory.class,
@@ -562,6 +582,7 @@ public class WatchPanel {
     private static final class Context {
         public String url;
         public int line;
+        public int column;
         public JPDADebugger debugger;
     }
 

@@ -43,24 +43,31 @@
  */
 package org.netbeans.modules.debugger.ui;
 
-import org.openide.awt.Mnemonics;
-import org.openide.util.NbBundle;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.CompoundBorder;
-import java.util.*;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ResourceBundle;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.editor.Utilities;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
+import org.openide.text.Line;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -92,8 +99,9 @@ public class WatchPanel {
         panel.setBorder (new EmptyBorder (11, 12, 1, 11));
         panel.add (BorderLayout.NORTH, textLabel);
 
-        final FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
+        final FileObject file = getRecentFile();
         int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
+        int column = getRecentColumn();
         String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
         boolean doBind = true;
         if (!mimeType.startsWith("text/")) { // NOI18N
@@ -111,20 +119,19 @@ public class WatchPanel {
                          org.openide.windows.WindowManager.getDefault().getMainWindow().getSize().width);
         sp.setPreferredSize(new Dimension(w, h));
         if (doBind) {
-            line = adjustLine(file, line);
-            if (file != null && line >= 0) {
-                DialogBinding.bindComponentToFile(file, line - 1, 0, 0, editorPane);
+            final Point lineCol = adjustLineAndColumn(file, line, column);
+            if (file != null && lineCol.x >= 0) {
+                DialogBinding.bindComponentToFile(file, lineCol.x - 1, lineCol.y, 0, editorPane);
             }
-            final int theLine = line;
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    final int adjustedLine = adjustLine(file, theLine);
-                    if (adjustedLine != theLine) {
+                    final Point adjustedLineCol = adjustLineAndColumn(file, lineCol.x, lineCol.y);
+                    if (!adjustedLineCol.equals(lineCol)) {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                DialogBinding.bindComponentToFile(file, adjustedLine - 1, 0, 0, editorPane);
+                                DialogBinding.bindComponentToFile(file, adjustedLineCol.x - 1, adjustedLineCol.y, 0, editorPane);
                             }
                         });
                     }
@@ -146,32 +153,58 @@ public class WatchPanel {
         return panel;
     }
 
+    public static FileObject getRecentFile() {
+        FileObject fo = EditorContextDispatcher.getDefault().getMostRecentFile();
+        if (fo == null) {
+            Line mostRecentLine = EditorContextDispatcher.getDefault().getMostRecentLine();
+            if (mostRecentLine != null) {
+                fo = mostRecentLine.getLookup().lookup(FileObject.class);
+            }
+        }
+        return fo;
+    }
+    
+    public static int getRecentColumn() {
+        JEditorPane mostRecentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
+        if (mostRecentEditor != null) {
+            Caret caret = mostRecentEditor.getCaret();
+            if (caret != null) {
+                int offset = caret.getDot();
+                try {
+                    int rs = javax.swing.text.Utilities.getRowStart(mostRecentEditor, offset);
+                    return offset - rs;
+                } catch (BadLocationException blex) {}
+            }
+        }
+        return 0;
+    }
+
     public String getExpression() {
         return editorPane.getText().trim();
     }
 
-    public static int adjustLine(FileObject fo, int theLine) {
+    public static Point adjustLineAndColumn(FileObject fo, int theLine, int theColumn) {
         if (theLine == -1) {
             theLine = 1;
         }
         if (fo == null) {
-            return theLine;
+            return new Point(theLine, theColumn);
         }
         if (!"java".equalsIgnoreCase(fo.getExt())) {
             // we do not understand other languages
-            return theLine;
+            return new Point(theLine, theColumn);
         }
         BufferedReader br;
         try {
             br = new BufferedReader(new InputStreamReader(fo.getInputStream()));
         } catch (FileNotFoundException ex) {
-            return theLine;
+            return new Point(theLine, theColumn);
         }
         try {
             int line = findClassLine(br);
-            line = findMethodLine(line, br);
-            if (theLine < line) {
-                theLine = line;
+            Point lc = findMethodLineColumn(line, theColumn, br);
+            if (theLine < lc.x) {
+                return lc;
             }
         } catch (IOException ioex) {
         } finally {
@@ -180,7 +213,7 @@ public class WatchPanel {
             } catch (IOException ex) {
             }
         }
-        return theLine;
+        return new Point(theLine, theColumn);
     }
 
     private static int findClassLine(BufferedReader br) throws IOException {
@@ -233,7 +266,7 @@ public class WatchPanel {
         return 1; // Did not find anything interesting
     }
 
-    private static int findMethodLine(int l, BufferedReader br) throws IOException {
+    private static Point findMethodLineColumn(int l, int col, BufferedReader br) throws IOException {
         int origLine = l;
         String line;
         boolean isParenthesis = false;
@@ -254,14 +287,14 @@ public class WatchPanel {
                 }
                 if (i < line.length()) {
                     if (line.charAt(i) == '{') {
-                        return l;
+                        return new Point(l, i+1);
                     } else {
                         isParenthesis = false;
                     }
                 }
             }
         }
-        return origLine;
+        return new Point(origLine, col);
     }
 
 }

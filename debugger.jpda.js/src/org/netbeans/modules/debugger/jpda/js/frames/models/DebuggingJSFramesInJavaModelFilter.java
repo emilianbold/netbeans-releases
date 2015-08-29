@@ -52,9 +52,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
-import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.js.frames.JSStackFrame;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -80,7 +80,7 @@ public class DebuggingJSFramesInJavaModelFilter implements TreeModelFilter, Node
     static final Preferences preferences = NbPreferences.forModule(DebuggingJSFramesInJavaModelFilter.class);
     static final String PREF_DISPLAY_JS_STACKS = "displayJSStacks";     // NOI18N
     
-    private final Set<JPDAThread> threadsWithJSStacks = Collections.synchronizedSet(new WeakSet<JPDAThread>());
+    private final Set<DebuggingView.DVThread> threadsWithJSStacks = Collections.synchronizedSet(new WeakSet<DebuggingView.DVThread>());
     // By default, filter frames to display just JS frames, where appropriate
     private volatile boolean displayJSStacks = preferences.getBoolean(PREF_DISPLAY_JS_STACKS, true);
     private final DisplayJSStacksAction displayJSStacksAction = new DisplayJSStacksAction();
@@ -94,10 +94,10 @@ public class DebuggingJSFramesInJavaModelFilter implements TreeModelFilter, Node
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
         Object[] children = original.getChildren(parent, from, to);
-        if (parent instanceof JPDAThread) {
+        if (parent instanceof DebuggingView.DVThread) {
             Object[] jsChildren = DebuggingJSTreeModel.createChildrenWithJSStack(children);
             if (jsChildren != null) {
-                threadsWithJSStacks.add((JPDAThread) parent);
+                threadsWithJSStacks.add((DebuggingView.DVThread) parent);
                 if (displayJSStacks) {
                     children = DebuggingJSTreeModel.filterChildren(jsChildren);
                 }
@@ -117,8 +117,8 @@ public class DebuggingJSFramesInJavaModelFilter implements TreeModelFilter, Node
             return true;
         } else {
             boolean leaf = original.isLeaf(node);
-            if (leaf && (node instanceof JPDAThread)) {
-                threadsWithJSStacks.remove((JPDAThread) node);
+            if (leaf && (node instanceof DebuggingView.DVThread)) {
+                threadsWithJSStacks.remove((DebuggingView.DVThread) node);
             }
             return leaf;
         }
@@ -149,8 +149,8 @@ public class DebuggingJSFramesInJavaModelFilter implements TreeModelFilter, Node
     @Override
     public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
         Action[] actions = original.getActions(node);
-        if (node instanceof JPDAThread &&
-            threadsWithJSStacks.contains((JPDAThread) node)) {
+        if (node instanceof DebuggingView.DVThread &&
+            threadsWithJSStacks.contains((DebuggingView.DVThread) node)) {
             
             Action[] newActions = new Action[actions.length + 2];
             System.arraycopy(actions, 0, newActions, 0, actions.length);

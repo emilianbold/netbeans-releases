@@ -70,6 +70,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
@@ -250,12 +251,17 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
                 if (!file.isEmpty()) {
                     FileObject fo = null;
                     try {
-                        URL url = URI.create(file).toURL();
-                        Project project = pc.getProject();
-                        if (project != null) {
-                            fo = ServerURLMapping.fromServer(project, url);
+                        URI uri = URI.create(file);
+                        if (uri.isAbsolute()) {
+                            URL url = uri.toURL();
+                            Project project = pc.getProject();
+                            if (project != null) {
+                                fo = ServerURLMapping.fromServer(project, url);
+                            }
                         }
                     } catch (MalformedURLException ex) {
+                    } catch (IllegalArgumentException iaex) {
+                        Exceptions.printStackTrace(Exceptions.attachMessage(iaex, "file = '"+file+"'"));
                     }
                     if (fo != null) {
                         file = fo.getNameExt();
@@ -269,15 +275,20 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
                     file = frame.getScript().getURL();
                     if (!file.isEmpty()) {
                         try {
-                            URL url = URI.create(file).toURL();
-                            Project project = pc.getProject();
-                            if (project != null) {
-                                FileObject fo = ServerURLMapping.fromServer(project, url);
-                                if (fo != null) {
-                                    file = FileUtil.getFileDisplayName(fo);
+                            URI uri = URI.create(file);
+                            if (uri.isAbsolute()) {
+                                URL url = uri.toURL();
+                                Project project = pc.getProject();
+                                if (project != null) {
+                                    FileObject fo = ServerURLMapping.fromServer(project, url);
+                                    if (fo != null) {
+                                        file = FileUtil.getFileDisplayName(fo);
+                                    }
                                 }
                             }
                         } catch (MalformedURLException ex) {
+                        } catch (IllegalArgumentException iaex) {
+                            Exceptions.printStackTrace(Exceptions.attachMessage(iaex, "file = '"+file+"'"));
                         }
                     }
                 } else {

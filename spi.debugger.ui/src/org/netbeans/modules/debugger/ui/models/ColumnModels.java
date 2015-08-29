@@ -45,6 +45,7 @@
 package org.netbeans.modules.debugger.ui.models;
 
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -632,8 +633,9 @@ public class ColumnModels {
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             this.value = value;
 
-            FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
+            FileObject file = WatchPanel.getRecentFile();
             int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
+            int col = WatchPanel.getRecentColumn();
             String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
             boolean doBind = true;
             if (!mimeType.startsWith("text/")) { // NOI18N
@@ -643,8 +645,8 @@ public class ColumnModels {
             }
             editorPane = new WatchesEditorPane(mimeType, "");
             if (doBind && file != null) {
-                line = WatchPanel.adjustLine(file, line);
-                DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
+                Point lc = WatchPanel.adjustLineAndColumn(file, line, col);
+                DialogBinding.bindComponentToFile(file, lc.x - 1, lc.y, 0, editorPane);
             }
 
             editorPane.addFocusListener(this);

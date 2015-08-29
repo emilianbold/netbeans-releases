@@ -150,7 +150,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             panelClassNames.add(wizardPanelClass);
         }
 
+        cmf.add(cmf.addModuleDependency("org.netbeans.api.templates")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        cmf.add(cmf.addModuleDependency("org.openide.util.ui")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.dialogs")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.awt")); // NOI18N
         

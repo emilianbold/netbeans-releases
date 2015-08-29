@@ -138,6 +138,7 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements FileVie
                 }
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), JComponent.WHEN_FOCUSED);
+        table.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "slideOut");
         initColumns();
     }
 
