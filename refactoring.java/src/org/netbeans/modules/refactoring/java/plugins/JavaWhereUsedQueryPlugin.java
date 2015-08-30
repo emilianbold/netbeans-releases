@@ -616,6 +616,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     if(usagesInComments) {
                         usedFilters.add(JavaWhereUsedFilters.COMMENT.getKey());
                     }
+                    if(inImport.get()) {
+                        usedFilters.add(JavaWhereUsedFilters.IMPORT.getKey());
+                    }
                     if(DEPENDENCIES) {
                         if(fromDependency) {
                             usedFilters.add(JavaWhereUsedFilters.DEPENDENCY.getKey());
