@@ -41,14 +41,11 @@
  */
 package org.netbeans.modules.refactoring.java.ui.scope;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -65,7 +62,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.refactoring.java.ui.scope.Bundle.*;
 
-
 /**
  *
  * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
@@ -75,31 +71,33 @@ import static org.netbeans.modules.refactoring.java.ui.scope.Bundle.*;
 @ScopeReference(path = "org-netbeans-modules-refactoring-java-ui-WhereUsedPanel")
 public class DependenciesScopeProvider extends ScopeProvider {
 
-    private static final EnumSet<Modifier> CONSTANT = EnumSet.of(Modifier.FINAL, Modifier.STATIC);
-
     private Scope scope;
     private Problem problem;
 
+    public DependenciesScopeProvider() {
+        problem = new Problem(false, WRN_COMPILED());
+    }
+
     @Override
     public boolean initialize(Lookup context, AtomicBoolean cancel) {
-        if(!JavaWhereUsedQueryPlugin.DEPENDENCIES) {
+        if (!JavaWhereUsedQueryPlugin.DEPENDENCIES) {
             return false;
         }
         Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
-        
+
         Project[] projects;
         try {
             projects = openProjects.get();
         } catch (InterruptedException | ExecutionException ex) {
             return false;
         }
-        
-        if(projects == null || projects.length == 0) {
+
+        if (projects == null || projects.length == 0) {
             return false;
         }
 
         Set<FileObject> srcRoots = new HashSet<>();
-        
+
         for (Project project : projects) {
             ProjectInformation pi = ProjectUtils.getInformation(project);
             final SourceGroup[] sourceGroups = ProjectUtils.getSources(pi.getProject()).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -107,16 +105,10 @@ public class DependenciesScopeProvider extends ScopeProvider {
                 srcRoots.add(sourceGroups[i].getRootFolder());
             }
         }
-        if(srcRoots.isEmpty()) {
+        if (srcRoots.isEmpty()) {
             return false;
         }
         scope = Scope.create(srcRoots, null, null, true);
-        Element element = context.lookup(Element.class);
-        if (element != null) {
-            if (element.getModifiers().containsAll(CONSTANT)) {
-                problem = new Problem(false, WRN_FIELDCONSTANTS());
-            }
-        }
         return true;
     }
 

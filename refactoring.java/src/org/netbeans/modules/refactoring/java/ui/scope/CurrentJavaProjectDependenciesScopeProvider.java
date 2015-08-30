@@ -42,10 +42,7 @@
 package org.netbeans.modules.refactoring.java.ui.scope;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -74,16 +71,19 @@ import static org.netbeans.modules.refactoring.java.ui.scope.Bundle.*;
 @ScopeProvider.Registration(id = "current-project-dependencies", displayName = "#LBL_CurrentProjectDependencies", position = 150)
 @ScopeReference(path = "org-netbeans-modules-refactoring-java-ui-WhereUsedPanel")
 @Messages({"LBL_CurrentProjectDependencies=Current Project & Dependencies",
-           "WRN_FIELDCONSTANTS=Missing field access on constants."})
+           "WRN_COMPILED=<html>Disclaimer: Searching for usages in compiled dependencies has \n" +
+"certain limitations. <a href=\"http://wiki.netbeans.org/Find_Usages_in_Compiled_Dependencies\">Find out more.</a>"})
 public final class CurrentJavaProjectDependenciesScopeProvider extends ScopeProvider {
-    
-    private static final EnumSet<Modifier> CONSTANT = EnumSet.of(Modifier.FINAL, Modifier.STATIC);
     
     private String detail;
     private Scope scope;
     private Problem problem;
     private Icon icon;
 
+    public CurrentJavaProjectDependenciesScopeProvider() {
+        problem = new Problem(false, WRN_COMPILED());
+    }
+    
     @Override
     public boolean initialize(Lookup context, AtomicBoolean cancel) {
         if(!JavaWhereUsedQueryPlugin.DEPENDENCIES) {
@@ -120,12 +120,6 @@ public final class CurrentJavaProjectDependenciesScopeProvider extends ScopeProv
             projectSources[i] = sourceGroups[i].getRootFolder();
         }
         scope = Scope.create(Arrays.asList(projectSources), null, null, true);
-        Element element = context.lookup(Element.class);
-        if (element != null) {
-            if (element.getModifiers().containsAll(CONSTANT)) {
-                problem = new Problem(false, WRN_FIELDCONSTANTS());
-            }
-        }
         detail = pi.getDisplayName();
         icon = new ImageIcon(ImageUtilities.mergeImages(
                 ImageUtilities.icon2Image(pi.getIcon()),
