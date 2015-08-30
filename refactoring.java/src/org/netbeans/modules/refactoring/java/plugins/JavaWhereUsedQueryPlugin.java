@@ -93,8 +93,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     private boolean fromLibrary;
     private final WhereUsedQuery refactoring;
     
-    public static final boolean DEPENDENCIES = Boolean.getBoolean("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies");     //NOI18N
-    
+    public static final boolean DEPENDENCIES;
+    static {
+        String prop = System.getProperty("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies"); //NOI18N
+        DEPENDENCIES = prop == null ? true : prop.equalsIgnoreCase("true");
+    }
     private volatile CancellableTask queryTask;
 
     /** Creates a new instance of WhereUsedQuery */
