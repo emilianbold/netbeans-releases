@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -81,18 +82,20 @@ public class ClankMacroUsagesProducer {
     }
 
     public List<CsmReference> getMacroUsages(Interrupter interrupter) {
-        List<CsmReference> res = new ArrayList<>();
-        ClankDriver.APTTokenStreamCache tokStreamCache = ClankDriver.extractTokenStream(curPreprocHandler);
-        assert tokStreamCache != null;
+        List<CsmReference> res = new ArrayList<>();        
+        int stopFileIndex;
         FileImpl startFile =  Utils.getStartFile(curPreprocHandler.getState());
         if (startFile == null) {
             startFile = fileImpl;
+            stopFileIndex = 0;
+        } else {
+            stopFileIndex = ClankDriver.extractTokenStream(curPreprocHandler).getFileIndex();
         }
         // do preprocessing
         FileMacroUsagesCallback callback = new FileMacroUsagesCallback(
                 curPreprocHandler,
-                fileImpl,
-                tokStreamCache.getFileIndex());
+                fileImpl, 
+                stopFileIndex);
         FileBuffer buffer = startFile.getBuffer();
         if (ClankDriver.preprocess(buffer, curPreprocHandler, callback, interrupter)) {
             ClankDriver.ClankFileInfo foundFileInfo = callback.getFoundFileInfo();
@@ -267,8 +270,8 @@ public class ClankMacroUsagesProducer {
             if (enteredTo.getFileIndex() == stopAtIndex) {
                 assert alreadySeenInterestedFileEnter == State.INITIAL;
                 alreadySeenInterestedFileEnter = State.SEEN;
-                CndUtils.assertPathsEqualInConsole(enteredTo.getFilePath(), stopFileImpl.getAbsolutePath(),
-                        "{0}\n vs. \n{1}", enteredTo, stopFileImpl);// NOI18N
+                    CndUtils.assertPathsEqualInConsole(enteredTo.getFilePath(), stopFileImpl.getAbsolutePath(),
+                            "{0}\n vs. \n{1}", enteredTo, stopFileImpl);// NOI18N
                 // we entered target file and after that we can
                 // handle inclusive #includes
                 curFiles.add(stopFileImpl);
@@ -284,7 +287,7 @@ public class ClankMacroUsagesProducer {
                   curFiles.add(curFile);
                 }
               }
-            }
+            }            
             insideInterestedFile = (enteredTo.getFileIndex() == stopAtIndex);
         }
 
