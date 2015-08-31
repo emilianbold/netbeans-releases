@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.project.ui.wizards;
 
@@ -141,7 +141,8 @@ class NewFileNamespacePanel implements NewFileWizardIterator.BottomPanel {
         getComponent().removeChangeListener(listener);
     }
 
-    public void fetchNamespaces(FileObject folder) {
+    private void fetchNamespaces(FileObject folder) {
+        assert EventQueue.isDispatchThread();
         if (folder == null) {
             return;
         }
@@ -216,7 +217,7 @@ class NewFileNamespacePanel implements NewFileWizardIterator.BottomPanel {
                 @Override
                 public void run() {
                     panel.setNamespaces(namespacesCopy);
-                    if (selectedNamespace != null) {
+                    if (StringUtils.hasText(selectedNamespace)) {
                         panel.setSelectedNamespace(selectedNamespace);
                     } else if (namespacesCopy.size() == 2) {
                         // exactly one namespace in the whole folder => preselect it
