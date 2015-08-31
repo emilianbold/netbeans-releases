@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.project.ui.wizards;
 
@@ -61,11 +61,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 public class NewFileNamespacePanelVisual extends JPanel {
-
-    private static final long serialVersionUID = 16763237854L;
 
     private static final String NAMESPACE_SEPARATOR = "\\"; // NOI18N
     private static final Pattern NAMESPACE_PART_PATTERN = Pattern.compile("^[a-z][a-z0-9_]*$", Pattern.CASE_INSENSITIVE); // NOI18N
@@ -75,11 +74,13 @@ public class NewFileNamespacePanelVisual extends JPanel {
 
 
     public NewFileNamespacePanelVisual() {
+        assert EventQueue.isDispatchThread();
         initComponents();
         init();
     }
 
     private void init() {
+        assert EventQueue.isDispatchThread();
         namespaceComboBox.setModel(comboBoxModel);
         // listeners
         namespaceComboBox.addActionListener(new ActionListener() {
@@ -105,10 +106,16 @@ public class NewFileNamespacePanelVisual extends JPanel {
     }
 
     public String getSelectedNamespace() {
-        if (!namespaceComboBox.isEnabled()) {
-            return null;
-        }
-        return (String) namespaceComboBox.getEditor().getItem();
+        return Mutex.EVENT.readAccess(new Mutex.Action<String>() {
+            @Override
+            public String run() {
+                assert EventQueue.isDispatchThread();
+                if (!namespaceComboBox.isEnabled()) {
+                    return null;
+                }
+                return (String) namespaceComboBox.getEditor().getItem();
+            }
+        });
     }
 
     public void setSelectedNamespace(String namespace) {

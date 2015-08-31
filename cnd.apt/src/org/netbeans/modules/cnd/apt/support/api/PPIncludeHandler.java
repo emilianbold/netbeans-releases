@@ -78,9 +78,10 @@ public interface PPIncludeHandler {
      * @param line #include directive line
      * @param offset #include directive offset
      * @param resolvedDirIndex index of resolved directory in lists of include paths
+     * @param inclDirIndex index in file
      * @return IncludeState.Recursive if inclusion is recursive and was prohibited
      */
-    public IncludeState pushInclude(FileSystem fs, CharSequence path, int line, int offset, int resolvedDirIndex);
+    public IncludeState pushInclude(FileSystem fs, CharSequence path, int line, int offset, int resolvedDirIndex, int inclDirIndex);
     
     /*
      * notify about finished inclusion
@@ -98,5 +99,6 @@ public interface PPIncludeHandler {
         public int getIncludeDirectiveLine();
         public int getIncludeDirectiveOffset();
         public int getIncludedDirIndex();
+        public int getIncludedDirFileIndex();
     }     
 }

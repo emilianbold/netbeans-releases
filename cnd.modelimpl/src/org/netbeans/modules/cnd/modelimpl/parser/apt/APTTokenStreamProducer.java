@@ -357,6 +357,12 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         public String toString() {
             return "restore " + include + " from line " + line + " in file " + include.getContainingFile(); // NOI18N
         }
+
+        @Override
+        public int getIncludedDirFileIndex() {
+            return -1;
+        }
+        
     }
 
 }

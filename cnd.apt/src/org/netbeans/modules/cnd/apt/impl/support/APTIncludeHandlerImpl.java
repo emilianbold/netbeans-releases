@@ -114,7 +114,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
 
     @Override
-    public IncludeState pushInclude(FileSystem fs, CharSequence path, int line, int offset, int resolvedDirIndex) {
+    public IncludeState pushInclude(FileSystem fs, CharSequence path, int line, int offset, int resolvedDirIndex, int inclDirIndex) {
         return pushIncludeImpl(fs, path, line, offset, resolvedDirIndex);
     }
 
@@ -528,6 +528,12 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         public int getIncludedDirIndex() {
             return this.resolvedDirIndex;
         }
+
+        @Override
+        public int getIncludedDirFileIndex() {
+            return -1;
+        }
+        
     }
       
     private CharSequence popIncludeImpl() {
