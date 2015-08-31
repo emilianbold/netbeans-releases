@@ -305,6 +305,9 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         }
         if (defineMacro) {
             CsmReference reference = CsmReferenceResolver.getDefault().findReference(file, doc, caretOffset);
+            if (reference == null) {
+                return;
+            }
             if (CsmKindUtilities.isMacro(reference.getReferencedObject())) {
                 CsmMacro macro = (CsmMacro) reference.getReferencedObject();
                 if (caretOffset >= macro.getStartOffset() 

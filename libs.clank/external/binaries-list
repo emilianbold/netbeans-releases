@@ -1,6 +1,6 @@
-#changeset:   15563:97e22d84eecb
+#changeset:   15566:b623a9d97d6a
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Aug 28 23:00:11 2015 +0300
-#summary:     PERF: use specialized path.append
-82285D0DD14A495D0A6E4E47A7C0D93E6C22D243 clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Mon Aug 31 18:29:18 2015 +0300
+#summary:     support collecting macro usages on demand
+998FF5E89B7386A5FF0474097C64E2D2D89879E3 clank_0.3.6.zip

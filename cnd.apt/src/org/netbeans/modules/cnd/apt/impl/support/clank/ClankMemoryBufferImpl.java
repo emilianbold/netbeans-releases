@@ -18,6 +18,7 @@ import org.openide.filesystems.FileObject;
  * @author vkvashin
  */
 class ClankMemoryBufferImpl extends MemoryBuffer {
+    private final char$ptr fileName;
 
     public static ClankMemoryBufferImpl create(FileObject fo) throws IOException {
         InputStream is = null;
@@ -26,7 +27,7 @@ class ClankMemoryBufferImpl extends MemoryBuffer {
                 throw new IOException("Can't read file: " + fo.getPath() + ". The file is too long: " + fo.getSize()); // NOI18N
             }
             String text = fo.asText();
-            return create(text.toCharArray()); // not optimal at all... but will dye quite soon
+            return create(fo.getPath(), text.toCharArray()); // not optimal at all... but will dye quite soon
         } finally {
             if (is != null) {
                 is.close();
@@ -36,10 +37,10 @@ class ClankMemoryBufferImpl extends MemoryBuffer {
 
     public static ClankMemoryBufferImpl create(APTFileBuffer aptBuf) throws IOException {
         char[] chars = aptBuf.getCharBuffer();
-        return create(chars);
+        return create(aptBuf.getAbsolutePath(), chars);
     }
     
-    public static ClankMemoryBufferImpl create(char[] chars) throws IOException {
+    public static ClankMemoryBufferImpl create(CharSequence fileName, char[] chars) throws IOException {
         int nullTermIndex = chars.length;
         byte[] array = new byte[nullTermIndex+1];
         for (int i = 0; i < nullTermIndex; i++) {
@@ -54,12 +55,18 @@ class ClankMemoryBufferImpl extends MemoryBuffer {
         array[nullTermIndex] = 0;
         char$ptr start = NativePointer.create_char$ptr(array);
         char$ptr end = start.$add(nullTermIndex);
-        return new ClankMemoryBufferImpl(start, end, true);
+        return new ClankMemoryBufferImpl(fileName, start, end, true);
     }    
 
-    private ClankMemoryBufferImpl(char$ptr start, char$ptr end, boolean RequiresNullTerminator) {
+    private ClankMemoryBufferImpl(CharSequence fileName, char$ptr start, char$ptr end, boolean RequiresNullTerminator) {
         super();
+        this.fileName = NativePointer.create_char$ptr(fileName);
         init(start, end, RequiresNullTerminator);
+    }
+
+    @Override
+    public char$ptr getBufferIdentifier() {
+        return fileName;
     }
 
     @Override
