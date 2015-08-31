@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.bower.exec.BowerExecutable;
 import org.netbeans.modules.javascript.bower.file.BowerJson;
 import org.netbeans.modules.javascript.bower.ui.options.BowerOptionsPanelController;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -185,6 +186,8 @@ public class LibrariesPanel extends javax.swing.JPanel {
 
     /** Progress handle used when storing changes. */
     private ProgressHandle progressHandle;
+    /** Determines whether library usage should be logged. */
+    private boolean logLibraryUsage;
 
     /**
      * Performs/stores the changes requested by the user in the customizer.
@@ -199,6 +202,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
             public void run() {
                 progressHandle = ProgressHandle.createHandle(Bundle.LibrariesPanel_updatingPackages());
                 progressHandle.start();
+                logLibraryUsage = false;
                 try {
                     BowerJson bowerJson = getBowerJson();
                     if (bowerJson.exists()) {
@@ -231,6 +235,10 @@ public class LibrariesPanel extends javax.swing.JPanel {
                         }
 
                         reportErrors(errors);
+
+                        if (logLibraryUsage) {
+                            logLibraryUsage();
+                        }
                     }
                 } finally {
                     progressHandle.finish();
@@ -354,6 +362,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
                     if (result == null || result != 0) {
                         errors.add(Bundle.LibrariesPanel_uninstallationFailed(name));
                     }
+                    logLibraryUsage = true;
                 }
             }
         }
@@ -407,6 +416,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
                     if (result == null || result != 0) {
                         errors.add(Bundle.LibrariesPanel_installationFailed(name, versionToInstall));
                     }
+                    logLibraryUsage = true;
                 }
             }
         }
@@ -437,7 +447,28 @@ public class LibrariesPanel extends javax.swing.JPanel {
                         Logger.getLogger(LibrariesPanel.class.getName()).log(Level.INFO, null, ioex);
                         errors.add(Bundle.LibrariesPanel_dependencyNotSet(name, newRequiredVersion));
                     }
+                    logLibraryUsage = true;
                 }
+            }
+        }
+    }
+
+    /** Logger of Bower library usage. */
+    private static final UsageLogger USAGE_LOGGER = new UsageLogger.Builder("org.netbeans.ui.metrics.javascript.bower")  // NOI18N
+            .message(LibrariesPanel.class, "USG_BOWER_LIBRARY") // NOI18N
+            .create();
+
+    /**
+     * Logs the used libraries.
+     */
+    private void logLibraryUsage() {
+        for (DependenciesPanel dependencyPanel : dependencyPanels) {
+            Dependency.Type dependencyType = dependencyPanel.getDependencyType();
+            String type = dependencyType.name();
+            for (Dependency dependency : dependencyPanel.getSelectedDependencies()) {
+                String name = dependency.getName();
+                String version = dependency.getInstalledVersion();
+                USAGE_LOGGER.log(type, name, version);
             }
         }
     }

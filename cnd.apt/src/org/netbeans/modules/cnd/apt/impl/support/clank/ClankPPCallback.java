@@ -128,6 +128,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     private final PreprocHandler ppHandler;
     private final ClankIncludeHandlerImpl includeHandler;
     private final ArrayList<ClankFileInfoWrapper> includeStack = new ArrayList<ClankFileInfoWrapper>(16);
+    private final ArrayList<Integer> includeHelperStack = new ArrayList<Integer>(16);
     private final CancellableInterrupter interrupter;
     private final SmallString tokenSpellBuffer = new SmallString(1024);
 
@@ -158,14 +159,19 @@ public final class ClankPPCallback extends FileInfoCallback {
 
     @Override
     protected void onInclusionDirective(FileInfo curFile, InclusionDirectiveInfo directive) {
+        assert includeHelperStack.size() == includeStack.size();
+        final int stacksSize = includeStack.size();
         // find ResolvedPath for #include
         ResolvedPath resolvedPath = createResolvedPath(getPreprocessor(), directive);
         StringRef fileNameSpelling = directive.getFileNameSpelling();
         String spelling = Casts.toCharSequence(fileNameSpelling.data(), fileNameSpelling.size()).toString();
-        ClankInclusionDirectiveWrapper inclDirectiveWrapper = new ClankInclusionDirectiveWrapper(directive, resolvedPath, spelling);
+        ClankInclusionDirectiveWrapper inclDirectiveWrapper = new ClankInclusionDirectiveWrapper(directive
+                                                                                                ,resolvedPath
+                                                                                                ,spelling);
         // keep it as annotation 
         directive.setAnnotation(inclDirectiveWrapper);
-        ClankFileInfoWrapper currentFileWrapper = includeStack.get(includeStack.size() - 1);
+        ClankFileInfoWrapper currentFileWrapper = includeStack.get(stacksSize - 1);
+        includeHelperStack.set(stacksSize - 1, includeHelperStack.get(stacksSize - 1) + 1);
         assert currentFileWrapper.current == curFile || !curFile.isFile();
         if (resolvedPath == null) {
             if (DebugUtils.STANDALONE) {
@@ -300,13 +306,15 @@ public final class ClankPPCallback extends FileInfoCallback {
             } else {
                 ResolvedPath resolvedPath = enteredToWrapper.getResolvedPath();
                 includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(),
-                        0/*should not be used by client*/, enteredTo.getIncludeStartOffset(), resolvedPath.getIndex());
+                        0/*should not be used by client*/, enteredTo.getIncludeStartOffset(), resolvedPath.getIndex(),
+                        includeHelperStack.get(includeHelperStack.size() - 1));
                 includeHandler.cacheTokens(enteredToWrapper);
                 enteredFromWrapper = includeStack.get(includeStack.size() - 1);
                 enteredToWrapper.setMacroDefinitions(((ClankFileInfoWrapper)enteredFromWrapper).getMacroDefinitions());
             }
             // keep stack of active files
             includeStack.add(enteredToWrapper);
+            includeHelperStack.add(0);
 
             delegate.onEnter(enteredFromWrapper, enteredToWrapper);
         } else {
@@ -343,6 +351,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             assert includeStack.size() > 0 : "empty include stack?";
             ClankDriver.ClankFileInfo exitedToWrapper;
             ClankFileInfoWrapper exitedFromWrapper = includeStack.remove(includeStack.size() - 1);
+            includeHelperStack.remove(includeHelperStack.size() - 1);
             assert exitedFromWrapper.current == exitedFrom;
             // we cache possibly collected tokens in include handler
             // to allow delegate to use them
