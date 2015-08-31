@@ -143,10 +143,10 @@ public class ClankDriverImpl {
             StringRef file = new StringRef(path);
             if (fortranFlavor) {
                 char[] chars = fixFortranTokens(buffer);
-                fileContent = ClankMemoryBufferImpl.create(chars);
+                fileContent = ClankMemoryBufferImpl.create(path, chars);
             } else {
                 char[] chars = buffer.getCharBuffer();
-                fileContent = ClankMemoryBufferImpl.create(chars);
+                fileContent = ClankMemoryBufferImpl.create(path, chars);
             }
             remappedBuffers = new HashMap<StringRef, MemoryBuffer>(remappedBuffers);
             remappedBuffers.put(file, fileContent);

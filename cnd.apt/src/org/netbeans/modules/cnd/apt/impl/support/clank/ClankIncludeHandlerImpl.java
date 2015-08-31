@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
@@ -734,10 +733,5 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         public ClankDriverImpl.APTTokenStreamCacheImplementation prepareCachesIfPossible() {
             return this;
         }
-
-        @Override
-        public Map<Integer, ClankDriver.ClankMacroDirective> getMacroDefinitions() {
-            return Collections.emptyMap();
         }
     }
-}
