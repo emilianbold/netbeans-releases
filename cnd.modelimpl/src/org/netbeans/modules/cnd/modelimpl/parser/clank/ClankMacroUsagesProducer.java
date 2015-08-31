@@ -91,13 +91,13 @@ public class ClankMacroUsagesProducer {
         // do preprocessing
         FileMacroUsagesCallback callback = new FileMacroUsagesCallback(
                 curPreprocHandler,
-                startFile,
+                fileImpl,
                 tokStreamCache.getFileIndex());
         FileBuffer buffer = startFile.getBuffer();
         if (ClankDriver.preprocess(buffer, curPreprocHandler, callback, interrupter)) {
             ClankDriver.ClankFileInfo foundFileInfo = callback.getFoundFileInfo();
             if (foundFileInfo != null) {
-                addPreprocessorDirectives(startFile, res, foundFileInfo);
+                addPreprocessorDirectives(fileImpl, res, foundFileInfo);
                 addMacroExpansions(fileImpl, res, startFile, foundFileInfo);
             }
         }
