@@ -324,6 +324,10 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestNavigation/public_html/js/issue252319/test252319.js", "ctrl.getD^", false);
     }
     
+    public void testIssue247713_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue247713/issue247713_test.js", "ee.b^age();", false);
+    }
+    
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
