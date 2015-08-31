@@ -192,13 +192,6 @@ public class ClankMacroUsagesProducer {
             this.stopAtIndex = stopAtIndex;
         }
 
-        boolean isTrace() {
-          if (false && stopFileImpl.getName().toString().endsWith(".h")) {// NOI18N
-            return true;
-          }
-          return false;
-        }
-
         @Override
         public void onErrorDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankErrorDirective directive) {
         }
@@ -270,8 +263,8 @@ public class ClankMacroUsagesProducer {
             if (enteredTo.getFileIndex() == stopAtIndex) {
                 assert alreadySeenInterestedFileEnter == State.INITIAL;
                 alreadySeenInterestedFileEnter = State.SEEN;
-                    CndUtils.assertPathsEqualInConsole(enteredTo.getFilePath(), stopFileImpl.getAbsolutePath(),
-                            "{0}\n vs. \n{1}", enteredTo, stopFileImpl);// NOI18N
+                CndUtils.assertPathsEqualInConsole(enteredTo.getFilePath(), stopFileImpl.getAbsolutePath(),
+                        "{0}\n vs. \n{1}", enteredTo, stopFileImpl);// NOI18N
                 // we entered target file and after that we can
                 // handle inclusive #includes
                 curFiles.add(stopFileImpl);
