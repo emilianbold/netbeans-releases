@@ -510,15 +510,17 @@ public final class ClankPPCallback extends FileInfoCallback {
             if (macroInfo.isFunctionLike()) {
                 IdentifierInfo[] args = null;
                 args = macroInfo.$ArgumentList();
-                isVariadic = macroInfo.isVariadic();
-                params = new ArrayList<CharSequence>(args.length);
-                for (IdentifierInfo arg : args) {
-                    CharSequence argName = ClankToAPTUtils.getIdentifierText(arg);
-                    params.add(argName);
-                }
-                if (isVariadic) {
-                    assert params.size() > 0;
-                    params.set(params.size() - 1, APTUtils.VA_ARGS_TOKEN.getTextID());
+                if (args != null) { // the following macro will return null arguments: #define XXX() __xxx()
+                    isVariadic = macroInfo.isVariadic();
+                    params = new ArrayList<CharSequence>(args.length);
+                    for (IdentifierInfo arg : args) {
+                        CharSequence argName = ClankToAPTUtils.getIdentifierText(arg);
+                        params.add(argName);
+                    }
+                    if (isVariadic) {
+                        assert params.size() > 0;
+                        params.set(params.size() - 1, APTUtils.VA_ARGS_TOKEN.getTextID());
+                    }
                 }
             }
             CharSequence strName = MD.getName();
