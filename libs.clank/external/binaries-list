@@ -1,6 +1,6 @@
-#changeset:   15566:b623a9d97d6a
+#changeset:   15581:e4f27e33b25f
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Aug 31 18:29:18 2015 +0300
-#summary:     support collecting macro usages on demand
-998FF5E89B7386A5FF0474097C64E2D2D89879E3 clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Mon Aug 31 21:37:57 2015 +0300
+#summary:     PERF: reuse tokens
+1A7D2553B800E2F5EC0DCAEF6B649983B59C63A4 clank_0.3.6.zip
