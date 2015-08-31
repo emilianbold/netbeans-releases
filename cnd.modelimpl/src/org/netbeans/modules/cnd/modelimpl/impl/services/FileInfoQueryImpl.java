@@ -581,12 +581,19 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 while(it.hasNext()){
                     APTIncludeHandler.IncludeInfo info = it.next();
                     int offset = info.getIncludeDirectiveOffset();
+                    int includeNdx = info.getIncludedDirFileIndex();
                     CsmInclude find = null;
+                    int currentIncludeIndex = 1;
                     for(CsmInclude inc : startFile.getIncludes()){
                         if (offset == inc.getStartOffset()){
                             find = inc;
                             break;
                         }
+                        if (includeNdx == currentIncludeIndex) {
+                            find = inc;
+                            break;
+                        }
+                        currentIncludeIndex++;
                     }
                     if (find != null) {
                         res.add(find);

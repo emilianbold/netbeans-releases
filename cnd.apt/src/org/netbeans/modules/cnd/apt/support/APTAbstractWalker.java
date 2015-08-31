@@ -341,7 +341,7 @@ public abstract class APTAbstractWalker extends APTWalker {
             APTIncludeHandler includeHandler = getIncludeHandler();
             if (includeHandler != null) {
                 pushIncludeState = includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(), 
-                        aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedPath.getIndex());
+                        aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedPath.getIndex(), -1);
             }
         }
 //        System.out.println("\nPUSH from " + getCurFile() + " at Line " + aptInclude.getToken().getLine() + " " + pushIncludeState + ":" + resolvedPath);
