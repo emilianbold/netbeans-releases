@@ -316,7 +316,7 @@ public final class Git {
 
     public VCSFileProxy getTopmostManagedAncestor (VCSFileProxy file) {
         if (file.toFile() != null) {
-            if (!"true".equals(System.getProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true"))) {
+            if (!"true".equals(System.getProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "false"))) {
                 return null;
             }
         }
