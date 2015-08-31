@@ -95,7 +95,10 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
     @Override
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
         if(handles.length > 0) {
-        return new IntroduceParameterUI(handles[0]);
+            TreePath path = handles[0].resolve(info);
+            if(path != null && (path.getLeaf().getKind() == Tree.Kind.VARIABLE || path.getLeaf() instanceof ExpressionTree)) {
+                return new IntroduceParameterUI(handles[0]);
+            }
         }
         return null;
     }
