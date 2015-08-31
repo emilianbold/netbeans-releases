@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.newproject;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.util.ArrayList;
@@ -61,6 +60,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
 import org.openide.WizardDescriptor;
@@ -122,6 +122,25 @@ public class ChooseArchetypePanel extends JPanel {
                     for (ArchetypeProvider provider : Lookup.getDefault().lookupAll(ArchetypeProvider.class)) {
                         final List<Archetype> added = provider.getArchetypes();
                         LOG.log(Level.FINE, "{0} -> {1}", new Object[] {provider, added});
+                        Collections.sort(added, new Comparator<Archetype>() {
+                            @Override
+                            public int compare(Archetype o1, Archetype o2) {
+                                int c = o1.getArtifactId().compareTo(o2.getArtifactId());                
+                                if(c != 0) {
+                                    return c;
+                                }
+                                String v1 = o1.getVersion();
+                                String v2 = o2.getVersion();
+                                if(v1 == null && v2 == null) {
+                                    return 0;
+                                } else if(v1 == null) {
+                                    return 1;
+                                } else if(v2 == null) {
+                                    return -1;
+                                }
+                                return new DefaultArtifactVersion(v1).compareTo(new DefaultArtifactVersion(v2)) * -1;
+                            }
+                        });
                         EventQueue.invokeLater(new Runnable() {
                             @Override public void run() {
                                 archetypes.addAll(added);
@@ -142,14 +161,14 @@ public class ChooseArchetypePanel extends JPanel {
         }
     }
 
-    private void updateList() {
+    private void updateList() {        
         Set<String> ids = new HashSet<String>();
         String filter = textFilter.getText();
         List<Archetype> filtered = new ArrayList<Archetype>();
         for (Archetype a : archetypes) {
             if (!showOld.isSelected() && !ids.add(a.getGroupId() + ":" + a.getArtifactId())) {
-                continue;
-            }
+                        continue;                        
+                    }
             if (!filter.isEmpty() && !matches(a.getGroupId(), filter) && !matches(a.getArtifactId(), filter) && !matches(a.getVersion(), filter) &&
                     (a.getRepository() == null || !matches(a.getRepository(), filter))
                     && !matches(a.getName(), filter) && (a.getDescription() == null || !matches(a.getDescription(), filter))) {
@@ -158,7 +177,7 @@ public class ChooseArchetypePanel extends JPanel {
             filtered.add(a);
         }
         Collections.sort(filtered, new Comparator<Archetype>() {
-
+        
             @Override
             public int compare(Archetype o1, Archetype o2) {
                 return o1.getArtifactId().compareTo(o2.getArtifactId());
