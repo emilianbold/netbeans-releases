@@ -260,13 +260,25 @@ public class ConvertToLambdaPreconditionChecker {
         public Tree visitIdentifier(IdentifierTree identifierTree, Trees trees) {
 
             //check for ref to 'this'
-            IDENT: if (identifierTree.getName().contentEquals("this") || identifierTree.getName().contentEquals("super")) {
+             IDENT: if (identifierTree.getName().contentEquals("this") || identifierTree.getName().contentEquals("super")) {
                 Tree parent = getCurrentPath().getParentPath().getLeaf();
                 if (parent.getKind() == Tree.Kind.MEMBER_SELECT) {
                     // something.this or something.super - resolve the type
                     Element el = info.getTrees().getElement(getCurrentPath().getParentPath());
                     if (el == createdClass) {
                         foundRefToThisOrSuper = true;
+                    } else {
+                        // this.something or super.something, dereference
+                        TypeMirror m = info.getTrees().getTypeMirror(getCurrentPath());
+                        if (!Utilities.isValidType(m)) {
+                            // just to be sure
+                            foundRefToThisOrSuper = true;
+                        } else if (m.getKind() == TypeKind.DECLARED) {
+                            if (createdClass != null && 
+                                info.getTypes().isSubtype(createdClass.asType(), m)) {
+                                foundRefToThisOrSuper = true;
+                            }
+                        }
                     }
                 } else {
                     // unqualified this/super
