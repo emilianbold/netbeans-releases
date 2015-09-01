@@ -44,7 +44,7 @@ package org.netbeans.modules.css.prep.preferences;
 import java.util.List;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.sass.SassExecutable;
+import org.netbeans.modules.css.prep.sass.SassCli;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.web.common.api.ValidationResult;
@@ -86,7 +86,7 @@ public final class SassPreferencesValidator implements CssPreprocessorPreference
     public SassPreferencesValidator validateExecutable(boolean enabled) {
         if (enabled) {
             try {
-                SassExecutable.getDefault();
+                SassCli.getDefault();
             } catch (InvalidExternalExecutableException ex) {
                 result.addError(new ValidationResult.Message("sass.path", Bundle.SassPreferencesValidator_error_executable(ex.getLocalizedMessage()))); // NOI18N
             }

@@ -54,28 +54,26 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.util.FileUtils;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.api.ExternalExecutable;
-import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.Version;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
-import org.openide.util.NbBundle;
-import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 /**
  * Class representing <tt>sass</tt> command line tool.
+ * <p>
+ * This is the only <b>officially</b> supported CLI as of NB 8.1.
  */
-public final class SassExecutable {
+final class SassExecutable extends SassCli {
 
     private static final Logger LOGGER = Logger.getLogger(SassExecutable.class.getName());
 
-    public static final String EXECUTABLE_NAME = "sass"; // NOI18N
-    public static final String EXECUTABLE_LONG_NAME = EXECUTABLE_NAME + FileUtils.getScriptExtension(true, false);
+    private static final String EXECUTABLE_NAME = "sass"; // NOI18N
+    private static final String EXECUTABLE_LONG_NAME = EXECUTABLE_NAME + FileUtils.getScriptExtension(true, false);
+    static final String[] EXECUTABLE_NAMES = new String[] {
+        EXECUTABLE_NAME,
+        EXECUTABLE_LONG_NAME,
+    };
 
     private static final String DEBUG_PARAM = "--debug-info"; // NOI18N
     private static final String SOURCEMAP_PARAM = "--sourcemap"; // NOI18N
@@ -89,50 +87,20 @@ public final class SassExecutable {
     private static final Version VERSION_WITH_DEFAULT_SOURCEMAP = Version.fromDottedNotationWithFallback("3.4.0"); // NOI18N
     static final String VERSION_PATTERN = "Sass\\s+(\\d+(\\.\\d+)*)"; // NOI18N
 
-    // version of the compiler set in ide options
-    private static volatile Version version;
 
-    private final String sassPath;
-
-
-    private SassExecutable(String sassPath) {
-        assert sassPath != null;
-        this.sassPath = sassPath;
-    }
-
-    /**
-     * Get the default, <b>valid only</b> Sass executable.
-     * @return the default, <b>valid only</b> Sass executable.
-     * @throws InvalidExternalExecutableException if Sass executable is not valid.
-     */
-    public static SassExecutable getDefault() throws InvalidExternalExecutableException {
-        String path = CssPrepOptions.getInstance().getSassPath();
-        String error = validate(path);
-        if (error != null) {
-            throw new InvalidExternalExecutableException(error);
-        }
-        return new SassExecutable(path);
-    }
-
-    @NbBundle.Messages("Sass.executable.label=Sass executable")
-    public static String validate(String path) {
-        return ExternalExecutableValidator.validateCommand(path, Bundle.Sass_executable_label());
-    }
-
-    public static void resetVersion() {
-        version = null;
+    SassExecutable(String sassPath) {
+        super(sassPath);
     }
 
     @CheckForNull
-    private static Version getVersion() {
+    private Version getVersion() {
         assert !EventQueue.isDispatchThread();
         if (version != null) {
             return version;
         }
         VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory(VERSION_PATTERN);
         try {
-            SassExecutable sassExecutable = getDefault();
-            sassExecutable.getExecutable("Sass version", TMP_DIR) // NOI18N
+            getExecutable("Sass version", TMP_DIR) // NOI18N
                     .additionalParameters(Collections.singletonList(VERSION_PARAM))
                     .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, "Detecting Sass version..."); // NOI18N
             String detectedVersion = versionOutputProcessorFactory.getVersion();
@@ -145,61 +113,8 @@ public final class SassExecutable {
             assert false;
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
-        } catch (InvalidExternalExecutableException ex) {
-            // cannot happen
-            LOGGER.log(Level.WARNING, null, ex);
-            assert false;
         }
         return null;
-    }
-
-    @NbBundle.Messages("Sass.compile=Sass (compile)")
-    @CheckForNull
-    public void compile(File workDir, File source, final File target, List<String> compilerOptions) throws ExecutionException {
-        assert !EventQueue.isDispatchThread();
-        assert workDir.isDirectory() : "Not directory given: " + workDir;
-        assert source.isFile() : "Not file given: " + source;
-        final File targetDir = target.getParentFile();
-        if (!targetDir.isDirectory()) {
-            if (!targetDir.mkdirs()) {
-                LOGGER.log(Level.WARNING, "Cannot create directory {0}", targetDir);
-                return;
-            }
-        }
-        try {
-            getExecutable(Bundle.Sass_compile(), workDir)
-                    .additionalParameters(getParameters(source, target, compilerOptions))
-                    .runAndWait(getDescriptor(new Runnable() {
-                @Override
-                public void run() {
-                    FileUtil.refreshFor(targetDir);
-                    UiUtils.refreshCssInBrowser(target);
-                }
-            }), "Compiling sass files..."); // NOI18N
-        } catch (CancellationException ex) {
-            // cancelled
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            throw ex;
-        }
-    }
-
-    private ExternalExecutable getExecutable(String title, File workDir) {
-        return new ExternalExecutable(sassPath)
-                .workDir(workDir)
-                .displayName(title)
-                .optionsPath(CssPreprocessors.OPTIONS_PATH);
-    }
-
-    private ExecutionDescriptor getDescriptor(Runnable postTask) {
-        return new ExecutionDescriptor()
-                .inputOutput(IOProvider.getDefault().getIO(Bundle.Sass_compile(), false))
-                .inputVisible(false)
-                .frontWindow(false)
-                .frontWindowOnError(CssPrepOptions.getInstance().getSassOutputOnError())
-                .noReset(true)
-                .showProgress(true)
-                .postExecution(postTask);
     }
 
     private static ExecutionDescriptor getSilentDescriptor() {
@@ -210,7 +125,8 @@ public final class SassExecutable {
                 .showProgress(false);
     }
 
-    private List<String> getParameters(File inputFile, File outputFile, List<String> compilerOptions) {
+    @Override
+    protected List<String> getParameters(File inputFile, File outputFile, List<String> compilerOptions) {
         List<String> params = new ArrayList<>();
         // cache location
         params.add(CACHE_LOCATION_PARAM);
