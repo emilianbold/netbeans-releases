@@ -64,7 +64,16 @@ class FormattedPrintFunction {
     private final ArrayList<Parameter> parameters;
     private final String formatString;
     private final int offset;
-    private static boolean STRICT_TYPE_CHECKS = false;
+    private static final boolean STRICT_TYPE_CHECKS;
+    
+    static {
+        String doStrictCheck = System.getProperty("printf.check.strict"); //NOI18N
+        if (doStrictCheck != null) {
+            STRICT_TYPE_CHECKS = Boolean.parseBoolean(doStrictCheck);
+        } else {
+            STRICT_TYPE_CHECKS = false;
+        }
+    }
     
     public FormattedPrintFunction(CsmFile file, int offset, String formatString, ArrayList<Parameter> parameters) {
         this.file = file;
