@@ -948,23 +948,49 @@ public class Utilities {
             throw new IllegalStateException("Currently unsupported kind of tree: " + t.getKind()); // NOI18N
         }
     }
-
-    public static TreePath findEnclosingMethodOrConstructor(HintContext ctx, TreePath from) {
-        return findEnclosingMethodOrConstructor(from);
-    }
     
-    public static TreePath findEnclosingMethodOrConstructor(TreePath from) {
-        while (from != null && from.getLeaf().getKind() != Kind.METHOD && !TreeUtilities.CLASS_TREE_KINDS.contains(from.getLeaf().getKind())) {
+    /**
+     * Finds the owner method, constructor, optionally initializer or lambda.
+     * The behaviour depends on the 'lambdaOrInitializer' parameter; if false,
+     * it will find the immediate owning method or constructor. If the code is
+     * NOT directly nested in a method or constructor (i.e. in a lambda, initializer),
+     * null is returned.
+     * <p/>
+     * If the parameter is true, the method is also able to return Lambda expression
+     * tree or initializer tree.
+     * <p/>
+     * At any rate, the search stops at class boundaries.
+     * 
+     * @param ctx the context
+     * @param from pat to start search from (upwards)
+     * @param lambdaOrInitializer also return lambdas or initializers if true.
+     * @return the direct owning executable block or {@code null} if the owning exec
+     * block does not satisfy the filter.
+     */
+    @SuppressWarnings({"AssignmentToMethodParameter", "NestedAssignment"})
+    public static TreePath findOwningExecutable(HintContext ctx, TreePath from, boolean lambdaOrInitializer) {
+        Tree.Kind k = null;
+        
+        OUTER: while (from != null && !(TreeUtilities.CLASS_TREE_KINDS.contains(k = from.getLeaf().getKind()))) {
+            switch (k) {
+                case METHOD:
+                    break OUTER;
+                case LAMBDA_EXPRESSION:
+                    return lambdaOrInitializer ? from : null;
+                case BLOCK: {
+                    TreePath par = from.getParentPath();
+                    Tree l = par.getLeaf();
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(l.getKind())) {
+                        return lambdaOrInitializer ? from : null;
+                    }
+                }
+            }
             from = from.getParentPath();
         }
-
-        if (from != null && from.getLeaf().getKind() == Kind.METHOD) {
-            return from;
-        }
-
-        return null;
+        return (from == null || k != Kind.METHOD) ?
+                null : from;
     }
-    
+
     /**
      * Finds the top-level block or expression that contains the 'from' path.
      * The result could be a 
@@ -1009,7 +1035,7 @@ public class Utilities {
     }
 
     public static boolean isInConstructor(HintContext ctx) {
-        TreePath method = findEnclosingMethodOrConstructor(ctx, ctx.getPath());
+        TreePath method = findOwningExecutable(ctx, ctx.getPath(), false);
         if (method == null) return false;
         Element enclosingMethodElement = ctx.getInfo().getTrees().getElement(method);
         return (enclosingMethodElement != null &&
