@@ -142,7 +142,7 @@ public class MenuProfileActionsCheck extends NbTestCase {
         if (errors.length() > 0) {
             fail(errors.toString());
         }
-        if (all < 1) {	// temporary workaround until "Profile/Attach to external process" is added to ergonomics menu
+        if (all < 3) {
             fail("Not enough suitable files found under profiler menu: " + all);
         }
     }
