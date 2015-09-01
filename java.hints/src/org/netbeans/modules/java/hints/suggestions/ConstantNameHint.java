@@ -97,6 +97,14 @@ public class ConstantNameHint {
     static final int DEFAULT_MAX_LENGTH = 35;
     static final boolean DEFAULT_CHECK_ONLY_IMMUTABLES = true;
     
+    static final Set<String> IGNORE_CONSTANT_NAMES = new HashSet<>();
+    
+    static {
+        // java serialization constants
+        IGNORE_CONSTANT_NAMES.add("serialVersionUID"); // NOI18N
+        IGNORE_CONSTANT_NAMES.add("serialPersistentFields"); // NOI18N
+    }
+    
     @NbBundle.Messages({
         "# {0} - minimum constant name length",
         "ERR_ConstantNameMinLength=Constant name should be at least {0} characters long",
@@ -135,6 +143,10 @@ public class ConstantNameHint {
             if (!mods.contains(Modifier.FINAL) || !mods.contains(Modifier.STATIC)) {
                 return null;
             }
+        }
+        // ignore specification-defined fields, althgough their names may not satisfy the check
+        if (IGNORE_CONSTANT_NAMES.contains(vt.getName().toString())) {
+            return null;
         }
         Preferences prefs = ctx.getPreferences();
         

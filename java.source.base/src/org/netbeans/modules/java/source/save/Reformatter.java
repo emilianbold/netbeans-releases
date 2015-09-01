@@ -2809,7 +2809,7 @@ public class Reformatter implements ReformatTask {
             if (cnt < 0)
                 newline();
             else
-                spaces(cnt, true);
+                spaces(cnt);
             scan(node.getStatement(), p);
             indent = old;
             return true;

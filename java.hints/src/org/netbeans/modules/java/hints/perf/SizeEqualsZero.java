@@ -131,7 +131,7 @@ public class SizeEqualsZero {
         }
         
         // #247190: check that the replacement is NOT done in the isEmpty method of the target type itself
-        TreePath enclMethod = org.netbeans.modules.java.hints.errors.Utilities.findEnclosingMethodOrConstructor(ctx.getPath());
+        TreePath enclMethod = org.netbeans.modules.java.hints.errors.Utilities.findOwningExecutable(ctx, ctx.getPath(), false);
         if (enclMethod != null) {
             Element enclMethodEl = ctx.getInfo().getTrees().getElement(enclMethod);
             if (enclMethodEl == isEmptyFound) {

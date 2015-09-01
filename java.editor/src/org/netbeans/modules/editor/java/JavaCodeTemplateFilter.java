@@ -158,7 +158,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                                 sp = controller.getTrees().getSourcePositions();
                                                 startPos = (int)sp.getStartPosition(controller.getCompilationUnit(), tree);
                                                 String text = controller.getText().substring(startPos, startOffset);
-                                                if (!text.endsWith(")")) {
+                                                if (!text.trim().endsWith(")")) {
                                                     treeKindCtx = null;
                                                 }
                                         }
