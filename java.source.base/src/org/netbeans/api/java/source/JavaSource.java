@@ -285,7 +285,11 @@ public final class JavaSource {
                     return null;
                 }
                 try {
-                    js = new JavaSource (info,fileObject,root);
+                    Source classSource = Source.create(fileObject);
+                    // avoid creation for invalid class files
+                    if (classSource != null) {
+                        js = new JavaSource (info, fileObject, classSource, root);
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
@@ -369,12 +373,14 @@ public final class JavaSource {
      */
     private JavaSource (final @NonNull ClasspathInfo info,
                         final @NonNull FileObject classFileObject,
+                        final @NonNull Source classSource,
                         final @NonNull FileObject root) throws IOException {
         assert info != null;
         assert classFileObject != null;
+        assert classSource != null;
         assert root != null;
         this.files = Collections.<FileObject>singletonList(classFileObject);
-        this.sources = Collections.<Source>singletonList(Source.create(classFileObject));
+        this.sources = Collections.<Source>singletonList(classSource);
         this.classpathInfo =  info;
     }
        
