@@ -108,6 +108,10 @@ public class VarValuesLoader {
             return value;
         }
     }
+
+    public void updateValue(Variable var, V8Value evalVal) {
+        var.setValue(evalVal);
+    }
     
     private final class Loader implements Runnable {
 
