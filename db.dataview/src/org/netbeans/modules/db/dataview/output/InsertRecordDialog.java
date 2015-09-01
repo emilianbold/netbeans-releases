@@ -53,9 +53,11 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -87,7 +89,6 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
@@ -339,7 +340,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         dispose();
     }
 
-    public class TableListener implements TableModelListener {
+    private class TableListener implements TableModelListener {
 
         @Override
         public void tableChanged(TableModelEvent e) {
@@ -405,8 +406,13 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                             insertRecordTableUI.getModel().removeRow(0);
                         }
                     }
-                } catch (InterruptedException | ExecutionException ex) {
+                } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
+                } catch (ExecutionException ex) {
+                    LOG.log(Level.INFO, ex.getCause().getLocalizedMessage(), ex);
+                    DialogDisplayer.getDefault().notifyLater(
+                            new NotifyDescriptor.Message(
+                                    ex.getCause().getLocalizedMessage()));
                 }
             }
         }.execute();
@@ -607,7 +613,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     }
                 }
             }
-        } catch (Exception ex) {
+        } catch (UnsupportedFlavorException | IOException | RuntimeException ex) {
             LOG.log(Level.INFO, "Failed to paste the contents ", ex);
         }
     }
