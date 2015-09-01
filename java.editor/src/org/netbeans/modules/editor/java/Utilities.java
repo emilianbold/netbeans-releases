@@ -478,7 +478,8 @@ public final class Utilities {
             return false;
         }
         TreePath parentPath = path.getParentPath();
-        if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) && parentPath.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT && !TreeUtilities.CLASS_TREE_KINDS.contains(parentPath.getLeaf().getKind())) {
+        if ((TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) || path.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) && 
+            parentPath.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT && !TreeUtilities.CLASS_TREE_KINDS.contains(parentPath.getLeaf().getKind())) {
             return true;
         }
         return inAnonymousOrLocalClass(parentPath);
