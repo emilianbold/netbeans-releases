@@ -383,7 +383,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
         if (node == ROOT) {
             return "";
-        } else if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
+        } else if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID) ||
+                   Constants.LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
             if (node instanceof Variable) {
                 Variable var = (Variable) node;
                 try {
