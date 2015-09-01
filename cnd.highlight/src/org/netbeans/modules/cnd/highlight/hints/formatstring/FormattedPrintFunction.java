@@ -64,7 +64,16 @@ class FormattedPrintFunction {
     private final ArrayList<Parameter> parameters;
     private final String formatString;
     private final int offset;
-    private static boolean STRICT_TYPE_CHECKS = false;
+    private static final boolean STRICT_TYPE_CHECKS;
+    
+    static {
+        String doStrictCheck = System.getProperty("printf.check.strict"); //NOI18N
+        if (doStrictCheck != null) {
+            STRICT_TYPE_CHECKS = Boolean.parseBoolean(doStrictCheck);
+        } else {
+            STRICT_TYPE_CHECKS = false;
+        }
+    }
     
     public FormattedPrintFunction(CsmFile file, int offset, String formatString, ArrayList<Parameter> parameters) {
         this.file = file;
@@ -223,7 +232,9 @@ class FormattedPrintFunction {
                                          ,handler);
 
         if (handler.type != null) {
-            if (handler.type.getClassifier().getKind().equals(CsmDeclaration.Kind.TYPEDEF)) {
+            CsmClassifier clsf;
+            CsmDeclaration.Kind kind;
+            if ((clsf = handler.type.getClassifier()) != null && (kind = clsf.getKind()) != null && kind.equals(CsmDeclaration.Kind.TYPEDEF)) {
                 switch (handler.type.getCanonicalText().toString()) {
                     case "intmax_t":    case "intmax_t*":   // NOI18N
                     case "uintmax_t":   case "uintmax_t*":  // NOI18N
@@ -249,7 +260,7 @@ class FormattedPrintFunction {
         @Override
         public void process(CsmType resolvedType) {
             type = resolvedType;
-        }        
+        }
     }
     
     /*

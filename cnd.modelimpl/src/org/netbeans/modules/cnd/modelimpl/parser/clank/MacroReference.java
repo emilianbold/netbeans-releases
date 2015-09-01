@@ -72,19 +72,19 @@ public final class MacroReference extends OffsetableBase implements CsmReference
         if (CharSequenceUtilities.equals(ClankMacroDirective.BUILD_IN_FILE, directive.getFile())) {
             CharSequence body = findBody(startFile, macroName);
             if (body == null) {
-                if (CharSequences.comparator().compare("__FILE__", macroName) == 0) {
+                if (CharSequences.comparator().compare("__FILE__", macroName) == 0) { // NOI18N
                     //NOI18N
                     body = curFile.getAbsolutePath();
-                } else if (CharSequences.comparator().compare("__LINE__", macroName) == 0) {
+                } else if (CharSequences.comparator().compare("__LINE__", macroName) == 0) { // NOI18N
                     //NOI18N
                     body = "" + curFile.getLineColumn(startOffset)[0];
-                } else if (CharSequences.comparator().compare("__DATE__", macroName) == 0) {
+                } else if (CharSequences.comparator().compare("__DATE__", macroName) == 0) { // NOI18N
                     //NOI18N
                     body = "";
-                } else if (CharSequences.comparator().compare("__TIME__", macroName) == 0) {
+                } else if (CharSequences.comparator().compare("__TIME__", macroName) == 0) { // NOI18N
                     //NOI18N
                     body = "";
-                } else if (CharSequences.comparator().compare("__FUNCTION__", macroName) == 0) {
+                } else if (CharSequences.comparator().compare("__FUNCTION__", macroName) == 0) { // NOI18N
                     body = "";
                 } else {
                     // file was parsed without context?

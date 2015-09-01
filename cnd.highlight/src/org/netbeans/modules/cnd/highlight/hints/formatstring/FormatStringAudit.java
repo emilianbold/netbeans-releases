@@ -85,6 +85,17 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class FormatStringAudit extends AbstractCodeAudit {
     
+    private static final boolean CHECKS_ENABLED;
+    
+    static {
+        String checksEnabled = System.getProperty("printf.check.enable"); //NOI18N
+        if (checksEnabled != null) {
+            CHECKS_ENABLED = Boolean.parseBoolean(checksEnabled);
+        } else {
+            CHECKS_ENABLED = true;
+        }
+    }
+    
     private FormatStringAudit(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
     }
@@ -260,7 +271,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
         public AbstractCodeAudit create(AuditPreferences preferences) {
             String id = NbBundle.getMessage(FormatStringAudit.class, "FormatStringAudit.name");  // NOI18N
             String description = NbBundle.getMessage(FormatStringAudit.class, "FormatStringAudit.description");  // NOI18N
-            return new FormatStringAudit(id, id, description, "error", true, preferences);  // NOI18N
+            return new FormatStringAudit(id, id, description, "error", CHECKS_ENABLED, preferences);  // NOI18N
         }
     }
     

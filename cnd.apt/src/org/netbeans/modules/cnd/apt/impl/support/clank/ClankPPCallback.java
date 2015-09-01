@@ -510,15 +510,17 @@ public final class ClankPPCallback extends FileInfoCallback {
             if (macroInfo.isFunctionLike()) {
                 IdentifierInfo[] args = null;
                 args = macroInfo.$ArgumentList();
-                isVariadic = macroInfo.isVariadic();
-                params = new ArrayList<CharSequence>(args.length);
-                for (IdentifierInfo arg : args) {
-                    CharSequence argName = ClankToAPTUtils.getIdentifierText(arg);
-                    params.add(argName);
-                }
-                if (isVariadic) {
-                    assert params.size() > 0;
-                    params.set(params.size() - 1, APTUtils.VA_ARGS_TOKEN.getTextID());
+                if (args != null) { // the following macro will return null arguments: #define XXX() __xxx()
+                    isVariadic = macroInfo.isVariadic();
+                    params = new ArrayList<CharSequence>(args.length);
+                    for (IdentifierInfo arg : args) {
+                        CharSequence argName = ClankToAPTUtils.getIdentifierText(arg);
+                        params.add(argName);
+                    }
+                    if (isVariadic) {
+                        assert params.size() > 0;
+                        params.set(params.size() - 1, APTUtils.VA_ARGS_TOKEN.getTextID());
+                    }
                 }
             }
             CharSequence strName = MD.getName();
@@ -538,22 +540,22 @@ public final class ClankPPCallback extends FileInfoCallback {
             this.isDefined = true;
             this.macroNameTokenSourceLocation = -1;
             macroNameOffset = Unsigned.long2uint(begOffset);
-            if (std.strcmp(bufferName, "<built-in>") == 0) {
+            if (std.strcmp(bufferName, "<built-in>") == 0) { // NOI18N
                 // predefined system or user macros
                 this.fileOwnerName = null;
                 isBuiltIn = true;
-            } else if (std.strcmp(bufferName, "<invalid loc>") == 0) {
+            } else if (std.strcmp(bufferName, "<invalid loc>") == 0) { // NOI18N
                 // context dependent macros (__FILE__, __LINE__)
                 // TODO: separate from other built-in macros
                 this.fileOwnerName = null;
                 isBuiltIn = true;
-            } else if (std.strcmp(bufferName, "Unknown buffer") == 0) {
+            } else if (std.strcmp(bufferName, "Unknown buffer") == 0) { // NOI18N
                 assert false : "Unknown location of macro definition "+macroName;
                 this.fileOwnerName = null;
                 isBuiltIn = true;
             } else {
                 this.fileOwnerName = getFileOwnerNameImpl(bufferName);
-                if (!Utilities.isWindows() && CharSequences.indexOf(fileOwnerName, "/") < 0) {
+                if (!Utilities.isWindows() && CharSequences.indexOf(fileOwnerName, "/") < 0) { // NOI18N
                     CndUtils.assertTrueInConsole(false, "Strange fileOwnerName: '" + fileOwnerName + "");
                 }
                 isBuiltIn = false;
