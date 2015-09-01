@@ -1016,7 +1016,7 @@ public class Reformatter implements ReformatTask {
                                     spaces(cs.spaceAroundAssignOps() ? 1 : 0);
                                 scan(init, p);
                             } else {
-                                wrapTree(cs.wrapAssignOps(), alignIndent, cs.spaceAroundAssignOps() ? 1 : 0, init);
+                                wrapTree(cs.wrapAssignOps(), alignIndent, !containedNewLine && cs.spaceAroundAssignOps() ? 1 : 0, init);
                             }
                         } else {
                             wrapOperatorAndTree(cs.wrapAssignOps(), alignIndent, cs.spaceAroundAssignOps() ? 1 : 0, init);
@@ -2809,7 +2809,7 @@ public class Reformatter implements ReformatTask {
             if (cnt < 0)
                 newline();
             else
-                spaces(cnt, true);
+                spaces(cnt);
             scan(node.getStatement(), p);
             indent = old;
             return true;

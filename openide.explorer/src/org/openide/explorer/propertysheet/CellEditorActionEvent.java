@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,63 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.source.parsing;
 
-import com.sun.tools.javac.util.JCDiagnostic;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
-import java.util.ArrayList;
-import java.util.List;
-import javax.tools.Diagnostic;
-import org.netbeans.modules.java.source.parsing.CompilationInfoImpl.RichDiagnostic;
+package org.openide.explorer.propertysheet;
+
+import java.awt.event.ActionEvent;
 
 /**
  *
- * @author lahvac
+ * @author Martin
  */
-public class Hacks {
-    public static boolean isSyntaxError(Diagnostic<?> d) {
-        JCDiagnostic jcd = getJCDiagnostic(d);
-        if (jcd == null) {
-            return false;
-        }
-        return jcd.isFlagSet(DiagnosticFlag.SYNTAX);
+class CellEditorActionEvent extends ActionEvent {
+    
+    private final boolean committed;
+    
+    CellEditorActionEvent(Object source, int id, String command, boolean committed) {
+        super(source, id, command);
+        this.committed = committed;
     }
     
-    public static Diagnostic[] getNestedDiagnostics(Diagnostic<?> d) {
-        List<Diagnostic> diags = new ArrayList<>();
-        getNestedDiagnostics(d, diags);
-        if (diags.isEmpty()) {
-            return null;
-        }
-        return diags.toArray(new Diagnostic[diags.size()]);
-    }
-    
-    private static void getNestedDiagnostics(Diagnostic<?> d, List<Diagnostic> diags) {
-        JCDiagnostic jcd = getJCDiagnostic(d);
-        if (jcd == null) {
-            return;
-        }
-        Object[] args = jcd.getArgs();
-        if (args == null || args.length == 0) {
-            return;
-        }
-        for (Object o : args) {
-            if (o instanceof Diagnostic) {
-                diags.add((Diagnostic)o);
-                getNestedDiagnostics((Diagnostic)o, diags);
-                break;
-            }
-        }
-    }
-    
-    private static JCDiagnostic getJCDiagnostic(Diagnostic<?> d) {
-        if (d instanceof JCDiagnostic) {
-            return ((JCDiagnostic)d);
-        } else if (d instanceof RichDiagnostic && ((RichDiagnostic) d).getDelegate() instanceof JCDiagnostic) {
-            return (JCDiagnostic)((RichDiagnostic)d).getDelegate();
-        }
-        return null;
+    boolean isCommitted() {
+        return committed;
     }
 }

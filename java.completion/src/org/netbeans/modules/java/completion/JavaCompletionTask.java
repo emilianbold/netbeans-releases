@@ -5332,7 +5332,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         if (typeArgument.getKind() == TypeKind.WILDCARD) {
                             typeArgument = ((WildcardType)typeArgument).getExtendsBound();
                         }
-                        if (typeArgument.getKind() != TypeKind.TYPEVAR) {
+                        if (typeArgument == null || typeArgument.getKind() != TypeKind.TYPEVAR) {
                             return type;
                         }
                     }
