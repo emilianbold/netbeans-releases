@@ -232,7 +232,9 @@ class FormattedPrintFunction {
                                          ,handler);
 
         if (handler.type != null) {
-            if (handler.type.getClassifier().getKind().equals(CsmDeclaration.Kind.TYPEDEF)) {
+            CsmClassifier clsf;
+            CsmDeclaration.Kind kind;
+            if ((clsf = handler.type.getClassifier()) != null && (kind = clsf.getKind()) != null && kind.equals(CsmDeclaration.Kind.TYPEDEF)) {
                 switch (handler.type.getCanonicalText().toString()) {
                     case "intmax_t":    case "intmax_t*":   // NOI18N
                     case "uintmax_t":   case "uintmax_t*":  // NOI18N
@@ -258,7 +260,7 @@ class FormattedPrintFunction {
         @Override
         public void process(CsmType resolvedType) {
             type = resolvedType;
-        }        
+        }
     }
     
     /*
