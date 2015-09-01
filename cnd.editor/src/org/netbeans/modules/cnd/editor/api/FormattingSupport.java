@@ -166,6 +166,15 @@ public final class FormattingSupport {
         return textToFormat;
     }
 
+    /**
+     * Indent text fragment inserted into document in offset.
+     * Indented lines from caretOffset+1 to end of inserted text.
+     * 
+     * @param doc
+     * @param caretOffset
+     * @param textToFormat should be started with new line
+     * @return return indented text.
+     */
     public static CharSequence getIndentedText(Document doc, final int caretOffset, CharSequence textToFormat) {
         if (doc == null) {
             System.err.println("original document is not specified for getFormattedText");
@@ -201,7 +210,7 @@ public final class FormattingSupport {
                         @Override
                         public void run() {
                             try {
-                                fmt.reindent(caretOffset, fmtDoc.getLength());
+                                fmt.reindent(caretOffset+1, fmtDoc.getLength());
                             } catch (BadLocationException ex) {
                             }
                         }
