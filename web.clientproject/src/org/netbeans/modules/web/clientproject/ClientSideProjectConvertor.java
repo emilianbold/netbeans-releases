@@ -89,18 +89,19 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
     public Result isProject(FileObject projectDirectory) {
         assert projectDirectory != null;
         String displayName = null;
-        FileObject file = null;
+        String fileName = null;
         for (String jsonFile : JSON_FILES) {
-            file = projectDirectory.getFileObject(jsonFile);
+            FileObject file = projectDirectory.getFileObject(jsonFile);
             if (file == null) {
                 continue;
             }
+            fileName = file.getNameExt();
             displayName = getDisplayName(file);
             if (StringUtilities.hasText(displayName)) {
                 break;
             }
         }
-        assert file != null : projectDirectory;
+        assert fileName != null : getChildrenNames(projectDirectory);
         if (!StringUtilities.hasText(displayName)) {
             // should not happen often
             displayName = projectDirectory.getNameExt();
@@ -110,7 +111,7 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             ProjectConvertors.createFileEncodingQuery());
         return new Result(
                 transientLkp,
-                new Factory(projectDirectory, displayName, (Closeable) transientLkp, file.getNameExt()),
+                new Factory(projectDirectory, displayName, (Closeable) transientLkp, fileName),
                 displayName,
                 ImageUtilities.image2Icon(ImageUtilities.loadImage(ClientSideProject.HTML5_PROJECT_ICON)));
     }
@@ -129,6 +130,17 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             LOGGER.log(Level.INFO, jsonFile.getPath(), ex);
         }
         return null;
+    }
+
+    private Object getChildrenNames(FileObject projectDirectory) {
+        StringBuilder sb = new StringBuilder();
+        for (FileObject child : projectDirectory.getChildren()) {
+            if (sb.length() > 0) {
+                sb.append(", "); // NOI18N
+            }
+            sb.append(child.getNameExt());
+        }
+        return sb.toString();
     }
 
     //~ Inner classes

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.options;
+package org.netbeans.modules.javascript2.editor;
 
-import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.sass.SassCli;
-import org.netbeans.modules.css.prep.util.StringUtils;
-import org.netbeans.modules.web.common.api.ValidationResult;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-public final class CssPrepOptionsValidator {
-
-    private final ValidationResult result = new ValidationResult();
-
-
-    public ValidationResult getResult() {
-        return result;
+/**
+ *
+ * @author Petr Pisl
+ */
+public class JsCodeCompletionIssue244509Test extends JsCodeCompletionBase {
+    
+    public JsCodeCompletionIssue244509Test(String testName) {
+        super(testName);
+    }
+    
+    public void testIssue246060_01() throws Exception {
+        checkCompletion("testfiles/completion/issue244509/issue244509_test.js", "fn1().fn1_^prop3;", false);
+    }
+    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "testfiles/completion/issue244509")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 
-    public CssPrepOptionsValidator validateSassPath(String sassPath, boolean allowEmpty) {
-        if (allowEmpty
-                && !StringUtils.hasText(sassPath)) {
-            // no warning in dialog, project problems will catch it
-            return this;
-        }
-        String warning = SassCli.validate(sassPath);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("sass.path", warning)); // NOI18N
-        }
-        return this;
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
     }
-
-    public CssPrepOptionsValidator validateLessPath(String lessPath, boolean allowEmpty) {
-        if (allowEmpty
-                && !StringUtils.hasText(lessPath)) {
-            // no warning in dialog, project problems will catch it
-            return this;
-        }
-        String warning = LessExecutable.validate(lessPath);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("less.path", warning)); // NOI18N
-        }
-        return this;
-    }
-
 }
