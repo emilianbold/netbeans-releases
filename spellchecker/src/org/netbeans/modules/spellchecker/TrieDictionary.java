@@ -68,6 +68,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
 import org.openide.filesystems.FileObject;
@@ -76,6 +77,7 @@ import org.openide.modules.OnStop;
 import org.openide.modules.Places;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -509,7 +511,9 @@ public class TrieDictionary implements Dictionary {
             
             temp.delete();
             
+            ProgressHandle handle = ProgressHandle.createHandle(NbBundle.getMessage(TrieDictionary.class, "BuildingDictionary"));
             try {
+                handle.start();
                 ByteArray array = new ByteArray(temp);
 
                 constructTrie(array, sources);
@@ -536,6 +540,7 @@ public class TrieDictionary implements Dictionary {
                     LOG.log(Level.INFO, "Something went wrong during dictionary construction, the temporary file still exists - deleting.");
                     temp.delete();
                 }
+                handle.finish();
             }
         }
     }
