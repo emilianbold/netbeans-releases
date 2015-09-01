@@ -687,12 +687,15 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
      *
      * @param event The event to be fired
      */
-    private void fireActionPerformed() {
+    private void fireActionPerformed(boolean committed) {
         if (listenerList == null) {
             return;
         }
 
-        ActionEvent event = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, getActionCommand());
+        CellEditorActionEvent event = new CellEditorActionEvent(this,
+                                                                ActionEvent.ACTION_PERFORMED,
+                                                                getActionCommand(),
+                                                                committed);
 
         Object[] listeners = listenerList.getListenerList();
 
@@ -819,14 +822,16 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
 
             //if the value should get updated, do something
             if (isSuccess) {
+                boolean committed = false;
                 if ((getUpdatePolicy() == UPDATE_ON_CONFIRMATION) || (getUpdatePolicy() == UPDATE_ON_FOCUS_LOST)) { //XXX needed by property panel, but breaks API def.  Fine while this is not API.
                     commit();
+                    committed = true;
                 }
 
                 //JTextField style behavior - fire a change unless there are
                 //action listeners attached
                 if (hasActionListeners()) {
-                    fireActionPerformed();
+                    fireActionPerformed(committed);
                 } else {
                     //Try to close the dialog, if any on enter - this method
                     //will make sure we're really processing an enter-key event

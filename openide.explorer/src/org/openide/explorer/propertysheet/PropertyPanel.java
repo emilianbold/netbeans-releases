@@ -188,6 +188,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
     private ReusablePropertyModel reusableModel = new ReusablePropertyModel(reusableEnv);
     private final boolean isGtk = "GTK".equals(UIManager.getLookAndFeel().getID()) || //NOI18N
         (UIManager.getLookAndFeel().getClass().getSuperclass().getName().indexOf("Synth") != -1); //NOI18N
+    private boolean ignoreCommit;
 
     /** Creates new PropertyPanel backed by a dummy property  */
     public PropertyPanel() {
@@ -457,6 +458,9 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
      * @return <code>true</code> when the value was successfully written, <code>false</code> otherwise.
      */
     private boolean commit() {
+        if (ignoreCommit) {
+            return true;
+        }
         if (displayer instanceof PropertyDisplayer_Editable) {
             try {
                 return ((PropertyDisplayer_Editable) displayer).commit();
@@ -1289,7 +1293,17 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
             if( inner == e.getSource() && "enterPressed".equals(e.getActionCommand()) ) { //NOI18N
                 Object beanBridge = getClientProperty("beanBridgeIdentifier"); //NOI18N
                 if( null != beanBridge && beanBridge instanceof CellEditor ) {
-                    ((CellEditor)beanBridge).stopCellEditing();
+                    boolean wasCommitted = false;
+                    if (e instanceof CellEditorActionEvent) {
+                        // Prevent from a second commit on stop of cell editing:
+                        wasCommitted = ((CellEditorActionEvent) e).isCommitted();
+                    }
+                    try {
+                        ignoreCommit = wasCommitted;
+                        ((CellEditor)beanBridge).stopCellEditing();
+                    } finally {
+                        ignoreCommit = false;
+                    }
                 }
             }
         }
