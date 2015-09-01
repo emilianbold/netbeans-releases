@@ -67,7 +67,6 @@ import org.netbeans.lib.profiler.ui.components.JCheckTree;
 import org.netbeans.lib.profiler.ui.components.tree.CheckTreeNode;
 import org.netbeans.lib.profiler.utils.formatting.DefaultMethodNameFormatter;
 import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
-import org.netbeans.modules.profiler.api.GestureSubmitter;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.netbeans.modules.profiler.selector.api.nodes.*;
@@ -628,8 +627,6 @@ public class RootSelectorTree extends JPanel {
     private AtomicBoolean searchInProgress = new AtomicBoolean(false);
     
     private void findNode(final String searchText) {
-        GestureSubmitter.logRMSSearch(searchText);
-        
         sCont = new TreePathSearch((TreeNode)tree.getModel().getRoot(), searchText, ci);
         find(false);
     }

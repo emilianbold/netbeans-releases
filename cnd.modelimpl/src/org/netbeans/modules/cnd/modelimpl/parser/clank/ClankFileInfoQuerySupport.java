@@ -84,6 +84,9 @@ public class ClankFileInfoQuerySupport {
             } else {
                 TreeSet<CsmReference> result = new TreeSet<>(CsmOffsetable.OFFSET_COMPARATOR);
                 for (PreprocHandler handler : handlers) {
+                    if (interrupter.cancelled()) {
+                        break;
+                    }
                     // ask for concurrent entry if absent
                     ClankMacroUsagesProducer producer = ClankMacroUsagesProducer.createImpl(fileImpl, handler);
                     result.addAll(producer.getMacroUsages(interrupter));
