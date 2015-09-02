@@ -1223,7 +1223,7 @@ less_condition_operator
     ;
 
 less_selector_interpolation_exp :
-    less_selector_interpolation (less_selector_interpolation_exp | IDENT | MINUS)?
+    less_selector_interpolation (less_selector_interpolation_exp | ( IDENT | MINUS | DIMENSION | LENGTH)+)?
     ;
 
 less_selector_interpolation
@@ -1233,7 +1233,7 @@ less_selector_interpolation
 
 //SCSS interpolation expression
 sass_selector_interpolation_exp :
-    (IDENT | MINUS)? sass_interpolation_expression_var (sass_selector_interpolation_exp | ( IDENT | MINUS | DIMENSION)+)?
+    (IDENT | MINUS)? sass_interpolation_expression_var (sass_selector_interpolation_exp | ( IDENT | MINUS | DIMENSION | LENGTH)+)?
     ;
 
 sass_interpolation_expression_var
