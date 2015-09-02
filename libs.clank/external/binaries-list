@@ -1,6 +1,6 @@
-#changeset:   15581:e4f27e33b25f
+#changeset:   15587:a56d8c2def00
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Aug 31 21:37:57 2015 +0300
-#summary:     PERF: reuse tokens
-1A7D2553B800E2F5EC0DCAEF6B649983B59C63A4 clank_0.3.6.zip
+#date:        Wed Sep 02 11:58:02 2015 +0300
+#summary:     PERF: gather PP directives only if asked to
+EA85D9EFB5B97A0A6D5022B6647477C3A4380639 clank_0.3.6.zip
