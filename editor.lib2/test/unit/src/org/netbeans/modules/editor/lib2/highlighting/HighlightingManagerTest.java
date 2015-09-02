@@ -70,7 +70,9 @@ import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.ReleasableHighlightsContainer;
 import org.netbeans.spi.editor.highlighting.ZOrder;
+import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.util.Lookup;
 
 /**
@@ -351,7 +353,7 @@ public class HighlightingManagerTest extends NbTestCase {
         bagB.addHighlight(15, 25, attribsB);
         bagC.addHighlight(50, 60, attribsC);
         bagD.addHighlight(55, 65, attribsD);
-
+        
         SingletonLayerFactory layerA = new SingletonLayerFactory("layerA", ZOrder.DEFAULT_RACK, true, bagA);
         SingletonLayerFactory layerB = new SingletonLayerFactory("layerB", ZOrder.DEFAULT_RACK.forPosition(1), false, bagB);
         SingletonLayerFactory layerC = new SingletonLayerFactory("layerC", ZOrder.DEFAULT_RACK.forPosition(2), true, bagC);
@@ -634,6 +636,24 @@ public class HighlightingManagerTest extends NbTestCase {
             assertFalse("There should be no highlights", fixed.moveNext());
         }
     }
+
+    public void testReleaseLayers() {
+        final String mimeType = "text/plain";
+        TestReleaseHighlightsContainer releasableContainer = new TestReleaseHighlightsContainer();
+        SingletonLayerFactory releasableLayer = new SingletonLayerFactory(
+                "releasableLayer", ZOrder.DEFAULT_RACK.forPosition(1), true, releasableContainer);
+
+        MemoryMimeDataProvider.reset(null);
+        MemoryMimeDataProvider.addInstances(mimeType, releasableLayer);
+
+        JEditorPane pane = new JEditorPane(mimeType, "Hello");
+        HighlightingManager hm = HighlightingManager.getInstance(pane); // Ensure layers get created
+        hm.getHighlights(HighlightsLayerFilter.IDENTITY);
+        pane.setEditorKit(new SimpleKit(mimeType));
+        // Do not check against concrete release count since there are e.g. mime lookup rebuild notifications
+        // that lead to HM.rebuildAllLayers() which increases the releaseCount too.
+        assertTrue("Highlights container releasing not performed after pane.setEditorKit()", releasableContainer.releaseCount > 0);
+    }
     
     // test getting independent HCs for different JEditorPanes with the same mime type
     
@@ -870,4 +890,23 @@ public class HighlightingManagerTest extends NbTestCase {
             return filteredLayers;
         }
     };
+    
+    private static final class TestReleaseHighlightsContainer extends AbstractHighlightsContainer
+            implements ReleasableHighlightsContainer
+    {
+        
+        public int releaseCount;
+        
+        @Override
+        public HighlightsSequence getHighlights(int startOffset, int endOffset) {
+            return HighlightsSequence.EMPTY;
+        }
+
+        @Override
+        public void released() {
+            releaseCount++;
+        }
+        
+    }
+    
 }

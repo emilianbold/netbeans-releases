@@ -31,6 +31,8 @@
 package org.netbeans.modules.editor.bracesmatching;
 
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,7 +58,6 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.spi.editor.bracesmatching.BraceContext;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
@@ -254,6 +255,24 @@ public final class MasterMatcher {
     
     private MasterMatcher(JTextComponent component) {
         this.component = component;
+        component.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("document".equals(evt.getPropertyName())) {
+                    synchronized (LOCK) {
+                        // Cancel any pending task and clear the lastResult
+                        if (task != null) {
+                            task.cancel();
+                            task = null;
+                        }
+                        if (lastResult != null) {
+                            lastResult.cancel();
+                            lastResult = null; // Prevent memory leak upon document change
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private Object getAllowedDirection() {

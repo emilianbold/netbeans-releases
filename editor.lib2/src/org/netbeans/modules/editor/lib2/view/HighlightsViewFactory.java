@@ -108,8 +108,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private static final int RTL_CHAR_TYPE = 2;
     private static final int TAB_CHAR_TYPE = 3;
     
-    private final DocumentView docView;
-
     private final HighlightingManager highlightingManager;
 
     private HighlightsContainer highlightsContainer;
@@ -154,11 +152,13 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     
     public HighlightsViewFactory(View documentView) {
         super(documentView);
-        this.docView = (DocumentView) documentView;
         highlightingManager = HighlightingManager.getInstance(textComponent());
         highlightingManager.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) { // Layers in highlighting manager changed
+                if (isReleased()) {
+                    return;
+                }
                 notifyStaleCreation();
                 updateHighlightsContainer();
                 fireEvent(EditorViewFactoryChange.createList(0, document().getLength() + 1,
@@ -260,7 +260,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                     TextLayout origTextLayout = origHView.getTextLayout();
                     if (origTextLayout != null) {
                         if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
-                            String origText = docView.getTextLayoutVerifier().get(origTextLayout);
+                            String origText = documentView().getTextLayoutVerifier().get(origTextLayout);
                             if (origText != null) {
                                 CharSequence text = docText.subSequence(startOffset, startOffset + length);
                                 if (!CharSequenceUtilities.textEquals(text, origText)) {
@@ -360,6 +360,9 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public void highlightChanged(final HighlightsChangeEvent evt) {
+        if (isReleased()) {
+            return;
+        }
         // Since still many highlighting layers fire changes without document lock acquired
         // do an extra read lock so that view hierarchy surely operates under document lock
         document().render(new Runnable() {

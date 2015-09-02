@@ -610,6 +610,7 @@ public final class DocumentViewOp
         viewHierarchyImpl.setDocumentView(null);
         uninstallFromViewport();
         textComponent.removePropertyChangeListener(this);
+        viewUpdates.released();
         viewUpdates = null;
     }
     
