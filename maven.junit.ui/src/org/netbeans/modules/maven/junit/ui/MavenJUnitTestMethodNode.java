@@ -90,40 +90,42 @@ public class MavenJUnitTestMethodNode extends JUnitTestMethodNode {
         FileObject testFO = getProject().getLookup().lookup(LineConvertors.FileLocator.class).find(testcase.getLocation());
         if (testFO != null){
             Project suiteProject = FileOwnerQuery.getOwner(testFO);
-            ActionProvider actionProvider = suiteProject.getLookup().lookup(ActionProvider.class);
-            if (actionProvider != null){
-                boolean runSupported = false;
-                boolean debugSupported = false;
-                for (String action : actionProvider.getSupportedActions()) {
-                    if (!runSupported && action.equals(COMMAND_RUN_SINGLE_METHOD)) {
-                        runSupported = true;
-                        if (debugSupported) {
-                            break;
+            if (suiteProject != null) {
+                ActionProvider actionProvider = suiteProject.getLookup().lookup(ActionProvider.class);
+                if (actionProvider != null) {
+                    boolean runSupported = false;
+                    boolean debugSupported = false;
+                    for (String action : actionProvider.getSupportedActions()) {
+                        if (!runSupported && action.equals(COMMAND_RUN_SINGLE_METHOD)) {
+                            runSupported = true;
+                            if (debugSupported) {
+                                break;
+                            }
+                        }
+                        if (!debugSupported && action.equals(COMMAND_DEBUG_SINGLE_METHOD)) {
+                            debugSupported = true;
+                            if (runSupported) {
+                                break;
+                            }
                         }
                     }
-                    if (!debugSupported && action.equals(COMMAND_DEBUG_SINGLE_METHOD)) {
-                        debugSupported = true;
-                        if (runSupported) {
-                            break;
-                        }
-                    }
-                }
 
-                SingleMethod methodSpec = new SingleMethod(testFO, testcase.getName());
-                Lookup nodeContext = Lookups.singleton(methodSpec);
-                if (runSupported && actionProvider.isActionEnabled(COMMAND_RUN_SINGLE_METHOD,
-                                                                   nodeContext)) {
-                    actions.add(new TestMethodNodeAction(actionProvider,
-                                                         nodeContext,
-                                                         COMMAND_RUN_SINGLE_METHOD,
-                                                         Bundle.LBL_RerunTest()));
-                }
-                if (debugSupported && actionProvider.isActionEnabled(COMMAND_DEBUG_SINGLE_METHOD,
-                                                                     nodeContext)) {
-                    actions.add(new TestMethodNodeAction(actionProvider,
-                                                         nodeContext,
-                                                         COMMAND_DEBUG_SINGLE_METHOD,
-                                                         Bundle.LBL_DebugTest()));
+                    SingleMethod methodSpec = new SingleMethod(testFO, testcase.getName());
+                    Lookup nodeContext = Lookups.singleton(methodSpec);
+                    if (runSupported && actionProvider.isActionEnabled(COMMAND_RUN_SINGLE_METHOD,
+                            nodeContext)) {
+                        actions.add(new TestMethodNodeAction(actionProvider,
+                                nodeContext,
+                                COMMAND_RUN_SINGLE_METHOD,
+                                Bundle.LBL_RerunTest()));
+                    }
+                    if (debugSupported && actionProvider.isActionEnabled(COMMAND_DEBUG_SINGLE_METHOD,
+                            nodeContext)) {
+                        actions.add(new TestMethodNodeAction(actionProvider,
+                                nodeContext,
+                                COMMAND_DEBUG_SINGLE_METHOD,
+                                Bundle.LBL_DebugTest()));
+                    }
                 }
             }
         }
