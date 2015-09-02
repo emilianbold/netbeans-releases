@@ -181,6 +181,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.selenium2.webclient</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.browser.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -193,7 +201,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.94</specification-version>
+                        <specification-version>1.98</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

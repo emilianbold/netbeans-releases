@@ -142,6 +142,7 @@ public interface SiteTemplateImplementation {
         private String testFolder;
         private String testSeleniumFolder;
         private String jsTestingProvider;
+        private String seleniumTestingProvider;
 
 
         /**
@@ -244,6 +245,33 @@ public interface SiteTemplateImplementation {
             this.jsTestingProvider = jsTestingProvider;
             return this;
         }
+
+        /**
+         * Get Selenium testing provider (its identifier).
+         *
+         * @return Selenium testing provider (its identifier); can be
+         * {@code null} if there is no default Selenium testing provider
+         * @since 1.98
+         */
+        @CheckForNull
+        public String getSeleniumTestingProvider() {
+            return seleniumTestingProvider;
+    }
+
+        /**
+         * Set Selenium testing provider (its identifier), can be {@code null}
+         * if there is no default Selenium testing provider.
+         *
+         * @param seleniumTestingProvider Selenium testing provider (its
+         * identifier), can be {@code null} if there is no default Selenium
+         * testing provider
+         * @return itself
+         * @since 1.98
+         */
+        public ProjectProperties setSeleniumTestingProvider(String seleniumTestingProvider) {
+            this.seleniumTestingProvider = seleniumTestingProvider;
+            return this;
+}
 
     }
 

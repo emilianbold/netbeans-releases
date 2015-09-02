@@ -320,7 +320,8 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.selenium2.webclient</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.mocha</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.protractor</friend>
                 <friend>org.netbeans.modules.web.client.kit</friend>
                 <package>org.netbeans.modules.javascript.nodejs.api</package>
             </friend-packages>
