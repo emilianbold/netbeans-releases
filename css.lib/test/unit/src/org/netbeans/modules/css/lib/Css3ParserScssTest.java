@@ -1869,4 +1869,8 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     }
+
+    public void testMathExpWithUnits() {
+        assertParses("$fa-li-width: (30em / 14) !default;");
+    }
 }

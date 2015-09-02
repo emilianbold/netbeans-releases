@@ -141,6 +141,7 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
         private static final String TEST_FOLDER = "test"; // NOI18N
         private static final String TEST_SELENIUM_FOLDER = "e2e-tests"; // NOI18N
         private static final String JS_TESTING_PROVIDER = "Karma"; // NOI18N
+        private static final String SELENIUM_TESTING_PROVIDER = "Protractor"; // NOI18N
 
 
         @NbBundle.Messages({"SiteAngularJsSeed.name=AngularJS Seed",
@@ -157,7 +158,8 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
             projectProperties.setSiteRootFolder(SITE_ROOT_FOLDER)
                     .setTestFolder(TEST_FOLDER)
                     .setTestSeleniumFolder(TEST_SELENIUM_FOLDER)
-                    .setJsTestingProvider(JS_TESTING_PROVIDER);
+                    .setJsTestingProvider(JS_TESTING_PROVIDER)
+                    .setSeleniumTestingProvider(SELENIUM_TESTING_PROVIDER);
         }
 
         @Override
