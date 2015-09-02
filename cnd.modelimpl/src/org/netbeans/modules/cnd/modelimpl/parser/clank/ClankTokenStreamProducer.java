@@ -380,10 +380,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               }
             }
             return true;
-        }        
-
-        @Override
-        public void onMacroDefineDirective(ClankDriver.ClankFileInfo directiveOwner, ClankMacroDirective directive) {
         }
 
         private ClankDriver.APTTokenStreamCache getPPOut() {
@@ -468,10 +464,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             // gather when come back to interested file
             insideInterestedFile = (exitedTo == includedFileInfo);
             return true;
-        }
-
-        @Override
-        public void onMacroDefineDirective(ClankDriver.ClankFileInfo directiveOwner, ClankMacroDirective directive) {
         }
 
         private ClankDriver.APTTokenStreamCache getPPOut() {

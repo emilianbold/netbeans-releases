@@ -395,31 +395,6 @@ public final class ClankPPCallback extends FileInfoCallback {
     protected boolean needMacroExpansion() {
         return delegate.needMacroExpansion();
     }
-
-    @Override
-    protected void onMacroDefineDirective(FileInfo curStackElement, MacroDirectiveInfo macroDirective) {
-        // old model tracked only #define and not #undef
-        CharSequence macroName = ClankToAPTUtils.getTokenText(macroDirective.getMacroNameToken(), curStackElement.getPreprocessor(), tokenSpellBuffer);
-        List<CharSequence> params = null;
-        if (macroDirective.isDefined()) {
-            if (macroDirective.isFunctionLike()) {
-                IdentifierInfo[] arguments = macroDirective.getArguments();
-                params = new ArrayList<CharSequence>(arguments.length);
-                for (IdentifierInfo arg : arguments) {
-                    CharSequence argName = ClankToAPTUtils.getIdentifierText(arg);
-                    params.add(argName);
-                }
-                if (macroDirective.isVariadic()) {
-                    // replace the last param name by variadic marker
-                    assert params.size() > 0;
-                    params.set(params.size() - 1, APTUtils.VA_ARGS_TOKEN.getTextID());
-                }
-            }
-        }
-        ClankMacroDirectiveWrapper wrapper = new ClankMacroDirectiveWrapper(macroName, params, macroDirective, macroDirective.getMacroNameToken());
-        ClankFileInfoWrapper currentFileWrapper = includeStack.get(0);
-        delegate.onMacroDefineDirective(currentFileWrapper, wrapper);
-    }
     
     private static ClankFileInfoWrapper findRecursiveInclusion(ArrayList<ClankFileInfoWrapper> stack) {
         if (!stack.isEmpty()) {

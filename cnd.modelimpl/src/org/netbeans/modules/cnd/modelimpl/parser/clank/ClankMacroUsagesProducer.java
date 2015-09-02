@@ -319,10 +319,6 @@ public class ClankMacroUsagesProducer {
             return true;
         }
 
-        @Override
-        public void onMacroDefineDirective(ClankDriver.ClankFileInfo directiveOwner, ClankMacroDirective directive) {
-            }
-
         private ClankDriver.ClankFileInfo getFoundFileInfo() {
             return foundFileInfo;
         }
