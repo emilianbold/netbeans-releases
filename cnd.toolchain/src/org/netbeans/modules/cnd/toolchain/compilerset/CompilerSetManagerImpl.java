@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -111,7 +112,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     //private static final Object MASTER_LOCK = new Object();
 
     // CopyOnWriteArrayList because of IZ#175647
-    private List<CompilerSet> sets = new ArrayList<CompilerSet>();
+    private final CopyOnWriteArrayList<CompilerSet> sets;
 
     private final ExecutionEnvironment executionEnvironment;
     private volatile State state;
@@ -130,6 +131,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         //if (log.isLoggable(Level.FINEST)) {
         //    log.log(Level.FINEST, "CompilerSetManager CTOR A @" + System.identityHashCode(this) + ' ' + env + ' ' + initialize, new Exception()); //NOI18N
         //}
+        sets = new CopyOnWriteArrayList<CompilerSet>();
         executionEnvironment = env;
         requestProcessor = new RequestProcessor("Compiler set manager " + env, 40); //NOI18N
         if (initialize && !DISABLED) {
@@ -178,7 +180,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         //}
         this.executionEnvironment = env;
         requestProcessor = new RequestProcessor("Compiler set manager " + env, 4); //NOI18N
-        this.sets = sets;
+        this.sets =  new CopyOnWriteArrayList<CompilerSet>(sets);
         this.platform = platform;
         completeCompilerSets();
         if (DISABLED) {
@@ -903,12 +905,15 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         }
         completeSunStudioCompilerSet(getPlatform());
         setDefaltCompilerSet();
-        Collections.<CompilerSet>sort(sets, new Comparator<CompilerSet>(){
+        ArrayList<CompilerSet> toSort = new ArrayList<CompilerSet>(sets);
+        Collections.<CompilerSet>sort(toSort, new Comparator<CompilerSet>(){
             @Override
             public int compare(CompilerSet o1, CompilerSet o2) {
                 return o1.getName().compareTo(o2.getName());
             }
         });
+        sets.clear();
+        sets.addAll(toSort);
         if (waitReady) {
             completeCompilerSetsSettings(false);
         }
