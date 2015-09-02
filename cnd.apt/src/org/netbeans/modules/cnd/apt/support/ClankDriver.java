@@ -241,6 +241,7 @@ public final class ClankDriver {
        */
       boolean onExit(ClankFileInfo exitedFrom, ClankFileInfo exitedTo);
 
+      boolean needPPDirectives();
       boolean needTokens();
       boolean needSkippedRanges();
       boolean needMacroExpansion();
@@ -252,7 +253,6 @@ public final class ClankDriver {
        * @param directive
        */
       void onErrorDirective(ClankFileInfo directiveOwner, ClankErrorDirective directive);
-      void onMacroDefineDirective(ClankFileInfo directiveOwner, ClankMacroDirective directive);
     }
 
     public interface ClankFileInfo {
