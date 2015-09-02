@@ -52,6 +52,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
@@ -59,6 +61,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.javascript.nodejs.api.NodeJsSupport;
 import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.selenium2.api.Utils;
 import org.netbeans.modules.selenium2.webclient.api.RunInfo;
@@ -116,9 +119,9 @@ class ProtractorRunner {
             return;
         }
         
-        String node = Utilities.getNode(p);
+        String node = getNode(p);
         if(node == null) {
-            Utilities.openNodeSettings(p);
+            openNodeSettings(p);
             return;
         }
         
@@ -201,6 +204,28 @@ class ProtractorRunner {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+    
+    /**
+     * Gets file path (<b>possibly with parameters!</b>) representing <tt>node</tt> executable of the given project
+     * or {@code null} if not set/found. If the project is {@code null}, the default <tt>node</tt>
+     * path is returned (path set in IDE Options).
+     * @param project project to get <tt>node</tt> for, can be {@code null}
+     * @return file path (<b>possibly with parameters!</b>) representing <tt>node</tt> executable, can be {@code null} if not set/found
+     */
+    @CheckForNull
+    private static String getNode(@NullAllowed Project project) {
+        return NodeJsSupport.getInstance().getNode(project);
+    }
+    
+    /**
+     * Opens <tt>node</tt> settings for the given project - if project specific <tt>node</tt> is used
+     * (and node.js is enabled in the given project), Project Properties dialog is opened (otherwise
+     * IDE Options). If project is {@code null}, opens IDE Options.
+     * @param project project to be used, can be {@code null}
+     */
+    private static void openNodeSettings(@NullAllowed Project project) {
+        NodeJsSupport.getInstance().openNodeSettings(project);
     }
     
     private static void add2specs(FileObject fo, ArrayList<String> files2test) {

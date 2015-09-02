@@ -197,6 +197,13 @@ public class ClankMacroUsagesProducer {
         }
 
         @Override
+        public boolean needPPDirectives() {
+          // TODO: now return true to track Defines, but may be FileInfoCallback
+          // can do this for us when needMacroExpansion is true (rename to needMacroUsage?)
+          return this.insideInterestedFile; 
+        }
+
+        @Override
         public boolean needTokens() {
           return false;
         }
@@ -318,10 +325,6 @@ public class ClankMacroUsagesProducer {
             }
             return true;
         }
-
-        @Override
-        public void onMacroDefineDirective(ClankDriver.ClankFileInfo directiveOwner, ClankMacroDirective directive) {
-            }
 
         private ClankDriver.ClankFileInfo getFoundFileInfo() {
             return foundFileInfo;
