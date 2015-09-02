@@ -47,7 +47,6 @@ import java.util.*;
 import javax.lang.model.element.Name;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.guards.DocumentGuards;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -3406,14 +3405,17 @@ public class Reformatter implements ReformatTask {
                             if (lastIdx == 0 && count < 0 && after != 1) {
                                 count = 0;
                             }
+                            String ind;
                             if (pendingDiff != null) {
                                 pendingDiff.text = beforeCnt < 0 ? getIndent() : getNewlines(count) + getIndent();
                                 if (!pendingDiff.text.contentEquals(pendingText)) {
                                     addDiff(pendingDiff);
                                     pendingDiff = null;
                                 }
+                                ind = after == 3 ? SPACE : beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
+                            } else {
+                                ind = after == 3 ? SPACE : getNewlines(count) + getIndent();
                             }
-                            String ind = after == 3 ? SPACE : pendingDiff == null || beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();                          
                             if (!ind.contentEquals(text.substring(lastIdx)))
                                 addDiff(new Diff(offset + lastIdx, tokens.offset(), ind));
                             lastToken = null;
@@ -3497,14 +3499,17 @@ public class Reformatter implements ReformatTask {
                             if (lastIdx == 0 && count < 0 && after != 1) {
                                 count = 0;
                             }
+                            String indent;
                             if (pendingDiff != null) {
                                 pendingDiff.text = beforeCnt < 0 ? getIndent() : getNewlines(count) + getIndent();
                                 if (!pendingDiff.text.contentEquals(pendingText)) {
                                     addDiff(pendingDiff);
                                     pendingDiff = null;
                                 }
+                                indent = after == 3 ? SPACE : beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
+                            } else {
+                                indent = after == 3 ? SPACE : getNewlines(count) + getIndent();
                             }
-                            String indent = after == 3 ? SPACE : pendingDiff == null || beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
                             if (!indent.contentEquals(text.substring(lastIdx)))
                                 addDiff(new Diff(offset + lastIdx, tokens.offset(), indent));
                         } else {
