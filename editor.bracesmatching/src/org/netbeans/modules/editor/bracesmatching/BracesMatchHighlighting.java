@@ -67,6 +67,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
+import org.netbeans.spi.editor.highlighting.ReleasableHighlightsContainer;
 import org.netbeans.spi.editor.highlighting.ZOrder;
 
 /**
@@ -74,7 +75,7 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
  * @author Vita Stejskal
  */
 public class BracesMatchHighlighting extends AbstractHighlightsContainer 
-    implements ChangeListener, PropertyChangeListener, HighlightsChangeListener, DocumentListener 
+    implements ReleasableHighlightsContainer, ChangeListener, PropertyChangeListener, HighlightsChangeListener, DocumentListener 
 {
     private static final Logger LOG = Logger.getLogger(BracesMatchHighlighting.class.getName());
     
@@ -95,6 +96,8 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
     private final AttributeSet bracesMismatchColoring;
     private final AttributeSet bracesMatchMulticharColoring;
     private final AttributeSet bracesMismatchMulticharColoring;
+    
+    private boolean released;
 
     public BracesMatchHighlighting(JTextComponent component, Document document) {
         this.document = document;
@@ -220,6 +223,10 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
     // ------------------------------------------------
     
     private void refresh() {
+        if (released) {
+            return; // No longer notify the matcher since it would leak to memory leak of MasterMatcher.lastResult
+        }
+
         Caret c = this.caret;
         if (c == null) {
             bag.clear();
@@ -246,6 +253,14 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
             }
         }
         return mimeType;
+    }
+
+    @Override
+    public void released() {
+        released = true;
+//        component.removePropertyChangeListener(this);
+//        bag.removeHighlightsChangeListener(this);
+//        document.removeDocumentListener(this);
     }
     
     public static final class Factory implements HighlightsLayerFactory {
