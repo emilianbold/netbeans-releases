@@ -42,11 +42,8 @@
 package org.netbeans.modules.selenium2.webclient.api;
 
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.ui.api.TestRunnerNodeFactory;
-import org.netbeans.modules.javascript.nodejs.api.NodeJsSupport;
 import org.netbeans.modules.selenium2.webclient.spi.JumpToCallStackCallback;
 import org.netbeans.modules.selenium2.webclient.ui.SeleniumTestRunnerNodeFactory;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
@@ -60,39 +57,6 @@ import org.openide.filesystems.FileObject;
 public class Utilities {
 
     private Utilities() {
-    }
-    
-    /**
-     * Gets file path (<b>possibly with parameters!</b>) representing <tt>node</tt> executable of the given project
-     * or {@code null} if not set/found. If the project is {@code null}, the default <tt>node</tt>
-     * path is returned (path set in IDE Options).
-     * @param project project to get <tt>node</tt> for, can be {@code null}
-     * @return file path (<b>possibly with parameters!</b>) representing <tt>node</tt> executable, can be {@code null} if not set/found
-     * @since 1.2
-     */
-    @CheckForNull
-    public static String getNode(@NullAllowed Project project) {
-        return NodeJsSupport.getInstance().getNode(project);
-    }
-    
-    /**
-     * Checks whether node.js support is present and enabled in the given project.
-     * @param project project to be checked
-     * @return {@code true} if node.js support is present and enabled in the given project, {@code false} otherwise
-     * @since 1.2
-     */
-    public static boolean isEnabled(@NonNull Project project) {
-        return NodeJsSupport.getInstance().isEnabled(project);
-    }
-    /**
-     * Opens <tt>node</tt> settings for the given project - if project specific <tt>node</tt> is used
-     * (and node.js is enabled in the given project), Project Properties dialog is opened (otherwise
-     * IDE Options). If project is {@code null}, opens IDE Options.
-     * @param project project to be used, can be {@code null}
-     * @since 1.2
-     */
-    public static void openNodeSettings(@NullAllowed Project project) {
-        NodeJsSupport.getInstance().openNodeSettings(project);
     }
     
     @CheckForNull

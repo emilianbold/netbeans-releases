@@ -62,6 +62,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProvider;
+import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProviders;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.ant.AntServices;
@@ -205,6 +207,17 @@ public final class ClientSideProjectUtilities {
             LOGGER.log(Level.WARNING, "JS testing provider {0} was not found", jsTestingProviderIdentifier);
         } else {
             JsTestingProviders.getDefault().setJsTestingProvider(project, testingProvider);
+        }
+    }
+
+    public static void setSeleniumTestingProvider(@NonNull Project project, @NonNull String seleniumTestingProviderIdentifier) {
+        assert project != null;
+        assert seleniumTestingProviderIdentifier != null;
+        SeleniumTestingProvider testingProvider = SeleniumTestingProviders.getDefault().findSeleniumTestingProvider(seleniumTestingProviderIdentifier);
+        if (testingProvider == null) {
+            LOGGER.log(Level.WARNING, "Selenium testing provider {0} was not found", seleniumTestingProviderIdentifier);
+        } else {
+            SeleniumTestingProviders.getDefault().setSeleniumTestingProvider(project, testingProvider);
         }
     }
 
