@@ -115,7 +115,7 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
                 void performOperation(POMModel model) {
                     String groupID = "org.testng"; //NOI18N
                     String artifactID = "testng"; //NOI18N
-                    if (!ModelUtils.hasModelDependency(model, groupID, artifactID)) {
+                    if (!hasEffectiveDependency(groupID, artifactID, p.getLookup().lookup(NbMavenProject.class))) {
                         fixJUnitDependency(model, p.getLookup().lookup(NbMavenProject.class));
                         Dependency dep = ModelUtils.checkModelDependency(model, groupID, artifactID, true);
                         dep.setVersion("6.8.1"); //NOI18N
@@ -132,6 +132,22 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
                 }
             });
         }
+    }
+    
+    private boolean hasEffectiveDependency(String groupId, String artifactId, NbMavenProject prj) {
+        MavenProject mp = prj.getMavenProject();
+        List<org.apache.maven.model.Dependency> dl = new ArrayList<org.apache.maven.model.Dependency>();
+        dl.addAll(mp.getDependencies());
+        org.apache.maven.model.DependencyManagement dm = mp.getDependencyManagement();
+        if (dm != null) {
+            dl.addAll(dm.getDependencies());
+        }
+        for (org.apache.maven.model.Dependency d : dl) {
+            if (groupId.equals(d.getGroupId()) && artifactId.equals(d.getArtifactId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void fixJUnitDependency(POMModel model, NbMavenProject prj) {
