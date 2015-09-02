@@ -1,6 +1,6 @@
-#changeset:   15587:a56d8c2def00
+#changeset:   15591:270ef5886133
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Sep 02 11:58:02 2015 +0300
-#summary:     PERF: gather PP directives only if asked to
-EA85D9EFB5B97A0A6D5022B6647477C3A4380639 clank_0.3.6.zip
+#date:        Wed Sep 02 19:44:44 2015 +0300
+#summary:     PERF: use provider allocator
+89E6E05242185C94745D94AE0D56C923FEAD793E clank_0.3.6.zip
