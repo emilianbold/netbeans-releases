@@ -896,4 +896,8 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "  color: fade(@a; @b);\n"
                 + "}");
     }
+    
+    public void testMathExpWithUnits() {
+        assertParses("@fa-li-width: (30em / 14);");
+    }
 }

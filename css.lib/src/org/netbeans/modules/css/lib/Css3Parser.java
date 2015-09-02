@@ -1,4 +1,4 @@
-// $ANTLR 3.5.2 /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2015-06-19 15:30:25
+// $ANTLR 3.5.2 /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2015-09-02 12:56:41
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -241,20 +241,20 @@ public class Css3Parser extends DebugParser {
 		"invalidRule", "cp_expression_operator", "key_only", "sass_content", "imports", 
 		"key_or", "importItem", "mediaFeatureValue", "synpred36_Css3", "cp_expression", 
 		"combinator", "sass_while", "body", "less_condition_operator", "sass_selector_interpolation_exp", 
-		"less_import_types", "fnAttributeName", "synpred6_Css3", "sass_each_variables", 
-		"sass_control_block", "synpred14_Css3", "synpred8_Css3", "media", "sass_extend_only_selector", 
-		"synpred18_Css3", "synpred22_Css3", "margin_sym", "namespaces", "sass_nested_properties", 
-		"mediaBodyItem", "cp_propertyValue", "synpred7_Css3", "synpred26_Css3", 
-		"simpleSelectorSequence", "sass_function_name", "mediaQueryOperator", 
-		"elementSubsequent", "less_condition", "mediaType", "cp_mixin_name", "unaryOperator", 
-		"slAttributeValue", "sass_if", "sass_error", "pseudoPage", "sass_function_return", 
-		"synpred43_Css3", "less_fn_name", "synpred32_Css3", "cp_mixin_block", 
-		"cssClass", "synpred33_Css3", "namespacePrefixName", "less_when", "prio", 
-		"fnAttributes", "term", "synpred16_Css3", "synpred27_Css3", "propertyDeclaration", 
-		"declarations", "namespace", "cp_mixin_declaration", "cp_variable", "operator", 
-		"cp_variable_declaration", "synpred19_Css3", "hexColor", "synpred31_Css3", 
-		"at_rule", "bodyItem", "propertyValue", "mediaBody", "synpred10_Css3", 
-		"sass_control", "sass_function_declaration", "moz_document_function", 
+		"less_import_types", "fnAttributeName", "synpred6_Css3", "cp_variable", 
+		"sass_each_variables", "sass_control_block", "synpred14_Css3", "synpred8_Css3", 
+		"media", "sass_extend_only_selector", "synpred18_Css3", "synpred22_Css3", 
+		"margin_sym", "namespaces", "sass_nested_properties", "mediaBodyItem", 
+		"cp_propertyValue", "synpred7_Css3", "synpred26_Css3", "simpleSelectorSequence", 
+		"sass_function_name", "mediaQueryOperator", "elementSubsequent", "less_condition", 
+		"mediaType", "cp_mixin_name", "unaryOperator", "sass_map_name", "slAttributeValue", 
+		"sass_if", "sass_error", "pseudoPage", "sass_function_return", "synpred43_Css3", 
+		"less_fn_name", "synpred32_Css3", "cp_mixin_block", "cssClass", "synpred33_Css3", 
+		"namespacePrefixName", "less_when", "prio", "fnAttributes", "term", "synpred16_Css3", 
+		"synpred27_Css3", "propertyDeclaration", "declarations", "namespace", 
+		"cp_mixin_declaration", "operator", "sass_map", "synpred19_Css3", "hexColor", 
+		"synpred31_Css3", "at_rule", "bodyItem", "propertyValue", "mediaBody", 
+		"synpred10_Css3", "sass_control", "sass_function_declaration", "moz_document_function", 
 		"cp_math_expression_atom", "sass_for", "key_and", "resourceIdentifier", 
 		"syncToFollow", "slAttributeName", "fontFace", "synpred3_Css3", "synpred20_Css3", 
 		"mediaFeature", "selector", "cp_args_list", "syncToDeclarationsRule", 
@@ -263,20 +263,21 @@ public class Css3Parser extends DebugParser {
 		"sass_map_pair", "synpred34_Css3", "webkitKeyframeSelectors", "cssId", 
 		"vendorAtRule", "synpred35_Css3", "margin", "esPred", "cp_mixin_call_arg", 
 		"synpred42_Css3", "synpred41_Css3", "synpred15_Css3", "sass_control_expression", 
-		"synpred21_Css3", "sass_map_name", "sass_interpolation_expression_var", 
-		"synpred1_Css3", "pseudo", "fnAttribute", "webkitKeyframesBlock", "expression", 
-		"mediaQuery", "mediaExpression", "syncTo_SEMI", "fnAttributeValue", "mediaQueryList", 
+		"synpred21_Css3", "sass_interpolation_expression_var", "synpred1_Css3", 
+		"pseudo", "fnAttribute", "webkitKeyframesBlock", "expression", "mediaQuery", 
+		"mediaExpression", "syncTo_SEMI", "fnAttributeValue", "mediaQueryList", 
 		"cp_expression_atom", "synpred17_Css3", "selectorsGroup", "webkitKeyframes", 
-		"synpred2_Css3", "cp_math_expression", "rule", "sass_map", "synpred9_Css3", 
-		"syncTo_RBRACE", "cp_math_expressions", "synpred12_Css3", "charSet", "moz_document", 
-		"generic_at_rule", "synpred13_Css3", "elementName", "synpred25_Css3", 
-		"slAttribute", "sass_debug", "synpred4_Css3", "synpred28_Css3", "synpred23_Css3", 
-		"cp_arg", "synpred29_Css3", "synpred38_Css3", "declaration", "atRuleId", 
-		"synpred37_Css3", "less_selector_interpolation", "cp_term_symbol", "synpred11_Css3", 
-		"property", "expressionPredicate", "sass_extend", "typeSelector", "cp_mixin_call", 
-		"styleSheet", "less_function_in_condition", "less_mixin_guarded", "synpred40_Css3", 
-		"cp_expression_list", "synpred5_Css3", "charSetValue", "synpred39_Css3", 
-		"sass_map_pairs", "cp_mixin_call_args", "sass_else", "page"
+		"synpred2_Css3", "cp_math_expression", "rule", "cp_variable_declaration", 
+		"synpred9_Css3", "syncTo_RBRACE", "cp_math_expressions", "synpred12_Css3", 
+		"charSet", "moz_document", "generic_at_rule", "synpred13_Css3", "elementName", 
+		"synpred25_Css3", "slAttribute", "sass_debug", "synpred4_Css3", "synpred28_Css3", 
+		"synpred23_Css3", "cp_arg", "synpred29_Css3", "synpred38_Css3", "declaration", 
+		"atRuleId", "synpred37_Css3", "less_selector_interpolation", "cp_term_symbol", 
+		"synpred11_Css3", "property", "expressionPredicate", "sass_extend", "typeSelector", 
+		"cp_mixin_call", "styleSheet", "less_function_in_condition", "less_mixin_guarded", 
+		"synpred40_Css3", "cp_expression_list", "synpred5_Css3", "charSetValue", 
+		"synpred39_Css3", "sass_map_pairs", "cp_mixin_call_args", "sass_else", 
+		"page"
 	};
 
 	public static final boolean[] decisionCanBacktrack = new boolean[] {
@@ -5465,7 +5466,7 @@ public class Css3Parser extends DebugParser {
 
 
 	// $ANTLR start "bodyItem"
-	// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:479:1: bodyItem : ( ( SASS_MIXIN | ( ( ( DOT IDENT ) | HASH ) ( ws )? LPAREN (~ RPAREN )* RPAREN (~ ( LBRACE | RBRACE | SEMI ) )* LBRACE ) )=> cp_mixin_declaration | ( cp_mixin_call ( ws )? SEMI )=>{...}? cp_mixin_call | ( cp_mixin_call )=>{...}? cp_mixin_call | rule | ( sass_map )=> sass_map | ( cp_variable ( ws )? COLON )=> cp_variable_declaration | at_rule |{...}? importItem |{...}? sass_debug |{...}? sass_control |{...}? sass_function_declaration );
+	// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:479:1: bodyItem : ( ( SASS_MIXIN | ( ( ( DOT IDENT ) | HASH ) ( ws )? LPAREN (~ RPAREN )* RPAREN (~ ( LBRACE | RBRACE | SEMI ) )* LBRACE ) )=> cp_mixin_declaration | ( cp_mixin_call ( ws )? SEMI )=>{...}? cp_mixin_call | ( cp_mixin_call )=>{...}? cp_mixin_call | rule | ( cp_variable ( ws )? COLON )=> cp_variable_declaration | ( sass_map )=> sass_map | at_rule |{...}? importItem |{...}? sass_debug |{...}? sass_control |{...}? sass_function_declaration );
 	public final void bodyItem() throws RecognitionException {
 		try { dbg.enterRule(getGrammarFileName(), "bodyItem");
 		if ( getRuleLevel()==0 ) {dbg.commence();}
@@ -5473,7 +5474,7 @@ public class Css3Parser extends DebugParser {
 		dbg.location(479, 0);
 
 		try {
-			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:480:5: ( ( SASS_MIXIN | ( ( ( DOT IDENT ) | HASH ) ( ws )? LPAREN (~ RPAREN )* RPAREN (~ ( LBRACE | RBRACE | SEMI ) )* LBRACE ) )=> cp_mixin_declaration | ( cp_mixin_call ( ws )? SEMI )=>{...}? cp_mixin_call | ( cp_mixin_call )=>{...}? cp_mixin_call | rule | ( sass_map )=> sass_map | ( cp_variable ( ws )? COLON )=> cp_variable_declaration | at_rule |{...}? importItem |{...}? sass_debug |{...}? sass_control |{...}? sass_function_declaration )
+			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:480:5: ( ( SASS_MIXIN | ( ( ( DOT IDENT ) | HASH ) ( ws )? LPAREN (~ RPAREN )* RPAREN (~ ( LBRACE | RBRACE | SEMI ) )* LBRACE ) )=> cp_mixin_declaration | ( cp_mixin_call ( ws )? SEMI )=>{...}? cp_mixin_call | ( cp_mixin_call )=>{...}? cp_mixin_call | rule | ( cp_variable ( ws )? COLON )=> cp_variable_declaration | ( sass_map )=> sass_map | at_rule |{...}? importItem |{...}? sass_debug |{...}? sass_control |{...}? sass_function_declaration )
 			int alt75=11;
 			try { dbg.enterDecision(75, decisionCanBacktrack[75]);
 
@@ -6091,11 +6092,11 @@ public class Css3Parser extends DebugParser {
 				case 5 :
 					dbg.enterAlt(5);
 
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:486:11: ( sass_map )=> sass_map
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:486:11: ( cp_variable ( ws )? COLON )=> cp_variable_declaration
 					{
-					dbg.location(486,24);
-					pushFollow(FOLLOW_sass_map_in_bodyItem1452);
-					sass_map();
+					dbg.location(486,37);
+					pushFollow(FOLLOW_cp_variable_declaration_in_bodyItem1457);
+					cp_variable_declaration();
 					state._fsp--;
 					if (state.failed) return;
 					}
@@ -6103,11 +6104,11 @@ public class Css3Parser extends DebugParser {
 				case 6 :
 					dbg.enterAlt(6);
 
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:487:11: ( cp_variable ( ws )? COLON )=> cp_variable_declaration
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:487:11: ( sass_map )=> sass_map
 					{
-					dbg.location(487,37);
-					pushFollow(FOLLOW_cp_variable_declaration_in_bodyItem1474);
-					cp_variable_declaration();
+					dbg.location(487,24);
+					pushFollow(FOLLOW_sass_map_in_bodyItem1474);
+					sass_map();
 					state._fsp--;
 					if (state.failed) return;
 					}
@@ -27593,34 +27594,17 @@ public class Css3Parser extends DebugParser {
 
 	// $ANTLR start synpred14_Css3
 	public final void synpred14_Css3_fragment() throws RecognitionException {
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:486:11: ( sass_map )
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:486:11: ( cp_variable ( ws )? COLON )
 		dbg.enterAlt(1);
 
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:486:12: sass_map
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:486:12: cp_variable ( ws )? COLON
 		{
 		dbg.location(486,12);
-		pushFollow(FOLLOW_sass_map_in_synpred14_Css31448);
-		sass_map();
-		state._fsp--;
-		if (state.failed) return;
-		}
-
-	}
-	// $ANTLR end synpred14_Css3
-
-	// $ANTLR start synpred15_Css3
-	public final void synpred15_Css3_fragment() throws RecognitionException {
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:487:11: ( cp_variable ( ws )? COLON )
-		dbg.enterAlt(1);
-
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:487:12: cp_variable ( ws )? COLON
-		{
-		dbg.location(487,12);
-		pushFollow(FOLLOW_cp_variable_in_synpred15_Css31465);
+		pushFollow(FOLLOW_cp_variable_in_synpred14_Css31448);
 		cp_variable();
 		state._fsp--;
-		if (state.failed) return;dbg.location(487,24);
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:487:24: ( ws )?
+		if (state.failed) return;dbg.location(486,24);
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:486:24: ( ws )?
 		int alt425=2;
 		try { dbg.enterSubRule(425);
 		try { dbg.enterDecision(425, decisionCanBacktrack[425]);
@@ -27635,10 +27619,10 @@ public class Css3Parser extends DebugParser {
 			case 1 :
 				dbg.enterAlt(1);
 
-				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:487:24: ws
+				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:486:24: ws
 				{
-				dbg.location(487,24);
-				pushFollow(FOLLOW_ws_in_synpred15_Css31467);
+				dbg.location(486,24);
+				pushFollow(FOLLOW_ws_in_synpred14_Css31450);
 				ws();
 				state._fsp--;
 				if (state.failed) return;
@@ -27647,8 +27631,25 @@ public class Css3Parser extends DebugParser {
 
 		}
 		} finally {dbg.exitSubRule(425);}
-		dbg.location(487,28);
-		match(input,COLON,FOLLOW_COLON_in_synpred15_Css31470); if (state.failed) return;
+		dbg.location(486,28);
+		match(input,COLON,FOLLOW_COLON_in_synpred14_Css31453); if (state.failed) return;
+		}
+
+	}
+	// $ANTLR end synpred14_Css3
+
+	// $ANTLR start synpred15_Css3
+	public final void synpred15_Css3_fragment() throws RecognitionException {
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:487:11: ( sass_map )
+		dbg.enterAlt(1);
+
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:487:12: sass_map
+		{
+		dbg.location(487,12);
+		pushFollow(FOLLOW_sass_map_in_synpred15_Css31470);
+		sass_map();
+		state._fsp--;
+		if (state.failed) return;
 		}
 
 	}
@@ -35732,8 +35733,8 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_cp_mixin_call_in_bodyItem1407 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_mixin_call_in_bodyItem1426 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_rule_in_bodyItem1435 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_sass_map_in_bodyItem1452 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_variable_declaration_in_bodyItem1474 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_cp_variable_declaration_in_bodyItem1457 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_sass_map_in_bodyItem1474 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_at_rule_in_bodyItem1486 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_importItem_in_bodyItem1509 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_debug_in_bodyItem1523 = new BitSet(new long[]{0x0000000000000002L});
@@ -36445,10 +36446,10 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_ws_in_synpred12_Css31398 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
 	public static final BitSet FOLLOW_SEMI_in_synpred12_Css31401 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_mixin_call_in_synpred13_Css31420 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_sass_map_in_synpred14_Css31448 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_variable_in_synpred15_Css31465 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000040000L});
-	public static final BitSet FOLLOW_ws_in_synpred15_Css31467 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_synpred15_Css31470 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_cp_variable_in_synpred14_Css31448 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000040000L});
+	public static final BitSet FOLLOW_ws_in_synpred14_Css31450 = new BitSet(new long[]{0x0000000000080000L});
+	public static final BitSet FOLLOW_COLON_in_synpred14_Css31453 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_sass_map_in_synpred15_Css31470 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_ws_in_synpred16_Css32671 = new BitSet(new long[]{0x0000000000100000L});
 	public static final BitSet FOLLOW_COMMA_in_synpred16_Css32674 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_variable_declaration_in_synpred17_Css33043 = new BitSet(new long[]{0x0000000000000002L});

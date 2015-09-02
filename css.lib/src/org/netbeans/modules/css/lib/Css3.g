@@ -483,8 +483,8 @@ bodyItem
         | (cp_mixin_call ws? SEMI)=> {isLessSource()}? cp_mixin_call
         | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call
     	| rule
-        | (sass_map)=> sass_map
         | (cp_variable ws? COLON)=> cp_variable_declaration
+        | (sass_map)=> sass_map
         | at_rule
         //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
         | {isCssPreprocessorSource()}? importItem
