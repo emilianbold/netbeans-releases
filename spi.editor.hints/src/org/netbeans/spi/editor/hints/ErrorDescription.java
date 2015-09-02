@@ -81,6 +81,10 @@ public final class ErrorDescription {
         this.file        = file;
     }
     
+    /**
+     * The constructor is intentionally not public. Use 
+     * {@link ErrorDescriptionFactory} when you need an instance of this class.
+     */
     ErrorDescription(FileObject file, String id, String description, CharSequence details, Severity severity, String customType, LazyFixList fixes, PositionBounds span) {
         this.id = id;
         this.description = description;
@@ -125,6 +129,10 @@ public final class ErrorDescription {
         return severity;
     }
     
+    /**
+     * The custom type is an annotation type provided for particular error
+     * @return custom annotation type
+     */
     public String getCustomType() {
         return customType;
     }

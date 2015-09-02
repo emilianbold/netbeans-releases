@@ -294,7 +294,7 @@ public class ErrorDescriptionFactory {
      * @param id an optional ID of the {@link ErrorDescription}. Should represent a "type" of an error/warning.
      *           It is recommended that providers prefix the ID with their unique prefix.
      * @param severity the desired {@link Severity}
-     * @param customType custom {@link Severity}
+     * @param customType custom annotation type
      * @param description the text of the error/warning
      * @param details optional "more details" describing the error/warning
      * @param fixes a collection of {@link Fix}es that should be shown for the error/warning
