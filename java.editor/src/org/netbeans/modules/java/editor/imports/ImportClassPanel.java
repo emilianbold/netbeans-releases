@@ -205,7 +205,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
     private void listMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listMouseReleased
         importClass( 
                 getSelected(), 
-                (evt.getModifiers() & InputEvent.ALT_MASK) > 0,
+                (evt.getModifiers() & (org.openide.util.Utilities.isMac() ? InputEvent.META_MASK : InputEvent.ALT_MASK)) > 0,
                 (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0);
     }//GEN-LAST:event_listMouseReleased
 
@@ -215,7 +215,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
              ks.getKeyCode() == KeyEvent.VK_SPACE ) {
             importClass( 
                     getSelected(),
-                    (evt.getModifiers() & InputEvent.ALT_MASK) > 0,
+                    (evt.getModifiers() & (org.openide.util.Utilities.isMac() ? InputEvent.META_MASK : InputEvent.ALT_MASK)) > 0,
                     (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0);
         }
     }//GEN-LAST:event_listKeyReleased
