@@ -69,6 +69,7 @@ import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
+import org.netbeans.spi.editor.highlighting.ReleasableHighlightsContainer;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -382,6 +383,8 @@ public final class HighlightingManager {
             if (inRebuildAllLayers) {
                 return;
             }
+            DirectMergeContainer origTopHighlights;
+            DirectMergeContainer origBottomHighlights;
             inRebuildAllLayers = true;
             try {
                 Document doc = pane.getDocument();
@@ -418,7 +421,18 @@ public final class HighlightingManager {
                     sortedLayers = sl;
                 }
                 // Filter layers by pane's filter - retains order
+                List<? extends HighlightsLayer> origSortedLayers = sortedLayers;
                 sortedLayers = paneFilter.filterLayers(sortedLayers);
+                if (origSortedLayers.size() != sortedLayers.size()) { // Release filtered out layers
+                    origSortedLayers = new ArrayList<>(origSortedLayers);
+                    origSortedLayers.removeAll(sortedLayers);
+                    for (HighlightsLayer layer : origSortedLayers) {
+                        HighlightsContainer container = HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer).getContainer();
+                        if (container instanceof ReleasableHighlightsContainer) {
+                            ((ReleasableHighlightsContainer)container).released();
+                        }
+                    }
+                }
 
                 int topStartIndex = 0;
                 for (int i = 0; i < sortedLayers.size(); i++) {
@@ -454,12 +468,20 @@ public final class HighlightingManager {
                     topContainers = Collections.emptyList();
                 }
 
+                origBottomHighlights = bottomHighlights;
+                origTopHighlights = topHighlights;
                 bottomHighlights = new DirectMergeContainer(bottomContainers.toArray(
                         new HighlightsContainer[bottomContainers.size()]));
                 topHighlights = new DirectMergeContainer(topContainers.toArray(
                         new HighlightsContainer[topContainers.size()]));
             } finally {
                 inRebuildAllLayers = false;
+            }
+            if (origBottomHighlights != null) {
+                origBottomHighlights.released();
+            }
+            if (origTopHighlights != null) {
+                origTopHighlights.released();
             }
             fireChangeListeners();
         }
