@@ -382,6 +382,11 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
+    protected boolean needPPDirectives() {
+        return delegate.needPPDirectives();
+    }
+
+    @Override
     protected boolean needTokens() {
         return delegate.needTokens();
     }

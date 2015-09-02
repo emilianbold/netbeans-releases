@@ -228,13 +228,18 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
         @Override
+        public boolean needPPDirectives() {
+            return needTokens();
+        }
+
+        @Override
         public boolean needTokens() {
-          return this.insideInterestedFile || true;
+          return /*this.insideInterestedFile || */true;
         }
 
         @Override
         public boolean needSkippedRanges() {
-          return this.insideInterestedFile || true;
+          return needTokens();
         }
 
         @Override
@@ -248,7 +253,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public boolean needComments() {
-          return !filterOutComments;
+          return needTokens() && !filterOutComments;
         }
         
         @Override
@@ -407,6 +412,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public void onErrorDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankErrorDirective directive) {
+        }
+
+        @Override
+        public boolean needPPDirectives() {
+            return false;
         }
 
         @Override

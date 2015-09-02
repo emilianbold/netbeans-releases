@@ -241,6 +241,7 @@ public final class ClankDriver {
        */
       boolean onExit(ClankFileInfo exitedFrom, ClankFileInfo exitedTo);
 
+      boolean needPPDirectives();
       boolean needTokens();
       boolean needSkippedRanges();
       boolean needMacroExpansion();

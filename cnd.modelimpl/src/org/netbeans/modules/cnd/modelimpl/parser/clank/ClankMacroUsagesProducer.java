@@ -197,6 +197,11 @@ public class ClankMacroUsagesProducer {
         }
 
         @Override
+        public boolean needPPDirectives() {
+          return false;
+        }
+
+        @Override
         public boolean needTokens() {
           return false;
         }
