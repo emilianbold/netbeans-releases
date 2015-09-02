@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.options;
 
-import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.sass.SassCli;
-import org.netbeans.modules.css.prep.util.StringUtils;
-import org.netbeans.modules.web.common.api.ValidationResult;
+package org.openide.explorer.propertysheet;
 
-public final class CssPrepOptionsValidator {
+import java.awt.event.ActionEvent;
 
-    private final ValidationResult result = new ValidationResult();
-
-
-    public ValidationResult getResult() {
-        return result;
+/**
+ *
+ * @author Martin
+ */
+class CellEditorActionEvent extends ActionEvent {
+    
+    private final boolean committed;
+    
+    CellEditorActionEvent(Object source, int id, String command, boolean committed) {
+        super(source, id, command);
+        this.committed = committed;
     }
-
-    public CssPrepOptionsValidator validateSassPath(String sassPath, boolean allowEmpty) {
-        if (allowEmpty
-                && !StringUtils.hasText(sassPath)) {
-            // no warning in dialog, project problems will catch it
-            return this;
-        }
-        String warning = SassCli.validate(sassPath);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("sass.path", warning)); // NOI18N
-        }
-        return this;
+    
+    boolean isCommitted() {
+        return committed;
     }
-
-    public CssPrepOptionsValidator validateLessPath(String lessPath, boolean allowEmpty) {
-        if (allowEmpty
-                && !StringUtils.hasText(lessPath)) {
-            // no warning in dialog, project problems will catch it
-            return this;
-        }
-        String warning = LessExecutable.validate(lessPath);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("less.path", warning)); // NOI18N
-        }
-        return this;
-    }
-
 }

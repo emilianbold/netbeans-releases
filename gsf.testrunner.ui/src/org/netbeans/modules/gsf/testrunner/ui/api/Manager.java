@@ -90,7 +90,6 @@ import org.openide.windows.WindowManager;
  */
 public final class Manager {
 
-    private static final boolean ALWAYS_OPEN_TEST_RESULTS = Boolean.getBoolean("nb.tests.results.open"); // NOI18N
     /**
      * reference to the singleton of this class.
      * Strong references to the singleton are kept in instances of
@@ -441,7 +440,7 @@ public final class Manager {
                         final ResultWindow window = ResultWindow.getInstance();
                         Mode mode = WindowManager.getDefault().findMode(window);
                         boolean isInSlidingMode = mode != null && mode.getName().contains("SlidingSide");   //NOI18N
-                        if (window.isOpened() && (ALWAYS_OPEN_TEST_RESULTS || !isInSlidingMode)) {
+                        if (window.isOpened() && !isInSlidingMode) {
                             window.promote();
                         } else if (!window.isOpened() || (window.isOpened() && !window.isShowing() && isInSlidingMode)) {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/ui/resources/testResults.png"));   //NOI18N

@@ -45,6 +45,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -156,6 +157,7 @@ public class IntroduceMethodPlugin extends CsmModificationRefactoringPlugin {
     protected final void processFile(CsmFile csmFile, ModificationResult mr, AtomicReference<Problem> outProblem) {
         CsmFile containingFile = bodyResult.getFunction().getContainingFile();
         if (csmFile.equals(containingFile)) {
+            ArrayList<ModificationResult.Difference> diffs = new ArrayList<>();
             // definition
             FileObject fo = CsmUtilities.getFileObject(csmFile);
             CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
@@ -170,7 +172,7 @@ public class IntroduceMethodPlugin extends CsmModificationRefactoringPlugin {
                 message = NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_MethodDefinition"); // NOI18N
             }
             ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, startPos, endPos, "", method, message);
-            mr.addDifference(fo, diff);
+            diffs.add(diff);
 
             String methodCall =refactoring.getMethodCall();
             startPos = ces.createPositionRef(bodyResult.getSelectionFrom(), Position.Bias.Forward);
@@ -181,7 +183,7 @@ public class IntroduceMethodPlugin extends CsmModificationRefactoringPlugin {
                 message = NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_MethodCall"); // NOI18N
             }
             diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, startPos, endPos, "", methodCall, message);
-            mr.addDifference(fo, diff);
+            diffs.add(diff);
 
             if (bodyResult.getFunctionKind() == FunctionKind.MethodDefinition){
                 CsmFunction functionDeclaration = bodyResult.getFunctionDeclaration();
@@ -192,8 +194,17 @@ public class IntroduceMethodPlugin extends CsmModificationRefactoringPlugin {
                     endPos = ces.createPositionRef(refactoring.getDeclarationInsetOffset(), Position.Bias.Backward);
                     diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, startPos, endPos, "", decl,
                             NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_MethodDeclaration")); // NOI18N
-                    mr.addDifference(fo, diff);
+                    diffs.add(diff);
                 }
+            }
+            Collections.sort(diffs, new Comparator<ModificationResult.Difference>(){
+                @Override
+                public int compare(ModificationResult.Difference o1, ModificationResult.Difference o2) {
+                    return o1.getStartPosition().getOffset() - o2.getStartPosition().getOffset();
+                }
+            });
+            for (ModificationResult.Difference df : diffs) {
+                mr.addDifference(fo, df);
             }
         } else {
             containingFile = bodyResult.getFunctionDeclaration().getContainingFile();

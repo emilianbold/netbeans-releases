@@ -934,6 +934,17 @@ public class ModelUtils {
                                 if (returnTypesFromFrameworks != null && !returnTypesFromFrameworks.isEmpty()) {
                                     lastResolvedTypes.addAll(returnTypesFromFrameworks);
                                 }
+                                Collection<? extends IndexResult> findByFqn = jsIndex.findByFqn(name, JsIndex.TERMS_BASIC_INFO);
+                                for (Iterator<? extends IndexResult> iterator = findByFqn.iterator(); iterator.hasNext();) {
+                                    IndexedElement indexElement = IndexedElement.create(iterator.next());
+                                    if(indexElement instanceof IndexedElement.FunctionIndexedElement) {
+                                        IndexedElement.FunctionIndexedElement iFunction = (IndexedElement.FunctionIndexedElement)indexElement;
+                                        for (String type : iFunction.getReturnTypes()) {
+                                            lastResolvedTypes.add(new TypeUsageImpl(type, -1, false));
+                                        }
+                                    }
+                                    
+                                }
                             } else if ("@arr".equals(kind) && lObject instanceof JsArray) {
                                 lastResolvedTypes.addAll(((JsArray) lObject).getTypesInArray());
                             } else {
