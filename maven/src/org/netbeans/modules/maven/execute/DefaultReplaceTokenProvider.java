@@ -228,7 +228,9 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         } else {
             // not all of the selected files are under one source root, so maybe they were
             // selected from both source and test packages and "Test Files" action was invoked on them?
-            if (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName)) {
+            if (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
+                ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName)) 
+            {
                 HashSet<String> test = new HashSet<String>();
                 addSelectedFiles(false, fos, test);
                 addSelectedFiles(true, fos, test);
