@@ -56,6 +56,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.ReleasableHighlightsContainer;
 import org.openide.util.WeakListeners;
 
 /**
@@ -67,7 +68,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Miloslav Metelka
  */
-public final class DirectMergeContainer implements HighlightsContainer, HighlightsChangeListener {
+public final class DirectMergeContainer implements HighlightsContainer, HighlightsChangeListener, ReleasableHighlightsContainer {
     
     // -J-Dorg.netbeans.modules.editor.lib2.highlighting.DirectMergeContainer.level=FINE
     private static final Logger LOG = Logger.getLogger(DirectMergeContainer.class.getName());
@@ -165,6 +166,15 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
             sb.append('\n');
         }
         return sb.toString();
+    }
+
+    @Override
+    public void released() {
+        for (HighlightsContainer layer : layers) {
+            if (layer instanceof ReleasableHighlightsContainer) {
+                ((ReleasableHighlightsContainer) layer).released();
+            }
+        }
     }
     
     static final class HlSequence implements HighlightsSequenceEx {
