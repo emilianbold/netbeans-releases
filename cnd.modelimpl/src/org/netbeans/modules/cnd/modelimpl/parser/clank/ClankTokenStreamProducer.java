@@ -245,7 +245,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         @Override
         public boolean needMacroExpansion() {
             if (APTTraceFlags.DEFERRED_MACRO_USAGES) {
-                return false;
+                // FIXME: when macro expansion service tries to expand file
+                // it creates TS producer with request not to filter out comments
+                return !filterOutComments;
             } else {
                 return needTokens();
             }
