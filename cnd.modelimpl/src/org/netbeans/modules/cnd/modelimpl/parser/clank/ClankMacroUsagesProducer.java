@@ -198,7 +198,9 @@ public class ClankMacroUsagesProducer {
 
         @Override
         public boolean needPPDirectives() {
-          return false;
+          // TODO: now return true to track Defines, but may be FileInfoCallback
+          // can do this for us when needMacroExpansion is true (rename to needMacroUsage?)
+          return this.insideInterestedFile; 
         }
 
         @Override
