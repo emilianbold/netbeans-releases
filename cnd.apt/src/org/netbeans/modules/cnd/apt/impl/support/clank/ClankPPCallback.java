@@ -781,8 +781,8 @@ public final class ClankPPCallback extends FileInfoCallback {
         
         private void prepareConvertedGuard() {
             SmallVector<FileGuardInfo> guards = current.getFileGuardsInfo();
-            if (guards != null) {
-                assert !guards.empty();
+            assert guards != null;
+            if (!guards.empty()) {
                 // TODO: use the last for now
                 FileGuardInfo fileGuardInfo = guards.$at(guards.size()-1);
                 SourceManager srcMgr = current.getSourceManager();
