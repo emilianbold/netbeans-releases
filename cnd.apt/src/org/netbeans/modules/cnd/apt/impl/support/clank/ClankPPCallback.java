@@ -224,6 +224,9 @@ public final class ClankPPCallback extends FileInfoCallback {
         String searchPath = Casts.toCharSequence(directive.getSearchPath().data(), directive.getSearchPath().size()).toString();
         if (searchPath.startsWith(ClankFileSystemProviderImpl.RFS_PREFIX)) {            
             FileObject fo = CndFileSystemProvider.urlToFileObject(searchPath); //TODO: optimize!
+            if (fo == null) {
+                return null;
+            }
             searchPath = fo.getPath();
             try {
                 fs = fo.getFileSystem();
