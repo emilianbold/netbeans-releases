@@ -460,6 +460,7 @@ public abstract class Disassembly implements StateModel.Listener {
                 }
             } catch (IOException ex) {
                 //do nothing
+                LOG.log(Level.INFO, null, ex);
             }
         }
         
