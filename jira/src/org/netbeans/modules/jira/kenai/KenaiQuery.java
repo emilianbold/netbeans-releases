@@ -74,13 +74,13 @@ public class KenaiQuery extends JiraQuery {
     }
 
     @Override
-    protected void logQueryEvent(int count, boolean autoRefresh) {
+    protected void logQueryEvent(int count) {
         LogUtils.logQueryEvent(
             JiraConnector.getConnectorName(),
             getDisplayName(),
             count,
             true,
-            autoRefresh);
+            false);
     }
 
     @Override
