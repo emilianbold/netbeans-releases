@@ -173,7 +173,7 @@ class NonVirtualDestructor extends AbstractCodeAudit {
         }
     }
     
-    private static final class AddVirtualKeyvord implements Fix {
+    private static final class AddVirtualKeyvord extends SafeFix {
         private final BaseDocument doc;
         private final Position start;
 
@@ -188,7 +188,7 @@ class NonVirtualDestructor extends AbstractCodeAudit {
         }
 
         @Override
-        public ChangeInfo implement() throws Exception {
+        public ChangeInfo performFix() throws BadLocationException, Exception {
             String text = "virtual "; //NOI18N
             doc.insertString(start.getOffset(), text, null);
             return null;
