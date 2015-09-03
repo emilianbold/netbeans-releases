@@ -148,11 +148,13 @@ public class JiraQuery {
         return NbJiraIssue.getColumnDescriptors(repository);
     }
 
-    public void refresh() { // XXX what if already running! - cancel task
+    public void refresh(JiraFilter jiraFilter) {
+        assert jiraFilter != null;
+        this.jiraFilter = jiraFilter;
         refreshIntern();
     }
-
-    boolean refreshIntern() { // XXX what if already running! - cancel task
+    
+    private boolean refreshIntern() { // XXX what if already running! - cancel task
 
         assert jiraFilter != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
@@ -238,12 +240,6 @@ public class JiraQuery {
             count,
             false,
             false);
-    }
-
-    void refresh(JiraFilter jiraFilter) {
-        assert jiraFilter != null;
-        this.jiraFilter = jiraFilter;
-        refreshIntern();
     }
 
     public boolean canRemove() {
