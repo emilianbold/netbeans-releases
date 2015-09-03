@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.SystemMacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
@@ -96,8 +97,8 @@ public final class MacroReference extends OffsetableBase implements CsmReference
         } else {
             CsmFile targetFile = getTargetFile(curFile, directive.getFile());
             if (targetFile == null) {
-                assert false : "Directive " + directive + " has invalide file"; //NOI18N
-                targetFile = ((ProjectBase)curFile.getProject()).getUnresolvedFile();
+                CndUtils.assertTrue(false, "Invalid file in the directive: "+directive); //NOI18N
+                //targetFile = ((ProjectBase)curFile.getProject()).getUnresolvedFile();
             }
             referencedMacro = MacroImpl.create(macroName, directive.getParameters(), "", targetFile, directive.getDirectiveStartOffset(), directive.getDirectiveEndOffset(), CsmMacro.Kind.DEFINED); //NOI18N
         }
@@ -175,7 +176,7 @@ public final class MacroReference extends OffsetableBase implements CsmReference
     static CsmFile getTargetFile(FileImpl current, CharSequence macroContainerFile) {
         CsmFile target = null;
         if (current != null && macroContainerFile.length() > 0) {
-            FileSystem fs = null;
+            FileSystem fs;
             ProjectBase currentPrj = (ProjectBase)current.getProject();
             ProjectBase targetPrj = currentPrj.findFileProject(macroContainerFile, true);
             if (targetPrj != null) {
@@ -186,13 +187,7 @@ public final class MacroReference extends OffsetableBase implements CsmReference
             }
             // try full model?
             if (target == null) {
-                target = CsmModelAccessor.getModel().findFile(new FSPath(fs, macroContainerFile.toString()), true, false);
-            }
-            if (target == null && targetPrj != null) {
-                target = targetPrj.getUnresolvedFile();
-            }
-            if (target == null) {
-                target = currentPrj.getUnresolvedFile();
+                target = CsmModelAccessor.getModel().findFile(new FSPath(fs, macroContainerFile.toString()), false, false);
             }
         }
         return target;
