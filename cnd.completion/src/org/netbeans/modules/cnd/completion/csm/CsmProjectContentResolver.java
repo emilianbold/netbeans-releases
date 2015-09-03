@@ -1467,7 +1467,7 @@ public final class CsmProjectContentResolver {
           for (it = namespacesToSearchIn.iterator(); it.hasNext();) {
               CsmNamespace nestedNs = (CsmNamespace) it.next();
 
-              boolean goDeeper = (searchNestedUnnamedNamespaces && nestedNs.getName().length() == 0) || nestedNs.isInline();
+              boolean goDeeper = (searchNestedUnnamedNamespaces && nestedNs.getName().length() == 0) || isInlineNamespace(nestedNs);
 
               // we need nested namespaces only if they do not modify qualified path (they names are empty) or they are inlined
               if (goDeeper) {
@@ -1524,6 +1524,23 @@ public final class CsmProjectContentResolver {
                 }
             }
         }
+    }
+    
+    private boolean isInlineNamespace(CsmNamespace ns) {
+        if (ns != null && !ns.isGlobal()) {
+            if (ns.isInline()) {
+                return true;
+            }
+            if (libs != null && !libs.isEmpty()) {
+                for (CsmProject lib : libs) {
+                    CsmNamespace libNmsp = lib.findNamespace(ns.getQualifiedName());
+                    if (libNmsp != null && libNmsp.isInline()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static boolean isKindOf(CsmDeclaration.Kind kind, CsmDeclaration.Kind kinds[]) {
