@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.debugger.jpda.projects;
 
-import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.AbstractMap;
@@ -52,27 +51,24 @@ import org.openide.util.BaseUtilities;
 
 /**
  * A weak hash map, that automatically release entries as soon as they are freed by GC.
- * <p/>
- * Do not use many instances of this class, as every instance is creating it's own
- * listening thread. If many instances is to be used, this needs a rewrite to use
- * a single listening thread on a single ReferenceQueue.
  * 
  * @author Martin Entlicher
  */
+// TODO: Make it a public API.
 public final class WeakHashMapActive<K,V> extends AbstractMap<K,V> {
     
     private final ReferenceQueue<Object> queue;
-    private final Map<Reference<K>, V> map;
+    private final Map<KeyReference<K>, V> map;
     
     public WeakHashMapActive() {
         super();
-        map = new HashMap<Reference<K>, V>();
+        map = new HashMap<>();
         queue = BaseUtilities.activeReferenceQueue();
     }
     
     @Override
     public V put(K key, V value) {
-        Reference<K> rk = new KeyReference<K>(key, queue);
+        KeyReference<K> rk = new KeyReference<>(key, queue);
         synchronized (map) {
             return map.put(rk, value);
         }
@@ -80,7 +76,7 @@ public final class WeakHashMapActive<K,V> extends AbstractMap<K,V> {
 
     @Override
     public V get(Object key) {
-        Reference<Object> rk = new KeyReference<Object>(key, null);
+        KeyReference<Object> rk = new KeyReference<>(key, null);
         synchronized (map) {
             return map.get(rk);
         }
@@ -88,7 +84,7 @@ public final class WeakHashMapActive<K,V> extends AbstractMap<K,V> {
 
     @Override
     public V remove(Object key) {
-        Reference<Object> rk = new KeyReference<Object>(key, null);
+        KeyReference<Object> rk = new KeyReference<>(key, null);
         synchronized (map) {
             return map.remove(rk);
         }
