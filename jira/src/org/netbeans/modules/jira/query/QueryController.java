@@ -1145,19 +1145,11 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         });
     }
 
-    public void refresh(boolean synchronously) {
-        refresh(false, synchronously);
-    }
-    
-    public void autoRefresh() {
-        refresh(true, false);
-    }
-
     public void onRefresh() {
-        refresh(false, false);
+        refresh(false);
     }
 
-    private void refresh(final boolean autoRefresh, boolean synchronously) {
+    public void refresh(boolean synchronously) {
         Task t;
         synchronized(REFRESH_LOCK) {
             if(refreshTask == null) {
@@ -1165,7 +1157,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             } else {
                 refreshTask.cancel();
             }
-            t = refreshTask.post(autoRefresh);
+            t = refreshTask.post();
         }
         if(synchronously) {
             t.waitFinished();
@@ -1396,7 +1388,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         private ProgressHandle handle;
         private int counter;
         private Task task;
-        private boolean autoRefresh;
         private long progressMaxWorkunits;
         private int progressWorkunits;
 
@@ -1469,7 +1460,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 }
             });
             try {
-                query.refresh(getJiraFilter(), autoRefresh);
+                query.refresh(getJiraFilter());
             } finally {
                 EventQueue.invokeLater(new Runnable() {
                     @Override
@@ -1508,12 +1499,11 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             }
         }
 
-        Task post(boolean autoRefresh) {
+        Task post() {
             if(task != null) {
                 task.cancel();
             }
             task = rp.create(this);
-            this.autoRefresh = autoRefresh;
             task.schedule(0);
             return task;
         }
