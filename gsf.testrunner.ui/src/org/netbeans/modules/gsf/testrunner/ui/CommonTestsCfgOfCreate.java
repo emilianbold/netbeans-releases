@@ -604,7 +604,10 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             shouldShowClassToTestInfo = testCreatorConfiguration.showClassToTestInfo();
         }
         lblClassToTest.setVisible(shouldShowClassToTestInfo);
-        lblClassToTestValue.setVisible(shouldShowClassToTestInfo);
+        if(lblClassToTestValue != null) {
+            // single class/package was selected by the user
+            lblClassToTestValue.setVisible(shouldShowClassToTestInfo);
+        }
         return shouldShowClassToTestInfo;
     }
     
