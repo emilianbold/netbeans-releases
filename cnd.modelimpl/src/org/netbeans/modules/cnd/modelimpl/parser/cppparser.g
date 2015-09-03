@@ -275,9 +275,15 @@ tokens {
 
 {
     private CppParserAction action;
-    protected CPPParser(TokenStream stream, CppParserAction action) {
-        this(stream);
+    protected CPPParser(TokenStream stream, CppParserAction action, int initialBufferCapacity) {
+        this(stream, 2, initialBufferCapacity);
         this.action = action;
+    }
+
+    private CPPParser(TokenStream lexer, int k, int initialBufferCapacity) {
+      super(lexer, k, initialBufferCapacity);
+      tokenNames = _tokenNames;
+      astFactory = new ASTFactory(getTokenTypeToASTClassMap());
     }
 
     // Defines for flags passed to init methods

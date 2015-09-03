@@ -111,9 +111,13 @@ public abstract class APTWalker {
     ////////////////////////////////////////////////////////////////////////////
     // template methods to override by extensions 
 
-    protected abstract void onInclude(APT apt);
+    protected void onInclude(APT apt) {
+        curIncludeDirectiveFileIndex++;
+    }
 
-    protected abstract void onIncludeNext(APT apt);
+    protected void onIncludeNext(APT apt) {
+        curIncludeDirectiveFileIndex++;
+    }
         
     protected abstract void onDefine(APT apt);
     
@@ -256,7 +260,7 @@ public abstract class APTWalker {
     }
     
     protected final void pushState() {
-        visits.addLast(new WalkerState(curFile, curAPT, curWasInChild));
+        visits.addLast(new WalkerState(curFile, curAPT, curWasInChild, curIncludeDirectiveFileIndex));
     }
 
     protected void preInit() {}
@@ -269,6 +273,7 @@ public abstract class APTWalker {
         curFile = state.lastFile;
         curAPT = state.lastNode;
         curWasInChild = state.wasInChild;
+        curIncludeDirectiveFileIndex = state.curIncludeDirectiveFileIndex;
         return true;
     }
     
@@ -281,6 +286,7 @@ public abstract class APTWalker {
         curFile = root;
         curAPT = curFile.getFirstChild();
         curWasInChild = false;
+        curIncludeDirectiveFileIndex = 0;
         pushState();
     }    
     
@@ -398,6 +404,10 @@ public abstract class APTWalker {
         return curAPT;
     }
 
+    protected final int getCurIncludeDirectiveFileIndex() {
+        return curIncludeDirectiveFileIndex;
+    }
+
     protected final APTFile getRootFile() {
         return root;
     }
@@ -406,6 +416,7 @@ public abstract class APTWalker {
     private APTFile curFile;
     private APT curAPT;
     private boolean curWasInChild;
+    private int curIncludeDirectiveFileIndex;
     private LinkedList<TokenStream> tokens = new LinkedList<TokenStream>();
     private LinkedList<WalkerState> visits = new LinkedList<WalkerState>();
     
@@ -413,10 +424,12 @@ public abstract class APTWalker {
         private final APT lastNode;
         private final APTFile lastFile;
         private final boolean wasInChild;
-        private WalkerState(APTFile file, APT node, boolean wasInChildState) {
+        private final int curIncludeDirectiveFileIndex;
+        private WalkerState(APTFile file, APT node, boolean wasInChildState, int curIncludeDirectiveFileIndex) {
             this.lastFile = file;
             this.lastNode = node;
             this.wasInChild = wasInChildState;
+            this.curIncludeDirectiveFileIndex = curIncludeDirectiveFileIndex;
         }
     }     
 

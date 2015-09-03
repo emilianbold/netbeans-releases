@@ -60,6 +60,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     private JsObject parent;
     final private List<Occurrence> occurrences = new ArrayList<Occurrence>();
     final private NavigableMap<Integer, Collection<TypeUsage>> assignments = new TreeMap<Integer, Collection<TypeUsage>>();
+    final private Map<String, Integer>assignmentsReverse = new HashMap();
+    private int countOfAssignments = 0;
     final private boolean hasName;
     private Documentation documentation;
     protected JsElement.Kind kind;
@@ -231,12 +233,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
 
     public void addAssignment(Collection<TypeUsage> typeNames, int offset) {
-        Collection<TypeUsage> types = assignments.get(offset);
-        if (types == null) {
-            types = new ArrayList<TypeUsage>();
-            assignments.put(offset, types);
+        for(TypeUsage type: typeNames) {
+            addAssignment(type, offset);
         }
-        types.addAll(typeNames);
     }
 
     @Override
@@ -246,26 +245,50 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     @Override
     public void addAssignment(TypeUsage typeName, int offset) {
-        if (Type.UNDEFINED.equals(typeName) && assignments.size() > 0) {
+        if (Type.UNDEFINED.equals(typeName.getType()) && assignments.size() > 0) {
             // don't add undefined type, if there are already some types
             return;
         }
         Collection<TypeUsage> types = assignments.get(offset);
         if (types == null) {
+            // create always empty list, need to be counted for number of assignments.
             types = new ArrayList<TypeUsage>();
             assignments.put(offset, types);
         }
+        
+        Integer alreadyDefinedOffset = assignmentsReverse.get(typeName.getType());
+        if (alreadyDefinedOffset != null) {
+            // there is already assignment of this type. It's enough to store the
+            // assignment with the min offset
+            if(alreadyDefinedOffset <= offset) {
+                // do nothing, just remember the previous one
+                return;
+            } else {
+                // we need to replace the assignment with bigger offset
+                Collection<TypeUsage> typesToRemove = assignments.get(alreadyDefinedOffset);
+                for (TypeUsage type : typesToRemove) {
+                    if (type.getType().equals(typeName.getType())) {
+                        typesToRemove.remove(type);
+                        break;
+                    }
+                }
+            }
+        }
+        assignmentsReverse.put(typeName.getType(), offset);
         types.add(typeName);
     }
 
     @Override
     public Collection<? extends TypeUsage> getAssignmentForOffset(int offset) {
-        Collection<? extends TypeUsage> result = Collections.EMPTY_LIST;
+        List<? extends TypeUsage> result = new ArrayList();
         Map.Entry<Integer, Collection<TypeUsage>> found = assignments.floorEntry(offset);
-        if (found != null) {
-            result = new ArrayList(found.getValue());
+        int tmpOffset = offset;
+        while (found != null) {
+            result.addAll((Collection)found.getValue());
+            tmpOffset = found.getKey() - 1;
+            found = assignments.floorEntry(tmpOffset);
         }
-        if (result.isEmpty()) {
+//        if (result.isEmpty()) {
 //            Collection<TypeUsage> resolved = new HashSet();
 //            for(TypeUsage item : result) {
 //                TypeUsageImpl type = (TypeUsageImpl)item;
@@ -282,10 +305,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 //                // keep somthink in the assignments. 
 //                resolved.add(new TypeUsageImpl("Object", offset, true));
 //            }
-            Collection<TypeUsage> resolved = new HashSet();
-            //resolved.add(new TypeUsageImpl("Object", offset, true));
-            result = resolved;
-        }
+//            Collection<TypeUsage> resolved = new HashSet();
+//            //resolved.add(new TypeUsageImpl("Object", offset, true));
+//            result = resolved;
+//        }
 
         return result;
     }

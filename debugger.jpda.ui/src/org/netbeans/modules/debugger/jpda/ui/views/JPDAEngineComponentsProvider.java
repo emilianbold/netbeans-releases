@@ -50,6 +50,8 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.EngineComponentsProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -81,10 +83,29 @@ public class JPDAEngineComponentsProvider implements EngineComponentsProvider {
                     cid, isOpened(cid, true), isMinimized(cid)));
         }
         for (String cid : DBG_COMPONENTS_CLOSED) {
+            if ("classes".equals(cid) && !checkTCExist(cid)) {
+                // Ignore classes component that might not be present.
+                continue;
+            }
             components.add(EngineComponentsProvider.ComponentInfo.create(
                     cid, isOpened(cid, false), isMinimized(cid)));
         }
         return components;
+    }
+    
+    private static boolean checkTCExist(String name) {
+        String role = WindowManager.getDefault().getRole();
+        FileObject wsRoot = FileUtil.getConfigRoot().getFileObject("Windows2");
+        if (wsRoot == null) {
+            return false;
+        }
+        if (role != null) {
+            wsRoot = wsRoot.getFileObject("Roles/"+role);
+            if (wsRoot == null) {
+               return false;
+            }
+        }
+        return wsRoot.getFileObject("Components/"+name+".settings") != null;
     }
 
     private static boolean isOpened(String cid, boolean open) {

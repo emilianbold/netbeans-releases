@@ -107,6 +107,7 @@ public abstract class APTAbstractWalker extends APTWalker {
 
     @Override
     protected void onInclude(APT apt) {
+        super.onInclude(apt);
         if (getIncludeHandler() != null) {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startFileSystem, startPath);
             ResolvedPath resolvedPath = resolver.resolveInclude((APTInclude)apt, getMacroMap());
@@ -127,6 +128,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     
     @Override
     protected void onIncludeNext(APT apt) {
+        super.onIncludeNext(apt);
         if (getIncludeHandler() != null) {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startFileSystem, startPath); 
             ResolvedPath resolvedPath = resolver.resolveIncludeNext((APTIncludeNext)apt, getMacroMap());
@@ -341,7 +343,7 @@ public abstract class APTAbstractWalker extends APTWalker {
             APTIncludeHandler includeHandler = getIncludeHandler();
             if (includeHandler != null) {
                 pushIncludeState = includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(), 
-                        aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedPath.getIndex(), -1);
+                        aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedPath.getIndex(), getCurIncludeDirectiveFileIndex());
             }
         }
 //        System.out.println("\nPUSH from " + getCurFile() + " at Line " + aptInclude.getToken().getLine() + " " + pushIncludeState + ":" + resolvedPath);

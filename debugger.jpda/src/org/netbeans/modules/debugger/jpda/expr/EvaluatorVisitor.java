@@ -1984,6 +1984,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             elm = evaluationContext.getTrees().getElement(identifierPath);
             if (elm instanceof TypeElement && ((TypeElement) elm).asType() instanceof ErrorType) {
+                switch(elm.getKind()) {
+                    case ANNOTATION_TYPE:
+                    case CLASS:
+                    case ENUM:
+                    case INTERFACE:
+                        Assert.error(arg0, "unknownType", ((TypeElement) elm).getQualifiedName().toString());
+                }
                 currentPath = null; // Elements not resolved correctly
             }
         }

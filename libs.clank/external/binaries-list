@@ -1,6 +1,7 @@
-#changeset:   15587:a56d8c2def00
+#changeset:   15592:526f570f822e
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Sep 02 11:58:02 2015 +0300
-#summary:     PERF: gather PP directives only if asked to
-EA85D9EFB5B97A0A6D5022B6647477C3A4380639 clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Thu Sep 03 09:21:08 2015 +0300
+#summary:     fixing #254953 - NullPointerException when parsing mixed remote project: if Length is passed, do not use strlen()
+3E8BABDBD19DBDC2EC829ACEBBB3F44B5E6FC620 clank_0.3.6.zip
+
