@@ -766,6 +766,8 @@ public class Reformatter implements ReformatTask {
                     accept(LBRACE);
                     break;
             }
+            int lastMaxPreservedBlankLines = maxPreservedBlankLines;
+            maxPreservedBlankLines = cs.getMaximumBlankLinesInDeclarations();
             boolean emptyClass = true;
             for (Tree member : node.getMembers()) {
                 if (!isSynthetic(getCurrentPath().getCompilationUnit(), member)) {
@@ -906,6 +908,7 @@ public class Reformatter implements ReformatTask {
             }
             col = indent();
             accept(RBRACE);
+            maxPreservedBlankLines = lastMaxPreservedBlankLines;
             indent = lastIndent = old;
             return true;
         }
@@ -4828,6 +4831,8 @@ public class Reformatter implements ReformatTask {
             while (path != null) {
                 if (Tree.Kind.BLOCK == path.getLeaf().getKind())
                     return true;
+                if (Tree.Kind.CLASS == path.getLeaf().getKind())
+                    return false;
                 path = path.getParentPath();
             }
             return false;

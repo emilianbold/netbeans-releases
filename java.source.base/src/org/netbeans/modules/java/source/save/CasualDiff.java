@@ -871,8 +871,8 @@ public class CasualDiff {
             insertHint = tokenSequence.offset();
         }
         int old = printer.indent();
-        Name origName = printer.enclClassName;
-        printer.enclClassName = newT.getSimpleName();
+        JCClassDecl origClass = printer.enclClass;
+        printer.enclClass = newT;
         PositionEstimator est = EstimatorFactory.members(filteredOldTDefs, filteredNewTDefs, diffContext);
         localPointer = copyUpTo(localPointer, insertHint);
         // diff inner comments
@@ -902,7 +902,7 @@ public class CasualDiff {
             }
         }
         localPointer = diffList(filteredOldTDefs, filteredNewTDefs, insertHint, est, Measure.REAL_MEMBER, printer);
-        printer.enclClassName = origName;
+        printer.enclClass = origClass;
         origClassName = origOuterClassName;
         newClassName = newOuterClassName;
         printer.undent(old);
@@ -1090,10 +1090,10 @@ public class CasualDiff {
             copyTo(localPointer, posHint);
             int old = printer.setPrec(TreeInfo.noPrec);
             parameterPrint = true;
-            Name oldEnclClassName = printer.enclClassName;
-            printer.enclClassName = null;
+            JCClassDecl oldEnclClass = printer.enclClass;
+            printer.enclClass = null;
             localPointer = diffParameterList(oldT.params, newT.params, null, posHint, Measure.MEMBER);
-            printer.enclClassName = oldEnclClassName;
+            printer.enclClass = oldEnclClass;
             parameterPrint = false;
             printer.setPrec(old);
         }
@@ -1368,11 +1368,11 @@ public class CasualDiff {
         );
         int old = printer.indent();
         localPointer = diffInnerComments(oldT, newT, localPointer);
-        Name oldEnclosing = printer.enclClassName;
-        printer.enclClassName = null;
+        JCClassDecl oldEnclosing = printer.enclClass;
+        printer.enclClass = null;
         List<JCTree> oldstats = filterHidden(oldT.stats);
         localPointer = diffList(oldstats, filterHidden(newT.stats), localPointer, est, Measure.MEMBER, printer);
-        printer.enclClassName = oldEnclosing;
+        printer.enclClass = oldEnclosing;
         if (localPointer < endPos(oldT)) {
 /*
             JCTree tree = oldstats.get(oldstats.size() - 1);
@@ -2592,8 +2592,8 @@ public class CasualDiff {
             copyTo(localPointer, posHint);
             int old = printer.setPrec(TreeInfo.noPrec);
             parameterPrint = true;
-            Name oldEnclClassName = printer.enclClassName;
-            printer.enclClassName = null;
+            JCClassDecl oldEnclClass = printer.enclClass;
+            printer.enclClass = null;
             suppressParameterTypes = newT.paramKind == JCLambda.ParameterKind.IMPLICIT;
             // check, if there are already written parenthesis
             JavaTokenId[] parens = null;
@@ -2605,7 +2605,7 @@ public class CasualDiff {
             }
             localPointer = diffParameterList(oldT.params, newT.params, parens, posHint, Measure.MEMBER);
             suppressParameterTypes = false;
-            printer.enclClassName = oldEnclClassName;
+            printer.enclClass = oldEnclClass;
             parameterPrint = false;
             printer.setPrec(old);
         }

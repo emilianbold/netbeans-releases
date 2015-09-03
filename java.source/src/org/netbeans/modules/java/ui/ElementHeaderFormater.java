@@ -33,7 +33,6 @@ package org.netbeans.modules.java.ui;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
-import javax.lang.model.element.Name;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.DiffContext;
@@ -47,10 +46,10 @@ public class ElementHeaderFormater {
     private ElementHeaderFormater() {
     }
     
-    public static String getMethodHeader(MethodTree tree, Name enclosingClassName, CompilationInfo info, String s) {
+    public static String getMethodHeader(MethodTree tree, ClassTree enclosingClass, CompilationInfo info, String s) {
         VeryPretty veryPretty = new VeryPretty(new DiffContext(info));
-        if (enclosingClassName != null) {
-            veryPretty.enclClassName = (com.sun.tools.javac.util.Name) enclosingClassName;
+        if (enclosingClass != null) {
+            veryPretty.enclClass = (com.sun.tools.javac.tree.JCTree.JCClassDecl) enclosingClass;
         }
         return veryPretty.getMethodHeader(tree, s);
     }
