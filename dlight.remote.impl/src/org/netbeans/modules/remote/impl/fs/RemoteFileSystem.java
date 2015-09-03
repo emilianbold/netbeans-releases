@@ -49,6 +49,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -537,8 +538,30 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             fileOtputStream = new FileOutputStream(attr);
             table.store(fileOtputStream, "Set attribute "+attrName); // NOI18N
         } catch (IOException ex) {
-            Exceptions.printStackTrace(new IOException(
-                    "Can not set attribute for " + file + "; attr. cache is " + attr, ex)); // NOI18N
+            // See issues #254952, #249548: FileNotFoundException: .rfs_attr
+            // It can happen that parent  was removed; 
+            // if that's the case, then don't report this via Exceptions.printStackTrace
+            // If it's not, we'd better report since I think this should never happen
+            boolean report = true;
+            StringBuilder sb = new StringBuilder();
+            sb.append("Can not set attribute for ").append(file) // NOI18N
+                    .append("; attr. cache is ").append(attr.getAbsolutePath()); // NOI18N
+            if (ex instanceof FileNotFoundException) {
+                File attrParentFile = attr.getParentFile();
+                if (attrParentFile != null) {
+                    boolean parentExists = attrParentFile.exists();
+                    sb.append("; attr. cache parent exists ? ").append(parentExists); // NOI18N
+                    if (!parentExists) {
+                        report = false;
+                    }
+                }
+            }
+            IOException ioEx = new IOException(sb.toString(), ex);
+            if (report) {
+                Exceptions.printStackTrace(ioEx);
+            } else {
+                ioEx.printStackTrace(System.err);
+            }
         } finally {
             if (fileOtputStream != null) {
                 try {
