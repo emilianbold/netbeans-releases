@@ -228,6 +228,7 @@ public class TwoModificationsTest extends GeneratorTestBase {
             "package personal;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    private int i;\n" +
             "    public Object method(Class o) {\n" +
             "    }\n" +

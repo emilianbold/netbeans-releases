@@ -145,6 +145,7 @@ public class IndentAddedElemTest extends GeneratorTestBase {
         String golden =
                 "package com.max.test.alfa;\n\n" +
                 "public class Test {\n" +
+                "\n" +
                 "    private double value;\n" +
                 "}\n";
         
@@ -236,7 +237,6 @@ public class IndentAddedElemTest extends GeneratorTestBase {
                 "public class Test {\n" +
                 "  public void test() {\n" +
                 "    new Runnable() {\n" +
-                "\n" +
                 "        @Override\n" +
                 "        public void run() {\n" +
                 "        }\n" +
