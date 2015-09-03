@@ -54,9 +54,6 @@ import org.openide.util.NbBundle;
  * @author Danila Sergeyev
  */
 public abstract class SafeFix implements Fix {
-    
-    @Override
-    public abstract String getText();
 
     @Override
     public final ChangeInfo implement() throws Exception {
