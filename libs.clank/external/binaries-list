@@ -1,6 +1,7 @@
-#changeset:   15591:270ef5886133
+#changeset:   15592:526f570f822e
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Sep 02 19:44:44 2015 +0300
-#summary:     PERF: use provider allocator
-89E6E05242185C94745D94AE0D56C923FEAD793E clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Thu Sep 03 09:21:08 2015 +0300
+#summary:     fixing #254953 - NullPointerException when parsing mixed remote project: if Length is passed, do not use strlen()
+3E8BABDBD19DBDC2EC829ACEBBB3F44B5E6FC620 clank_0.3.6.zip
+
