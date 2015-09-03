@@ -44,9 +44,6 @@ package org.netbeans.modules.cnd.highlight.hints;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -200,7 +197,7 @@ public class MissingGuardBlock extends AbstractCodeAudit {
         }
     }
     
-    private static final class AddGuardBlock implements Fix {
+    private static final class AddGuardBlock extends SafeFix {
         private final BaseDocument doc;
         private final CsmFile file;
         private final int startOffset;
@@ -217,7 +214,7 @@ public class MissingGuardBlock extends AbstractCodeAudit {
         }
         
         @Override
-        public ChangeInfo implement () throws Exception {
+        public ChangeInfo performFix() throws BadLocationException, Exception {
             // Strings to build guard block
             final String defName = file.getFileObject().getName().toUpperCase() + "_H\n";  // NOI18N
             final String ifndefMacro = "#ifndef ";  // NOI18N
@@ -254,7 +251,7 @@ public class MissingGuardBlock extends AbstractCodeAudit {
         }
     }
     
-    private static final class AddPragmaOnce implements Fix {
+    private static final class AddPragmaOnce extends SafeFix {
         private final BaseDocument doc;
         private final CsmFile file;
         private final int offset;
@@ -271,7 +268,7 @@ public class MissingGuardBlock extends AbstractCodeAudit {
         }
         
         @Override
-        public ChangeInfo implement () throws Exception {
+        public ChangeInfo performFix() throws BadLocationException, Exception {
             Position ifndefPosition = NbDocument.createPosition(doc, offset, Position.Bias.Forward);
             doc.insertString(ifndefPosition.getOffset(), "#pragma once\n\n", null); // NOI18N
             return null;

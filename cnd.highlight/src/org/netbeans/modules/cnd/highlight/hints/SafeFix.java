@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.highlight.hints;
 
-package org.netbeans.modules.jira.kenai;
-
-
-import org.netbeans.modules.jira.JiraConfig;
-import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.client.spi.JiraFilter;
-import org.netbeans.modules.jira.query.JiraQuery;
-import org.netbeans.modules.jira.query.QueryController;
-import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.team.commons.LogUtils;
+import javax.swing.text.BadLocationException;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author Tomas Stupka
+ * Allows to perform a change when the user selects the hint if file can be modified,
+ * displays warning otherwise
+ * @author Danila Sergeyev
  */
-public class KenaiQuery extends JiraQuery {
-    private boolean predefinedQuery = false;
-    private String project;
-
-    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
-        super(name, repository, jf, saved, false);
-        this.predefinedQuery = predefined;
-        this.project = project;
-        this.lastRefresh = JiraConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
-        controller = createControler(repository, this, jf);
-    }
+public abstract class SafeFix implements Fix {
 
     @Override
-    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
-        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, project, predefinedQuery);
-        return c;
+    public final ChangeInfo implement() throws Exception {
+        try {
+            return performFix();
+        } catch (BadLocationException ex) {
+            NotifyDescriptor descriptor = new NotifyDescriptor(NbBundle.getMessage(SafeFix.class, "SafeFix.message")  // NOI18N
+                                                              ,NbBundle.getMessage(SafeFix.class, "SafeFix.title")  // NOI18N
+                                                              ,NotifyDescriptor.DEFAULT_OPTION
+                                                              ,NotifyDescriptor.ERROR_MESSAGE
+                                                              ,new Object[]{NotifyDescriptor.OK_OPTION}
+                                                              ,NotifyDescriptor.OK_OPTION);
+            DialogDisplayer.getDefault().notify(descriptor);
+        }
+        return null;
     }
-
-    @Override
-    protected void logQueryEvent(int count) {
-        LogUtils.logQueryEvent(
-            JiraConnector.getConnectorName(),
-            getDisplayName(),
-            count,
-            true,
-            false);
-    }
-
-    @Override
-    public String getStoredQueryName() {
-        return super.getStoredQueryName() + "-" + project;
-    }
-
+    
+    /**
+     * Actual implementation of the fix actions
+     * @return A ChangeInfo instance if invoking the hint caused changes
+     *  that should change the editor selection/caret position, or null
+     *  if no such change was made, or proper caret positioning cannot be
+     *  determined.
+     * @throws BadLocationException
+     * @throws Exception 
+     */
+    public abstract ChangeInfo performFix() throws BadLocationException, Exception;
 }

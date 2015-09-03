@@ -187,6 +187,7 @@ public class AddExistingItemAction extends NodeAction {
             public void run() {
                 boolean notifySources = false;
                 ArrayList<Item> items = new ArrayList<>();
+                ArrayList<String> sourceRoots = new ArrayList<>();
                 for (int i = 0; i < files.length; i++) {
                     String itemPath = ProjectSupport.toProperPath(projectDescriptor.getBaseDirFileObject(), files[i].getPath(), project);
                     itemPath = CndPathUtilities.normalizeSlashes(itemPath);
@@ -200,7 +201,16 @@ public class AddExistingItemAction extends NodeAction {
                         items.add(item);
                         if (CndPathUtilities.isPathAbsolute(itemPath)) {
                             notifySources = true;
+                            String dirName = CndPathUtilities.getDirName(itemPath);
+                            if (!sourceRoots.contains(dirName)) {
+                                sourceRoots.add(dirName);
+                            }
                         }
+                    }
+                }
+                if (notifySources && !sourceRoots.isEmpty()) {
+                    for(String root : sourceRoots) {
+                        projectDescriptor.addSourceRoot(root);
                     }
                 }
                 MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
