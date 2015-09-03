@@ -44,6 +44,7 @@ package org.netbeans.modules.testng.api;
 
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin;
 import org.netbeans.modules.java.testrunner.CommonSettings;
 import org.netbeans.modules.testng.TestConfigAccessor;
@@ -86,7 +87,9 @@ public class TestNGUtils {
      */
     public static FileObject[] createTests(FileObject[] filesToTest, FileObject targetRoot, Map<CommonPlugin.CreateTestParam, Object> params) {
         // Determine the plugin to be used:
-        TestNGPlugin plugin = TestUtil.getPluginForProject(FileOwnerQuery.getOwner(filesToTest[0]));
+        // filesToTest might be null so use targetRoot to determine the project
+        FileObject fo = filesToTest == null ? targetRoot : filesToTest[0];
+        TestNGPlugin plugin = TestUtil.getPluginForProject(FileOwnerQuery.getOwner(fo));
         return TestNGPluginTrampoline.DEFAULT.createTests(plugin, filesToTest, targetRoot, params);
     }
     

@@ -185,7 +185,7 @@ class MissingMethodOverride extends AbstractCodeAudit {
         }
     }
     
-    private static final class AddMissingOverrideKeyvord implements Fix {
+    private static final class AddMissingOverrideKeyvord extends SafeFix {
         private final BaseDocument doc;
         private final Position start;
 
@@ -200,7 +200,7 @@ class MissingMethodOverride extends AbstractCodeAudit {
         }
 
         @Override
-        public ChangeInfo implement() throws Exception {
+        public ChangeInfo performFix() throws BadLocationException, Exception {
             String t = doc.getText(start.getOffset(), 1);
             String text;
             if (t.charAt(0) == ' ' || t.charAt(0) == ';') {
