@@ -329,7 +329,6 @@ public class MethodBodyTest extends GeneratorTestBase {
             "public class Test {\n" +
             "    public void method() {\n" +
             "        new Runnable() {\n" + 
-            "\n" + 
             "            public void run() {\n" +
             "            }\n" +
             "        }.\n" +
@@ -388,7 +387,6 @@ public class MethodBodyTest extends GeneratorTestBase {
             "public class Test {\n" +
             "    public void method() {\n" +
             "        Runnable r = new Runnable() {\n" + 
-            "\n" + 
             "            public void run() {\n" +
             "            }\n" +
             "        }.\n" +

@@ -102,8 +102,8 @@ public final class ElementHeaders {
                 while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                     tp = tp.getParentPath();
                 }
-                Name enclosingClassName = tp != null ? ((ClassTree) tp.getLeaf()).getSimpleName() : null;
-                return ElementHeaderFormater.getMethodHeader((MethodTree) tree, enclosingClassName, info, formatString);
+                ClassTree enclosingClass = tp != null ? (ClassTree) tp.getLeaf() : null;
+                return ElementHeaderFormater.getMethodHeader((MethodTree) tree, enclosingClass, info, formatString);
             } else if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                 return ElementHeaderFormater.getClassHeader((ClassTree)tree, info, formatString);
             } else if (tree.getKind() == Tree.Kind.VARIABLE) {

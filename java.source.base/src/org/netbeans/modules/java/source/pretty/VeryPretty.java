@@ -161,7 +161,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
      * Suppresses printing of variable type. Used when printing parameters for IMPLICIT-param lambdas
      */
     public boolean suppressVariableType;
-    public Name enclClassName; // the enclosing class name.
+    public JCClassDecl enclClass; // the enclosing class.
     private int indentSize;
     private int prec; // visitor argument: the current precedence level.
     private boolean printingMethodParams;
@@ -199,7 +199,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     private VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<Tree, DocCommentTree> tree2Doc, Map<?, int[]> tag2Span, String origText) {
 	names = Names.instance(context);
-	enclClassName = names.empty;
+	enclClass = null;
         commentHandler = CommentHandlerService.instance(context);
 	symbols = Symtab.instance(context);
         types = Types.instance(context);
@@ -635,7 +635,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         printFlags(tree.mods.flags);
         s = replace(s, FLAGS);
         if (tree.name == names.init) {
-            print(enclClassName);
+            print(enclClass.name);
             s = replace(s, NAME);
         } else {
             if (tree.typarams != null) {
@@ -754,8 +754,8 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public void visitClassDef(JCClassDecl tree) {
-        Name enclClassNamePrev = enclClassName;
-	enclClassName = tree.name;
+        JCClassDecl enclClassPrev = enclClass;
+	enclClass = tree;
 	toLeftMargin();
         printAnnotations(tree.mods.annotations);
 	long flags = tree.mods.flags;
@@ -817,7 +817,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         printInnerCommentsAsTrailing(tree, true);
         java.util.List<JCTree> members = CasualDiff.filterHidden(diffContext, tree.defs);
 	if (!members.isEmpty()) {
-	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : (flags & ENUM) != 0 ? cs.getBlankLinesAfterEnumHeader() : cs.getBlankLinesAfterClassHeader());
+	    blankLines(enclClass.name.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : (flags & ENUM) != 0 ? cs.getBlankLinesAfterEnumHeader() : cs.getBlankLinesAfterClassHeader());
             boolean firstMember = true;
             if ((tree.mods.flags & ENUM) != 0 && members.get(0) instanceof FieldGroupTree && ((FieldGroupTree) members.get(0)).isEnum()) {
                 printEnumConstants(((FieldGroupTree) members.get(0)).getVariables(), false, false);
@@ -828,14 +828,14 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 printStat(t, true, firstMember, true, true, false);
                 firstMember = false;
             }
-	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : (flags & ENUM) != 0 ? cs.getBlankLinesBeforeEnumClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
+	    blankLines(enclClass.name.isEmpty() ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : (flags & ENUM) != 0 ? cs.getBlankLinesBeforeEnumClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
         } else {
             printEmptyBlockComments(tree, false);
         }
         toColExactly(bcol);
 	undent(old);
 	print('}');
-	enclClassName = enclClassNamePrev;
+	enclClass = enclClassPrev;
     }
 
     private void printEnumConstants(java.util.List<? extends JCTree> defs, boolean forceSemicolon, boolean printComments) {
@@ -881,17 +881,17 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     public void visitMethodDef(JCMethodDecl tree) {
 	if ((tree.mods.flags & Flags.SYNTHETIC)==0 &&
 		tree.name != names.init ||
-		enclClassName != null) {
-	    Name enclClassNamePrev = enclClassName;
-	    enclClassName = null;
+		enclClass != null) {
+	    JCClassDecl enclClassPrev = enclClass;
+	    enclClass = null;
             printAnnotations(tree.mods.annotations);
             printFlags(tree.mods.flags);
             if (tree.typarams != null) {
                 printTypeParameters(tree.typarams);
                 needSpace();
             }
-            if (tree.name == names.init || tree.name.contentEquals(enclClassNamePrev)) {
-                print(enclClassNamePrev);
+            if (tree.name == names.init || tree.name.contentEquals(enclClassPrev.name)) {
+                print(enclClassPrev.name);
             } else {
                 print(tree.restype);
                 needSpace();
@@ -924,7 +924,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 }
                 print(';');
             }
-            enclClassName = enclClassNamePrev;
+            enclClass = enclClassPrev;
 	}
     }
 
@@ -968,10 +968,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                     print(cs.spaceWithinMethodCallParens() ? " )" : ")");
                 }
                 if (newClsTree.def != null) {
-                    Name enclClassNamePrev = enclClassName;
-                    enclClassName = newClsTree.def.name;
+                    JCClassDecl enclClassPrev = enclClass;
+                    enclClass = newClsTree.def;
                     printBlock(null, newClsTree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace(), true);
-                    enclClassName = enclClassNamePrev;
+                    enclClass = enclClassPrev;
                 }
             }
         }
@@ -1483,10 +1483,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
     
     public void printNewClassBody(JCNewClass tree) {
-        Name enclClassNamePrev = enclClassName;
-        enclClassName = tree.def.name;
+        JCClassDecl enclClassPrev = enclClass;
+        enclClass = tree.def;
         printBlock(null, tree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace(), true, true);
-        enclClassName = enclClassNamePrev;
+        enclClass = enclClassPrev;
     }
 
     @Override
@@ -1914,21 +1914,60 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             case METHOD: // do not handle for sythetic things
         	if ((((JCMethodDecl) tree).mods.flags & Flags.SYNTHETIC) == 0 &&
                     ((JCMethodDecl) tree).name != names.init ||
-                    enclClassName != null)
+                    enclClass != null)
                 {
-                    n = before ? cs.getBlankLinesBeforeMethods() : cs.getBlankLinesAfterMethods();
+                    n = before
+                            ? isFirst(tree, enclClass.defs)
+                            ? enclClass.name == names.empty
+                            ? cs.getBlankLinesAfterAnonymousClassHeader()
+                            : cs.getBlankLinesAfterClassHeader()
+                            : cs.getBlankLinesBeforeMethods()
+                            : isLast(tree, enclClass.defs)
+                            ? enclClass.name == names.empty
+                            ? cs.getBlankLinesBeforeAnonymousClassClosingBrace()
+                            : cs.getBlankLinesBeforeClassClosingBrace()
+                            : cs.getBlankLinesAfterMethods();
                     out.blanklines(n);
         	    toLeftMargin();
                 }
                 return;
             case VARIABLE: // just for the fields
-                if (enclClassName != null && enclClassName != names.empty && (((JCVariableDecl) tree).mods.flags & ENUM) == 0) {
-                    n = before ? cs.getBlankLinesBeforeFields() : cs.getBlankLinesAfterFields();
+                if (enclClass != null && enclClass.name != names.empty && (((JCVariableDecl) tree).mods.flags & ENUM) == 0) {
+                    n = before
+                            ? isFirst(tree, enclClass.defs)
+                            ? enclClass.name == names.empty
+                            ? cs.getBlankLinesAfterAnonymousClassHeader()
+                            : cs.getBlankLinesAfterClassHeader()
+                            : cs.getBlankLinesBeforeFields()
+                            : isLast(tree, enclClass.defs)
+                            ? enclClass.name == names.empty
+                            ? cs.getBlankLinesBeforeAnonymousClassClosingBrace()
+                            : cs.getBlankLinesBeforeClassClosingBrace()
+                            : cs.getBlankLinesAfterFields();
                     out.blanklines(n);
                     if (before) toLeftMargin();
                 }
                 return;
         }
+    }
+    
+    private boolean isFirst(JCTree tree, List<? extends JCTree> list) {
+        for (JCTree t : list) {
+            if (!isSynthetic(t)) {
+                return t == tree;
+            }
+        }
+        return false;
+    }
+    
+    private boolean isLast(JCTree tree, List<? extends JCTree> list) {
+        boolean b = false;
+        for (JCTree t : list) {
+            if (!isSynthetic(t)) {
+                b = t == tree;
+            }
+        }
+        return b;
     }
     
     /**

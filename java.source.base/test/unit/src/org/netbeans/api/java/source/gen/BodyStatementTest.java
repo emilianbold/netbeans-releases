@@ -452,7 +452,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "   public void method() {\n" +
             "        try {\n" +
             "            new Runnable() {\n" +
-            "\n" +
             "                public void run() {\n" +
             "                }\n" +
             "            };\n" +
@@ -529,7 +528,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "   public Object method() {\n" +
             "        try {\n" +
             "            new Runnable() {\n" +
-            "\n" +
             "                public void run() {\n" +
             "                }\n" +
             "            }\n" +

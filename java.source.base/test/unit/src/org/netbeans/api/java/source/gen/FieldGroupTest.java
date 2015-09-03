@@ -820,6 +820,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "package javaapplication1;\n" +
             "\n" +
             "class MyOuterClass {\n" +
+            "\n" +
             "    private Exception a;\n" + 
             "    private String b;\n" + 
             "    private Object c;\n" + 
@@ -1352,6 +1353,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "package javaapplication1;\n" +
             "\n" +
             "class Test {\n" +
+            "\n" +
             "    Object l;\n" +
             "}\n\n" +
             "class A {\n" +

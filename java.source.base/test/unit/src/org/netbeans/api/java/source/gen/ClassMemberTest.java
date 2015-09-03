@@ -392,6 +392,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         String golden =
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
+            "\n" +
             "    String prefix;\n" +
             "    \n" +
             "    int i = 0;\n" +
@@ -1221,6 +1222,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    boolean prefix;\n" +
             "}\n";
 
@@ -1358,6 +1360,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    /**\n" +
             "     * Test comment\n" +
             "     */\n" +
@@ -1404,6 +1407,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    /**\n" +
             "     * Test comment\n" +
             "     */\n" +

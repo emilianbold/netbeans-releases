@@ -1557,7 +1557,6 @@ public class EnumTest extends GeneratorTestBase {
             "package hierbas.del.litoral;\n" +
             "public enum Test {\n"+
             "    A {\n" +
-            "\n"+
             "        public void run() {\n"+
             "        }\n"+
             "    };\n"+
