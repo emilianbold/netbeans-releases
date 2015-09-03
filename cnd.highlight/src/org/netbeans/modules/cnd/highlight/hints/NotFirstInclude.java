@@ -170,7 +170,7 @@ public class NotFirstInclude extends AbstractCodeAudit {
         }
     }
 
-    private static final class MoveIncludeFix implements Fix {
+    private static final class MoveIncludeFix extends SafeFix {
         private final BaseDocument doc;
         private final Position start;
         private final Position end;
@@ -189,7 +189,7 @@ public class NotFirstInclude extends AbstractCodeAudit {
         }
 
         @Override
-        public ChangeInfo implement() throws Exception {
+        public ChangeInfo performFix() throws BadLocationException, Exception {
             doc.runAtomicAsUser(new Runnable() {
                 @Override
                 public void run() {

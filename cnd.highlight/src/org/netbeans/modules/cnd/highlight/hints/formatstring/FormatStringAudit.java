@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.hints.CsmHintProvider;
 import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
+import org.netbeans.modules.cnd.highlight.hints.SafeFix;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -326,7 +327,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
         }
     }
     
-    private static final class FixFormat implements Fix {
+    private static final class FixFormat extends SafeFix {
         private final BaseDocument doc;
         private final FormatError error;
         private final Position start;
@@ -354,7 +355,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
         }
         
         @Override
-        public ChangeInfo implement () throws Exception {
+        public ChangeInfo performFix() throws BadLocationException, Exception {
             int length = end.getOffset() - start.getOffset();
             doc.replace(start.getOffset(), length, newText, null);
             return null;
