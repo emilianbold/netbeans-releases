@@ -269,6 +269,31 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             }
         }
     }
+    
+    /*package*/ static int[] getDefineOffsets(APTDefine define, APTToken lastParam) {
+        int startOffset = define.getToken().getOffset();
+        List<APTToken> bodyTokens = define.getBody();
+        APTToken last;
+        if (bodyTokens.isEmpty()) {
+            if (false && lastParam != null && !APTUtils.isEOF(lastParam) && lastParam.getEndOffset() > 0) {
+                // To make APT and Clank more similar for 
+                // #define FUN_LIKE(param)
+                // for closing ) use last param + 1
+                final int lParentOffset = lastParam.getEndOffset()+1;
+                last = new APTTokenAbstact() { 
+                    public int getEndOffset() {
+                        return lParentOffset;
+                    }
+                };
+            } else {
+                last = define.getName() ;
+            }
+        } else {
+            last = bodyTokens.get(bodyTokens.size() - 1);
+        }
+        int endOffset = (last != null && !APTUtils.isEOF(last) && last.getEndOffset() > 0) ? last.getEndOffset() : startOffset;
+        return new int[]{startOffset, endOffset};
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
@@ -449,37 +474,17 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
                 params = Collections.<CharSequence>emptyList();
             }
         }
+        
+        int offsets[] = getDefineOffsets(define, lastParam);
 
-        int startOffset = define.getToken().getOffset();
-        List<APTToken> bodyTokens = define.getBody();
-        APTToken last;
-        String body = "";
-        if (bodyTokens.isEmpty()) {
-            if (false && lastParam != null && !APTUtils.isEOF(lastParam) && lastParam.getEndOffset() > 0) {
-                // To make APT and Clank more similar for 
-                // #define FUN_LIKE(param)
-                // for closing ) use last param + 1
-                final int lParentOffset = lastParam.getEndOffset()+1;
-                last = new APTTokenAbstact() { 
-                    public int getEndOffset() {
-                        return lParentOffset;
-                    }
-                };
-            } else {
-                last = define.getName() ;
-            }
-        } else {
-            last = bodyTokens.get(bodyTokens.size() - 1);
-            //APTToken start = (APTToken) bodyTokens.get(0);
-            // FIXUP (performance/memory). For now:
-            // 1) nobody uses macros.getText
-            // 2) its realization is ineffective
-            // so we temporarily switch this off
-            body = ""; //file.getText( start.getOffset(), last.getEndOffset());
-        }
-        int endOffset = (last != null && !APTUtils.isEOF(last) && last.getEndOffset() > 0) ? last.getEndOffset() : startOffset;
+        // FIXUP (performance/memory). For now:
+        // 1) nobody uses macros.getText
+        // 2) its realization is ineffective
+        // so we temporarily switch this off
+        String body = ""; //file.getText( start.getOffset(), last.getEndOffset());
+        
         CsmMacro.Kind kind = define.isValid() ? CsmMacro.Kind.DEFINED : CsmMacro.Kind.INVALID;
-        return MacroImpl.create(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), startOffset, endOffset, kind);
+        return MacroImpl.create(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), offsets[0], offsets[1], kind);
     }
 
     private IncludeImpl createInclude(final APTInclude apt, final FileImpl included, boolean recursive) {

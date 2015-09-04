@@ -1,6 +1,6 @@
-#changeset:   15600:1bce35d84241
+#changeset:   15606:5876f1ba6cbe
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Sep 04 14:44:53 2015 +0300
-#summary:     catch exception for debugging
-CE7CCBC9BB8636B11A596C22CB04C842F0586B50 clank_0.3.6.zip
+#date:        Fri Sep 04 21:40:39 2015 +0300
+#summary:     clean up
+7A27770B8539DFCF12CD921776FF67E41150F5F7 clank_0.3.6.zip

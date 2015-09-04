@@ -94,6 +94,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import static org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker.getDefineOffsets;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileSystem;
@@ -355,7 +356,17 @@ import org.openide.filesystems.FileSystem;
                                 if (target instanceof Unresolved.UnresolvedFile) {
                                     refObj = SystemMacroImpl.create(macroName, "", null, target, CsmMacro.Kind.USER_SPECIFIED);
                                 } else {
-                                    refObj = MacroImpl.create(macroName, null, "", target, macroStartOffset, macroStartOffset + macroName.length(), CsmMacro.Kind.DEFINED);
+                                    // TODO: maybe in future lastParam should be passed, but now it is unused anyway
+                                    int offsets[] = getDefineOffsets(macro.getDefineNode(), null);
+                                    refObj = MacroImpl.create(
+                                        macroName, 
+                                        null, 
+                                        "", 
+                                        target, 
+                                        offsets[0], 
+                                        offsets[1], 
+                                        CsmMacro.Kind.DEFINED
+                                    );
                                     Utils.setSelfUID(refObj);
                                 }
                             }
