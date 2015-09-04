@@ -141,7 +141,14 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
                         int offset2 = MacroExpansionViewUtils.getDocumentOffset(expandedContextDoc, MacroExpansionViewUtils.getFileOffset(mainDoc, offset));
                         for(JTextComponent comp : EditorRegistry.componentList()) {
                             if (expandedContextDoc.equals(comp.getDocument())) {
-                                comp.setCaretPosition(offset2);
+                                int length = comp.getDocument().getLength();
+                                if (offset2 > 0 && offset2 < length) {
+                                    comp.setCaretPosition(offset2);
+                                } else if (offset2 >= length) {
+                                    comp.setCaretPosition(length - 1);
+                                } else {
+                                    comp.setCaretPosition(0);
+                                }
                                 break;
                             }
                         }
