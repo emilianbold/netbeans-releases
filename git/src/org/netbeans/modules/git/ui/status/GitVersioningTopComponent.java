@@ -92,6 +92,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
     private RepositoryInfo          repositoryInfo;
     
     private static GitVersioningTopComponent instance;
+    private File[] files = new File[0];
 
     public GitVersioningTopComponent () {
         putClientProperty("SlidingName", NbBundle.getMessage(GitVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
@@ -133,14 +134,17 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(this.contentTitle);
-        out.writeObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+        File[] files = context == null
+                ? this.files
+                : context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
+        out.writeObject(files);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         contentTitle = (String) in.readObject();
-        File[] files = (File[]) in.readObject();
+        files = (File[]) in.readObject();
         final List<Node> nodes = new ArrayList<>(files.length);
         for (File file : files) {
             nodes.add(new AbstractNode(Children.LEAF, Lookups.singleton(file)) {

@@ -136,7 +136,7 @@ class PreferredCCParser {
                 }
             }
             preferredCI = (CompilationController) handle.getCompilationController();
-            toPhase(preferredCI, JavaSource.Phase.PARSED, LOG);
+            toPhaseSync(preferredCI, JavaSource.Phase.PARSED, LOG);
         } else {
             preferredCI = null;
         }
@@ -186,7 +186,7 @@ class PreferredCCParser {
         } else {
             try {
                 CompilationController ci = getPreferredCompilationController(file, js);
-                if (ci == null || !toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
+                if (ci == null || !toPhaseSync(ci, JavaSource.Phase.RESOLVED, LOG)) {
                     return new EditorContext.Operation[] {};
                 }
                 LineMap lineMap = ci.getCompilationUnit().getLineMap();
@@ -293,7 +293,7 @@ class PreferredCCParser {
         } else {
             try {
                 CompilationController ci = getPreferredCompilationController(file, js);
-                if (ci == null || !toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
+                if (ci == null || !toPhaseSync(ci, JavaSource.Phase.RESOLVED, LOG)) {
                     return null;
                 }
                 LineMap lineMap = ci.getCompilationUnit().getLineMap();
@@ -604,7 +604,19 @@ class PreferredCCParser {
     }
     
     static boolean toPhase(CompilationController ci, JavaSource.Phase phase, Logger log) throws IOException {
-        if (ci.toPhase(phase).compareTo(phase) < 0) {
+        return toPhaseCheck(ci, phase, ci.toPhase(phase).compareTo(phase), log);
+    }
+    
+    private static boolean toPhaseSync(CompilationController ci, JavaSource.Phase phase, Logger log) throws IOException {
+        int compareToPhase;
+        synchronized (ci) {
+            compareToPhase = ci.toPhase(phase).compareTo(phase);
+        }
+        return toPhaseCheck(ci, phase, compareToPhase, log);
+    }
+    
+    private static boolean toPhaseCheck(CompilationController ci, JavaSource.Phase phase, int compareToPhase, Logger log) {
+        if (compareToPhase < 0) {
             log.log(Level.WARNING,
                     "Unable to resolve {0} to phase {1}, current phase = {2}\n"+
                     "Diagnostics = {3}\n"+
