@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.projects;
+package org.netbeans.modules.debugger.jpda.util;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
@@ -54,7 +54,7 @@ import org.openide.util.BaseUtilities;
  * 
  * @author Martin Entlicher
  */
-// TODO: Make it a public API. There's another copy of this class in debugger.jpda module.
+// TODO: Make it a public API. There's another copy of this class in debugger.jpda.projects module.
 public final class WeakHashMapActive<K,V> extends AbstractMap<K,V> {
     
     private final ReferenceQueue<Object> queue;

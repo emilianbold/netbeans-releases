@@ -373,6 +373,7 @@ public class WatchesColumnModels {
 
         @Override
         public boolean stopCellEditing() {
+            fireEditingStopped();
             return true;
         }
 
@@ -400,6 +401,10 @@ public class WatchesColumnModels {
 
         @Override
         public void focusLost(FocusEvent e) {
+            fireEditingStopped();
+        }
+        
+        private void fireEditingStopped() {
             synchronized(listeners) {
                 List<CellEditorListener> list = new ArrayList<CellEditorListener>(listeners);
                 for (CellEditorListener listener : list) {
