@@ -88,6 +88,7 @@ public final class MavenSettings  {
     private static final String PROP_EXPERIMENTAL_USE_BEST_MAVEN = "useBestMaven";
     private static final String PROP_EXPERIMENTAL_USE_ALTERNATE_LOCATION = "useBestMavenAltLocation";
     private static final String PROP_EXPERIMENTAL_ALTERNATE_LOCATION = "bestMavenAltLocation";
+    private static final String PROP_VM_OPTIONS_WRAP = "vmOptionsWrap";
 
     //these are from former versions (6.5) and are here only for conversion
     private static final String PROP_DEBUG = "showDebug"; // NOI18N
@@ -244,6 +245,13 @@ public final class MavenSettings  {
         }        
     }
     
+    public boolean isVMOptionsWrap() {
+        return getPreferences().getBoolean(PROP_VM_OPTIONS_WRAP, true);
+    }
+    
+    public void setVMOptionsWrap(boolean b) {
+        getPreferences().putBoolean(PROP_VM_OPTIONS_WRAP, b);
+    }
 
     public String getLastArchetypeGroupId() {
         return getPreferences().get(PROP_LAST_ARCHETYPE_GROUPID, Boolean.getBoolean("netbeans.full.hack") ? "test" : "com.mycompany"); //NOI18N
@@ -366,7 +374,7 @@ public final class MavenSettings  {
             getPreferences().remove(PROP_OUTPUT_TAB_NAME);
         }
     }
-    
+
     public static enum OutputTabName {
         PROJECT_NAME,
         PROJECT_ID
