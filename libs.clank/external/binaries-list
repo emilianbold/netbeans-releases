@@ -1,7 +1,6 @@
-#changeset:   15592:526f570f822e
+#changeset:   15600:1bce35d84241
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Sep 03 09:21:08 2015 +0300
-#summary:     fixing #254953 - NullPointerException when parsing mixed remote project: if Length is passed, do not use strlen()
-3E8BABDBD19DBDC2EC829ACEBBB3F44B5E6FC620 clank_0.3.6.zip
-
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Fri Sep 04 14:44:53 2015 +0300
+#summary:     catch exception for debugging
+CE7CCBC9BB8636B11A596C22CB04C842F0586B50 clank_0.3.6.zip
