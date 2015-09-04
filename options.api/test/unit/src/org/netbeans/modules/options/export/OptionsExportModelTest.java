@@ -390,9 +390,13 @@ public class OptionsExportModelTest extends NbTestCase {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("ProductVersion=NetBeans IDE 8.0.1 (Build 201408251540)", "201408251540");
         map.put("ProductVersion=NetBeans IDE 8.0.1 (Build 20141127-4fefcedaef32)", "201411272359");
-        map.put("ProductVersion=OptionsImport 20140825154", "20140825154");
+        map.put("ProductVersion=OptionsImport 201408251545", "201408251545");
         map.put("NetbeansBuildnumber=201408251540", "201408251540");
         map.put("NetbeansBuildnumber=20141127-4fefcedaef32", "201411272359");
+        map.put("NetbeansBuildnumber=nbms-and-javadoc-2438-on-20141212", "201412122359");
+        map.put("201408251540", "201408251540");
+        map.put("20141127", "201411272359");
+        map.put("20141127-4fefcedaef32", "201411272359");
         
         for(Map.Entry<String, String> entry : map.entrySet()) {
             assertTrue("Error parsing: " + entry.getKey(), model.parseBuildNumber(entry.getKey()).equals(entry.getValue()));
