@@ -409,11 +409,7 @@ public final class EditorFindSupport {
                                 false
                             );
                         }
-                        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-                        if (prefs.get(SimpleValueNames.EDITOR_SEARCH_TYPE, "default").equals("closing")) // NOI18N
-                            ensureVisible(comp, pos, pos);
-                        else
-                            selectText(comp, pos, pos + len, back);
+                        ensureVisible(comp, pos, pos);
                         return true;
                     }
                 }

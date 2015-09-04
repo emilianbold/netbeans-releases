@@ -1461,13 +1461,25 @@ public final class CsmProjectContentResolver {
         // handle all nested and inlined namespaces
 
         // Note that nested namespaces contain inlined namespaces
-        Collection<CsmNamespace> namespacesToSearchIn = searchNestedUnnamedNamespaces ? ns.getNestedNamespaces() : ns.getInlinedNamespaces();
+        Collection<CsmNamespace> namespacesToSearchIn;
+        if (searchNestedUnnamedNamespaces) {
+            namespacesToSearchIn = ns.getNestedNamespaces();
+        } else {
+            namespacesToSearchIn = getInlinedNamespaces(ns);
+        }
 
         if (!namespacesToSearchIn.isEmpty()) {
           for (it = namespacesToSearchIn.iterator(); it.hasNext();) {
               CsmNamespace nestedNs = (CsmNamespace) it.next();
 
-              boolean goDeeper = (searchNestedUnnamedNamespaces && nestedNs.getName().length() == 0) || nestedNs.isInline();
+              boolean goDeeper;
+              if (searchNestedUnnamedNamespaces) {
+                  // namespacesToSearchIn contains all nested namespaces
+                  goDeeper = nestedNs.getName().length() == 0 || isInlinedNamespace(nestedNs);
+              } else {
+                  // namespacesToSearchIn contains only inlined namespaces
+                  goDeeper = true;
+              }
 
               // we need nested namespaces only if they do not modify qualified path (they names are empty) or they are inlined
               if (goDeeper) {
@@ -1524,6 +1536,36 @@ public final class CsmProjectContentResolver {
                 }
             }
         }
+    }
+    
+    private Collection<CsmNamespace> getInlinedNamespaces(CsmNamespace ns) {
+        if (libs != null && !libs.isEmpty()) {
+            List<CsmNamespace> inlinedNamespaces = new ArrayList<CsmNamespace>(ns.getInlinedNamespaces());
+            for (CsmProject lib : libs) {
+                CsmNamespace libNmsp = lib.findNamespace(ns.getQualifiedName());
+                if (libNmsp != null) {
+                    inlinedNamespaces.addAll(libNmsp.getInlinedNamespaces());
+                }
+            }
+        }
+        return ns.getInlinedNamespaces();
+    }
+    
+    private boolean isInlinedNamespace(CsmNamespace ns) {
+        if (!ns.isGlobal()) {
+            if (ns.isInline()) {
+                return true;
+            }
+            if (libs != null && !libs.isEmpty()) {
+                for (CsmProject lib : libs) {
+                    CsmNamespace libNmsp = lib.findNamespace(ns.getQualifiedName());
+                    if (libNmsp != null && libNmsp.isInline()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static boolean isKindOf(CsmDeclaration.Kind kind, CsmDeclaration.Kind kinds[]) {
