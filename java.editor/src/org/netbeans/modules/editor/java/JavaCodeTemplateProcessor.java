@@ -97,6 +97,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private static final String TRUE = "true"; //NOI18N
     private static final String NULL = "null"; //NOI18N
+    private static final String ZERO = "0"; //NOI18N
     private static final String ERROR = "<error>"; //NOI18N
     private static final String CLASS = "class"; //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("Update Imports", 1, false, false); //NOI18N
@@ -667,10 +668,22 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             if (cInfo != null) {
                 TypeMirror type = type(typeName);
                 if (type != null) {
-                    if (type.getKind() == TypeKind.DECLARED) {
-                        return NULL;
-                    } else if (type.getKind() == TypeKind.BOOLEAN) {
-                        return TRUE;
+                    switch(type.getKind()) {
+                        case ARRAY:
+                        case DECLARED:
+                        case TYPEVAR:
+                        case WILDCARD:
+                            return null;
+                        case BOOLEAN:
+                            return TRUE;
+                        case BYTE:
+                        case CHAR:
+                        case INT:
+                        case LONG:
+                        case SHORT:
+                        case DOUBLE:
+                        case FLOAT:
+                            return ZERO;
                     }
                 }
             }
@@ -678,7 +691,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         }
         return null;
     }
-    
+
     private VariableElement array() {
         if (cInfo != null) {
             for (Element e : locals) {
