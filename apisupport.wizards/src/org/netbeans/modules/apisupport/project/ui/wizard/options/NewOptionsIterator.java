@@ -445,6 +445,7 @@ public final class NewOptionsIterator extends BasicWizardIterator {
         
         private void generateDependencies() {
             files.add(files.addModuleDependency("org.openide.util")); // NOI18N
+            files.add(files.addModuleDependency("org.openide.util.ui")); //NOI18N
             files.add(files.addModuleDependency("org.openide.util.lookup")); // NOI18N
             files.add(files.addModuleDependency("org.netbeans.modules.options.api","1",null,true));// NOI18N
             files.add(files.addModuleDependency("org.openide.awt")); // NOI18N

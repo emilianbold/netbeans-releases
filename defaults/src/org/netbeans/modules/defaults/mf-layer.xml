@@ -156,7 +156,7 @@ made subject to such option by the copyright holder.
             <file name="SO-1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance"/>
             </file>
-            <file name="D-F5.shadow">
+            <file name="C-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
             </file>
             <file name="F7.shadow">
@@ -660,7 +660,7 @@ made subject to such option by the copyright holder.
             <file name="D-F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
             </file>
-            <file name="D-F5.shadow">
+            <file name="C-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
             </file>
             <file name="D-Y.shadow">

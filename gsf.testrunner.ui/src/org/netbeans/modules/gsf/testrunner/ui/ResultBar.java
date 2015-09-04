@@ -165,7 +165,10 @@ public final class ResultBar extends JComponent implements ActionListener{
     private String getString() {
         // #183996 (PHP project) requires to use the format "%.2f".
         // It lets to have not rounding a value if number of tests <= 10000
-        return String.format("%.2f %%", passedPercentage); // NOI18N
+        
+        // make it clearer what the shown percentage stands for, since now
+        // the color bar schema has been changed/simplyfied
+        return "Tests passed: ".concat(String.format("%.2f %%", passedPercentage)); // NOI18N
     }
 
     @Override
@@ -226,10 +229,6 @@ public final class ResultBar extends JComponent implements ActionListener{
 	    amountFail = 0;
 	}
 
-        Graphics2D g2 = (Graphics2D) g;
-
-        g2.setColor(getBackground());
-
         Color notCoveredLight = NOT_COVERED_LIGHT;
         Color notCoveredDark = NOT_COVERED_DARK;
         Color coveredLight = COVERED_LIGHT;
@@ -253,88 +252,33 @@ public final class ResultBar extends JComponent implements ActionListener{
             abortedTestsLight = abortedTestsLight.brighter();
             abortedTestsDark = abortedTestsDark.darker();
         }
+        Graphics2D g2 = (Graphics2D) g;
+        // running with no results yet -> gray
+        Color light = noTestsLight;
+        Color dark = noTestsDark;
 
-        if (passedReported){
-	    if(amountFail > 0) {
-		g2.setPaint(new GradientPaint(0, phase, notCoveredLight, 0, phase + height/2, notCoveredDark, true));
-		g2.fillRect(amountFull, 1, skippedReported ? amountFail : width - 1, height);
-		g2.setColor(getForeground());
-	    }
-
-            g2.setPaint(new GradientPaint(0, phase, coveredLight, 0, phase + height/2, coveredDark, true));
-            g2.fillRect(1, 1, amountFull, height);
-
-	    if(skippedReported) {
-		g2.setColor(getForeground());
-		g2.setPaint(new GradientPaint(0, phase, noTestsLight, 0, phase + height/2, noTestsDark, true));
-		g2.fillRect(amountFull + amountFail, 1, width - 1, height);
-	    }
-
-            if(abortedReported) {
-		g2.setColor(getForeground());
-		g2.setPaint(new GradientPaint(0, phase, abortedTestsLight, 0, phase + height/2, abortedTestsDark, true));
-		g2.fillRect(amountFull + amountFail + amountSkip, 1, width - 1, height);
-	    }
-
-            Rectangle oldClip = g2.getClipBounds();
-            if (passedPercentage > 0.0f) {
-                g2.setColor(coveredDark);
-                g2.clipRect(0, 0, amountFull + 1, height);
-                g2.drawRect(0, 0, width - 1, height - 1);
+        if (abortedReported || skippedReported || passedReported) {
+            // running with at least one result or finished
+            if (passedPercentage == 100.0) {
+                // contains only successful tests -> green
+                light = coveredLight;
+                dark = coveredDark;
+            } else if (abortedPercentage > 0.0) {
+                // contains aborted tests -> abort color
+                light = abortedTestsLight;
+                dark = abortedTestsDark;
+            } else if(100.0f - passedPercentage - abortedPercentage - skippedPercentage > 0.0) {
+                // contains failed tests -> red
+                light = notCoveredLight;
+                dark = notCoveredDark;
+            } else if (skippedPercentage > 0.0) {
+                // contains ignored tests -> gray
+                light = noTestsLight;
+                dark = noTestsDark;
             }
-            if (passedPercentage < 100.0f) {
-		if (amountFail > 0) {
-		    g2.setColor(notCoveredDark);
-		    g2.setClip(oldClip);
-		    g2.clipRect(amountFull + 1, 0, width - amountSkip - amountAbort, height);
-		    g2.drawRect(0, 0, width - 1, height - 1);
-		}
-		if(skippedReported) {
-		    g2.setColor(noTestsDark);
-		    g2.setClip(oldClip);
-		    g2.clipRect(amountFull + amountFail, 0, width, height);
-		    g2.drawRect(0, 0, width - 1, height - 1);
-		}
-		if(abortedReported) {
-		    g2.setColor(abortedTestsDark);
-		    g2.setClip(oldClip);
-		    g2.clipRect(amountFull + amountFail + amountSkip, 0, width, height);
-		    g2.drawRect(0, 0, width - 1, height - 1);
-            }
-            }
-            g2.setClip(oldClip);
-        } else if (skippedReported){
-	    if (amountFail > 0) {
-		g2.setPaint(new GradientPaint(0, phase, notCoveredLight, 0, phase + height / 2, notCoveredDark, true));
-		g2.fillRect(1, 1, amountFail, height);
-		g2.setColor(getForeground());
-	    }
-	    g2.setPaint(new GradientPaint(0, phase, noTestsLight, 0, phase + height / 2, noTestsDark, true));
-	    g2.fillRect(amountFail, 1, width - 1, height);
-
-            Rectangle oldClip = g2.getClipBounds();
-            if (skippedPercentage > 0.0f) {
-                g2.setColor(noTestsDark);
-                g2.clipRect(0, 0, amountFull + 1, height);
-                g2.drawRect(0, 0, width - 1, height - 1);
-            }
-            if (skippedPercentage < 100.0f) {
-                g2.setColor(noTestsDark);
-                g2.setClip(oldClip);
-                g2.clipRect(amountFull, 0, width, height);
-                g2.drawRect(0, 0, width - 1, height - 1);
-            }
-            g2.setClip(oldClip);
-        } else {
-            g2.setPaint(new GradientPaint(0, phase, noTestsLight, 0, phase + height/2, noTestsDark, true));
-            g2.fillRect(0, 1, width - 1, height);
-            Rectangle oldClip = g2.getClipBounds();
-            g2.setColor(noTestsDark);
-            g2.setClip(oldClip);
-            g2.clipRect(0, 0, width, height);
-            g2.drawRect(0, 0, width - 1, height - 1);
-            g2.setClip(oldClip);
         }
+        g2.setPaint(new GradientPaint(0, phase, light, 0, phase + height / 2, dark, true));
+        g2.fillRect(1, 1, barRectWidth, height);
 
         g2.setFont(getFont());
         paintDropShadowText(g2, barRectWidth, barRectHeight);
