@@ -435,7 +435,7 @@ public final class OptionsChooserPanel extends JPanel {
         double currentBuildNumber;
         String nbBuildNumber = System.getProperty("netbeans.buildnumber"); // NOI18N
         try {
-            currentBuildNumber = Double.parseDouble(getOptionsExportModel().getBuildNumber(nbBuildNumber));
+            currentBuildNumber = Double.parseDouble(getOptionsExportModel().parseBuildNumber(nbBuildNumber));
         } catch (NumberFormatException nfe) {
             LOGGER.log(Level.INFO, "Could not parse netbeans.buildnumber: {0}", nbBuildNumber);  //NOI18N
             currentBuildNumber = 201403101706.0;  // default to build date of 8.0 version

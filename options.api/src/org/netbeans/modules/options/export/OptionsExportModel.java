@@ -114,6 +114,13 @@ public final class OptionsExportModel {
     private final String PASSWORDS_PATTERN = "config/Preferences/org/netbeans/modules/keyring.*";  // NOI18N
     static final String ENABLED_ITEMS_INFO = "enabledItems.info";  // NOI18N
     static final String BUILD_INFO = "build.info";  // NOI18N
+    
+    /**
+     * Simple regex to match build.version in format "YYYY MM DD HH mm".
+     * HHmm is optional and YYYY starts from 2000 until 2099
+     */
+    private static final String DATE_SIMPLE_REGEX = "(?<YEAR>(20)\\d\\d)(?<MONTH>0[1-9]|1[012])(?<DAY>0[1-9]|[12][0-9]|3[01])((?<HOURS>[0-1][0-9]|2[0-3])(?<MINUTES>[0-5][0-9]))?"; // NOI18N
+    private static final Pattern DATE_SIMPLE_PATTERN = Pattern.compile(DATE_SIMPLE_REGEX);
 
     /** Returns instance of export options model.
      * @param source source of export/import. It is either zip file or userdir
@@ -232,30 +239,17 @@ public final class OptionsExportModel {
     }
     
     String parseBuildNumber(String strLine) {
-        String buildNumber = null;
-        if (strLine.startsWith("NetbeansBuildnumber=")) {  // NOI18N
-            return getBuildNumber(strLine.substring(20));
+        Matcher matcher = DATE_SIMPLE_PATTERN.matcher(strLine);
+        if (matcher.find()) {
+            String year = matcher.group("YEAR");
+            String month = matcher.group("MONTH");
+            String day = matcher.group("DAY");
+            String hours = matcher.group("HOURS");
+            String minutes = matcher.group("MINUTES");
+            String time = (hours != null && minutes != null) ? hours.concat(minutes) : "2359";  // NOI18N
+            return year.concat(month).concat(day).concat(time);
         }
-        if (strLine.startsWith("ProductVersion=")) {  // NOI18N
-            int index = strLine.indexOf(" (Build ");
-            if (index != -1) {
-                return getBuildNumber(strLine.substring(index + 8, strLine.length() - 1));
-            } else {
-                // org.netbeans.core.startup.Bundle#currentVersion has been branded, so at this point
-                // we can only guess/hope that build number is the last number in the branded token
-                index = strLine.lastIndexOf(" ") + 1;
-                return getBuildNumber(strLine.substring(index));
-            }
-        }
-        return buildNumber;
-    }
-    
-    String getBuildNumber(String build) {
-        String number = build;
-        if (build.contains("-")) { // dev build e.g. 20140606-ab7b8979c660
-            number = build.substring(0, build.indexOf("-")).concat("2359");  // NOI18N
-        }
-        return number;
+        return null;
     }
 
     /**
