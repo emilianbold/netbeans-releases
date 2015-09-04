@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -123,9 +124,9 @@ public class LineBreakpoint extends AbstractBreakpoint {
                                 Parser.Result parserResult = resultIterator.getParserResult();
                                 if (parserResult != null && parserResult instanceof PHPParseResult) {
                                     PHPParseResult phpParserResult = (PHPParseResult) parserResult;
-                                    int rowStart = Utilities.getRowStartFromLineOffset(baseDocument, myLine.getLineNumber());
+                                    int rowStart = LineDocumentUtils.getLineStartFromIndex(baseDocument, myLine.getLineNumber());
                                     int contentStart = Utilities.getRowFirstNonWhite(baseDocument, rowStart);
-                                    int contentEnd = Utilities.getRowLastNonWhite(baseDocument, rowStart) + 1;
+                                    int contentEnd = LineDocumentUtils.getLineLastNonWhitespace(baseDocument, rowStart) + 1;
                                     StatementVisitor statementVisitor = new StatementVisitor(contentStart, contentEnd);
                                     statementVisitor.scan(phpParserResult.getProgram().getStatements());
                                     int properStatementOffset = statementVisitor.getProperStatementOffset();
