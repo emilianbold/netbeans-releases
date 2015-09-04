@@ -211,8 +211,17 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
     
     private String spaces(int i){
         StringBuilder buf = new StringBuilder(i);
+        if (!expandTabs()) {
+            int tabSize = getTabSize();
+            if (tabSize > 1) {
+                while (i >= tabSize) {
+                    buf.append('\t'); //NOI18N
+                    i -= tabSize;
+                }
+            }
+        }
         for(;i>0;i--){
-            buf.append(' ');
+            buf.append(' '); //NOI18N
         }
         return buf.toString();
     }

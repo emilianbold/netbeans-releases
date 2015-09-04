@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.Iterator;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -57,8 +58,8 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsPro
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup.Provider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -98,7 +99,8 @@ public class CompileSupport extends CompileOptionsProvider {
                 lock = properties.lock();
                 properties.rename(lock, newName, STORAGE_SUFFIX);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                BuildProjectActionHandler.logger.log(Level.WARNING, 
+                        NbBundle.getMessage(CompileSupport.class, "CANNOT_RENAME_COMPILE_LINES"), properties.getPath()); // NOI18N
             } finally {
                 if (lock != null) {
                     lock.releaseLock();
@@ -118,7 +120,8 @@ public class CompileSupport extends CompileOptionsProvider {
                 lock = properties.lock();
                 properties.delete(lock);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                BuildProjectActionHandler.logger.log(Level.WARNING, 
+                        NbBundle.getMessage(CompileSupport.class, "CANNOT_REMOVE_COMPILE_LINES"), properties.getPath()); // NOI18N
             } finally {
                 if (lock != null) {
                     lock.releaseLock();
@@ -135,7 +138,9 @@ public class CompileSupport extends CompileOptionsProvider {
             try {
                 properties = FileUtil.createData(nbPrivateProjectFileObject, confName+"."+STORAGE_SUFFIX); // NOI18N
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                BuildProjectActionHandler.logger.log(Level.WARNING, 
+                        NbBundle.getMessage(CompileSupport.class, "CANNOT_SAVE_COMPILE_LINES"), // NOI18N
+                        nbPrivateProjectFileObject.getPath()+"/"+confName+"."+STORAGE_SUFFIX); // NOI18N
                 return;
             }
         }
@@ -153,7 +158,8 @@ public class CompileSupport extends CompileOptionsProvider {
                 }
                 
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                BuildProjectActionHandler.logger.log(Level.WARNING, 
+                        NbBundle.getMessage(CompileSupport.class, "CANNOT_SAVE_COMPILE_LINES"), properties.getPath()); // NOI18N
             } finally {
                 if (outputStream != null) {
                     outputStream.close();
@@ -203,13 +209,14 @@ public class CompileSupport extends CompileOptionsProvider {
                     };
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                BuildProjectActionHandler.logger.log(Level.WARNING, 
+                        NbBundle.getMessage(CompileSupport.class, "CANNOT_READ_COMPILE_LINES"), properties.getPath()); // NOI18N
             } finally {
                 if (in != null) {
                     try {
                         in.close();
                     } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        // do nothing
                     }
                 }
             }

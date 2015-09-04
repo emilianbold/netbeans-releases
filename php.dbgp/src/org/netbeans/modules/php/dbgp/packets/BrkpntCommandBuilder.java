@@ -59,6 +59,10 @@ public final class BrkpntCommandBuilder {
     }
 
     public static BrkpntSetCommand buildLineBreakpoint(SessionId id, String transactionId, FileObject localFile, int lineNumber) {
+        if (localFile == null) {
+            // #251806
+            return null;
+        }
         BrkpntSetCommand command = new BrkpntSetCommand(transactionId);
         String uri = id.toWebServerURI(localFile);
         if (uri == null) {
