@@ -295,7 +295,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 String ek = Integer.toString(startPos) + ":" + err.getKey(); // NOI18N
                 
                 //Guess if there is parsing error too large
-                if (err.getKey().equals("PARSING") && err.getDescription().contains("too large")) {
+                if ("PARSING".equals(err.getKey()) && err.getDescription() != null && err.getDescription().contains("too large")) {
                     errorTooLargeForParser = true;
                 }
                 if (!seenErrorKeys.add(ek)) {

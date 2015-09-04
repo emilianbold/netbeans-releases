@@ -242,6 +242,8 @@ public class DebugSession extends SingleThread {
                         retval = (DbgpResponse) message;
                     }
                 }
+            } catch (SocketException e) {
+                log(e);
             } catch (IOException e) {
                 log(e);
             }

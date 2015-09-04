@@ -284,7 +284,10 @@ public class ToolTipAnnotation extends Annotation implements PropertyChangeListe
     }
 
     private String getSelectedText(JEditorPane pane, int offset) {
-        if ((pane != null && pane.getSelectionStart() <= offset) && (offset <= pane.getSelectionEnd())) {
+        if (pane != null
+                && pane.getCaret() != null
+                && pane.getSelectionStart() <= offset
+                && offset <= pane.getSelectionEnd()) {
             return pane.getSelectedText();
         }
         return null;
