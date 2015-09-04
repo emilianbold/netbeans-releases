@@ -348,14 +348,8 @@ public final class EditorFindSupport {
     
     public boolean incSearch(Map<String, Object> props, int caretPos) {
         props = getValidFindProperties(props);
-
-        // if regexp terminate incSearch
-        Boolean b = (Boolean)props.get(FIND_REG_EXP);
-        if (b !=null && b.booleanValue()){
-            return false;
-        }
         
-        b = (Boolean)props.get(FIND_INC_SEARCH);
+        Boolean b = (Boolean)props.get(FIND_INC_SEARCH);
         if (b != null && b.booleanValue()) { // inc search enabled
             JTextComponent comp = getFocusedTextComponent();
             
@@ -409,7 +403,12 @@ public final class EditorFindSupport {
                                 false
                             );
                         }
-                        ensureVisible(comp, pos, pos);
+                        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+                        if (prefs.get(SimpleValueNames.EDITOR_SEARCH_TYPE, "default").equals("closing")) { // NOI18N
+                            ensureVisible(comp, pos, pos);
+                        } else {
+                            selectText(comp, pos, pos + len, back);
+                        }
                         return true;
                     }
                 }
