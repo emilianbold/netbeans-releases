@@ -58,10 +58,13 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -91,6 +94,7 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
     
     private static HgVersioningTopComponent instance;
     private WorkingCopyInfo info;
+    private File[] files = new File[0];
 
     public HgVersioningTopComponent() {
         putClientProperty("SlidingName", NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
@@ -135,15 +139,18 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(this.contentTitle);
-        out.writeObject(context == null ? new File[0] : context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+        File[] files = context == null
+                ? this.files
+                : context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
+        out.writeObject(files);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         setContentTitle((String) in.readObject());
-        File[] files = (File[]) in.readObject();
-        List<Node> nodes = new LinkedList<Node>();
+        files = (File[]) in.readObject();
+        final List<Node> nodes = new ArrayList<>(files.length);
         for (File file : files) {
             nodes.add(new AbstractNode(Children.LEAF, Lookups.singleton(file)) {
                 @Override
@@ -152,8 +159,29 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
                 }
             });
         }
-        VCSContext ctx = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
-        setContext(ctx);
+        setContext(null);
+        Utils.post(new Runnable() {
+
+            @Override
+            public void run () {
+                try {
+                    OpenProjects.getDefault().openProjects().get();
+                } catch (InterruptedException | ExecutionException ex) {
+                }
+                final VCSContext ctx = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
+                EventQueue.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run () {
+                        if (context == null) {
+                            setContext(ctx);
+                            performRefreshAction();
+                        }
+                    }
+                    
+                });
+            }
+        });
     }
 
     private void refreshContent() {
