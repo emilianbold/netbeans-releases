@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -56,7 +57,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
-import org.netbeans.modules.j2ee.weblogic9.dd.web1031.FastSwapType;
 import org.netbeans.modules.schema2beans.AttrProp;
 import org.netbeans.modules.schema2beans.NullEntityResolver;
 import org.openide.util.NbBundle;
@@ -68,6 +68,10 @@ import org.xml.sax.SAXException;
  * @author Petr Hejl
  */
 public final class WebApplicationModel extends BaseDescriptorModel {
+
+    private static final Pattern SCHEMA_1031 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-web-app/1\\.[0-3]/weblogic-web-app\\.xsd"); // NOI18N
+
+    private static final Pattern SCHEMA_1211 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-web-app/1\\.[4-7]/weblogic-web-app\\.xsd"); // NOI18N
 
     private final WeblogicWebApp bean;
 
@@ -103,7 +107,14 @@ public final class WebApplicationModel extends BaseDescriptorModel {
 
         String ns = doc.getDocumentElement().getNamespaceURI();
         if ("http://xmlns.oracle.com/weblogic/weblogic-web-app".equals(ns)) { // NOI18N
-            return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp.createGraph(doc));
+            String value = doc.getDocumentElement().getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation"); // NOI18N
+            if (SCHEMA_1031.matcher(value).matches()) {
+                return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp.createGraph(doc));
+            } else if (SCHEMA_1211.matcher(value).matches()) {
+                return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1211.WeblogicWebApp.createGraph(doc));
+            } else {
+                return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1211.WeblogicWebApp.createGraph(doc));
+            }
         } else if ("http://www.bea.com/ns/weblogic/weblogic-web-app".equals(ns)) { // NOI18N
             return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1030.WeblogicWebApp.createGraph(doc));
         }
@@ -112,7 +123,9 @@ public final class WebApplicationModel extends BaseDescriptorModel {
     
     public static WebApplicationModel generate(@NullAllowed Version serverVersion) {
         if (serverVersion != null) {
-            if (serverVersion.isAboveOrEqual(VERSION_10_3_1)) {
+            if (serverVersion.isAboveOrEqual(VERSION_12_1_1)) {
+                return generate1211();
+            } else if (serverVersion.isAboveOrEqual(VERSION_10_3_1)) {
                 return generate1031();
             } else if (serverVersion.isAboveOrEqual(VERSION_10_3_0)) {
                 return generate1030();
@@ -142,7 +155,14 @@ public final class WebApplicationModel extends BaseDescriptorModel {
         webLogicWebApp.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
         webLogicWebApp.setAttributeValue("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.0/weblogic-web-app.xsd"); // NOI18N
         return new WebApplicationModel(webLogicWebApp);
-    }    
+    }
+
+    private static WebApplicationModel generate1211() {
+        org.netbeans.modules.j2ee.weblogic9.dd.web1211.WeblogicWebApp webLogicWebApp = new org.netbeans.modules.j2ee.weblogic9.dd.web1211.WeblogicWebApp();
+        webLogicWebApp.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
+        webLogicWebApp.setAttributeValue("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.4/weblogic-web-app.xsd"); // NOI18N
+        return new WebApplicationModel(webLogicWebApp);
+    }
     
     @CheckForNull
     public String getContextRoot() {
@@ -228,10 +248,14 @@ public final class WebApplicationModel extends BaseDescriptorModel {
 
     public void setFastSwap(boolean fast) {
         if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) {
-            FastSwapType fastSwap = new FastSwapType();
+            org.netbeans.modules.j2ee.weblogic9.dd.web1031.FastSwapType fastSwap = new org.netbeans.modules.j2ee.weblogic9.dd.web1031.FastSwapType();
             fastSwap.setEnabled(fast);
             ((org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp) bean).setFastSwap(fastSwap);
-        }        
+        } else if (bean instanceof org.netbeans.modules.j2ee.weblogic9.dd.web1211.WeblogicWebApp) {
+            org.netbeans.modules.j2ee.weblogic9.dd.web1211.FastSwapType fastSwap = new org.netbeans.modules.j2ee.weblogic9.dd.web1211.FastSwapType();
+            fastSwap.setEnabled(fast);
+            ((org.netbeans.modules.j2ee.weblogic9.dd.web1211.WeblogicWebApp) bean).setFastSwap(fastSwap);
+        }
     }
   
     private JspDescriptorType[] getJspDescriptor() {
