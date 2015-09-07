@@ -81,11 +81,10 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
     public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
         if (file != null) {
-            if (request.isCancelled()) {
-                return;
-            }
-            
             for (CsmReference ref : CsmReferenceResolver.getDefault().getReferences(file)) {
+                if (request.isCancelled()) {
+                    return;
+                }
                 if (CsmKindUtilities.isFunction(ref.getReferencedObject())) {
                     CsmFunction function = (CsmFunction) ref.getReferencedObject();
                     String altText = getAlternativesIfUnsafe(function);
