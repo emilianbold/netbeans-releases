@@ -319,10 +319,21 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         }
 
         String dirName;
-        if (expanded) {
-            dirName = ConfigurationMakefileWriter.getObjectDir(conf);
+        if (item.getFolder() != null && item.getFolder().isTest()) {
+            if (expanded) {
+                dirName = ConfigurationMakefileWriter.getTestObjectDir(conf);
+            } else {
+                // I think it's a good idea to get rid of hardcoded paths
+                // (i.e. MakeActionProvider::getOutputFile, ConfigurationMakefileWriter::writeLinkTestTarget, ...)
+                // target.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}");
+                dirName = "${TESTDIR}";
+            }
         } else {
-            dirName = MakeConfiguration.OBJECTDIR_MACRO;
+            if (expanded) {
+                dirName = ConfigurationMakefileWriter.getObjectDir(conf);
+            } else {
+                dirName = MakeConfiguration.OBJECTDIR_MACRO;
+            }
         }
 
         if (CndPathUtilities.isPathAbsolute(fileName) || filePath.startsWith("..")) { // NOI18N;
