@@ -198,7 +198,9 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         }
         LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
         editorPane.setFont(referenceTextField.getFont());
-        editorPane.setCaretColor(referenceTextField.getCaretColor());
+        if (!isCurrentLF("Nimbus")) {
+            editorPane.setCaretColor(referenceTextField.getCaretColor());
+        }
         LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
     }
 
