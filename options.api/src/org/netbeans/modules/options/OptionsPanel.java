@@ -725,6 +725,7 @@ public class OptionsPanel extends JPanel {
                                         if (exactTabIndex == tabIndex
 						&& (exactTabTitle == null || (exactTabTitle != null && pane.getTitleAt(tabIndex).equals(exactTabTitle)))) {
                                             pane.setSelectedIndex(tabIndex);
+                                            setCurrentCategory(categoryModel.getCategory(id), null);
                                         }
 					matchedKeywords = getAllMatchedKeywords(tabWords, stWords);
 					categoryModel.getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
