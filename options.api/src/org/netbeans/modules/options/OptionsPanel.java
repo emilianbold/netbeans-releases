@@ -746,6 +746,11 @@ public class OptionsPanel extends JPanel {
                                     }
                                 }
                             }
+                            // above we tried to find an exact match and were conservative about selecting a specific tab, so if
+                            // the search term is found and no tab is yet selected make sure at least last one found gets selected
+                            if (!foundInNoTab && pane.getSelectedIndex() == -1) {
+                                pane.setSelectedIndex(exactTabIndex);
+                            }
                             if(foundInNoTab) {
                                 handleNotFound(id, exactCategory, exactTabTitle);
                             }
