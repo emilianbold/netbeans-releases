@@ -135,6 +135,8 @@ public class MavenJUnitTestMethodNode extends JUnitTestMethodNode {
     }
 
     public FileObject getTestcaseFileObject() {
-        return getProject().getLookup().lookup(LineConvertors.FileLocator.class).find(testcase.getLocation());
+        LineConvertors.FileLocator fileLocator = getProject().getLookup().lookup(LineConvertors.FileLocator.class);
+        String location = testcase.getLocation();
+        return fileLocator.find(location);
     }
 }
