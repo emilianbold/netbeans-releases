@@ -69,6 +69,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1185,14 +1186,18 @@ public class BinaryAnalyser {
                                     err.getMessage()
                                 });
                         return true;
-                    } catch (IllegalArgumentException iae) {
+                    } catch (RuntimeException re) {
+                        if (re instanceof NoSuchElementException) {
+                            //Valid for Enumeration.nextElement
+                            throw (NoSuchElementException) re;
+                        }
                         if (!brokenLogged) {
                             LOGGER.log(
                                     Level.INFO,
                                     "Broken zip file: {0}, reason: {1}",    //NOI18N
                                     new Object[]{
                                         zipFile.getName(),
-                                        iae.getMessage()
+                                        re.getMessage()
                                     });
                             brokenLogged = true;
                         }
