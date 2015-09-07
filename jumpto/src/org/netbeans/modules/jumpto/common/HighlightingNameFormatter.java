@@ -180,11 +180,14 @@ public class HighlightingNameFormatter {
         //AbcDeFGhiJo -> [Abc, De, F, Ghi, Jo]
         StringBuilder sb = new StringBuilder(searchText.length());
         for (char c : searchText.toCharArray()) {
-            if (isCamelCaseStart(c) || c == '?') {  //NOI18N
-                //add split marker into text before the uppercase char and replace '?' by '*'
-                //example: AbcDeFGhiJo -> &Abc&De&F&Ghi&Jo
-                sb.append("*"); //NOI18N
+            if (isCamelCaseStart(c)) {
+                //add split marker into text before the uppercase char
+                //example: AbcDeFGhiJo -> *Abc*De*F*Ghi*Jo
+                sb.append('*'); //NOI18N
                 sb.append(c);
+            } else if (c == '?') {    //NOI18N
+                //replace '?' by '*'
+                sb.append('*'); //NOI18N
             } else {
                 sb.append(c);
             }

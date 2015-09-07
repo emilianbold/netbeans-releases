@@ -75,6 +75,12 @@ public class HighlightingNameFormatterTest {
     }
 
     @Test
+    public void testRegExp() {
+        String typeName = "PrinterMakeAndModel";
+        assertEquals("PrinterM[a]keAnd[Model]", cut.formatName(typeName, "*a??Model", false));
+    }
+
+    @Test
     public void testFormatTypeName_NullOrEmpty() {
         String typeName = "AbstractDummyBarTest";
         assertEquals("AbstractDummyBarTest", cut.formatName(typeName, null, true));
