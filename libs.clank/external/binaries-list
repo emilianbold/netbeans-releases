@@ -1,6 +1,6 @@
-#changeset:   15606:5876f1ba6cbe
+#changeset:   15634:4ba4d882ccb5
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Sep 04 21:40:39 2015 +0300
-#summary:     clean up
-7A27770B8539DFCF12CD921776FF67E41150F5F7 clank_0.3.6.zip
+#date:        Mon Sep 07 05:54:27 2015 +0300
+#summary:     PERF: less State[] copies
+E603B8FF6E0BC21F7CCF07A8E6D07E5B2BBE3B8B clank_0.3.6.zip
