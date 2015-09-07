@@ -507,6 +507,7 @@ public class OptionsPanel extends JPanel {
 
         Set<String> keywords = new HashSet<String>();
 	keywords.add(location.toUpperCase());
+        keywords.add(tabTitle.toUpperCase());
 	Enumeration<String> attributes = keywordsFO.getAttributes();
 	while(attributes.hasMoreElements()) {
 	    String attribute = attributes.nextElement();
