@@ -1588,9 +1588,11 @@ public class ConfigurationMakefileWriter {
                 if (folder.isTest()) {
                     ItemConfiguration itemConfiguration = items[x].getItemConfiguration(conf);
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
-                    String outputFile = compilerConfiguration.getOutputFile(items[x], conf, false);
-                    linkObjects.append(" \\\n\t"); // NOI18N
-                    linkObjects.append(outputFile);
+                    if (compilerConfiguration != null) {
+                        String outputFile = compilerConfiguration.getOutputFile(items[x], conf, false);
+                        linkObjects.append(" \\\n\t"); // NOI18N
+                        linkObjects.append(outputFile);
+                    }
                 }
             }
         }
