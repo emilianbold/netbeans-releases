@@ -826,6 +826,12 @@ public class OptionsPanel extends JPanel {
 
         @Override
         public void quickSearchCanceled() {
+            if(!text2search.trim().isEmpty()) {
+                // we got a call from GuickSearch.SearchFieldListener.searchForNode(),
+                // so call quickSearchUpdate ourselves.
+                quickSearchUpdate("");
+                return;
+            }
             clearAllinQS();
             if (searchTC.hasFocus()) {
                 showHint(false);
