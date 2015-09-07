@@ -49,13 +49,16 @@ import java.util.regex.Pattern;
 import java.util.logging.*;
 
 import java.io.*;
+import java.util.HashMap;
 
 import org.openide.ErrorManager;
 
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -79,7 +82,7 @@ import org.openide.util.Exceptions;
 
 public abstract class PsProvider {
 
-    private static final boolean DISABLE_PARGS = Boolean.getBoolean("attach.pargs.disable"); //NOI18N
+    private static boolean DISABLE_PARGS = Boolean.getBoolean("attach.pargs.disable"); //NOI18N
 
     private static final Logger logger =
 	Logger.getLogger(PsProvider.class.getName());
@@ -289,7 +292,9 @@ public abstract class PsProvider {
                 pargsBuilder.setArguments(pargs_args);
 
                 try {
-                    List<String> pargsOutput = ProcessUtils.readProcessOutput(pargsBuilder.call());
+                    final NativeProcess pargsProcess = pargsBuilder.call();
+                    CndUtils.assertNotNull(pargsProcess, "pargsBuilder.call() returned null");   // NOI18N
+                    List<String> pargsOutput = ProcessUtils.readProcessOutput(pargsProcess);
                     updatePargsData(res, pargs_args, pargsOutput);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -302,6 +307,7 @@ public abstract class PsProvider {
     
     static void updatePargsData(PsData res, String[] pargs_args, List<String> pargsOutput) {
         int idx = 1;
+        final Map<String, String> updateTable = new HashMap();
         for (String procArgs : pargsOutput) {
             if (procArgs.isEmpty() ||
                     procArgs.startsWith("pargs: Warning") || // NOI18N
@@ -310,13 +316,18 @@ public abstract class PsProvider {
                 continue;
             }
             if (!procArgs.startsWith("pargs:")) { // NOI18N
-                res.updateCommand(pargs_args[idx], procArgs);
+                updateTable.put(pargs_args[idx], procArgs);
             }
             idx++;
         }
         if ( (idx-1) != res.processes.size()) {     // we should check if the operation has been applied to all processes
             logger.info("Process list:" + res.processes.toString() + "\npargs output:" + pargsOutput.toString()); // NOI18N
+            DISABLE_PARGS = true;
             throw new AssertionError("PsProvider failed to match pargs output with ps output");
+        } else {
+            for (Map.Entry<String, String> entry : updateTable.entrySet()) {
+                res.updateCommand(entry.getKey(), entry.getValue());
+            }
         }
     }
 
