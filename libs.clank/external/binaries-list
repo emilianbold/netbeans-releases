@@ -1,6 +1,6 @@
-#changeset:   15635:9e392f8bc057
+#changeset:   15638:7743a7abdc91
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Sep 07 12:48:02 2015 +0300
-#summary:     fixed #254998 - [newcodemodel] two byte symbol breaks code model
-7385A49AB39EB7BE5055C491622C82C010B7F2A4 clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Mon Sep 07 17:05:03 2015 +0300
+#summary:     PERF: reuse in$ptr (19G=>8G on boost)
+B1FCDE2DC83ADD7D1252319FF6B3E2DFBE30746D clank_0.3.6.zip
