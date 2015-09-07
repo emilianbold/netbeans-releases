@@ -1,6 +1,6 @@
-#changeset:   15634:4ba4d882ccb5
+#changeset:   15635:9e392f8bc057
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Sep 07 05:54:27 2015 +0300
-#summary:     PERF: less State[] copies
-E603B8FF6E0BC21F7CCF07A8E6D07E5B2BBE3B8B clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Mon Sep 07 12:48:02 2015 +0300
+#summary:     fixed #254998 - [newcodemodel] two byte symbol breaks code model
+7385A49AB39EB7BE5055C491622C82C010B7F2A4 clank_0.3.6.zip
