@@ -811,6 +811,18 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null) return;
         String id = evt.getPropertyName();
+        if (evt.getSource() == textComponent) {
+            if ("caret".equals(id)) {
+                if (caret != null) {
+                    caret.removeChangeListener(this);
+                }
+                caret = textComponent.getCaret();
+                if (caret != null) {
+                    caret.addChangeListener(this);
+                }
+            }
+            return;
+        }
         if (EditorUI.COMPONENT_PROPERTY.equals(id)) {  // NOI18N
             if (evt.getNewValue() == null){
                 // component deinstalled, lets uninstall all isteners
