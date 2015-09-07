@@ -73,6 +73,8 @@ public final class WebApplicationModel extends BaseDescriptorModel {
 
     private static final Pattern SCHEMA_1211 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-web-app/1\\.[4-7]/weblogic-web-app\\.xsd"); // NOI18N
 
+    private static final Pattern SCHEMA_1221 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-web-app/1\\.[8]/weblogic-web-app\\.xsd"); // NOI18N
+
     private final WeblogicWebApp bean;
 
     private WebApplicationModel(WeblogicWebApp bean) {
@@ -112,8 +114,10 @@ public final class WebApplicationModel extends BaseDescriptorModel {
                 return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1031.WeblogicWebApp.createGraph(doc));
             } else if (SCHEMA_1211.matcher(value).matches()) {
                 return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1211.WeblogicWebApp.createGraph(doc));
+            } else if (SCHEMA_1221.matcher(value).matches()) {
+                return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1221.WeblogicWebApp.createGraph(doc));
             } else {
-                return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1211.WeblogicWebApp.createGraph(doc));
+                return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1221.WeblogicWebApp.createGraph(doc));
             }
         } else if ("http://www.bea.com/ns/weblogic/weblogic-web-app".equals(ns)) { // NOI18N
             return new WebApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.web1030.WeblogicWebApp.createGraph(doc));
@@ -123,7 +127,9 @@ public final class WebApplicationModel extends BaseDescriptorModel {
     
     public static WebApplicationModel generate(@NullAllowed Version serverVersion) {
         if (serverVersion != null) {
-            if (serverVersion.isAboveOrEqual(VERSION_12_1_1)) {
+            if (serverVersion.isAboveOrEqual(VERSION_12_2_1)) {
+                return generate1221();
+            } else if (serverVersion.isAboveOrEqual(VERSION_12_1_1)) {
                 return generate1211();
             } else if (serverVersion.isAboveOrEqual(VERSION_10_3_1)) {
                 return generate1031();
@@ -161,6 +167,13 @@ public final class WebApplicationModel extends BaseDescriptorModel {
         org.netbeans.modules.j2ee.weblogic9.dd.web1211.WeblogicWebApp webLogicWebApp = new org.netbeans.modules.j2ee.weblogic9.dd.web1211.WeblogicWebApp();
         webLogicWebApp.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
         webLogicWebApp.setAttributeValue("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.4/weblogic-web-app.xsd"); // NOI18N
+        return new WebApplicationModel(webLogicWebApp);
+    }
+
+    private static WebApplicationModel generate1221() {
+        org.netbeans.modules.j2ee.weblogic9.dd.web1221.WeblogicWebApp webLogicWebApp = new org.netbeans.modules.j2ee.weblogic9.dd.web1221.WeblogicWebApp();
+        webLogicWebApp.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
+        webLogicWebApp.setAttributeValue("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.8/weblogic-web-app.xsd"); // NOI18N
         return new WebApplicationModel(webLogicWebApp);
     }
     
