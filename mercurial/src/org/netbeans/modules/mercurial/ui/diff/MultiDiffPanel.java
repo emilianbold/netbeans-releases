@@ -634,8 +634,28 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         if (refreshTask != null) {
             HgModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         }
+        if (diffView != null) {
+            // Traverse children components of controller panel and release the editor panes
+            // from editor registry and annotation holder
+            releaseChildrenPanes(diffView);
+        }
         super.removeNotify();
     }
+    
+    private static void releaseChildrenPanes(JComponent c) {
+        for (int i = c.getComponentCount() - 1; i >= 0; i--) {
+            java.awt.Component ac = c.getComponent(i);
+            if (ac instanceof JComponent) {
+                JComponent ch = (JComponent) ac;
+                if (Boolean.TRUE.equals(ch.getClientProperty("usedByCloneableEditor"))) {
+                    ch.putClientProperty("usedByCloneableEditor", Boolean.FALSE);
+                } else {
+                    releaseChildrenPanes(ch);
+                }
+            }
+        }
+    }
+    
     
     private boolean affectsView(PropertyChangeEvent event) {
         FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) event.getNewValue();

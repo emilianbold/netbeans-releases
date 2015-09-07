@@ -73,7 +73,7 @@ import org.openide.util.WeakListeners;
  * @author Miloslav Metelka
  */
 
-public final class HighlightsViewFactory extends EditorViewFactory implements HighlightsChangeListener {
+public final class HighlightsViewFactory extends EditorViewFactory implements HighlightsChangeListener, ChangeListener {
     
     /**
      * Length of the highlights view (text layout) above which the infrastructure will search
@@ -153,18 +153,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     public HighlightsViewFactory(View documentView) {
         super(documentView);
         highlightingManager = HighlightingManager.getInstance(textComponent());
-        highlightingManager.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) { // Layers in highlighting manager changed
-                if (isReleased()) {
-                    return;
-                }
-                notifyStaleCreation();
-                updateHighlightsContainer();
-                fireEvent(EditorViewFactoryChange.createList(0, document().getLength() + 1,
-                        EditorViewFactoryChange.Type.REBUILD));
-            }
-        });
+        highlightingManager.addChangeListener(this);
         updateHighlightsContainer();
     }
 
@@ -414,6 +403,11 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     }
 
     @Override
+    protected void released() {
+        highlightingManager.removeChangeListener(this);
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(100);
         sb.append("lineIndex=").append(lineIndex). // NOI18N
@@ -423,6 +417,17 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                 append(", nextCharType=").append(nextCharType); // NOI18N
         sb.append(", ").append(super.toString());
         return sb.toString();
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if (isReleased()) {
+            return;
+        }
+        notifyStaleCreation();
+        updateHighlightsContainer();
+        fireEvent(EditorViewFactoryChange.createList(0, document().getLength() + 1,
+                EditorViewFactoryChange.Type.REBUILD));
     }
 
     public static final class HighlightsFactory implements EditorViewFactory.Factory {
