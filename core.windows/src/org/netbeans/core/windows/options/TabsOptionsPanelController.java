@@ -60,7 +60,6 @@ import org.openide.util.Lookup;
     keywordsCategory="Appearance/Tabs",
     location = "Appearance"
 )
-@org.openide.util.NbBundle.Messages({"KW_TabsOptions=editor tabs, multi-row", "Tabs_DisplayName=Document Tabs"})
 public class TabsOptionsPanelController extends OptionsPanelController {
 
     private TabsPanel panel;
