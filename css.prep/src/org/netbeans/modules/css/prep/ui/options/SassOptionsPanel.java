@@ -78,7 +78,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords={"css", "preprocessors", "sass", "#CssPrepOptionsPanel.keywords.preprocessing"},
-        location=CssPreprocessors.OPTIONS_PATH, tabTitle="#CssPrepOptionsPanel.name")
+        location=CssPreprocessors.OPTIONS_CATEGORY, tabTitle="#CssPrepOptionsPanel.name")
 public final class SassOptionsPanel extends JPanel {
 
     private static final Logger LOGGER = Logger.getLogger(SassOptionsPanel.class.getName());
