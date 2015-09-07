@@ -568,7 +568,9 @@ public class WebKitPageModel extends PageModel {
         if (domNode == null) {
             domNode = new DOMNode(this, node);
             nodes.put(nodeId, domNode);
-            checkPageSize();
+            if (nodes.size() > MAX_NODES) { // Check page size
+                showPageSizeWarning();
+            }
         }
         boolean updateChildren = false;
         List<Node> subNodes = node.getChildren();
@@ -577,6 +579,9 @@ public class WebKitPageModel extends PageModel {
             if (nodeType == org.w3c.dom.Node.ELEMENT_NODE
                     || nodeType == org.w3c.dom.Node.DOCUMENT_NODE
                     || nodeType == org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE) {
+                if (node.getChildrenCount() > MAX_CHILD_NODES) {
+                    showPageSizeWarning();
+                }
                 webKit.getDOM().requestChildNodes(nodeId);
             }
         } else {
@@ -618,6 +623,8 @@ public class WebKitPageModel extends PageModel {
 
     /** Maximum number of elements in a page for safe inspection. */
     private static final int MAX_NODES = 100000;
+    /** Maximum number of child nodes of one node for safe inspection. */
+    private static final int MAX_CHILD_NODES = 20000;
     /** Determines whether a warning about the size of the page was shown. */
     private boolean pageSizeWarningShown = false;
     
@@ -632,8 +639,8 @@ public class WebKitPageModel extends PageModel {
                 + "You may run out of memory if you continue with the inspection. "
                 + "Do you what to close this page and stop its inspection?"
     })
-    private void checkPageSize() {
-        if (!pageSizeWarningShown && nodes.size() > MAX_NODES) {
+    private void showPageSizeWarning() {
+        if (!pageSizeWarningShown) {
             pageSizeWarningShown = true;
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
                     Bundle.WebKitPageModel_pageSizeWarningMessage(),

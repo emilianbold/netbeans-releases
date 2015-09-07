@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -64,6 +65,10 @@ import org.xml.sax.SAXException;
  * @author Petr Hejl
  */
 public final class MessageModel extends BaseDescriptorModel {
+
+    private static final Pattern SCHEMA_1031 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-jms/1\\.[0-3]/weblogic-jms\\.xsd"); // NOI18N
+
+    private static final Pattern SCHEMA_1211 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-jms/1\\.[4]/weblogic-jms\\.xsd"); // NOI18N
 
     private final WeblogicJms bean;
 
@@ -97,11 +102,24 @@ public final class MessageModel extends BaseDescriptorModel {
             throw new RuntimeException(NbBundle.getMessage(EarApplicationModel.class, "MSG_CantCreateXMLDOMDocument"), ex);
         }
 
-        //String ns = doc.getDocumentElement().getNamespaceURI();
-        return new MessageModel(org.netbeans.modules.j2ee.weblogic9.dd.jms1031.WeblogicJms.createGraph(doc));
+        String value = doc.getDocumentElement().getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation"); // NOI18N
+        if (SCHEMA_1031.matcher(value).matches()) {
+            return new MessageModel(org.netbeans.modules.j2ee.weblogic9.dd.jms1031.WeblogicJms.createGraph(doc));
+        } else if (SCHEMA_1211.matcher(value).matches()) {
+            return new MessageModel(org.netbeans.modules.j2ee.weblogic9.dd.jms1211.WeblogicJms.createGraph(doc));
+        } else {
+            return new MessageModel(org.netbeans.modules.j2ee.weblogic9.dd.jms1211.WeblogicJms.createGraph(doc));
+        }
     }
 
     public static MessageModel generate(@NullAllowed Version serverVersion) {
+        if (serverVersion != null) {
+            if (serverVersion.isAboveOrEqual(VERSION_12_1_1)) {
+                return generate1211();
+            } else if (serverVersion.isAboveOrEqual(VERSION_10_3_1)) {
+                return generate1031();
+            }
+        }
         return generate1031();
     }
 
@@ -161,6 +179,13 @@ public final class MessageModel extends BaseDescriptorModel {
         org.netbeans.modules.j2ee.weblogic9.dd.jms1031.WeblogicJms webLogicJms = new org.netbeans.modules.j2ee.weblogic9.dd.jms1031.WeblogicJms();
         webLogicJms.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
         webLogicJms.setAttributeValue("xsi:schemaLocation", "http://xmlns.oracle.com/weblogic/weblogic-jms http://xmlns.oracle.com/weblogic/weblogic-jms/1.0/weblogic-jms.xsd"); // NOI18N
+        return new MessageModel(webLogicJms);
+    }
+
+    private static MessageModel generate1211() {
+        org.netbeans.modules.j2ee.weblogic9.dd.jms1211.WeblogicJms webLogicJms = new org.netbeans.modules.j2ee.weblogic9.dd.jms1211.WeblogicJms();
+        webLogicJms.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
+        webLogicJms.setAttributeValue("xsi:schemaLocation", "http://xmlns.oracle.com/weblogic/weblogic-jms http://xmlns.oracle.com/weblogic/weblogic-jms/1.4/weblogic-jms.xsd"); // NOI18N
         return new MessageModel(webLogicJms);
     }
 
