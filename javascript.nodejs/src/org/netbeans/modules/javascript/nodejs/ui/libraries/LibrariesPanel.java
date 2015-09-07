@@ -58,6 +58,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
+import javax.swing.JPanel;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -68,6 +69,7 @@ import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelContr
 import org.netbeans.modules.web.common.api.UsageLogger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -76,7 +78,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Stola
  */
-public class LibrariesPanel extends javax.swing.JPanel {
+public class LibrariesPanel extends JPanel implements HelpCtx.Provider {
     /** Request processor used by this class. */
     private static final RequestProcessor RP = new RequestProcessor(LibrariesPanel.class);
     /** Project whose npm libraries are being customized. */
@@ -88,12 +90,12 @@ public class LibrariesPanel extends javax.swing.JPanel {
 
     /**
      * Creates a new {@code LibrariesPanel}.
-     * 
+     *
      * @param project project whose libraries should be customized.
      */
     public LibrariesPanel(Project project) {
         this.project = project;
-        initComponents();        
+        initComponents();
         PackageJson packageJson = getPackageJson();
         if (packageJson.exists()) {
             dependencyPanels = new DependenciesPanel[] {regularPanel, developmentPanel, optionalPanel};
@@ -112,9 +114,14 @@ public class LibrariesPanel extends javax.swing.JPanel {
         }
     }
 
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.javascript.nodejs.ui.libraries.LibrariesPanel"); // NOI18N
+    }
+
     /**
      * Shows the given component in the main area of the customizer.
-     * 
+     *
      * @param component component to show.
      */
     private void show(Component component) {
@@ -127,7 +134,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
     /**
      * Creates a store listener (the listener that is invoked when
      * the changes in the project customizer are confirmed).
-     * 
+     *
      * @return store listener.
      */
     ActionListener createStoreListener() {
@@ -136,7 +143,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
 
     /**
      * Returns {@code package.json} for the project.
-     * 
+     *
      * @return {@code package.json} for the project.
      */
     private PackageJson getPackageJson() {
@@ -149,7 +156,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
 
     /**
      * Converts the library-to-version map to the list of {@code Library.Version}s.
-     * 
+     *
      * @param map maps library name to library version.
      * @return list of {@code Library.Version}s that corresponds to the given map.
      */
@@ -261,7 +268,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
 
     /**
      * Returns dependencies from {@code package.json} of the given type.
-     * 
+     *
      * @param dependencies dependencies from {@code package.json}.
      * @param dependencyType requested type of dependencies.
      * @return dependencies of the given type.
@@ -281,7 +288,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
 
     /**
      * Returns save parameter ({@code --save(-dev/-optional)}) for the given dependency type.
-     * 
+     *
      * @param dependencyType requested type of save parameter.
      * @return save parameter for the given dependency type.
      */
@@ -299,7 +306,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
     /**
      * Returns the name of the {@code package.json} section where the dependencies
      * of the given type are stored.
-     * 
+     *
      * @param dependencyType requested type of the section.
      * @return name of the section where the dependencies of the given type are stored.
      */
@@ -316,7 +323,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
 
     /**
      * Notifies the user about errors that occurred while storing changes.
-     * 
+     *
      * @param errors list of error messages (possibly empty).
      */
     private void reportErrors(List<String> errors) {
@@ -336,7 +343,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
 
     /**
      * Un-installs the dependencies that are no longer needed.
-     * 
+     *
      * @param originalDependencies original dependencies.
      * @param selectedDependencies requested list of dependencies.
      * @param dependencyType dependency type.
@@ -383,7 +390,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
 
     /**
      * Installs the missing dependencies.
-     * 
+     *
      * @param selectedDependencies requested list of dependencies.
      * @param dependencyType dependency type.
      * @param errors collection that should be populated with errors that occurred.
@@ -432,7 +439,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
     /**
      * Updates required versions in {@code package.json} (to match the ones
      * required by the user).
-     * 
+     *
      * @param selectedDependencies requested list of dependencies.
      * @param dependencyType dependency type.
      * @param errors collection that should be populated with errors that occurred.
@@ -615,7 +622,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
         public void actionPerformed(ActionEvent e) {
             storeChanges();
         }
-        
+
     }
 
 }

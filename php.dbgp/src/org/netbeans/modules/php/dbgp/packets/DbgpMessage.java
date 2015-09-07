@@ -238,7 +238,9 @@ public abstract class DbgpMessage {
     /*
      * Notify user about unexpected format of received packet.
      */
-    @NbBundle.Messages("DbgpMessage.packet.error=Error occured during communication with Xdebug.\n\nReport issue, provide steps to reproduce and ideally attach Xdebug log.")
+    @NbBundle.Messages("DbgpMessage.packet.error=Error occured during communication with Xdebug.\n\n"
+            + "Report issue, provide steps to reproduce and attach IDE and ideally also Xdebug log.\n"
+            + "(Add xdebug.remote_log=/log_path/xdebug.log to your php.ini.)")
     private static void notifyPacketError(Exception e) {
         if (e != null) {
             LOGGER.log(Level.INFO, null, e);
