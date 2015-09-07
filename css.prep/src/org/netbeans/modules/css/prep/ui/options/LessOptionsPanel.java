@@ -75,8 +75,8 @@ import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-@OptionsPanelController.Keywords(keywords={"css", "preprocessors", "sass", "#CssPrepOptionsPanel.keywords.preprocessing"},
-        location=CssPreprocessors.OPTIONS_PATH, tabTitle="#CssPrepOptionsPanel.name")
+@OptionsPanelController.Keywords(keywords={"css", "preprocessors", "less", "#CssPrepOptionsPanel.keywords.preprocessing"},
+        location=CssPreprocessors.OPTIONS_CATEGORY, tabTitle="#CssPrepOptionsPanel.name")
 public final class LessOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 268356546654654L;

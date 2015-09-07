@@ -64,6 +64,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.javascript.gulp.exec.GulpExecutable;
 import org.netbeans.modules.javascript.gulp.util.FileUtils;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
@@ -72,6 +73,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
+@OptionsPanelController.Keywords(keywords={"#KW.GulpOptionsPanel"}, location="Html5", tabTitle= "Gulp")
 public class GulpOptionsPanel extends JPanel implements HelpCtx.Provider {
 
     private static final Logger LOGGER = Logger.getLogger(GulpOptionsPanel.class.getName());

@@ -43,6 +43,7 @@
 package org.netbeans.modules.schema2beansdev;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -64,6 +65,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+import org.apache.tools.ant.util.FileUtils;
 import org.netbeans.modules.schema2beans.Schema2Beans;
 import org.netbeans.modules.schema2beans.Schema2Beans.Multiple;
 import org.netbeans.modules.schema2beansdev.GenBeans.Config;
@@ -141,8 +143,17 @@ public class Schema2BeansProcessor extends AbstractProcessor {
                 assert false;
             }
             if (s2b.mddFile().length() > 0) {
-                FileObject mdd = findResource(s2b.mddFile(), pkg);
-                config.setMddIn(mdd.openInputStream());
+                try {
+                    FileObject mdd = findResource(s2b.mddFile(), pkg);
+                    config.setMddIn(mdd.openInputStream());
+                } catch (FileNotFoundException ex) {
+                    // try to create one
+                    FileObject mdd = createResource(s2b.mddFile(), pkg);
+                    File f = new File(fileObjectToUri(mdd));
+                    f.getParentFile().mkdirs();
+                    processingEnv.getMessager().printMessage(Kind.NOTE, "going to create new MDD file at " + f.getAbsolutePath());
+                    config.setMddFile(f);
+                }
             }
             switch (s2b.outputType()) {
             case TRADITIONAL_BASEBEAN:
@@ -204,6 +215,17 @@ public class Schema2BeansProcessor extends AbstractProcessor {
             f = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", abspath);
         }
         return f;
+    }
+
+    private FileObject createResource(String path, String pkg) throws URISyntaxException, IOException {
+        // XXX LayerBuilder has standard versions of this logic now
+        String abspath;
+        if (path.startsWith("/")) {
+            abspath = path.substring(1);
+        } else {
+            abspath = new URI(null, pkg.replace('.', '/') + "/", null).resolve(new URI(null, path, null)).getPath();
+        }
+        return processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", abspath);
     }
 
     /** Workaround for JRE #6419926 */

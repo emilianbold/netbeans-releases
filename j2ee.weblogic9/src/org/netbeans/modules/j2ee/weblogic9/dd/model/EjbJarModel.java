@@ -69,6 +69,8 @@ public final class EjbJarModel extends BaseDescriptorModel {
 
     private static final Pattern SCHEMA_1211 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-ejb-jar/1\\.[3-5]/weblogic-ejb-jar\\.xsd"); // NOI18N
 
+    private static final Pattern SCHEMA_1221 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-ejb-jar/1\\.[6]/weblogic-ejb-jar\\.xsd"); // NOI18N
+
     private final WeblogicEjbJar bean;
 
     private EjbJarModel(WeblogicEjbJar bean) {
@@ -108,8 +110,10 @@ public final class EjbJarModel extends BaseDescriptorModel {
                 return new EjbJarModel(org.netbeans.modules.j2ee.weblogic9.dd.ejb1031.WeblogicEjbJar.createGraph(doc));
             } else if (SCHEMA_1211.matcher(value).matches()) {
                 return new EjbJarModel(org.netbeans.modules.j2ee.weblogic9.dd.ejb1211.WeblogicEjbJar.createGraph(doc));
+            } else if (SCHEMA_1221.matcher(value).matches()) {
+                return new EjbJarModel(org.netbeans.modules.j2ee.weblogic9.dd.ejb1221.WeblogicEjbJar.createGraph(doc));
             } else {
-                return new EjbJarModel(org.netbeans.modules.j2ee.weblogic9.dd.ejb1211.WeblogicEjbJar.createGraph(doc));
+                return new EjbJarModel(org.netbeans.modules.j2ee.weblogic9.dd.ejb1221.WeblogicEjbJar.createGraph(doc));
             }
         } else if ("http://www.bea.com/ns/weblogic/weblogic-ejb-jar".equals(ns)) { // NOI18N
             return new EjbJarModel(org.netbeans.modules.j2ee.weblogic9.dd.ejb1030.WeblogicEjbJar.createGraph(doc));
@@ -119,7 +123,9 @@ public final class EjbJarModel extends BaseDescriptorModel {
     
     public static EjbJarModel generate(@NullAllowed Version serverVersion) {
         if (serverVersion != null) {
-            if (serverVersion.isAboveOrEqual(VERSION_12_1_1)) {
+            if (serverVersion.isAboveOrEqual(VERSION_12_2_1)) {
+                return generate1221();
+            } else if (serverVersion.isAboveOrEqual(VERSION_12_1_1)) {
                 return generate1211();
             } else if (serverVersion.isAboveOrEqual(VERSION_10_3_1)) {
                 return generate1031();
@@ -157,6 +163,13 @@ public final class EjbJarModel extends BaseDescriptorModel {
         org.netbeans.modules.j2ee.weblogic9.dd.ejb1211.WeblogicEjbJar webLogicEjbJar = new org.netbeans.modules.j2ee.weblogic9.dd.ejb1211.WeblogicEjbJar();
         webLogicEjbJar.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
         webLogicEjbJar.setAttributeValue("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd http://xmlns.oracle.com/weblogic/weblogic-ejb-jar http://xmlns.oracle.com/weblogic/weblogic-ejb-jar/1.3/weblogic-ejb-jar.xsd"); // NOI18N
+        return new EjbJarModel(webLogicEjbJar);
+    }
+
+    private static EjbJarModel generate1221() {
+        org.netbeans.modules.j2ee.weblogic9.dd.ejb1221.WeblogicEjbJar webLogicEjbJar = new org.netbeans.modules.j2ee.weblogic9.dd.ejb1221.WeblogicEjbJar();
+        webLogicEjbJar.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
+        webLogicEjbJar.setAttributeValue("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd http://xmlns.oracle.com/weblogic/weblogic-ejb-jar http://xmlns.oracle.com/weblogic/weblogic-ejb-jar/1.6/weblogic-ejb-jar.xsd"); // NOI18N
         return new EjbJarModel(webLogicEjbJar);
     }
     

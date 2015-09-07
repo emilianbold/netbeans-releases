@@ -66,6 +66,8 @@ public class BaseDescriptorModel {
     protected static final Version VERSION_10_3_0 = Version.fromJsr277NotationWithFallback("10.3.0"); // NOI18N
 
     protected static final Version VERSION_12_1_1 = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
+
+    protected static final Version VERSION_12_2_1 = Version.fromJsr277NotationWithFallback("12.2.1"); // NOI18N
     
     private final CommonDDBean bean;
 
