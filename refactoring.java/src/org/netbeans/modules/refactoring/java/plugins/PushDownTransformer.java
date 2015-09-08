@@ -133,7 +133,7 @@ public class PushDownTransformer extends RefactoringVisitor {
         final Element el = workingCopy.getTrees().getElement(getCurrentPath());
         for (int i = 0; i<members.length; i++) {
             Element member = members[i].getElementHandle().resolve(workingCopy);
-            if (el.equals(member)) {
+            if (el != null && el.equals(member)) {
                 String isSuper = node.getExpression().toString();
                 if (isSuper.equals("super") || isSuper.endsWith(".super")) { //NOI18N
                     
