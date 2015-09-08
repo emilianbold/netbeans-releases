@@ -1,6 +1,6 @@
-#changeset:   15638:7743a7abdc91
+#changeset:   15641:c95ffee876e5
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Sep 07 17:05:03 2015 +0300
-#summary:     PERF: reuse in$ptr (19G=>8G on boost)
-B1FCDE2DC83ADD7D1252319FF6B3E2DFBE30746D clank_0.3.6.zip
+#date:        Mon Sep 07 22:07:06 2015 +0300
+#summary:     PERF: keeping all tokens in growing MacroExpandedTokens array make it huge
+F52418F170AA6E0893F076062A9B199692FECD96 clank_0.3.6.zip

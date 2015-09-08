@@ -162,8 +162,12 @@ public class AstRenderer {
                         }
                         break;
                     }
-                    case CPPTokenTypes.CSM_ENUM_DECLARATION:
                     case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
+                    {
+                        createForwardEnumDeclaration(token, container, file, currentNamespace);
+                        break;
+                    }
+                    case CPPTokenTypes.CSM_ENUM_DECLARATION:
                     {
                         boolean planB = false;
                         EnumImpl csmEnum = null;
@@ -1364,6 +1368,10 @@ public class AstRenderer {
 
     protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
         return ClassForwardDeclarationImpl.create(ast, file, scope, container, !isRenderingLocalContext());
+    }
+    
+    protected CsmEnumForwardDeclaration createForwardEnumDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
+        return EnumForwardDeclarationImpl.create(ast, file, scope, container, !isRenderingLocalContext());
     }
 
     private CsmTypedef createTypeAlias(Pair results, AST nameAST, List<CsmTemplateParameter> csmTemplateParams, FileImpl file, CsmScope scope, CsmType typeImpl, CharSequence name) {
