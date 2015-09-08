@@ -161,7 +161,7 @@ public abstract class TokenStreamProducer {
         return fromEnsureParsed;
     }
     
-    public CodePatch getFixCode() {
+    public CodePatch getCodePatch() {
         return codePatch;
     }
 

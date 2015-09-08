@@ -142,8 +142,8 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                   fileImpl, getFileContent(),
                   tokStreamCache.getFileIndex());
           FileBuffer buffer = fileImpl.getBuffer();
-          if (getFixCode() != null) {
-              buffer = new PatchedFileBuffer(buffer, getFixCode());
+          if (getCodePatch() != null) {
+              buffer = new PatchedFileBuffer(buffer, getCodePatch());
           }
           boolean tsFromClank = ClankDriver.preprocess(buffer, ppHandler, callback, interrupter);
           if (!tsFromClank) {
