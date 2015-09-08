@@ -268,6 +268,10 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
      * @param classNames List of class names
      */
     protected final String[] checkSourcesEnabled(String[] classNames, String[] srcRootPtr) {
+        if (getBreakpoint().isHidden()) {
+            // Enable hidden breakpoints. Their are submitted programmatically.
+            return classNames;
+        }
         List<String> enabledClassNames = new ArrayList<String>(classNames.length);
         for (String className : classNames) {
             String relPath = SourcePath.convertClassNameToRelativePath(className);
