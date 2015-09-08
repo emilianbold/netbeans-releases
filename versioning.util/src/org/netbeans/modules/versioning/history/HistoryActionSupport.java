@@ -47,6 +47,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -59,6 +61,7 @@ import org.openide.util.Lookup;
 class HistoryActionSupport<H> {
 
     private final Callback<H> callback;
+    private static final Logger LOG = Logger.getLogger(HistoryActionSupport.class.getName());
     
     public interface Callback<H> {
         void call(H entry, Set<VCSFileProxy> files);
@@ -85,7 +88,13 @@ class HistoryActionSupport<H> {
                 break;
             }
         }
-        assert he != null;
+        if (he == null) {
+            LOG.log(Level.WARNING, "No history entry under the nodes");
+            for (Node node : nodes) {
+                LOG.log(Level.INFO, "Node {0} --- {1}", new Object[] { node, node.getLookup().lookupAll(Object.class) });
+            }
+            assert he != null;
+        }
         return he == null ? null : he.getRevisionShort();
     }
 

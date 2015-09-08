@@ -640,7 +640,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size());
         TransformTask transform = new TransformTask(new RenameTransformer(treePathHandle, docTreePathHandle, refactoring, allMethods, refactoring.isSearchInComments()), treePathHandle != null && treePathHandle.getKind() == Tree.Kind.LABELED_STATEMENT ? null : treePathHandle);
-        Problem problem = createAndAddElements(a, transform, elements, refactoring);
+        Problem problem = createAndAddElements(a, transform, elements, refactoring,getClasspathInfo(refactoring));
         fireProgressListenerStop();
         return problem;
     }

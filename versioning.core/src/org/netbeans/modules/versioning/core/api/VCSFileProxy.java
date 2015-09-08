@@ -128,14 +128,19 @@ public final class VCSFileProxy {
      * @return a VCSFileProxy representing the a file given by the parent and child values
      */
     public static VCSFileProxy createFileProxy(VCSFileProxy parent, String child) {
-        final String p = parent.getPath();
-        if (p.endsWith("/")) {   // NOI18N
-            return new VCSFileProxy(p + child, parent.proxy); 
+        File parentFile = parent.toFile();
+        if (parentFile != null) {
+            return createFileProxy(new File(parentFile, child));
         } else {
-            if (p.isEmpty() && child.startsWith("/")) {
-                return new VCSFileProxy(child, parent.proxy);   // NOI18N
+            final String p = parent.getPath();
+            if (p.endsWith("/")) {   // NOI18N
+                return new VCSFileProxy(p + child, parent.proxy);
             } else {
-                return new VCSFileProxy(p + "/" + child, parent.proxy);   // NOI18N
+                if (p.isEmpty() && child.startsWith("/")) {
+                    return new VCSFileProxy(child, parent.proxy);   // NOI18N
+                } else {
+                    return new VCSFileProxy(p + "/" + child, parent.proxy);   // NOI18N
+                }
             }
         }
     }

@@ -86,6 +86,7 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(model.getProject());
 
         //add module dependency
+        cmf.add(cmf.addModuleDependency("org.netbeans.modules.java.source.base", "java")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.netbeans.modules.java.source", "java")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.netbeans.spi.java.hints", "java")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.netbeans.spi.editor.hints", "ide")); // NOI18N

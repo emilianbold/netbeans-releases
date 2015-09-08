@@ -64,7 +64,7 @@ public final class RemoteTerminalAction extends TerminalAction {
     private final RemoteInfoDialog cfgPanel;
 
     public RemoteTerminalAction() {
-        super("RemoteTerminalAction", NbBundle.getMessage(LocalTerminalAction.class, "RemoteTerminalShortDescr"), // NOI18N
+        super("RemoteTerminalAction", NbBundle.getMessage(RemoteTerminalAction.class, "RemoteTerminalShortDescr"), // NOI18N
                 ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/remote_term.png", false)); // NOI18N
         cfgPanel = new RemoteInfoDialog(System.getProperty("user.name"));
     }

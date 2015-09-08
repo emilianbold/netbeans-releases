@@ -1342,6 +1342,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         String golden =
             "import java.lang.annotation.RetentionPolicy;\n" +
             "public class Test {\n" +
+            "\n" +
             "    RetentionPolicy p;\n" +
             "}\n";
 

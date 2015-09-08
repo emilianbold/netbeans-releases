@@ -703,6 +703,9 @@ public final class EditorContextDispatcher {
                 } else {
                     newFile = findPrimary(fos);
                 }
+                if (newFile != null && !newFile.isData()) {
+                    newFile = null;
+                }
                 synchronized (EditorContextDispatcher.this) {
                     oldFile = currentFile.get();
                     //System.err.println("\nCURRENT FILES = "+fos+"\n");

@@ -50,9 +50,12 @@ import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import java.io.InvalidObjectException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -84,7 +87,8 @@ public final class DebuggerSupport {
     private static final String METHOD_FROM_CLASS  = "fromClass";       // NOI18N
     private static final String SIGNAT_FROM_CLASS  = "(Ljava/lang/Class;)Ljdk/nashorn/internal/runtime/Context;";   // NOI18N
     private static final String METHOD_CONTEXT_EVAL= "eval";            // NOI18N
-    private static final String SIGNAT_CONTEXT_EVAL= "(Ljdk/nashorn/internal/runtime/ScriptObject;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/lang/Object;";  // NOI18N
+    private static final String SIGNAT_CONTEXT_EVAL= "(Ljdk/nashorn/internal/runtime/ScriptObject;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;";  // NOI18N
+    private static final String SIGNAT_CONTEXT_EVAL_OLD = "(Ljdk/nashorn/internal/runtime/ScriptObject;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/lang/Object;";  // NOI18N
     private static final String METHOD_VALUE_AS_STRING = "valueAsString";       // NOI18N
     private static final String SIGNAT_VALUE_AS_STRING = "(Ljava/lang/Object;)Ljava/lang/String;";  // NOI18N
     private static final String METHOD_SOURCE_INFO = "getSourceInfo";   // NOI18N
@@ -99,6 +103,8 @@ public final class DebuggerSupport {
 //        this.descExpandableField    = this.DebuggerValueDescClass.fieldByName("expandable");
 //        this.descValueAsObjectField = this.DebuggerValueDescClass.fieldByName("valueAsObject");
 //        this.descValueAsStringField = this.DebuggerValueDescClass.fieldByName("valueAsString");
+    
+    private static final List<Reference<JPDADebugger>> hasOldEval = new CopyOnWriteArrayList<>();
 
     private DebuggerSupport() {}
     
@@ -264,29 +270,60 @@ public final class DebuggerSupport {
         // Call Context.fromClass(clazz):
         List<JPDAClassType> contextClassesByName = debugger.getClassesByName(CONTEXT_CLASS);
         JPDAClassType contextClass = contextClassesByName.get(0);
+        Variable contextObj = null;
         try {
-            Variable contextObj = contextClass.invokeMethod(
+            contextObj = contextClass.invokeMethod(
                     METHOD_FROM_CLASS,
                     SIGNAT_FROM_CLASS,
                     new Variable[] { sourceClassType.classObject() });
-            
-            Variable[] args = new Variable[5];
-            try {
-                args[0] = scope;
-                args[1] = debugger.createMirrorVar(expression);
-                args[2] = contextVar;
-                args[3] = null; // ScriptRuntime.UNDEFINED, or null for directEval
-                args[4] = debugger.createMirrorVar(false, true);
-            } catch (InvalidObjectException ioex) {
-                Exceptions.printStackTrace(ioex);
-                throw new InvalidExpressionException(ioex);
-            }
-            return ((ObjectVariable) contextObj).invokeMethod(
-                    METHOD_CONTEXT_EVAL,
-                    SIGNAT_CONTEXT_EVAL,
-                    args);
         } catch (NoSuchMethodException nsmex) {
             Exceptions.printStackTrace(nsmex);
+        }
+        if (contextObj != null) {
+            boolean oldEval = isOldEval(debugger);
+            if (!oldEval) {
+                try {
+                    Variable[] args = new Variable[4];
+                    try {
+                        args[0] = scope;
+                        args[1] = debugger.createMirrorVar(expression);
+                        args[2] = contextVar;
+                        args[3] = null; // ScriptRuntime.UNDEFINED, or null for directEval
+                    } catch (InvalidObjectException ioex) {
+                        Exceptions.printStackTrace(ioex);
+                        throw new InvalidExpressionException(ioex);
+                    }
+                    return ((ObjectVariable) contextObj).invokeMethod(
+                            METHOD_CONTEXT_EVAL,
+                            SIGNAT_CONTEXT_EVAL,
+                            args);
+                } catch (NoSuchMethodException nsmex) {
+                    oldEval = true;
+                    setOldEval(debugger);
+                }
+            }
+            if (oldEval) {
+                // older than 1.8.0_60
+                try {
+                    Variable[] args = new Variable[5];
+                    try {
+                        args[0] = scope;
+                        args[1] = debugger.createMirrorVar(expression);
+                        args[2] = contextVar;
+                        args[3] = null; // ScriptRuntime.UNDEFINED, or null for directEval
+                        args[4] = debugger.createMirrorVar(false, true);
+                    } catch (InvalidObjectException ioex) {
+                        Exceptions.printStackTrace(ioex);
+                        throw new InvalidExpressionException(ioex);
+                    }
+                    return ((ObjectVariable) contextObj).invokeMethod(
+                            METHOD_CONTEXT_EVAL,
+                            SIGNAT_CONTEXT_EVAL_OLD,
+                            args);
+                } catch (NoSuchMethodException nsmex) {
+                    Exceptions.printStackTrace(nsmex);
+                }
+            }
         }
         // Fallback to global evaluation...
         Variable[] args = new Variable[4];
@@ -303,6 +340,22 @@ public final class DebuggerSupport {
             Exceptions.printStackTrace(nsmex);
             return null;
         }
+    }
+    
+    private static boolean isOldEval(JPDADebugger debugger) {
+        for (Reference<JPDADebugger> dbgRef : hasOldEval) {
+            JPDADebugger dbg = dbgRef.get();
+            if (dbg == null) {
+                hasOldEval.remove(dbgRef);
+            } else if (dbg == debugger) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static void setOldEval(JPDADebugger debugger) {
+        hasOldEval.add(new WeakReference<>(debugger));
     }
     
     public static String getVarValue(JPDADebugger debugger, Variable var) {

@@ -49,7 +49,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.sass.SassExecutable;
+import org.netbeans.modules.css.prep.sass.SassCli;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.openide.util.NbPreferences;
 
@@ -111,7 +111,7 @@ public final class CssPrepOptions {
         String path = getPreferences().get(SASS_PATH, null);
         if (path == null && !sassSearched) {
             sassSearched = true;
-            List<String> paths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_LONG_NAME, SassExecutable.EXECUTABLE_NAME);
+            List<String> paths = FileUtils.findFileOnUsersPath(SassCli.getExecutableNames());
             if (!paths.isEmpty()) {
                 path = paths.get(0);
                 setSassPath(path);

@@ -121,7 +121,6 @@ public class Node {
         }
 
         // Cleanup
-        node.remove("childNodeCount"); // NOI18N
         node.remove("children"); // NOI18N
         node.remove("attributes"); // NOI18N
         node.remove("contentDocument"); // NOI18N
@@ -200,6 +199,7 @@ public class Node {
      */
     final synchronized void initChildren() {
         children = new CopyOnWriteArrayList<Node>();
+        getProperties().remove("childNodeCount"); // NOI18N
     }
 
     /**
@@ -213,6 +213,24 @@ public class Node {
      */
     public synchronized List<Node> getChildren() {
         return children;
+    }
+
+    /**
+     * Returns number of sub-nodes of this node.
+     * 
+     * @return number of sub-nodes of this node.
+     */
+    public synchronized int getChildrenCount() {
+        int count = -1;
+        if (children == null) {
+            Object nodeCount = getProperties().get("childNodeCount"); // NOI18N
+            if (nodeCount instanceof Number) {
+                count = ((Number)nodeCount).intValue();
+            }
+        } else {
+            count = children.size();
+        }
+        return count;
     }
 
     /**

@@ -352,7 +352,7 @@ public class ELJavaCompletion {
 
         private static boolean isAccessibleClass(TypeElement te) {
             NestingKind nestingKind = te.getNestingKind();
-            return (nestingKind == NestingKind.TOP_LEVEL);
+            return (nestingKind == NestingKind.TOP_LEVEL && te.getModifiers().contains(Modifier.PUBLIC));
         }
 
         @Override

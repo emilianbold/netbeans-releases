@@ -96,9 +96,9 @@ public abstract class EditorViewFactory {
         return viewFactoryFactories;
     }
     
-    private final DocumentView docView;
+    private DocumentView docView;
     
-    private final JTextComponent component;
+    private JTextComponent component;
 
     private ViewBuilder viewBuilder;
 
@@ -115,7 +115,7 @@ public abstract class EditorViewFactory {
     /**
      * Text component for which this view factory was constructed.
      *
-     * @return non-null text component.
+     * @return text component or null if this view factory is released.
      */
     protected final JTextComponent textComponent() {
         return component;
@@ -127,10 +127,11 @@ public abstract class EditorViewFactory {
      * it may differ from <code>document()</code> result at certain points
      * and it could lead to incorrect behavior.
      *
-     * @return non-null document for which the view hierarchy was constructed.
+     * @return document for which the view hierarchy was constructed
+     *   or null if this view factory is released.
      */
     protected final Document document() {
-        return docView.getDocument();
+        return (docView != null) ? docView.getDocument() : null;
     }
 
     /**
@@ -295,6 +296,37 @@ public abstract class EditorViewFactory {
         this.viewBuilder = viewBuilder;
     }
 
+    public final boolean isReleased() {
+        return (docView == null);
+    }
+
+    /**
+     * Notification that this factory is no longer being used so it should
+     * release its resources - for example detach all listeners.
+     * <br/>
+     * It's called upon document view receives setParent(null) which typically signals
+     * that a new document view will be created for the particular editor pane.
+     */
+    protected void released() {
+    }
+    
+    void releaseAll() {
+        released(); // Is allowed to use docView and component info before subsequent clearing
+        this.docView = null;
+        this.component = null;
+        // this.viewBuilder should be null-ed in try..finally manner
+    }
+    
+    /**
+     * Used by highlights view factory. If there would be a high demand for this method
+     * it might become public although the view factories are used at times when
+     * the document view is not in a "stable" state so the factories would have to be careful.
+     * @return 
+     */
+    DocumentView documentView() {
+        return docView;
+    }
+    
     @Override
     public String toString() {
         ViewBuilder vb = viewBuilder;

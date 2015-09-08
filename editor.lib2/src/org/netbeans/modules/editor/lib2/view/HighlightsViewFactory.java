@@ -73,7 +73,7 @@ import org.openide.util.WeakListeners;
  * @author Miloslav Metelka
  */
 
-public final class HighlightsViewFactory extends EditorViewFactory implements HighlightsChangeListener {
+public final class HighlightsViewFactory extends EditorViewFactory implements HighlightsChangeListener, ChangeListener {
     
     /**
      * Length of the highlights view (text layout) above which the infrastructure will search
@@ -108,8 +108,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private static final int RTL_CHAR_TYPE = 2;
     private static final int TAB_CHAR_TYPE = 3;
     
-    private final DocumentView docView;
-
     private final HighlightingManager highlightingManager;
 
     private HighlightsContainer highlightsContainer;
@@ -154,17 +152,8 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     
     public HighlightsViewFactory(View documentView) {
         super(documentView);
-        this.docView = (DocumentView) documentView;
         highlightingManager = HighlightingManager.getInstance(textComponent());
-        highlightingManager.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) { // Layers in highlighting manager changed
-                notifyStaleCreation();
-                updateHighlightsContainer();
-                fireEvent(EditorViewFactoryChange.createList(0, document().getLength() + 1,
-                        EditorViewFactoryChange.Type.REBUILD));
-            }
-        });
+        highlightingManager.addChangeListener(this);
         updateHighlightsContainer();
     }
 
@@ -260,7 +249,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                     TextLayout origTextLayout = origHView.getTextLayout();
                     if (origTextLayout != null) {
                         if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
-                            String origText = docView.getTextLayoutVerifier().get(origTextLayout);
+                            String origText = documentView().getTextLayoutVerifier().get(origTextLayout);
                             if (origText != null) {
                                 CharSequence text = docText.subSequence(startOffset, startOffset + length);
                                 if (!CharSequenceUtilities.textEquals(text, origText)) {
@@ -360,6 +349,9 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public void highlightChanged(final HighlightsChangeEvent evt) {
+        if (isReleased()) {
+            return;
+        }
         // Since still many highlighting layers fire changes without document lock acquired
         // do an extra read lock so that view hierarchy surely operates under document lock
         document().render(new Runnable() {
@@ -411,6 +403,11 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     }
 
     @Override
+    protected void released() {
+        highlightingManager.removeChangeListener(this);
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(100);
         sb.append("lineIndex=").append(lineIndex). // NOI18N
@@ -420,6 +417,17 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                 append(", nextCharType=").append(nextCharType); // NOI18N
         sb.append(", ").append(super.toString());
         return sb.toString();
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if (isReleased()) {
+            return;
+        }
+        notifyStaleCreation();
+        updateHighlightsContainer();
+        fireEvent(EditorViewFactoryChange.createList(0, document().getLength() + 1,
+                EditorViewFactoryChange.Type.REBUILD));
     }
 
     public static final class HighlightsFactory implements EditorViewFactory.Factory {

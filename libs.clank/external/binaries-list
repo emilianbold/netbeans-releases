@@ -1,6 +1,6 @@
-#changeset:   15460:1811ba114545
+#changeset:   15641:c95ffee876e5
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Aug 21 13:08:18 2015 +0300
-#summary:     fixed NPE
-481F3F250488F9230E076578DBDB0ED0AC5A47F9 clank_0.3.6.zip
+#date:        Mon Sep 07 22:07:06 2015 +0300
+#summary:     PERF: keeping all tokens in growing MacroExpandedTokens array make it huge
+F52418F170AA6E0893F076062A9B199692FECD96 clank_0.3.6.zip

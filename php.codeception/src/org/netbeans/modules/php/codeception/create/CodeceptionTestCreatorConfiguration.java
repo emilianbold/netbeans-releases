@@ -43,9 +43,10 @@ package org.netbeans.modules.php.codeception.create;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.gsf.testrunner.ui.spi.TestCreatorConfiguration;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -60,19 +61,17 @@ import org.openide.util.Pair;
 public final class CodeceptionTestCreatorConfiguration extends TestCreatorConfiguration {
 
     private final CreateTestsSupport createTestsSupport;
-    private final List<String> suites;
 
     // @GuardedBy("EDT")
     private CodeceptionCreateTestPanel panel;
+    // @GuardedBy("this")
+    private List<String> suites;
 
 
     CodeceptionTestCreatorConfiguration(FileObject[] activatedFileObjects) {
         assert activatedFileObjects != null;
         assert activatedFileObjects.length > 0;
         createTestsSupport = CreateTestsSupport.create(CodeceptionTestingProvider.getInstance(), activatedFileObjects);
-        PhpModule phpModule = createTestsSupport.getPhpModule();
-        assert phpModule != null;
-        suites = new CopyOnWriteArrayList<>(Codecept.getSuiteNames(phpModule));
     }
 
     @Override
@@ -84,7 +83,7 @@ public final class CodeceptionTestCreatorConfiguration extends TestCreatorConfig
     public Component getConfigurationPanel(Context context) {
         assert EventQueue.isDispatchThread();
         if (panel == null) {
-            panel = new CodeceptionCreateTestPanel(TestCreator.TEST_COMMANDS, suites);
+            panel = new CodeceptionCreateTestPanel(TestCreator.TEST_COMMANDS, getSuites());
         }
         return panel;
     }
@@ -97,7 +96,7 @@ public final class CodeceptionTestCreatorConfiguration extends TestCreatorConfig
     @NbBundle.Messages("CodeceptionTestCreatorConfiguration.error.suites.none=No test suites available in project.")
     @Override
     public String getErrorMessage() {
-        if (suites.isEmpty()) {
+        if (getSuites().isEmpty()) {
             return Bundle.CodeceptionTestCreatorConfiguration_error_suites_none();
         }
         return null;
@@ -137,6 +136,15 @@ public final class CodeceptionTestCreatorConfiguration extends TestCreatorConfig
         //return new String[] {"whatever", "donotcare"};
         //  update: aha, the test class must end with Test - it does not, trust me ;)
         return Pair.of("whatever", "donotcareTest");
+    }
+
+    private synchronized List<String> getSuites() {
+        if (suites == null) {
+            PhpModule phpModule = createTestsSupport.getPhpModule();
+            assert phpModule != null;
+            suites = new ArrayList<>(Codecept.getSuiteNames(phpModule));
+        }
+        return Collections.unmodifiableList(suites);
     }
 
 }

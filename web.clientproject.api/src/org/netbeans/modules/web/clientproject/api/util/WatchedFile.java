@@ -143,7 +143,7 @@ public final class WatchedFile {
 
     private synchronized File getWatchedFile() {
         if (file == null) {
-            file = new File(FileUtil.toFile(directory), filename);
+            file = FileUtil.normalizeFile(new File(FileUtil.toFile(directory), filename)); // #254561
             try {
                 FileUtil.addFileChangeListener(fileListener, file);
                 LOGGER.log(Level.FINE, "Started listening to {0}", file);

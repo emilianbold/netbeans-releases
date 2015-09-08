@@ -86,12 +86,15 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.netbeans.api.actions.Savable;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.options.Options;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
@@ -129,6 +132,8 @@ public class ScreenshotComponent extends TopComponent {
     
     private static final String[] ZOOM_PERCENTS = { "10%", "25%", "50%", "75%", "100%", "150%", "200%", "300%" }; // NOI18N
     private static final String PROP_ZOOM = "zoom";     // NOI18N
+    @StaticResource
+    private static final String HIERARCHY_CHANGES_ICON = "org/netbeans/modules/debugger/jpda/visual/resources/hierarchy.png";   // NOI18N
     
     private RemoteScreenshot screenshot;
     private ScreenshotUIManager manager;
@@ -215,6 +220,8 @@ public class ScreenshotComponent extends TopComponent {
         toolBar.add(createZoomPercent());
         toolBar.addSeparator();
         toolBar.add(createSaveButton());
+        toolBar.addSeparator();
+        toolBar.add(createHierarchyChangesButton());
         toolBar.addSeparator();
         return toolBar;
     }
@@ -381,6 +388,39 @@ public class ScreenshotComponent extends TopComponent {
         JButton jb = new JButton();
         Actions.connect(jb, saveAction);
         return jb;
+    }
+    
+    @NbBundle.Messages({"TT_TrackingComponentChanges=Tracking locations of component hierarchy changes (may have impact on application performance)",
+                        "TTL_TrackComponentChangesConfirm=Confirm Tracking of Component Hierarchy Changes",
+                        "MSG_TrackComponentChangesConfirm=Tracking of component hierarchy changes allows you to "+
+                                "navigate to the place where components were added to their containers.\n"+
+                                "The tracking may have an impact on performace of the application.\n"+
+                                "Turn on the tracking? You may need to restart the application to take an effect."})
+    private JToggleButton createHierarchyChangesButton() {
+        final JToggleButton jtb = new JToggleButton(ImageUtilities.loadImageIcon(HIERARCHY_CHANGES_ICON, false));
+        boolean tcc = Options.isTrackComponentChanges();
+        jtb.setSelected(tcc);
+        jtb.setToolTipText(Bundle.TT_TrackingComponentChanges());
+        jtb.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean tcc = jtb.isSelected();
+                if (tcc) {
+                    NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
+                            Bundle.MSG_TrackComponentChangesConfirm(),
+                            Bundle.TTL_TrackComponentChangesConfirm(),
+                            NotifyDescriptor.YES_NO_OPTION
+                    );
+                    Object result = DialogDisplayer.getDefault().notify(confirmation);
+                    if (result != NotifyDescriptor.YES_OPTION) {
+                        jtb.setSelected(false);
+                        return ;
+                    }
+                }
+                Options.setTrackComponentChanges(tcc);
+            }
+        });
+        return jtb;
     }
     
     private static ComponentInfo getFirstCustomComponent(Node node) {

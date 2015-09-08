@@ -145,10 +145,11 @@ public abstract class CCCCompiler extends AbstractCompiler {
 
     @Override
     public List<String> getSystemPreprocessorSymbols() {
-        if (compilerDefinitions == null) {
-            resetSystemProperties();
+        Pair cur = compilerDefinitions;
+        if (cur == null) {
+            cur = resetAndGetSystemProperties();
         }
-        return compilerDefinitions.systemPreprocessorSymbolsList;
+        return cur.systemPreprocessorSymbolsList;
     }
     
     private final Map<String,Pair> particularModel = new HashMap<String,Pair>();
@@ -193,10 +194,11 @@ public abstract class CCCCompiler extends AbstractCompiler {
     
     @Override
     public List<String> getSystemIncludeDirectories() {
-        if (compilerDefinitions == null) {
-            resetSystemProperties();
+        Pair cur = compilerDefinitions;
+        if (cur == null) {
+            cur = resetAndGetSystemProperties();
         }
-        return compilerDefinitions.systemIncludeDirectoriesList;
+        return cur.systemIncludeDirectoriesList;
     }
 
     @Override
@@ -233,13 +235,19 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
     }
 
+    private Pair resetAndGetSystemProperties() {
+        CndUtils.assertNonUiThread();
+        Pair res = getFreshSystemIncludesAndDefines();
+        compilerDefinitions = res;
+        return res;
+    }
+
     @Override
-    public void resetSystemProperties(boolean lazy) {
+    public final void resetSystemProperties(boolean lazy) {
         if (lazy) {
             compilerDefinitions = null;
         } else {
-            CndUtils.assertNonUiThread();
-            compilerDefinitions = getFreshSystemIncludesAndDefines();
+            resetAndGetSystemProperties();
         }
     }
 

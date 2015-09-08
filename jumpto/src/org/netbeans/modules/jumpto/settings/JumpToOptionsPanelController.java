@@ -60,7 +60,6 @@ import org.openide.util.Lookup;
         keywordsCategory = "Editor/GoTo",
         position=2311
 )
-@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_GoTo=Go To", "AdvancedOption_Keywords_GoTo=goto,symbol,file,type"})
 public final class JumpToOptionsPanelController extends OptionsPanelController {
 
     private JumpToPanel panel;

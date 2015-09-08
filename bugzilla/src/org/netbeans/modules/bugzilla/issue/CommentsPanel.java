@@ -457,6 +457,10 @@ public class CommentsPanel extends JPanel {
                     if (attachment != null) {
                         add(new JMenuItem(attachment.getOpenAction()));
                         add(new JMenuItem(attachment.getSaveAction()));
+                        Action openInStackAnalyzerAction = attachment.getOpenInStackAnalyzerAction();
+                        if(openInStackAnalyzerAction != null) {
+                            add(new JMenuItem(openInStackAnalyzerAction));
+                        }
                         if (attachment.isPatch()) { 
                             Action a = attachment.getApplyPatchAction();
                             if(a != null) {

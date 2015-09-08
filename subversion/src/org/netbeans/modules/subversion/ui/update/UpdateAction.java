@@ -52,8 +52,10 @@ import org.netbeans.modules.subversion.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -168,27 +170,33 @@ public class UpdateAction extends ContextAction {
                
         File[] roots = ctx.getRootFiles();
         
-        SVNUrl repositoryUrl = null;
+        Map<SVNUrl, List<File>> rootsPerRepository = new HashMap<>();
         try {
             for (File root : roots) {
-                repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
-                if(repositoryUrl != null) {
-                    break;
-                } else {
+                SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+                if(repositoryUrl == null) {
                     Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{root});
                 }
+                List<File> files = rootsPerRepository.get(repositoryUrl);
+                if (files == null) {
+                    files = new ArrayList<>();
+                    rootsPerRepository.put(repositoryUrl, files);
+                }
+                files.add(root);
             }
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }        
-        if (repositoryUrl == null) {
+        if (rootsPerRepository.isEmpty()) {
             return;
         }
-
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         cache.refreshCached(ctx);
-        update(roots, progress, contextDisplayName, repositoryUrl, revision);
+        for (Map.Entry<SVNUrl, List<File>> e : rootsPerRepository.entrySet()) {
+            List<File> files = e.getValue();
+            update(files.toArray(new File[files.size()]), progress, contextDisplayName, e.getKey(), revision);
+        }
     }
 
     private static void update(File[] roots, final SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl, final SVNRevision revision) {

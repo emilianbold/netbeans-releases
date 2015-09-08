@@ -44,25 +44,17 @@ package org.netbeans.modules.cnd.modelimpl.parser.clank;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.event.ChangeListener;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
-import org.netbeans.modules.cnd.apt.support.ClankDriver.APTTokenStreamCache;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
+import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankMacroDirective;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
@@ -73,14 +65,12 @@ import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.SystemMacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Line2Offset;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -89,7 +79,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
@@ -207,7 +196,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private final boolean triggerParsingActivity;
         private final boolean filterOutComments;
 
-        private List<FileImpl> curFiles = new ArrayList<>();
+        private final List<FileImpl> curFiles = new ArrayList<>();
 
         private FileTokenStreamCallback(
                 PreprocHandler ppHandler,
@@ -239,23 +228,34 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
         @Override
+        public boolean needPPDirectives() {
+            return needTokens();
+        }
+
+        @Override
         public boolean needTokens() {
-          return this.insideInterestedFile || true;
+          return /*this.insideInterestedFile || */true;
         }
 
         @Override
         public boolean needSkippedRanges() {
-          return this.insideInterestedFile || true;
+          return needTokens();
         }
 
         @Override
         public boolean needMacroExpansion() {
-          return !APTTraceFlags.DEFERRED_MACRO_USAGES;
+            if (APTTraceFlags.DEFERRED_MACRO_USAGES) {
+                // FIXME: when macro expansion service tries to expand file
+                // it creates TS producer with request not to filter out comments
+                return !filterOutComments;
+            } else {
+                return needTokens();
+            }
         }
 
         @Override
         public boolean needComments() {
-          return !filterOutComments;
+          return needTokens() && !filterOutComments;
         }
         
         @Override
@@ -387,14 +387,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               }
             }
             return true;
-        }        
-
-        @Override
-        public void onMacroDefineDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankMacroDirective directive) {
-            if (directive.isDefined()) {
-                // for #define A BODY macro name location is macro-ID
-                ((APTTokenStreamCache)directiveOwner).getMacroDefinitions().put(directive.getMacroNameLocation(), directive);
-            }
         }
 
         private ClankDriver.APTTokenStreamCache getPPOut() {
@@ -422,6 +414,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public void onErrorDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankErrorDirective directive) {
+        }
+
+        @Override
+        public boolean needPPDirectives() {
+            return false;
         }
 
         @Override
@@ -481,10 +478,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             return true;
         }
 
-        @Override
-        public void onMacroDefineDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankMacroDirective directive) {
-        }
-
         private ClankDriver.APTTokenStreamCache getPPOut() {
             return foundTokens;
         }
@@ -499,8 +492,8 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 addInclude(curFile, parsingFileContent, (ClankDriver.ClankInclusionDirective)cur);
             } else if (cur instanceof ClankDriver.ClankErrorDirective) {
                 addError(curFile, parsingFileContent, (ClankDriver.ClankErrorDirective)cur);
-            } else if (cur instanceof ClankDriver.ClankMacroDirective) {
-                addMacro(curFile, parsingFileContent, (ClankDriver.ClankMacroDirective)cur);
+            } else if (cur instanceof ClankMacroDirective) {
+                addMacro(curFile, parsingFileContent, (ClankMacroDirective)cur);
             } else {
               CndUtils.assertTrueInConsole(false, "unknown directive " + cur.getClass().getSimpleName() + " " + cur);
             }
@@ -517,27 +510,24 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
 
     private static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.APTTokenStreamCache cache) {
-        Map<Integer, ClankDriver.ClankMacroDirective> macroDefinitions = cache.getMacroDefinitions();
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
             assert !APTTraceFlags.DEFERRED_MACRO_USAGES;
-            int referencedDeclaration = cur.getReferencedMacroID();
-            if (referencedDeclaration != 0) {
-                ClankDriver.ClankMacroDirective directive = macroDefinitions.get(referencedDeclaration);
-                assert directive != null : "Not found referenced ClankMacroDirective "+referencedDeclaration;
-                addMacroUsage(curFile, parsingFileContent, MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset()+cur.getMacroNameLength(), parsingFileContent, startFile, directive));
+            ClankMacroDirective directive = cur.getReferencedMacro();
+            if (directive != null) {
+                addMacroUsage(curFile, parsingFileContent, MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset()+cur.getMacroNameLength(), startFile, directive));
             } else {
                 // TODO: process invalid macro definition
+                assert false : "Not found referenced ClankMacroDirective "+cur;
             }
         }
         for(ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
             assert !APTTraceFlags.DEFERRED_MACRO_USAGES;
-            int referencedDeclaration = cur.getReferencedMacroID();
-            if (referencedDeclaration != 0) {
-                ClankDriver.ClankMacroDirective directive = macroDefinitions.get(referencedDeclaration);
-                assert directive != null : "Not found referenced ClankMacroDirective "+referencedDeclaration;
-                addMacroUsage(curFile, parsingFileContent, MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), parsingFileContent, startFile, directive));
+            ClankMacroDirective directive = cur.getReferencedMacro();
+            if (directive != null) {
+                addMacroUsage(curFile, parsingFileContent, MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), startFile, directive));
             } else {
                 // TODO: process invalid macro definition
+                assert false : "Not found referenced ClankMacroDirective "+cur;
             }
         }
     }
@@ -546,7 +536,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         parsingFileContent.addReference(macroReference, macroReference.getReferencedObject());
     }
 
-    private static void addMacro(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankMacroDirective ppDirective) {
+    private static void addMacro(FileImpl curFile, FileContent parsingFileContent, ClankMacroDirective ppDirective) {
         if (!ppDirective.isDefined()) {
             // only #define are handled by old model, not #undef
             return;
@@ -740,146 +730,4 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
     }
 
-    public static final class MacroReference extends OffsetableBase implements CsmReference {
-        private final CsmMacro referencedMacro;
-
-        private static MacroReference createMacroReference(FileImpl curFile, int startOffset, int endOffset, FileContent parsingFileContent, FileImpl startFile, final ClankDriver.ClankMacroDirective directive) {
-            CsmMacro referencedMacro;
-            if (CharSequenceUtilities.equals(ClankDriver.ClankMacroDirective.BUILD_IN_FILE, directive.getFile())) {
-                referencedMacro =  SystemMacroImpl.create(directive.getMacroName(), findBody(startFile, directive.getMacroName()), directive.getParameters(), startFile, findType(startFile, directive.getMacroName()));
-            } else {
-                referencedMacro =  MacroImpl.create(directive.getMacroName(), directive.getParameters(),
-                    "", getTargetFile(curFile, directive.getFile()), directive.getDirectiveStartOffset(), directive.getDirectiveEndOffset(), CsmMacro.Kind.DEFINED);
             }
-            return new MacroReference(curFile, startOffset, endOffset, referencedMacro);
-        }
-
-        public static CsmMacro.Kind findType(FileImpl startFile, CharSequence macroName) {
-            CsmMacro.Kind res = CsmMacro.Kind.COMPILER_PREDEFINED;
-            NativeFileItem item = startFile.getNativeFileItem();
-            if (item != null) {
-                for(String m : item.getUserMacroDefinitions()) {
-                    if (CharSequenceUtilities.startsWith(m, macroName)) {
-                        res = CsmMacro.Kind.USER_SPECIFIED;
-                        break;
-                    }
-                }
-            }
-            return res;
-        }
-
-        public static CharSequence findBody(FileImpl startFile, CharSequence macroName) {
-            CharSequence res = "";
-            NativeFileItem item = startFile.getNativeFileItem();
-            if (item != null) {
-                for(String m : item.getSystemMacroDefinitions()) {
-                    if (CharSequenceUtilities.startsWith(m, macroName)) {
-                        int i = CharSequenceUtilities.indexOf(m, '=');
-                        if (i > 0) {
-                            res = m.substring(i+1);
-                        }
-                    }
-                }
-                for(String m : item.getUserMacroDefinitions()) {
-                    if (CharSequenceUtilities.startsWith(m, macroName)) {
-                        int i = CharSequenceUtilities.indexOf(m, '=');
-                        if (i > 0) {
-                            res = m.substring(i+1);
-                        }
-                    }
-                }
-            }
-            return res;
-        }
-
-        private MacroReference(FileImpl curFile, int startOffset, int endOffset, CsmMacro referencedMacro) {
-            super(curFile, startOffset, endOffset);
-            this.referencedMacro =  referencedMacro;
-        }
-
-        @Override
-        public CsmObject getReferencedObject() {
-            return referencedMacro;
-        }
-
-        @Override
-        public CsmObject getOwner() {
-            return null;
-        }
-
-        @Override
-        public CsmReferenceKind getKind() {
-            return CsmReferenceKind.DIRECT_USAGE;
-        }
-
-        @Override
-        public CharSequence getText() {
-            return referencedMacro.getName();
-        }
-
-        @Override
-        public CsmObject getClosestTopLevelObject() {
-            return getContainingFile();
-        }
-
-        static CsmFile getTargetFile(FileImpl current, CharSequence macroContainerFile) {
-            CsmFile target = null;
-            if (current != null && macroContainerFile.length() > 0) {
-                FileSystem fs = null;
-                ProjectBase currentPrj = (ProjectBase) current.getProject();
-                ProjectBase targetPrj = currentPrj.findFileProject(macroContainerFile, true);
-                if (targetPrj != null) {
-                    target = targetPrj.findFile(macroContainerFile, true, false);
-                    fs = targetPrj.getFileSystem();
-                } else {
-                    fs = currentPrj.getFileSystem();
-                }
-                // try full model?
-                if (target == null) {
-                    target = CsmModelAccessor.getModel().findFile(new FSPath(fs, macroContainerFile.toString()), true, false);
-                }
-                if (target == null && targetPrj != null) {
-                    target = targetPrj.getUnresolvedFile();
-                }
-                if (target == null) {
-                    target = currentPrj.getUnresolvedFile();
-                }
-            }
-            return target;
-        }
-    }
-
-    private static final class MacroDeclarationReference extends OffsetableBase implements CsmReference {
-        private final CsmMacro referencedMacro;
-
-        private MacroDeclarationReference(FileImpl curFile, CsmMacro referencedMacro, int macroNameOffset) {
-            super(curFile, macroNameOffset, macroNameOffset + referencedMacro.getName().length());
-            this.referencedMacro = referencedMacro;
-        }
-
-        @Override
-        public CsmObject getReferencedObject() {
-            return referencedMacro;
-        }
-
-        @Override
-        public CsmObject getOwner() {
-            return referencedMacro;
-        }
-
-        @Override
-        public CsmReferenceKind getKind() {
-            return CsmReferenceKind.DECLARATION;
-        }
-
-        @Override
-        public CharSequence getText() {
-            return referencedMacro.getName();
-        }
-
-        @Override
-        public CsmObject getClosestTopLevelObject() {
-            return getContainingFile();
-        }
-    }
-}

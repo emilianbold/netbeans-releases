@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.spellchecker;
 
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
@@ -67,11 +68,15 @@ public class SpellcheckerHighlightLayerFactory implements HighlightsLayerFactory
     }
     
     public static synchronized OffsetsBag getBag(JTextComponent component) {
-        OffsetsBag bag = (OffsetsBag) component.getClientProperty(SpellcheckerHighlightLayerFactory.class);
-        Spellchecker.register (component);
-        if (bag == null) {
-            component.putClientProperty(SpellcheckerHighlightLayerFactory.class, bag = new OffsetsBag(component.getDocument()));
+        Document doc = component.getDocument();
+        OffsetsBag bag = null;
+        if (doc != null) {
+            bag = (OffsetsBag) doc.getProperty(SpellcheckerHighlightLayerFactory.class);
+            if (bag == null) {
+                doc.putProperty(SpellcheckerHighlightLayerFactory.class, bag = new OffsetsBag(doc));
+            }
         }
+        Spellchecker.register (component);
         
         return bag;
     }

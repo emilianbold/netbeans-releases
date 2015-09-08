@@ -459,6 +459,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug251256.cpp", 12, 10, "bug251256.cpp", 6, 5);
     }
     
+    public void testBug254671() throws Exception {
+        // Bug 254671 - IDE can't parse STL (default compiler in Ubuntu 15.10)
+        performTest("bug254671.cpp", 16, 8, "bug254671.cpp", 10, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

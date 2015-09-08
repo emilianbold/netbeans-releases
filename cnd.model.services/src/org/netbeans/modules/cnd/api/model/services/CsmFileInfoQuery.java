@@ -132,7 +132,7 @@ public abstract class CsmFileInfoQuery {
     public abstract List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file, Interrupter interrupter);
 
     /**
-     * @return list of macro's usages in the file
+     * @return SORTED list of macro's usages in the file
      */
     public abstract List<CsmReference> getMacroUsages(CsmFile file, Interrupter interrupter);
 

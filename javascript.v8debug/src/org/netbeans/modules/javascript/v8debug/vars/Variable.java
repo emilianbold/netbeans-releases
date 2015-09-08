@@ -43,6 +43,7 @@
 package org.netbeans.modules.javascript.v8debug.vars;
 
 import java.util.Objects;
+import org.netbeans.lib.v8debug.V8Scope;
 import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
@@ -62,14 +63,21 @@ public class Variable {
     private final String name;
     private final long ref;
     private V8Value value;
+    private final V8Scope scope;
     private String valueLoadError;
     private boolean hasIncompleteValue;
     
     public Variable(Kind kind, String name, long ref, V8Value value, boolean incompleteValue) {
+        this(kind, name, ref, value, incompleteValue, null);
+    }
+    
+    public Variable(Kind kind, String name, long ref, V8Value value, boolean incompleteValue,
+                    V8Scope scope) {
         this.kind = kind;
         this.name = name;
         this.ref = ref;
         this.value = value;
+        this.scope = scope;
         this.hasIncompleteValue = incompleteValue;
     }
     
@@ -103,6 +111,11 @@ public class Variable {
     
     void setValueLoadError(String valueLoadError) {
         this.valueLoadError = valueLoadError;
+    }
+    
+    /** Variable's scope or <code>null</code>. */
+    public V8Scope getScope() {
+        return scope;
     }
 
     @Override

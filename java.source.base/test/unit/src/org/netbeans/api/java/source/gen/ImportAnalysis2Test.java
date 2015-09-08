@@ -127,6 +127,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import java.util.List;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    List l;\n" +
             "}\n";
 
@@ -165,6 +166,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import foo.A;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    A l;\n" +
             "}\n";
 
@@ -204,6 +206,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    A l;\n" +
             "}\n";
 
@@ -246,6 +249,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import foo.A.C;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    B l;\n" +
             "    C k;\n" +
             "}\n";
@@ -292,6 +296,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    A l;\n\n" +
             "    class A {\n" +
             "    }\n" +
@@ -333,6 +338,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import java.util.Map;\n" +
             "\n" +
             "public class Test implements Map {\n" +
+            "\n" +
             "    Entry l;\n" +
             "}\n";
 
@@ -371,6 +377,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import java.util.List;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    List<String> l;\n" +
             "}\n";
 
@@ -407,6 +414,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    int[] l;\n" +
             "}\n";
 
@@ -443,6 +451,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    does.not.Exist l;\n" +
             "}\n";
 
@@ -585,6 +594,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import java.util.List;\n" +
             "\n" +
             "public class Test extends Test {\n" +
+            "\n" +
             "    List l;\n" +
             "}\n";
 
@@ -678,6 +688,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import java.util.Map;\n" +
             "\n" +
             "public abstract class Test implements Map<String, String> {\n" +
+            "\n" +
             "    Entry e;\n" +
             "}\n";
 
@@ -805,6 +816,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import foo.A;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    A l;\n" +
             "}\n";
 
@@ -860,6 +872,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import foo.A.B;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    B l;\n" +
             "}\n";
 
@@ -907,6 +920,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import foo.A.B;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    B l;\n" +
             "}\n";
 

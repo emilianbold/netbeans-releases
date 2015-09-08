@@ -63,11 +63,13 @@ import org.openide.util.NbBundle;
 public class FunctionUsageAudit extends AbstractCodeAudit {
     private final FunctionsXmlService.Level level;
     private final FunctionsXmlService.Category category;
+    private final String customType;
     
-    public FunctionUsageAudit(FunctionsXmlService.Level level, FunctionsXmlService.Category category, String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
+    public FunctionUsageAudit(FunctionsXmlService.Level level, FunctionsXmlService.Category category, String id, String name, String description, String defaultSeverity, String customType, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
         this.level = level;
         this.category = category;
+        this.customType = customType;
     }
     
     @Override
@@ -79,11 +81,10 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
     public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
         if (file != null) {
-            if (request.isCancelled()) {
-                return;
-            }
-            
             for (CsmReference ref : CsmReferenceResolver.getDefault().getReferences(file)) {
+                if (request.isCancelled()) {
+                    return;
+                }
                 if (CsmKindUtilities.isFunction(ref.getReferencedObject())) {
                     CsmFunction function = (CsmFunction) ref.getReferencedObject();
                     String altText = getAlternativesIfUnsafe(function);
@@ -94,9 +95,9 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
                         String description = (altText.isEmpty())?getDescription():(getDescription()+NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.alternative", altText)); // NOI18N
                         if (response instanceof AnalyzerResponse) {
                             ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), id+"\n"+name+"\n"+description, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
+                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), id+"\n"+name+"\n"+description, severity, customType, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
                         } else {
-                            response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), description, severity, ref.getStartOffset(), ref.getEndOffset()));
+                            response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), description, severity, customType, ref.getStartOffset(), ref.getEndOffset()));
                         }
                     }
                 }

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.team.ide.spi;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -205,6 +206,20 @@ public interface IDEServices {
      */
     public void shutdown(boolean restart);
         
+    /**
+     * Determines whether it is possible to open some text fragment in the StackAnalyzer.
+     * 
+     * @return <code>true</code> a stack analyzer view is available, otherwise <code>false</code>. 
+     */
+    public boolean providesOpenInStackAnalyzer();
+
+    /**
+     * Opens some text in the StackAnalyzer. Reads the lines from 
+     * the supplied reader and fills them into the stack analyzer view.
+     * @param r
+     */
+    public void openInStackAnalyzer(BufferedReader r);
+    
     /**
      * Creates a date picker component that can be used in task editor UI.
      * May return null.

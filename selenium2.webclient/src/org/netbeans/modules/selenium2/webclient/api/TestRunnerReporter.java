@@ -81,6 +81,7 @@ public final class TestRunnerReporter {
     static final Pattern SESSION_START_PATTERN = Pattern.compile("^" + CAPABILITY + "1\\.\\.(?<TOTAL>[\\d]+)"); // NOI18N
     static final Pattern SESSION_END_PATTERN = Pattern.compile("^" + CAPABILITY + "(.*)tests (?<TOTAL>[\\d]+), pass (?<PASS>[\\d]+), fail (?<FAIL>[\\d]+), skip (?<SKIP>[\\d]+)"); // NOI18N
     static final String SKIP = " # SKIP -"; // NOI18N
+    static final Pattern DONE_PATTERN = Pattern.compile("^(.*)Done."); // NOI18N
 
     private final RunInfo runInfo;
 
@@ -97,6 +98,7 @@ public final class TestRunnerReporter {
     private final boolean showOutput;
     private int multiCapabilities = 0;
     private String browser;
+    private boolean normalSessionEnd = false;
 
     public TestRunnerReporter(RunInfo runInfo, String reporterSuffix) {
         assert runInfo != null;
@@ -120,6 +122,15 @@ public final class TestRunnerReporter {
             return logMessage;
         }
         
+        matcher = DONE_PATTERN.matcher(line);
+        if (matcher.find()) {
+            if (!normalSessionEnd) {
+                // something unexpected has happened
+                sessionFinishedAbnormally(line);
+            }
+            return logMessage;
+        }
+        
         if(index == -1) {
             if (trouble != null) { // stacktrace from javascript/selenium mocha runner
                 stackTrace.add(getStacktrace(line));
@@ -135,6 +146,7 @@ public final class TestRunnerReporter {
                     (multiCapabilities > 0 && matcher.group("CAPABILITY") == null) || // multiCapabilities is used with only one browser
                     (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == 1)) { // multiCapabilities is used with more than one browser
                 sessionStarted(line);
+                normalSessionEnd = false;
             }
             return showOutput ? line : null;
         }
@@ -145,8 +157,9 @@ public final class TestRunnerReporter {
             // in "multi capability" mode session is finished only once
             if (multiCapabilities == 0 || // capabilities is used
                     (multiCapabilities > 0 && matcher.group("CAPABILITY") == null) || // multiCapabilities is used with only one browser
-                    (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == 1)) { // multiCapabilities is used with more than one browser
+                    (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == multiCapabilities)) { // multiCapabilities is used with more than one browser
                 sessionFinished(line);
+                normalSessionEnd = true;
             }
             return showOutput ? "" : null;
         }
@@ -295,6 +308,18 @@ public final class TestRunnerReporter {
         }
         getManager().sessionFinished(testSession);
         testSession = null;
+        runningSuite = null;
+        hasTests = false;
+    }
+    
+    @NbBundle.Messages({
+        "TestRunner.session.finished.abnormally=Test session terminated abnormally - perhaps an error occured?"
+    })
+    private void sessionFinishedAbnormally(String line) {
+        getManager().displayOutput(testSession, Bundle.TestRunner_session_finished_abnormally(), false);
+        getManager().sessionFinished(testSession);
+        testSession = null;
+        runningSuite = null;
         hasTests = false;
     }
 
@@ -358,7 +383,8 @@ public final class TestRunnerReporter {
         // at notify (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:465:12)
         // at C:\Users\toikonom\AppData\Local\Temp\AngularJSPhoneCat\node_modules\protractor\lib\protractor.js:1041:17
         // at [object Object].webdriver.promise.ControlFlow.runInNewFrame_ (C:\Users\toikonom\AppData\Local\Temp\AngularJSPhoneCat\node_modules\protractor\node_modules\selenium-webdriver\lib\webdriver\promise.js:1539:20)
-        static final Pattern FILE_LINE_PATTERN_UNIX = Pattern.compile("^" + CAPABILITY + "(.*)at ([^/]*)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
+        // at Context.<anonymous> (test/test.js:8:24)
+        static final Pattern FILE_LINE_PATTERN_UNIX = Pattern.compile("^" + CAPABILITY + "(.*)at ([^/(]*)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
         static final Pattern FILE_LINE_PATTERN_WINDOWS = Pattern.compile("^" + CAPABILITY + "(.*)at (.*)(?<DRIVE>[a-zA-Z]:)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
 
         final Project project;
@@ -382,7 +408,9 @@ public final class TestRunnerReporter {
             }
             if (matchFound) {
                 String pathname = drive == null ? matcher.group("FILE") : drive.concat(matcher.group("FILE")); // NOI18N
-                File path = new File(pathname);
+                // mocha changed the way it might report failures' stack traces after 2.2.3
+                // This might result in pathname being '(...', so we need to ommit the starting '('
+                File path = new File(pathname.replace("(", ""));
                 File file;
                 FileObject projectDir = project.getProjectDirectory();
                 if (path.isAbsolute()) {
@@ -394,7 +422,8 @@ public final class TestRunnerReporter {
                     }
                 }
                 FileObject parent = underTestRoot ? Utilities.getTestsSeleniumFolder(project, false) : projectDir;
-                if(!FileUtil.isParentOf(parent, FileUtil.toFileObject(file))) {
+                FileObject fo = FileUtil.toFileObject(file);
+                if(fo == null || (underTestRoot && !FileUtil.isParentOf(parent, fo))) {
                     return null;
                 }
                 return Pair.of(file, new int[] {Integer.parseInt(matcher.group("LINE")), Integer.parseInt(matcher.group("COLUMN"))}); // NOI18N

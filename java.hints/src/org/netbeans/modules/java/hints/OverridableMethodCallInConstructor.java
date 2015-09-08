@@ -83,7 +83,7 @@ public class OverridableMethodCallInConstructor {
     public static ErrorDescription hint(HintContext ctx) {
         MethodInvocationTree mit = (MethodInvocationTree) ctx.getPath().getLeaf();
         CompilationInfo info = ctx.getInfo();
-        TreePath enclosingMethod = Utilities.findEnclosingMethodOrConstructor(ctx, ctx.getPath());
+        TreePath enclosingMethod = Utilities.findOwningExecutable(ctx, ctx.getPath(), false);
 
         if (enclosingMethod == null) {
             return null;

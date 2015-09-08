@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.cnd.completion.impl.xref;
 
+import java.io.File;
+import java.util.Arrays;
+
 /**
  *
  * @author Vladimir Voskresensky
@@ -51,6 +54,14 @@ public class SimpleReferencesTestCase extends ReferencesBaseTestCase {
     public SimpleReferencesTestCase(String testName) {
         super(testName);
     }
+
+    @Override
+    protected File[] changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
+        super.setUsrIncludes(projectDir.getAbsolutePath(), Arrays.asList(projectDir.getAbsolutePath()));
+        return super.changeDefProjectDirBeforeParsingProjectIfNeeded(projectDir);
+    }
+    
+    
 
     public void testMacroInInclude() throws Exception {
         performTest("macro_in_include.cc");

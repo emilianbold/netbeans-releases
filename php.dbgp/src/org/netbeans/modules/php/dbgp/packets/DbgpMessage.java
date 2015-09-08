@@ -59,6 +59,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.php.dbgp.DebugSession;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -235,25 +238,32 @@ public abstract class DbgpMessage {
     /*
      * Notify user about unexpected format of received packet.
      */
+    @NbBundle.Messages("DbgpMessage.packet.error=Error occured during communication with Xdebug.\n\n"
+            + "Report issue, provide steps to reproduce and attach IDE and ideally also Xdebug log.\n"
+            + "(Add xdebug.remote_log=/log_path/xdebug.log to your php.ini.)")
     private static void notifyPacketError(Exception e) {
-        Logger.getLogger(DbgpMessage.class.getName()).log(Level.SEVERE, null, e);
+        if (e != null) {
+            LOGGER.log(Level.INFO, null, e);
+        }
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.DbgpMessage_packet_error(), NotifyDescriptor.ERROR_MESSAGE));
     }
 
     private static byte[] getContent(InputStream inputStream, int size)
             throws IOException {
         byte[] bytes = new byte[size];
         int count = 0;
-        while (count < size) {
-            int awaitedBytes = size - count;
-            int length = awaitedBytes < getMaxDataSize() ? awaitedBytes : getMaxDataSize();
-            count += inputStream.read(bytes, count, length);
+        try {
+            while (count < size) {
+                int awaitedBytes = size - count;
+                int length = awaitedBytes < getMaxDataSize() ? awaitedBytes : getMaxDataSize();
+                count += inputStream.read(bytes, count, length);
+            }
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
         if (count != size) {
             notifyPacketError(null);
-            Logger.getLogger(DbgpMessage.class.getName()).log(
-                    Level.FINE,
-                    "Red {0}" + " bytes from socket input stream," + " but expected {1} bytes", // NOI18N
-                    new Object[]{count, size});
+            LOGGER.log(Level.INFO, "Read {0} bytes from socket input stream, but expected {1} bytes", new Object[]{count, size});
             return null;
         }
         int nullByte = inputStream.read();
@@ -336,7 +346,6 @@ public abstract class DbgpMessage {
             return doc.getDocumentElement();
         } catch (SAXException e) {
             LOGGER.log(Level.SEVERE, "Possible invalid XML - ORIGINAL:\n\n{0}\n\nAFTER REPLACE:\n\n{1}", new Object[]{original, inputWithoutNullChars});
-            notifyPacketError(e);
             return null;
         }
     }

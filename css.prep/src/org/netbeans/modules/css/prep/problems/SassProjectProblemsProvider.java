@@ -46,7 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
-import org.netbeans.modules.css.prep.sass.SassExecutable;
+import org.netbeans.modules.css.prep.sass.SassCli;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.util.NbBundle;
@@ -79,7 +79,7 @@ public final class SassProjectProblemsProvider extends BaseProjectProblemsProvid
     @Override
     void checkCompiler(Collection<ProjectProblem> currentProblems) {
         try {
-            SassExecutable.getDefault();
+            SassCli.getDefault();
         } catch (InvalidExternalExecutableException ex) {
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.SassProjectProblemsProvider_invalidCompiler_title(),

@@ -178,6 +178,21 @@ is the proper place.
              <class name="PositionRefresher" package="org.netbeans.spi.editor.hints"/>
              <class name="Context" package="org.netbeans.spi.editor.hints"/>
         </change>
+        
+        <change id="custom-annotation-type">
+             <api name="EditorHintsSPI"/>
+             <summary>Added customType field and constructor to ErrorDescription</summary>
+             <version major="1" minor="38" subsubminor="0"/>
+             <date day="26" month="8" year="2015"/>
+             <author login="danilasergeyev"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added customType field to ErrorDescription as well as corresponding getter method and new constructor 
+                 in order to be able to provide custom annotation type for particular hint. Added new factory method to
+                 ErrorDescriptionFactory which uses new ErrorDescription constructor.
+             </description>
+             <issue number="254375"/>
+        </change>
 
     </changes>
 

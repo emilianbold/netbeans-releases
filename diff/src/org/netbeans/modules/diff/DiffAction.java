@@ -269,6 +269,12 @@ public class DiffAction extends NodeAction {
                         }
 
                         @Override
+                        protected void componentClosed() {
+                            super.componentClosed(); //To change body of generated methods, choose Tools | Templates.
+                            fsdp.closed();
+                        }
+                        
+                        @Override
                         public UndoRedo getUndoRedo() {
                             return fsdp.getUndoRedo();
                         }

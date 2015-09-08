@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -323,9 +324,16 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         
     /*private*/ void setAttrs(Lookup.Result<FontColorSettings> result) {
         if (Boolean.TRUE.equals(component.getClientProperty("AsTextField"))) {
-            attribs = AttributesUtilities.createImmutable(
-                    StyleConstants.Background, (Color) UIManager.get("TextField.selectionBackground"),
-                    StyleConstants.Foreground, (Color) UIManager.get("TextField.selectionForeground"));
+            if (UIManager.get("TextField.selectionBackground") != null) {
+                attribs = AttributesUtilities.createImmutable(
+                        StyleConstants.Background, (Color) UIManager.get("TextField.selectionBackground"),
+                        StyleConstants.Foreground, (Color) UIManager.get("TextField.selectionForeground"));
+            } else {
+                final JTextField referenceTextField = (JTextField) new JComboBox<String>().getEditor().getEditorComponent();
+                attribs = AttributesUtilities.createImmutable(
+                        StyleConstants.Background, referenceTextField.getSelectionColor(),
+                        StyleConstants.Foreground, referenceTextField.getSelectedTextColor());
+            }
             return;
         }
         FontColorSettings fcs = result.allInstances().iterator().next();

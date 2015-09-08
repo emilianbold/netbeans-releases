@@ -83,7 +83,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
     private ExecutionEnvironment execEnv;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<>();
     private Collection<OutputStreamHandler> outputHandlers;
-    private static final Logger logger = Logger.getLogger(BuildProjectActionHandler.class.getName());
+    static final Logger logger = Logger.getLogger(BuildProjectActionHandler.class.getName());
 
     /* package-local */
     BuildProjectActionHandler() {

@@ -271,6 +271,9 @@ public class CsmFinderImpl implements CsmFinder {
             for (CsmProject csmProject : projets) {
                 final Collection<CsmProject> libraries = csmProject.getLibraries();
                 if (!libraries.isEmpty()) {
+                    // TODO: it seems that all libraries should be collected at the beginning of this method
+                    // and there is no need to create contResolver more than once (no need for libContResolver).
+                    CsmProjectContentResolver libContResolver = new CsmProjectContentResolver(null, null, getCaseSensitive(), false, false, libraries);
                     HashSet<CharSequence> set = new HashSet<CharSequence>();
                     for (Object o : ret) {
                         if (CsmKindUtilities.isQualified((CsmObject) o)) {
@@ -285,7 +288,7 @@ public class CsmFinderImpl implements CsmFinder {
                             libNmsp = lib.findNamespace(ns.getQualifiedName());
                         }
                         if (libNmsp != null) {
-                            if (checkStopAfterAppendAllNamespaceElements(libNmsp, name, exactMatch, searchNested, searchFirst, false, null, contResolver, ret, true, set, vasitedNamespaces)) {
+                            if (checkStopAfterAppendAllNamespaceElements(libNmsp, name, exactMatch, searchNested, searchFirst, false, null, libContResolver, ret, true, set, vasitedNamespaces)) {
                                 return ret;
                             }
                         }

@@ -271,85 +271,88 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         assert modifiable;
         JiraConnectorProvider connectorProvider = JiraConnectorSupport.getInstance().getConnector();
         FilterDefinition fd =  connectorProvider.createFilterDefinition();
-
-        // text search
-        String text = panel.queryTextField.getText().trim();
-        if(!text.equals("")) {                                                  // NOI18N
-            fd.setContentFilter(connectorProvider.createContentFilter(
-                    text,
-                    panel.summaryCheckBox.isSelected(),
-                    panel.descriptionCheckBox.isSelected(),
-                    panel.commentsCheckBox.isSelected(),
-                    panel.environmentCheckBox.isSelected()));
-        }
-
-        List<Project> projects = getValues(panel.projectList);
-        if(projects.size() > 0) {
-            fd.setProjectFilter(connectorProvider.createProjectFilter(projects.toArray(new Project[projects.size()])));
-        }
-        List<IssueType> types = getValues(panel.typeList);
-        if(types.size() > 0) {
-            fd.setIssueTypeFilter(connectorProvider.createIssueTypeFilter(types.toArray(new IssueType[types.size()])));
-        }
-        List<Component> components = getValues(panel.componentsList);
-        if(components.size() > 0) {
-            fd.setComponentFilter(connectorProvider.createComponentFilter(components.toArray(new Component[components.size()]),components.isEmpty()));
-        }
-        List<Version> versions = getValues(panel.fixForList);
-        if(versions.size() > 0) {
-            fd.setFixForVersionFilter(connectorProvider.createVersionFilter(versions.toArray(new Version[versions.size()]), versions.isEmpty(), true, false));
-        }
-        versions = getValues(panel.affectsVersionList);
-        if(versions.size() > 0) {
-            fd.setReportedInVersionFilter(connectorProvider.createVersionFilter(versions.toArray(new Version[versions.size()]), versions.isEmpty(), true, false));
-        }
-        List<JiraStatus> statuses = getValues(panel.statusList);
-        if(statuses.size() > 0) {
-            fd.setStatusFilter(connectorProvider.createStatusFilter(statuses.toArray(new JiraStatus[statuses.size()])));
-        }
-        List<Resolution> resolutions = getValues(panel.resolutionList);
-        if(resolutions.size() > 0) {
-            fd.setResolutionFilter(connectorProvider.createResolutionFilter(resolutions.toArray(new Resolution[resolutions.size()])));
-        }
-        List<Priority> priorities = getValues(panel.priorityList);
-        if(priorities.size() > 0) {
-            fd.setPriorityFilter(connectorProvider.createPriorityFilter(priorities.toArray(new Priority[priorities.size()])));
-        }
-
-        if(reporterUserSearch != null) {
-            UserFilter userFilter = reporterUserSearch.getFilter();
-            if(userFilter != null) {
-                fd.setReportedByFilter(userFilter);
+        if(isChanged) {
+            // text search
+            String text = panel.queryTextField.getText().trim();
+            if(!text.equals("")) {                                                  // NOI18N
+                fd.setContentFilter(connectorProvider.createContentFilter(
+                        text,
+                        panel.summaryCheckBox.isSelected(),
+                        panel.descriptionCheckBox.isSelected(),
+                        panel.commentsCheckBox.isSelected(),
+                        panel.environmentCheckBox.isSelected()));
             }
-        }
-        if(assigneeUserSearch != null) { 
-            UserFilter userFilter = assigneeUserSearch.getFilter();
-            if(userFilter != null) {
-                fd.setAssignedToFilter(userFilter);
+
+            List<Project> projects = getValues(panel.projectList);
+            if(projects.size() > 0) {
+                fd.setProjectFilter(connectorProvider.createProjectFilter(projects.toArray(new Project[projects.size()])));
             }
-        }
-        Long min = getLongValue(panel.ratioMinTextField);
-        Long max = getLongValue(panel.ratioMaxTextField);
-        if(min != null || max != null) {
-            EstimateVsActualFilter estimateFilter = connectorProvider.createEstimateVsActualFilter(min != null ? min : 0, max != null ? max : 0);
-            fd.setEstimateVsActualFilter(estimateFilter);
-        }
+            List<IssueType> types = getValues(panel.typeList);
+            if(types.size() > 0) {
+                fd.setIssueTypeFilter(connectorProvider.createIssueTypeFilter(types.toArray(new IssueType[types.size()])));
+            }
+            List<Component> components = getValues(panel.componentsList);
+            if(components.size() > 0) {
+                fd.setComponentFilter(connectorProvider.createComponentFilter(components.toArray(new Component[components.size()]),components.isEmpty()));
+            }
+            List<Version> versions = getValues(panel.fixForList);
+            if(versions.size() > 0) {
+                fd.setFixForVersionFilter(connectorProvider.createVersionFilter(versions.toArray(new Version[versions.size()]), versions.isEmpty(), true, false));
+            }
+            versions = getValues(panel.affectsVersionList);
+            if(versions.size() > 0) {
+                fd.setReportedInVersionFilter(connectorProvider.createVersionFilter(versions.toArray(new Version[versions.size()]), versions.isEmpty(), true, false));
+            }
+            List<JiraStatus> statuses = getValues(panel.statusList);
+            if(statuses.size() > 0) {
+                fd.setStatusFilter(connectorProvider.createStatusFilter(statuses.toArray(new JiraStatus[statuses.size()])));
+            }
+            List<Resolution> resolutions = getValues(panel.resolutionList);
+            if(resolutions.size() > 0) {
+                fd.setResolutionFilter(connectorProvider.createResolutionFilter(resolutions.toArray(new Resolution[resolutions.size()])));
+            }
+            List<Priority> priorities = getValues(panel.priorityList);
+            if(priorities.size() > 0) {
+                fd.setPriorityFilter(connectorProvider.createPriorityFilter(priorities.toArray(new Priority[priorities.size()])));
+            }
 
-        DateRangeFilter rf = getDateRangeFilter(panel.createdFromTextField, panel.createdToTextField);
-        if(rf != null) {
-            fd.setCreatedDateFilter(rf);
-        }
+            if(reporterUserSearch != null) {
+                UserFilter userFilter = reporterUserSearch.getFilter();
+                if(userFilter != null) {
+                    fd.setReportedByFilter(userFilter);
+                }
+            }
+            if(assigneeUserSearch != null) { 
+                UserFilter userFilter = assigneeUserSearch.getFilter();
+                if(userFilter != null) {
+                    fd.setAssignedToFilter(userFilter);
+                }
+            }
+            Long min = getLongValue(panel.ratioMinTextField);
+            Long max = getLongValue(panel.ratioMaxTextField);
+            if(min != null || max != null) {
+                EstimateVsActualFilter estimateFilter = connectorProvider.createEstimateVsActualFilter(min != null ? min : 0, max != null ? max : 0);
+                fd.setEstimateVsActualFilter(estimateFilter);
+            }
 
-        rf = getDateRangeFilter(panel.updatedFromTextField, panel.updatedToTextField);
-        if(rf != null) {
-            fd.setUpdatedDateFilter(rf);
-        }
+            DateRangeFilter rf = getDateRangeFilter(panel.createdFromTextField, panel.createdToTextField);
+            if(rf != null) {
+                fd.setCreatedDateFilter(rf);
+            }
 
-        rf = getDateRangeFilter(panel.dueFromTextField, panel.dueToTextField);
-        if(rf != null) {
-            fd.setDueDateFilter(rf);
-        }
+            rf = getDateRangeFilter(panel.updatedFromTextField, panel.updatedToTextField);
+            if(rf != null) {
+                fd.setUpdatedDateFilter(rf);
+            }
 
+            rf = getDateRangeFilter(panel.dueFromTextField, panel.dueToTextField);
+            if(rf != null) {
+                fd.setDueDateFilter(rf);
+            }
+        } else {
+            fd = filterDefinition;
+        }
+        
         return fd;
     }
 
@@ -858,7 +861,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                     firstTimeSave = true;
                 }
                 assert name != null;
-                jiraFilter = getFilterDefinition();
+                filterDefinition = getFilterDefinition();
+                jiraFilter = filterDefinition;
                 save(name);
                 
                 if(!firstTimeSave) {
@@ -1145,19 +1149,11 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         });
     }
 
-    public void refresh(boolean synchronously) {
-        refresh(false, synchronously);
-    }
-    
-    public void autoRefresh() {
-        refresh(true, false);
-    }
-
     public void onRefresh() {
-        refresh(false, false);
+        refresh(false);
     }
 
-    private void refresh(final boolean autoRefresh, boolean synchronously) {
+    public void refresh(boolean synchronously) {
         Task t;
         synchronized(REFRESH_LOCK) {
             if(refreshTask == null) {
@@ -1165,7 +1161,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             } else {
                 refreshTask.cancel();
             }
-            t = refreshTask.post(autoRefresh);
+            t = refreshTask.post();
         }
         if(synchronously) {
             t.waitFinished();
@@ -1396,7 +1392,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         private ProgressHandle handle;
         private int counter;
         private Task task;
-        private boolean autoRefresh;
         private long progressMaxWorkunits;
         private int progressWorkunits;
 
@@ -1469,7 +1464,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 }
             });
             try {
-                query.refresh(getJiraFilter(), autoRefresh);
+                query.refresh(getJiraFilter());
             } finally {
                 EventQueue.invokeLater(new Runnable() {
                     @Override
@@ -1508,12 +1503,11 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             }
         }
 
-        Task post(boolean autoRefresh) {
+        Task post() {
             if(task != null) {
                 task.cancel();
             }
             task = rp.create(this);
-            this.autoRefresh = autoRefresh;
             task.schedule(0);
             return task;
         }
@@ -1521,9 +1515,12 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         @Override
         public boolean cancel() {
             if(task != null) {
-                task.cancel();
-                query.cancel();
-                finnishQuery();
+                try { query.cancel(); } finally { }                
+                try{
+                    task.cancel();
+                } finally {
+                    finnishQuery();
+                }
             }
             return true;
         }

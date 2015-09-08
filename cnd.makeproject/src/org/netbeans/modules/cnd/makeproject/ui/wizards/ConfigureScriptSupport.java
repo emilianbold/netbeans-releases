@@ -76,6 +76,7 @@ public final class ConfigureScriptSupport implements PreBuildArtifactProvider {
         if (folder == null) {
             return null;
         }
+        folder.refresh();
         if (!(folder.isFolder() && (folder.canRead()))) {
             return null;
         }

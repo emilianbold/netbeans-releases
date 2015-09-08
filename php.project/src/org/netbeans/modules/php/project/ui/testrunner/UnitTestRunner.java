@@ -263,7 +263,12 @@ public final class UnitTestRunner {
 
         @Override
         public Locations.Line parseLocation(String callStack) {
-            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+            List<PhpTestingProvider> providers = project.getTestingProviders();
+            if (providers.isEmpty()) {
+                PhpProjectUtils.openCustomizer(project, CompositePanelProviderImpl.TESTING);
+                return null;
+            }
+            for (PhpTestingProvider testingProvider : providers) {
                 Locations.Line location = testingProvider.parseFileFromOutput(callStack);
                 if (location != null) {
                     return location;

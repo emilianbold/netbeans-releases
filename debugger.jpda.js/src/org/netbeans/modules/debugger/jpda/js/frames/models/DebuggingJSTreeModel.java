@@ -47,9 +47,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -75,7 +75,7 @@ public class DebuggingJSTreeModel implements TreeModelFilter {
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
         Object[] children = original.getChildren(parent, from, to);
-        if (parent instanceof JPDAThread) {
+        if (parent instanceof DebuggingView.DVThread) {
             Object[] jsChildren = createChildrenWithJSStack(children);
             if (jsChildren != null) {
                 children = filterChildren(jsChildren);

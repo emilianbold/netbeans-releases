@@ -68,7 +68,7 @@ import org.openide.util.Exceptions;
  */
 public class ClankFileInfoQuerySupport {
 
-    public static List<CsmReference> getMacroUsages(FileImpl fileImpl, final Interrupter interrupter) {
+    public static List<CsmReference> getMacroUsages(FileImpl fileImpl, Interrupter interrupter) {
         List<CsmReference> out = new ArrayList<>();
         if (APTTraceFlags.DEFERRED_MACRO_USAGES) {
             Collection<PreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
@@ -84,6 +84,9 @@ public class ClankFileInfoQuerySupport {
             } else {
                 TreeSet<CsmReference> result = new TreeSet<>(CsmOffsetable.OFFSET_COMPARATOR);
                 for (PreprocHandler handler : handlers) {
+                    if (interrupter.cancelled()) {
+                        break;
+                    }
                     // ask for concurrent entry if absent
                     ClankMacroUsagesProducer producer = ClankMacroUsagesProducer.createImpl(fileImpl, handler);
                     result.addAll(producer.getMacroUsages(interrupter));

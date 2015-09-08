@@ -436,31 +436,45 @@ public final class Resolver3 implements Resolver {
     }
 
     private CsmObject resolveInInlinedNamespaces(CsmObject result, CsmNamespace namespace, CharSequence nameToken, AtomicBoolean outVisibility) {
-        return resolveInInlinedNamespacesImpl(result, new HashSet<CharSequence>(), namespace, nameToken, outVisibility);
+        return resolveInInlinedNamespaces(result, new HashSet<CharSequence>(), namespace, nameToken, outVisibility);
     }
     
-    private CsmObject resolveInInlinedNamespacesImpl(CsmObject result, Set<CharSequence> checked, CsmNamespace namespace, CharSequence nameToken, AtomicBoolean outVisibility) {
+    private CsmObject resolveInInlinedNamespaces(CsmObject result, Set<CharSequence> checked, CsmNamespace namespace, CharSequence nameToken, AtomicBoolean outVisibility) {
         if (result == null || !outVisibility.get()) {
             for (CsmNamespace ns : namespace.getInlinedNamespaces()) {
-                final CharSequence name = ns.getQualifiedName();
-                if (checked.add(name)) {
-                    String fqn = name + "::" + nameToken; // NOI18N
-                    if (fqn.startsWith("::")) { // NOI18N
-                        fqn = fqn.substring(2);
+                result = resolveInInlinedNamespace(ns, checked, nameToken, outVisibility);
+                if (result != null && outVisibility.get()) {
+                    return result;
+                }
+            }
+            for (CsmProject library : project.getLibraries()) {
+                CsmNamespace libNs = library.findNamespace(namespace.getQualifiedName());
+                if (libNs != null) {
+                    for (CsmNamespace ns : libNs.getInlinedNamespaces()) {
+                        result = resolveInInlinedNamespace(ns, checked, nameToken, outVisibility);
+                        if (result != null && outVisibility.get()) {
+                            return result;
+                        }
                     }
-                    
-                    result = findClassifierUsedInFile(fqn, outVisibility);
-                    
-                    result = resolveInInlinedNamespacesImpl(result, checked, ns, nameToken, outVisibility);
-
-                    if (result != null && outVisibility.get()) {
-                        break;
-                    }                            
                 }
             }
         }
         return result;
-    }    
+    }   
+    
+    private CsmObject resolveInInlinedNamespace(CsmNamespace ns, Set<CharSequence> checked, CharSequence nameToken, AtomicBoolean outVisibility) {
+        CsmObject result = null;
+        final CharSequence name = ns.getQualifiedName();
+        if (checked.add(name)) {
+            String fqn = name + "::" + nameToken; // NOI18N
+            if (fqn.startsWith("::")) { // NOI18N
+                fqn = fqn.substring(2);
+            }
+            result = findClassifierUsedInFile(fqn, outVisibility);
+            result = resolveInInlinedNamespaces(result, checked, ns, nameToken, outVisibility);
+        }
+        return result;
+    }
 
     void traceRecursion(){
         System.out.println("Detected recursion in resolver:"); // NOI18N

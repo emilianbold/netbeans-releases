@@ -53,6 +53,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -75,7 +76,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola
  */
-public class SelectionPanel extends javax.swing.JPanel {
+public class SelectionPanel extends JPanel implements HelpCtx.Provider {
     /** Panel for searching CDNJS libraries. */
     private SearchPanel searchPanel;
     /** Selected libraries. */
@@ -107,6 +108,11 @@ public class SelectionPanel extends javax.swing.JPanel {
         tableColumnModel.getColumn(1).setCellRenderer(versionColumnRenderer);
         tableColumnModel.getColumn(2).setCellRenderer(versionColumnRenderer);
         loadLibraryInfo(existingLibraries);
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.javascript.cdnjs.ui.SelectionPanel"); // NOI18N
     }
 
     /**

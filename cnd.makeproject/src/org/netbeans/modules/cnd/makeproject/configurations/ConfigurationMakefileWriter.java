@@ -528,6 +528,9 @@ public class ConfigurationMakefileWriter {
             bw.write("\n"); // NOI18N
             bw.write("# Test Files\n"); // NOI18N
             bw.write("TESTFILES=" + getTestTargetFiles(projectDescriptor, conf) + "\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+            bw.write("# Test Object Files\n"); // NOI18N
+            bw.write("TESTOBJECTFILES=" + getTestObjectFiles(projectDescriptor, conf) + "\n"); // NOI18N
         }
 
         bw.write("\n"); // NOI18N
@@ -1540,6 +1543,10 @@ public class ConfigurationMakefileWriter {
     public static String getObjectDir(MakeConfiguration conf) {
         return MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO; // UNIX path // NOI18N
     }
+    
+    public static String getTestObjectDir(MakeConfiguration conf) {
+        return MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO + '/' + "tests"; // UNIX path // NOI18N
+    }
 
     private static String getObjectFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
         Item[] items = getSortedProjectItems(projectDescriptor);
@@ -1567,6 +1574,26 @@ public class ConfigurationMakefileWriter {
                 BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                 linkObjects.append(" \\\n\t"); // NOI18N
                 linkObjects.append(compilerConfiguration.getOutputFile(items[x], conf, false));
+            }
+        }
+        return linkObjects.toString();
+    }
+    
+    private static String getTestObjectFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
+        Item[] items = getSortedProjectItems(projectDescriptor);
+        StringBuilder linkObjects = new StringBuilder();
+        if (conf.isCompileConfiguration()) {
+            for (int x = 0; x < items.length; x++) {
+                final Folder folder = items[x].getFolder();
+                if (folder.isTest()) {
+                    ItemConfiguration itemConfiguration = items[x].getItemConfiguration(conf);
+                    BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+                    if (compilerConfiguration != null) {
+                        String outputFile = compilerConfiguration.getOutputFile(items[x], conf, false);
+                        linkObjects.append(" \\\n\t"); // NOI18N
+                        linkObjects.append(outputFile);
+                    }
+                }
             }
         }
         return linkObjects.toString();

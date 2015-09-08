@@ -168,6 +168,14 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                     new Object[] { docView.getTextComponent(), Arrays.asList(viewFactories) });
         }
     }
+    
+    void released() {
+        if (viewFactories != null) {
+            for (EditorViewFactory viewFactory : viewFactories) {
+                viewFactory.releaseAll();
+            }
+        }
+    }
 
     /**
      * Start view building process (it must be followed by finishBuildViews() in try-finally).

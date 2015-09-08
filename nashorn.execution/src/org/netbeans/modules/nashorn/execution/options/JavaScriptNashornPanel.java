@@ -55,7 +55,7 @@ import org.netbeans.spi.options.OptionsPanelController;
  *
  * @author Martin Entlicher
  */
-@OptionsPanelController.Keywords(keywords={"JavaScript, Nashorn", "#KW_JavaScript"}, location="Html5", tabTitle= "#LBL_Nashorn")
+@OptionsPanelController.Keywords(keywords={"JavaScript, Nashorn", "#KW_JavaScript"}, location=JavaOptions.JAVA, tabTitle= "#LBL_Nashorn")
 public class JavaScriptNashornPanel extends javax.swing.JPanel {
     
     private final JavaScriptNashornOptionsPanelController optionsController;

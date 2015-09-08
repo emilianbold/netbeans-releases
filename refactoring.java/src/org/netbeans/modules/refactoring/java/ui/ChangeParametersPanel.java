@@ -148,7 +148,21 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         this.refactoredObj = refactoredObj;
         this.parent = parent;
         this.preConfiguration = preConfiguration;
-        model = new ParamTableModel(columnNames, 0);
+        model = new ParamTableModel(columnNames, 0) {
+
+            @Override
+            public void addRow(Object[] rowData) {
+                int row = paramTable.getRowCount();
+                super.addRow(rowData);
+                for (int i = 0; i < paramTable.getColumnCount(); i++) {
+                    TableCellEditor cellEditor = paramTable.getCellEditor(row, i);
+                    int rowHeight = cellEditor.getTableCellEditorComponent(paramTable, rowData[0], true, row, i).getPreferredSize().height;
+                    if(paramTable.getRowHeight() < rowHeight) {
+                        paramTable.setRowHeight(rowHeight);
+                    }
+                }
+            }
+        };
         this.returnTypeAction = new ReturnTypeAction();
         singleLineEditor = Utilities.createSingleLineEditor(MIME_JAVA);
         paramname = CodeStyleUtils.addPrefixSuffix("par", cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
@@ -749,19 +763,19 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     }
 
     private void initTableData(CompilationController info) {
+        List<Object[]> newModel = new LinkedList<>();
+
         TreePath path = refactoredObj.resolve(info);
         ExecutableElement method = (ExecutableElement) info.getTrees().getElement(path);
         MethodTree tree = info.getTrees().getTree(method);
-        
         parameterSpan = info.getTreeUtilities().findMethodParameterSpan(tree);
-        
+
         List<? extends VariableElement> pars = method.getParameters();
-        
         int originalIndex = 0;
-        for (VariableElement par:method.getParameters()) {
+        for (VariableElement par : pars) {
             VariableTree parTree = (VariableTree) info.getTrees().getTree(par);
             String typeRepresentation;
-            if (method.isVarArgs() && originalIndex == pars.size()-1) {
+            if (method.isVarArgs() && originalIndex == pars.size() - 1) {
                 typeRepresentation = getTypeStringRepresentation(parTree).replace("[]", "..."); // NOI18N
             } else {
                 typeRepresentation = getTypeStringRepresentation(parTree);
@@ -769,32 +783,39 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             LocalVarScanner scan = new LocalVarScanner(info, null);
             scan.scan(path, par);
             Boolean removable = !scan.hasRefernces();
-            if (model.getRowCount()<=originalIndex) {
-                Object[] parRep = new Object[] { typeRepresentation, par.toString(), "", new Integer(originalIndex), removable };
-                model.addRow(parRep);
-            } else {
-                removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
-                ((Vector) model.getDataVector().get(originalIndex)).set(4, removable);
-            }
+            // Used to check if var was user in overridden/overriding methods
+//            if (model.getRowCount()<=originalIndex) {
+            newModel.add(new Object[]{typeRepresentation, par.toString(), "", new Integer(originalIndex), removable});
+//            } else {
+//                removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
+//                ((Vector) model.getDataVector().get(originalIndex)).set(4, removable);
+//            }
             originalIndex++;
         }
-        if(preConfiguration != null) {
-            List<Object[]> newModel = new LinkedList<Object[]>();
+        if (preConfiguration != null) {
+            List<Object[]> preModel = new LinkedList<>();
             for (int i = 0; i < preConfiguration.length; i++) {
                 ParameterInfo parameterInfo = preConfiguration[i];
-                newModel.add(new Object[] {parameterInfo.getType(),
+                preModel.add(new Object[]{parameterInfo.getType(),
                     parameterInfo.getName(),
-                    parameterInfo.getDefaultValue() == null? "" : parameterInfo.getDefaultValue(),
+                    parameterInfo.getDefaultValue() == null ? "" : parameterInfo.getDefaultValue(),
                     parameterInfo.getOriginalIndex(),
-                    model.isRemovable(parameterInfo.getOriginalIndex())});
+                    newModel.get(parameterInfo.getOriginalIndex())[4]});
             }
-            while(model.getRowCount() > 0) {
-                model.removeRow(0);
-            }
-            for (Object[] row : newModel) {
-                model.addRow(row);
-            }
+            newModel = preModel;
         }
+        final List<Object[]> todo = newModel;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                while (model.getRowCount() > 0) {
+                    model.removeRow(0);
+                }
+                for (Object[] row : todo) {
+                    model.addRow(row);
+                }
+            }
+        });
     }
     
     private static String getTypeStringRepresentation(VariableTree desc) {

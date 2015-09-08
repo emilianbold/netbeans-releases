@@ -114,8 +114,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
 
     @Override
-    public IncludeState pushInclude(FileSystem fs, CharSequence path, int line, int offset, int resolvedDirIndex) {
-        return pushIncludeImpl(fs, path, line, offset, resolvedDirIndex);
+    public IncludeState pushInclude(FileSystem fs, CharSequence path, int line, int offset, int resolvedDirIndex, int inclDirIndex) {
+        return pushIncludeImpl(fs, path, line, offset, resolvedDirIndex, inclDirIndex);
     }
 
     @Override
@@ -288,7 +288,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                             inclInfo.getIncludedPath(),
                             inclInfo.getIncludeDirectiveLine(),
                             inclInfo.getIncludeDirectiveOffset(),
-                            inclInfo.getIncludedDirIndex());
+                            inclInfo.getIncludedDirIndex(),
+                            inclInfo.getIncludedDirFileIndex());
                 }
                 assert inclInfoImpl != null;
                 inclInfoImpl.write(output);
@@ -393,7 +394,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
 
-    private IncludeState pushIncludeImpl(FileSystem fs, CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
+    private IncludeState pushIncludeImpl(FileSystem fs, CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex, int inclDirIndex) {
         assert CharSequences.isCompact(path) : "must be char sequence key " + path; // NOI18N
         boolean okToPush = true;
         if (CHECK_INCLUDE_DEPTH > 0) {
@@ -431,7 +432,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             }
         }
         if (okToPush) {
-            inclStack.addLast(new IncludeInfoImpl(fs, path, directiveLine, directiveOffset, resolvedDirIndex));
+            inclStack.addLast(new IncludeInfoImpl(fs, path, directiveLine, directiveOffset, resolvedDirIndex, inclDirIndex));
             return IncludeState.Success;
         } else {
             APTUtils.LOG.log(Level.WARNING, "RECURSIVE inclusion:\n\t{0}\n\tin {1}\n", new Object[] { path , getCurPath() }); // NOI18N
@@ -445,8 +446,9 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         private final int directiveLine;
         private final int directiveOffset;
         private final int resolvedDirIndex;
+        private final int includedDirFileIndex;
         
-        public IncludeInfoImpl(FileSystem fs, CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
+        public IncludeInfoImpl(FileSystem fs, CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex, int includedDirFileIndex) {
             assert path != null;
             this.fs = fs;
             this.path = path;
@@ -455,6 +457,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             this.directiveLine = directiveLine;
             this.directiveOffset = directiveOffset;
             this.resolvedDirIndex = resolvedDirIndex;
+            this.includedDirFileIndex = includedDirFileIndex;
         }
         
         public IncludeInfoImpl(final RepositoryDataInput input) throws IOException {
@@ -464,6 +467,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             directiveLine = input.readInt();
             directiveOffset = input.readInt();
             resolvedDirIndex = input.readInt();
+            includedDirFileIndex = input.readInt();
         }
 
         @Override
@@ -502,7 +506,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             }
             IncludeInfoImpl other = (IncludeInfoImpl)obj;
             return this.directiveLine == other.directiveLine && this.directiveOffset == other.directiveOffset &&
-                    this.path.equals(other.path) && (resolvedDirIndex == other.resolvedDirIndex);
+                    this.path.equals(other.path) && (resolvedDirIndex == other.resolvedDirIndex) && (this.includedDirFileIndex == other.includedDirFileIndex);
         }
 
         @Override
@@ -512,6 +516,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             hash = 73 * hash + this.directiveLine;
             hash = 73 * hash + this.directiveOffset;
             hash = 73 * hash + this.resolvedDirIndex;
+            hash = 73 * hash + this.includedDirFileIndex;
             return hash;
         }
 
@@ -522,12 +527,19 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             output.writeInt(directiveLine);
             output.writeInt(directiveOffset);
             output.writeInt(resolvedDirIndex);
+            output.writeInt(includedDirFileIndex);
         }
 
         @Override
         public int getIncludedDirIndex() {
             return this.resolvedDirIndex;
         }
+
+        @Override
+        public int getIncludedDirFileIndex() {
+            return includedDirFileIndex;
+        }
+        
     }
       
     private CharSequence popIncludeImpl() {

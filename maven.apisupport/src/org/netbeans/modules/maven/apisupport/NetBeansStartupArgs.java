@@ -100,6 +100,11 @@ public class NetBeansStartupArgs implements LateBoundPrerequisitesChecker {
             String newProp = config.getProperties().get(NetBeansRunParamsIDEChecker.PROPERTY);
             if (newProp != null) {
                 config.setProperty(NetBeansRunParamsIDEChecker.PROPERTY, b.toString() + newProp);
+            } else {
+                String prop = NetBeansRunParamsIDEChecker.usingNbmPlugin311(config.getMavenProject()) ? 
+                                NetBeansRunParamsIDEChecker.PROPERTY : 
+                                NetBeansRunParamsIDEChecker.OLD_PROPERTY;
+                config.setProperty(prop, b.toString());                
             }
         }
         return true;

@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
-import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducer;
+import org.netbeans.modules.cnd.modelimpl.parser.clank.MacroReference;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
@@ -219,7 +219,12 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
         public T getObject() {
             I object = instance.getObject();
             FileImpl file = (FileImpl)object;
-            SystemMacroImpl res = SystemMacroImpl.create(argument, ClankTokenStreamProducer.MacroReference.findBody(file, argument), null, file, ClankTokenStreamProducer.MacroReference.findType(file, argument));
+            CharSequence body = MacroReference.findBody(file, argument);
+            if (body == null) {
+                // macros is not defined in item properties.
+                body = "";
+            }
+            SystemMacroImpl res = SystemMacroImpl.create(argument, body, null, file, MacroReference.findType(file, argument));
             return (T)res;
         }
 

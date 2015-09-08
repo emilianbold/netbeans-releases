@@ -148,11 +148,13 @@ public class JiraQuery {
         return NbJiraIssue.getColumnDescriptors(repository);
     }
 
-    public void refresh() { // XXX what if already running! - cancel task
-        refreshIntern(false);
+    public void refresh(JiraFilter jiraFilter) {
+        assert jiraFilter != null;
+        this.jiraFilter = jiraFilter;
+        refreshIntern();
     }
-
-    boolean refreshIntern(final boolean autoRefresh) { // XXX what if already running! - cancel task
+    
+    private boolean refreshIntern() { // XXX what if already running! - cancel task
 
         assert jiraFilter != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
@@ -191,11 +193,11 @@ public class JiraQuery {
                             }
                         }
                         JiraConnectorSupport.getInstance().getConnector().setQuery(repository.getTaskRepository(), iquery, jiraFilter);
-                        SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getCommandFactory()
+                        queryCmd = MylynSupport.getInstance().getCommandFactory()
                                 .createSynchronizeQueriesCommand(repository.getTaskRepository(), iquery);
                         QueryProgressListener list = new QueryProgressListener();
                         queryCmd.addCommandProgressListener(list);
-                        repository.getExecutor().execute(queryCmd, !autoRefresh);
+                        repository.getExecutor().execute(queryCmd);
                         ret[0] = queryCmd.hasFailed();
                         if (ret[0]) {
                             if (isSaved()) {
@@ -219,7 +221,7 @@ public class JiraQuery {
                 } finally {
                     queryCmd = null;
                     JiraConfig.getInstance().putLastQueryRefresh(repository, getStoredQueryName(), System.currentTimeMillis());
-                    logQueryEvent(issues.size(), autoRefresh);
+                    logQueryEvent(issues.size());
                     Jira.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name /* XXX , filterDefinition*/}); // NOI18N
                 }
             }
@@ -231,19 +233,13 @@ public class JiraQuery {
         return getDisplayName();
     }
 
-    protected void logQueryEvent(int count, boolean autoRefresh) {
+    protected void logQueryEvent(int count) {
         LogUtils.logQueryEvent(
             JiraConnector.getConnectorName(),
             name,
             count,
             false,
-            autoRefresh);
-    }
-
-    void refresh(JiraFilter jiraFilter, boolean autoReresh) {
-        assert jiraFilter != null;
-        this.jiraFilter = jiraFilter;
-        refreshIntern(autoReresh);
+            false);
     }
 
     public boolean canRemove() {

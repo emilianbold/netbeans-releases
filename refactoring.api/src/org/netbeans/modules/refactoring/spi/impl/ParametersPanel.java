@@ -46,15 +46,19 @@ package org.netbeans.modules.refactoring.spi.impl;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.refactoring.api.*;
@@ -167,9 +171,20 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         inspect = "org.netbeans.modules.java.hints.spiimpl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
         //cancel.setEnabled(false);
         next.setVisible(!isPreviewRequired());
-        validate();
-        Dimension preferredSize = progressPanel.getPreferredSize();
-        progressPanel.setPreferredSize(preferredSize);
+        
+        label.addHyperlinkListener(new HyperlinkListener() {
+
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED && Desktop.isDesktopSupported()) {
+                    try {
+                        Desktop.getDesktop().browse(e.getURL().toURI());
+                    } catch (IOException | URISyntaxException ex) {
+                        LOGGER.log(Level.INFO, "Desktop.browse failed: ", ex); // NOI18N
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -183,7 +198,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (errorPanel != null) {
             epDim = errorPanel.getPreferredSize();
         }
-        Dimension dimension = new Dimension(Math.max(Math.max(cpDim.width, ppDim.width),epDim.width) , Math.max(cpDim.height, epDim.height) + ppDim.height);
+        Dimension dimension = new Dimension(Math.max(cpDim.width, epDim.width), Math.max(cpDim.height, epDim.height) + ppDim.height);
         
         return dimension;
     }
@@ -206,7 +221,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         help = new javax.swing.JButton();
         openInNewTab = new javax.swing.JCheckBox();
         innerPanel = new javax.swing.JPanel();
-        label = new TooltipLabel();
+        label = new javax.swing.JEditorPane();
         containerPanel = new javax.swing.JPanel();
         pleaseWait = new javax.swing.JLabel();
 
@@ -310,8 +325,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         innerPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(128, 128, 128)));
         innerPanel.setLayout(new java.awt.BorderLayout());
 
-        label.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        innerPanel.add(label, java.awt.BorderLayout.WEST);
+        label.setEditable(false);
+        label.setContentType("text/html"); // NOI18N
+        label.setOpaque(false);
+        innerPanel.add(label, java.awt.BorderLayout.NORTH);
 
         progressPanel.add(innerPanel, java.awt.BorderLayout.NORTH);
 
@@ -514,7 +531,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private javax.swing.JPanel controlsPanel;
     private javax.swing.JButton help;
     private javax.swing.JPanel innerPanel;
-    private javax.swing.JLabel label;
+    private javax.swing.JEditorPane label;
     private javax.swing.JButton next;
     private javax.swing.JCheckBox openInNewTab;
     private javax.swing.JLabel pleaseWait;
@@ -745,6 +762,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             //refactoring cancelled
             return;
         }
+        showProblem(null);
         containerPanel.removeAll();
         errorPanel = new ErrorPanel(problem, rui);
         errorPanel.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
@@ -786,6 +804,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         dialog.pack();
         if(next.isEnabled() && next.isVisible()) {
             next.requestFocusInWindow();
+        } else if(previewButton.isEnabled() && previewButton.isVisible()) {
+            previewButton.requestFocusInWindow();
         } else {
             cancel.requestFocusInWindow();
         }
@@ -826,6 +846,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             }
         }
         dialog.repaint();
+        stateChanged(null);
     }
 
     private boolean isPreviewRequired() {
@@ -977,13 +998,15 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             previewButton.setEnabled(true);
             return;
         }
-        innerPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray));
+        innerPanel.setBorder(new CompoundBorder(new javax.swing.border.LineBorder(java.awt.Color.gray),
+                             new EmptyBorder(0, 2, 2, 2)));
         progressPanel.setVisible(true);
         if (problem.isFatal()) {
             displayError(problem.getMessage());
         } else {
             displayWarning(problem.getMessage());
         }
+        dialog.pack();
     }
 
     private void displayError(String error) {
@@ -1008,7 +1031,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         public void run() {
             if (currentState != POST_CHECK && currentState != CHECK_PARAMETERS) {
                 problem = rui.setParameters();
-                if (problem != null && currentState != POST_CHECK) {
+                if (problem != null && (problem.isFatal() || problem.getNext() != null) && currentState != POST_CHECK) {
                     currentState = CHECK_PARAMETERS;
                     try {
                         SwingUtilities.invokeAndWait(new Runnable() {

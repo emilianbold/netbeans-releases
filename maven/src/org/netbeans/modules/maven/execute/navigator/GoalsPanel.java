@@ -379,7 +379,13 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         protected @Override
         boolean createKeys(List<Mojo> toPopulate) {
             Set<Mojo> goals = new TreeSet<Mojo>();
-            MavenProject mp = prj.getLookup().lookup(NbMavenProject.class).getMavenProject();
+            NbMavenProject nbmp = prj.getLookup().lookup(NbMavenProject.class);
+            assert nbmp != null : "Project " + prj + " has no NbMavenProject in lookup.";
+            if(nbmp == null) {
+                LOG.log(Level.WARNING, "Project {0} has no NbMavenProject in lookup.", prj);
+                return true;
+            }
+            MavenProject mp = nbmp.getMavenProject();
             for (Artifact p : mp.getPluginArtifacts()) {
                 try {
 

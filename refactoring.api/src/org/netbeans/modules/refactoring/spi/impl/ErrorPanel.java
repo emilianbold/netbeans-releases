@@ -44,7 +44,6 @@
 package org.netbeans.modules.refactoring.spi.impl;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
-import java.awt.SystemColor;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -132,7 +131,7 @@ public class ErrorPanel extends javax.swing.JPanel {
         listPanel = new javax.swing.JPanel();
         errorLabel = new javax.swing.JLabel();
         listScrollPane = new javax.swing.JScrollPane();
-        errors = new javax.swing.JPanel();
+        errors = new ScrollableJPanel();
         explanationPanel = new javax.swing.JPanel();
         fatalError = new javax.swing.JLabel();
         nonFatalError = new javax.swing.JLabel();
@@ -168,16 +167,17 @@ public class ErrorPanel extends javax.swing.JPanel {
 
         add(explanationPanel, java.awt.BorderLayout.SOUTH);
 
-        headLine.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         headLine.setEditable(false);
+        headLine.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         headLine.setFont(errorLabel.getFont());
         headLine.setLineWrap(true);
         headLine.setText(org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("LBL_ErrorPanelDescription")); // NOI18N
         headLine.setWrapStyleWord(true);
         headLine.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 10, 1));
         add(headLine, java.awt.BorderLayout.NORTH);
-        headLine.getAccessibleContext().setAccessibleName("null");
-        headLine.getAccessibleContext().setAccessibleDescription("null");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle"); // NOI18N
+        headLine.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_ErrorPanelName")); // NOI18N
+        headLine.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ErrorPanel.class, "ACSD_ErrorPanelDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(ErrorPanel.class).getString("ACSD_ErrorPanelName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ErrorPanel.class).getString("ACSD_ErrorPanelDescription")); // NOI18N

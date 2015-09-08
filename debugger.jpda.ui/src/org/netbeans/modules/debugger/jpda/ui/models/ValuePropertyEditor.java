@@ -56,9 +56,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -105,6 +108,8 @@ class ValuePropertyEditor implements ExPropertyEditor {
     private VariablesTableModel vtm;
     private Validate validate = new Validate();
     
+    private static final Map<Class, Boolean> classesWithPE = Collections.synchronizedMap(new WeakHashMap<Class, Boolean>());
+    
     ValuePropertyEditor(ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
     }
@@ -131,6 +136,12 @@ class ValuePropertyEditor implements ExPropertyEditor {
         if (CLASSES_2_IGNORE.contains(clazz)) {
             return false;
         }
+        // Cache which classes have PropertyEditor,
+        // so that we do not have to wait for AWT event queue.
+        Boolean hasPE = classesWithPE.get(clazz);
+        if (hasPE != null) {
+            return hasPE;
+        }
         if (SwingUtilities.isEventDispatchThread()) {
             return findThePropertyEditor(clazz) != null;
         } else {
@@ -153,32 +164,35 @@ class ValuePropertyEditor implements ExPropertyEditor {
         if (SwingUtilities.isEventDispatchThread()) {
             return findThePropertyEditor(clazz);
         } else {
-            final PropertyEditor[] pe = new PropertyEditor[] { null };
+            final PropertyEditor[] peRef = new PropertyEditor[] { null };
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
-                        pe[0] = findThePropertyEditor(clazz);
+                        peRef[0] = findThePropertyEditor(clazz);
                     }
                 });
             } catch (InterruptedException ex) {
             } catch (InvocationTargetException ex) {
             }
-            return pe[0];
+            return peRef[0];
         }
     }
     
     private static PropertyEditor findThePropertyEditor(Class clazz) {
+        PropertyEditor pe;
         if (Object.class.equals(clazz)) {
-            return null;
-        }
-        PropertyEditor pe = PropertyEditorManager.findEditor(clazz);
-        if (pe == null) {
-            clazz = clazz.getSuperclass();
-            if (clazz != null) {
-                return findPropertyEditor(clazz);
+            pe = null;
+        } else {
+            pe = PropertyEditorManager.findEditor(clazz);
+            if (pe == null) {
+                Class sclazz = clazz.getSuperclass();
+                if (sclazz != null) {
+                    pe = findPropertyEditor(sclazz);
+                }
             }
         }
+        classesWithPE.put(clazz, pe != null);
         return pe;
     }
     

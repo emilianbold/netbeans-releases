@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
@@ -567,7 +568,9 @@ public class WebKitPageModel extends PageModel {
         if (domNode == null) {
             domNode = new DOMNode(this, node);
             nodes.put(nodeId, domNode);
-            checkPageSize();
+            if (nodes.size() > MAX_NODES) { // Check page size
+                showPageSizeWarning();
+            }
         }
         boolean updateChildren = false;
         List<Node> subNodes = node.getChildren();
@@ -576,6 +579,9 @@ public class WebKitPageModel extends PageModel {
             if (nodeType == org.w3c.dom.Node.ELEMENT_NODE
                     || nodeType == org.w3c.dom.Node.DOCUMENT_NODE
                     || nodeType == org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE) {
+                if (node.getChildrenCount() > MAX_CHILD_NODES) {
+                    showPageSizeWarning();
+                }
                 webKit.getDOM().requestChildNodes(nodeId);
             }
         } else {
@@ -617,6 +623,8 @@ public class WebKitPageModel extends PageModel {
 
     /** Maximum number of elements in a page for safe inspection. */
     private static final int MAX_NODES = 100000;
+    /** Maximum number of child nodes of one node for safe inspection. */
+    private static final int MAX_CHILD_NODES = 20000;
     /** Determines whether a warning about the size of the page was shown. */
     private boolean pageSizeWarningShown = false;
     
@@ -631,8 +639,8 @@ public class WebKitPageModel extends PageModel {
                 + "You may run out of memory if you continue with the inspection. "
                 + "Do you what to close this page and stop its inspection?"
     })
-    private void checkPageSize() {
-        if (!pageSizeWarningShown && nodes.size() > MAX_NODES) {
+    private void showPageSizeWarning() {
+        if (!pageSizeWarningShown) {
             pageSizeWarningShown = true;
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
                     Bundle.WebKitPageModel_pageSizeWarningMessage(),
@@ -669,6 +677,7 @@ public class WebKitPageModel extends PageModel {
             }
             selectedNodes = knownNodes(nodes);
         }
+        logPageInspectionUsage();
         firePropertyChange(PROP_SELECTED_NODES, null, null);
     }
 
@@ -689,6 +698,16 @@ public class WebKitPageModel extends PageModel {
             }
         }
         return knownNodes;
+    }
+
+    private static final UsageLogger USAGE_LOGGER = new UsageLogger.Builder("org.netbeans.ui.metrics.web.inspect")  // NOI18N
+            .firstMessageOnly(true)
+            .message(WebKitPageModel.class, "USG_PAGE_INSPECTION") // NOI18N
+            .create();
+
+    /** Logs the usage of page inspection. */
+    private void logPageInspectionUsage() {
+        USAGE_LOGGER.log();
     }
 
     @Override
