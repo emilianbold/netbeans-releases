@@ -685,6 +685,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return true;
                     }
                     break;
+                case INTERFACE:
+                    return true;
             }
 
             occurrence = occurrence.getParentPath();
