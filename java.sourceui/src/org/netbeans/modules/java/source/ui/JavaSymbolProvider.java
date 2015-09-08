@@ -124,6 +124,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                 prefix = textToSearch.substring(0, dotIndex);
                 textToSearch = textToSearch.substring(dotIndex+1);
             }
+            final String textToHighLight = textToSearch;
             ClassIndex.NameKind _kind;
             boolean _caseSensitive;
             switch (st) {
@@ -174,7 +175,7 @@ public class JavaSymbolProvider implements SymbolProvider {
             final Pair<NameMatcher,Boolean> restriction;
             if (prefix != null) {
                 restriction = compileName(prefix,caseSensitive);
-                result.setHighlightText(textToSearch);
+                result.setHighlightText(textToHighLight);
             } else {
                 restriction = null;
             }

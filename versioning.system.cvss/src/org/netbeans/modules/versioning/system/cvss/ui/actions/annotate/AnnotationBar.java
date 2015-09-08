@@ -119,7 +119,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Caret of the target text component.
      */
-    private final Caret caret;
+    private Caret caret;
 
     /**
      * Caret batch timer launched on receiving
@@ -192,7 +192,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.editorUI = Utilities.getEditorUI(target);
         this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         this.doc = editorUI.getDocument();
-        this.caret = textComponent.getCaret();
         if (textComponent instanceof JEditorPane) {
             String mimeType = NbEditorUtilities.getMimeType(textComponent);
             FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
@@ -320,7 +319,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
 
         // lazy listener registration
-        caret.addChangeListener(this);
+        caret = textComponent.getCaret();
+        if (caret != null) {
+            caret.addChangeListener(this);
+        }
+        textComponent.addPropertyChangeListener(this);
         this.caretTimer = new Timer(500, this);
         caretTimer.setRepeats(false);
 
@@ -758,8 +761,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private void release() {
         editorUI.removePropertyChangeListener(this);
         textComponent.removeComponentListener(this);
+        textComponent.removePropertyChangeListener(this);
         doc.removeDocumentListener(this);
-        caret.removeChangeListener(this);
+        if (caret != null) {
+            caret.removeChangeListener(this);
+        }
         if (caretTimer != null) {
             caretTimer.removeActionListener(this);
         }
@@ -1010,6 +1016,18 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null) return;
         String id = evt.getPropertyName();
+        if (evt.getSource() == textComponent) {
+            if ("caret".equals(id)) {
+                if (caret != null) {
+                    caret.removeChangeListener(this);
+                }
+                caret = textComponent.getCaret();
+                if (caret != null) {
+                    caret.addChangeListener(this);
+                }
+            }
+            return;
+        }
         if (EditorUI.COMPONENT_PROPERTY.equals(id)) {  // NOI18N
             if (evt.getNewValue() == null){
                 // component deinstalled, lets uninstall all isteners

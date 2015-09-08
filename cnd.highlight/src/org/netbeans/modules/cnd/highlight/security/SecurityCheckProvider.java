@@ -105,6 +105,25 @@ public final class SecurityCheckProvider extends CsmErrorProvider implements Cod
     }
     
     @Override
+    protected boolean validate(Request request) {
+        CsmFile file = request.getFile();
+        if (file == null){
+            return false;
+        }
+        for(CodeAudit audit : getAudits()) {
+            if (audit.isEnabled()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean hasHintControlPanel() {
+        return true;
+    }
+    
+    @Override
     public String getName() {
         return NAME;
     }

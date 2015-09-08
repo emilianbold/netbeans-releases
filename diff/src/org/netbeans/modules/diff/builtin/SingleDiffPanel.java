@@ -226,6 +226,26 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         }
     }
     
+    public void closed() {
+        // Traverse children components of controller panel and release the editor panes
+        // from editor registry and annotation holder
+        releaseChildrenPanes(controllerPanel);
+    }
+    
+    private static void releaseChildrenPanes(JComponent c) {
+        for (int i = c.getComponentCount() - 1; i >= 0; i--) {
+            java.awt.Component ac = c.getComponent(i);
+            if (ac instanceof JComponent) {
+                JComponent ch = (JComponent) ac;
+                if (Boolean.TRUE.equals(ch.getClientProperty("usedByCloneableEditor"))) {
+                    ch.putClientProperty("usedByCloneableEditor", Boolean.FALSE);
+                } else {
+                    releaseChildrenPanes(ch);
+                }
+            }
+        }
+    }
+    
     private void onPrev() {
         int idx = controller.getDifferenceIndex();
         if (idx > 0) {

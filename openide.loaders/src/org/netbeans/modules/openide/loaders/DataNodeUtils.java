@@ -45,7 +45,7 @@ import org.openide.util.RequestProcessor;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class DataNodeUtils {
-    private static final RequestProcessor RP = new RequestProcessor("Data System Nodes", 10); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Data System Nodes"); // NOI18N
     
     private DataNodeUtils() {
     }
