@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
-@OptionsPanelController.Keywords(keywords={"#KW_WindowOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName_WinSys")
+@OptionsPanelController.Keywords(keywords={"#KW_WindowOptions"}, location="Appearance", tabTitle="#AdvancedOption_DisplayName_WinSys")
 public class WinSysPanel extends javax.swing.JPanel {
 
     protected final WinSysOptionsPanelController controller;
