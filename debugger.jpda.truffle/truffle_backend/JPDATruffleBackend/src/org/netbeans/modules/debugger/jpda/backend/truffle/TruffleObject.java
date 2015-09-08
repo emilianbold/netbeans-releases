@@ -49,7 +49,6 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Property;
-import com.oracle.truffle.js.runtime.objects.JSObject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,7 +90,7 @@ public class TruffleObject {
     private static boolean isLeaf(Object object) {
         return isLeafGeneric(object);
     }
-    
+    /*
     private static boolean isLeafJS(Object object) {
         if (object instanceof DynamicObject) {
             DynamicObject dobj = (DynamicObject) object;
@@ -101,7 +100,7 @@ public class TruffleObject {
             return true;
         }
     }
-    
+    */
     private static boolean isLeafGeneric(Object object) {
         if (object instanceof DynamicObject) {
             if (((DynamicObject) object).getShape().getPropertyCount() > 0 ) {//||
@@ -114,7 +113,7 @@ public class TruffleObject {
             return true;
         }
     }
-    
+    /*
     private Object[] getChildrenJS() {
         //if (object instanceof JSObject) {
         //    JSObject jso = (JSObject) object;
@@ -133,7 +132,7 @@ public class TruffleObject {
             return null;
         }
     }
-    
+    */
     private Object[] getChildrenGeneric() {
         if (object instanceof DynamicObject) {
             DynamicObject dobj = (DynamicObject) object;

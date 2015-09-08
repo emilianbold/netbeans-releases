@@ -44,7 +44,6 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
-import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.debug.Breakpoint;
 import com.oracle.truffle.api.debug.DebugSupportException;
 import com.oracle.truffle.api.debug.DebugSupportProvider;
@@ -58,7 +57,6 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.impl.Accessor;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
@@ -67,10 +65,8 @@ import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.vm.TruffleVM;
-import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -78,7 +74,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import javax.script.ScriptEngine;
 
 /**
  * Truffle accessor for JPDA debugger.
@@ -206,7 +201,7 @@ public class JPDATruffleAccessor extends Object {
         Node node = evt.getNode();
         DebugSupportProvider debugSupport = getDebugSupport(node);
         Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
-        return new FrameInfo(evt.getFrame(), visualizer, node);
+        return new FrameInfo(evt.getFrame(), visualizer, node, evt.getStack());
     }
     
     static void setStep(/*SuspendedEvent*/Object suspendedEvent, int stepCmd) {
@@ -236,7 +231,11 @@ public class JPDATruffleAccessor extends Object {
             Object nodes = nodesField.get(null);
             Method findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguage", RootNode.class);
             findLanguageMethod.setAccessible(true);
-            Class languageClass = (Class) findLanguageMethod.invoke(nodes, node.getRootNode());
+            Node rootNode = node.getRootNode();
+            if (rootNode == null) {
+                rootNode = node;
+            }
+            Class languageClass = (Class) findLanguageMethod.invoke(nodes, rootNode);
             /*
             System.err.println("languageClass = "+languageClass+", node = "+node+", root node = "+node.getRootNode());
             System.err.println("root node's class = "+node.getRootNode().getClass());
@@ -246,8 +245,8 @@ public class JPDATruffleAccessor extends Object {
             System.err.println("Root node's language class = "+rnLangClass);
             */
             if (languageClass == null) {
-                System.err.println("languageClass = "+languageClass+", node = "+node+", root node = "+node.getRootNode());
-                System.err.println("root node's class = "+node.getRootNode().getClass());
+                System.err.println("languageClass = "+languageClass+", node = "+node+", root node = "+rootNode);
+                System.err.println("root node's class = "+rootNode.getClass());
                 return null;
             }
             
@@ -406,11 +405,12 @@ public class JPDATruffleAccessor extends Object {
             frameInfos.append("\n\n");
             
             codes[i] = position.code;
-            
+            /*
+             TODO Find "this"
             Frame f = fi.getFrame(FrameInstance.FrameAccess.READ_ONLY, false);
             if (f instanceof VirtualFrame) {
                 thiss[i] = JSFrameUtil.getThisObj((VirtualFrame) f);
-            }
+            }*/
         }
         return new Object[] { frameInfos.toString(), codes, thiss };
     }
