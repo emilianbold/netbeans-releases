@@ -178,6 +178,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                         isSearchOverloadedMethods(),
                         isFindUsages(),
                         customScope.isDependencies(),
+                        isSearchInComments(),
                         null, cancelRequested);
                 fileSet.addAll(relevantFiles);
             }
@@ -209,7 +210,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                             isFindDirectSubclassesOnly(),
                             isFindOverridingMethods(),
                             isSearchOverloadedMethods(),
-                            isFindUsages(), customScope.isDependencies(), packages, cancelRequested);
+                            isFindUsages(), customScope.isDependencies(),
+                            isSearchInComments(), packages, cancelRequested);
                     fileSet.addAll(relevantFiles);
                 }
             }
@@ -224,6 +226,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     isSearchOverloadedMethods(),
                     isFindUsages(),
                     false,
+                    isSearchInComments(),
                     null,
                     cancelRequested);
         }
@@ -234,7 +237,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             final TreePathHandle tph, final ClasspathInfo cpInfo,
             final boolean isFindSubclasses, final boolean isFindDirectSubclassesOnly,
             final boolean isFindOverridingMethods, final boolean isSearchOverloadedMethods,
-            final boolean isFindUsages, final boolean isIncludeDependencies, final Set<NonRecursiveFolder> folders,
+            final boolean isFindUsages, final boolean isIncludeDependencies, final boolean isSearchInComments, final Set<NonRecursiveFolder> folders,
             final AtomicBoolean cancel) {
         final ClassIndex idx = cpInfo.getClassIndex();
         final Set<FileObject> sourceSet = new TreeSet<>(new FileComparator());
@@ -287,7 +290,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 }
                 if (el.getKind().isField()) {
                     //get field references from index
-                    sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType, resourceType));
+                    final ElementHandle<TypeElement> handle = ElementHandle.create((TypeElement) el.getEnclosingElement());
+                    sourceSet.addAll(idx.getResources(handle, EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType, resourceType));
+                    if(isSearchInComments && cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE).contains(file)) {
+                        sourceSet.add(file);
+                    }
                 } else if (el.getKind().isClass() || el.getKind().isInterface()) {
                     if (isFindSubclasses || isFindDirectSubclassesOnly) {
                         EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
@@ -489,6 +496,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     private boolean isSearchOverloadedMethods() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_OVERLOADED);
     }
+    private boolean isSearchInComments() {
+        return refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS);
+    }
     private boolean isSearchFromBaseClass() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS);
     }
@@ -595,7 +605,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             AtomicBoolean inImport = new AtomicBoolean();
             if (isFindUsages()) {
                 Collection<WhereUsedElement> foundElements;
-                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, cancelled, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS), isSearchOverloadedMethods(), fromTest, fromPlatform, fromDependency, inImport);
+                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, cancelled, isSearchInComments(), isSearchOverloadedMethods(), fromTest, fromPlatform, fromDependency, inImport);
                 findVisitor.scan(cu, element);
                 foundElements = findVisitor.getElements();
                 boolean usagesInComments = findVisitor.usagesInComments();

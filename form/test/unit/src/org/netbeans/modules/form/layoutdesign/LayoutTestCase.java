@@ -55,6 +55,8 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import junit.framework.TestCase;
@@ -120,6 +122,12 @@ public abstract class LayoutTestCase extends TestCase {
         loadForm(startingFormFile);
 
         Method[] methods = this.getClass().getMethods();
+        Arrays.sort(methods, new Comparator<Method>() {
+            @Override
+            public int compare(Method o1, Method o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
         for (int i=0; i < methods.length; i++) {
             Method m = methods[i];
             if (m.getName().startsWith("doChanges")) {

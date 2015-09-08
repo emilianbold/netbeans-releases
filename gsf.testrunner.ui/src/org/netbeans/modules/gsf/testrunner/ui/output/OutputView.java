@@ -43,6 +43,7 @@
 package org.netbeans.modules.gsf.testrunner.ui.output;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -119,15 +120,18 @@ final class OutputView extends PlainView {
     public void paint(Graphics g, Shape a) {
         ((Graphics2D) g).addRenderingHints(getHints());
 
-	final JTextComponent textComp = (JTextComponent) getContainer();
-        selStart = textComp.getSelectionStart();
-        selEnd = textComp.getSelectionEnd();
-        unselectedFg = textComp.isEnabled()
-                       ? textComp.getForeground()
-                       : textComp.getDisabledTextColor();
-        selectedFg = textComp.getCaret().isSelectionVisible()
-                     ? textComp.getSelectedTextColor()
-                     : unselectedFg;
+        Container container = getContainer();
+        if (container instanceof JTextComponent) {
+            final JTextComponent textComp = (JTextComponent) container;
+            selStart = textComp.getSelectionStart();
+            selEnd = textComp.getSelectionEnd();
+            unselectedFg = textComp.isEnabled()
+                    ? textComp.getForeground()
+                    : textComp.getDisabledTextColor();
+            selectedFg = textComp.getCaret().isSelectionVisible()
+                    ? textComp.getSelectedTextColor()
+                    : unselectedFg;
+        }
         super.paint(g, a);
     }
 
