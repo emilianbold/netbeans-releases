@@ -234,8 +234,10 @@ class FormattedPrintFunction {
         if (handler.type != null) {
             CsmClassifier clsf;
             CsmDeclaration.Kind kind;
-            if ((clsf = handler.type.getClassifier()) != null && (kind = clsf.getKind()) != null && kind.equals(CsmDeclaration.Kind.TYPEDEF)) {
-                switch (handler.type.getCanonicalText().toString()) {
+            CsmType handlerType = handler.type;
+            if ((clsf = handlerType.getClassifier()) != null && (kind = clsf.getKind()) != null && kind.equals(CsmDeclaration.Kind.TYPEDEF)) {
+                String handlerTypeText = handlerType.getCanonicalText().toString();
+                switch (handlerTypeText) {
                     case "intmax_t":    case "intmax_t*":   // NOI18N
                     case "uintmax_t":   case "uintmax_t*":  // NOI18N
                     case "size_t":      case "size_t*":     // NOI18N
@@ -244,11 +246,12 @@ class FormattedPrintFunction {
                     case "wchar_t":     case "wchar_t*":    // NOI18N
                         break;
                     default:
-                        CsmClassifier cer = CsmClassifierResolver.getDefault().getTypeClassifier(handler.type, file, offset, true);
-                        return cer.getName().toString().replace("const", "").replace("&", "");  // NOI18N
+                        CsmClassifier cer = CsmClassifierResolver.getDefault().getTypeClassifier(handlerType, file, offset, true);
+                        String replacement = cer.getName().toString().replace("const", "").replace("&", "");  // NOI18N
+                        return handlerTypeText.replace(handlerType.getClassifier().getName(), replacement);
                 }
             }
-            return handler.type.getCanonicalText().toString().replace("const", "").replace("&", "");  // NOI18N
+            return handlerType.getCanonicalText().toString().replace("const", "").replace("&", "");  // NOI18N
         }
         return null;
     }
