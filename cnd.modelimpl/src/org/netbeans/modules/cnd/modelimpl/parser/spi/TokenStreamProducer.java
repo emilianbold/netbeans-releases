@@ -141,7 +141,7 @@ public abstract class TokenStreamProducer {
         return fileImpl;
     }    
 
-    public FileImpl getStartFile() {
+    protected FileImpl getStartFile() {
         if (startFile != null) {
             return startFile;
         }
@@ -161,7 +161,7 @@ public abstract class TokenStreamProducer {
         return fromEnsureParsed;
     }
     
-    public CodePatch getCodePatch() {
+    protected CodePatch getCodePatch() {
         return codePatch;
     }
 
