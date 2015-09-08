@@ -528,4 +528,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 245802 - inaccuracy tests(regression): operator< breaks parser
         performTest("bug245802.cpp");
     }
+    
+    public void testBug254698() throws Exception {
+        // Bug 254698 - java.io.UTFDataFormatException: encoded string too long: 169505 bytes
+        performTest("bug254698.cpp");
+    }
 }

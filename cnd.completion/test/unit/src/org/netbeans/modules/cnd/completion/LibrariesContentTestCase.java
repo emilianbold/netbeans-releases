@@ -118,6 +118,18 @@ public class LibrariesContentTestCase extends CompletionBaseTestCase {
     public void test202486_NS51() throws Exception {
         super.performTest("src/iz202486.cc", 11, 5, "NS5::NS51::");
     }
+    
+    public void testBug254671_1() throws Exception {
+        super.performTest("src/bug254671.cpp", 5, 23);
+    }
+    
+    public void testBug254671_2() throws Exception {
+        super.performTest("src/bug254671.cpp", 7, 10);
+    }
+    
+    public void testBug254671_3() throws Exception {
+        super.performTest("src/bug254671.cpp", 8, 10);
+    }
 
 //    public void testStdSizeTGlob() throws Exception {
 //        super.performTest("sys_include/sys1_incl_sys2.h", 5, 14);
