@@ -326,7 +326,7 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
                 // I think it's a good idea to get rid of hardcoded paths
                 // (i.e. MakeActionProvider::getOutputFile, ConfigurationMakefileWriter::writeLinkTestTarget, ...)
                 // target.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}");
-                dirName = "${TESTDIR}";
+                dirName = "${TESTDIR}"; // NOI18N
             }
         } else {
             if (expanded) {
