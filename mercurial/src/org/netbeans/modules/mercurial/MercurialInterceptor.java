@@ -46,6 +46,7 @@ package org.netbeans.modules.mercurial;
 import java.util.Map;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
@@ -293,6 +294,10 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     @Override
+    @NbBundle.Messages({
+        "# {0} - file path",
+        "MSG_CopyFailed_NotExists=Copy failed because {0} does not exist"
+    })
     public void doCopy (final File from, final File to) throws IOException {
         Mercurial.LOG.log(Level.FINE, "doCopy {0}->{1}", new Object[]{from, to});
         if (from == null || to == null || to.exists()) return;
@@ -303,7 +308,13 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (from.isDirectory()) {
             FileUtils.copyDirFiles(from, to);
         } else {
-            FileUtils.copyFile(from, to);
+            try {
+                FileUtils.copyFile(from, to);
+            } catch (FileNotFoundException ex) {
+                throw Exceptions.attachLocalizedMessage(ex, Bundle.MSG_CopyFailed_NotExists(from.getAbsolutePath()));
+            } catch (IOException ex) {
+                throw Exceptions.attachLocalizedMessage(ex, ex.getLocalizedMessage()); //NOI18N
+            }
         }
 
         if (root == null || HgUtils.isIgnored(to, false)) {
