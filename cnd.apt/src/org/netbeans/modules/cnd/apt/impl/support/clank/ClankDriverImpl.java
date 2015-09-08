@@ -112,6 +112,15 @@ public class ClankDriverImpl {
             PreprocHandler ppHandler,
             final ClankDriver.ClankPreprocessorCallback callback,
             final org.netbeans.modules.cnd.support.Interrupter interrupter) {
+
+        if (APTTraceFlags.TRACE_PREPROC || APTTraceFlags.TRACE_PREPROC_STACKS) {
+            String text = "Preprocessing " + buffer; //NOI18N
+            if (APTTraceFlags.TRACE_PREPROC_STACKS) {
+                new Exception(text).printStackTrace(System.err);
+            } else {
+                System.err.println(text);
+            }
+        }        
         try {
             // TODO: prepare buffers mapping
             // note that for local files no "file://" prefix is added
