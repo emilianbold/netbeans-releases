@@ -252,10 +252,10 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 FileObject file = project.getHelper().resolveFileObject(locEval);
                 try {
                     if (file == null) {
+                        return null;
+                    } else {
                         Node orig = DataObject.find(file).getNodeDelegate();
                         return new Node[] {NodeFactoryUtils.createSpecialFileNode(orig, FILES.get(key))};
-                    } else {
-                        return null;
                     }
                 } catch (DataObjectNotFoundException e) {
                     throw new AssertionError(e);
