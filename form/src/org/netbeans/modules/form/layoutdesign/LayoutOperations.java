@@ -660,16 +660,13 @@ class LayoutOperations implements LayoutConstants {
         }
 
         if (dissolve) { // the sub-group can be dissolved into parent group
-            int alignmentInParent = group.getAlignment();
-            int index = layoutModel.removeInterval(group);
-            while (group.getSubIntervalCount() > 0) {
-                LayoutInterval li = group.getSubInterval(0);
-                int align = li.getAlignment();
-                layoutModel.removeInterval(li);
-                if (justOne && !LayoutInterval.canResize(group)) {
-                    
-                }
-                if (parent.isParallel()) { // moving to parallel group
+            if (parent.isParallel()) { // moving to parallel group
+                int alignmentInParent = group.getAlignment();
+                int index = layoutModel.removeInterval(group);
+                while (group.getSubIntervalCount() > 0) {
+                    LayoutInterval li = group.getSubInterval(0);
+                    int align = li.getAlignment();
+                    layoutModel.removeInterval(li);
                     if (justOne) {
                         if ((align != DEFAULT && align != alignmentInParent)
                                 || (align == DEFAULT && alignmentInParent != parent.getGroupAlignment())) {
@@ -692,9 +689,11 @@ class LayoutOperations implements LayoutConstants {
                         }
                     }
                     layoutModel.addInterval(li, parent, index++);
-                } else { // moving to sequential group
-                    index += addContent(li, parent, index, LayoutUtils.determineDimension(li));
                 }
+            } else { // moving to sequential group
+                int dim = LayoutUtils.determineDimension(group);
+                int index = layoutModel.removeInterval(group);
+                addContent(group, parent, index, dim);
             }
             if (parent.getSubIntervalCount() == 1) {
                 dissolveRedundantGroup(parent.getSubInterval(0));

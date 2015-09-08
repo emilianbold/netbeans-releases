@@ -92,6 +92,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             new BuildToolsCommand(project, COMMAND_BUILD),
             new BuildToolsCommand(project, COMMAND_REBUILD),
             new BuildToolsCommand(project, COMMAND_CLEAN),
+            new BuildToolsCommand(project, COMMAND_TEST_SINGLE),
 
             new CopyCommand(project),
             new MoveCommand(project),

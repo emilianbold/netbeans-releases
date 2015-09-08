@@ -111,7 +111,12 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         T t = getElementHandle().resolve(controller);
                         if (t != null) {
-                            delegate = getDelegate(controller, t);
+                            ScopeHolder scopeHolder = (ScopeHolder) controller.getCachedValue(ScopeHolder.class);
+                            if (scopeHolder == null || scopeHolder.pos != substitutionOffset) {
+                                scopeHolder = new ScopeHolder(substitutionOffset, controller.getTrees().getScope(controller.getTreeUtilities().pathFor(substitutionOffset)));
+                                controller.putCachedValue(ScopeHolder.class, scopeHolder, CompilationInfo.CacheClearPolicy.ON_CHANGE);
+                            }
+                            delegate = getDelegate(controller, scopeHolder.scope, t);
                         }
                     }
                 });
@@ -121,7 +126,7 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
         return delegate != null;
     }
 
-    protected abstract JavaCompletionItem getDelegate(CompilationInfo info, T t);
+    protected abstract JavaCompletionItem getDelegate(CompilationInfo info, Scope scope, T t);
     
     protected JavaCompletionItem getDelegate() {
         return delegate;
@@ -199,11 +204,9 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
         }
 
         @Override
-        protected JavaCompletionItem getDelegate(CompilationInfo info, TypeElement te) {
-            Trees trees = info.getTrees();
+        protected JavaCompletionItem getDelegate(CompilationInfo info, Scope scope, TypeElement te) {
             Elements elements = info.getElements();
-            Scope scope = trees.getScope(info.getTreeUtilities().pathFor(substitutionOffset));
-            if (te != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(te)) && trees.isAccessible(scope, te)) {
+            if (te != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(te)) && info.getTrees().isAccessible(scope, te)) {
                 if (isOfKind(te, kinds) && (!afterExtends || !te.getModifiers().contains(Modifier.FINAL)) && (!isInDefaultPackage(te) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(te.getQualifiedName())) {
                     return createTypeItem(info, te, (DeclaredType) te.asType(), substitutionOffset, referencesCount, elements.isDeprecated(te), insideNew, addTypeVars, false, false, false, getWhiteList());
                 }
@@ -270,10 +273,9 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
         }
 
         @Override
-        protected JavaCompletionItem getDelegate(CompilationInfo info, TypeElement te) {
+        protected JavaCompletionItem getDelegate(CompilationInfo info, Scope scope, TypeElement te) {
             Elements elements = info.getElements();
             Trees trees = info.getTrees();
-            Scope scope = info.getTrees().getScope(info.getTreeUtilities().pathFor(substitutionOffset));
             if (te != null) {
                 Element element = null;
                 boolean multiVersion = false;
@@ -311,6 +313,17 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
         @Override
         public CharSequence getInsertPrefix() {
             return name;
+        }
+    }
+    
+    private static class ScopeHolder {
+
+        private int pos;
+        private Scope scope;
+
+        private ScopeHolder(int pos, Scope scope) {
+            this.pos = pos;
+            this.scope = scope;
         }
     }
 }
