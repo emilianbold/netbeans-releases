@@ -1225,7 +1225,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     }
         
     private boolean isOfKindAndType(TypeMirror type, Element e, EnumSet<ElementKind> kinds, TypeMirror base, Scope scope, Trees trees, Types types) {
-        if (kinds.contains(e.getKind())) {
+        if (type.getKind() != TypeKind.ERROR && kinds.contains(e.getKind())) {
             if (base == null)
                 return true;
             if (types.isSubtype(type, base))
