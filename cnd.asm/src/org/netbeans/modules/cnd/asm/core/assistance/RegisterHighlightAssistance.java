@@ -93,7 +93,7 @@ public class RegisterHighlightAssistance extends AbstractHighlightsContainer
 
     private void update() {
         AsmModelAccessor acc = AsmObjectUtilities.getAccessor(pane);
-        if (acc == null)  {
+        if (acc == null || pane.getCaret() == null)  {
             return;
         }  
         
