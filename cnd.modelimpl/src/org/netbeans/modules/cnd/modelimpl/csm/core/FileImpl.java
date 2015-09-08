@@ -1257,7 +1257,7 @@ public final class FileImpl implements CsmFile,
      * @param filtered
      * @return
      */
-    public final TokenStream getTokenStream(int startContextOffset, int endContextOffset, String context, boolean filtered) {
+    public final TokenStream getTokenStreamForMacroExpansion(int startContextOffset, int endContextOffset, String context, boolean filtered) {
         FileTokenStreamCache cache = new FileTokenStreamCache();
         PreprocessorStatePair bestStatePair = getContextPreprocStatePair(startContextOffset, endContextOffset);
         PreprocHandler preprocHandler = getPreprocHandler(bestStatePair);
