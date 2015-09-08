@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.j2ee.ui.wizard;
 
+import java.awt.EventQueue;
 import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -74,9 +75,19 @@ public final class EAVisualPanel extends JPanel  {
         helper = new ServerSelectionHelper(serverModel, j2eeVersion, J2eeModule.Type.EAR);
         vg = ValidationGroup.create();
 
-        addArtifactIdValidatorFor(tfWeb);
-        addArtifactIdValidatorFor(tfEar);
-        addArtifactIdValidatorFor(tfEjb);
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                addArtifactIdValidatorFor(tfWeb);
+                addArtifactIdValidatorFor(tfEar);
+                addArtifactIdValidatorFor(tfEjb);
+            }
+        };
+        if(EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            EventQueue.invokeLater(r);
+        }
 
         SwingValidationGroup.setComponentName(tfWeb, "Web ArtifactId");
         SwingValidationGroup.setComponentName(tfEar, "Ear ArtifactId");
