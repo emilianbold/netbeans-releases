@@ -85,11 +85,11 @@ public class TruffleObject {
     
     public Object[] getChildren() {
         // TODO: Handle arrays in a special way
-        return getChildrenJS();
+        return getChildrenGeneric();
     }
     
     private static boolean isLeaf(Object object) {
-        return isLeafJS(object);
+        return isLeafGeneric(object);
     }
     
     private static boolean isLeafJS(Object object) {

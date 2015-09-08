@@ -236,6 +236,10 @@ class JPDATruffleDebugManager {
         if (sourceSection == null) {
             sourceSection = node.getEncapsulatingSourceSection();
         }
+        if (sourceSection == null) {
+            System.err.println("Node without sourceSection! node = "+node+", of class: "+node.getClass());
+            throw new IllegalStateException("Node without sourceSection! node = "+node+", of class: "+node.getClass());
+        }
         int line = sourceSection.getStartLine();
         Source source = sourceSection.getSource();
         //System.err.println("source of "+node+" = "+source);

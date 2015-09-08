@@ -65,6 +65,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.vm.TruffleVM;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.io.File;
@@ -250,7 +251,7 @@ public class JPDATruffleAccessor extends Object {
                 return null;
             }
             
-            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguage", TruffleVM.class, Class.class);
+            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguage", Object.class, Class.class);
             findLanguageMethod.setAccessible(true);
             Object tl = findLanguageMethod.invoke(spi, debugManager.getTruffleVM(), languageClass);
             
@@ -315,7 +316,8 @@ public class JPDATruffleAccessor extends Object {
             case Long:      return FrameUtil.getLongSafe(frame, slot);
             case Object:    Object obj = FrameUtil.getObjectSafe(frame, slot);
                             //Node node = frame.materialize().getFrameDescriptor().
-                            Node node = Truffle.getRuntime().getCurrentFrame().getCallNode();   // TODO find frame's node
+                            FrameInstance fi = Truffle.getRuntime().getCurrentFrame();
+                            Node node = (fi != null) ? fi.getCallNode() : null;   // TODO find frame's node
                             DebugSupportProvider debugSupport = (node != null) ? getDebugSupport(node) : null;
                             Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
                             String name;
@@ -380,7 +382,8 @@ public class JPDATruffleAccessor extends Object {
                 frameInfos.append('\n');
                 frameInfos.append(fi.getCallNode().toString());
                 frameInfos.append('\n');
-                frameInfos.append(fi.getCallNode().getSourceSection().getShortDescription());
+                SourceSection ss = fi.getCallNode().getSourceSection();
+                frameInfos.append((ss != null) ? ss.getShortDescription() : "unknown");
                 frameInfos.append('\n');
             }
             if (fi.getCallNode() == null) {
