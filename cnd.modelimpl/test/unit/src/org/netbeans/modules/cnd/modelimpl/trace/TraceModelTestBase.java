@@ -396,7 +396,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         origin = origin.substring(0,i-1)+origin.substring(i+golden.length());
         i = origin.lastIndexOf(separator);
         origin = origin.substring(0, i);
-
+        
         File goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(goldenErrFile), "UTF-8"));
         BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(goldenErrFileCopy), "UTF-8"));
@@ -407,7 +407,13 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
                 char currentSeparator = line.charAt(i+macro.length());
                 if (separator != currentSeparator) {
                      //line = line.replace(currentSeparator, separator);
-                     line = line.replace(macro + currentSeparator, origin + separator);
+                     if (APTTraceFlags.USE_CLANK) {
+                         // do not change separator in clank mode
+                        String clankOrigin = origin.replaceAll(String.valueOf(separator), String.valueOf(currentSeparator));
+                        line = line.replace(macro + currentSeparator, clankOrigin + currentSeparator);
+                     } else {
+                        line = line.replace(macro + currentSeparator, origin + separator);
+                     }
                 }
                 line = line.replace(macro, origin);
             }
