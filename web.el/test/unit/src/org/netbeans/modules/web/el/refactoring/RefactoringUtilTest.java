@@ -48,33 +48,43 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Erno Mononen
  */
-public class RefactoringUtilTest {
+public class RefactoringUtilTest extends NbTestCase {
 
-    public RefactoringUtilTest() {
+    public RefactoringUtilTest(final String name) {
+        super(name);
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+    @Override
+    public void setUp() throws IOException {
+        clearWorkDir();
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        assertNotNull(wd);
+        final FileObject cf = FileUtil.createFolder(wd, "index");   //NOI18N
+        assertNotNull(cf);
+        CacheFolder.setCacheFolder(cf);
     }
 
     @Test
     public void testEncodeAndHighlight() {
+        System.out.println(CacheFolder.getCacheFolder()
+        );
         String text = "#{bar.foo}";
         OffsetRange expressionOffset = new OffsetRange(0, 10);
         OffsetRange nodeOffset = new OffsetRange(6, 9);

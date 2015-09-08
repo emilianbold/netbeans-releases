@@ -88,16 +88,17 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
             Exceptions.printStackTrace(mue);
         }
         final Map<String,String> systemProperties = new HashMap<>();
-        final Properties p = System.getProperties();
+        Map<Object,Object> p = System.getProperties();
         synchronized (p) {
-            for (Map.Entry<Object,Object> e : p.entrySet()) {
-                final String key = (String) e.getKey();
-                final String value = Util.fixSymLinks(
-                        key,
-                        (String) e.getValue(),
-                        Util.toFileObjects(installFolders));
-                systemProperties.put(key, value);
-            }
+            p = new HashMap<>(p);
+        }
+        for (Map.Entry<Object,Object> e : p.entrySet()) {
+            final String key = (String) e.getKey();
+            final String value = Util.fixSymLinks(
+                    key,
+                    (String) e.getValue(),
+                    Util.toFileObjects(installFolders));
+            systemProperties.put(key, value);
         }
         return new DefaultPlatformImpl(installFolders, properties, systemProperties, sources, javadoc);
     }

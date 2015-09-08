@@ -48,7 +48,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -102,7 +104,7 @@ public final class BrokenReferencesModel extends AbstractListModel implements Pr
     @Override
     public Object getElementAt(int index) {
         return getOneReference(index);
-    }    
+    }
 
     @Override
     public int getSize() {
@@ -116,21 +118,31 @@ public final class BrokenReferencesModel extends AbstractListModel implements Pr
             @Override
             public Integer run() {
                 synchronized (lock) {
+                    final Map<ProjectProblemsProvider,Project> newProviders = new LinkedHashMap<ProjectProblemsProvider,Project>();
+                    for (Project bprj : ctx.getBrokenProjects()) {
+                        final ProjectProblemsProvider provider = bprj.getLookup().lookup(ProjectProblemsProvider.class);
+                        if (provider != null) {
+                            newProviders.put(provider, bprj);
+                        }
+                    }
                     for (Iterator<Map.Entry<ProjectProblemsProvider,PropertyChangeListener>> it = providers.entrySet().iterator(); it.hasNext();) {
                         final Map.Entry<ProjectProblemsProvider,PropertyChangeListener> e = it.next();
-                        e.getKey().removePropertyChangeListener(e.getValue());
-                        it.remove();
+                        if (!newProviders.containsKey(e.getKey())) {
+                            e.getKey().removePropertyChangeListener(e.getValue());
+                            it.remove();
+                        }
                     }
                     final Set<ProblemReference> all = new LinkedHashSet<ProblemReference>();
-                    for (Project bprj : ctx.getBrokenProjects()) {
-                        final ProjectProblemsProvider ppp = bprj.getLookup().lookup(ProjectProblemsProvider.class);
-                        if (ppp != null) {
+                    for (Map.Entry<ProjectProblemsProvider,Project> ne : newProviders.entrySet()) {
+                        final ProjectProblemsProvider ppp = ne.getKey();
+                        final Project bprj = ne.getValue();
+                        if (!providers.containsKey(ppp)) {
                             final PropertyChangeListener l = WeakListeners.propertyChange(BrokenReferencesModel.this, ppp);
                             ppp.addPropertyChangeListener(l);
                             providers.put(ppp, l);
-                            for (ProjectProblem problem : ppp.getProblems()) {
-                                all.add(new ProblemReference(problem, bprj, global));
-                            }
+                        }
+                        for (ProjectProblem problem : ppp.getProblems()) {
+                            all.add(new ProblemReference(problem, bprj, global));
                         }
                     }
                     updateReferencesList(problems, all);
@@ -152,7 +164,7 @@ public final class BrokenReferencesModel extends AbstractListModel implements Pr
             return problems.get(index);
         }
     }
-    
+
     private static void updateReferencesList(List<ProblemReference> oldBroken, Set<ProblemReference> newBroken) {
         LOG.log(Level.FINE, "References updated from {0} to {1}", new Object[] {oldBroken, newBroken});
         for (ProblemReference or : oldBroken) {
@@ -181,7 +193,7 @@ public final class BrokenReferencesModel extends AbstractListModel implements Pr
         private final boolean global;
         private final Project project;
         final ProjectProblem problem;
-        
+
 
         volatile boolean resolved;
 
@@ -250,7 +262,7 @@ public final class BrokenReferencesModel extends AbstractListModel implements Pr
         public Context() {
             toResolve = Collections.synchronizedList(new LinkedList<Project>());
             support = new ChangeSupport(this);
-        }        
+        }
 
         public void offer(@NonNull final Project broken) {
             assert broken != null;
@@ -280,5 +292,5 @@ public final class BrokenReferencesModel extends AbstractListModel implements Pr
             support.removeChangeListener(listener);
         }
     }
-    
+
 }

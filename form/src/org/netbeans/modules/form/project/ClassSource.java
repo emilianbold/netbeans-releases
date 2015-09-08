@@ -126,7 +126,7 @@ public final class ClassSource {
      */
     public static Entry unpickle(String type, String name) {
         Resolver resolver = Lookup.getDefault().lookup(Resolver.class);
-        return resolver.resolve(type, name);
+        return resolver != null ? resolver.resolve(type, name) : null;
     }
 
     /**
