@@ -170,32 +170,36 @@ public class UpdateAction extends ContextAction {
                
         File[] roots = ctx.getRootFiles();
         
-        Map<SVNUrl, List<File>> rootsPerRepository = new HashMap<>();
-        try {
-            for (File root : roots) {
-                SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
-                if(repositoryUrl == null) {
-                    Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{root});
-                }
-                List<File> files = rootsPerRepository.get(repositoryUrl);
+        Map<File, List<File>> rootsPerCheckout = new HashMap<>();
+        for (File root : roots) {
+            File topManaged = Subversion.getInstance().getTopmostManagedAncestor(root);
+            if (topManaged != null) {
+                List<File> files = rootsPerCheckout.get(topManaged);
                 if (files == null) {
                     files = new ArrayList<>();
-                    rootsPerRepository.put(repositoryUrl, files);
+                    rootsPerCheckout.put(topManaged, files);
                 }
                 files.add(root);
             }
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
-            return;
-        }        
-        if (rootsPerRepository.isEmpty()) {
+        }
+        if (rootsPerCheckout.isEmpty()) {
             return;
         }
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         cache.refreshCached(ctx);
-        for (Map.Entry<SVNUrl, List<File>> e : rootsPerRepository.entrySet()) {
+        for (Map.Entry<File, List<File>> e : rootsPerCheckout.entrySet()) {
             List<File> files = e.getValue();
-            update(files.toArray(new File[files.size()]), progress, contextDisplayName, e.getKey(), revision);
+            try {
+                File root = files.get(0);
+                SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+                if(repositoryUrl == null) {
+                    Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{root});
+                    continue;
+                }
+                update(files.toArray(new File[files.size()]), progress, contextDisplayName, repositoryUrl, revision);
+            } catch (SVNClientException ex) {
+                SvnClientExceptionHandler.notifyException(ex, true, true);
+            }
         }
     }
 
