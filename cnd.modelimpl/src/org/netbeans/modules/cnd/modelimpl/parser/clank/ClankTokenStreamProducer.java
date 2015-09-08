@@ -139,7 +139,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                   ppHandler,
                   triggerParsingActivity,
                   filterOutComments,
-                  fileImpl, getFileContent(),
+                  fileImpl,
                   tokStreamCache.getFileIndex());
           FileBuffer buffer = fileImpl.getBuffer();
           if (getCodePatch() != null) {
@@ -178,11 +178,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     
     private static final class FileTokenStreamCallback implements ClankPreprocessorCallback {
         private final ProjectBase startProject;
-        private final FileImpl startFile;
         private final PreprocHandler ppHandler;
 
         private final FileImpl stopFileImpl;
-        private final FileContent fileContent;
         private final int stopAtIndex;
         private ClankDriver.APTTokenStreamCache foundTokens;
 
@@ -203,16 +201,13 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 boolean triggerParsingActivity,
                 boolean filterOutComments,
                 FileImpl stopFileImpl, 
-                FileContent fileContent,
                 int stopAtIndex) {
             this.ppHandler = ppHandler;
             StartEntry startEntry = ppHandler.getIncludeHandler().getStartEntry();
             this.startProject = Utils.getStartProject(startEntry);
-            this.startFile = Utils.getStartFile(ppHandler.getState());
             this.triggerParsingActivity = triggerParsingActivity;
             this.filterOutComments = filterOutComments;
             this.stopFileImpl = stopFileImpl;
-            this.fileContent = fileContent;
             this.stopAtIndex = stopAtIndex;
         }
 
