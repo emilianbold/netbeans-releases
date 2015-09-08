@@ -470,7 +470,7 @@ public class NbModuleProjectGenerator {
     
     private static void createInitialProperties(FileObject projectDir) throws IOException {
         EditableProperties props = new EditableProperties(false);
-        props.put(SingleModuleProperties.JAVAC_SOURCE, "1.6"); // NOI18N
+        props.put(SingleModuleProperties.JAVAC_SOURCE, "1.7"); // NOI18N
         props.put(SingleModuleProperties.JAVAC_COMPILERARGS, "-Xlint -Xlint:-serial"); // NOI18N
         FileObject f = createFileObject(projectDir, AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Util.storeProperties(f, props);
