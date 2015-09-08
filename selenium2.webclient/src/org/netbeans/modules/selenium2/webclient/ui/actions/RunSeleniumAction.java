@@ -55,6 +55,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProvider;
 import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProviders;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -126,7 +128,7 @@ public class RunSeleniumAction extends AbstractAction implements ContextAwareAct
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -134,6 +136,7 @@ public class RunSeleniumAction extends AbstractAction implements ContextAwareAct
                 if (p == null) {
                     return;
                 }
+                FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_TEST_SINGLE, Bundle.SeleniumTestFileAction_name(), null).actionPerformed(e);
                 SeleniumTestingProvider provider = SeleniumTestingProviders.getDefault().getSeleniumTestingProvider(p, true);
                 if (provider != null) {
                     provider.runTests(activatedFOs);
