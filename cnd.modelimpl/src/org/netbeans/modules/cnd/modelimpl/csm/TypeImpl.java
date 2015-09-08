@@ -106,6 +106,7 @@ import org.openide.util.CharSequences;
  */
 public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBasedProvider {
     private static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();
+    private static final int MAX_CLASSIFIER_TEXT_LENGTH = 512;
     
     private static final byte FLAGS_TYPE_OF_TYPEDEF = 1;
     private static final byte FLAGS_REFERENCE = 1 << 1;
@@ -712,25 +713,33 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     /*
      * Add text without instantiation params
      */
-    private static void addText(StringBuilder sb, AST ast) {
+    private static boolean addText(StringBuilder sb, AST ast) {
         if( ! (ast instanceof FakeAST) ) {
             if( sb.length() > 0 ) {
                 sb.append(' ');
             }
             sb.append(AstUtil.getText(ast));
         }
-        int curDepth = 0;
-        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            if (token.getType() == CPPTokenTypes.LESSTHAN) {
-                curDepth++;
-                continue;
-            } else if (token.getType() == CPPTokenTypes.GREATERTHAN) {
-                curDepth--;
-                continue;
+        if (sb.length() < MAX_CLASSIFIER_TEXT_LENGTH) {
+            int curDepth = 0;
+            for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+                if (token.getType() == CPPTokenTypes.LESSTHAN) {
+                    curDepth++;
+                    continue;
+                } else if (token.getType() == CPPTokenTypes.GREATERTHAN) {
+                    curDepth--;
+                    continue;
+                }
+                if (curDepth == 0) {
+                    if (!addText(sb,  token)) {
+                        return false;
+                    }
+                }
             }
-            if (curDepth == 0) {
-                addText(sb,  token);
-            }
+            return true;
+        } else {
+            sb.append("..."); // NOI18N
+            return false;
         }
     }
 
