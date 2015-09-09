@@ -486,7 +486,7 @@ public final class Manager {
             }
         }
     }
-
+    
     /** singleton of the <code>ResultDisplayHandler</code> */
     // the ResultDisplayHandler holds TestSession and is referenced from other
     // places so we use WeakReference, otherwise there would be memory leak
@@ -494,7 +494,10 @@ public final class Manager {
     private Semaphore lock;
     /**
      */
+    @NbBundle.Messages({"Null_Session_Error=Test session passed was null"})
     private synchronized ResultDisplayHandler getDisplayHandler(final TestSession session) {
+        // just in case a client passes null as a test session catch it early here
+        assert session != null : Bundle.Null_Session_Error();
         ResultDisplayHandler displayHandler = null;
         if (displayHandlers != null) {
             WeakReference<ResultDisplayHandler> reference = displayHandlers.get(session);
