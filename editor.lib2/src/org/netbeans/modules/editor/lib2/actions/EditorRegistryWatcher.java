@@ -84,8 +84,10 @@ public class EditorRegistryWatcher implements PropertyChangeListener {
         presenterUpdaters.add(updater);
         JTextComponent activeTextComponent = activeTextComponentRef.get();
         if (activeTextComponent != null) {
-            EditorKit kit = activeTextComponent.getUI().getEditorKit((activeTextComponent));
-            updater.setActiveAction(EditorActionUtilities.getAction(kit, updater.getActionName()));
+            EditorKit kit = activeTextComponent.getUI().getEditorKit(activeTextComponent);
+            if (kit != null) {
+                updater.setActiveAction(EditorActionUtilities.getAction(kit, updater.getActionName()));
+            }
         }
     }
 
