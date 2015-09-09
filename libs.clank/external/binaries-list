@@ -1,6 +1,6 @@
-#changeset:   15649:1bd2e87c5fe5
+#changeset:   15659:fdc9844deaf2
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Sep 09 13:59:12 2015 +0300
-#summary:     fixed #255130 - [newcodemodel] java.lang.AssertionError: Key already in new map?
-3E701B8BB92A45CA192131772F6D3922C60BB81C clank_0.3.6.zip
+#date:        Wed Sep 09 21:22:50 2015 +0300
+#summary:     PERF: keep raw information, let client to convert when really needed
+23CB1F69F8E645CCD8C436D59F5FDB676A96A9D7 clank_0.3.6.zip
