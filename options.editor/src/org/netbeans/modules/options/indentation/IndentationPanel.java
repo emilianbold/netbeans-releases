@@ -98,7 +98,22 @@ import org.openide.util.WeakListeners;
  *
  * @author Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords={"org.netbeans.modules.options.editor.Bundle#KW_IndentationPanel"}, location=OptionsDisplayer.EDITOR, tabTitle= "org.netbeans.modules.options.editor.Bundle#CTL_Formating_DisplayName")
+@OptionsPanelController.Keywords(
+        keywords={
+            "org.netbeans.modules.options.editor.Bundle#KW_IndentationPanel"
+            , "AD_Override_Global_Options"
+            , "#AD_Expand_Tabs"
+            , "#AD_Indent"
+            , "#AD_TabSize"
+            , "#AD_Right_Margin"
+            , "#AD_Preview"
+            , "#AD_Language"
+            , "#AD_Category"
+            , "#AD_sNumberOfSpacesPerIndent"
+            , "#AD_sTabSize"
+            , "#AD_sRightMargin"
+            , "#AD_Line_Wrap"
+        }, location=OptionsDisplayer.EDITOR, tabTitle= "org.netbeans.modules.options.editor.Bundle#CTL_Formating_DisplayName")
 public class IndentationPanel extends JPanel implements ChangeListener, ActionListener, PreferenceChangeListener {
 
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());
