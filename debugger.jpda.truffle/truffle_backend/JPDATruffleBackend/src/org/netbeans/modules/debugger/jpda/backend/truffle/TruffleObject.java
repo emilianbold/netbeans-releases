@@ -51,6 +51,7 @@ import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Property;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -71,7 +72,7 @@ public class TruffleObject {
         this.visualizer = visualizer;
         this.name = name;
         this.object = object;
-        this.displayValue = (visualizer != null) ? visualizer.displayValue(object, DISPLAY_TRIM) : object.toString();
+        this.displayValue = (visualizer != null) ? visualizer.displayValue(object, DISPLAY_TRIM) : Objects.toString(object);
         if (object instanceof String) {
             this.type = String.class.getSimpleName();
         } else if (object instanceof Number) {
