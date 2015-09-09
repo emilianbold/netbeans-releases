@@ -357,7 +357,7 @@ public final class FileImpl implements CsmFile,
         this.fileBuffer = fileBuffer;
 
         hasBrokenIncludes = new AtomicBoolean(false);
-        this.currentFileContent = FileContent.createFileContent(FileImpl.this, project);
+        this.currentFileContent = FileContent.createFileContent(FileImpl.this, FileImpl.this);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
@@ -1182,7 +1182,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguage = this.getContextLanguage(ppState);
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
-        TokenStream tokenStream = tsp.getTokenStream(false, false, false, interrupter);
+        TokenStream tokenStream = tsp.getTokenStream(TokenStreamProducer.Parameters.createForOneFileTokens(true), interrupter);
         if (tokenStream == null) {
             return false;
         }
@@ -1257,7 +1257,7 @@ public final class FileImpl implements CsmFile,
      * @param filtered
      * @return
      */
-    public final TokenStream getTokenStream(int startContextOffset, int endContextOffset, String context, boolean filtered) {
+    public final TokenStream getTokenStreamForMacroExpansion(int startContextOffset, int endContextOffset, String context, boolean filtered) {
         FileTokenStreamCache cache = new FileTokenStreamCache();
         PreprocessorStatePair bestStatePair = getContextPreprocStatePair(startContextOffset, endContextOffset);
         PreprocHandler preprocHandler = getPreprocHandler(bestStatePair);
@@ -1274,7 +1274,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
         tsp.setCodePatch(new TokenStreamProducer.CodePatch(startContextOffset, endContextOffset, context));
-        TokenStream tokenStream = tsp.getTokenStream(false, false, false, interrupter);
+        TokenStream tokenStream = tsp.getTokenStream(TokenStreamProducer.Parameters.createForOneFileTokens(true), interrupter);
         if (tokenStream == null) {
             return null;
         }
@@ -1445,7 +1445,8 @@ public final class FileImpl implements CsmFile,
                         "%n while parsing file " + getAbsolutePath() + "%n of project " + getProject()); // NOI18N
                 return null;
             }            
-            TokenStream filteredTokenStream = parseParams.tsp.getTokenStream(parseParams.triggerParsingActivity, true, true, interrupter);
+            TokenStream filteredTokenStream = parseParams.tsp.getTokenStream(
+                    TokenStreamProducer.Parameters.createForParsing(parseParams.triggerParsingActivity), interrupter);
             if (filteredTokenStream == null) {
                 System.err.println(" null token stream for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
                         "%n while parsing file " + getAbsolutePath() + "%n of project " + getProject()); // NOI18N
@@ -2077,7 +2078,7 @@ public final class FileImpl implements CsmFile,
         this.fileBuffer = PersistentUtils.readBuffer(input);
 
         hasBrokenIncludes = new AtomicBoolean(input.readBoolean());
-        currentFileContent = new FileContent(this, this._getProject(false), input);
+        currentFileContent = new FileContent(this, this, input);
 
         fileType = FileType.values()[input.readByte()];
 

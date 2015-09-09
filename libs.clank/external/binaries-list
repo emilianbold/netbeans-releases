@@ -1,6 +1,6 @@
-#changeset:   15641:c95ffee876e5
+#changeset:   15659:fdc9844deaf2
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Sep 07 22:07:06 2015 +0300
-#summary:     PERF: keeping all tokens in growing MacroExpandedTokens array make it huge
-F52418F170AA6E0893F076062A9B199692FECD96 clank_0.3.6.zip
+#date:        Wed Sep 09 21:22:50 2015 +0300
+#summary:     PERF: keep raw information, let client to convert when really needed
+23CB1F69F8E645CCD8C436D59F5FDB676A96A9D7 clank_0.3.6.zip

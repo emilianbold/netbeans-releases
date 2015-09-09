@@ -127,8 +127,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
 
     @Override
-    public TokenStream getTokenStream(boolean triggerParsingActivity,
-            boolean filterOutComments, boolean applyLanguageFilter, Interrupter interrupter) {
+    public TokenStream getTokenStream(Parameters parameters, Interrupter interrupter) {
         PreprocHandler ppHandler = getCurrentPreprocHandler();
         ClankDriver.APTTokenStreamCache tokStreamCache = ClankDriver.extractTokenStream(ppHandler);
         assert tokStreamCache != null;
@@ -137,13 +136,12 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           // do preprocessing
           FileTokenStreamCallback callback = new FileTokenStreamCallback(
                   ppHandler,
-                  triggerParsingActivity,
-                  filterOutComments,
-                  fileImpl, getFileContent(),
+                  parameters,
+                  fileImpl,
                   tokStreamCache.getFileIndex());
           FileBuffer buffer = fileImpl.getBuffer();
-          if (getFixCode() != null) {
-              buffer = new PatchedFileBuffer(buffer, getFixCode());
+          if (getCodePatch() != null) {
+              buffer = new PatchedFileBuffer(buffer, getCodePatch());
           }
           boolean tsFromClank = ClankDriver.preprocess(buffer, ppHandler, callback, interrupter);
           if (!tsFromClank) {
@@ -164,7 +162,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           setFileGuard(fileImpl, getFileContent(), tokStreamCache);
         }
         skipped = tokStreamCache.getSkippedRanges();
-        if (applyLanguageFilter) {
+        if (parameters.applyLanguageFilter) {
           APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppHandler.getState());
           tokenStream = languageFilter.getFilteredStream(new APTCommentsFilter(tokenStream));
         }
@@ -178,11 +176,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     
     private static final class FileTokenStreamCallback implements ClankPreprocessorCallback {
         private final ProjectBase startProject;
-        private final FileImpl startFile;
         private final PreprocHandler ppHandler;
 
         private final FileImpl stopFileImpl;
-        private final FileContent fileContent;
         private final int stopAtIndex;
         private ClankDriver.APTTokenStreamCache foundTokens;
 
@@ -193,26 +189,20 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
         private State alreadySeenInterestedFileEnter = State.INITIAL;
         private boolean insideInterestedFile = false;
-        private final boolean triggerParsingActivity;
-        private final boolean filterOutComments;
+        private final Parameters parameters;
 
         private final List<FileImpl> curFiles = new ArrayList<>();
 
         private FileTokenStreamCallback(
                 PreprocHandler ppHandler,
-                boolean triggerParsingActivity,
-                boolean filterOutComments,
+                Parameters parameters,
                 FileImpl stopFileImpl, 
-                FileContent fileContent,
                 int stopAtIndex) {
             this.ppHandler = ppHandler;
             StartEntry startEntry = ppHandler.getIncludeHandler().getStartEntry();
             this.startProject = Utils.getStartProject(startEntry);
-            this.startFile = Utils.getStartFile(ppHandler.getState());
-            this.triggerParsingActivity = triggerParsingActivity;
-            this.filterOutComments = filterOutComments;
+            this.parameters = parameters;
             this.stopFileImpl = stopFileImpl;
-            this.fileContent = fileContent;
             this.stopAtIndex = stopAtIndex;
         }
 
@@ -247,7 +237,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             if (APTTraceFlags.DEFERRED_MACRO_USAGES) {
                 // FIXME: when macro expansion service tries to expand file
                 // it creates TS producer with request not to filter out comments
-                return !filterOutComments;
+                return parameters.needComments;
             } else {
                 return needTokens();
             }
@@ -255,12 +245,12 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public boolean needComments() {
-          return needTokens() && !filterOutComments;
+          return needTokens() && parameters.needComments;
         }
         
         @Override
         public void onInclusionDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankInclusionDirective directive) {
-            if ((alreadySeenInterestedFileEnter == State.SEEN) && (triggerParsingActivity || insideInterestedFile)) {
+            if ((alreadySeenInterestedFileEnter == State.SEEN) && (parameters.triggerParsingActivity || insideInterestedFile)) {
               // let's resolve include as FileImpl
               ResolvedPath resolvedPath = directive.getResolvedPath();
               if (resolvedPath == null) {
@@ -311,7 +301,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 // handle inclusive #includes
                 curFiles.add(stopFileImpl);
             } else {
-              if ((alreadySeenInterestedFileEnter == State.SEEN) && triggerParsingActivity) {
+              if ((alreadySeenInterestedFileEnter == State.SEEN) && parameters.triggerParsingActivity) {
                 // let's keep stack of inner includes
                 // then onExit post process headers wthich should be parsed
                 FileImpl curFile = getCurFile(false);
@@ -360,7 +350,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               // stop all activity
               alreadySeenInterestedFileEnter = State.EXITED;
               return false;
-            } else if (triggerParsingActivity) {
+            } else if (parameters.triggerParsingActivity) {
               assert alreadySeenInterestedFileEnter == State.SEEN;
               try {
                 assert ClankDriver.extractTokenStream(ppHandler).hasTokenStream();

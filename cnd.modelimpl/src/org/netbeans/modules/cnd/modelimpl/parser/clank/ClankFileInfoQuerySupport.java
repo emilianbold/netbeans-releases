@@ -119,7 +119,7 @@ public class ClankFileInfoQuerySupport {
         
     public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
         assert APTTraceFlags.USE_CLANK;
-        TokenStream ts = fileImpl.getTokenStream(offset, offset, code, true);
+        TokenStream ts = fileImpl.getTokenStreamForMacroExpansion(offset, offset, code, true);
         ts = new APTCommentsFilter(ts);
 
         StringBuilder sb = new StringBuilder(""); // NOI18N

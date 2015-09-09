@@ -58,6 +58,8 @@ import org.netbeans.modules.cnd.utils.ComponentType;
 public class APTTraceFlags {
 
     public static final boolean USE_CLANK;
+    public static final boolean TRACE_PREPROC = Boolean.getBoolean("apt.clank.trace.pp"); // NOI18N
+    public static final boolean TRACE_PREPROC_STACKS = Boolean.getBoolean("apt.clank.trace.pp.stacks"); // NOI18N
 
     static {
         String propUseClank = System.getProperty("apt.use.clank"); //NOI18N

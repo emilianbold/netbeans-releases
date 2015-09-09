@@ -229,13 +229,21 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     }
 
     private VCSFileProxy getExportFile() {
-        String execPath = panel.exportFilenameTextField.getText();
-        return VCSFileProxySupport.getResource(getRoot(), execPath).normalizeFile();
+        String exportPath = panel.exportFilenameTextField.getText();
+        if (exportPath.startsWith("/")) { //NOI18N
+            return VCSFileProxySupport.getResource(getRoot(), exportPath).normalizeFile();
+        } else {
+            return getRoot();
+        }
     }
 
     private VCSFileProxy getExecutableFile() {
         String execPath = panel.executablePathTextField.getText();
-        return VCSFileProxySupport.getResource(getRoot(), execPath).normalizeFile();
+        if (execPath.startsWith("/")) { //NOI18N
+            return VCSFileProxySupport.getResource(getRoot(), execPath).normalizeFile();
+        } else {
+            return getRoot();
+        }
     }
 
     private boolean validateFields() {
@@ -265,7 +273,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     }
 
     private void onExportFilenameBrowseClick() {
-        VCSFileProxy oldFile = getExecutableFile();
+        VCSFileProxy oldFile = getExportFile();
         JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(NbBundle.getMessage(MercurialOptionsPanelController.class, "ExportBrowse_title"));                                            // NOI18N
         fileChooser.setMultiSelectionEnabled(false);
@@ -285,7 +293,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         if (getFS() == null) {
             return;
         }
-        VCSFileProxy oldFile = getExportFile();
+        VCSFileProxy oldFile = getExecutableFile();
         JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(NbBundle.getMessage(MercurialOptionsPanelController.class, "Browse_title"));                                            // NOI18N
         fileChooser.setMultiSelectionEnabled(false);

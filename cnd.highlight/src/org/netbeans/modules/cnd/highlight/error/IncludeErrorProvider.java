@@ -188,7 +188,7 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
     }
 
     private boolean hasBrokenIncludes(CsmFile file, Collection<CsmFile> visited) {
-        if (visited.contains(file)) {
+        if (!file.isValid() || visited.contains(file)) {
             return false;
         }
         visited.add(file);
