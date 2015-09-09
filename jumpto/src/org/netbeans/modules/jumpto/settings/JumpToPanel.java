@@ -159,6 +159,12 @@ final class JumpToPanel extends javax.swing.JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        controller.changed();
+        boolean isChanged = false;
+        HighlightingSettings settings = HighlightingSettings.getDefault();
+        if ((HighlightingSettings.Mode)highlight.getSelectedItem() != settings.getMode()
+                || (HighlightingSettings.Type)by.getSelectedItem() != settings.getType()) {
+            isChanged = true;
+        }
+        controller.changed(isChanged);
     }
 }
