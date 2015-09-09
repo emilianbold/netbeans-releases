@@ -133,9 +133,9 @@ public final class ClankDriver {
         private final int endOfset;
         private final ClankMacroDirective referencedMacro;
 
-        public MacroUsage(FileInfoCallback.MacroUsageInfo usage, ClankMacroDirective referencedDirective) {
-            startOfset = usage.getStartOffset();
-            endOfset = usage.getEndOffset();
+        public MacroUsage(int startOfset, int endOfset, ClankMacroDirective referencedDirective) {
+            this.startOfset = startOfset;
+            this.endOfset = endOfset;
             referencedMacro = referencedDirective;
         }
 
