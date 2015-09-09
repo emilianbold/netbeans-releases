@@ -217,35 +217,49 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         public void onErrorDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankErrorDirective directive) {
         }
 
+        
+        private boolean valueOf(YesNoInterested param) {
+            switch (param) {
+                case ALWAYS:
+                    return true;
+                case NEVER:
+                    return false;
+                case INTERESTED:
+                    return insideInterestedFile;
+                default:
+                    throw new AssertionError(param.name());
+
+            }
+        }
+        
         @Override
         public boolean needPPDirectives() {
-            return needTokens();
+            return valueOf(parameters.needPPDirectives);
         }
 
         @Override
         public boolean needTokens() {
-          return /*this.insideInterestedFile || */true;
+            return valueOf(parameters.needTokens);
         }
 
         @Override
         public boolean needSkippedRanges() {
-          return needTokens();
+          return valueOf(parameters.needSkippedRanges);
         }
 
         @Override
         public boolean needMacroExpansion() {
-            if (APTTraceFlags.DEFERRED_MACRO_USAGES) {
-                // FIXME: when macro expansion service tries to expand file
-                // it creates TS producer with request not to filter out comments
-                return parameters.needComments;
-            } else {
-                return needTokens();
-            }
+            return valueOf(parameters.needMacroExpansion);
         }
 
         @Override
         public boolean needComments() {
-          return needTokens() && parameters.needComments;
+            // There was an idea of using
+            // needTokens() && parameters.needComments
+            // for the case we need comments, but need tokens only for the file of interest - 
+            // then it's no use to process comments for other files/
+            // But this does not work since this method is called only once when initializing preprocessor
+            return parameters.needComments;
         }
         
         @Override

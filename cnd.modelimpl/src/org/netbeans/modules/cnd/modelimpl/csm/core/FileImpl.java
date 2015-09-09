@@ -126,6 +126,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer.YesNoInterested;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -1182,7 +1183,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguage = this.getContextLanguage(ppState);
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
-        TokenStream tokenStream = tsp.getTokenStream(TokenStreamProducer.Parameters.createForOneFileTokens(true), interrupter);
+        TokenStream tokenStream = tsp.getTokenStream(TokenStreamProducer.Parameters.createForOneFileTokens(true, YesNoInterested.INTERESTED), interrupter);
         if (tokenStream == null) {
             return false;
         }
@@ -1274,7 +1275,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
         tsp.setCodePatch(new TokenStreamProducer.CodePatch(startContextOffset, endContextOffset, context));
-        TokenStream tokenStream = tsp.getTokenStream(TokenStreamProducer.Parameters.createForOneFileTokens(true), interrupter);
+        TokenStream tokenStream = tsp.getTokenStream(TokenStreamProducer.Parameters.createForOneFileTokens(true, YesNoInterested.INTERESTED), interrupter);
         if (tokenStream == null) {
             return null;
         }
