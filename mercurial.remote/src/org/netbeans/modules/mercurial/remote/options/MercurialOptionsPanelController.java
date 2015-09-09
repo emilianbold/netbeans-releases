@@ -230,7 +230,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
 
     private VCSFileProxy getExportFile() {
         String exportPath = panel.exportFilenameTextField.getText();
-        if (exportPath.startsWith("/")) {
+        if (exportPath.startsWith("/")) { //NOI18N
             return VCSFileProxySupport.getResource(getRoot(), exportPath).normalizeFile();
         } else {
             return getRoot();
@@ -239,7 +239,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
 
     private VCSFileProxy getExecutableFile() {
         String execPath = panel.executablePathTextField.getText();
-        if (execPath.startsWith("/")) {
+        if (execPath.startsWith("/")) { //NOI18N
             return VCSFileProxySupport.getResource(getRoot(), execPath).normalizeFile();
         } else {
             return getRoot();
