@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
+import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
@@ -63,6 +64,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.api.debugger.Breakpoint;
@@ -85,6 +87,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.MethodEntryEventWrapper;
@@ -326,11 +329,31 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
             Set<String> exitMethodNames = null;
             boolean locationEntry = false;
             String methodName = breakpoint.getMethodName();
-            String constructorName = referenceType.name();
-            int index = constructorName.lastIndexOf('.');
-            if (index > 0) constructorName = constructorName.substring(index + 1);
+            String typeName = referenceType.name();
+            String outerArgsSignature = null;   // Signature of arguments from outer classes
+            String constructorName = typeName;
+            int index = Math.max(constructorName.lastIndexOf('.'),
+                                 constructorName.lastIndexOf('$'));
+            if (index > 0) {
+                constructorName = constructorName.substring(index + 1);
+                if (typeName.charAt(index) == '$') {
+                    // test for: ...$<digits only>$<name>
+                    int i = index - 1;
+                    while (i > 0 && Character.isDigit(typeName.charAt(i))) {
+                        i--;
+                    }
+                    if (typeName.charAt(i) == '$') {
+                        if (constructorName.equals(typeName.substring(i+1, index) + methodName)) {
+                            methodName = constructorName; // Constructor
+                        }
+                    }
+                }
+            }
             if (methodName.equals(constructorName)) {
                 methodName = "<init>"; // Constructor
+                if (!ReferenceTypeWrapper.isStatic0(referenceType)) {
+                    outerArgsSignature = findOuterArgsSignature(typeName, referenceType);
+                }
             }
             String signature = breakpoint.getMethodSignature();
             while (methods.hasNext ()) {
@@ -341,7 +364,8 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                 try {
                     if (methodName.equals("") || match (TypeComponentWrapper.name (method), methodName) &&
                                                  (signature == null ||
-                                                  egualMethodSignatures(signature, TypeComponentWrapper.signature(method)))) {
+                                                  egualMethodSignatures(signature, outerArgsSignature,
+                                                                        TypeComponentWrapper.signature(method)))) {
 
                         if (methodEntryType) {
                             if (MethodWrapper.location(method) != null && !MethodWrapper.isNative(method)) {
@@ -484,12 +508,68 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
     
-    private static boolean egualMethodSignatures(String s1, String s2) {
+    private static boolean egualMethodSignatures(String s1, String outerArgsSignature1, String s2) {
         int i = s1.lastIndexOf(")");
         if (i > 0) s1 = s1.substring(0, i);
         i = s2.lastIndexOf(")");
         if (i > 0) s2 = s2.substring(0, i);
-        return s1.equals(s2);
+        boolean equals = s1.equals(s2);
+        if (!equals && outerArgsSignature1 != null) {
+            equals = ("("+outerArgsSignature1+s1.substring(1)).equals(s2);
+        }
+        return equals;
+    }
+    
+    /**
+     * Find signature of arguments coming from outer classes
+     * @param type Type name
+     * @param referenceType Type reference
+     * @return Signature of arguments from outer classes or <code>null</code>.
+     */
+    private String findOuterArgsSignature(String type, ReferenceType referenceType) {
+        int index = type.lastIndexOf('$');
+        if (index <= 0) {
+            return null;
+        }
+        VirtualMachine vm = getVirtualMachine ();
+        if (vm == null) {
+            return null;
+        }
+        try {
+            ClassLoaderReference classLoader = ReferenceTypeWrapper.classLoader(referenceType);
+            index--;
+            int dot = Math.max(type.lastIndexOf('.'), 0);
+            if (index > dot) {
+                int i1 = Math.max(type.lastIndexOf('$', index), dot);
+                String enclosingTypeName = type.substring(0, index + 1);
+                ReferenceType enclosingType = null;
+                for (ReferenceType rt : VirtualMachineWrapper.classesByName0(vm, enclosingTypeName)) {
+                    try {
+                        ClassLoaderReference clref = ReferenceTypeWrapper.classLoader(rt);
+                        if (!Objects.equals(classLoader, clref)) {
+                            // Ignore classes whose class loaders are gone.
+                            continue;
+                        }
+                    } catch (InternalExceptionWrapper |
+                             ObjectCollectedExceptionWrapper |
+                             VMDisconnectedExceptionWrapper ex) {
+                        continue;
+                    }
+                    enclosingType = rt;
+                    break;
+                }
+                if (enclosingType == null) {
+                    return null;
+                }
+                return enclosingType.signature();
+            } else {
+                return null;
+            }
+        } catch (InternalExceptionWrapper |
+                 ObjectCollectedExceptionWrapper |
+                 VMDisconnectedExceptionWrapper ex) {
+            return null;
+        }
     }
     
 }

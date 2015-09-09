@@ -6,16 +6,14 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.js.runtime.JSFrameUtil;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +27,8 @@ final class FrameInfo {
     final String topFrame;
     final Object thisObject;
 
-    public FrameInfo(MaterializedFrame frame, Visualizer visualizer, Node astNode) {
+    public FrameInfo(MaterializedFrame frame, Visualizer visualizer, Node astNode,
+                     List<FrameInstance> stack) {
         this.frame = frame;
         Object[] arguments = frame.getArguments();
         FrameDescriptor frameDescriptor = frame.getFrameDescriptor();
@@ -56,7 +55,8 @@ final class FrameInfo {
         }
         //System.err.println("FrameInfo: arguments = "+Arrays.toString(arguments));
         //System.err.println("           identifiers = "+frameDescriptor.getIdentifiers());
-        if (frame instanceof VirtualFrame) {
+        if (false /* TODO: frame instanceof VirtualFrame*/) {
+            /* TODO: Find "this"
             Object thisObj;
             try {
                 thisObj = JSFrameUtil.getThisObj((VirtualFrame) frame);
@@ -66,6 +66,7 @@ final class FrameInfo {
             }
             //System.err.println("           this = "+thisObj);
             thisObject = thisObj;
+            */
         } else if (arguments.length > 1) {
             thisObject = arguments[0];
         } else {
@@ -84,15 +85,32 @@ final class FrameInfo {
         System.err.println("    "+slotNames[i]+" = "+JPDATruffleAccessor.getSlotValue(frame, slots[i]));
         }
          */
-        ArrayList<FrameInstance> stackTraceArr = new ArrayList<>();
-        Truffle.getRuntime().iterateFrames((FrameInstance fi) -> {
+        List<FrameInstance> frames = null;
+        int n = stack.size();
+        for (int i = 0; i < n; i++) {
+            FrameInstance fi = stack.get(i);
             // Filter frames with null call node. How should we display them?
-            if (fi.getCallNode() == null) {
-                return false;
+            Node node = fi.getCallNode();
+            SourceSection ss;
+            if (node == null ||
+                ((ss = node.getSourceSection()) == null && (ss = node.getEncapsulatingSourceSection()) == null) ||
+                ss.getSource() == null) {
+                
+                if (frames == null) {
+                    frames = new ArrayList<>();
+                    for (int j = 0; j < i; j++) {
+                        frames.add(stack.get(j));
+                    }
+                }
+            } else if (frames != null) {
+                frames.add(fi);
             }
-            return stackTraceArr.add(fi);
-        });
-        stackTrace = stackTraceArr.toArray(new FrameInstance[]{});
+        }
+        if (frames == null) {
+            frames = stack;
+        }
+        stackTrace = frames.toArray(new FrameInstance[frames.size()]);
+        
         /*
         String[] stackNames = new String[stackTrace.length];
         for (int i = 0; i < stackTrace.length; i++) {

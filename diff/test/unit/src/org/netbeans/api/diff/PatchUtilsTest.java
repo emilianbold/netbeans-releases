@@ -45,8 +45,10 @@ package org.netbeans.api.diff;
 
 
 import java.io.*;
+import java.lang.reflect.Field;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.diff.PatchAction;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -64,6 +66,9 @@ public class PatchUtilsTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         dataDir = new File(getDataDir(), "patch");
+        Field declaredField = PatchAction.class.getDeclaredField("skipReport");
+        declaredField.setAccessible(true);
+        declaredField.set(PatchAction.class, true);
     }
 
     public void testIsPatchNoFile() {
@@ -116,6 +121,76 @@ public class PatchUtilsTest extends NbTestCase {
 
         PatchUtils.applyPatch(normalPatch, file);
         assertFiles(new File(dataDir, "goldenFileAfter"), file, true);
+    }
+    
+    public void testFileSingleEdit () throws Exception {
+        File dir = new File(dataDir, "testFileSingleEdit");
+        File normalPatch = new File(dir, "patch.patch");
+        File file = new File(dir, "NewClass.java");
+        
+        PatchUtils.applyPatch(normalPatch, dir);
+        assertFiles(new File(dir, "golden/" + file.getName()), file, true);
+    }
+    
+    public void testFileSingleCopy () throws Exception {
+        File dir = new File(dataDir, "testFileSingleCopy");
+        File normalPatch = new File(dir, "patch.patch");
+        File file = new File(dir, "NewClass.java");
+        File copied = new File(dir, "NewClassCopy.java");
+        
+        PatchUtils.applyPatch(normalPatch, dir);
+        assertFiles(new File(dir, "golden/" + file.getName()), file, true);
+        assertFiles(new File(dir, "golden/" + copied.getName()), copied, true);
+    }
+    
+    public void testFileCopyCopyEdit () throws Exception {
+        File dir = new File(dataDir, "testFileCopyCopyEdit");
+        File normalPatch = new File(dir, "patch.patch");
+        File file = new File(dir, "NewClass.java");
+        File copied1 = new File(dir, "NewClassCopy1.java");
+        File copied2 = new File(dir, "NewClassCopy2.java");
+        
+        PatchUtils.applyPatch(normalPatch, dir);
+        assertFiles(new File(dir, "golden/" + file.getName()), file, true);
+        assertFiles(new File(dir, "golden/" + copied1.getName()), copied1, true);
+        assertFiles(new File(dir, "golden/" + copied2.getName()), copied2, true);
+    }
+    
+    public void testFileSingleRename () throws Exception {
+        File dir = new File(dataDir, "testFileSingleRename");
+        File normalPatch = new File(dir, "patch.patch");
+        File file = new File(dir, "NewClass.java");
+        File renamed = new File(dir, "NewClassRename.java");
+        
+        PatchUtils.applyPatch(normalPatch, dir);
+        assertFalse(file.exists());
+        assertFiles(new File(dir, "golden/" + renamed.getName()), renamed, true);
+    }
+    
+    public void testFileRenameRename () throws Exception {
+        File dir = new File(dataDir, "testFileRenameRename");
+        File normalPatch = new File(dir, "patch.patch");
+        File file = new File(dir, "NewClass.java");
+        File rename1 = new File(dir, "NewClassRename1.java");
+        File rename2 = new File(dir, "NewClassRename2.java");
+        
+        PatchUtils.applyPatch(normalPatch, dir);
+        assertFalse(file.exists());
+        assertFiles(new File(dir, "golden/" + rename1.getName()), rename1, true);
+        assertFiles(new File(dir, "golden/" + rename2.getName()), rename2, true);
+    }
+    
+    public void testFileCopyRename () throws Exception {
+        File dir = new File(dataDir, "testFileCopyRename");
+        File normalPatch = new File(dir, "patch.patch");
+        File file = new File(dir, "NewClass.java");
+        File rename = new File(dir, "NewClassRename.java");
+        File copy = new File(dir, "NewClassCopy.java");
+        
+        PatchUtils.applyPatch(normalPatch, dir);
+        assertFalse(file.exists());
+        assertFiles(new File(dir, "golden/" + rename.getName()), rename, true);
+        assertFiles(new File(dir, "golden/" + copy.getName()), copy, true);
     }
 
     private void assertFiles(File golden, File file, boolean equal) throws FileNotFoundException, IOException {

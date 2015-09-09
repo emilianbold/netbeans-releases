@@ -821,6 +821,13 @@ public final class FileUtil extends Object {
         File retVal = (File) fo.getAttribute("java.io.File"); // NOI18N;        
 
         if (retVal == null) {
+            try {
+                if (fo.getFileSystem() instanceof JarFileSystem) {
+                    return null;
+                }
+            } catch (FileStateInvalidException ex) {
+                return null;
+            }
             URL fileURL = URLMapper.findURL(fo, URLMapper.INTERNAL);
             if (fileURL == null || !"file".equals(fileURL.getProtocol())) {  //NOI18N
                 fileURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);

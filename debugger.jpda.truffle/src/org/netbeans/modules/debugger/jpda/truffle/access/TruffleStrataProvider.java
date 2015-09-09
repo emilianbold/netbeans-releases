@@ -42,10 +42,9 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.access;
 
-import com.sun.jdi.AbsentInformationException;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.debugger.jpda.LocalVariable;
+import java.util.regex.Pattern;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.spi.StrataProvider;
@@ -60,12 +59,14 @@ public class TruffleStrataProvider implements StrataProvider {
     
     public static final String TRUFFLE_STRATUM = "TruffleScript";
     
+    private static final String TRUFFLE_ACCESS_CLASS = "com.oracle.truffle.api.vm.TruffleVM";   // TruffleAccess.BASIC_CLASS_NAME
+    private static final Pattern TRUFFLE_ACCESS_METHOD_REGEX = Pattern.compile("dispatch.*Event");
+    
     private static final String VAR_LINE = "line";
 
     @Override
     public String getDefaultStratum(CallStackFrameImpl csf) {
-        //if (TruffleAccess.BASIC_CLASS_NAME.equals(csf.getClassName())) {
-        if ("com.oracle.truffle.api.vm.TruffleVM".equals(csf.getClassName())) {
+        if (isInTruffleAccessPoint(csf)) {
             return TRUFFLE_STRATUM;
         }
         return null;
@@ -73,11 +74,15 @@ public class TruffleStrataProvider implements StrataProvider {
 
     @Override
     public List<String> getAvailableStrata(CallStackFrameImpl csf) {
-        //if (TruffleAccess.BASIC_CLASS_NAME.equals(csf.getClassName())) {
-        if ("com.oracle.truffle.api.vm.TruffleVM".equals(csf.getClassName())) {
+        if (isInTruffleAccessPoint(csf)) {
             return Collections.singletonList(TRUFFLE_STRATUM);
         }
         return null;
+    }
+    
+    private boolean isInTruffleAccessPoint(CallStackFrameImpl csf) {
+        return TRUFFLE_ACCESS_CLASS.equals(csf.getClassName()) &&
+               TRUFFLE_ACCESS_METHOD_REGEX.matcher(csf.getMethodName()).matches();
     }
 
     @Override

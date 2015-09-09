@@ -154,6 +154,10 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     // No accessor
                     return ;
                 }
+                if (debugManager != null) {
+                    // Initialized already
+                    return ;
+                }
                 //event.getThread();
                 JPDAThreadImpl thread = (JPDAThreadImpl) event.getThread();
                 InvocationExceptionTranslated iextr = null;
@@ -189,6 +193,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
                             "(L"+Object.class.getName().replace('.', '/')+";Z)Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
                     ThreadReference tr = thread.getThreadReference();
                     List<Value> dmArgs = Arrays.asList(engineValue, doStepInto);
+                    LOG.log(Level.FINE, "Setting engine and step into = {0}", isStepInto());
                     Object ret = ClassTypeWrapper.invokeMethod(accessorClass, tr, debugManagerMethod, dmArgs, ObjectReference.INVOKE_SINGLE_THREADED);
                     if (!(ret instanceof ObjectReference)) {
                         LOG.log(Level.WARNING, "Could not start up debugger manager for "+engineValue);

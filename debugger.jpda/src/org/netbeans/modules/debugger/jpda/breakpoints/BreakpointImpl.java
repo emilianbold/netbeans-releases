@@ -532,7 +532,8 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
             e = new JPDABreakpointEvent (
                 getBreakpoint (),
                 debugger,
-                JPDABreakpointEvent.CONDITION_TRUE,
+                (compiledCondition == null) ? JPDABreakpointEvent.CONDITION_NONE :
+                                              JPDABreakpointEvent.CONDITION_TRUE,
                 debugger.getThread (threadReference), 
                 referenceType, 
                 variable

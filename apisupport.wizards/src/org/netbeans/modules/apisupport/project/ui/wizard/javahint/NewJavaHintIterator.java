@@ -95,6 +95,8 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         cmf.add(cmf.addTestModuleDependency("org.netbeans.modules.java.hints.test", "java"));
         cmf.add(cmf.addTestModuleDependency("org.netbeans.libs.junit4", "extra"));
         cmf.add(cmf.addTestModuleDependency("org.netbeans.modules.nbjunit", "harness")); // NOI18N
+        cmf.add(cmf.addTestModuleDependency("org.netbeans.modules.parsing.nb", "ide")); // NOI18N
+        cmf.add(cmf.addTestModuleDependency("org.netbeans.modules.projectapi.nb", "ide")); // NOI18N
         
         NbProjectProvider nbProjectProvider = getProjectProvider(model.getProject());
 
@@ -127,6 +129,7 @@ public class NewJavaHintIterator extends BasicWizardIterator {
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.diff", "ide")); // NOI18N ?
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.actions", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.document", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.fold", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.fold.nbui", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.errorstripe.api", "ide")); // NOI18N
@@ -134,10 +137,12 @@ public class NewJavaHintIterator extends BasicWizardIterator {
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.guards", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.indent", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.indent.project", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.indent.support", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.lib", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.lib2", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.options.editor", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.settings", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.settings.lib", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.settings.storage", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.util", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.project.libraries", "ide")); // NOI18N
@@ -146,9 +151,13 @@ public class NewJavaHintIterator extends BasicWizardIterator {
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.libs.lucene", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.spi.navigator", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.parsing.api", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.parsing.indexing", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.parsing.lucene", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.parsing.nb", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.projectapi", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.project.indexingbridge", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.project.spi.intern", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.projectuiapi.base", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.projectuiapi", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.refactoring.api", "ide")); // NOI18N
             cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.code.analysis", "ide")); // NOI18N
