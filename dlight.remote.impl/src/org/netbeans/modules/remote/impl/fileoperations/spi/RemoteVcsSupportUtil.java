@@ -69,9 +69,11 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.netbeans.modules.remote.spi.RemoteServerListProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * Static methods that are need for RemoteVcsSupportImpl
@@ -343,16 +345,26 @@ public class RemoteVcsSupportUtil {
     }
 
     public static FileSystem[] getConnectedFileSystems() {
-        Collection<RemoteFileSystem> all = RemoteFileSystemManager.getInstance().getAllFileSystems();
-        List<FileSystem> connected = new ArrayList<>(all.size());
-        for (RemoteFileSystem fs : all) {
-            if (ConnectionManager.getInstance().isConnectedTo(fs.getExecutionEnvironment())) {
-                connected.add(fs);
+        List<FileSystem> connected = new ArrayList<>();
+        RemoteServerListProvider provider = Lookup.getDefault().lookup(RemoteServerListProvider.class);
+        if (provider == null) {
+            for (RemoteFileSystem fs : RemoteFileSystemManager.getInstance().getAllFileSystems()) {
+                if (ConnectionManager.getInstance().isConnectedTo(fs.getExecutionEnvironment())) {
+                    connected.add(fs);
+                }
+            }
+        } else {
+            for (ExecutionEnvironment env : provider.getRemoteServers()) {
+                if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                    // just ensure that file systems are instantiated 
+                    // for all remote servers that have been set up
+                    RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+                    connected.add(fs);
+                }
             }
         }
         return connected.toArray(new FileSystem[connected.size()]);
     }
-
     
     public static void refreshFor(FileSystem fs, String... paths) throws ConnectException, IOException {
         RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
