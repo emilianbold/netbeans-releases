@@ -348,6 +348,7 @@ public class VisualReplicator {
             handleDefaultLayout(metacont, contDelegate);
             laysup.setLayoutToContainer(cont, contDelegate);
             if (comps.length > 0) {
+                updateLayeredPane(cont, metacomps, comps);
                 laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
             }
             laysup.arrangeContainer(cont, contDelegate);
@@ -361,10 +362,9 @@ public class VisualReplicator {
                     FakePeerSupport.attachFakePeerRecursively((Container)comps[i]);
             }
 
+            updateLayeredPane(cont, metacomps, comps);
             setupContainerLayout(metacont, comps, compIds);
         }
-
-        updateLayeredPane(cont, metacomps, comps);
     }
 
     private static void updateLayeredPane(Container cont, RADVisualComponent[] metacomps, Component[] comps) {
@@ -817,14 +817,15 @@ public class VisualReplicator {
                     handleDefaultLayout(metacont, contDelegate);
                     laysup.setLayoutToContainer(cont, contDelegate);
                     if (comps.length > 0) { // add cloned subcomponents to container
+                        updateLayeredPane(cont, metacomps, comps);
                         laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
                     }
                     laysup.arrangeContainer(cont, contDelegate);
                 }
                 else { // new layout support
+                    updateLayeredPane(cont, metacomps, comps);
                     setupContainerLayout(metacont, comps, compIds);
                 }
-                updateLayeredPane(cont, metacomps, comps);
             }
         }
         else if (metacomp instanceof RADMenuComponent) {

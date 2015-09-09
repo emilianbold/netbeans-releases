@@ -281,7 +281,9 @@ public class ImportClassPanel extends javax.swing.JPanel {
                         return ;
                     CompilationUnitTree cut = wc.getCompilationUnit();
                     
-                    if ( useFqn && !replaceSimpleName(fqn, wc) ) {
+                    if ( useFqn ) {
+                        if ( replaceSimpleName(fqn, wc) )
+                            return;
                         Document doc = wc.getDocument();
                         if (doc instanceof BaseDocument) {
                             try {

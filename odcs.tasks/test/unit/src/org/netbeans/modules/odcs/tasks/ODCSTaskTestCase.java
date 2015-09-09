@@ -592,8 +592,8 @@ public class ODCSTaskTestCase extends NbTestSuite {
             
             assertEquals(1, count);
             assertEquals(comment, commentText);
-            assertEquals("odcs_testuser1@netbeans.org", author);
-            assertEquals("Netbeans TestUser1", authorName);
+            assertEquals(AbstractODCSTestCase.TEST_USER1, author);
+            assertEquals("Tina Testsuite", authorName);
             assertEquals(SimpleDateFormat.getDateInstance().format(now), SimpleDateFormat.getDateInstance().format(d));
         }  
         

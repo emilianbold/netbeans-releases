@@ -1491,7 +1491,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
     /**
      * Returns initialization string for number spinner model.
      * 
-     * @return initializtaion string for number spinner model.
+     * @return initialization string for number spinner model.
      */
     private String numberInitializationString(FormSpinnerModel model) {
         StringBuilder code = new StringBuilder();
@@ -1502,59 +1502,55 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         Object maximum = numberModel.getMaximum();
         Object stepSize = numberModel.getStepSize();
         Class clazz = initial.getClass();
-        boolean generated = false;
-        if (clazz == Integer.class) {
-            if (Integer.valueOf(0).equals(initial)
+        if (clazz == Integer.class
+                && Integer.valueOf(0).equals(initial)
                 && (minimum == null) && (maximum == null)
                 && (Integer.valueOf(1).equals(stepSize))) {
-                // default constructor
-                code.append(')');
-                generated = true;
-            } else if ((minimum != null) && (maximum != null)) {
-                // int constructor
-                code.append(initial).append(", "); // NOI18N
-                code.append(minimum).append(", "); // NOI18N
-                code.append(maximum).append(", "); // NOI18N
-                code.append(stepSize).append(')');
-                generated = true;
-            }
-        } else if ((clazz == Double.class) && (minimum != null) && (maximum != null)) {
-            // double constructor
-            code.append(initial).append("d, "); // NOI18N
-            code.append(minimum).append("d, "); // NOI18N
-            code.append(maximum).append("d, "); // NOI18N
-            code.append(stepSize).append("d)"); // NOI18N
-            generated = true;
-        }
-        if (!generated) {
+            // default constructor
+            code.append(')');
+        } else {
             // general constructor
-            String prefix = clazz.getName();
-            prefix = prefix.substring(prefix.lastIndexOf('.')+1);
-            prefix = prefix + ".valueOf("; // NOI18N
+            String prefix = ""; // NOI18N
             String suffix = ""; // NOI18N
             if (clazz == Long.class) {
                 suffix = "L"; // NOI18N
+                if (minimum != null && maximum != null) {
+                    prefix = "Long.valueOf(";
+                    suffix += ")";
+                }
             } else if (clazz == Float.class) {
                 suffix = "f"; // NOI18N
+                if (minimum != null && maximum != null) {
+                    prefix = "Float.valueOf(";
+                    suffix += ")";
+                }
             } else if (clazz == Double.class) {
                 suffix = "d"; // NOI18N
             } else if (clazz == Byte.class) {
-                prefix += "(byte)"; // NOI18N
+                prefix = "(byte)"; // NOI18N
+                if (minimum != null && maximum != null) {
+                    prefix = "Byte.valueOf(" + prefix;
+                    suffix += ")";
+                }
             } else if (clazz == Short.class) {
-                prefix += "(short)"; // NOI18N
+                prefix = "(short)"; // NOI18N
+                if (minimum != null && maximum != null) {
+                    prefix = "Short.valueOf(" + prefix;
+                    suffix += ")";
+                }
             }
-            code.append(prefix).append(initial).append(suffix).append("), "); // NOI18N
+            code.append(prefix).append(initial).append(suffix).append(", "); // NOI18N
             if (minimum == null) {
                 code.append("null, "); // NOI18N
             } else{
-                code.append(prefix).append(minimum).append(suffix).append("), "); // NOI18N
+                code.append(prefix).append(minimum).append(suffix).append(", "); // NOI18N
             }
             if (maximum == null) {
                 code.append("null, "); // NOI18N
             } else{
-                code.append(prefix).append(maximum).append(suffix).append("), "); // NOI18N
+                code.append(prefix).append(maximum).append(suffix).append(", "); // NOI18N
             }
-            code.append(prefix).append(stepSize).append(suffix).append("))"); // NOI18N
+            code.append(prefix).append(stepSize).append(suffix).append(")"); // NOI18N
         }
         return code.toString();
     }

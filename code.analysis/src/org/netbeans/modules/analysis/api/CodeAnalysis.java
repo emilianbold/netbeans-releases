@@ -44,7 +44,12 @@ package org.netbeans.modules.analysis.api;
 import org.netbeans.modules.analysis.RunAnalysis;
 import org.netbeans.modules.analysis.RunAnalysisPanel.DialogState;
 import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
 
 /**XXX: refers to SPI class (WarningDescription) - should be moved to the API!
  *
@@ -53,6 +58,10 @@ import org.openide.util.Utilities;
 public class CodeAnalysis {
     
     public static void open(WarningDescription wd) {
-        RunAnalysis.showDialogAndRunAnalysis(Utilities.actionsGlobalContext(), DialogState.from(wd));
+        Node[] n = TopComponent.getRegistry().getActivatedNodes();
+        final Lookup context = n.length > 0 ? n[0].getLookup():Lookup.EMPTY;
+        RunAnalysis.showDialogAndRunAnalysis(
+                new ProxyLookup(Utilities.actionsGlobalContext(), 
+                        context), DialogState.from(wd));
     }
 }
