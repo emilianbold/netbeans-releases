@@ -88,15 +88,16 @@ public abstract class TokenStreamProducer {
     public static class Parameters {
 
         public final YesNoInterested needTokens;
-        public final boolean needPPDirectives;
-        public final boolean needSkippedRanges;
-        public final boolean needMacroExpansion;
+        public final YesNoInterested needPPDirectives;
+        public final YesNoInterested needSkippedRanges;
+        public final YesNoInterested needMacroExpansion;
         public final boolean needComments;
         public final boolean triggerParsingActivity;
         public final boolean applyLanguageFilter;
         
-        private Parameters(boolean triggerParsingActivity, boolean needPPDirectives, YesNoInterested needTokens,
-                boolean needSkippedRanges, boolean needMacroExpansion, boolean needComments, boolean applyLanguageFilter) {
+        private Parameters(YesNoInterested needTokens, boolean triggerParsingActivity, 
+                YesNoInterested needPPDirectives, YesNoInterested needMacroExpansion, YesNoInterested needSkippedRanges, 
+                boolean needComments, boolean applyLanguageFilter) {
             this.triggerParsingActivity = triggerParsingActivity;
             this.needPPDirectives = needPPDirectives;
             this.needSkippedRanges = needSkippedRanges;
@@ -107,11 +108,13 @@ public abstract class TokenStreamProducer {
         }
 
         public static Parameters createForParsing(boolean triggerParsingActivity) {
-            return new Parameters(triggerParsingActivity, true, YesNoInterested.ALWAYS, true, !APTTraceFlags.DEFERRED_MACRO_USAGES, false, true);
+            return new Parameters(YesNoInterested.ALWAYS, triggerParsingActivity, 
+                    YesNoInterested.ALWAYS, 
+                    APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.NEVER : YesNoInterested.ALWAYS, YesNoInterested.ALWAYS, false, true);
         }
 
-        public static Parameters createForOneFileTokens(boolean needComments) {
-            return new Parameters(false, false, YesNoInterested.INTERESTED, false, false, needComments, false);
+        public static Parameters createForOneFileTokens(boolean needComments, YesNoInterested needMacroExpansion) {
+            return new Parameters(YesNoInterested.INTERESTED, false, YesNoInterested.NEVER, needMacroExpansion, YesNoInterested.INTERESTED, needComments, false);
         }
 
 //        public static Parameters createForMacroUsages() {
