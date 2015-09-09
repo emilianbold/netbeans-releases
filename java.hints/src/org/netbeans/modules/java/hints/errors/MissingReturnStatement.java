@@ -125,9 +125,10 @@ public class MissingReturnStatement implements ErrorRule<Void> {
             }
         } else if (method.getLeaf().getKind() == Kind.LAMBDA_EXPRESSION) {
             LambdaExpressionTree let = (LambdaExpressionTree)method.getLeaf();
+            TreePath bodyPath = new TreePath(method, let.getBody());
             if (let.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
                 TypeMirror m = compilationInfo.getTrees().getTypeMirror(
-                    new TreePath(method, let.getBody()));
+                    bodyPath);
                 if (m == null) {
                     return null;
                 }
@@ -139,6 +140,9 @@ public class MissingReturnStatement implements ErrorRule<Void> {
                     // some type
                     return null;
                 }
+            } else if (Utilities.exitsFromAllBranchers(compilationInfo, bodyPath)) {
+                // do not add return, returns are already there.
+                return null;
             }
         }
 

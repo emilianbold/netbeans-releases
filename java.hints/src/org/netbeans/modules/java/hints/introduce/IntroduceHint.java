@@ -373,7 +373,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     if (viableTargets != null && !viableTargets.isEmpty()) {
                         for (TargetDescription target : viableTargets) {
                             Set<String> cNames = new HashSet<>();
-                            outer: for (ExecutableElement ee : ElementFilter.methodsIn(target.type.resolve(info).getEnclosedElements())) {
+                            if (target.type == null) {
+                                // could not create a handle for a type ??
+                                continue;
+                            }
+                            Element parent = target.type.resolve(info);
+                            // resolve may result in null ptr
+                            if (parent == null) {
+                                continue;
+                            }
+                            outer: for (ExecutableElement ee : ElementFilter.methodsIn(parent.getEnclosedElements())) {
                                 List<? extends TypeMirror> pTypes = ((ExecutableType) ee.asType()).getParameterTypes();
                                 if (pTypes.size() == scanner.usedLocalVariables.keySet().size()) {
                                     Iterator<? extends TypeMirror> pTypesIt = pTypes.iterator();
@@ -676,6 +685,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return true;
                     }
                     break;
+                case INTERFACE:
+                    return true;
             }
 
             occurrence = occurrence.getParentPath();

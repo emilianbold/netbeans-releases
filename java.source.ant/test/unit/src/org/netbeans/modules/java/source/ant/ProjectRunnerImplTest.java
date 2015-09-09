@@ -71,30 +71,43 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
-import static org.junit.Assert.*;
 import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.runner.JavaRunner;
+import org.netbeans.junit.MockServices;
 import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class ProjectRunnerImplTest {
+public class ProjectRunnerImplTest extends NbTestCase {
+
+    private File workDir;
+
+    public ProjectRunnerImplTest(String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+        workDir = FileUtil.normalizeFile(getWorkDir());
+        MockServices.setServices(MockProjectFactory.class);
+    }
 
     @Test
-    public void testComputeProperties1() throws MalformedURLException {
+    public void testComputeProperties1() throws IOException {
         ClassPath cp = ClassPathSupport.createClassPath(new URL("file:///E/"));
-        checkProperties(Arrays.asList("classname", "A", "platform.java", "J", "execute.classpath", cp, "work.dir", "W","boot.classpath",cp,"runtime.encoding",Charset.defaultCharset()),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", "/E", "work.dir", "W", "application.args", "", "run.jvmargs", "", "platform.bootcp", "/E","encoding",Charset.defaultCharset().name()));
+        final String wd = workDir.getAbsolutePath();
+        checkProperties(Arrays.asList("classname", "A", "platform.java", "J", "execute.classpath", cp, "work.dir", wd,"boot.classpath",cp,"runtime.encoding",Charset.defaultCharset()),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", "/E", "work.dir", wd, "application.args", "", "run.jvmargs", "", "platform.bootcp", "/E","encoding",Charset.defaultCharset().name()));
     }
 
     @Test
     public void testComputeProperties2() throws MalformedURLException, IOException {
-        File wd = getWD();
-        FileObject fo = FileUtil.toFileObject(wd);
+        FileObject fo = FileUtil.toFileObject(workDir);
 
         assertNotNull(fo);
 
@@ -103,17 +116,16 @@ public class ProjectRunnerImplTest {
 
         String prjPath = FileUtil.toFile(prj).getAbsolutePath();
 
-        MockLookup.setInstances(new ProjectFactoryImpl(prj));
-        
+        Lookup.getDefault().lookup(MockProjectFactory.class).prjDir = prj;
+
         checkProperties(Arrays.asList("execute.file", java, "platform.java", "J"),
                         Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", prjPath, "run.jvmargs", "", "encoding", "UTF-8", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()),
                         "prj");
     }
-    
+
     @Test
     public void testComputeProperties3() throws MalformedURLException, IOException {
-        File wd = getWD();
-        FileObject fo = FileUtil.toFileObject(wd);
+        FileObject fo = FileUtil.toFileObject(workDir);
 
         assertNotNull(fo);
 
@@ -123,7 +135,7 @@ public class ProjectRunnerImplTest {
 
         String prjPath = FileUtil.toFile(prj).getAbsolutePath();
 
-        MockLookup.setInstances(new ProjectFactoryImpl(prj));
+        Lookup.getDefault().lookup(MockProjectFactory.class).prjDir = prj;
 
         Project fake = new Project() {
             public FileObject getProjectDirectory() {
@@ -158,12 +170,12 @@ public class ProjectRunnerImplTest {
     }
 
     @Test public void testStartupExtender() throws Exception {
-        File wd = getWD();
+        File wd = workDir;
         FileObject fo = FileUtil.toFileObject(wd);
         FileObject java = FileUtil.createData(fo, "prj/A.java");
         FileObject prj = java.getParent();
         String prjPath = FileUtil.toFile(prj).getAbsolutePath();
-        MockLookup.setInstances(new ProjectFactoryImpl(prj));
+        Lookup.getDefault().lookup(MockProjectFactory.class).prjDir = prj;
         checkProperties(JavaRunner.QUICK_RUN, Arrays.asList("execute.file", java, "platform.java", "J", JavaRunner.PROP_RUN_JVMARGS, Collections.singleton("-ea")),
                         Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "encoding", "UTF-8", "work.dir", FileUtil.toFile(prj).getAbsolutePath(), JavaRunner.PROP_RUN_JVMARGS, "-ea -Ddir=prj -Dvm=j2se", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()));
         checkProperties(JavaRunner.QUICK_DEBUG, Arrays.asList("execute.file", java, "platform.java", "J", JavaRunner.PROP_RUN_JVMARGS, Collections.singleton("-ea")),
@@ -177,11 +189,11 @@ public class ProjectRunnerImplTest {
             return Arrays.asList("-Ddir=" + context.lookup(Project.class).getProjectDirectory().getNameExt(), "-Dvm=" + context.lookup(JavaPlatform.class).getSpecification().getName());
         }
     }
-    
+
     private void checkProperties(Collection<?> source, Collection<String> target) {
         checkProperties(source, target, null);
     }
-    
+
     private void checkProperties(String command, Collection<?> source, Collection<String> target) {
         checkProperties(command, source, target, null);
     }
@@ -189,7 +201,7 @@ public class ProjectRunnerImplTest {
     private void checkProperties(Collection<?> source, Collection<String> target, String displayName) {
         checkProperties("build", source, target, displayName);
     }
-    
+
     private void checkProperties(String command, Collection<?> source, Collection<String> target, String displayName) {
         Map<String, Object> sourceMap = new HashMap<String, Object>();
 
@@ -220,42 +232,6 @@ public class ProjectRunnerImplTest {
         }
     }
 
-    private File getWD() throws IOException {
-        String name = "unknown";
-        for (StackTraceElement e : new Exception().getStackTrace()) {
-            if (e.getMethodName().startsWith("test")) {
-                name = e.getMethodName();
-                break;
-            }
-        }
-        
-        NbTestCase ntc = new NbTestCase(name) {};
-
-        ntc.clearWorkDir();
-
-        return ntc.getWorkDir();
-    }
-
-    private static final class ProjectFactoryImpl implements ProjectFactory {
-
-        private final FileObject file;
-
-        public ProjectFactoryImpl(FileObject file) {
-            this.file = file;
-        }
-
-        public boolean isProject(FileObject projectDirectory) {
-            return projectDirectory.equals(file);
-        }
-
-        public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-            return new ProjectImpl(file);
-        }
-
-        public void saveProject(Project project) throws IOException, ClassCastException {
-        }
-
-    }
     private static final class ProjectImpl implements Project {
 
         private final FileObject dir;
@@ -280,7 +256,30 @@ public class ProjectRunnerImplTest {
                 }
             });
         }
-        
     }
-    
+
+    public static final class MockProjectFactory implements ProjectFactory {
+
+        volatile FileObject prjDir;
+
+        @Override
+        public boolean isProject(FileObject projectDirectory) {
+            FileObject fo = prjDir;
+            return fo != null && fo.equals(projectDirectory);
+        }
+
+        @Override
+        public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
+            if (isProject(projectDirectory)) {
+                return new ProjectImpl(projectDirectory);
+            }
+            return null;
+        }
+
+        @Override
+        public void saveProject(Project project) throws IOException, ClassCastException {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+    }
 }
