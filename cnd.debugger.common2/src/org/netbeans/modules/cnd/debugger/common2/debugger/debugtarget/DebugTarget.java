@@ -316,6 +316,7 @@ public final class DebugTarget implements Record {
 	clone.setHostName(this.getHostName());
 	clone.setCorefile(this.getCorefile());
 	clone.setEngine(this.getEngine());
+        clone.setUnparsedArgs(this.getUnparsedArgs());
 
 	return clone;
     }
