@@ -167,6 +167,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
             fileSystem = null;
         }
         panel.cbBuildHost.setModel(new DefaultComboBoxModel<FileSystem>(fileSystems));
+        annotationSettings.update();
         if (fileSystem == null) {
             return;
         }
@@ -175,7 +176,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault(fileSystem).getAutoOpenOutput());
         panel.cbGetRemoteLocks.setSelected(SvnModuleConfig.getDefault(fileSystem).isGetRemoteLocks());
         panel.cbAutoLockFiles.setSelected(SvnModuleConfig.getDefault(fileSystem).isAutoLock());
-        annotationSettings.update();
         if (repository != null) {
             repository.refreshUrlHistory();
         }
