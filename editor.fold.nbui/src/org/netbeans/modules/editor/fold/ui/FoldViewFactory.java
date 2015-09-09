@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.text.Document;
 import javax.swing.text.View;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
@@ -181,25 +182,31 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
         if (FoldUtilitiesImpl.PREF_CONTENT_PREVIEW.equals(k) ||
             FoldUtilitiesImpl.PREF_CONTENT_SUMMARY.equals(k)) {
             initViewFlags();
-            document().render(new Runnable() {
-                @Override
-                public void run() {
-                    int end = document().getLength();
-                    fireEvent(EditorViewFactoryChange.createList(0, end, EditorViewFactoryChange.Type.CHARACTER_CHANGE));
-                }
-            });
+            final Document d = document();
+            if (d != null) {
+                d.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        int end = d.getLength();
+                        fireEvent(EditorViewFactoryChange.createList(0, end, EditorViewFactoryChange.Type.CHARACTER_CHANGE));
+                    }
+                });
+            }
         }
     }
 
     private void refreshColors() {
         colorSettings = (FontColorSettings)colorSource.allInstances().iterator().next();
-        document().render(new Runnable() {
-            @Override
-            public void run() {
-                int end = document().getLength();
-                fireEvent(EditorViewFactoryChange.createList(0, end, EditorViewFactoryChange.Type.CHARACTER_CHANGE));
-            }
-        });
+        final Document d = document();
+        if (d != null) {
+            d.render(new Runnable() {
+                @Override
+                public void run() {
+                    int end = d.getLength();
+                    fireEvent(EditorViewFactoryChange.createList(0, end, EditorViewFactoryChange.Type.CHARACTER_CHANGE));
+                }
+            });
+        }
     }
 
     @Override

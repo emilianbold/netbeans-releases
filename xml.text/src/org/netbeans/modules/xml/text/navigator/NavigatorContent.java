@@ -184,7 +184,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent implements Car
             return;
         }
         JTextComponent c = active.get();
-        if (c == null) {
+        if (c == null || c.getCaret() == null) {
             return;
         }
         int offset = c.getCaret().getDot();

@@ -375,7 +375,17 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         if (virtualTextCtx.getCurrentPrefix().length() > 0) {
             String prefix = virtualTextCtx.getCurrentPrefix();
             if (prefix.lastIndexOf("${") > prefix.lastIndexOf("}")) {
-                String propPrefix = prefix.substring(prefix.lastIndexOf("${") + 2);
+                int propStart = prefix.lastIndexOf("${") + 2;
+                int delLen = -1;
+                String propPrefix = prefix.substring(propStart);
+                String val = virtualTextCtx.getNodeValue();
+                int e = val.indexOf('}', propStart);
+                if (e != -1) {
+                    int s = val.indexOf("${", propStart);
+                    if (s == -1 || e < s) {
+                        delLen = e - (propStart + propPrefix.length()) + 1; // with the closing curly brace, caret will be placed after it
+                    }
+                }
                 FileObject fo = getEnvironment().getFileObject();
                 if (fo != null) {
                     List<String> set = new ArrayList<String>();
@@ -402,9 +412,20 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                     }
                     Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
                     Collections.sort(set);
+                    String suffix = virtualTextCtx.getNodeValue().substring(prefix.length());
+                    int pplen = propPrefix.length();
                     for (String pr : set) {
                         if (pr.startsWith(propPrefix)) {
-                            elems.add(new ExpressionValueTextElement(pr, propPrefix, ""));
+                            int l = delLen;
+                            if (l == -1) {
+                                // delete all following characters which match the property name
+                                for (l = 0; (l < suffix.length()) && (l + pplen < pr.length()); l++) {
+                                    if (suffix.charAt(l) != pr.charAt(pplen +l)) {
+                                        break;
+                                    }
+                                }
+                            }
+                            elems.add(new ExpressionValueTextElement(pr, propPrefix, l));
                         }
                     }
                     return Collections.enumeration(elems);
