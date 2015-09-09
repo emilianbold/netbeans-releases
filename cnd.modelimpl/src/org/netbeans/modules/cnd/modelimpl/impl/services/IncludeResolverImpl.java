@@ -195,7 +195,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     
     // Returns standard header if it exists
     private CsmFile getStandardHeaderIfExists(CsmFile currentFile, List<FSPath> sysIncsPaths, CsmFile file, HashSet<CsmFile> scannedFiles) {
-        if (scannedFiles.contains(file) || !isSystemHeader(currentFile, file)) {
+        if (!file.isValid() || scannedFiles.contains(file) || !isSystemHeader(currentFile, file)) {
             return null;
         }
         scannedFiles.add(file);

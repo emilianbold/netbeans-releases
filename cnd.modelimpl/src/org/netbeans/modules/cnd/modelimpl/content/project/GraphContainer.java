@@ -260,7 +260,7 @@ public class GraphContainer extends ProjectComponent implements CsmProgressListe
         GraphContainer current = map.get(UIDUtilities.getProjectID(keyFrom));
         if (current == null) {
             CsmFile file = UIDCsmConverter.UIDtoFile(keyFrom);
-            if (file == null) {
+            if (file == null || !file.isValid()) {
                 return;
             }
             current = ((ProjectBase)file.getProject()).getGraphStorage();
@@ -421,7 +421,7 @@ public class GraphContainer extends ProjectComponent implements CsmProgressListe
         Set<CsmFile> res2= new HashSet<>();
         for(CsmUID<CsmFile> uid : res) {
             CsmFile file = UIDCsmConverter.UIDtoFile(uid);
-            if (file != null) {
+            if (file != null && file.isValid()) {
                 res2.add(file);
             }
         }
