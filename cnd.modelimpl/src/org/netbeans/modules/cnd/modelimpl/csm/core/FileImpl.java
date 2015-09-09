@@ -1182,7 +1182,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguage = this.getContextLanguage(ppState);
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
-        TokenStream tokenStream = tsp.getTokenStream(false, false, false, interrupter);
+        TokenStream tokenStream = tsp.getTokenStream(TokenStreamProducer.Parameters.createForOneFileTokens(true), interrupter);
         if (tokenStream == null) {
             return false;
         }
@@ -1274,7 +1274,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
         tsp.setCodePatch(new TokenStreamProducer.CodePatch(startContextOffset, endContextOffset, context));
-        TokenStream tokenStream = tsp.getTokenStream(false, false, false, interrupter);
+        TokenStream tokenStream = tsp.getTokenStream(TokenStreamProducer.Parameters.createForOneFileTokens(true), interrupter);
         if (tokenStream == null) {
             return null;
         }
@@ -1445,7 +1445,8 @@ public final class FileImpl implements CsmFile,
                         "%n while parsing file " + getAbsolutePath() + "%n of project " + getProject()); // NOI18N
                 return null;
             }            
-            TokenStream filteredTokenStream = parseParams.tsp.getTokenStream(parseParams.triggerParsingActivity, true, true, interrupter);
+            TokenStream filteredTokenStream = parseParams.tsp.getTokenStream(
+                    TokenStreamProducer.Parameters.createForParsing(parseParams.triggerParsingActivity), interrupter);
             if (filteredTokenStream == null) {
                 System.err.println(" null token stream for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
                         "%n while parsing file " + getAbsolutePath() + "%n of project " + getProject()); // NOI18N

@@ -77,6 +77,48 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
  * @author Vladimir Voskresensky
  */
 public abstract class TokenStreamProducer {
+    
+    public static enum YesNoInterested {
+        ALWAYS,
+        NEVER,
+        INTERESTED
+    }
+    
+    // in fact used only in clank mode
+    public static class Parameters {
+
+        public final YesNoInterested needTokens;
+        public final boolean needPPDirectives;
+        public final boolean needSkippedRanges;
+        public final boolean needMacroExpansion;
+        public final boolean needComments;
+        public final boolean triggerParsingActivity;
+        public final boolean applyLanguageFilter;
+        
+        private Parameters(boolean triggerParsingActivity, boolean needPPDirectives, YesNoInterested needTokens,
+                boolean needSkippedRanges, boolean needMacroExpansion, boolean needComments, boolean applyLanguageFilter) {
+            this.triggerParsingActivity = triggerParsingActivity;
+            this.needPPDirectives = needPPDirectives;
+            this.needSkippedRanges = needSkippedRanges;
+            this.needTokens = needTokens;
+            this.needMacroExpansion = needMacroExpansion;
+            this.needComments = needComments;
+            this.applyLanguageFilter = applyLanguageFilter;
+        }
+
+        public static Parameters createForParsing(boolean triggerParsingActivity) {
+            return new Parameters(triggerParsingActivity, true, YesNoInterested.ALWAYS, true, !APTTraceFlags.DEFERRED_MACRO_USAGES, false, true);
+        }
+
+        public static Parameters createForOneFileTokens(boolean needComments) {
+            return new Parameters(false, false, YesNoInterested.INTERESTED, false, false, needComments, false);
+        }
+
+//        public static Parameters createForMacroUsages() {
+//            return new Parameters(false, true, YesNoInterested.NEVER, false, true, false, false);
+//        }
+    }
+    
     private PreprocHandler curPreprocHandler;
     private FileImpl startFile;
     private String language = APTLanguageSupport.GNU_CPP;
@@ -109,7 +151,7 @@ public abstract class TokenStreamProducer {
 
     public abstract TokenStream getTokenStreamOfIncludedFile(PreprocHandler.State includeOwnerState, CsmInclude include, Interrupter interrupter);
 
-    public abstract TokenStream getTokenStream(boolean triggerParsingActivity, boolean filterOutComments, boolean applyLanguageFilter, Interrupter interrupter);
+    public abstract TokenStream getTokenStream(Parameters parameters, Interrupter interrupter);
     
     /** must be called when TS was completely consumed */
     public abstract FilePreprocessorConditionState release();
