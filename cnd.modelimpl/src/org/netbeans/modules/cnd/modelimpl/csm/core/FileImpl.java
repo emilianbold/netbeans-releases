@@ -357,7 +357,7 @@ public final class FileImpl implements CsmFile,
         this.fileBuffer = fileBuffer;
 
         hasBrokenIncludes = new AtomicBoolean(false);
-        this.currentFileContent = FileContent.createFileContent(FileImpl.this, project);
+        this.currentFileContent = FileContent.createFileContent(FileImpl.this, FileImpl.this);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
@@ -2078,7 +2078,7 @@ public final class FileImpl implements CsmFile,
         this.fileBuffer = PersistentUtils.readBuffer(input);
 
         hasBrokenIncludes = new AtomicBoolean(input.readBoolean());
-        currentFileContent = new FileContent(this, this._getProject(false), input);
+        currentFileContent = new FileContent(this, this, input);
 
         fileType = FileType.values()[input.readByte()];
 

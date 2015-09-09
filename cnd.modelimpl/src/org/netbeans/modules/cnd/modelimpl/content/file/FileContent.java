@@ -117,8 +117,8 @@ public final class FileContent implements MutableDeclarationsContainer {
     private final Union2<FileComponentReferences, WeakContainer<FileComponentReferences>> fileComponentReferences;
     private final Collection<CsmParserProvider.ParserError> parserErrors;
     
-    public static FileContent createFileContent(FileImpl fileImpl, ProjectBase project) {
-        return new FileContent(fileImpl, project, true,
+    public static FileContent createFileContent(FileImpl fileImpl, CsmValidable owner) {
+        return new FileContent(fileImpl, owner, true,
                 new FileComponentDeclarations(fileImpl),
                 new FileComponentMacros(fileImpl),
                 new FileComponentIncludes(fileImpl),
@@ -131,7 +131,7 @@ public final class FileContent implements MutableDeclarationsContainer {
                 createParserErrors(Collections.<CsmParserProvider.ParserError>emptyList()));
     }
     
-    private FileContent(FileImpl fileImpl, ProjectBase project, boolean persistent,
+    private FileContent(FileImpl fileImpl, CsmValidable owner, boolean persistent,
             FileComponentDeclarations fcd, FileComponentMacros fcm,
             FileComponentIncludes fcinc, boolean hasBrokenIncludes,
             FileComponentInstantiations fcinst, FileComponentReferences fcr,
@@ -141,12 +141,12 @@ public final class FileContent implements MutableDeclarationsContainer {
             Collection<CsmParserProvider.ParserError> parserErrors) {
         this.persistent = persistent;
         this.fileImpl = fileImpl;
-        this.fileComponentDeclarations = asUnion(project, fcd, persistent);
-        this.fileComponentMacros = asUnion(project, fcm, persistent);
-        this.fileComponentIncludes = asUnion(project, fcinc, persistent);
+        this.fileComponentDeclarations = asUnion(owner, fcd, persistent);
+        this.fileComponentMacros = asUnion(owner, fcm, persistent);
+        this.fileComponentIncludes = asUnion(owner, fcinc, persistent);
         this.hasBrokenIncludes = new AtomicBoolean(hasBrokenIncludes);
-        this.fileComponentInstantiations = asUnion(project, fcinst, persistent);
-        this.fileComponentReferences = asUnion(project, fcr, persistent);
+        this.fileComponentInstantiations = asUnion(owner, fcinst, persistent);
+        this.fileComponentReferences = asUnion(owner, fcr, persistent);
         this.fakeIncludeRegistrations = fakeIncludeRegistrations;
         this.fakeFunctionRegistrations = fakeFunctionRegistrations;
         this.errors = errors;
@@ -176,8 +176,7 @@ public final class FileContent implements MutableDeclarationsContainer {
      */
     public static FileContent getHardReferenceBasedCopy(FileContent other, boolean emptyContent) {
         other.checkValid();
-        final ProjectBase projectImpl = other.fileImpl.getProjectImpl(true);
-        return new FileContent(other.fileImpl, projectImpl, false,
+        return new FileContent(other.fileImpl, other.fileImpl, false,
                 new FileComponentDeclarations(other.getFileDeclarations(), emptyContent),
                 new FileComponentMacros(other.getFileMacros(), emptyContent),
                 new FileComponentIncludes(other.getFileIncludes(), emptyContent),
@@ -196,12 +195,11 @@ public final class FileContent implements MutableDeclarationsContainer {
      * @return copy which reference internal containers by weak reference and repository keys
      */
     public FileContent toWeakReferenceBasedCopy() {
-        final ProjectBase projectImpl = this.fileImpl.getProjectImpl(true);
         checkValid();
         try {
             // convert this instance as is into persistent copy
             // it not legal to use it later on for appending elements
-            return new FileContent(this.fileImpl, projectImpl, true,
+            return new FileContent(this.fileImpl, this.fileImpl, true,
                     this.getFileDeclarations(), this.getFileMacros(),
                     this.getFileIncludes(), this.hasBrokenIncludes(),
                     this.getFileInstantiations(), this.getFileReferences(),
@@ -519,29 +517,29 @@ public final class FileContent implements MutableDeclarationsContainer {
         // TODO : store parser errors
     }
     
-    public FileContent(FileImpl file, ProjectBase project, RepositoryDataInput input) throws IOException {
+    public FileContent(FileImpl file, CsmValidable owner, RepositoryDataInput input) throws IOException {
         this.fileImpl = file;
         this.persistent = true;
         FileDeclarationsKey fileDeclarationsKey = new FileDeclarationsKey(input);
         assert fileDeclarationsKey != null : "file declaratios key can not be null";
-        fileComponentDeclarations = Union2.createSecond(new WeakContainer<FileComponentDeclarations>(project, fileDeclarationsKey));
+        fileComponentDeclarations = Union2.createSecond(new WeakContainer<FileComponentDeclarations>(owner, fileDeclarationsKey));
 
         FileIncludesKey fileIncludesKey = new FileIncludesKey(input);
         assert fileIncludesKey != null : "file includes key can not be null";
-        fileComponentIncludes = Union2.createSecond(new WeakContainer<FileComponentIncludes>(project, fileIncludesKey));
+        fileComponentIncludes = Union2.createSecond(new WeakContainer<FileComponentIncludes>(owner, fileIncludesKey));
         hasBrokenIncludes = new AtomicBoolean(input.readBoolean());
 
         FileMacrosKey fileMacrosKey = new FileMacrosKey(input);
         assert fileMacrosKey != null : "file macros key can not be null";
-        fileComponentMacros = Union2.createSecond(new WeakContainer<FileComponentMacros>(project, fileMacrosKey));
+        fileComponentMacros = Union2.createSecond(new WeakContainer<FileComponentMacros>(owner, fileMacrosKey));
 
         FileReferencesKey fileReferencesKey = new FileReferencesKey(input);
         assert fileReferencesKey != null : "file referebces key can not be null";
-        fileComponentReferences = Union2.createSecond(new WeakContainer<FileComponentReferences>(project, fileReferencesKey));
+        fileComponentReferences = Union2.createSecond(new WeakContainer<FileComponentReferences>(owner, fileReferencesKey));
 
         FileInstantiationsKey fileInstantiationsKey = new FileInstantiationsKey(input);
         assert fileInstantiationsKey != null : "file instantiation references key can not be null";
-        fileComponentInstantiations = Union2.createSecond(new WeakContainer<FileComponentInstantiations>(project, fileInstantiationsKey));
+        fileComponentInstantiations = Union2.createSecond(new WeakContainer<FileComponentInstantiations>(owner, fileInstantiationsKey));
         
         this.errors = createErrors(Collections.<ErrorDirectiveImpl>emptySet());
         PersistentUtils.readErrorDirectives(this.errors, input);
