@@ -1,6 +1,6 @@
-#changeset:   15641:c95ffee876e5
-#tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Sep 07 22:07:06 2015 +0300
-#summary:     PERF: keeping all tokens in growing MacroExpandedTokens array make it huge
-F52418F170AA6E0893F076062A9B199692FECD96 clank_0.3.6.zip
+changeset:   15649:1bd2e87c5fe5
+tag:         tip
+user:        Vladimir Voskresensky <vv159170@netbeans.org>
+date:        Wed Sep 09 13:59:12 2015 +0300
+summary:     fixed #255130 - [newcodemodel] java.lang.AssertionError: Key already in new map?
+3E701B8BB92A45CA192131772F6D3922C60BB81C clank_0.3.6.zip
