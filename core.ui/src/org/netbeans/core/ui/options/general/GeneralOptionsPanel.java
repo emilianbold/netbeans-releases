@@ -800,7 +800,8 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             editor = Lookup.getDefault().lookup(HtmlBrowser.FactoryEditor.class);
         }
         String browser = editor.getAsText();
-        if (browser != null && !browser.equals((String) cbWebBrowser.getSelectedItem())) {
+        // web browser settings are hidden in platform
+        if (cbWebBrowser.isVisible() && browser != null && !browser.equals((String) cbWebBrowser.getSelectedItem())) {
             return true;
         }
         // proxy settings
