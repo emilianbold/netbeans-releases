@@ -67,7 +67,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 
 /**
- * Provies access to the main or currently selected project.
+ * Provides access to the main or currently selected project.
  *
  * @author   Jan Jancura, Martin Entlicher
  */
