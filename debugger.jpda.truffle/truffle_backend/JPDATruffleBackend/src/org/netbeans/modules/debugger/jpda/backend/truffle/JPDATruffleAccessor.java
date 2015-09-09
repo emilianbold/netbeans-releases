@@ -306,6 +306,7 @@ public class JPDATruffleAccessor extends Object {
     static Object getSlotValue(Object frameObj, Object slotObj) {
         Frame frame = (Frame) frameObj;
         FrameSlot slot = (FrameSlot) slotObj;
+        /* Does not work in some cases, throws FrameSlotTypeException
         switch(slot.getKind()) {
             case Boolean:   return FrameUtil.getBooleanSafe(frame, slot);
             case Byte:      return FrameUtil.getByteSafe(frame, slot);
@@ -334,6 +335,46 @@ public class JPDATruffleAccessor extends Object {
             case Illegal:   
             default:        return null;
         }
+        */
+        if (frame.isBoolean(slot)) {
+            return FrameUtil.getBooleanSafe(frame, slot);
+        }
+        if (frame.isByte(slot)) {
+            return FrameUtil.getByteSafe(frame, slot);
+        }
+        if (frame.isDouble(slot)) {
+            return FrameUtil.getDoubleSafe(frame, slot);
+        }
+        if (frame.isFloat(slot)) {
+            return FrameUtil.getFloatSafe(frame, slot);
+        }
+        if (frame.isInt(slot)) {
+            return FrameUtil.getIntSafe(frame, slot);
+        }
+        if (frame.isLong(slot)) {
+            return FrameUtil.getLongSafe(frame, slot);
+        }
+        if (frame.isObject(slot)) {
+            Object obj = FrameUtil.getObjectSafe(frame, slot);
+            //Node node = frame.materialize().getFrameDescriptor().
+            FrameInstance fi = Truffle.getRuntime().getCurrentFrame();
+            Node node = (fi != null) ? fi.getCallNode() : null;   // TODO find frame's node
+            DebugSupportProvider debugSupport = (node != null) ? getDebugSupport(node) : null;
+            Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
+            String name;
+            if (visualizer != null) {
+                name = visualizer.displayIdentifier(slot);
+            } else {
+                name = slot.getIdentifier().toString();
+            }
+            TruffleObject to = new TruffleObject(visualizer, name, obj);
+            //return context.getVisualizer().displayValue(context, obj);
+            //System.err.println("TruffleObject: "+to);
+            //System.err.println("  children Generic = "+Arrays.toString(to.getChildrenGeneric()));
+            //System.err.println("  children JS = "+Arrays.toString(to.getChildrenJS()));
+            return to;
+        }
+        return null;
     }
     
     /*
