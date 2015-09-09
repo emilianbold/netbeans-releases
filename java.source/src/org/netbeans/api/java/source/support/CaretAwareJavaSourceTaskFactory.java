@@ -54,6 +54,7 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.annotations.common.NonNull;
@@ -184,7 +185,10 @@ public abstract class CaretAwareJavaSourceTaskFactory extends JavaSourceTaskFact
                 component2Listener.put(c, l);
                 
                 //TODO: are we in AWT Thread?:
-                setLastPosition(OpenedEditors.getFileObject(c), c.getCaretPosition());
+                Caret caret = c.getCaret();
+                if (caret != null) {
+                    setLastPosition(OpenedEditors.getFileObject(c), caret.getDot());
+                }
             }
             
             fileObjectsChanged();
