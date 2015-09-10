@@ -43,10 +43,20 @@ package org.netbeans.modules.java.source.parsing;
 
 import com.sun.tools.javac.code.Symbol;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -58,15 +68,17 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Petr Hejl
+ * @author Tomas Zezula
  */
-public class Issue247469Test extends NbTestCase {
+public class CtSymArchiveTest extends NbTestCase {
 
-    public Issue247469Test(String name) {
+    public CtSymArchiveTest(String name) {
         super(name);
     }
 
@@ -98,7 +110,6 @@ public class Issue247469Test extends NbTestCase {
             public void run(final CompilationController cc) throws Exception {
                 final PackageElement packageElement = cc.getElements().getPackageElement("java.lang"); // NOI18N
                 for (Element elem : packageElement.getEnclosedElements()) {
-                    System.out.println(elem.getSimpleName().toString() + " completer: " + ((Symbol)elem).completer + elem.asType().getKind());
                     if ("ProcessBuilder$1".equals(elem.getSimpleName().toString())) { // NOI18N
                         TypeElement te = (TypeElement) elem;
                         assertEquals(NestingKind.ANONYMOUS, te.getNestingKind());
@@ -107,5 +118,84 @@ public class Issue247469Test extends NbTestCase {
                 }
             }
         }, true);
+    }
+
+    public void testCtSym() throws Exception {
+        final JavaPlatform jp = JavaPlatform.getDefault();
+        assertNotNull(jp);
+        final FileObject ctSym = jp.getInstallFolders().iterator().next().getFileObject("lib/ct.sym");  //NOI18N
+        if (ctSym == null) {
+            log(String.format("No ct.sym for platform: %s installed in: %s",jp.getDisplayName(), jp.getInstallFolders()));  //NOI18N
+            return;
+        }
+        final ClassPath boot = jp.getBootstrapLibraries();
+        assertNotNull(boot);
+        FileObject base = null;
+        for (FileObject root : boot.getRoots()) {
+            if (root.getFileObject("java/lang/Object.class") != null) { //NOI18N
+                base = root;
+                break;
+            }
+        }
+        assertNotNull(base);
+        final Map<String,List<String>> ctContent = createMap(ctSym, "META-INF/sym/rt.jar/");
+        final Map<String,List<String>> baseContent = createMap(FileUtil.getArchiveFile(base), null);
+        final Archive arch = CachingArchiveProvider.getDefault().getArchive(
+                base.toURL(),
+                true);
+        assertNotNull(arch);
+        for (Map.Entry<String,List<String>> e : baseContent.entrySet()) {
+            final String folder = e.getKey();
+            List<String> folderContent = ctContent.get(folder);
+            if (folderContent == null) {
+                folderContent = e.getValue();
+            }
+            final List<String> archContent = asList(arch.getFiles(folder, null, EnumSet.of(JavaFileObject.Kind.CLASS), null));
+            compare(folderContent,archContent);
+        }
+    }
+
+    private static void compare(List<String> expected, List<String> res) {
+        Collections.sort(expected);
+        Collections.sort(res);
+        assertEquals(expected, res);
+    }
+
+    private static Map<String,List<String>> createMap(FileObject root, String pathIn) throws IOException {
+        final Map<String,List<String>> result = new HashMap<>();
+        try (ZipFile zf = new ZipFile(FileUtil.toFile(root))) {
+            final Enumeration<? extends ZipEntry> entries = zf.entries();
+            while (entries.hasMoreElements()) {
+                final ZipEntry e = entries.nextElement();
+                if (e.isDirectory()) {
+                    continue;
+                }
+                String name = e.getName();
+                if (pathIn != null) {
+                    if(!name.startsWith(pathIn)) {
+                        continue;
+                    } else {
+                        name = name.substring(pathIn.length());
+                    }
+                }
+                final String[] names = FileObjects.getFolderAndBaseName(name, '/');    //NOI18N
+                if (JavaFileObject.Kind.CLASS.equals(FileObjects.getKind(FileObjects.getExtension(names[1])))) {
+                    List<String> c = result.get(names[0]);
+                    if (c == null) {
+                        result.put(names[0],c = new ArrayList<>());
+                    }
+                    c.add(names[1]);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static List<String> asList(Iterable<? extends JavaFileObject> it) {
+        final List<String> res = new ArrayList<>();
+        for (JavaFileObject fo : it) {
+            res.add(fo.getName());
+        }
+        return res;
     }
 }
