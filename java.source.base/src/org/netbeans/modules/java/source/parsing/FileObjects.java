@@ -1511,7 +1511,11 @@ public class FileObjects {
 
         @Override
         public InputStream openInputStream() throws IOException {
-            return new BufferedInputStream (this.zipFile.getInputStream(new ZipEntry (this.resName)));
+            final InputStream zin = this.zipFile.getInputStream(new ZipEntry (this.resName));
+            if (zin == null) {
+                throw new IOException("Not found: " + this.resName);
+            }
+            return new BufferedInputStream (zin);
 	}
 
         @Override
