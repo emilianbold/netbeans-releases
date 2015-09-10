@@ -52,8 +52,12 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.Action;
-
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
@@ -64,6 +68,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Provides access to the main or currently selected project.
@@ -75,6 +80,8 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
     public static final String PROP_MAIN_PROJECT = "mainProject";   // NOI18N
 
     public static final String PROP_SELECTED_PROJECT = "selectedProject";   // NOI18N
+    
+    private static final RequestProcessor RP = new RequestProcessor(MainProjectManager.class);
 
     private static MainProjectManager mainProjectManager = new MainProjectManager ();
 
@@ -116,6 +123,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
             isMain = isMainProject;
         }
         if (isMain && lastSelectedProject != null &&
+            lastSelectedProject != current &&
             !isDependent(lastSelectedProject, current)) {
             // If there's a main project set, but the current project has no
             // dependency on it, return the current project.
@@ -125,6 +133,57 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
             return current;
         }
         //System.err.println("getMainProject() = "+currentProject);
+    }
+    
+    /** Can be safely called from AWT event queue */
+    Future<Project> getMainProjectLazy() {
+        final Project lastSelectedProject;
+        final Project current;
+        final boolean isMain;
+        synchronized (this) {
+            lastSelectedProject = lastSelectedProjectRef.get();
+            current = currentProject.get();
+            isMain = isMainProject;
+        }
+        if (isMain && lastSelectedProject != null &&
+            lastSelectedProject != current) {
+            return RP.submit(new Callable<Project>() {
+                @Override
+                public Project call() throws Exception {
+                    if (!isDependent(lastSelectedProject, current)) {
+                        // If there's a main project set, but the current project has no
+                        // dependency on it, return the current project.
+                        return lastSelectedProject;
+                    } else {
+                        return current;
+                    }
+                }
+            });
+        } else {
+            // Done future:
+            return new Future() {
+                @Override
+                public boolean cancel(boolean mayInterruptIfRunning) {
+                    return false;
+                }
+                @Override
+                public boolean isCancelled() {
+                    return false;
+                }
+                @Override
+                public boolean isDone() {
+                    return true;
+                }
+                @Override
+                public Object get() throws InterruptedException, ExecutionException {
+                    return current;
+                }
+                @Override
+                public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                    return current;
+                }
+            };
+        }
     }
 
     public @Override void perform(Project p) {

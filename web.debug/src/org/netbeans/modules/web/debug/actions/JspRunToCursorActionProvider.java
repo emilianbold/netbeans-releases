@@ -49,6 +49,9 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
@@ -60,14 +63,16 @@ import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.debug.Context;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
 import org.netbeans.modules.web.debug.util.Utils;
 import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 
 /**
 *
@@ -75,6 +80,8 @@ import org.openide.util.Lookup;
 */
 @Registration(actions={"runToCursor"}, activateForMIMETypes={"text/x-jsp"})
 public class JspRunToCursorActionProvider extends ActionsProviderSupport {
+    
+    private static final RequestProcessor RP = new RequestProcessor(JspRunToCursorActionProvider.class);
     
     private JspLineBreakpoint breakpoint;
         
@@ -85,7 +92,7 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
         EditorContextDispatcher.getDefault().addPropertyChangeListener("text/x-tag", listener);
         DebuggerManager.getDebuggerManager ().addDebuggerListener (listener);
 
-        setEnabled(ActionsManager.ACTION_RUN_TO_CURSOR, shouldBeEnabled());
+        setEnabledIfItShouldBe();
     }
     
     public Set getActions() {
@@ -112,16 +119,50 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
         }
     }
     
-    private boolean shouldBeEnabled () {
+    private Pair<Boolean, ? extends Callable<Boolean>> shouldBeEnabled () {
 
         if (!Utils.isJsp(Context.getCurrentFile())) {
-            return false;
+            return Pair.of(false, null);
         }
         
         // check if current project supports this action
-        Project p = MainProjectManager.getDefault ().getMainProject ();
+        Project p;
+        if (SwingUtilities.isEventDispatchThread()) {
+            final Future<Project> pl = MainProjectManager.getDefault ().getMainProjectLazy();
+            if (pl.isDone()) {
+                try {
+                    p = pl.get();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return Pair.of(false, null);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return Pair.of(false, null);
+                }
+            } else {
+                return Pair.of(null, new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        Project p = pl.get();
+                        if (p == null) {
+                            return false;
+                        } else {
+                            return isDebuggableProject(p);
+                        }
+                    }
+                });
+            }
+        } else {
+            p = MainProjectManager.getDefault ().getMainProject ();
+        }
         // XXX revisit - should perhaps check selection?
-        if (p == null) return false;
+        if (p == null) {
+            return Pair.of(false, null);
+        }
+        return Pair.of(isDebuggableProject(p), null);
+    }
+    
+    private static boolean isDebuggableProject(Project p) {
         ActionProvider actionProvider = (ActionProvider)p.getLookup ().lookup (ActionProvider.class);
         if (actionProvider == null) return false;
 
@@ -143,6 +184,32 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
                 ActionProvider.COMMAND_DEBUG, 
                 p.getLookup ()
             );
+    }
+    
+    private void setEnabledIfItShouldBe() {
+        Pair<Boolean, ? extends Callable<Boolean>> shouldBeEnabled = shouldBeEnabled();
+        if (shouldBeEnabled.first() != null) {
+            setEnabled (
+                ActionsManager.ACTION_RUN_TO_CURSOR,
+                shouldBeEnabled.first()
+            );
+        } else {
+            final Callable<Boolean> lazyEnable = shouldBeEnabled.second();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Boolean enabled = lazyEnable.call();
+                        setEnabled (
+                            ActionsManager.ACTION_RUN_TO_CURSOR,
+                            enabled
+                        );
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
     }
 
     private void createBreakpoint() {
@@ -172,10 +239,7 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
                 return;
             }
 
-            setEnabled (
-                ActionsManager.ACTION_RUN_TO_CURSOR,
-                shouldBeEnabled ()
-            );
+            setEnabledIfItShouldBe();
         }
         
         public void sessionRemoved (Session session) {
