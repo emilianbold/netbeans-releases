@@ -45,7 +45,9 @@ package org.netbeans.modules.java.source.parsing;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,7 +68,7 @@ public class CTSymArchive extends CachingArchive {
     private final File ctSym;
     private final String pathToRootInCtSym;
     private ZipFile zipFile;
-    private Set<String> pkgs;
+    private Map<String,Set<String>> pkgs;
 
     CTSymArchive(
         @NonNull final File archive,
@@ -81,7 +83,7 @@ public class CTSymArchive extends CachingArchive {
     @Override
     protected void beforeInit() throws IOException {
         zipFile = new ZipFile(ctSym);
-        pkgs = new HashSet<>();
+        pkgs = new HashMap<>();
         final Enumeration<? extends ZipEntry> entries = zipFile.entries();
         while (entries.hasMoreElements()) {
             final ZipEntry entry = entries.nextElement();
@@ -90,6 +92,7 @@ public class CTSymArchive extends CachingArchive {
             }
             final String name = entry.getName();
             String dirname;
+            String basename;
             if (pathToRootInCtSym != null) {
                 if (!name.startsWith(pathToRootInCtSym)) {
                     continue;
@@ -98,17 +101,23 @@ public class CTSymArchive extends CachingArchive {
                 dirname = i < pathToRootInCtSym.length() ?
                     "" :    //NOI18N
                     name.substring(pathToRootInCtSym.length(), i);
+                basename = name.substring(i+1);
             } else {
                 final int i = name.lastIndexOf(FileObjects.NBFS_SEPARATOR_CHAR);
                 dirname = i == -1 ? "" : name.substring(0, i);  //NOI18N
+                basename = name.substring(i+1);
             }
-            pkgs.add(dirname);
+            Set<String> content = pkgs.get(dirname);
+            if (content == null) {
+                pkgs.put(dirname, content = new HashSet<>());
+            }
+            content.add(basename);
         }
     }
 
     @Override
     protected short getFlags(@NonNull final String dirname) throws IOException {
-        boolean isPublic = pkgs.contains(dirname);
+        boolean isPublic = pkgs.containsKey(dirname);
         LOG.log(
             Level.FINE,
             "Package: {0} is public: {1}", //NOI18N
@@ -117,6 +126,18 @@ public class CTSymArchive extends CachingArchive {
                 isPublic
             });
         return (short) (isPublic ? 0 : 1);
+    }
+
+    @Override
+    protected boolean includes(int flags, String folder, String name) {
+        if (flags == 0) {
+            final Set<String> content = pkgs.get(folder);
+            return content == null ?
+                    false :
+                    content.contains(name);
+        } else {
+            return super.includes(flags, folder, name);
+        }
     }
 
     @Override
