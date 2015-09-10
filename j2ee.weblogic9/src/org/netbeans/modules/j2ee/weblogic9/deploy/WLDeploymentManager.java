@@ -174,6 +174,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private final WLSharedState mutableState;
 
+    private final WebLogicConfiguration config;
+
     private final boolean disconnected;
 
     /* GuardedBy("this") */
@@ -187,9 +189,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     /* GuardedBy("this") */
     private WLConnectionSupport connectionSupport;
-
-    /* GuardedBy("this") */
-    private WebLogicConfiguration config;
 
     /* GuardedBy("this") */
     private ServerLogManager logManager;
@@ -216,12 +215,10 @@ public class WLDeploymentManager implements DeploymentManager2 {
         this.port = port;
         this.disconnected = disconnected;
         this.mutableState = mutableState;
+        this.config = createConfiguration();
     }
 
-    public synchronized WebLogicConfiguration getCommonConfiguration() {
-        if (config == null) {
-            config = createConfiguration();
-        }
+    public WebLogicConfiguration getCommonConfiguration() {
         return config;
     }
 

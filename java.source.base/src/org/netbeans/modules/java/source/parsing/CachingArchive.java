@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 public class CachingArchive implements Archive, FileChangeListener {
-    
+
     private static final Logger LOGGER = Logger.getLogger(CachingArchive.class.getName());
 
     private final File archiveFile;
@@ -91,8 +91,8 @@ public class CachingArchive implements Archive, FileChangeListener {
     //@GuardedBy("this")
     private Map<String, Folder> folders; // = new HashMap<String, Folder>();
 
-        // Constructors ------------------------------------------------------------    
-    
+        // Constructors ------------------------------------------------------------
+
     /** Creates a new instance of archive from zip file */
     public CachingArchive(
             @NonNull final File archiveFile,
@@ -124,21 +124,21 @@ public class CachingArchive implements Archive, FileChangeListener {
 
         FileUtil.addFileChangeListener(this, FileUtil.normalizeFile(archiveFile));
     }
-        
+
     // Archive implementation --------------------------------------------------
-   
+
     /** Gets all files in given folder
      */
     @Override
     public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter ) throws IOException {
         Map<String, Folder> folders = doInit();
-        Folder files = folders.get( folderName );        
+        Folder files = folders.get( folderName );
         if (files == null) {
             return Collections.<JavaFileObject>emptyList();
         }
         else {
             assert !keepOpened || zipFile != null;
-            List<JavaFileObject> l = new ArrayList<JavaFileObject>(files.idx / files.delta);
+            List<JavaFileObject> l = new ArrayList<>(files.idx / files.delta);
             final Predicate<String> predicate = kinds == null ? new Tautology() : new HasKind(kinds);
             for (int i = 0; i < files.idx; i += files.delta){
                 final JavaFileObject fo = create(folderName, files, i, predicate);
@@ -148,13 +148,13 @@ public class CachingArchive implements Archive, FileChangeListener {
             }
             return l;
         }
-    }          
+    }
 
     @Override
     public JavaFileObject create (final String relativePath, final JavaFileFilterImplementation filter) {
         throw new UnsupportedOperationException("Write into archives not supported");   //NOI18N
     }
-        
+
     @Override
     public synchronized void clear () {
         folders = null;
@@ -164,7 +164,7 @@ public class CachingArchive implements Archive, FileChangeListener {
 
     @Override
     public JavaFileObject getFile(final @NonNull String name) {
-        Map<String, Folder> folders = doInit();        
+        Map<String, Folder> folders = doInit();
         final int index = name.lastIndexOf(FileObjects.NBFS_SEPARATOR_CHAR);
         String folder, sn;
         if (index<=0) {
@@ -206,6 +206,10 @@ public class CachingArchive implements Archive, FileChangeListener {
         return 0;
     }
 
+    protected boolean includes(final int flags, final String folder, final String name) {
+        return true;
+    }
+
     protected void afterInit(boolean success) throws IOException {
     }
 
@@ -217,7 +221,7 @@ public class CachingArchive implements Archive, FileChangeListener {
         return pathToRootInArchive;
     }
     // Private methods ---------------------------------------------------------
-    
+
     /*test*/ synchronized Map<String, Folder> doInit() {
         if (folders == null) {
             try {
@@ -236,8 +240,8 @@ public class CachingArchive implements Archive, FileChangeListener {
                 LOGGER.log(Level.FINE, null, e);
                 names = new byte[0];
                 nameOffset = 0;
-                folders = new HashMap<String, Folder>();
-                
+                folders = new HashMap<>();
+
                 if (zipFile != null) {
                     try {
                         zipFile.close();
@@ -269,13 +273,13 @@ public class CachingArchive implements Archive, FileChangeListener {
     "# {0} - the ZIP filename",
     "ERR_CorruptedZipFile=The ZIP file {0} is either corrupted, or is being built by an external process. Some entries may not be accessible"
     })
-    private Map<String,Folder> createMap(File file ) throws IOException {        
+    private Map<String,Folder> createMap(File file ) throws IOException {
         if (!file.canRead()) {
             return Collections.<String, Folder>emptyMap();
         }
         Map<String,Folder> map = null;
         if (!keepOpened) {
-            map = new HashMap<String,Folder>();
+            map = new HashMap<>();
             try {
                 Iterable<? extends FastJar.Entry> e = FastJar.list(file);
                 for (FastJar.Entry entry : e) {
@@ -299,9 +303,9 @@ public class CachingArchive implements Archive, FileChangeListener {
                 map = null;
                 Logger.getLogger(CachingArchive.class.getName()).log(Level.WARNING, "Fallback to ZipFile: {0}", file.getPath());       //NOI18N
             }
-        }            
+        }
         if (map == null) {
-            map = new HashMap<String,Folder>();
+            map = new HashMap<>();
             ZipFile zip = new ZipFile (file);
             try {
                 for ( Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements(); ) {
@@ -346,10 +350,10 @@ public class CachingArchive implements Archive, FileChangeListener {
                         map.put(dirname.intern(), fld);
                     }
 
-                    if ( basename != null ) {
+                    if ( basename != null && includes(fld.flags, dirname, basename)) {
                         fld.appendEntry(this, basename, entry.getTime(),-1);
                     }
-                }                    
+                }
             } finally {
                 if (keepOpened) {
                     this.zipFile = zip;
@@ -362,7 +366,7 @@ public class CachingArchive implements Archive, FileChangeListener {
                     }
                 }
             }
-        }            
+        }
         return map;
     }
 
@@ -409,8 +413,8 @@ public class CachingArchive implements Archive, FileChangeListener {
             }
         }
         return null;
-    }    
-            
+    }
+
     /*test*/ synchronized int putName(byte[] name) {
         int start = nameOffset;
 
@@ -433,7 +437,7 @@ public class CachingArchive implements Archive, FileChangeListener {
     public void fileDataCreated(FileEvent fe) {
         clear();
     }
-    
+
     @Override
     public void fileChanged(FileEvent fe) {
         clear();
@@ -545,5 +549,5 @@ public class CachingArchive implements Archive, FileChangeListener {
 
     }
 
-        
+
 }

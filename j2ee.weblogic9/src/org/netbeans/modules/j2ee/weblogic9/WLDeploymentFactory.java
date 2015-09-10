@@ -189,7 +189,9 @@ public class WLDeploymentFactory implements DeploymentFactory {
             String port = parts[4] != null ? parts[4].trim() : parts[4];
 
             dm = new WLDeploymentManager(uri, host, port, false, shared);
-            managerCache.put(props, dm);
+            if (dm.getCommonConfiguration() != null) {
+                managerCache.put(props, dm);
+            }
             return dm;
         }
     }
@@ -204,6 +206,10 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
         // TODO should we decorate it somehow ?
         WLDeploymentManager dm = (WLDeploymentManager) getDeploymentManager(uri, null, null);
+        if (dm.getCommonConfiguration() == null) {
+            LOGGER.log(Level.INFO, "Invalid WebLogic instance: {0}", uri);
+            return null;
+        }
         return dm;
     }
 
