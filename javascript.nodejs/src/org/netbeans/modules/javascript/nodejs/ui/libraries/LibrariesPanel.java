@@ -467,24 +467,16 @@ public class LibrariesPanel extends JPanel implements HelpCtx.Provider {
         }
     }
 
-    /** Logger of npm library usage. */
+    /** Logger of npm library UI usage. */
     private static final UsageLogger USAGE_LOGGER = new UsageLogger.Builder("org.netbeans.ui.metrics.javascript.nodejs")  // NOI18N
-            .message(LibrariesPanel.class, "USG_NPM_LIBRARY") // NOI18N
+            .message(LibrariesPanel.class, "USG_NPM_LIBRARY_EDIT") // NOI18N
             .create();
 
     /**
-     * Logs the used libraries.
+     * Logs the UI usage.
      */
     private void logLibraryUsage() {
-        for (DependenciesPanel dependencyPanel : dependencyPanels) {
-            Dependency.Type dependencyType = dependencyPanel.getDependencyType();
-            String type = dependencyType.name();
-            for (Dependency dependency : dependencyPanel.getSelectedDependencies()) {
-                String name = dependency.getName();
-                String version = dependency.getInstalledVersion();
-                USAGE_LOGGER.log(type, name, version);
-            }
-        }
+        USAGE_LOGGER.log();
     }
 
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.nodejs.ui.options;
 
@@ -84,7 +84,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-@OptionsPanelController.Keywords(keywords={"#KW.NodeJsOptionsPanel"}, location="Html5", tabTitle= "Node.js")
+@OptionsPanelController.Keywords(keywords = {"#KW.NodeJsOptionsPanel"}, location = "Html5", tabTitle = "Node.js")
 public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, HelpCtx.Provider {
 
     private static final Logger LOGGER = Logger.getLogger(NodeJsOptionsPanel.class.getName());
@@ -119,7 +119,9 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, 
         npmHintLabel.setText(Bundle.NodeJsOptionsPanel_npm_hint(NpmExecutable.NPM_NAME));
         expressHintLabel.setText(Bundle.NodeJsOptionsPanel_express_hint(ExpressExecutable.EXPRESS_NAME));
         nodePanelHolder.add(nodePanel, BorderLayout.CENTER);
-        liveEditCheckBox.addItemListener(new DefaultItemListener());
+        DefaultItemListener defaultItemListener = new DefaultItemListener();
+        stopAtFirstLineCheckBox.addItemListener(defaultItemListener);
+        liveEditCheckBox.addItemListener(defaultItemListener);
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         npmTextField.getDocument().addDocumentListener(defaultDocumentListener);
         expressTextField.getDocument().addDocumentListener(defaultDocumentListener);
@@ -160,6 +162,14 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, 
 
     public void setNodeSources(String nodeSources) {
         nodePanel.setNodeSources(nodeSources);
+    }
+
+    public boolean isStopAtFirstLine() {
+        return stopAtFirstLineCheckBox.isSelected();
+    }
+
+    public void setStopAtFirstLine(boolean stopAtFirstLine) {
+        stopAtFirstLineCheckBox.setSelected(stopAtFirstLine);
     }
 
     public boolean isLiveEdit() {
@@ -209,6 +219,9 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, 
     private void initComponents() {
 
         nodePanelHolder = new JPanel();
+        debuggingLabel = new JLabel();
+        debuggingSeparator = new JSeparator();
+        stopAtFirstLineCheckBox = new JCheckBox();
         liveEditCheckBox = new JCheckBox();
         liveEditInfo1Label = new JLabel();
         liveEditInfo2Label = new JLabel();
@@ -230,6 +243,10 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, 
         errorLabel = new JLabel();
 
         nodePanelHolder.setLayout(new BorderLayout());
+
+        Mnemonics.setLocalizedText(debuggingLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.debuggingLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(stopAtFirstLineCheckBox, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.stopAtFirstLineCheckBox.text")); // NOI18N
 
         Mnemonics.setLocalizedText(liveEditCheckBox, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.liveEditCheckBox.text")); // NOI18N
 
@@ -330,6 +347,10 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, 
                 .addComponent(npmSeparator))
             .addComponent(nodePanelHolder, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
+                .addComponent(debuggingLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(debuggingSeparator))
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(errorLabel)
                     .addComponent(liveEditCheckBox)
@@ -337,7 +358,8 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, 
                         .addGap(21, 21, 21)
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                             .addComponent(liveEditInfo2Label)
-                            .addComponent(liveEditInfo1Label))))
+                            .addComponent(liveEditInfo1Label)))
+                    .addComponent(stopAtFirstLineCheckBox))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -346,6 +368,12 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, 
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(nodePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                    .addComponent(debuggingLabel)
+                    .addComponent(debuggingSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(stopAtFirstLineCheckBox)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(liveEditCheckBox)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -442,6 +470,8 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, 
     }//GEN-LAST:event_expressInstallLabelMousePressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JLabel debuggingLabel;
+    private JSeparator debuggingSeparator;
     private JLabel errorLabel;
     private JButton expressBrowseButton;
     private JLabel expressHeaderLabel;
@@ -462,6 +492,7 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, 
     private JButton npmSearchButton;
     private JSeparator npmSeparator;
     private JTextField npmTextField;
+    private JCheckBox stopAtFirstLineCheckBox;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
