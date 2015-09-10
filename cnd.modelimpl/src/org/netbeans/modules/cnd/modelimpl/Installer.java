@@ -43,7 +43,10 @@
  */
 package org.netbeans.modules.cnd.modelimpl;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -58,12 +61,13 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public final class Installer {
-    private static final AtomicBoolean closed = new AtomicBoolean(false);
+    private static final AtomicBoolean CLOSED = new AtomicBoolean(false);
+    public static final Logger MODEL_LIFECYCLE_LOG = Logger.getLogger("org.netbeans.modules.cnd.modelimpl.Installer"); // NOI18N
 
     public static boolean isClosed() {
-        return closed.get();
+        return CLOSED.get();
     }
-    
+
     @OnStart
     public static final class Start implements Runnable {
 
@@ -71,25 +75,34 @@ public final class Installer {
         public void run() {
             CndUtils.assertNonUiThread();
             if (TraceFlags.TRACE_MODEL_STATE) {
-                System.err.println("=== Installer.Start");
+                Installer.MODEL_LIFECYCLE_LOG.log(Level.INFO, "=== Installer.Start"); // NOI18N
             }
             ModelSupport.instance().startup();
         }
     }
 
     @OnStop
-    public static final class Stop implements Runnable {
+    public static class Stop implements Runnable, Callable<Boolean> {
 
         @Override
         public void run() {
             CndUtils.assertNonUiThread();
-            closed.set(true);
             final Runnable runnable = new RunnableImpl();
             if (CndUtils.isStandalone() || CndUtils.isUnitTestMode() || !ModelSupport.instance().hasOpenedProjects()) {
                 runnable.run();
             } else {
                 ProgressUtils.showProgressDialogAndRun(runnable, NbBundle.getMessage(Installer.class, "CLOSE_PROJECT_DIALOG_MESSAGE")); //NOI18N
             }
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            if (TraceFlags.TRACE_MODEL_STATE) {
+                Installer.MODEL_LIFECYCLE_LOG.log(Level.INFO, "=== Installer.AskStop"); // NOI18N
+            }
+            CLOSED.set(true);
+            ModelSupport.instance().notifyClosing();
+            return true;
         }
 
         private static final class RunnableImpl implements Runnable/*, org.openide.util.Cancellable*/ {
@@ -100,16 +113,10 @@ public final class Installer {
             @Override
             public void run() {
                 if (TraceFlags.TRACE_MODEL_STATE) {
-                    System.err.println("=== Installer.Stop");
+                    Installer.MODEL_LIFECYCLE_LOG.log(Level.INFO, "=== Installer.Stop"); // NOI18N
                 }
                 ModelSupport.instance().shutdown();
-                
             }
-
-//            @Override
-            public boolean cancel() {
-                return true;
-            }            
         }
     }
 }

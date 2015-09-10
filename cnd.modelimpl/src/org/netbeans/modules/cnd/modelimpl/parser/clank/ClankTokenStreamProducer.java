@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Line2Offset;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -290,7 +292,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                       }
                       includedFile = inclFileOwner.prepareIncludedFile(aStartProject, path, ppHandler);
                       if (includedFile == null) {
-                        assert false : "something wrong when including " + path + " from " + curFile;
+                            final CsmModelState modelState = ModelImpl.instance().getState();
+                            if (modelState == CsmModelState.ON) {
+                                assert false : "something wrong when including " + path + " from " + curFile;
+                            }
                       }
                   } else {
                     APTUtils.LOG.log(Level.INFO, "invalid start project {0} when including {1} from {2}", new Object[] {aStartProject, path, curFile});
