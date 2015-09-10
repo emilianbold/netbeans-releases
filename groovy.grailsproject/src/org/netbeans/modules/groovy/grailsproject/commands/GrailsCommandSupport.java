@@ -375,10 +375,12 @@ public final class GrailsCommandSupport {
         }
 
         public void processLine(String line) {
-            if (!running && line.contains("Browse to http://")) {
+            if (!running && isReady(line)) {
                 running = true;
 
                 String urlString = line.substring(line.indexOf("http://"));
+                // grails 3 includes a few more words after the url, fetch url:
+                urlString = urlString.split("\\s+")[0];
 
                 URL url;
                 try {
@@ -403,6 +405,17 @@ public final class GrailsCommandSupport {
 
         public void close() {
             // noop
+        }
+ 	
+        private boolean isReady(String line) {            
+            if ( line.contains("Grails application running at http://") ) {
+                //grails 3
+                return true;
+            } else if ( line.contains("Browse to http://") ) {
+                //grails 2
+                return true;
+            }
+            return false;  
         }
     }
 
