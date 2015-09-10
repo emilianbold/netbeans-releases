@@ -47,6 +47,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankMacroDirective;
@@ -57,11 +58,11 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.util.CharSequences;
 
 /**
  *
@@ -251,7 +252,10 @@ public class ClankMacroUsagesProducer {
                       }
                       includedFile = inclFileOwner.prepareIncludedFile(aStartProject, path, ppHandler);
                       if (includedFile == null) {
-                        assert false : "something wrong when including " + path + " from " + curFile;
+                        final CsmModelState modelState = ModelImpl.instance().getState();
+                        if (modelState == CsmModelState.ON) {
+                            assert false : "something wrong when including " + path + " from " + curFile;
+                        }
                       }
                   } else {
                     APTUtils.LOG.log(Level.INFO, "invalid start project {0} when including {1} from {2}", new Object[] {aStartProject, path, curFile});
