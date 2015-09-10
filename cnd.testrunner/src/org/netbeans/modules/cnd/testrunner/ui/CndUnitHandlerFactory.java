@@ -166,11 +166,11 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         public void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
-            testcase.setTimeMillis(toMillis(matcher.group(1)));
-            testcase.setClassName(matcher.group(3));
+            Testcase testcase = new Testcase(getMatcher().group(2), CPP_UNIT, session);
+            testcase.setTimeMillis(toMillis(getMatcher().group(1)));
+            testcase.setClassName(getMatcher().group(3));
             testcase.setTrouble(new Trouble(false));
-            String message = matcher.group(4).replace("%BR%", "\n"); // NOI18N
+            String message = getMatcher().group(4).replace("%BR%", "\n"); // NOI18N
             testcase.getTrouble().setStackTrace(getStackTrace(message, "")); // NOI18N
             testcase.getTrouble().setComparisonFailure(getComparisonFailure(message));
 
@@ -211,11 +211,11 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         public void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
-            testcase.setTimeMillis(toMillis(matcher.group(1)));
-            testcase.setClassName(matcher.group(3));
+            Testcase testcase = new Testcase(getMatcher().group(2), CPP_UNIT, session);
+            testcase.setTimeMillis(toMillis(getMatcher().group(1)));
+            testcase.setClassName(getMatcher().group(3));
             testcase.setTrouble(new Trouble(true));
-            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4).replace("%BR%", "\n"), "")); // NOI18N
+            testcase.getTrouble().setStackTrace(getStackTrace(getMatcher().group(4).replace("%BR%", "\n"), "")); // NOI18N
             session.addTestCase(testcase);
 
             String errorMsg = errorMsg(session.incrementFailuresCount());
@@ -266,11 +266,11 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         public void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
+            Testcase testcase = new Testcase(getMatcher().group(2), CPP_UNIT, session);
             if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
                     session.getCurrentTestCase().getTrouble() != null)) {
-                testcase.setTimeMillis(toMillis(matcher.group(1)));
-                testcase.setClassName(matcher.group(3));
+                testcase.setTimeMillis(toMillis(getMatcher().group(1)));
+                testcase.setClassName(getMatcher().group(3));
                 session.addTestCase(testcase);
             }
         }
@@ -299,7 +299,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         public void updateUI( Manager manager, TestSession session) {
-            manager.displayReport(session, session.getReport(toMillis(matcher.group(1))));
+            manager.displayReport(session, session.getReport(toMillis(getMatcher().group(1))));
             manager.sessionFinished(session);
         }
     }
@@ -323,13 +323,13 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         public void updateUI( Manager manager, TestSession session) {
-            manager.displayOutput(session, matcher.group(1), true);
+            manager.displayOutput(session, getMatcher().group(1), true);
             manager.displayOutput(session, "", false);
         }
 
         @Override
         public List<String> getRecognizedOutput() {
-            return Collections.<String>singletonList(matcher.group(1));
+            return Collections.<String>singletonList(getMatcher().group(1));
         }
 
     }
@@ -348,7 +348,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
                 firstSuite = false;
                 manager.testStarted(session);
             }
-            String suiteName = matcher.group(1);
+            String suiteName = getMatcher().group(1);
             session.addSuite(new TestSuite(suiteName));
             manager.displaySuiteRunning(session, suiteName);
         }
@@ -380,9 +380,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         public void updateUI( Manager manager, TestSession session) {
-            Level level = Level.parse(matcher.group(1));
+            Level level = Level.parse(getMatcher().group(1));
             if (LOGGER.isLoggable(level))
-                LOGGER.log(level, matcher.group(2));
+                LOGGER.log(level, getMatcher().group(2));
         }
     }
 

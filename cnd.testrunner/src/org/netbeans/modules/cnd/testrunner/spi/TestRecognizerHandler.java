@@ -60,22 +60,17 @@ public abstract class TestRecognizerHandler {
     private static final Logger LOGGER = Logger.getLogger(TestRecognizerHandler.class.getName());
     
     protected final Pattern pattern;
-    protected Matcher matcher;
+    private Matcher matcher;
     protected String line;
     private final boolean performOutput;
 
     public TestRecognizerHandler(String regex) {
-        this(regex, false);
+        this(regex, true, false);
     }
 
-    public TestRecognizerHandler(String regex, boolean performOutput) {
-        // handle newline chars at the end -- see #143508
-        if (!regex.endsWith(".*")) { //NOI18N
-            regex += ".*";  //NOI18N
-        }
-        // see #151725
-        if (!regex.startsWith(".*") && !regex.startsWith("(.*)")) { //NOI18N
-            regex = ".*" + regex; //NOI18N
+    public TestRecognizerHandler(String regex, boolean wrapRegex, boolean performOutput) {
+        if (wrapRegex) {
+            regex = wrap(regex);
         }
         this.pattern = Pattern.compile(regex, Pattern.DOTALL);
         this.performOutput = performOutput;
@@ -86,15 +81,28 @@ public abstract class TestRecognizerHandler {
     }
 
     public final boolean matches(String line) {
-        return match(line).matches();
+        match(line);
+        return matchesImpl(line);
     }
-    
+
+    public Matcher getMatcher() {
+        return pattern.matcher(line);
+    }
+
+    /**
+     * Don't use directly. For compound handlers, which have to poll all
+     * underlying to decide if the line mathes or not
+     */
+    public boolean matchesImpl(String line) {
+        return matcher.matches();
+    }
+
     /**
      * <i>Package private for unit tests, otherwise don't use directly</i>.
      */
     public final Matcher match(String line) {
         this.line = line;
-        this.matcher = pattern.matcher(line);
+        this.matcher = getMatcher();
         return matcher;
     }
 
@@ -121,5 +129,19 @@ public abstract class TestRecognizerHandler {
             LOGGER.log(Level.WARNING, "Could not parse time, returning 0", nfe);
         }
         return 0;
+    }
+
+    protected static String wrap(String string) {
+        String regex = string;
+        // handle newline chars at the end -- see #143508
+        if (!regex.endsWith(".*")) { //NOI18N
+            regex += ".*";  //NOI18N
+        }
+        // see #151725
+        if (!regex.startsWith(".*") && !regex.startsWith("(.*)")) { //NOI18N
+            regex = ".*" + regex; //NOI18N
+        }
+
+        return regex;
     }
 }
