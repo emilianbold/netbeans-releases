@@ -48,9 +48,11 @@ import org.netbeans.lib.profiler.heap.Field;
 import org.netbeans.lib.profiler.heap.FieldValue;
 import org.netbeans.lib.profiler.heap.Instance;
 import org.netbeans.lib.profiler.heap.JavaClass;
+import org.netbeans.lib.profiler.heap.ObjectFieldValue;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.api.debugger.jpda.JPDAArrayType;
@@ -170,8 +172,21 @@ public class JavaClassImpl implements JavaClass {
 
     @Override
     public Object getValueOfStaticField(String name) {
-        // TODO
-        return Collections.EMPTY_LIST;
+        Iterator fIt = getStaticFieldValues().iterator();
+
+        while (fIt.hasNext()) {
+            FieldValue fieldValue = (FieldValue) fIt.next();
+
+            if (fieldValue.getField().getName().equals(name)) {
+                if (fieldValue instanceof ObjectFieldValue) {
+                    return ((ObjectFieldValue) fieldValue).getInstance();
+                } else {
+                    return fieldValue.getValue();
+                }
+            }
+        }
+
+        return null;
     }
 
     @Override
