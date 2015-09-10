@@ -221,6 +221,17 @@ public class ModelSupport implements PropertyChangeListener {
         return hasOpenedProjects.get();
     }
 
+    public void notifyClosing() {
+        if (!TraceFlags.USE_PARSER_API) {
+            DataObject.getRegistry().removeChangeListener(modifiedListener);
+            modifiedListener.clean();
+        }
+        ModelImpl model = theModel;
+        if (model != null) {
+            CsmCorePackageAccessor.get().notifyClosing(model);
+        }
+    }
+
     public void shutdown() {
         if (!TraceFlags.USE_PARSER_API) {
             DataObject.getRegistry().removeChangeListener(modifiedListener);
