@@ -90,6 +90,7 @@ public class DebuggerHeapFragmentWalker extends HeapFragmentWalker {
         if (activate) {
             view.requestActive();
         }
+        ((InstancesView) view).assureSubViewsVisible();
         return view;
     }
     

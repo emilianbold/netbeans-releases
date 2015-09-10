@@ -170,11 +170,20 @@ public class InstancesView extends TopComponent {
             hfwPanel = null;
         }
         this.hfw = hfw;
-        if (hfw == null) return ;
+        if (hfw == null) {
+            return ;
+        }
         hfwPanel = hfw.getInstancesController().getPanel();
         add(hfwPanel, "Center");
         revalidate();
         repaint();
+    }
+    
+    void assureSubViewsVisible() {
+        // Assure that the sub-views are visible:
+        hfw.getInstancesController().getInstancesListController().getPanel().setVisible(true);
+        hfw.getInstancesController().getFieldsBrowserController().getPanel().setVisible(true);
+        hfw.getInstancesController().getReferencesBrowserController().getPanel().setVisible(true);
     }
     
     public HeapFragmentWalker getCurrentFragmentWalker() {
