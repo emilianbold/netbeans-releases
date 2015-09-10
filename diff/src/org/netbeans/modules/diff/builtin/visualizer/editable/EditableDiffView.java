@@ -62,8 +62,6 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.AncestorListener;
-import javax.swing.event.AncestorEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
@@ -111,7 +109,7 @@ import org.openide.util.WeakListeners;
  * 
  * @author Maros Sandor
  */
-public class EditableDiffView extends DiffControllerImpl implements DiffView, DocumentListener, AncestorListener, PropertyChangeListener, PreferenceChangeListener, ChangeListener {
+public class EditableDiffView extends DiffControllerImpl implements DiffView, DocumentListener, PropertyChangeListener, PreferenceChangeListener, ChangeListener {
 
     private static final int INITIAL_DIVIDER_SIZE = 32;
     private static final String CONTENT_TYPE_PLAIN = "text/plain";
@@ -195,6 +193,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private final String name2;
     private boolean sourcesInitialized;
     private boolean viewAdded;
+    private boolean addedToHierarchy;
 
     public EditableDiffView (final StreamSource ss1, final StreamSource ss2) {
         this(ss1, ss2, false);
@@ -218,7 +217,21 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         actionsEnabled = ss2.isEditable();
         diffMarkprovider = new EditableDiffMarkProvider();        
 
-        view = new JPanel(new BorderLayout(0, 0));
+        view = new JPanel(new BorderLayout(0, 0)) {
+
+            @Override
+            public void addNotify () {
+                super.addNotify();
+                viewAdded();
+            }
+
+            @Override
+            public void removeNotify () {
+                viewRemoved();
+                super.removeNotify();
+            }
+            
+        };
         searchContainer = new JPanel();
         searchContainer.setLayout(new BoxLayout(searchContainer, BoxLayout.Y_AXIS));
         view.add(searchContainer, BorderLayout.PAGE_END);
@@ -381,8 +394,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (binaryDiff || canceled) {
             return;
         }
-        
-        view.addAncestorListener(this);
     }
 
     private void initializeTabPane (StreamSource ss1, StreamSource ss2) {
@@ -597,9 +608,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (modifiedDocument != null) modifiedDocument.removeDocumentListener(this);
     }
     
-    @Override
-    public void ancestorAdded(AncestorEvent event) {
+    private void viewAdded () {
         DiffModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        addedToHierarchy = true;
         if (sourcesInitialized) {
             addListeners();
             refreshDiff(50);
@@ -625,14 +636,16 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         editableDocument.addDocumentListener(this);
     }
 
-    @Override
-    public void ancestorRemoved(AncestorEvent event) {
+    private void viewRemoved () {
         viewAdded = false;
-        if (sourcesInitialized) {
+        if (addedToHierarchy) {
+            addedToHierarchy = false;
             DiffModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
-            removeDocumentListeners();
-            if (editableCookie != null) {
-                editableCookie.removePropertyChangeListener(this);
+            if (sourcesInitialized) {
+                removeDocumentListeners();
+                if (editableCookie != null) {
+                    editableCookie.removePropertyChangeListener(this);
+                }
             }
         }
     }
@@ -642,10 +655,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         initColors();
         diffChanged();  // trigger re-calculation of hightlights in case diff stays the same
         refreshDiff(20);
-    }
-    
-    @Override
-    public void ancestorMoved(AncestorEvent event) {
     }
 
     @Override
