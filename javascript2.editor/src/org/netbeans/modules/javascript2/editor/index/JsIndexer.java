@@ -58,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.editor.parser.SanitizingParser;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -234,6 +235,9 @@ public class JsIndexer extends EmbeddingIndexer {
         }
 
         private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
+            if ((snapshot.getText().length() > SanitizingParser.MAX_FILE_SIZE_TO_PARSE) && !SanitizingParser.PARSE_BIG_FILES) {
+                return false;
+            }
             return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(snapshot.getMimeType());
         }
 

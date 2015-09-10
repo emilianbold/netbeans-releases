@@ -857,7 +857,13 @@ public class ProfileSupport {
                     }
                 }
             } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                LOG.log(
+                        Level.INFO,
+                        "Cannot read class: {0}, reason: {1}",  //NOI18N
+                        new Object[]{
+                            sb,
+                            ioe.getMessage()
+                        });
             }
             return res;
         }
