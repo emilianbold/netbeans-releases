@@ -89,6 +89,7 @@ import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.javascript.v8debug.api.Connector;
+import org.netbeans.modules.javascript.v8debug.api.DebuggerOptions;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.modules.web.common.api.Version;
@@ -113,7 +114,8 @@ public class NodeExecutable {
 
     private static final String IO_NAME;
 
-    private static final String DEBUG_COMMAND = "--debug-brk=%d"; // NOI18N
+    private static final String DEBUG_BRK_COMMAND = "--debug-brk=%d"; // NOI18N
+    private static final String DEBUG_COMMAND = "--debug=%d"; // NOI18N
     private static final String VERSION_PARAM = "--version"; // NOI18N
 
     // versions of node executables
@@ -362,9 +364,16 @@ public class NodeExecutable {
 
     private List<String> getDebugParams(int port, File script, String args) {
         List<String> params = new ArrayList<>();
-        params.add(String.format(DEBUG_COMMAND, port));
+        params.add(String.format(getDebugCommand(), port));
         params.addAll(getScriptArgsParams(script, args));
         return getParams(params);
+    }
+
+    private String getDebugCommand() {
+        if (DebuggerOptions.getInstance().isBreakAtFirstLine()) {
+            return DEBUG_BRK_COMMAND;
+        }
+        return DEBUG_COMMAND;
     }
 
     private List<String> getVersionParams() {

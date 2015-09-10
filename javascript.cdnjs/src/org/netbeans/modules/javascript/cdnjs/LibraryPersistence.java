@@ -219,19 +219,22 @@ public final class LibraryPersistence {
 
     /** Logger of CDNJS libraries usage. */
     private static final UsageLogger USAGE_LOGGER = new UsageLogger.Builder("org.netbeans.ui.metrics.javascript.cdnjs")  // NOI18N
-            .message(LibraryPersistence.class, "USG_CDNJS_LIBRARY") // NOI18N
+            .firstMessageOnly(false)
             .create();
 
     /**
      * Logs the used libraries.
-     * 
-     * @param libraries used libraries. 
+     *
+     * @param libraries used libraries.
      */
     private static void logLibraryUsage(Library.Version[] libraries) {
+        // ui usage
+        USAGE_LOGGER.log(LibraryPersistence.class, "USG_CDNJS_LIBRARY_EDIT"); // NOI18N
+        // libraries
         for (Library.Version library : libraries) {
             String version = library.getName();
             String name = library.getLibrary().getName();
-            USAGE_LOGGER.log(name, version);
+            USAGE_LOGGER.log(LibraryPersistence.class, "USG_CDNJS_LIBRARY", name, version); // NOI18N
         }
     }
 
