@@ -69,7 +69,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
     private static Preferences SYSTEM_ROOT;
     private ThreadLocal<Boolean> localThread = new ThreadLocal<Boolean>();
     private ArrayList<String> keyEntries = new ArrayList<String>();
-    private HashMap<String, ArrayList<String>> cachedKeyValues = new HashMap<String, ArrayList<String>>();
+    /*private*/ HashMap<String, ArrayList<String>> cachedKeyValues = new HashMap<String, ArrayList<String>>();
     
     /*private*/EditableProperties properties;
     /*private*/FileStorage fileStorage;
@@ -191,6 +191,11 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
                 }
             } else {
                 cachedValues.add(value);
+                // The last 100 values added to cache should make it safe to handle any
+                // delayed file change event that would set an old value to some property
+                if(cachedValues.size() > 1000) {
+                    cachedValues.subList(0, 900).clear();
+                }
                 cachedKeyValues.put(key, cachedValues);
             }
             super.put(key, value);

@@ -46,6 +46,7 @@ package org.netbeans.core.startup.preferences;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeEvent;
@@ -484,6 +485,29 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         pref.sync();
         assertEquals("value", pref.get("key", null));
     }  
+    
+    public void testClearCache_248538() throws BackingStoreException {
+        NbPreferences pref = (NbPreferences) getPreferencesNode();
+        assertNotNull(pref);
+        for (int i = 0; i < 10000; i++) {
+            pref.put("key", "value-".concat(Integer.toString(i)));
+        }
+        // cache should only contain values [9000 - 9999]
+        assertEquals(1000, getCachedKeyValuesSize(pref, "key"));
+        
+        pref.put("key", "value-10000");
+        // cache should only contain values [9900 - 10000]
+        assertEquals(101, getCachedKeyValuesSize(pref, "key"));
+        
+        pref.flush();
+        // cache should be cleared
+        assertEquals(-1, getCachedKeyValuesSize(pref, "key"));
+    }
+    
+    private int getCachedKeyValuesSize(NbPreferences pref, String key) {
+        ArrayList<String> values = pref.cachedKeyValues.get(key);
+        return values == null ? -1 : values.size();
+    }
     
     public void testUnsavedChangesDropped () throws Exception {
         NbPreferences pref = (NbPreferences) getPreferencesNode();
