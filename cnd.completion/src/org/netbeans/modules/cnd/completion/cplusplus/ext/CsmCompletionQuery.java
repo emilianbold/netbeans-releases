@@ -126,6 +126,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
@@ -1120,7 +1121,8 @@ abstract public class CsmCompletionQuery {
     }
 
     private static CsmType getOverloadedOperatorReturnType(CsmType type, CsmFile contextFile, int offset, CsmFunction.OperatorKind operator, int level) {
-        if (type == null || type.isPointer() || type.getArrayDepth() > 0) {
+        // Note: in case of performance issues merge isPointer() and getClassifier() calls into one
+        if (type == null || type.getArrayDepth() > 0 || isPointer(type)) {
             return null;
         }
         CsmType opType = null;
