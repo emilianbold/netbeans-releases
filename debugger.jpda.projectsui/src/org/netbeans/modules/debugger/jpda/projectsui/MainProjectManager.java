@@ -117,6 +117,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
             isMain = isMainProject;
         }
         if (isMain && lastSelectedProject != null &&
+            lastSelectedProject != current &&
             !isDependent(lastSelectedProject, current)) {
             // If there's a main project set, but the current project has no
             // dependency on it, return the current project.
