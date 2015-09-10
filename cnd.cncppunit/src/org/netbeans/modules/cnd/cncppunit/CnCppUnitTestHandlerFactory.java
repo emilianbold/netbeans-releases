@@ -177,13 +177,13 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
         class CppUnitTestFinishedHandler extends StartEndHandler {
 
             public CppUnitTestFinishedHandler() {
-                super("(?<suite>.*)::(?<test>.+)", ".* : OK");
+                super("(?<suite>.*)::(?<test>.+)", ".* : OK"); //NOI18N
             }
 
             @Override
             public void updateUI(Manager manager, TestSession session) {
 
-                String suiteName = getMatcher().group("suite");
+                String suiteName = getMatcher().group("suite"); //NOI18N
 
                 final TestSuite currentSuite = session.getCurrentSuite();
                 if (currentSuite == null) {
@@ -203,7 +203,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
                 }
                 currentSuiteName = suiteName;
 
-                Testcase testcase = new Testcase(getMatcher().group("test"), CPP_UNIT, session);
+                Testcase testcase = new Testcase(getMatcher().group("test"), CPP_UNIT, session); //NOI18N
                 if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
                         session.getCurrentTestCase().getTrouble() != null)) {
                     testcase.setTimeMillis(0);
@@ -222,7 +222,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
             @Override
             public void updateUI( Manager manager, TestSession session) {
 
-                String suiteName = getMatcher().group("suite");
+                String suiteName = getMatcher().group("suite"); //NOI18N
 
                 final TestSuite currentSuite = session.getCurrentSuite();
                 if (currentSuite == null) {
@@ -241,7 +241,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
                 }
                 currentSuiteName = suiteName;
 
-                Testcase testcase = new Testcase(getMatcher().group("test"), CPP_UNIT, session);
+                Testcase testcase = new Testcase(getMatcher().group("test"), CPP_UNIT, session); //NOI18N
                 testcase.setTimeMillis(0);
                 testcase.setClassName(suiteName);
 
