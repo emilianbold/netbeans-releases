@@ -206,6 +206,10 @@ public class CachingArchive implements Archive, FileChangeListener {
         return 0;
     }
 
+    protected boolean includes(final int flags, final String folder, final String name) {
+        return true;
+    }
+
     protected void afterInit(boolean success) throws IOException {
     }
 
@@ -346,7 +350,7 @@ public class CachingArchive implements Archive, FileChangeListener {
                         map.put(dirname.intern(), fld);
                     }
 
-                    if ( basename != null ) {
+                    if ( basename != null && includes(fld.flags, dirname, basename)) {
                         fld.appendEntry(this, basename, entry.getTime(),-1);
                     }
                 }
