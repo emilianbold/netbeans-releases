@@ -260,7 +260,7 @@ public class RevertModificationsAction extends ContextAction {
                         FileInformation fi = cache.getStatus(f);
                         if (fi.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
                             ISVNStatus entry = fi.getEntry(f);
-                            if (entry.isCopied()) {
+                            if (entry != null && entry.isCopied()) {
                                 // file exists but it's status is set to deleted
                                 File temporary = FileUtils.generateTemporaryFile(f.getParentFile(), f.getName());
                                 try {
