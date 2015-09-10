@@ -108,4 +108,8 @@ public class OverloadedOperatorTestCase extends CompletionBaseTestCase {
     public void testInstantiationOverloadedArrowArrayOnC() throws Exception {
         performTest("file.cc", 15, 5, "c[1]->");
     }       
+    
+    public void testBug254273() throws Exception {
+        performTest("bug254273.cpp", 19, 9, "ccc->");
+    }
 }
