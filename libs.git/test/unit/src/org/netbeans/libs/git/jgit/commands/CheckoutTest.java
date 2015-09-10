@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -774,6 +775,42 @@ public class CheckoutTest extends AbstractGitTestCase {
         assertEquals(e1.getObjectId(), repository.readDirCache().getEntry("f").getObjectId());
         res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
         assertEquals(0, res.size());
+    }
+    
+    public void testCheckoutAfterUnresolvedMerge () throws Exception {
+        File file = new File(workDir, "file");
+        write(file, "initial");
+        File[] files = new File[] { file };
+        add(files);
+        GitClient client = getClient(workDir);
+        GitRevisionInfo info = client.commit(files, "initial", null, null, NULL_PROGRESS_MONITOR);
+        client.createBranch(BRANCH, info.getRevision(), NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(BRANCH, true, NULL_PROGRESS_MONITOR);
+        
+        write(file, BRANCH);
+        add(file);
+        client.commit(files, BRANCH, null, null, NULL_PROGRESS_MONITOR);
+        
+        client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
+        write(file, "master change");
+        add(file);
+        client.commit(files, "master commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        client.merge(BRANCH, NULL_PROGRESS_MONITOR);
+        
+        try {
+            client.checkoutRevision(BRANCH, true, NULL_PROGRESS_MONITOR);
+            fail("Should fail, there are conflicts");
+        } catch (GitException.CheckoutConflictException ex) {
+            // ok
+        }
+        
+        try {
+            client.checkoutRevision(BRANCH, false, NULL_PROGRESS_MONITOR);
+            fail("Should fail, there are conflicts");
+        } catch (GitException ex) {
+            assertEquals(ex.getMessage(), MessageFormat.format(Utils.getBundle(GitCommand.class).getString("MSG_Error_CannotCheckoutHasConflicts"), workDir));
+        }
     }
 
     private void unpack (String filename) throws IOException {

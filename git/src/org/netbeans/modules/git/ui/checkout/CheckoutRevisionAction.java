@@ -75,13 +75,16 @@ public class CheckoutRevisionAction extends AbstractCheckoutAction {
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
-        checkoutRevision(repository, info.getActiveBranch().getName().equals(GitBranch.NO_BRANCH) ? GitUtils.HEAD : info.getActiveBranch().getName());
+        if (canCheckout(info)) {
+            checkoutRevision(repository, info.getActiveBranch().getName().equals(GitBranch.NO_BRANCH) ? GitUtils.HEAD : info.getActiveBranch().getName());
+        }
     }
 
     public void checkoutRevision (final File repository, String preselectedRevision) {
         checkoutRevision(repository, new CheckoutRevision(repository, RepositoryInfo.getInstance(repository), preselectedRevision), "LBL_CheckoutRevisionAction.progressName", //NOI18N
                 new HelpCtx(CheckoutRevisionAction.class));
     }
+
     
     private static class CheckoutRevision extends AbstractCheckoutRevision {
 

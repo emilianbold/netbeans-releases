@@ -58,7 +58,6 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.LifecycleManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -74,7 +73,9 @@ public class SwitchBranchAction extends AbstractCheckoutAction {
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
-        checkoutRevision(repository, info.getActiveBranch().getName().equals(GitBranch.NO_BRANCH) ? GitUtils.HEAD : info.getActiveBranch().getName());
+        if (canCheckout(info)) {
+            checkoutRevision(repository, info.getActiveBranch().getName().equals(GitBranch.NO_BRANCH) ? GitUtils.HEAD : info.getActiveBranch().getName());
+        }
     }
 
     public void checkoutRevision (final File repository, String preselectedRevision) {
