@@ -43,9 +43,11 @@ package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.AbstractList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.ClankPreprocessorServices;
@@ -332,7 +334,7 @@ public class ClankDriverImpl {
         return includeHandler.getInclStackIndex();
     }
 
-    public static final class ArrayBasedAPTTokenStream implements APTTokenStream, TokenStream {
+    public static final class ArrayBasedAPTTokenStream extends AbstractList<APTToken> implements APTTokenStream, TokenStream {
 
         private int index;
         private final int lastIndex;
@@ -354,8 +356,28 @@ public class ClankDriverImpl {
         }
 
         @Override
+        public APTToken get(int index) {
+            return tokens[index];
+        }
+        
+        public List<APTToken> toList() {
+            return this;
+        }
+
+        @Override
+        public int size() {
+            if (tokens.length == 0) {
+                return 0;
+            } else if (tokens[tokens.length-1] == APTUtils.EOF_TOKEN) {
+                return tokens.length-1;
+            } else {
+                return tokens.length ;
+            }
+        }
+
+        @Override
         public String toString() {
             return APTUtils.debugString(new ArrayBasedAPTTokenStream(tokens)).toString();
         }
-    }
+    }    
 }
