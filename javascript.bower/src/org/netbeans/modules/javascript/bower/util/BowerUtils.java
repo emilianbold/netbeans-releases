@@ -51,6 +51,10 @@ public final class BowerUtils {
     private static final UsageLogger BOWER_INSTALL_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
             .message(BowerUtils.class, "USG_BOWER_INSTALL") // NOI18N
             .create();
+    private static final UsageLogger BOWER_LIBRARY_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
+            .message(BowerUtils.class, "USG_BOWER_LIBRARY") // NOI18N
+            .firstMessageOnly(false)
+            .create();
 
 
     private BowerUtils() {
@@ -58,6 +62,10 @@ public final class BowerUtils {
 
     public static void logUsageBowerInstall() {
         BOWER_INSTALL_USAGE_LOGGER.log();
+    }
+
+    public static void logUsageBowerLibrary(String type, String name, String version) {
+        BOWER_LIBRARY_USAGE_LOGGER.log(type, name, version);
     }
 
     public static String getProjectDisplayName(Project project) {
