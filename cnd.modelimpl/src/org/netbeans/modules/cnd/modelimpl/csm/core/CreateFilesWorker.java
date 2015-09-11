@@ -46,7 +46,7 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -199,8 +199,7 @@ final class CreateFilesWorker {
             if (failureDetected.get()) {
                 return false;
             }
-            final CsmModelState modelState = ModelImpl.instance().getState();
-            if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+            if (!CsmModelAccessor.isModelAlive()) {
                 if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
                     System.err.printf("createProjectFilesIfNeedRun: %s file [%s] is interrupted on closing model%n", nativeFileItem.getAbsolutePath(), project.getName());
                 }

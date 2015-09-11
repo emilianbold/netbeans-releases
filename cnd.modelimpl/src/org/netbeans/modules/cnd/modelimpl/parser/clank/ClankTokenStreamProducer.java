@@ -50,9 +50,8 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankMacroDirective;
@@ -72,7 +71,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Line2Offset;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -292,8 +290,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                       }
                       includedFile = inclFileOwner.prepareIncludedFile(aStartProject, path, ppHandler);
                       if (includedFile == null) {
-                            final CsmModelState modelState = ModelImpl.instance().getState();
-                            if (modelState == CsmModelState.ON) {
+                            if (CsmModelAccessor.isModelAlive()) {
                                 assert false : "something wrong when including " + path + " from " + curFile;
                             }
                       }
@@ -328,7 +325,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 if (includedFile != null) {
                   curFiles.add(includedFile);
                 } else {
-                  assert false : "something wrong when including " + enteredTo.getFilePath() + " from " + curFile;
+                    if (CsmModelAccessor.isModelAlive()) {
+                        assert false : "something wrong when including " + enteredTo.getFilePath() + " from " + curFile;
+                    }
                   curFiles.add(curFile);
                 }
               }
@@ -575,7 +574,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         boolean system = ppDirective.isAngled();
         boolean broken = (resolvedPath == null);
         FileImpl includedFile = (FileImpl) ppDirective.getAnnotation();
-        assert (includedFile == null) == broken : "broken " + broken + " vs. " + includedFile;
+        if ((includedFile == null) != broken) {
+            if (CsmModelAccessor.isModelAlive()) {
+                assert false : "broken " + broken + " vs. " + includedFile;
+            }
+        }
         int startOffset = ppDirective.getDirectiveStartOffset();
         int endOffset = ppDirective.getDirectiveEndOffset();
         //boolean hasRecursiveInclude = curFile.equals(includedFile);

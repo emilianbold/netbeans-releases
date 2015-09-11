@@ -1742,8 +1742,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (isDisposing() || startProject.isDisposing()) {
             return null;
         }
-        final CsmModelState modelState = ModelImpl.instance().getState();
-        if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+        if (!CsmModelAccessor.isModelAlive()) {
             if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
                 System.err.printf("prepareIncludedFile: %s file [%s] is interrupted on closing model%n", file, this.getName());
             }
