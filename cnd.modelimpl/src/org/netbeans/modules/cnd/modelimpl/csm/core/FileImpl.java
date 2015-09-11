@@ -1473,11 +1473,12 @@ public final class FileImpl implements CsmFile,
         if (cacheTokens) {
             TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsingAndTokenStreamCaching(parseParams.triggerParsingActivity);
             TokenStream ts = parseParams.tsp.getTokenStream(tsParams, interrupter);
+            List<APTToken> tokenList = APTUtils.toList(ts);
             pcState = parseParams.tsp.release();
             assertParamsReadyForCache(tsParams);
             APTLanguageFilter languageFilter = APTLanguageSupport.getInstance().getFilter(parseParams.getLanguage(), parseParams.getLanguageFlavor());
             FileTokenStreamCache cache = getTokenStreamCache();            
-            filteredTokenStream = cache.cacheTokensAndReturnFiltered(pcState, APTUtils.toList(ts), languageFilter);
+            filteredTokenStream = cache.cacheTokensAndReturnFiltered(pcState, tokenList, languageFilter);
         } else {
             TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsing(parseParams.triggerParsingActivity);
             filteredTokenStream = parseParams.tsp.getTokenStream(tsParams, interrupter);
