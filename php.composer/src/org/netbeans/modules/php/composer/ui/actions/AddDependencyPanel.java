@@ -68,6 +68,7 @@ import org.netbeans.modules.php.composer.commands.Composer;
 import org.netbeans.modules.php.composer.output.model.ComposerPackage;
 import org.netbeans.modules.php.composer.ui.DependenciesPanel;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
+import org.netbeans.modules.php.composer.util.ComposerUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -288,6 +289,7 @@ final class AddDependencyPanel extends JPanel {
             public void run() {
                 assert EventQueue.isDispatchThread();
                 assert phpModule != null;
+                ComposerUtils.logUsageComposerRequire();
                 composer.require(phpModule, composerPackage.asFullPackage());
             }
         });
@@ -305,11 +307,11 @@ final class AddDependencyPanel extends JPanel {
             public void run() {
                 assert EventQueue.isDispatchThread();
                 assert phpModule != null;
+                ComposerUtils.logUsageComposerRequire();
                 composer.requireDev(phpModule, composerPackage.asFullPackage());
             }
         });
     }//GEN-LAST:event_requireDevButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JPanel innerPanel;

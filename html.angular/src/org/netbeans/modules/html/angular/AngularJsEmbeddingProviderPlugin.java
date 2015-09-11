@@ -660,7 +660,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         String[] conditionParts = part.trim().split(":");
                         if (conditionParts.length > 1 && !conditionParts[0].contains("?")) { //ignore if ternary operator is present (issue #251057)
                             String propName = conditionParts[1].trim();
-                            if (!propName.startsWith("//")) {
+                            if (!propName.isEmpty() && !propName.startsWith("//")) {
                                 int position = lastPartPos + part.indexOf(propName) + oneTimeBindingShift + 1;
                                 if (propName.charAt(0) == '"' || propName.charAt(0) == '\'') {
                                     propName = propName.substring(1);

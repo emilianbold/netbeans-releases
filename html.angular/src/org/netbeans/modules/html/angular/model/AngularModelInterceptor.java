@@ -43,6 +43,7 @@ package org.netbeans.modules.html.angular.model;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -82,25 +84,34 @@ public class AngularModelInterceptor implements ModelInterceptor {
         InputStream is = getClass().getClassLoader().getResourceAsStream(
                 "org/netbeans/modules/html/angular/model/resources/angular-1.3.6.model"); // NOI18N
         try {
-            JsObject angularObject = factory.loadGlobalObject(
+            final JsObject angularObject = factory.loadGlobalObject(
                     is, Bundle.LBL_Angular(), new URL("https://docs.angularjs.org/api/ng")); // NOI18N
 
-            long start = System.currentTimeMillis();
-            ProgressHandle progress = ProgressHandle.createHandle(Bundle.LBL_DocumentationDownload());
-            progress.start(angularObject.getProperty("angular").getProperties().entrySet().size());
-            int loaded = 0;
-            for (Entry<String, ? extends JsObject> prop : angularObject.getProperty("angular").getProperties().entrySet()) { // NOI18N
-                AngularDoc.FunctionDocUrl fdoc = new AngularDoc.FunctionDocUrl(prop.getValue().getFullyQualifiedName());
-                String docContent = AngularDoc.getDefault().getFunctionDocumentation(fdoc);
-                if (docContent != null) {
-                    prop.getValue().setDocumentation(Documentation.create(docContent, new URL(fdoc.getDocumentationUrl())));
-                }
-                progress.progress(++loaded);
-            }
-            progress.finish();
-            long end = System.currentTimeMillis();
-            LOGGER.log(Level.FINE, "Loading of AngularJS documentation took: {0} ms.", (end - start)); //NOI18N
+            RequestProcessor.getDefault().execute(new Runnable() {
 
+                @Override
+                public void run() {
+                    long start = System.currentTimeMillis();
+                    ProgressHandle progress = ProgressHandle.createHandle(Bundle.LBL_DocumentationDownload());
+                    progress.start(angularObject.getProperty("angular").getProperties().entrySet().size());
+                    int loaded = 0;
+                    try {
+                        for (Entry<String, ? extends JsObject> prop : angularObject.getProperty("angular").getProperties().entrySet()) { // NOI18N
+                            AngularDoc.FunctionDocUrl fdoc = new AngularDoc.FunctionDocUrl(prop.getValue().getFullyQualifiedName());
+                            String docContent = AngularDoc.getDefault().getFunctionDocumentation(fdoc);
+                            if (docContent != null) {
+                                    prop.getValue().setDocumentation(Documentation.create(docContent, new URL(fdoc.getDocumentationUrl())));
+                            }
+                            progress.progress(++loaded);
+                        }
+                    } catch (MalformedURLException ex) {
+                        LOGGER.log(Level.WARNING, null, ex);
+                    }
+                    progress.finish();
+                    long end = System.currentTimeMillis();
+                    LOGGER.log(Level.FINE, "Loading of AngularJS documentation took: {0} ms.", (end - start)); //NOI18N
+                }
+            });
             return Collections.<JsObject>singleton(angularObject);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);

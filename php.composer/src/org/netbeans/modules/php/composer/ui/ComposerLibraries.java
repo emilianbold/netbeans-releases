@@ -49,17 +49,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.composer.commands.Composer;
 import org.netbeans.modules.php.composer.files.ComposerJson;
 import org.netbeans.modules.php.composer.files.ComposerLock;
+import org.netbeans.modules.php.composer.util.ComposerUtils;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
@@ -100,7 +98,6 @@ public final class ComposerLibraries {
 
     private static final class ComposerLibrariesNodeList implements NodeList<Node>, PropertyChangeListener {
 
-        private final Project project;
         private final ComposerJson composerJson;
         private final ComposerLock composerLock;
         private final ComposerLibrariesChildren composerLibrariesChildren;
@@ -112,8 +109,9 @@ public final class ComposerLibraries {
 
         ComposerLibrariesNodeList(Project project) {
             assert project != null;
-            this.project = project;
-            FileObject composerDirectory = findComposerJsonDirectory();
+            PhpModule phpModule = PhpModule.Factory.lookupPhpModule(project);
+            assert phpModule != null : "PHP module must be found in " + project.getClass().getName();
+            FileObject composerDirectory = ComposerUtils.getComposerWorkDir(phpModule);
             composerJson = new ComposerJson(composerDirectory);
             composerLock = new ComposerLock(composerDirectory);
             composerLibrariesChildren = new ComposerLibrariesChildren(composerJson, composerLock);
@@ -169,20 +167,6 @@ public final class ComposerLibraries {
         private void fireChange() {
             composerLibrariesChildren.refreshDependencies();
             changeSupport.fireChange();
-        }
-
-        private FileObject findComposerJsonDirectory() {
-            PhpModule phpModule = PhpModule.Factory.lookupPhpModule(project);
-            assert phpModule != null : project.getClass().getName();
-            try {
-                FileObject file = Composer.getDefault().getComposerJson(phpModule);
-                if (file != null) {
-                    return file.getParent();
-                }
-            } catch (InvalidPhpExecutableException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-            return phpModule.getProjectDirectory();
         }
 
     }
