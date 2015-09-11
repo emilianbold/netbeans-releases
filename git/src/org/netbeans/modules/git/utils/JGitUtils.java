@@ -45,9 +45,13 @@ package org.netbeans.modules.git.utils;
 import java.io.File;
 import java.io.IOException;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo.PushMode;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -72,6 +76,43 @@ public class JGitUtils {
 
     public static boolean isValidRefName (String refName) {
         return Repository.isValidRefName(refName);
+    }
+    
+    public static boolean isUserSetup (File root) {
+        Repository repository = getRepository(root);
+        boolean userExists = true;
+        if (repository != null) {
+            try {
+                StoredConfig config = repository.getConfig();
+                String name = config.getString("user", null, "name"); //NOI18N
+                String email = config.getString("user", null, "email"); //NOI18N
+                if (name == null || name.isEmpty() || email == null || email.isEmpty()) {
+                    userExists = false;
+                }
+            } finally {
+                repository.close();
+            }
+        }
+        return userExists;
+    }
+
+    public static void persistUser (File root, GitUser author) throws GitException {
+        Repository repository = getRepository(root);
+        if (repository != null) {
+            try {
+                StoredConfig config = repository.getConfig();
+                config.setString("user", null, "name", author.getName()); //NOI18N
+                config.setString("user", null, "email", author.getEmailAddress()); //NOI18N
+                try {
+                    config.save();
+                    FileUtil.refreshFor(new File(GitUtils.getGitFolderForRoot(root), "config"));
+                } catch (IOException ex) {
+                    throw new GitException(ex);
+                }
+            } finally {
+                repository.close();
+            }
+        }
     }
 
     private static Repository getRepository (File root) {
