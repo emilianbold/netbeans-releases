@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -122,7 +123,9 @@ public final class ProjectImpl extends ProjectBase {
             instance = null;
         }
         if (instance == null) {
-            instance = new ProjectImpl(model, platformProject, name);
+            if (CsmModelAccessor.isModelAlive()) {
+                instance = new ProjectImpl(model, platformProject, name);
+            }
         }
         return (ProjectImpl) instance;
     }

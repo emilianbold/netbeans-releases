@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
-import org.netbeans.modules.cnd.modelimpl.Installer;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -440,7 +439,7 @@ public class ModelSupport implements PropertyChangeListener {
             NamedRunnable task = new NamedRunnable(taskName) {
                 @Override
                 protected void runImpl() {
-                    if (Installer.isClosed()) {
+                    if (!CsmModelAccessor.isModelAlive()) {
                         return;
                     }
                     ProgressHandle handle = ProgressHandleFactory.createHandle(getName());

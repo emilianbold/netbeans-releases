@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -668,6 +669,9 @@ P/DEL     | P/DEL   | P/DEL   | P/DEL    | P/DEL    | P/DEL    | P/DEL    | P/DE
     private final class Worker implements Runnable {
         @Override
         public void run() {
+            if (!CsmModelAccessor.isModelAlive()) {
+                return;
+            }
             HashMap<String, CsmEvent> curEvents;
             synchronized (eventsLock) {
                 if (events.isEmpty()) {

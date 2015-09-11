@@ -61,13 +61,6 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public final class Installer {
-    private static final AtomicBoolean CLOSED = new AtomicBoolean(false);
-    public static final Logger MODEL_LIFECYCLE_LOG = Logger.getLogger("org.netbeans.modules.cnd.modelimpl.Installer"); // NOI18N
-
-    public static boolean isClosed() {
-        return CLOSED.get();
-    }
-
     @OnStart
     public static final class Start implements Runnable {
 
@@ -75,7 +68,7 @@ public final class Installer {
         public void run() {
             CndUtils.assertNonUiThread();
             if (TraceFlags.TRACE_MODEL_STATE) {
-                Installer.MODEL_LIFECYCLE_LOG.log(Level.INFO, "=== Installer.Start"); // NOI18N
+                System.err.println("=== Installer.Start"); // NOI18N
             }
             ModelSupport.instance().startup();
         }
@@ -98,9 +91,8 @@ public final class Installer {
         @Override
         public Boolean call() throws Exception {
             if (TraceFlags.TRACE_MODEL_STATE) {
-                Installer.MODEL_LIFECYCLE_LOG.log(Level.INFO, "=== Installer.AskStop"); // NOI18N
+                System.err.println("=== Installer.AskStop"); // NOI18N
             }
-            CLOSED.set(true);
             ModelSupport.instance().notifyClosing();
             return true;
         }
@@ -113,7 +105,7 @@ public final class Installer {
             @Override
             public void run() {
                 if (TraceFlags.TRACE_MODEL_STATE) {
-                    Installer.MODEL_LIFECYCLE_LOG.log(Level.INFO, "=== Installer.Stop"); // NOI18N
+                    System.err.println("=== Installer.Stop"); // NOI18N
                 }
                 ModelSupport.instance().shutdown();
             }

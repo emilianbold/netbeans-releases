@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -91,7 +90,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
@@ -639,8 +637,7 @@ public final class FileImpl implements CsmFile,
             if (inEnsureParsed.incrementAndGet() != 1) {
                 assert false : "concurrent ensureParsed in file " + getAbsolutePath() + parsingState + state;
             }
-            CsmModelState modelState = ModelImpl.instance().getState();
-            if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+            if (!CsmModelAccessor.isModelAlive()) {
                 if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
                     System.err.printf("ensureParsed: %s file is interrupted on closing model%n", this.getAbsolutePath());
                 }
@@ -799,8 +796,7 @@ public final class FileImpl implements CsmFile,
                 }
             }
             // check state at the end as well, because there could be interruption during parse of file
-            modelState = ModelImpl.instance().getState();
-            if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+            if (!CsmModelAccessor.isModelAlive()) {
                 if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
                     System.err.printf("after ensureParsed: %s file is interrupted on closing model%n", this.getAbsolutePath());
                 }
@@ -1881,8 +1877,7 @@ public final class FileImpl implements CsmFile,
                 // when IDE exists during ensureParsed, then file is left in
                 // INITIAL state which is not PARSED
                 // check such a case to prevent infinite loop of code model clients
-                CsmModelState modelState = ModelImpl.instance().getState();
-                if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+                if (!CsmModelAccessor.isModelAlive()) {
                     if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
                         System.err.printf("scheduleParsing: %s file is interrupted on closing model%n", this.getAbsolutePath());
                     }
