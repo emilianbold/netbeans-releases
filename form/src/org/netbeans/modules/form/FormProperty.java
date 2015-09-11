@@ -46,6 +46,8 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.lang.reflect.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.nodes.Node;
 
 /**
@@ -497,7 +499,9 @@ public abstract class FormProperty extends Node.Property {
 
                 lastRealValue = getTargetValue();
             }
-            catch (IllegalArgumentException e) {} // should not happen
+            catch (Exception e) {
+                Logger.getLogger(FormProperty.class.getName()).log(Level.INFO, "Failed to reset default value of property: "+getName(), e); // NOI18N
+            }
         }
 
         propertyValue = defValue;
