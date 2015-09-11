@@ -64,6 +64,7 @@ public class ReopenBrokenRepositoryComposite extends RepositoryValidationBase {
     protected void setUp() throws Exception {
         System.setProperty("cnd.repository.hardrefs", Boolean.TRUE.toString()); //NOI18N
         System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
+        System.setProperty("cnd.skip.err.check", Boolean.TRUE.toString()); //NOI18N
         super.setUp();
     }
 

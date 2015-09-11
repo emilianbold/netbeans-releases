@@ -46,6 +46,7 @@ public class RepositoryValidationFirstParse extends RepositoryValidationBase {
     protected @Override void setUp() throws Exception {
         System.setProperty("cnd.repository.hardrefs", Boolean.FALSE.toString()); //NOI18N
         System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
+        System.setProperty("cnd.skip.err.check", Boolean.TRUE.toString()); //NOI18N
         assertNotNull("This test can only be run from suite", RepositoryValidationGoldens.getGoldenDirectory()); //NOI18N
         System.setProperty(PROPERTY_GOLDEN_PATH, RepositoryValidationGoldens.getGoldenDirectory());
         super.setUp();
