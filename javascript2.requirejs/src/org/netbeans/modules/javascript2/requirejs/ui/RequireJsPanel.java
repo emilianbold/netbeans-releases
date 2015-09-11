@@ -447,6 +447,6 @@ final class RequireJsPanel extends JPanel implements HelpCtx.Provider {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx("org.netbeans.modules.javascript2.requirejs.ui.RequireJsPanel");
     }
 }

@@ -407,8 +407,9 @@ public class DerbyOptions {
                     outStreamd = derbyLib.getOutputStream(ld);
                     osw = new OutputStreamWriter(outStreamd);
                     outd = new BufferedWriter(osw);
-                    outd.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE library PUBLIC \"-//NetBeans//DTD Library Declaration 1.0//EN\" \"http://www.netbeans.org/dtds/library-declaration-1_0.dtd\">\n");//NOI18N
-                    outd.write("<library version=\"1.0\">\n<name>JAVADB_DRIVER_LABEL</name>\n");//NOI18N
+                    outd.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");//NOI18N
+                    outd.write("<library version=\"3.0\" xmlns=\"http://www.netbeans.org/ns/library-declaration/3\">\n");//NOI18N
+                    outd.write("<name>JAVADB_DRIVER_LABEL</name>\n");//NOI18N
                     outd.write("<type>j2se</type>\n");//NOI18N
                     outd.write("<localizing-bundle>org.netbeans.modules.derby.Bundle</localizing-bundle>\n");//NOI18N
                     outd.write("<volume>\n<type>classpath</type>\n"); //NOI18N
@@ -417,7 +418,16 @@ public class DerbyOptions {
                     outd.write("<resource>jar:" + new File(location.getAbsolutePath() + "/lib/derbynet.jar").toURI().toURL() + "!/</resource>\n"); //NOI18N
                     outd.write("</volume>\n<volume>\n<type>src</type>\n</volume>\n"); //NOI18N
                     outd.write("<volume>\n<type>javadoc</type>\n");  //NOI18N
-                    outd.write("</volume>\n</library>"); //NOI18N
+                    outd.write("</volume>\n"); //NOI18N
+                    outd.write("<properties>\n<property>\n"); //NOI18N
+                    outd.write("<name>maven-dependencies</name>\n"); //NOI18N
+                    outd.write("<value>\n"); //NOI18N
+                    outd.write("org.apache.derby:derby:10.11.1.1:jar\n"); //NOI18N
+                    outd.write("org.apache.derby:derbyclient:10.11.1.1:jar\n"); //NOI18N
+                    outd.write("org.apache.derby:derbynet:10.11.1.1:jar\n"); //NOI18N
+                    outd.write("</value>\n"); //NOI18N
+                    outd.write("</property>\n</properties>\n"); //NOI18N
+                    outd.write("</library>\n"); //NOI18N
                 }
             } finally {
                 if (null != outd) {
