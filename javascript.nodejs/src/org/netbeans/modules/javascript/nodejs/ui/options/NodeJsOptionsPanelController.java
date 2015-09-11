@@ -164,7 +164,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         }
         saved = getNodeJsOptions().getNpm();
         current = getPanel().getNpm().trim();
-        if (saved == null ? current != null : !saved.equals(current)) {
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
             return true;
         }
         saved = getNodeJsOptions().getExpress();

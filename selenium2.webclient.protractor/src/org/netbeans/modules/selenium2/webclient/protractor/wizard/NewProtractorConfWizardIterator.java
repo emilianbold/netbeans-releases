@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
         content = "protractor.conf.js",
         scriptEngine = "freemarker",
         position = 1,
-        category = "html5",
+        category = "selenium-types",
         displayName = "#NewProtractorConfWizardIterator.protractor.template.displayName",
         description = "ProtractorConfDescription.html")
 @NbBundle.Messages("NewProtractorConfWizardIterator.protractor.template.displayName=Protractor Configuration File")

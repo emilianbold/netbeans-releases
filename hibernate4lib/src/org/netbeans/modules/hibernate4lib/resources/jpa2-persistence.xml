@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>org.hibernate:hibernate-jpa-2.1-api-1.0.0.Final:jar</value>
+            <value>org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final:jar</value>
         </property>
     </properties>
 </library>
