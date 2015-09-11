@@ -87,19 +87,21 @@ public abstract class AbstractJNIAction extends NodeAction {
     }
     
     protected final Triple<DataObject, Document, Integer> extractContext(Node[] activatedNodes) {
-        final Node activeNode = activatedNodes[0];
-        final DataObject dobj = activeNode.getLookup().lookup(DataObject.class);
-        if (dobj != null) {
-            final EditorCookie ec = activeNode.getLookup().lookup(EditorCookie.class);
-            if (ec != null) {
-                JEditorPane pane = Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
-                    @Override
-                    public JEditorPane run() {
-                        return NbDocument.findRecentEditorPane(ec);
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            final Node activeNode = activatedNodes[0];
+            final DataObject dobj = activeNode.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                final EditorCookie ec = activeNode.getLookup().lookup(EditorCookie.class);
+                if (ec != null) {
+                    JEditorPane pane = Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
+                        @Override
+                        public JEditorPane run() {
+                            return NbDocument.findRecentEditorPane(ec);
+                        }
+                    });
+                    if (pane != null) {
+                        return Triple.of(dobj, pane.getDocument(), pane.getCaret().getDot());
                     }
-                });
-                if (pane != null) {
-                    return Triple.of(dobj, pane.getDocument(), pane.getCaret().getDot());
                 }
             }
         }
