@@ -111,15 +111,13 @@ public class SubprojectsGroupEditPanel extends GroupEditPanel {
                         String path = p.getProjectDirectory().toURL().toExternalForm();
                         Preferences pref = NODE.node(g.id);
                         pref.put(KEY_PATH, path);
-                        if(Group.getActiveGroup().equals(g)) {
-                            if(Group.getActiveGroup().equals(g)) {
-                                RequestProcessor.getDefault().post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Group.open(g, null, false, null);
-                                    }
-                                });
-                            }
+                        if(g.equals(Group.getActiveGroup())) {
+                            RequestProcessor.getDefault().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Group.open(g, null, false, null);
+                                }
+                            });
                         }
                     }
                  } catch (IOException x) {

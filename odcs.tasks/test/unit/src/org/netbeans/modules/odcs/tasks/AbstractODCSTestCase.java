@@ -116,7 +116,7 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
 
                 url = br.readLine();
                 assert url != null && !url.trim().isEmpty();
-                
+                url = url.endsWith("/") ? url + "s/qa-dev_netbeans-test/tasks" : url + "/s/qa-dev_netbeans-test/tasks";
                 br.close();
                 
                 if(proxyPort != null && proxyHost != null) {
