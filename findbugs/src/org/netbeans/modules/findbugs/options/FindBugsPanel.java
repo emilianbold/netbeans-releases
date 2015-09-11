@@ -124,11 +124,13 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         initComponents();
         // prevent from jumping
         setPreferredSize(getPreferredSize());
-        reinitialize();
+        reinitialize(false);
     }
     
-    private void reinitialize() {
-        final Boolean previousRunInEditor = this.runInEditor != null ? this.runInEditor.isSelected() : null;
+    private void reinitialize(boolean reuse) {
+        final Boolean previousRunInEditor = (this.runInEditor != null && reuse)
+                ? this.runInEditor.isSelected()
+                : null;
         WORKER.post(new Runnable() {
             @Override public void run() {
                 final TreeNode root = backgroundInit();
@@ -255,10 +257,11 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         customPlugins.setVisible(cc == null);
 
         if (cc == null) {
-            if (previousRunInEditor == null)
+            if (previousRunInEditor == null) {
                 load();
-            else 
+            } else {
                 runInEditor.setSelected(previousRunInEditor);
+            }
         }
         
         setPreferredSize(null);
@@ -418,7 +421,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             modifiedPluginsList = panel.getPlugins();
-            reinitialize();
+            reinitialize(true);
         }
     }//GEN-LAST:event_customPluginsActionPerformed
 
@@ -427,7 +430,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
             //not initialized yet
             return;
         }
-        this.runInEditor.setSelected(NbPreferences.forModule(FindBugsPanel.class).getBoolean(RunInEditor.RUN_IN_EDITOR, RunInEditor.RUN_IN_EDITOR_DEFAULT));
+        this.runInEditor.setSelected(NbPreferences.forModule(RunInEditor.class).getBoolean(RunInEditor.RUN_IN_EDITOR, RunInEditor.RUN_IN_EDITOR_DEFAULT));
     }
 
     void store() {
