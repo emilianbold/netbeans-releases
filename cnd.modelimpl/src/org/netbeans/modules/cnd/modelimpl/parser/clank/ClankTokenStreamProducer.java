@@ -520,7 +520,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
     private static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.APTTokenStreamCache cache) {
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
-            assert !APTTraceFlags.DEFERRED_MACRO_USAGES;
             ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
                 addMacroUsage(curFile, parsingFileContent, MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset()+cur.getMacroNameLength(), startFile, directive));
@@ -530,7 +529,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             }
         }
         for(ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
-            assert !APTTraceFlags.DEFERRED_MACRO_USAGES;
             ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
                 addMacroUsage(curFile, parsingFileContent, MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), startFile, directive));

@@ -90,6 +90,10 @@ public class FoldingParserImplTestCase extends CndBaseTestCase {
         performTest("mixedPreprocDirectives.cc");
     }
 
+    public void testExternC() throws Exception {
+        performTest("extern_c.cc");
+    }
+
     private void performTest(String source) throws Exception {
         if (TRACE) {
             System.out.println(getWorkDir());

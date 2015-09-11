@@ -67,6 +67,7 @@ public final class RecommendedTemplatesImpl implements RecommendedTemplates, Pri
         "REST-clients",
         "wsdl",
         "junit",
+        "selenium-types",
         "simple-files",
     };
     private static final String[] JAR_PRIVILEGED_NAMES = {
@@ -103,6 +104,7 @@ public final class RecommendedTemplatesImpl implements RecommendedTemplates, Pri
         "servlet-types",
         "web-types",
         "junit",
+        "selenium-types",
         "simple-files",
         "ear-types",
     };
@@ -114,6 +116,7 @@ public final class RecommendedTemplatesImpl implements RecommendedTemplates, Pri
         "XML",
         "wsdl",
         "junit",
+        "selenium-types",
         "simple-files",
     };
     private static final String[] GENERIC_EJB_TYPES = {
@@ -124,6 +127,7 @@ public final class RecommendedTemplatesImpl implements RecommendedTemplates, Pri
         "oasis-XML-catalogs",
         "XML",
         "junit",
+        "selenium-types",
         "simple-files",
     };
     private static final String[] GENERIC_EAR_TYPES = {

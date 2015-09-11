@@ -650,6 +650,7 @@ public class ClientSideProject implements Project {
             return new String[] {
                 "html5",     // NOI18N
                 "html5-test",     // NOI18N
+                "selenium-types",
                 "XML",                  // NOI18N
                 "simple-files"          // NOI18N
             };
