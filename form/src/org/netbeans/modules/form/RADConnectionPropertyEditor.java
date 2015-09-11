@@ -175,6 +175,9 @@ public class RADConnectionPropertyEditor
         }
         if (editorType == Type.CustomCode) {
             FormEditor formEditor = FormEditor.getFormEditor(formModel);
+            if (formEditor == null) {
+                return false; // bug 254390, unknown cause (how the form can be not opened??)
+            }
             if (formEditor.getGuardedSectionManager() == null) {
                 // unknown setup problem - bug 223356, bug 220699
                 return false;
