@@ -92,7 +92,7 @@ public class ODCSClientTest extends NbTestCase  {
     protected  static String passw;
     private static String proxyHost;
     private static String proxyPort;
-    public static final String URL = "http://developer.us.oracle.com/qa-dev";
+    private static String url;
     private static final String MY_PROJECT = "qa-dev_netbeans-test"; //NOI18N
 
     public static Test suite() {
@@ -123,6 +123,7 @@ public class ODCSClientTest extends NbTestCase  {
                 passw = br.readLine();
                 proxyHost = br.readLine();
                 proxyPort = br.readLine();
+                url = br.readLine();
                 br.close();
             }
             if (firstRun) {
@@ -206,22 +207,22 @@ public class ODCSClientTest extends NbTestCase  {
         }
     }
 
-    public void testWatchUnwatchProject () throws Exception {
-        ODCSClient client = getClient();
-        String projectIdent = "qa-dev_getting-started";
-        client.unwatchProject(projectIdent);
-        assertFalse(client.isWatchingProject(projectIdent));
-        List<Project> watchedProjects = client.getWatchedProjects();
-        assertTrue(watchedProjects.isEmpty());
-        client.watchProject(projectIdent);
-        watchedProjects = client.getWatchedProjects();
-        assertFalse(watchedProjects.isEmpty());
-        assertTrue(client.isWatchingProject(projectIdent));
-        client.unwatchProject(projectIdent);
-        assertFalse(client.isWatchingProject(projectIdent));
-        watchedProjects = client.getWatchedProjects();
-        assertTrue(watchedProjects.isEmpty());
-    }
+//    public void testWatchUnwatchProject () throws Exception {
+//        ODCSClient client = getClient();
+//        String projectIdent = "qa-dev_getting-started";
+//        client.unwatchProject(projectIdent);
+//        assertFalse(client.isWatchingProject(projectIdent));
+//        List<Project> watchedProjects = client.getWatchedProjects();
+//        assertTrue(watchedProjects.isEmpty());
+//        client.watchProject(projectIdent);
+//        watchedProjects = client.getWatchedProjects();
+//        assertFalse(watchedProjects.isEmpty());
+//        assertTrue(client.isWatchingProject(projectIdent));
+//        client.unwatchProject(projectIdent);
+//        assertFalse(client.isWatchingProject(projectIdent));
+//        watchedProjects = client.getWatchedProjects();
+//        assertTrue(watchedProjects.isEmpty());
+//    }
     
     public void testGetRecentActivities () throws Exception {
         ODCSClient client = getClient();
@@ -377,7 +378,9 @@ public class ODCSClientTest extends NbTestCase  {
     private void assertQuery(ODCSClient client, SavedTaskQuery stq, String name, String criteria) throws ODCSException {
         RepositoryConfiguration rc = client.getRepositoryContext(MY_PROJECT);
         assertNotNull(rc);
-        assertFalse(rc.getSavedTaskQueries().isEmpty());
+        if (stq != null) {
+            assertFalse(rc.getSavedTaskQueries().isEmpty());
+        }
         boolean found = false;
         List<SavedTaskQuery> queries = rc.getSavedTaskQueries();
         for (SavedTaskQuery q : queries) {
@@ -399,7 +402,7 @@ public class ODCSClientTest extends NbTestCase  {
     }
     
     private ODCSClient getClient() {
-        ODCSClient client = ODCSFactory.getInstance().createClient(URL, new PasswordAuthentication(uname, passw.toCharArray()));
+        ODCSClient client = ODCSFactory.getInstance().createClient(url, new PasswordAuthentication(uname, passw.toCharArray()));
         assertEquals(ODCSClientImpl.class, client.getClass());
         return client;
     }    
