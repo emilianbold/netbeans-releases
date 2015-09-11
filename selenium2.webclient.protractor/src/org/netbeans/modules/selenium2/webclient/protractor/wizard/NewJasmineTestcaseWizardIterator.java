@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
         description = "SeleneseJasmineTestWebclient.html",
         position = 30,
         scriptEngine = "freemarker",
-        category = "html5")
+        category = "selenium-types")
 @NbBundle.Messages({"SeleniumJasmineTestCase_displayName=Selenium Jasmine Test Case",
     "# {0} - project",
     "NO_SELENIUM_SUPPORT=No Selenium 2.0 support for project {0}"})

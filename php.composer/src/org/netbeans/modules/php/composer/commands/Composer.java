@@ -67,6 +67,7 @@ import org.netbeans.modules.php.composer.options.ComposerOptionsValidator;
 import org.netbeans.modules.php.composer.output.model.SearchResult;
 import org.netbeans.modules.php.composer.output.parsers.Parsers;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
+import org.netbeans.modules.php.composer.util.ComposerUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -415,7 +416,7 @@ public final class Composer {
     }
 
     @CheckForNull
-    public FileObject getComposerJson(PhpModule phpModule) {
+    private FileObject getComposerJson(PhpModule phpModule) {
         assert phpModule != null;
         if (workDir != null) {
             FileObject fo = FileUtil.toFileObject(workDir);
@@ -426,18 +427,8 @@ public final class Composer {
             }
             return fo.getFileObject(COMPOSER_FILENAME);
         }
-        // first project dir
-        FileObject composerJson = phpModule.getProjectDirectory().getFileObject(COMPOSER_FILENAME);
-        if (composerJson != null) {
-            return composerJson;
-        }
-        // now source dir
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
-            // invalid sources
-            return null;
-        }
-        return sourceDirectory.getFileObject(COMPOSER_FILENAME);
+        return ComposerUtils.getComposerWorkDir(phpModule)
+                .getFileObject(COMPOSER_FILENAME);
     }
 
     private boolean userConfirmation(String title, String question) {

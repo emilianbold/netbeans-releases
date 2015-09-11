@@ -243,6 +243,7 @@ public class FoldingParserImpl {
             CppTokenId LA2 = LA(2);
             switch (LA1) {
                 case RBRACE:
+                    match(CppTokenId.RBRACE);
                     break main_loop;
                 case EOF:
                     break main_loop;
@@ -364,6 +365,7 @@ public class FoldingParserImpl {
             // Local LA Cache for 2 element(s):
             switch (LA(1)) {
                 case EXTERN:
+                case STRUCT:
                 case TYPEDEF:
                     moveNext();
                     // eat
@@ -588,13 +590,15 @@ public class FoldingParserImpl {
 
         int index = ts.index();
         boolean between = (ts.token() == null);
+        boolean eof = false;
         while (lookahead > 0) {
             if (!moveNext(true)) {
-                return CppTokenId.EOF;
+                eof = true;
+                break;
             }
             lookahead--;
         }
-        CppTokenId id = ts.token().id();
+        CppTokenId id = eof ? CppTokenId.EOF : ts.token().id();
         ts.moveIndex(index);
         if (!between) {
             ts.moveNext();
@@ -607,13 +611,15 @@ public class FoldingParserImpl {
 
         int index = ts.index();
         boolean between = (ts.token() == null);
+        
+        boolean eof = false;
         while (lookahead > 0) {
             if (!moveNext(true)) {
-                return null;
+                break;
             }
             lookahead--;
         }
-        Token<CppTokenId> token = ts.offsetToken();
+        Token<CppTokenId> token = eof ? null : ts.offsetToken();
         ts.moveIndex(index);
         if (!between) {
             ts.moveNext();

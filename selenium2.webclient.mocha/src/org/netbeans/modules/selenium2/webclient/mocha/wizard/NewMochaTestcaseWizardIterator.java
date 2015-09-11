@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
         description = "SeleneseMochaTestWebclient.html",
         position = 20,
         scriptEngine = "freemarker",
-        category = "html5")
+        category = "selenium-types")
 @NbBundle.Messages({"SeleniumMochaTestCase_displayName=Selenium Mocha Test Case",
     "# {0} - project",
     "NO_SELENIUM_SUPPORT=No Selenium 2.0 support for project {0}"})
