@@ -279,7 +279,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                   if (aStartProject.isValid()) {
                       ProjectBase inclFileOwner = aStartProject.getLibraryManager().resolveFileProjectOnInclude(aStartProject, curFile, resolvedPath);
                       if (inclFileOwner == null) {
-                          assert false : "something wrong when parsing " + stopFileImpl + " from " + this.startProject;
+                          // resolveFileProjectOnInclude() javadoc reads: "Can return NULL !"; and it asserts itself
                           if (aStartProject.getFileSystem() == resolvedPath.getFileSystem()) {
                               inclFileOwner = aStartProject;
                           }
@@ -290,7 +290,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                       }
                       includedFile = inclFileOwner.prepareIncludedFile(aStartProject, path, ppHandler);
                       if (includedFile == null) {
-                            if (CsmModelAccessor.isModelAlive()) {
+                            if (CsmModelAccessor.isModelAlive() && inclFileOwner.isValid()) {
                                 assert false : "something wrong when including " + path + " from " + curFile;
                             }
                       }

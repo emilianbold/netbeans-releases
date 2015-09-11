@@ -240,20 +240,20 @@ public class ClankMacroUsagesProducer {
                   if (aStartProject.isValid()) {
                       ProjectBase inclFileOwner = aStartProject.getLibraryManager().resolveFileProjectOnInclude(aStartProject, curFile, resolvedPath);
                       if (inclFileOwner == null) {
-                          assert false : "something wrong when parsing " + stopFileImpl + " from " + this.startProject;
+                          // resolveFileProjectOnInclude() javadoc reads: "Can return NULL !"; and it asserts itself
                           if (aStartProject.getFileSystem() == resolvedPath.getFileSystem()) {
                               inclFileOwner = aStartProject;
                           }
                       }
-                      assert inclFileOwner != null;
+                      CndUtils.assertTrue(inclFileOwner != null);
                       if (CndUtils.isDebugMode()) {
                           CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
                       }
                       includedFile = inclFileOwner.prepareIncludedFile(aStartProject, path, ppHandler);
                       if (includedFile == null) {
-                        if (CsmModelAccessor.isModelAlive()) {
-                            assert false : "something wrong when including " + path + " from " + curFile;
-                        }
+                            if (CsmModelAccessor.isModelAlive() && inclFileOwner.isValid()) {
+                                assert false : "something wrong when including " + path + " from " + curFile;
+                            }
                       }
                   } else {
                     APTUtils.LOG.log(Level.INFO, "invalid start project {0} when including {1} from {2}", new Object[] {aStartProject, path, curFile});

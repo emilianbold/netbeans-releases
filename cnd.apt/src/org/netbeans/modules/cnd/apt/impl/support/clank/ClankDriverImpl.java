@@ -131,7 +131,7 @@ public class ClankDriverImpl {
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
             settings.WorkName = path;
             boolean fortranFlavor = APTToClankCompilationDB.isFortran(ppHandler);
-            settings.KeepCommentsTokens = callback.needComments() || fortranFlavor;
+            settings.KeepCommentsTokens = callback.needComments();
             settings.GenerateDiagnostics = true;
             PrintWriter printWriter = null;
             if (CndUtils.isUnitTestMode() && !fortranFlavor) {
@@ -152,13 +152,8 @@ public class ClankDriverImpl {
             Map<StringRef, MemoryBuffer> remappedBuffers = getRemappedBuffers();
             MemoryBuffer fileContent;
             StringRef file = new StringRef(path);
-            if (fortranFlavor) {
-                char[] chars = fixFortranTokens(buffer);
-                fileContent = ClankMemoryBufferImpl.create(path, chars);
-            } else {
-                char[] chars = buffer.getCharBuffer();
-                fileContent = ClankMemoryBufferImpl.create(path, chars);
-            }
+            char[] chars = fortranFlavor ? fixFortranTokens(buffer) : buffer.getCharBuffer();
+            fileContent = ClankMemoryBufferImpl.create(path, chars);
             remappedBuffers = new HashMap<StringRef, MemoryBuffer>(remappedBuffers);
             remappedBuffers.put(file, fileContent);
             ClankPreprocessorServices.preprocess(Collections.singleton(db), settings, remappedBuffers);
