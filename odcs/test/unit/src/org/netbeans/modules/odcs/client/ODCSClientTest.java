@@ -125,6 +125,15 @@ public class ODCSClientTest extends NbTestCase  {
                 proxyPort = br.readLine();
                 url = br.readLine();
                 br.close();
+                
+                System.out.println(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ");
+                System.out.println(" url: " + url);
+                System.out.println(" username: " + uname);
+                System.out.println(" password: " + passw);
+                System.out.println(" proxy host: " + proxyHost);
+                System.out.println(" proxy port: " + proxyPort);
+                System.out.println(" <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ");
+                
             }
             if (firstRun) {
                 firstRun = false;
