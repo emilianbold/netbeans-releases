@@ -131,7 +131,7 @@ public class ClankDriverImpl {
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
             settings.WorkName = path;
             boolean fortranFlavor = APTToClankCompilationDB.isFortran(ppHandler);
-            settings.KeepCommentsTokens = callback.needComments() || fortranFlavor;
+            settings.KeepCommentsTokens = callback.needComments();
             settings.GenerateDiagnostics = true;
             PrintWriter printWriter = null;
             if (CndUtils.isUnitTestMode() && !fortranFlavor) {

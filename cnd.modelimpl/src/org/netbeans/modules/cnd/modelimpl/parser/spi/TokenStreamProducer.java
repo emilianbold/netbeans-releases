@@ -107,14 +107,14 @@ public abstract class TokenStreamProducer {
             this.applyLanguageFilter = applyLanguageFilter;
         }
 
-        public static Parameters createForParsing(boolean triggerParsingActivity) {
+        public static Parameters createForParsing(boolean triggerParsingActivity, String language) {
             return new Parameters(
                     triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED, 
                     triggerParsingActivity, 
                     YesNoInterested.ALWAYS, 
                     APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.NEVER : YesNoInterested.ALWAYS,
                     YesNoInterested.ALWAYS,
-                    false, // no comments needed for just parsing
+                    APTLanguageSupport.FORTRAN.equals(language), // no comments needed for just parsing except fortran
                     true);
         }
 
