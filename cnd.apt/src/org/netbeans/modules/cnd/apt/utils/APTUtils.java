@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTLiteLiteralToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl;
 import org.netbeans.modules.cnd.apt.impl.support.generated.APTExprParser;
 import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
@@ -654,18 +655,22 @@ public class APTUtils {
     }
 
     public static List<APTToken> toList(TokenStream ts) {
-        LinkedList<APTToken> tokens = new LinkedList<APTToken>();
-        try {
-            APTToken token = (APTToken) ts.nextToken();
-            while (!isEOF(token)) {
-                assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
-                tokens.add(token);
-                token = (APTToken) ts.nextToken();
+        if (ts instanceof ClankDriverImpl.ArrayBasedAPTTokenStream) {
+            return ((ClankDriverImpl.ArrayBasedAPTTokenStream) ts).toList();
+        } else {
+            LinkedList<APTToken> tokens = new LinkedList<APTToken>();
+            try {
+                APTToken token = (APTToken) ts.nextToken();
+                while (!isEOF(token)) {
+                    assert (token != null) : "list of tokens must not have 'null' elements"; // NOI18N
+                    tokens.add(token);
+                    token = (APTToken) ts.nextToken();
+                }
+            } catch (TokenStreamException ex) {
+                LOG.log(Level.INFO, "error on converting token stream to list", ex.getMessage()); // NOI18N
             }
-        } catch (TokenStreamException ex) {
-            LOG.log(Level.INFO, "error on converting token stream to list", ex.getMessage()); // NOI18N
+            return tokens;
         }
-        return tokens;
     }
     
     public static Object getTextKey(String text) {

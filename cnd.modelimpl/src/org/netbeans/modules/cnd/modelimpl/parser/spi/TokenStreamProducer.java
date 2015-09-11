@@ -108,18 +108,49 @@ public abstract class TokenStreamProducer {
         }
 
         public static Parameters createForParsing(boolean triggerParsingActivity) {
-            return new Parameters(YesNoInterested.ALWAYS, triggerParsingActivity, 
+            return new Parameters(
+                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED, 
+                    triggerParsingActivity, 
                     YesNoInterested.ALWAYS, 
-                    APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.NEVER : YesNoInterested.ALWAYS, YesNoInterested.ALWAYS, false, true);
+                    APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.NEVER : YesNoInterested.ALWAYS,
+                    YesNoInterested.ALWAYS,
+                    false, // no comments needed for just parsing
+                    true);
         }
 
-        public static Parameters createForOneFileTokens(boolean needComments, YesNoInterested needMacroExpansion) {
-            return new Parameters(YesNoInterested.INTERESTED, false, YesNoInterested.NEVER, needMacroExpansion, YesNoInterested.INTERESTED, needComments, false);
+        public static Parameters createForParsingAndTokenStreamCaching(boolean triggerParsingActivity) {
+            return new Parameters(
+                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
+                    triggerParsingActivity, 
+                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
+                    APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.INTERESTED : YesNoInterested.ALWAYS,
+                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
+                    true, // we need comments for macro views
+                    false); //cache only unfiltered
+        }
+
+        public static Parameters createForTokenStreamCaching() {
+            return new Parameters(
+                    YesNoInterested.INTERESTED, 
+                    false, 
+                    YesNoInterested.NEVER, 
+                    YesNoInterested.INTERESTED, // we need start/end expansion toknes
+                    YesNoInterested.INTERESTED, 
+                    true, // we need comments for macro views
+                    false); //cache only unfiltered
         }
 
 //        public static Parameters createForMacroUsages() {
 //            return new Parameters(false, true, YesNoInterested.NEVER, false, true, false, false);
 //        }
+
+        @Override
+        public String toString() {
+            return "needTokens=" + needTokens + ", needPPDirectives=" + needPPDirectives + //NOI18N
+                    ", needSkippedRanges=" + needSkippedRanges + ", needMacroExpansion=" + needMacroExpansion + //NOI18N
+                    ", needComments=" + needComments + ", triggerParsingActivity=" + triggerParsingActivity + //NOI18N
+                    ", applyLanguageFilter=" + applyLanguageFilter; //NOI18N
+        }
     }
     
     private PreprocHandler curPreprocHandler;

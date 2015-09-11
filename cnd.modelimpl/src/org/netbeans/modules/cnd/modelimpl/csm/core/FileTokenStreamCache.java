@@ -78,6 +78,12 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
         cacheData.add(newData);
     }
 
+    public final TokenStream cacheTokensAndReturnFiltered(FilePreprocessorConditionState pcState, List<APTToken> tokens, APTLanguageFilter lang) {
+        TSData newData = new TSData(pcState, tokens, lang);
+        cacheData.add(newData);
+        return newData.getTS(true, 0, Integer.MAX_VALUE, 0);
+    }
+
     private static final class TSData {
         private final FilePreprocessorConditionState pcState;
         private final List<APTToken> tokens;
