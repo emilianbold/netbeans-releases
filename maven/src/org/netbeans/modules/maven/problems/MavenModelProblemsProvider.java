@@ -42,12 +42,14 @@
 
 package org.netbeans.modules.maven.problems;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -82,6 +84,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -127,7 +130,7 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
 
     @Override
     public Collection<? extends ProjectProblem> getProblems() {
-        List<ProjectProblem> toRet = new ArrayList<ProjectProblem>();
+        final MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
         synchronized (this) {
             //lazy adding listener only when someone asks for the problems the first time
             if (projectListenerSet.compareAndSet(false, true)) {
@@ -137,7 +140,7 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
                 project.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(projectListener);
             
             }
-            MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
+            
             //for non changed project models, no need to recalculate, always return the cached value
             Object wasprocessed = prj.getContextValue(MavenModelProblemsProvider.class.getName());
             if (wasprocessed != null) {
@@ -146,18 +149,35 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
                     return cached;
                 }
             } 
-            MavenExecutionResult res = MavenProjectCache.getExecutionResult(prj);
-            if (res != null && res.hasExceptions()) {
-                toRet.addAll(reportExceptions(res));
-            }
-            //TODO if this is called from AWT, we might have a problem
-            //#217286 doArtifactChecks can call FileOwnerQuery and attempt to aquire the project mutex.
-            toRet.addAll(doArtifactChecks(prj));
-            //mark the project model as checked once and cached
-            prj.setContextValue(MavenModelProblemsProvider.class.getName(), new Object());
-            problemsCache.set(toRet);
+            
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    Object wasprocessed = prj.getContextValue(MavenModelProblemsProvider.class.getName());
+                    if (wasprocessed != null) {
+                        Collection<ProjectProblem> cached = problemsCache.get();
+                        if (cached != null) {                            
+                            return;
+                        }
+                    } 
+                    List<ProjectProblem> toRet = new ArrayList<>();
+                    MavenExecutionResult res = MavenProjectCache.getExecutionResult(prj);
+                    if (res != null && res.hasExceptions()) {
+                        toRet.addAll(reportExceptions(res));
+                    }
+                    //#217286 doArtifactChecks can call FileOwnerQuery and attempt to aquire the project mutex.
+                    toRet.addAll(doArtifactChecks(prj));
+                    //mark the project model as checked once and cached
+                    prj.setContextValue(MavenModelProblemsProvider.class.getName(), new Object());
+                    synchronized(MavenModelProblemsProvider.this) {
+                        problemsCache.set(toRet);
+                    }
+                    firePropertyChange();
+                }
+            });
         }
-        return toRet;
+        
+        return Collections.emptyList();
     }
 
     private void firePropertyChange() {

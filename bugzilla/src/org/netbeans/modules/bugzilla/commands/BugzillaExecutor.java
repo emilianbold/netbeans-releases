@@ -85,6 +85,7 @@ public class BugzillaExecutor {
 
     private static final String HTTP_ERROR_NOT_FOUND         = "http error: not found";         // NOI18N
     private static final String EMPTY_PASSWORD               = "Empty password not allowed to login"; // NOI18N
+    private static final String USERNAME_CONFIRM_MATCH       = "Confirm Match"; // NOI18N
     private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";  // NOI18N
     private static final String REPOSITORY_LOGIN_FAILURE     = "unable to login to";            // NOI18N
     private static final String KENAI_LOGIN_REDIRECT         = "/people/login?original_uri=";   // NOI18N
@@ -385,7 +386,8 @@ public class BugzillaExecutor {
                 msg = msg.trim().toLowerCase();
                 if(INVALID_USERNAME_OR_PASSWORD.equals(msg) ||
                    msg.contains(INVALID_USERNAME_OR_PASSWORD) ||
-                   msg.contains(EMPTY_PASSWORD))
+                   msg.contains(EMPTY_PASSWORD) || 
+                   msg.contains(USERNAME_CONFIRM_MATCH))
                 {
                     Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
                     String url;
