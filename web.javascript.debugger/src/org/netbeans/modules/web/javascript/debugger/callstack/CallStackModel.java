@@ -85,13 +85,13 @@ import org.openide.util.NbBundle;
 public final class CallStackModel extends ViewModelSupport implements TreeModel, NodeModel,
         TableModel, Debugger.Listener, PropertyChangeListener {
 
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     public static final String CALL_STACK =
             "org/netbeans/modules/debugger/resources/callStackView/NonCurrentFrame"; // NOI18N
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     public static final String CURRENT_CALL_STACK =
             "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame"; // NOI18N
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     private static final String ICON_EMPTY =
             "org/netbeans/modules/debugger/resources/empty";                // NOI18N
 

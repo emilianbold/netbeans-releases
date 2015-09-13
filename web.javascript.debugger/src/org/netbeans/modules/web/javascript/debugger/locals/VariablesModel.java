@@ -90,7 +90,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         TableModel, Debugger.Listener, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(VariablesModel.class.getName());
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
     @StaticResource(searchClasspath = true)
     public static final String GLOBAL = "org/netbeans/modules/javascript2/debug/resources/global_variable_16.png"; // NOI18N
