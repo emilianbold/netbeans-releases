@@ -255,7 +255,7 @@ class FormattedPrintFunction {
             }
             StringBuilder result = new StringBuilder(handlerClassifier.getName().toString().replace("const", "").replace("&", ""));  // NOI18N
             for (int i = 0, limit = getReferenceDepth(handlerType); i < limit; i++) {
-                result.append("*");
+                result.append("*");  // NOI18N
             }
             return result.toString();
         }
