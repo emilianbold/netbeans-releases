@@ -175,8 +175,8 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
             };
             if(Boolean.getBoolean("test.reload.sync")) {
                 try {
-                    return RP.submit(c).get();
-                } catch (InterruptedException | ExecutionException ex) {
+                    return c.call();
+                } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
             } else {
