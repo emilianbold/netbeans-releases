@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.web.clientproject.ui;
 
@@ -61,7 +61,6 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -87,7 +86,6 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
@@ -127,7 +125,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     static final Logger LOGGER = Logger.getLogger(ClientSideProjectLogicalView.class.getName());
 
-    static final RequestProcessor RP = new RequestProcessor(ClientSideProjectLogicalView.class);
+    static final RequestProcessor RP = new RequestProcessor(ClientSideProjectLogicalView.class.getName(), 2);
 
     private final ClientSideProject project;
 
@@ -547,13 +545,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         return JsTestingProviders.getDefault().createJsTestingProvidersNodeFactory();
     }
 
-    private static class ClientProjectNodeList implements NodeList<Key>, ChangeListener {
+    private static final class ClientProjectNodeList implements NodeList<Key>, ChangeListener {
 
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private final ClientSideProject project;
         private final FileObject nbprojectFolder;
-        private final Sources projectSources;
-        private final ChangeListener changeListener;
+        final Sources projectSources;
+        final ChangeListener changeListener;
 
 
         private ClientProjectNodeList(ClientSideProject p) {
@@ -576,14 +574,19 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public void addNotify() {
-            // #230378 - use weak listeners otherwise project is not garbage collected
-            projectSources.addChangeListener(changeListener);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    // #230378 - use weak listeners otherwise project is not garbage collected
+                    // #237407 - do it in a background thread
+                    projectSources.addChangeListener(changeListener);
+                }
+            });
         }
 
         @Override
         public void removeNotify() {
             // #230378 - weak listeners are used so in fact, no need to call "removeListener"
-            projectSources.removeChangeListener(changeListener);
         }
 
         void fireChange() {
