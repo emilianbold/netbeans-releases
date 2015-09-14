@@ -191,7 +191,9 @@ final class TestNGOutputReader {
         if (msg == null) {
             return;
         }
-        if (!msg.startsWith(RegexpUtils.TEST_LISTENER_PREFIX) || offline) {
+        // msg could contain arbitrary charachters printed by the user,
+        // so TestNG specific output could exist e.g. in the middle of msg.
+        if (!msg.contains(RegexpUtils.TEST_LISTENER_PREFIX) || offline) {
             //this message is not for us...
             return;
         }
@@ -591,9 +593,20 @@ final class TestNGOutputReader {
             tc.getOutput().add(new OutputLine(msg, false));
         }
         if (!offline) {
+            // msg could contain arbitrary charachters printed by the user,
+            // so display them in TRW before parsing TestNG specific output.
+            int index = msg.indexOf(RegexpUtils.TEST_LISTENER_PREFIX);
+            String message = msg;
+            if(index != -1) {
+                message = message.substring(0, index);
+            }
             //log/verbose level = 0 so don't show output
-            if (!msg.startsWith(RegexpUtils.TEST_LISTENER_PREFIX)) {
-                displayOutput(msg, event.getLogLevel() == AntEvent.LOG_WARN);
+            if (!message.isEmpty() && !message.startsWith(RegexpUtils.TEST_LISTENER_PREFIX)) {
+                displayOutput(message, event.getLogLevel() == AntEvent.LOG_WARN);
+            }
+            if (index == -1) {
+                //this message is not for us...
+                return;
             }
             verboseMessageLogged(event);
         }
@@ -1021,7 +1034,10 @@ final class TestNGOutputReader {
 
     private String getMessage(String msg) {
         int prefixLength = RegexpUtils.TEST_LISTENER_PREFIX.length();
-        return msg.substring(prefixLength).replace("\n", "");
+        int index = msg.indexOf(RegexpUtils.TEST_LISTENER_PREFIX);
+        // msg could contain arbitrary charachters printed by the user,
+        // so remove them before parsing TestNG specific output.
+        return msg.substring(index + prefixLength).replace("\n", "");
     }
 
     private void addDescription(String in) {

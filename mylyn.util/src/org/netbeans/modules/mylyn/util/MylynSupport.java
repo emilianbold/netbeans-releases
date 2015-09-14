@@ -477,12 +477,17 @@ public class MylynSupport {
             ensureTaskListLoaded();
             assert taskRepositoryManager.getRepositoryConnector(repository.getConnectorKind()) != null
                 : "Did you forget to implement RepositoryConnectorProvider?";
-            for (ITask task : taskList.getAllTasks()) {
-                if (url.equals(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL))) {
-                    taskDataManager.refactorRepositoryUrl(task, task.getRepositoryUrl(), url);
-                } else if (oldUrl.equals(task.getRepositoryUrl())) {
-                    taskDataManager.refactorRepositoryUrl(task, url, url);
+            try {
+                for (ITask task : taskList.getAllTasks()) {
+                    if (url.equals(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL))) {
+                        taskDataManager.refactorRepositoryUrl(task, task.getRepositoryUrl(), url);
+                    } else if (oldUrl.equals(task.getRepositoryUrl())) {
+                        taskDataManager.refactorRepositoryUrl(task, url, url);
+                    }
                 }
+            } catch (Throwable t) {
+                // log, but set the rapository & co
+                LOG.log(Level.WARNING, null, t);
             }
             taskList.refactorRepositoryUrl(oldUrl, url);
             repository.setRepositoryUrl(url);
