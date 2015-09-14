@@ -77,20 +77,20 @@ class Utilities {
     // take const modifier into account
     static List<String> typeToFormat(String type) {
         if (type.contains("*")) {                           // NOI18N
-            if (type.contains("char")) {                    // NOI18N
-                return Arrays.asList("p", "hhn", "s");      // NOI18N
-            } else if (type.contains("wchar_t")) {          // NOI18N
-                return Arrays.asList("p", "s", "ls", "S");  // NOI18N
+            if (type.contains("wchar_t")) {                 // NOI18N
+                return Arrays.asList("s", "p", "ls", "S");  // NOI18N
+            } else if (type.contains("char")) {             // NOI18N
+                return Arrays.asList("s", "p", "hhn");      // NOI18N
             } else if (type.contains("short")) {            // NOI18N
                 return Arrays.asList("p", "hn");            // NOI18N
-            } else if (type.contains("int")) {              // NOI18N
-                return Arrays.asList("p", "n");             // NOI18N
             } else if (type.contains("long long")) {        // NOI18N
                 return Arrays.asList("p", "lln");           // NOI18N
             } else if (type.contains("long")) {             // NOI18N
                 return Arrays.asList("p", "ln");            // NOI18N
             } else if (type.contains("intmax_t")) {         // NOI18N
                 return Arrays.asList("p", "jn");            // NOI18N
+            } else if (type.contains("int")) {              // NOI18N
+                return Arrays.asList("p", "n");             // NOI18N
             } else if (type.contains("size_t")) {           // NOI18N
                 return Arrays.asList("p", "zn");            // NOI18N
             } else if (type.contains("ptrdiff_t")) {        // NOI18N
