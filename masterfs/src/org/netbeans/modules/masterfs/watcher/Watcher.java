@@ -484,9 +484,10 @@ public final class Watcher extends BaseAnnotationProvider {
             } catch (Exception ex) {
                 LOG.log(Level.INFO, "Exception while instantiating " + item, ex);
             } catch (LinkageError ex) {
-                LOG.log(Level.INFO, "Linkage error for " + item, ex);
+                LOG.log(Level.FINE, "Linkage error for " + item, ex);   //NOI18N
             }
         }
+        LOG.log(Level.INFO, "Native file watcher is disabled");         //NOI18N
         return null;
     }
     
