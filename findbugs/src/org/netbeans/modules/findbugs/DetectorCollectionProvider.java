@@ -143,9 +143,9 @@ public class DetectorCollectionProvider {
             customPluginsPrefs.clear();
             
             int i = 0;
-            
             for (String plugin : customPlugins) {
                 customPluginsPrefs.put(PLUGIN_URL_PREFIX + i, plugin);
+                i++;
             }
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
@@ -156,12 +156,16 @@ public class DetectorCollectionProvider {
 
     private static void clearRegisteredPlugins() {
         Iterator<Plugin> plugins = DetectorFactoryCollection.instance().pluginIterator();
-        
+        List<Plugin> toRemove = new ArrayList<>();
         while (plugins.hasNext()) {
             Plugin p = plugins.next();
             if (!p.isCorePlugin()) {
-                Plugin.removeCustomPlugin(p);
+                toRemove.add(p);
             }
+        }
+        // prevents ConcurrentModificationException in the above code
+        for (Plugin p : toRemove) {
+            Plugin.removeCustomPlugin(p);
         }
     }
 }
