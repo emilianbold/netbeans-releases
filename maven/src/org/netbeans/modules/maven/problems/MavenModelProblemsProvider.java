@@ -42,18 +42,17 @@
 
 package org.netbeans.modules.maven.problems;
 
-import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.MissingResourceException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -82,7 +81,6 @@ import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -149,15 +147,14 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
                     return cached;
                 }
             } 
-            
-            RP.post(new Runnable() {
+            Callable<Collection<? extends ProjectProblem>> c = new Callable<Collection<? extends ProjectProblem>>() {
                 @Override
-                public void run() {
+                public Collection<? extends ProjectProblem> call() throws Exception {
                     Object wasprocessed = prj.getContextValue(MavenModelProblemsProvider.class.getName());
                     if (wasprocessed != null) {
                         Collection<ProjectProblem> cached = problemsCache.get();
                         if (cached != null) {                            
-                            return;
+                            return Collections.EMPTY_LIST;
                         }
                     } 
                     List<ProjectProblem> toRet = new ArrayList<>();
@@ -173,8 +170,18 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
                         problemsCache.set(toRet);
                     }
                     firePropertyChange();
+                    return toRet;
+                }                
+            };
+            if(Boolean.getBoolean("test.reload.sync")) {
+                try {
+                    return RP.submit(c).get();
+                } catch (InterruptedException | ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            });
+            } else {
+                RP.submit(c);
+            }
         }
         
         return Collections.emptyList();

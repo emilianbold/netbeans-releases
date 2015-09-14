@@ -63,6 +63,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
 
     protected @Override void setUp() throws Exception {
         clearWorkDir();
+        System.setProperty("test.reload.sync", "true");
     }
     
     private static ProblemReporterImpl getReporter(Project p) {
