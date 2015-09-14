@@ -81,10 +81,10 @@ import org.openide.util.datatransfer.PasteType;
 })
 public class DebuggingModel extends ViewModelSupport implements TreeModel, ExtendedNodeModel {
     
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     private static final String ICON_CALL_STACK =
             "org/netbeans/modules/debugger/resources/threadsView/call_stack_16.png";
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     private static final String ICON_EMPTY =
             "org/netbeans/modules/debugger/resources/empty.gif";
     
