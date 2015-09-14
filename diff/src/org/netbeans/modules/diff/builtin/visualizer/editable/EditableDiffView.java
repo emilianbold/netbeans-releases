@@ -1151,7 +1151,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         };
         propertyChangeListeners.put(jEditorPane1.getEditorPane(), list);
-        jEditorPane1.getEditorPane().addPropertyChangeListener("font", WeakListeners.propertyChange(list, jEditorPane1.getEditorPane())); //NOI18N
+        jEditorPane1.getEditorPane().addPropertyChangeListener("font", WeakListeners.propertyChange(list, "font", jEditorPane1.getEditorPane())); //NOI18N
         list = new java.beans.PropertyChangeListener() { // NOI18N
             @Override
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -1168,7 +1168,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         };
         propertyChangeListeners.put(jEditorPane2.getEditorPane(), list);
-        jEditorPane2.getEditorPane().addPropertyChangeListener("font", WeakListeners.propertyChange(list, jEditorPane2.getEditorPane())); //NOI18N
+        jEditorPane2.getEditorPane().addPropertyChangeListener("font", WeakListeners.propertyChange(list, "font", jEditorPane2.getEditorPane())); //NOI18N
     }
 
     private synchronized void diffChanged() {
