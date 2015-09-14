@@ -918,6 +918,7 @@ public final class EditorFindSupport {
                                 // Update position in original properties
                                 props.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, blockSearchStartPos);
                             }
+                            blockSearchEndOffset = getBlockEndOffset();
                         }
                         pos = backSearch ? blk[0] : blk[0] + ((replaceWith != null) ? replaceWith.length() : 0);
                         if (!wrapSearch && backSearch) {
