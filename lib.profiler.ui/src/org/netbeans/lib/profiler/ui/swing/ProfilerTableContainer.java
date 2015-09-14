@@ -66,6 +66,7 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.JTableHeader;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 
 /**
  *
@@ -82,6 +83,8 @@ public class ProfilerTableContainer extends JPanel {
     public ProfilerTableContainer(final ProfilerTable table, boolean decorated,
                                   ColumnChangeAdapter adapter) {
         super(new BorderLayout());
+        setOpaque(true);
+        setBackground(new HTMLTextArea().getBackground());
         
         this.table = table;
         
@@ -126,6 +129,8 @@ public class ProfilerTableContainer extends JPanel {
                     return d;
                 }
             };
+            scrollersPanel.setOpaque(true);
+            scrollersPanel.setBackground(getBackground());
 
             for (final Integer column : scrollableColumns) {
                 final JScrollBar scroller = new JScrollBar(JScrollBar.HORIZONTAL) {

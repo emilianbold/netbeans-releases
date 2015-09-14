@@ -491,7 +491,7 @@ public final class CPUSnapshotPanel extends SnapshotPanel implements ActionListe
 
         ProfilerToolbar toolBar = ProfilerToolbar.create(true);
 
-        toolBar.add(saveAction = new SaveSnapshotAction(loadedSnapshot));
+        saveAction = new SaveSnapshotAction(loadedSnapshot);
         toolBar.add(new ExportAction(this, loadedSnapshot));
         toolBar.add(saveViewAction = new SaveViewAction(this));
 

@@ -79,6 +79,7 @@ import org.netbeans.lib.profiler.results.threads.ThreadsDataManager;
 import org.netbeans.lib.profiler.ui.Formatters;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.components.FlatToolBar;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.lib.profiler.ui.components.ProfilerToolbar;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTable;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTableContainer;
@@ -143,6 +144,8 @@ public class ThreadsPanel extends JPanel {
     
     
     private void initUI(Action saveView) {
+        setOpaque(true);
+        setBackground(new HTMLTextArea().getBackground());
         
         final AbstractTableModel threadsTableModel = new AbstractTableModel() {
             public String getColumnName(int columnIndex) {
@@ -367,6 +370,8 @@ public class ThreadsPanel extends JPanel {
         threadsToolbar.add(threadStateFilter);
         
         contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setOpaque(true);
+        contentPanel.setBackground(getBackground());
         contentPanel.add(threadsTableContainer, BorderLayout.CENTER);
         contentPanel.add(legendPanel, BorderLayout.SOUTH);
         
