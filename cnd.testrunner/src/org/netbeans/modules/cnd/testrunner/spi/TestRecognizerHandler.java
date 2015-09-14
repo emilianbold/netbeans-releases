@@ -86,7 +86,7 @@ public abstract class TestRecognizerHandler {
     }
 
     public Matcher getMatcher() {
-        return pattern.matcher(line);
+        return matcher;
     }
 
     /**
@@ -102,7 +102,7 @@ public abstract class TestRecognizerHandler {
      */
     public final Matcher match(String line) {
         this.line = line;
-        this.matcher = getMatcher();
+        this.matcher = pattern.matcher(line);
         return matcher;
     }
 
