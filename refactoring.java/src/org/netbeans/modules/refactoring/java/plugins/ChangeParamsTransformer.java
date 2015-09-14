@@ -416,14 +416,31 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         for (int i = 0; i < pi.length; i++) {
             int originalIndex = pi[i].getOriginalIndex();
             VariableTree vt;
+            boolean isVarArgs = i == pi.length -1 && pi[i].getType().endsWith("..."); // NOI18N
+            String newType = isVarArgs? pi[i].getType().replace("...", "") : pi[i].getType(); //NOI18N
             if (originalIndex < 0) {
-                boolean isVarArgs = i == pi.length -1 && pi[i].getType().endsWith("..."); // NOI18N
                 vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()),
                         pi[i].getName(),
-                        skipType? null : make.Identifier(isVarArgs? pi[i].getType().replace("...", "") : pi[i].getType()), // NOI18N
+                        skipType? null : make.Identifier(newType), // NOI18N
                         null);
             } else {
                 vt = currentParameters.get(originalIndex);
+                if(!skipType) {
+                    Tree typeTree = null;
+                    if (origMethod != null) {
+                        if (!pi[i].getType().equals(origMethod.getParameters().get(originalIndex).getType().toString())) {
+                            typeTree = make.Identifier(newType);
+                        }
+                    } else {
+                        typeTree = make.Identifier(newType);
+                    }
+                    if(typeTree != null) {
+                        vt = make.Variable(vt.getModifiers(),
+                                vt.getName(),
+                                typeTree,
+                                vt.getInitializer());
+                    }
+                }
             }
             arguments.add(vt);
         }

@@ -44,11 +44,14 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 
 /**
@@ -71,5 +74,21 @@ public class FindOverridingVisitor extends FindVisitor {
             }
         }
         return super.visitMethod(node, elementToFind);
+    }
+
+    @Override
+    public Tree visitLambdaExpression(LambdaExpressionTree node, Element elementToFind) {
+        Element type = elementToFind.getEnclosingElement();
+        if (type.getKind() == ElementKind.INTERFACE &&
+                workingCopy.getElements().isFunctionalInterface((TypeElement) type) &&
+                !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            
+            TypeMirror typeMirror = workingCopy.getTrees().getTypeMirror(getCurrentPath());
+            
+            if (typeMirror != null && workingCopy.getTypes().isSameType(typeMirror, type.asType())) {
+                addUsage(getCurrentPath());
+            }
+        }
+        return super.visitLambdaExpression(node, elementToFind);
     }
 }
