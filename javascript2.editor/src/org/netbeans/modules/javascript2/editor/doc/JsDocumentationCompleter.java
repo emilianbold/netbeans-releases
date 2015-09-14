@@ -131,6 +131,9 @@ public class JsDocumentationCompleter {
                             }
                             int examinedOffset = nearestNode instanceof VarNode ? nearestNode.getStart() : nearestNode.getFinish();
                             int originalExaminedOffset = parserResult.getSnapshot().getOriginalOffset(examinedOffset);
+                            if (originalExaminedOffset == -1) {
+                                originalExaminedOffset = parserResult.getSnapshot().getOriginalOffset(nearestNode.getStart());
+                            }
                             JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), originalExaminedOffset);
                             assert jsObject != null;
                             if (jsObject.getJSKind() == Kind.FILE || isWrapperObject(jsParserResult, jsObject, nearestNode)) {

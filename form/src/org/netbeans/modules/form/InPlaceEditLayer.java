@@ -319,8 +319,9 @@ public class InPlaceEditLayer extends JPanel
         layerResizeListener = new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                if (InPlaceEditLayer.this.isVisible())
+                if (InPlaceEditLayer.this.isVisible() && editedComp != null && editedComp.getGraphics() != null) {
                     placeInPlaceField();
+                }
             }
         };
 

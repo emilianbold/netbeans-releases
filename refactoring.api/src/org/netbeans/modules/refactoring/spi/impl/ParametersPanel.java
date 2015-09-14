@@ -46,7 +46,6 @@ package org.netbeans.modules.refactoring.spi.impl;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -71,6 +70,7 @@ import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.spi.impl.ProblemComponent.CallbackAction;
 import org.openide.LifecycleManager;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 
 /**
@@ -176,12 +176,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
             @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED && Desktop.isDesktopSupported()) {
-                    try {
-                        Desktop.getDesktop().browse(e.getURL().toURI());
-                    } catch (IOException | URISyntaxException ex) {
-                        LOGGER.log(Level.INFO, "Desktop.browse failed: ", ex); // NOI18N
-                    }
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    HtmlBrowser.URLDisplayer.getDefault().showURLExternal(e.getURL());
                 }
             }
         });

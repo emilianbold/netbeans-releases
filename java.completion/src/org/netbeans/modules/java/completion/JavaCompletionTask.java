@@ -219,7 +219,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
     };
 
     private static final String[] BLOCK_KEYWORDS = new String[]{
-        ASSERT_KEYWORD, CLASS_KEYWORD, FINAL_KEYWORD, NEW_KEYWORD,
+        ASSERT_KEYWORD, CLASS_KEYWORD, FINAL_KEYWORD, NEW_KEYWORD, STRICT_KEYWORD,
         THROW_KEYWORD
     };
 
