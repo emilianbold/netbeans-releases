@@ -711,6 +711,7 @@ public class JavacParser extends Parser {
                 sourceLevel != null ? sourceLevel.getSourceLevel() : null,
                 sourceLevel != null ? sourceLevel.getProfile() : null,
                 false,
+                parser != null && parser.sourceCount > 1,
                 oraculum,
                 dcc,
                 parser == null ? null : new DefaultCancelService(parser),
@@ -729,7 +730,7 @@ public class JavacParser extends Parser {
             @NullAllowed final DuplicateClassChecker dcc,
             @NullAllowed final CancelService cancelService,
             @NullAllowed final APTUtils aptUtils) {
-        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, sourceProfile, true, cnih, dcc, cancelService, aptUtils);
+        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, sourceProfile, true, true, cnih, dcc, cancelService, aptUtils);
     }
 
     private static JavacTaskImpl createJavacTask(
@@ -738,6 +739,7 @@ public class JavacParser extends Parser {
             @NullAllowed final String sourceLevel,
             @NullAllowed SourceLevelQuery.Profile sourceProfile,
             final boolean backgroundCompilation,
+            final boolean multiSource,
             @NullAllowed final ClassNamesForFileOraculum cnih,
             @NullAllowed final DuplicateClassChecker dcc,
             @NullAllowed final CancelService cancelService,
@@ -777,8 +779,10 @@ public class JavacParser extends Parser {
         options.add("-XDdiags=-source");  // NOI18N
         options.add("-XDdiagsFormat=%L%m|%L%m|%L%m");  // NOI18N
         options.add("-XDbreakDocCommentParsingOnError=false");  // NOI18N
-        boolean aptEnabled = aptUtils != null && aptUtils.aptEnabledOnScan() && (backgroundCompilation || aptUtils.aptEnabledInEditor())
-                && !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
+        boolean aptEnabled = aptUtils != null &&
+                aptUtils.aptEnabledOnScan() &&
+                (backgroundCompilation || (aptUtils.aptEnabledInEditor() && !multiSource)) &&
+                !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
         Collection<? extends Processor> processors = null;
         if (aptEnabled) {
             processors = aptUtils.resolveProcessors(backgroundCompilation);
