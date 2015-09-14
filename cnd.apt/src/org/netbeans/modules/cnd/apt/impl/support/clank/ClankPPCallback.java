@@ -404,6 +404,11 @@ public final class ClankPPCallback extends FileInfoCallback {
         return delegate.needMacroExpansion();
     }
     
+    @Override
+    protected boolean needComments() {
+        return delegate.needComments();
+    }
+    
     private static ClankFileInfoWrapper findRecursiveInclusion(ArrayList<ClankFileInfoWrapper> stack) {
         if (!stack.isEmpty()) {
             ClankFileInfoWrapper best = null;

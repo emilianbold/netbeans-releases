@@ -3707,7 +3707,9 @@ public class CasualDiff {
                         int diffTo = diffTree(ld, item.element, poss);
                         copyTo(diffTo, poss[1]);
                         localPointer = Math.max(localPointer, poss[1]);
+                        if (j > 0 && LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
                         printer.print(this.printer.toString());
+                        if (j < result.length -1 && LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
                         printer.reindentRegions.addAll(this.printer.reindentRegions);
                         this.printer = oldPrinter;
                         this.printer.undent(old);

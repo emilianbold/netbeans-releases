@@ -188,6 +188,16 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         } else {
             if(defaultRepository == null) {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, false);
+                if(!IssueTopComponent.this.isShowing()) {
+                    try {
+                        // ensure issue exists when TC is opened so 
+                        // that we can notify the issue implementation about issue being opened
+                        IssueTopComponent.this.open();
+                        IssueTopComponent.this.requestActive();
+                    } finally {
+                        UIUtils.setWaitCursor(false);                        
+                    }
+                }
             } else {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository.getRepository());
             }
