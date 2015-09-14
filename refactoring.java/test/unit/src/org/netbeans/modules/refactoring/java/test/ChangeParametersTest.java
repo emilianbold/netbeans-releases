@@ -72,6 +72,29 @@ public class ChangeParametersTest extends RefactoringTestBase {
         JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
     
+    public void test255269() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public interface A {\n"
+                        + "    boolean test(int a);\n"
+                        + "\n"
+                        + "    public static void m() {\n"
+                        + "        A f2 = (int c) -> true;\n"
+                        + "    }\n"
+                        + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(0, "a", "Object", null)};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 0, false, new Problem(false, "WRN_isNotAssignable"));
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public interface A {\n"
+                        + "    boolean test(Object a);\n"
+                        + "\n"
+                        + "    public static void m() {\n"
+                        + "        A f2 = (Object c) -> true;\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
     public void test250047() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"
