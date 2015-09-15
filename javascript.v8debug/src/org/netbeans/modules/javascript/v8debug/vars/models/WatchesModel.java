@@ -87,7 +87,7 @@ import org.openide.util.RequestProcessor;
                              types={ TreeModelFilter.class, ExtendedNodeModel.class, TableModel.class })
 public class WatchesModel extends VariablesModel implements TreeModelFilter {
     
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     public static final String ICON_WATCH =
             "org/netbeans/modules/debugger/resources/watchesView/watch_16.png"; // NOI18N
     

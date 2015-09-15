@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankMacroDirective;
@@ -151,6 +152,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           if (tokStreamCache == null) {
             return null;
           }
+          cacheMacroUsagesInFileIfNeed(parameters, callback.getFoundFileInfo());
         }
         TokenStream tokenStream = tokStreamCache.getTokenStream();
         if (tokenStream == null) {
@@ -169,11 +171,23 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         return tokenStream;
     }
 
+    private void cacheMacroUsagesInFileIfNeed(Parameters parameters, ClankDriver.ClankFileInfo foundFileInfo) {
+        if (foundFileInfo == null) {
+            return; // can this happen? should we assert? (softly!)
+        }
+        // TODO: shouldn't we introduce a special flag for this?
+        if (parameters.needMacroExpansion == YesNoInterested.INTERESTED && parameters.needPPDirectives == YesNoInterested.INTERESTED) {
+            FileImpl fileImpl = getMainFile();
+            List<CsmReference> macroUsages = ClankMacroUsagesSupport.getMacroUsages(fileImpl, getStartFile(), foundFileInfo);
+            fileImpl.setLastMacroUsages(macroUsages);
+        }
+    }
+
     @Override
     public FilePreprocessorConditionState release() {
         return CsmCorePackageAccessor.get().createPCState(getMainFile().getAbsolutePath(), skipped);
     }
-    
+
     private static final class FileTokenStreamCallback implements ClankPreprocessorCallback {
         private final ProjectBase startProject;
         private final PreprocHandler ppHandler;
@@ -181,6 +195,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private final FileImpl stopFileImpl;
         private final int stopAtIndex;
         private ClankDriver.APTTokenStreamCache foundTokens;
+        private ClankDriver.ClankFileInfo foundFileInfo;
 
         private enum State {
           INITIAL,
@@ -364,6 +379,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               CndUtils.assertPathsEqualInConsole(exitedFrom.getFilePath(), stopFileImpl.getAbsolutePath(),
                       "{0} expected {1}", stopFileImpl.getAbsolutePath(), exitedFrom);// NOI18N
               foundTokens = ClankDriver.extractPreparedCachedTokenStream(ppHandler);
+              foundFileInfo = exitedFrom;
               assert foundTokens.hasTokenStream();
               // stop all activity
               alreadySeenInterestedFileEnter = State.EXITED;
@@ -395,6 +411,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               }
             }
             return true;
+        }
+
+        private ClankDriver.ClankFileInfo getFoundFileInfo() {
+            return foundFileInfo;
         }
 
         private ClankDriver.APTTokenStreamCache getPPOut() {

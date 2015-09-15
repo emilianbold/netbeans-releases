@@ -70,19 +70,19 @@ import org.openide.util.RequestProcessor;
                              types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class })
 public class EvaluationResultsModel extends VariablesModel {
     
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     private static final String ICON_HISTORY_NODE =
         "org/netbeans/modules/debugger/resources/evaluator/history_node_16.png"; // NOI18N
 
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     private static final String ICON_HISTORY_ITEM =
         "org/netbeans/modules/debugger/resources/evaluator/eval_history_item.png"; // NOI18N
     
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     private static final String ICON_EVAL_RESULT =
         "org/netbeans/modules/debugger/resources/evaluator/evaluator_result_16.png"; // NOI18N
 
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     private static final String ICON_WRONG_PASS =
         "org/netbeans/modules/debugger/resources/wrong_pass.png"; // NOI18N
 

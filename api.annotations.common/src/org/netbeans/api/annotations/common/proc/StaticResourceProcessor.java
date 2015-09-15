@@ -98,7 +98,7 @@ public class StaticResourceProcessor extends AbstractProcessor {
                     boolean ok = false;
                     for (JavaFileManager.Location loc : new JavaFileManager.Location[] {StandardLocation.SOURCE_PATH, /* #181355 */ StandardLocation.CLASS_OUTPUT, StandardLocation.CLASS_PATH, StandardLocation.PLATFORM_CLASS_PATH}) {
                         try {
-                            processingEnv.getFiler().getResource(loc, "", resource);
+                            processingEnv.getFiler().getResource(loc, "", resource).openInputStream().close();
                             ok = true;
                         } catch (IOException ex) {
                             continue;
