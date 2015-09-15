@@ -1444,11 +1444,16 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 }
                 putProperty(BaseDocument.READ_LINE_SEPARATOR_PROP, lineSeparator);
             }
+            if (debugRead) {
+                String ls = (String) getProperty(READ_LINE_SEPARATOR_PROP);
+                if (ls != null) {
+                    ls = org.netbeans.lib.editor.util.CharSequenceUtilities.debugText(text);
+                }
+                LOG.log(Level.INFO, "BaseDocument.read(): Will insert {0} chars, lineSeparatorProperty: \"{1}\", StreamDescriptionProperty: {2}\n",
+                        new Object[] { buffer.length(), ls, getProperty(StreamDescriptionProperty)} );
+            }
             insertString(pos, buffer.toString(), null);
             inited = true; // initialized but not modified
-            if (debugRead) {
-                LOG.log(Level.FINE, "BaseDocument.read(): StreamDescriptionProperty: {0}", getProperty(StreamDescriptionProperty));
-            }
 
             // Workaround for #138951:
             // BaseDocument.read method is only called when loading the document from a file

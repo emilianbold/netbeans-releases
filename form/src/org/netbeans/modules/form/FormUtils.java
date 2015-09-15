@@ -1030,6 +1030,43 @@ public class FormUtils
         return method;
     }
 
+    /**
+     * @param metacomp
+     * @return the type parameters value set for given component, without enclosing < >
+     */
+    public static String getTypeParameters(RADComponent metacomp) {
+        if (metacomp != null) {
+            String typeParams = (String) metacomp.getAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS);
+            if (typeParams != null && typeParams.startsWith("<") && typeParams.endsWith(">")) { // NOI18N
+                return typeParams.substring(1, typeParams.length()-1);
+            }
+            return typeParams;
+        }
+        return null;
+    }
+
+    /**
+     * @param property
+     * @param needType
+     * @return the type parameters code to be used for generating a property code that uses the same type parameters as the component class
+     */
+    public static String getTypeParametersCode(RADProperty property, boolean needType) {
+        if (property != null) {
+            RADComponent metacomp = property.getRADComponent();
+            String typeParams = (String) metacomp.getAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS);
+            if (!needType && typeParams != null && typeParams.length() > 0) {
+                FormDataObject formDO = FormEditor.getFormDataObject(metacomp.getFormModel());
+                if (formDO == null || ClassPathUtils.isJava7ProjectPlatform(formDO.getPrimaryFile())) {
+                    return "<>"; // NOI18N
+                }
+            }
+            if (typeParams != null) {
+                return typeParams;
+            }
+        }
+        return "";
+    }
+
     public static void setupEditorPane(javax.swing.JEditorPane editor, FileObject srcFile, int ccPosition) {
         FormServices services = Lookup.getDefault().lookup(FormServices.class);
         services.setupCodeEditorPane(editor, srcFile, ccPosition);
