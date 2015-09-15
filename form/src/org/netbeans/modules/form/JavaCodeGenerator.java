@@ -1518,6 +1518,10 @@ class JavaCodeGenerator extends CodeGenerator {
                     props = RADComponent.NO_PROPERTIES;
                 }
                 String typeParams = (String)comp.getAuxValue(AUX_TYPE_PARAMETERS);
+                if (typeParams != null && typeParams.startsWith("<") // NOI18N
+                        && ClassPathUtils.isJava7ProjectPlatform(formEditor.getFormDataObject().getPrimaryFile())) {
+                    typeParams = "<>"; // NOI18N
+                }
 
                 String defaultCreationCode = creator.getJavaCreationCode(props, null, null, null, typeParams);
                 buf.append(" = ").append(defaultCreationCode).append(";\n"); // NOI18N

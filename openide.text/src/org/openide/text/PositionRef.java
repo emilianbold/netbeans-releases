@@ -53,6 +53,8 @@ import java.lang.ref.WeakReference;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -68,6 +70,9 @@ import javax.swing.text.StyledDocument;
 */
 public final class PositionRef extends Object implements Serializable, Position {
     static final long serialVersionUID = -4931337398907426948L;
+
+    // -J-Dorg.openide.text.PositionRef.level=FINE
+    private static final Logger LOG = Logger.getLogger(PositionRef.class.getName());
 
     /** Which type of position is currently holded - int X Position */
     transient private Manager.Kind kind;
@@ -106,14 +111,31 @@ public final class PositionRef extends Object implements Serializable, Position 
     */
     private PositionRef(Manager manager, Manager.Kind kind, Position.Bias bias) {
         this.manager = manager;
-        this.kind = kind;
         insertAfter = (bias == Position.Bias.Backward);
-        init();
+        init(kind, "new");
     }
 
     /** Initialize variables after construction and after deserialization. */
-    private void init() {
-        kind = manager.addPosition(this);
+    private void init(Manager.Kind initialKind, String originMsg) {
+        this.kind = initialKind;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine(originMsg + " PositionRef@" + System.identityHashCode(this) + "(manager=" + // NOI18N
+                    System.identityHashCode(this.manager) + ", kind=" + this.kind + // NOI18N
+                    ", backwardBias=" + this.insertAfter + ")\n"); // NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINE, originMsg + "PositionRef", new Throwable());  // NOI18N
+            }
+        }
+        // Possibly update the kind to PositionKind if the document is loaded
+        manager.addPosition(this);
+    }
+    
+    void setKind(Manager.Kind kind) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("PositionRef@" + System.identityHashCode(this) + ": Setting kind from " + this.kind + // NOI18N
+                    " to kind=" + kind + '\n'); // NOI18N
+        }
+        this.kind = kind;
     }
 
     /** Writes the manager and the offset (int). */
@@ -127,8 +149,7 @@ public final class PositionRef extends Object implements Serializable, Position 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         insertAfter = in.readBoolean();
         manager = (Manager) in.readObject();
-        kind = manager.readKind(in);
-        init();
+        init(manager.readKind(in), "Deserialized");
     }
 
     /** @return the appropriate manager for this position ref.
@@ -346,33 +367,8 @@ public final class PositionRef extends Object implements Serializable, Position 
 
             counter = 0;
 
-            /* pre-33165
-                        synchronized(this) {
-                            ChainItem previous = head;
-                            ChainItem ref = previous.next;
-
-                            while(ref != null) {
-                                PositionRef pos = (PositionRef)ref.get();
-                                if(pos == null) {
-                                    // Remove the item from data structure.
-                                    previous.next = ref.next;
-                                } else {
-                                    // Process the PostionRef.
-                                    if(toMemory) {
-                                        pos.kind = pos.kind.toMemory(pos.insertAfter);
-                                    } else {
-                                        pos.kind = pos.kind.fromMemory();
-                                    }
-
-                                    previous = ref;
-                                }
-
-                                ref = ref.next;
-                            }
-                       }
-             */
             // doc.render() acquires doc's readlock
-            new DocumentRenderer(this, DocumentRenderer.PROCESS_POSITIONS, toMemory).render();
+            new DocumentRenderer(DocumentRenderer.PROCESS_POSITIONS, this, toMemory).render();
         }
 
         /** Polls queue and increases the <code>counter</code> accordingly.
@@ -414,22 +410,9 @@ public final class PositionRef extends Object implements Serializable, Position 
         }
 
         /** Adds the position to this manager. */
-        Kind addPosition(final PositionRef pos) {
-            Kind kind;
-
-            /* pre-33165
-                        synchronized(this) {
-                            head.next = new ChainItem(pos, queue, head.next);
-
-                            kind = (doc == null ?
-                                        pos.kind :
-                                        pos.kind.toMemory(pos.insertAfter));
-                        }
-             */
-            kind = (Kind) new DocumentRenderer(this, DocumentRenderer.ADD_POSITION, pos).renderToObject();
+        void addPosition(final PositionRef pos) {
+            new DocumentRenderer(DocumentRenderer.ADD_POSITION, this, pos).renderToObject();
             checkQueue();
-
-            return kind;
         }
 
         //
@@ -500,21 +483,63 @@ public final class PositionRef extends Object implements Serializable, Position 
 
             /** Converts the kind to representation in memory */
             public PositionKind toMemory(boolean insertAfter) {
-                /* pre-33165
-                                // try to find the right position
-                                Position p;
-                                try {
-                                    p = NbDocument.createPosition (doc, getOffset (), insertAfter ? Position.Bias.Forward : Position.Bias.Backward);
-                                } catch (BadLocationException e) {
-                                    p = doc.getEndPosition ();
-                                }
-                                return new PositionKind (p);
-                 */
-                return (PositionKind) new DocumentRenderer(mgr, DocumentRenderer.KIND_TO_MEMORY, this, insertAfter).renderToObject();
+                return (PositionKind) new DocumentRenderer(DocumentRenderer.KIND_TO_MEMORY, this, insertAfter).renderToObject();
+            }
+            
+            protected PositionKind toMemoryLockAcquired(boolean insertAfter) {
+                // try to find the right position
+                Position p;
+
+                int offset = getOffset();
+
+                        // #33165
+                // Try to use line:column instead
+                // Following code can be commented out to retain old behavior
+                if (getClass() == OutKind.class) {
+                    try {
+                        int line = getLine();
+                        int col = getColumn();
+                        Element lineRoot = NbDocument.findLineRootElement(mgr.getDoc());
+
+                        if (line < lineRoot.getElementCount()) {
+                            Element lineElem = lineRoot.getElement(line);
+                            int lineStartOffset = lineElem.getStartOffset();
+                            int lineLen = lineElem.getEndOffset() - lineStartOffset;
+
+                            if (lineLen >= 1) { // should always be at least '\n'
+                                col = Math.min(col, lineLen - 1);
+                                offset = lineStartOffset + col;
+                            }
+                        }
+                    } catch (IOException e) {
+                        // use offset in that case
+                    }
+                }
+
+                try {
+                    p = NbDocument.createPosition(
+                            mgr.getDoc(), offset,
+                            insertAfter ? Position.Bias.Backward : Position.Bias.Forward
+                    );
+                } catch (BadLocationException e) {
+                    p = mgr.getDoc().getEndPosition();
+                }
+
+                return new PositionKind(p, mgr);
+            }
+            
+            /**
+             * Whether this is already a memory implementation so calling {@link #toMemory(boolean)}
+             * would make no difference.
+             *
+             * @return true for in-memory impl or false otherwise.
+             */
+            public boolean isMemoryType() {
+                return false;
             }
 
             /** Converts the kind to representation out from memory */
-            public Kind fromMemory() {
+            protected Kind fromMemoryLockAcquired() {
                 return this;
             }
         }
@@ -539,24 +564,25 @@ public final class PositionRef extends Object implements Serializable, Position 
 
             /** Get the line number */
             public int getLine() {
-                // pre-33165                return NbDocument.findLineNumber(doc, getOffset());
-                return new DocumentRenderer(mgr, DocumentRenderer.POSITION_KIND_GET_LINE, this).renderToInt();
+                return new DocumentRenderer(DocumentRenderer.POSITION_KIND_GET_LINE, this).renderToInt();
+            }
+            
+            int getLineLockAcquired() {
+                return NbDocument.findLineNumber(mgr.getDoc(), getOffset());
             }
 
             /** Get the column number */
             public int getColumn() {
-                // pre-33165                return NbDocument.findLineColumn(doc, getOffset());
-                return new DocumentRenderer(mgr, DocumentRenderer.POSITION_KIND_GET_COLUMN, this).renderToInt();
+                return new DocumentRenderer(DocumentRenderer.POSITION_KIND_GET_COLUMN, this).renderToInt();
+            }
+
+            int getColumnLockAcquired() {
+                return NbDocument.findLineColumn(mgr.getDoc(), getOffset());
             }
 
             /** Writes the kind to stream */
             public void write(DataOutput os) throws IOException {
-                /* pre-33165
-                                int offset = getOffset();
-                                int line = getLine();
-                                int column = getColumn();
-                 */
-                DocumentRenderer renderer = new DocumentRenderer(mgr, DocumentRenderer.POSITION_KIND_WRITE, this);
+                DocumentRenderer renderer = new DocumentRenderer(DocumentRenderer.POSITION_KIND_WRITE, this);
 
                 int offset = renderer.renderToIntIOE();
                 int line = renderer.getLine();
@@ -578,14 +604,32 @@ public final class PositionRef extends Object implements Serializable, Position 
             }
 
             /** Converts the kind to representation in memory */
+            @Override
             public PositionKind toMemory(boolean insertAfter) {
                 return this;
             }
 
+            @Override
+            public PositionKind toMemoryLockAcquired(boolean insertAfter) {
+                return this;
+            }
+
+            @Override
+            public boolean isMemoryType() {
+                return true;
+            }
+            
             /** Converts the kind to representation out from memory */
-            public Kind fromMemory() {
+            @Override
+            protected Kind fromMemoryLockAcquired() {
                 return new OutKind(this, mgr);
             }
+
+            @Override
+            public String toString() {
+                return "PositionKind(offset=" + (pos != null ? pos.getOffset() : -1) + ")"; // NOI18N
+            }
+            
         }
 
         /** Kind for representing position when the document is
@@ -599,19 +643,13 @@ public final class PositionRef extends Object implements Serializable, Position 
 
             /** Constructs the out kind from the position kind.
             */
-            public OutKind(PositionKind kind, PositionRef.Manager mgr) {
+            OutKind(PositionKind kind, PositionRef.Manager mgr) {
                 super(mgr);
-
-                /* pre-33165
-                                int offset = kind.getOffset();
-                                int line = kind.getLine();
-                                int column = kind.getColumn();
-                 */
-                DocumentRenderer renderer = new DocumentRenderer(mgr, DocumentRenderer.OUT_KIND_CONSTRUCTOR, kind);
-
-                int offset = renderer.renderToInt();
-                int line = renderer.getLine();
-                int column = renderer.getColumn();
+                // This constructor is only called from the fromMemoryLockAcquired() method
+                // thus no extra document locking is necessary
+                int offset = kind.getOffset();
+                int line = kind.getLineLockAcquired();
+                int column = kind.getColumnLockAcquired();
 
                 if ((offset < 0) || (line < 0) || (column < 0)) {
                     throw new IndexOutOfBoundsException(
@@ -668,6 +706,12 @@ public final class PositionRef extends Object implements Serializable, Position 
                 os.writeInt(line);
                 os.writeInt(column);
             }
+
+            @Override
+            public String toString() {
+                return "OutKind(offset=" + offset + "[" + (line+1) + ":" + (column+1) + "])"; // NOI18N
+            }
+            
         }
          // OutKind
 
@@ -701,18 +745,16 @@ public final class PositionRef extends Object implements Serializable, Position 
 
             /** Get the line number */
             public int getLine() throws IOException {
-                // pre-33165                return NbDocument.findLineNumber(getCloneableEditorSupport().openDocument(), offset);
                 mgr.getCloneableEditorSupport().openDocument(); // make sure document is fully read
 
-                return new DocumentRenderer(mgr, DocumentRenderer.OFFSET_KIND_GET_LINE, this, offset).renderToIntIOE();
+                return new DocumentRenderer(DocumentRenderer.OFFSET_KIND_GET_LINE, this, offset).renderToIntIOE();
             }
 
             /** Get the column number */
             public int getColumn() throws IOException {
-                // pre-33165                return NbDocument.findLineColumn (getCloneableEditorSupport().openDocument(), offset);
                 mgr.getCloneableEditorSupport().openDocument(); // make sure document fully read
 
-                return new DocumentRenderer(mgr, DocumentRenderer.OFFSET_KIND_GET_COLUMN, this, offset).renderToIntIOE();
+                return new DocumentRenderer(DocumentRenderer.OFFSET_KIND_GET_COLUMN, this, offset).renderToIntIOE();
             }
 
             /** Writes the kind to stream */
@@ -730,6 +772,12 @@ public final class PositionRef extends Object implements Serializable, Position 
                 os.writeInt(-1);
                 os.writeInt(-1);
             }
+
+            @Override
+            public String toString() {
+                return "OffsetKind(offset=" + offset + ")"; // NOI18N
+            }
+            
         }
 
         /** Kind for representing position when the document is
@@ -759,18 +807,6 @@ public final class PositionRef extends Object implements Serializable, Position 
 
             /** Offset */
             public int getOffset() {
-                /* pre-33165
-                                try {
-                                    StyledDocument doc = getCloneableEditorSupport().getDocument();
-                                    if (doc == null) {
-                                        doc = getCloneableEditorSupport().openDocument();
-                                    }
-                                    return NbDocument.findLineOffset (doc, line) + column;
-                                } catch (IOException e) {
-                                    // what to do? hopefully unlikelly
-                                    return 0;
-                                }
-                 */
                 try {
                     StyledDocument doc = mgr.getCloneableEditorSupport().getDocument();
 
@@ -782,7 +818,7 @@ public final class PositionRef extends Object implements Serializable, Position 
                         // PositionRefs can still have LineKind even after doc's opening.
                         // Therefore service the case when the line is above doc's end here.
                         int retOffset = new DocumentRenderer(
-                                mgr, DocumentRenderer.LINE_KIND_GET_OFFSET, this, line, column, doc
+                                DocumentRenderer.LINE_KIND_GET_OFFSET, this, doc
                             ).renderToInt();
                         return retOffset;
                     } catch (IndexOutOfBoundsException e) {
@@ -821,23 +857,28 @@ public final class PositionRef extends Object implements Serializable, Position 
                 os.writeInt(column);
             }
 
-            /** Converts the kind to representation in memory */
-            public PositionKind toMemory(boolean insertAfter) {
-                /* pre-33165
-                                // try to find the right position
-                                Position p;
-                                try {
-                                    p = NbDocument.createPosition (doc, NbDocument.findLineOffset (doc, line) + column, insertAfter ? Position.Bias.Forward : Position.Bias.Backward);
-                                } catch (BadLocationException e) {
-                                    p = doc.getEndPosition ();
-                                }
-                 */
-                Position p = (Position) new DocumentRenderer(
-                        mgr, DocumentRenderer.LINE_KIND_TO_MEMORY, this, line, column, insertAfter
-                    ).renderToObject();
+            @Override
+            public PositionKind toMemoryLockAcquired(boolean insertAfter) {
+                Position p;
+                try {
+                    p = NbDocument.createPosition(
+                            mgr.getDoc(), NbDocument.findLineOffset(mgr.getDoc(), line) + column,
+                            insertAfter ? Position.Bias.Backward : Position.Bias.Forward
+                        );
+                } catch (BadLocationException e) {
+                    p = mgr.getDoc().getEndPosition();
+                } catch (IndexOutOfBoundsException e) {
+                    p = mgr.getDoc().getEndPosition();
+                }
 
                 return new PositionKind(p, mgr);
             }
+
+            @Override
+            public String toString() {
+                return "LineKind([" + (line+1) + ":" + (column+1) + "])"; // NOI18N
+            }
+            
         }
 
         /**
@@ -849,68 +890,55 @@ public final class PositionRef extends Object implements Serializable, Position 
             private static final int POSITION_KIND_GET_LINE = KIND_TO_MEMORY + 1;
             private static final int POSITION_KIND_GET_COLUMN = POSITION_KIND_GET_LINE + 1;
             private static final int POSITION_KIND_WRITE = POSITION_KIND_GET_COLUMN + 1;
-            private static final int OUT_KIND_CONSTRUCTOR = POSITION_KIND_WRITE + 1;
-            private static final int OFFSET_KIND_GET_LINE = OUT_KIND_CONSTRUCTOR + 1;
+            private static final int OFFSET_KIND_GET_LINE = POSITION_KIND_WRITE + 1;
             private static final int OFFSET_KIND_GET_COLUMN = OFFSET_KIND_GET_LINE + 1;
             private static final int LINE_KIND_GET_OFFSET = OFFSET_KIND_GET_COLUMN + 1;
-            private static final int LINE_KIND_TO_MEMORY = LINE_KIND_GET_OFFSET + 1;
-            private static final int PROCESS_POSITIONS = LINE_KIND_TO_MEMORY + 1;
+            private static final int PROCESS_POSITIONS = LINE_KIND_GET_OFFSET + 1;
             private static final int ADD_POSITION = PROCESS_POSITIONS + 1;
-            private final Manager mgr;
             private final int opCode;
+            private final Manager mgr;
             private Kind argKind;
             private boolean argInsertAfter;
             private boolean argToMemory;
             private int argInt;
-            private Object retObject;
-            private int retInt;
-            private int argLine;
-            private int argColumn;
             private PositionRef argPos;
             private StyledDocument argDoc;
+            private Object retObject;
+            private int retInt;
+            private int retLine;
+            private int retColumn;
             private IOException ioException;
 
-            DocumentRenderer(Manager mgr, int opCode, Kind argKind) {
-                this.mgr = mgr;
+            DocumentRenderer(int opCode, Kind argKind) {
                 this.opCode = opCode;
                 this.argKind = argKind;
+                this.mgr = argKind.mgr;
             }
 
-            DocumentRenderer(Manager mgr, int opCode, Kind argKind, boolean argInsertAfter) {
-                this(mgr, opCode, argKind);
+            DocumentRenderer(int opCode, Kind argKind, boolean argInsertAfter) {
+                this(opCode, argKind);
                 this.argInsertAfter = argInsertAfter;
             }
 
-            DocumentRenderer(Manager mgr, int opCode, Kind argKind, int argInt) {
-                this(mgr, opCode, argKind);
+            DocumentRenderer(int opCode, Kind argKind, int argInt) {
+                this(opCode, argKind);
                 this.argInt = argInt;
             }
 
-            DocumentRenderer(Manager mgr, int opCode, Kind argKind, int argLine, int argColumn) {
-                this(mgr, opCode, argKind);
-                this.argLine = argLine;
-                this.argColumn = argColumn;
-            }
-
-            DocumentRenderer(Manager mgr, int opCode, Kind argKind, int argLine, int argColumn, StyledDocument argDoc) {
-                this(mgr, opCode, argKind, argLine, argColumn);
+            DocumentRenderer(int opCode, Kind argKind, StyledDocument argDoc) {
+                this(opCode, argKind);
                 this.argDoc = argDoc;
             }
 
-            DocumentRenderer(Manager mgr, int opCode, Kind argKind, int argLine, int argColumn, boolean argInsertAfter) {
-                this(mgr, opCode, argKind, argLine, argColumn);
-                this.argInsertAfter = argInsertAfter;
-            }
-
-            DocumentRenderer(Manager mgr, int opCode, boolean toMemory) {
-                this.mgr = mgr;
+            DocumentRenderer(int opCode, Manager mgr, boolean toMemory) {
                 this.opCode = opCode;
+                this.mgr = mgr;
                 this.argToMemory = toMemory;
             }
 
-            DocumentRenderer(Manager mgr, int opCode, PositionRef argPos) {
-                this.mgr = mgr;
+            DocumentRenderer(int opCode, Manager mgr, PositionRef argPos) {
                 this.opCode = opCode;
+                this.mgr = mgr;
                 this.argPos = argPos;
             }
 
@@ -964,111 +992,53 @@ public final class PositionRef extends Object implements Serializable, Position 
             }
 
             int getLine() {
-                return argLine;
+                return retLine;
             }
 
             int getColumn() {
-                return argColumn;
+                return retColumn;
             }
 
             public void run() {
                 try {
                     switch (opCode) {
                     case KIND_TO_MEMORY: {
-                        // try to find the right position
-                        Position p;
-
-                        int offset = argKind.getOffset();
-
-                        // #33165
-                        // Try to use line:column instead
-                        // Following code can be commented out to retain old behavior
-                        if (argKind.getClass() == OutKind.class) {
-                            try {
-                                int line = argKind.getLine();
-                                int col = argKind.getColumn();
-                                Element lineRoot = NbDocument.findLineRootElement(mgr.getDoc());
-
-                                if (line < lineRoot.getElementCount()) {
-                                    Element lineElem = lineRoot.getElement(line);
-                                    int lineStartOffset = lineElem.getStartOffset();
-                                    int lineLen = lineElem.getEndOffset() - lineStartOffset;
-
-                                    if (lineLen >= 1) { // should always be at least '\n'
-                                        col = Math.min(col, lineLen - 1);
-                                        offset = lineStartOffset + col;
-                                    }
-                                }
-                            } catch (IOException e) {
-                                // use offset in that case
-                            }
-                        }
-
-                        try {
-                            p = NbDocument.createPosition(
-                                    mgr.getDoc(), offset,
-                                    argInsertAfter ? Position.Bias.Backward : Position.Bias.Forward
-                                );
-                        } catch (BadLocationException e) {
-                            p = mgr.getDoc().getEndPosition();
-                        }
-
-                        retObject = new PositionKind(p, mgr);
-
+                        retObject = argKind.toMemoryLockAcquired(argInsertAfter);
                         break;
                     }
 
                     case POSITION_KIND_GET_LINE: {
-                        retInt = NbDocument.findLineNumber(mgr.getDoc(), argKind.getOffset());
-
+                        retInt = ((PositionKind)argKind).getLineLockAcquired();
                         break;
                     }
 
                     case POSITION_KIND_GET_COLUMN: {
-                        retInt = NbDocument.findLineColumn(mgr.getDoc(), argKind.getOffset());
-
+                        retInt = ((PositionKind)argKind).getColumnLockAcquired();
                         break;
                     }
 
-                    case POSITION_KIND_WRITE:
-                    case OUT_KIND_CONSTRUCTOR: {
+                    case POSITION_KIND_WRITE: {
                         retInt = argKind.getOffset();
-                        argLine = argKind.getLine();
-                        argColumn = argKind.getColumn();
+                        retLine = argKind.getLine();
+                        retColumn = argKind.getColumn();
 
                         break;
                     }
 
                     case OFFSET_KIND_GET_LINE: {
-                        retInt = NbDocument.findLineNumber(mgr.getCloneableEditorSupport().openDocument(), argInt);
+                        retInt = NbDocument.findLineNumber(argKind.mgr.getCloneableEditorSupport().openDocument(), argInt);
 
                         break;
                     }
 
                     case OFFSET_KIND_GET_COLUMN: {
-                        retInt = NbDocument.findLineColumn(mgr.getCloneableEditorSupport().openDocument(), argInt);
+                        retInt = NbDocument.findLineColumn(argKind.mgr.getCloneableEditorSupport().openDocument(), argInt);
 
                         break;
                     }
 
                     case LINE_KIND_GET_OFFSET: {
-                        retInt = NbDocument.findLineOffset(argDoc, argLine) + argColumn;
-
-                        break;
-                    }
-
-                    case LINE_KIND_TO_MEMORY: {
-                        // try to find the right position
-                        try {
-                            retObject = NbDocument.createPosition(
-                                    mgr.getDoc(), NbDocument.findLineOffset(mgr.getDoc(), argLine) + argColumn,
-                                    argInsertAfter ? Position.Bias.Backward : Position.Bias.Forward
-                                );
-                        } catch (BadLocationException e) {
-                            retObject = mgr.getDoc().getEndPosition();
-                        } catch (IndexOutOfBoundsException e) {
-                            retObject = mgr.getDoc().getEndPosition();
-                        }
+                        retInt = NbDocument.findLineOffset(argDoc, argKind.getLine()) + argKind.getColumn();
 
                         break;
                     }
@@ -1077,25 +1047,35 @@ public final class PositionRef extends Object implements Serializable, Position 
                         synchronized (mgr.getLock()) {
                             ChainItem previous = mgr.head;
                             ChainItem ref = previous.next;
-
+                            int refCount = 0;
+                            int emptyRefCount = 0;
                             while (ref != null) {
                                 PositionRef pos = ref.get();
-
+                                refCount++;
                                 if (pos == null) {
                                     // Remove the item from data structure.
                                     previous.next = ref.next;
+                                    emptyRefCount++;
                                 } else {
                                     // Process the PostionRef.
                                     if (argToMemory) {
-                                        pos.kind = pos.kind.toMemory(pos.insertAfter);
-                                    } else {
-                                        pos.kind = pos.kind.fromMemory();
+                                        if (!pos.kind.isMemoryType()) {
+                                            pos.setKind(pos.kind.toMemoryLockAcquired(pos.insertAfter));
+                                        }
+                                    } else { // From memory
+                                        if (pos.kind.isMemoryType()) {
+                                            pos.setKind(pos.kind.fromMemoryLockAcquired());
+                                        }
                                     }
 
                                     previous = ref;
                                 }
 
                                 ref = ref.next;
+                            }
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("PositionRef.PROCESS_POSITIONS: toMemory=" + argToMemory + // NOI18N
+                                        ", refCount=" + refCount + ", emptyRefCount=" + emptyRefCount); // NOI18N
                             }
                         }
 
@@ -1110,9 +1090,9 @@ public final class PositionRef extends Object implements Serializable, Position 
                             mgr.support.howToReproduceDeadlock40766(false);
                             mgr.head.next = new ChainItem(argPos, mgr.queue, mgr.head.next);
 
-                            retObject = ((mgr.getDoc() == null) ? argPos.kind : argPos.kind.toMemory(
-                                    argPos.insertAfter
-                                ));
+                            if (mgr.getDoc() != null) {
+                                argPos.setKind(argPos.kind.toMemory(argPos.insertAfter));
+                            }
                         }
 
                         break;

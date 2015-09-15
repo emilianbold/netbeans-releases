@@ -46,7 +46,12 @@ package org.netbeans.modules.form.editors2;
 
 import java.awt.Component;
 import javax.swing.*;
+import org.netbeans.modules.form.FormAwareEditor;
+import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.FormProperty;
+import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.NamedPropertyEditor;
+import org.netbeans.modules.form.RADProperty;
 import org.netbeans.modules.form.editors.StringArrayCustomEditor;
 import org.netbeans.modules.form.editors.StringArrayEditor;
 import org.openide.util.NbBundle;
@@ -56,9 +61,10 @@ import org.openide.util.NbBundle;
  * @author Tomas Pavek
  */
 
-public class ListModelEditor extends StringArrayEditor implements NamedPropertyEditor {
+public class ListModelEditor extends StringArrayEditor implements NamedPropertyEditor, FormAwareEditor {
 
-    private ListModel listModel = null;
+    private ListModel listModel;
+    private RADProperty property;
 
     @Override
     public void setValue(Object val) {
@@ -94,14 +100,21 @@ public class ListModelEditor extends StringArrayEditor implements NamedPropertyE
 
     @Override
     public String getJavaInitializationString() {
-        if (getStrings(true).equals(""))
+        if (getStrings(true).equals("")) {
             return null;
-        StringBuilder buf = new StringBuilder("new javax.swing.AbstractListModel() {\n"); // NOI18N
+        }
+        StringBuilder buf = new StringBuilder();
+        buf.append("new javax.swing.AbstractListModel"); // NOI18N
+        buf.append(FormUtils.getTypeParametersCode(property, true));
+        buf.append("() {\n"); // NOI18N
         buf.append("String[] strings = { "); // NOI18N
         buf.append(getStrings(true));
         buf.append(" };\n"); // NOI18N
         buf.append("public int getSize() { return strings.length; }\n"); // NOI18N
-        buf.append("public Object getElementAt(int i) { return strings[i]; }\n"); // NOI18N
+        buf.append("public ");
+        String typeParam = property != null ? FormUtils.getTypeParameters(property.getRADComponent()) : null;
+        buf.append("String".equals(typeParam) ? typeParam : "Object"); // NOI18N
+        buf.append(" getElementAt(int i) { return strings[i]; }\n"); // NOI18N
         buf.append("}"); // NOI18N
 
         return buf.toString();
@@ -141,5 +154,16 @@ public class ListModelEditor extends StringArrayEditor implements NamedPropertyE
                     ListModelEditor.class,
                     "ListModelEditor.label.text")
                 );  // NOI18N
+    }
+
+    @Override
+    public void setContext(FormModel formModel, FormProperty property) {
+        if (property instanceof RADProperty) {
+            this.property = (RADProperty) property;
+        }
+    }
+
+    @Override
+    public void updateFormVersionLevel() {
     }
 }

@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import java.io.*;
+import java.lang.ref.Reference;
 
 import java.util.*;
 
@@ -244,12 +245,20 @@ public abstract class DocumentLine extends Line {
         return pos.getCloneableEditorSupport().hashCode();
     }
 
+    private static int dlEqualsCounter; // Counter for Line.Set.whm iterations
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof DocumentLine) {
             DocumentLine dl = (DocumentLine) o;
 
             if (dl.pos.getCloneableEditorSupport() == pos.getCloneableEditorSupport()) {
+                dlEqualsCounter++;
+                if ((dlEqualsCounter & 127) == 127) {
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("DocumentLine.equals() performed " + dlEqualsCounter + " times."); // NOI18N
+                    }
+                }
                 return dl.getLineNumber() == getLineNumber();
             }
         }
@@ -474,6 +483,10 @@ public abstract class DocumentLine extends Line {
     /** Attach created Line.Part to the parent Line */
     void addLinePart(DocumentLine.Part linePart) {
         lineParts.add(linePart);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "DocumentLine.addLinePart(): Added part at column={0}, length={1}, lineParts.size()={2}", // NOI18N
+                    new Object[] { linePart.getColumn(), linePart.getLength(), lineParts.size()});
+        }
     }
 
     /** Move Line.Part from this Line to a new one*/
@@ -976,8 +989,9 @@ public abstract class DocumentLine extends Line {
         private List<Line> getLinesFromRange(int startLineNumber, int endLineNumber) {
             List<Line> linesInRange = new ArrayList<Line>(10);
 
-            synchronized (findWeakHashMap()) {
-                for (Line line : findWeakHashMap().keySet()) {
+            Map<Line,Reference<Line>> whm = findWeakHashMap();
+            synchronized (whm) {
+                for (Line line : whm.keySet()) {
                     int lineNumber = line.getLineNumber();
 
                     if ((startLineNumber <= lineNumber) && (lineNumber <= endLineNumber)) {

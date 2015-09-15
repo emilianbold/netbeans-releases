@@ -131,6 +131,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.CloseCookie;
@@ -548,8 +549,11 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
             // The form was loaded with some non-fatal errors - some data
             // was not loaded - show a warning about possible data loss.
             // The dialog is shown later to let the designer opening complete.
-            final Object[] options = new Object[] { new JButton(FormUtils.getBundleString("CTL_ViewOnly")), // NOI18N
-                                                    new JButton(FormUtils.getBundleString("CTL_AllowEditing")), // NOI18N
+            JButton viewButton = new JButton();
+            Mnemonics.setLocalizedText(viewButton, FormUtils.getBundleString("CTL_ViewOnly")); // NOI18N
+            JButton editButton = new JButton();
+            Mnemonics.setLocalizedText(editButton, FormUtils.getBundleString("CTL_AllowEditing")); // NOI18N
+            final Object[] options = new Object[] { viewButton, editButton,
                                                     NotifyDescriptor.CANCEL_OPTION };
             final DialogDescriptor dd = formEditor.reportLoadingErrors(options);
             if (dd != null) {

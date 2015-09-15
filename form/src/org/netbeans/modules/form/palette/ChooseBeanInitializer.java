@@ -71,25 +71,32 @@ class ChooseBeanInitializer implements PaletteItem.ComponentInitializer {
         dd.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
         HelpCtx.setHelpIDString(panel, "f1_gui_choose_bean_html"); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        String className = null;
         boolean invalidInput;
         do {
             invalidInput = false;
             dialog.setVisible(true);
             if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                String className = panel.getEnteredName();
-                if (!SourceVersion.isName(className)) {
+                className = panel.getEnteredName();
+                String checkName;
+                if (className != null && className.endsWith(">") && className.indexOf("<") > 0) { // NOI18N
+                    checkName = className.substring(0, className.indexOf("<")); // NOI18N
+                } else {
+                    checkName = className;
+                }
+                if (!SourceVersion.isName(checkName)) {
                     invalidInput = true;
                     DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(ChooseBeanInitializer.class, "MSG_InvalidClassName"), // NOI18N
                                                      NotifyDescriptor.WARNING_MESSAGE));
-                } else if (!PaletteItem.checkDefaultPackage(className, classPathRep)) {
+                } else if (!PaletteItem.checkDefaultPackage(checkName, classPathRep)) {
                     invalidInput = true;
                 }
-                item.setClassFromCurrentProject(className, classPathRep);
             } else {
                 return false;
             }
         } while (invalidInput);
+        item.setClassFromCurrentProject(className, classPathRep);
         return true;
     }
 
