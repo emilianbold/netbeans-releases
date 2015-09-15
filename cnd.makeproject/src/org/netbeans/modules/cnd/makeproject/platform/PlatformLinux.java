@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public class PlatformLinux extends Platform {
-    public static final String NAME = "Linux-x86"; // NOI18N
+    public static final String NAME = "Linux"; // NOI18N
 
     private static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
         StdLibraries.getStandardLibary("Motif"), // NOI18N
@@ -62,7 +62,7 @@ public class PlatformLinux extends Platform {
     };
     
     public PlatformLinux() {
-        super(NAME, "Linux x86", PlatformTypes.PLATFORM_LINUX); // NOI18N
+        super(NAME, "Linux", PlatformTypes.PLATFORM_LINUX); // NOI18N
     }
     
     @Override
