@@ -62,6 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
@@ -69,6 +70,11 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.findbugs.options.FindBugsPanel;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
@@ -148,6 +154,32 @@ public class AnalyzerImpl implements Analyzer {
         for (FileObject file : ctx.getScope().getFiles()) {
             if (cancel.get()) return Collections.emptyList();
             ClassPath source = ClassPath.getClassPath(file, ClassPath.SOURCE);
+            if (source == null && file.isFolder()) {
+                try {
+                    Project p = ProjectManager.getDefault().findProject(file);
+                    if (p != null) {
+                        Sources sources = ProjectUtils.getSources(p);
+                        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                        if (groups.length > 0) {
+                            int[] subElementsSize = new int[groups.length];
+                            Arrays.fill(subElementsSize, elementsSize[i] / groups.length);
+                            subElementsSize[groups.length - 1] += elementsSize[i] % groups.length;
+                            for (int j = 0; j < groups.length; j++) {
+                                result.addAll(doRunFindBugs(groups[j].getRootFolder(),
+                                        total, subElementsSize[j], uncompilable));
+                                total += subElementsSize[j];
+                            }
+                            i++;
+                        } else {
+                            total += elementsSize[i++];
+                        }
+                        continue;
+                    }
+                } catch (IOException ex) {
+                    RunFindBugs.LOG.log(Level.FINE, "Exception while trying to open file as project", ex);
+                }
+            }
+
             FileObject sr = source != null ? source.findOwnerRoot(file) : null;
             if (sr != null) {
                 for (ErrorDescription ed : doRunFindBugs(sr, total, elementsSize[i], uncompilable)) {
