@@ -43,13 +43,17 @@ package org.netbeans.modules.java.hints.suggestions;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type.TypeVar;
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
@@ -191,9 +195,7 @@ public class TooStrongCast {
                 }
                 // remove typecast, it is completely useless...
                 if (report) {
-                    return ErrorDescriptionFactory.forTree(ctx, tct.getType(), TEXT_UnnecessaryCast(
-                            currentTypeName), new RemoveCast(info, ctx.getPath(), exp.getTheExpression(), currentTypeName).
-                            toEditorFix());
+                    return reportUselessCast(ctx, tct, currentTypeName, info, exp, castType);
                 }
             } 
             if (!info.getTypeUtilities().isCastable(casteeType, tm) || 
@@ -248,6 +250,66 @@ public class TooStrongCast {
         String msg = TEXT_TooStrongCast(currentTypeName, lst);
         
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), msg, fixes);
+    }
+
+    private static ErrorDescription reportUselessCast(HintContext ctx, TypeCastTree tct, 
+            CharSequence currentTypeName, CompilationInfo info, ExpectedTypeResolver exp,
+            TypeMirror castType) {
+        
+        if (!Utilities.isValidType(castType)) {
+            return null;
+        }
+        if (castType.getKind().isPrimitive()) {
+            TreePath binParent = findBinaryParent(ctx.getPath().getParentPath());
+            if (binParent != null) {
+                Map<Tree, TypeMirror> exclusions = (Map<Tree,TypeMirror>)ctx.getInfo().getCachedValue(RemoveCast.class);
+                if (exclusions == null) {
+                    exclusions = new HashMap<>();
+                    ctx.getInfo().putCachedValue(RemoveCast.class, exclusions, CompilationInfo.CacheClearPolicy.ON_TASK_END);
+                } else {
+                    TypeMirror x = exclusions.get(binParent.getLeaf());
+                    if (x != null && ctx.getInfo().getTypes().isSameType(x, castType)) {
+                        return null;
+                    }
+                }
+                exclusions.put(binParent.getLeaf(), castType);
+            }
+        }
+        
+        return ErrorDescriptionFactory.forTree(ctx, tct.getType(), TEXT_UnnecessaryCast(
+                currentTypeName), new RemoveCast(info, ctx.getPath(), exp.getTheExpression(), currentTypeName).
+                        toEditorFix());
+    }
+    
+    /**
+     * Checks that the same type cast removal is not suggested in the left operand
+     * of a binary op: both casts cannot be removed, otherwise the operation
+     * could change semantic.
+     * @param path
+     * @param useless
+     * @return 
+     */
+    private static TreePath findBinaryParent(TreePath path) {
+        O: while (path != null) {
+            Tree l = path.getLeaf();
+            Tree.Kind k = l.getKind();
+            if (k.asInterface().isAssignableFrom(StatementTree.class)) {
+                return null;
+            }
+            switch (k) {
+                case PLUS: case MINUS: case MULTIPLY: case DIVIDE: case REMAINDER:
+                case CONDITIONAL_EXPRESSION:
+                    break O;
+                    
+                case PARENTHESIZED:
+                    break;
+                    
+                default:
+                    return null;
+            }
+            path = path.getParentPath();
+        }
+        return path;
     }
 
     /**
