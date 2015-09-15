@@ -47,15 +47,20 @@ package org.openide.loaders;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1190,6 +1195,78 @@ public class FolderChildrenTest extends NbTestCase {
         }
     }
 
+    /**
+     * Test for bug 252073 - Can expand no explorer nodes if one directory is
+     * very slow
+     * @throws java.io.IOException
+     */
+    public void testSlowFSDoesNotBlockFastFS() throws IOException {
+
+        final Semaphore contentSemaphore = new Semaphore(0);
+        final Semaphore orderingSemaphore = new Semaphore(0);
+
+        FileObject fastRoot = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fastContent = fastRoot.createFolder("content");
+        fastContent.createData("a.txt");
+        fastContent.createData("b.txt");
+        fastContent.createData("c.txt");
+
+        /*
+         * Slow filesystem is slow because it must wait for the semaphore before
+         * it can return children of folder "content".
+         */
+        FileObject slowRoot = new SlowFileSystem(contentSemaphore).getRoot();
+        FileObject slowContent = slowRoot.getFileObject("content");
+
+        final Node fastNode = DataObject.find(fastContent).getNodeDelegate();
+        final Node slowNode = DataObject.find(slowContent).getNodeDelegate();
+
+        assertNotNull(fastNode);
+        assertNotNull(slowNode);
+
+        // Ensure the fast node can finish before the slow node
+        final AtomicInteger resultSlow = new AtomicInteger(0);
+        final AtomicInteger resultFast = new AtomicInteger(0);
+
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                orderingSemaphore.release();
+                int res = slowNode.getChildren().getNodesCount(true);
+                resultSlow.set(res);
+            }
+        });
+
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // wait until slow node has been posted
+                    orderingSemaphore.acquire(1);
+                    int res = fastNode.getChildren().getNodesCount(true);
+                    resultFast.set(res);
+                    contentSemaphore.release(); // we have overtaken slow node,
+                                                // let it continue now
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                fastNode.getChildren();
+            }
+        });
+        t1.start();
+        t2.start();
+        try {
+            t1.join();
+            t2.join();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        /* If slower thread blocks faster thread, timeout occurs, empty child
+         * list is returned from SlowFileSystem#children and the test fails. */
+        assertTrue("Slower folder should not block faster folder",
+            resultFast.get() == 3 && resultSlow.get() == 3);
+    }
+
     public static final class FileBasedFilterOffMutex implements
             DataFilter.FileBased {
 
@@ -1375,4 +1452,106 @@ public class FolderChildrenTest extends NbTestCase {
         }
     }
 
+    /**
+     * Slow file system for {@link #testSlowFSDoesNotBlockFastFS()}.
+     */
+    private static class SlowFileSystem extends AbstractFileSystem
+            implements AbstractFileSystem.List, AbstractFileSystem.Info {
+
+        private final Semaphore contentSemaphore;
+
+        /**
+         * Semaphore that makes listing of folder "content" slow. The listing
+         * is blocked until the semaphore is released.
+         *
+         * @param contentSemaphore
+         */
+        @SuppressWarnings("LeakingThisInConstructor")
+        public SlowFileSystem(Semaphore contentSemaphore) {
+            this.contentSemaphore = contentSemaphore;
+            this.info = this;
+            this.list = this;
+            this.attr = new DefaultAttributes(info, null, list);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Slow File System";
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
+        }
+
+        @Override
+        public String[] children(String f) {
+            if ("".equals(f)) {
+                return new String[] {"content"};
+            } else if ("content".equals(f)) {
+                try {
+                    if (contentSemaphore.tryAcquire(1, 10, TimeUnit.SECONDS)) {
+                        return new String[] {"a.txt", "b.txt", "c.txt"};
+                    } else {
+                        return new String[0];
+                    }
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return new String[0];
+                }
+            } else {
+                return new String[0];
+            }
+        }
+
+        @Override
+        public Date lastModified(String name) {
+            return new Date(123456);
+        }
+
+        @Override
+        public boolean folder(String name) {
+            return "".equals(name) || "content".equals(name);
+        }
+
+        @Override
+        public boolean readOnly(String name) {
+            return true;
+        }
+
+        @Override
+        public String mimeType(String name) {
+            return "text/plain";
+        }
+
+        @Override
+        public long size(String name) {
+            return 0;
+        }
+
+        @Override
+        public InputStream inputStream(String name) throws FileNotFoundException {
+            return new ByteArrayInputStream(new byte[] {});
+        }
+
+        @Override
+        public OutputStream outputStream(String name) throws IOException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public void lock(String name) throws IOException {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public void unlock(String name) {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public void markUnimportant(String name) {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+    }
 }
