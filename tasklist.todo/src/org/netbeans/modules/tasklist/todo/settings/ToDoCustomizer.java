@@ -47,6 +47,8 @@ package org.netbeans.modules.tasklist.todo.settings;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -111,6 +113,18 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
         table.getSelectionModel().addListSelectionListener( new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 enableButtons();
+            }
+        });
+        table.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("tableCellEditor".equals(evt.getPropertyName())) { //NOI18N
+                    if (!table.isEditing()) { //  A cell has stopped editing
+                        fireChanged();
+                        firePropertyChange(OptionsPanelController.PROP_CHANGED, new Boolean(changed), Boolean.TRUE);
+                        firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+                    }
+                }
             }
         });
         jScrollPane1.getViewport().setOpaque( false );
