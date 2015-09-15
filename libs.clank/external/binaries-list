@@ -1,6 +1,6 @@
-#changeset:   15683:bf633f9caf64
+#changeset:   15695:ffc5167c3f2f
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Sep 14 15:49:22 2015 +0300
-#summary:     needComments on Callback level
-A8C1DD1ECB47D9424506C3BB0B40D7148278006E clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Wed Sep 16 00:01:36 2015 +0300
+#summary:     fixed path.root_name(), path.root_directory() and path.root_path for remote + added test
+9C83889E77EA39056757E38EA33E2820C2B6EC5C clank_0.3.6.zip
