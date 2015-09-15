@@ -65,23 +65,23 @@ import org.openide.util.ImageUtilities;
  */
 public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
 
-    @StaticResource(searchClasspath=true)
+    //@StaticResource(searchClasspath=true)
     private static final String ICON_FIND = "org/openide/awt/resources/quicksearch/findMenu.png";             // NOI18N
-    @StaticResource(searchClasspath=true)
+    //@StaticResource(searchClasspath=true)
     private static final String ICON_PROGRESS_0 = "org/openide/awt/resources/quicksearch/progress_0.png"; // NOI18N
-    @StaticResource(searchClasspath=true)
+    //@StaticResource(searchClasspath=true)
     private static final String ICON_PROGRESS_1 = "org/openide/awt/resources/quicksearch/progress_1.png"; // NOI18N
-    @StaticResource(searchClasspath=true)
+    //@StaticResource(searchClasspath=true)
     private static final String ICON_PROGRESS_2 = "org/openide/awt/resources/quicksearch/progress_2.png"; // NOI18N
-    @StaticResource(searchClasspath=true)
+    //@StaticResource(searchClasspath=true)
     private static final String ICON_PROGRESS_3 = "org/openide/awt/resources/quicksearch/progress_3.png"; // NOI18N
-    @StaticResource(searchClasspath=true)
+    //@StaticResource(searchClasspath=true)
     private static final String ICON_PROGRESS_4 = "org/openide/awt/resources/quicksearch/progress_4.png"; // NOI18N
-    @StaticResource(searchClasspath=true)
+    //@StaticResource(searchClasspath=true)
     private static final String ICON_PROGRESS_5 = "org/openide/awt/resources/quicksearch/progress_5.png"; // NOI18N
-    @StaticResource(searchClasspath=true)
+    //@StaticResource(searchClasspath=true)
     private static final String ICON_PROGRESS_6 = "org/openide/awt/resources/quicksearch/progress_6.png"; // NOI18N
-    @StaticResource(searchClasspath=true)
+    //@StaticResource(searchClasspath=true)
     private static final String ICON_PROGRESS_7 = "org/openide/awt/resources/quicksearch/progress_7.png"; // NOI18N
     private static final String[] ICON_PROGRESS = new String[] {
         ICON_PROGRESS_0, ICON_PROGRESS_1, ICON_PROGRESS_2, ICON_PROGRESS_3,
