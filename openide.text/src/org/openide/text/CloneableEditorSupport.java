@@ -975,6 +975,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         // call outside in the sync block
         synchronized (LOCK_PRINTING) {
             if (lineSetWHM != null) {
+                Line.LOG.log(Level.FINE, "CloneableEditorSupport.findWeakHashMap() whm.size()={0}", lineSetWHM.size());
                 return lineSetWHM;
             }
 
