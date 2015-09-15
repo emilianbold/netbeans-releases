@@ -46,7 +46,12 @@ package org.netbeans.modules.form.editors2;
 
 import java.awt.Component;
 import javax.swing.*;
+import org.netbeans.modules.form.FormAwareEditor;
+import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.FormProperty;
+import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.NamedPropertyEditor;
+import org.netbeans.modules.form.RADProperty;
 import org.netbeans.modules.form.editors.StringArrayCustomEditor;
 import org.netbeans.modules.form.editors.StringArrayEditor;
 import org.openide.util.NbBundle;
@@ -57,9 +62,10 @@ import org.openide.util.NbBundle;
  */
 
 public class ComboBoxModelEditor extends StringArrayEditor 
-       implements NamedPropertyEditor {
+       implements NamedPropertyEditor, FormAwareEditor {
 
-    private ComboBoxModel comboModel = null;
+    private ComboBoxModel comboModel;
+    private RADProperty property;
 
     @Override
     public void setValue(Object val) {
@@ -95,10 +101,13 @@ public class ComboBoxModelEditor extends StringArrayEditor
 
     @Override
     public String getJavaInitializationString() {
-        if (getStrings(true).equals("")) // NOI18N
+        if (getStrings(true).equals("")) { // NOI18N
             return null;
-        StringBuilder buf = new StringBuilder(
-                "new javax.swing.DefaultComboBoxModel(new String[] { "); // NOI18N
+        }
+        StringBuilder buf = new StringBuilder();
+        buf.append("new javax.swing.DefaultComboBoxModel"); // NOI18N
+        buf.append(FormUtils.getTypeParametersCode(property, false));
+        buf.append("(new String[] { "); // NOI18N
         buf.append(getStrings(true));
         buf.append(" })"); // NOI18N
 
@@ -131,5 +140,16 @@ public class ComboBoxModelEditor extends StringArrayEditor
                     ComboBoxModelEditor.class, 
                     "ComboBoxModelEditor.label.text")
                 ); // NOI18N
+    }
+
+    @Override
+    public void setContext(FormModel formModel, FormProperty property) {
+        if (property instanceof RADProperty) {
+            this.property = (RADProperty) property;
+        }
+    }
+
+    @Override
+    public void updateFormVersionLevel() {
     }
 }

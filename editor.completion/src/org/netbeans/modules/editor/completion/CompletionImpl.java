@@ -1091,19 +1091,17 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             String prefLC = prefix.toLowerCase();
             for (CompletionItem item : items) {
                 CharSequence text = item.getInsertPrefix();
-                boolean isSmart = item.getSortPriority() < 0;
+                int prio = item.getSortPriority() * 1000;
+                boolean isSmart = prio < 0;
                 String name = text != null ? text.toString() : null;
                 if (name != null) {
                     for (String part : name.split("\\.")) {
                         if (part.startsWith(prefix) && (!(item instanceof LazyCompletionItem) || ((LazyCompletionItem)item).accept())) {
                             return idx;
                         }
-                        int d = getDistance(part.toLowerCase(), prefLC);
+                        int d = prio + getDistance(part.toLowerCase(), prefLC);
                         if (part.toLowerCase().startsWith(prefLC)) {
                             d -= 500;
-                        }
-                        if (isSmart) {
-                            d -= 1000;
                         }
                         if (d < distance) {
                             distance = d;

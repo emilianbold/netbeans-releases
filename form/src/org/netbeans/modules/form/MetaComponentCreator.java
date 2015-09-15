@@ -148,11 +148,7 @@ public class MetaComponentCreator {
 
         RADComponent metacomp = createAndAddComponent(compClass, targetComp, constraints, exactTargetMatch);
         if (metacomp != null) {
-            String typeParams = classSource.getTypeParameters();
-            if (typeParams != null) {
-                metacomp.setAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS, typeParams);
-                JavaCodeGenerator.setupComponentFromAuxValues(metacomp);
-            }
+            setUserTypeParams(metacomp, classSource.getTypeParameters());
         }
         return metacomp;
     }
@@ -285,11 +281,7 @@ public class MetaComponentCreator {
             public Object run() throws Exception {
                 preMetaComp = createVisualComponent(compClass, compName); // this may fail and throw exception
                 if (preMetaComp != null) {
-                    String typeParams = classSource.getTypeParameters();
-                    if (typeParams != null) {
-                        preMetaComp.setAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS, typeParams);
-                        JavaCodeGenerator.setupComponentFromAuxValues(preMetaComp);
-                    }
+                    setUserTypeParams(preMetaComp, classSource.getTypeParameters());
                 }
                 return preMetaComp;
             }
@@ -394,6 +386,26 @@ public class MetaComponentCreator {
         if (preMetaComp != null) {
             preMetaComp = null;
             preLayoutComp = null;
+        }
+    }
+
+    private static void setUserTypeParams(RADComponent created, String typeParams) {
+        if (typeParams != null) {
+            RADComponent typedComp = null;
+            if (created.getAuxValue("autoScrollPane") != null && created instanceof RADVisualContainer) { // in auto scrollpane
+                RADVisualComponent[] comps = ((RADVisualContainer)created).getSubComponents();
+                if (comps != null && comps.length == 1) {
+                    typedComp = comps[0];
+                }
+            } else {
+                typedComp = created;
+            }
+            if (typedComp != null) {
+                typedComp.setAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS, typeParams);
+                if (typedComp.isInModel()) {
+                    JavaCodeGenerator.setupComponentFromAuxValues(typedComp);
+                }
+            }
         }
     }
 
@@ -1644,6 +1656,7 @@ public class MetaComponentCreator {
                     prefix + 1, prefix + 2, prefix + 3, prefix + 4
                 });
                 changes.put("model", propValue); // NOI18N
+                changes.put(JavaCodeGenerator.AUX_TYPE_PARAMETERS, "<Object>"); // NOI18N
             }
 
         } else if (comp instanceof JList) {
@@ -1656,6 +1669,7 @@ public class MetaComponentCreator {
                     defaultModel.addElement(prefix + i); // NOI18N
                 }
                 changes.put("model", defaultModel); // NOI18N
+                changes.put(JavaCodeGenerator.AUX_TYPE_PARAMETERS, "<Object>"); // NOI18N
             }
         } else if (comp instanceof JTextArea) {
             JTextArea textArea = (JTextArea)comp;
@@ -1680,6 +1694,8 @@ public class MetaComponentCreator {
                     prop.setChangeFiring(true);
                 }
                 catch (Exception e) {} // never mind, ignore
+            } else if (propName.startsWith("JavaCodeGenerator_")) { // NOI18N
+                newMetaComp.setAuxValue(propName, propValue);
             }
         }
 

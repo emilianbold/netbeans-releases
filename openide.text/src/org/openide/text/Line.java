@@ -55,6 +55,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -536,6 +537,7 @@ public abstract class Line extends Annotatable implements Serializable {
         Map<Line,Reference<Line>> findWeakHashMap() {
             synchronized (date) {
                 if (whm != null) {
+                    LOG.log(Level.FINE, "Line.Set.findWeakHashMap() whm.size()={0}", whm.size());
                     return whm;
                 }
 
@@ -581,7 +583,6 @@ public abstract class Line extends Annotatable implements Serializable {
          */
         final Line findLine(Line line) {
             Map<Line,Reference<Line>> lines = findWeakHashMap();
-
             synchronized (lines) {
                 Reference<Line> r = lines.get(line);
                 Line in = r != null ? r.get() : null;
