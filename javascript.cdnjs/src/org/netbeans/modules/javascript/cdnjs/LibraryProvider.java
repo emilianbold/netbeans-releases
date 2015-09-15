@@ -262,7 +262,7 @@ public final class LibraryProvider {
          * 
          * @return URL of the query to perform.
          */
-        private String getSearchURL() {
+        String getSearchURL() {
             String encodedSearchTerm;
             try {
                 encodedSearchTerm = URLEncoder.encode(searchTerm, "UTF-8"); // NOI18N
@@ -291,7 +291,7 @@ public final class LibraryProvider {
          * @param url URL whose content should be read.
          * @return content of the given URL.
          */
-        private String readUrl(String url) {
+        String readUrl(String url) {
             String urlContent = null;
             try {
                 URL urlObject = new URL(url);
@@ -319,7 +319,7 @@ public final class LibraryProvider {
          * @param data search result.
          * @return libraries returned in the search result.
          */
-        private Library[] parse(String data) {
+        Library[] parse(String data) {
             Library[] libraries = null;
             try {
                 JSONParser parser = new JSONParser();
