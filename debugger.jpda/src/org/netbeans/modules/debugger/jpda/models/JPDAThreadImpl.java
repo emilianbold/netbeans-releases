@@ -2135,22 +2135,51 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
     }
 
     public static String getThreadStateLog(ThreadReference threadReference) {
-        String msg;
+        String name;
         try {
-            msg = "Thread '"+ThreadReferenceWrapper.name(threadReference)+
-                         "': status = "+ThreadReferenceWrapper.status(threadReference)+
-                         ", is suspended = "+ThreadReferenceWrapper.isSuspended(threadReference)+
-                         ", suspend count = "+ThreadReferenceWrapper.suspendCount(threadReference)+
-                         ", is at breakpoint = "+ThreadReferenceWrapper.isAtBreakpoint(threadReference);
-        } catch (InternalExceptionWrapper ex) {
-            msg = ex.getCause().getLocalizedMessage();
-        } catch (VMDisconnectedExceptionWrapper ex) {
-            msg = ex.getCause().getLocalizedMessage();
-        } catch (ObjectCollectedExceptionWrapper ex) {
-            msg = ex.getCause().getLocalizedMessage();
-        } catch (IllegalThreadStateExceptionWrapper ex) {
-            msg = ex.getCause().getLocalizedMessage();
+            name = ThreadReferenceWrapper.name(threadReference);
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                 ObjectCollectedExceptionWrapper | IllegalThreadStateExceptionWrapper ex) {
+            Throwable t = ex.getCause();
+            name = "<"+t.getClass() + ":" + t.getLocalizedMessage()+">";
         }
+        String status;
+        try {
+            status = Integer.toString(ThreadReferenceWrapper.status(threadReference));
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                 ObjectCollectedExceptionWrapper | IllegalThreadStateExceptionWrapper ex) {
+            Throwable t = ex.getCause();
+            status = "<"+t.getClass() + ":" + t.getLocalizedMessage()+">";
+        }
+        String isSuspended;
+        try {
+            isSuspended = Boolean.toString(ThreadReferenceWrapper.isSuspended(threadReference));
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                 ObjectCollectedExceptionWrapper | IllegalThreadStateExceptionWrapper ex) {
+            Throwable t = ex.getCause();
+            isSuspended = "<"+t.getClass() + ":" + t.getLocalizedMessage()+">";
+        }
+        String suspendCount;
+        try {
+            suspendCount = Integer.toString(ThreadReferenceWrapper.suspendCount(threadReference));
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                 ObjectCollectedExceptionWrapper | IllegalThreadStateExceptionWrapper ex) {
+            Throwable t = ex.getCause();
+            suspendCount = "<"+t.getClass() + ":" + t.getLocalizedMessage()+">";
+        }
+        String isAtBreakpoint;
+        try {
+            isAtBreakpoint = Boolean.toString(ThreadReferenceWrapper.isAtBreakpoint(threadReference));
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                 ObjectCollectedExceptionWrapper | IllegalThreadStateExceptionWrapper ex) {
+            Throwable t = ex.getCause();
+            isAtBreakpoint = "<"+t.getClass() + ":" + t.getLocalizedMessage()+">";
+        }
+        String msg = "Thread '"+name+
+                         "': status = "+status+
+                         ", is suspended = "+isSuspended+
+                         ", suspend count = "+suspendCount+
+                         ", is at breakpoint = "+isAtBreakpoint;
         return msg;
     }
 
