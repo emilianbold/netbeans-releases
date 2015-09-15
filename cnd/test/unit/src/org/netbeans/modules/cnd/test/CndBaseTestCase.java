@@ -119,6 +119,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     private Logger logger3;
     private Logger logger4;
     private Logger logger5;
+    private Logger logger6;
     
     /** Creates a new instance of BaseTestCase */
     public CndBaseTestCase(String testName) {
@@ -162,6 +163,8 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         logger4.setLevel(Level.SEVERE);
         logger5 = Logger.getLogger("org.netbeans.ui.indexing");
         logger5.setLevel(Level.SEVERE);
+        logger6 = Logger.getLogger("org.netbeans.modules.masterfs.watcher.Watcher");
+        logger6.setLevel(Level.SEVERE);
         System.setProperty("RepositoryUpdate.increasedLogLevel", "SEVERE");
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");

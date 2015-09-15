@@ -204,6 +204,9 @@ public class LibrariesPanel extends JPanel implements HelpCtx.Provider {
         "LibrariesPanel.updatingBowerJson=Updating bower.json."
     })
     void storeChanges() {
+        if (installedLibraries == null) {
+            return; // 255276
+        }
         RP.post(new Runnable() {
             @Override
             public void run() {
