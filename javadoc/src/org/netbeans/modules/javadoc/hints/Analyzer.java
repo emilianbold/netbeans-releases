@@ -465,7 +465,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
     private void checkParamsDocumented(List<? extends Element> list, List<? extends Tree> trees, DocTreePath docTreePath, Set<String> inheritedParams, List<ErrorDescription> errors) {
         if(foundInheritDoc) return;
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = 0; i < list.size() && i < trees.size(); i++) {
             if(ctx.isCanceled()) { return; }
             Element e = list.get(i);
             Tree t = trees.get(i);

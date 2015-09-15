@@ -2461,7 +2461,7 @@ public class Reformatter implements ReformatTask {
                         }
                     }
                 } else {
-                    wrapOperatorAndTree(cs.wrapAssignOps(), alignIndent, cs.spaceAroundAssignOps()? 1 : 0, node.getExpression());
+                    wrapOperatorAndTree(cs.wrapAssignOps(), alignIndent, spaceAroundAssignOps ? 1 : 0, node.getExpression());
                 }
             } else {
                 scan(node.getExpression(), p);
