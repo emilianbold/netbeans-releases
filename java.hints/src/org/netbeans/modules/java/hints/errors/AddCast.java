@@ -127,7 +127,9 @@ public final class AddCast implements ErrorRule<Void> {
                     TypeMirror returnType = null;
                     if (p.getKind() == Kind.METHOD) {
                         Tree returnTypeTree = ((MethodTree) parents.getLeaf()).getReturnType();
-                        returnType = info.getTrees().getTypeMirror(new TreePath(parents, returnTypeTree));
+                        if (returnTypeTree != null) {
+                            returnType = info.getTrees().getTypeMirror(new TreePath(parents, returnTypeTree));
+                        }
                     } else if (p.getKind() == Kind.LAMBDA_EXPRESSION) {
                         TypeMirror lambdaType = info.getTrees().getTypeMirror(parents);
                         if (org.netbeans.modules.java.hints.errors.Utilities.isValidType(lambdaType) &&
