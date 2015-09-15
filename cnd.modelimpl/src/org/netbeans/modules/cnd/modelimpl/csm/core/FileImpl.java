@@ -1522,8 +1522,8 @@ public final class FileImpl implements CsmFile,
         }
         if (!cacheTokens) {
             clearStateCache();
+            lastMacroUsages = null;
         }
-        lastMacroUsages = null;
         TraceModel.TestHook aHook = hook;
         if (aHook != null) {
             aHook.parsingFinished(this, preprocHandler);
