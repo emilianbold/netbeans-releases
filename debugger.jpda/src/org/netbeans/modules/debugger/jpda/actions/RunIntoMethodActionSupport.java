@@ -180,11 +180,7 @@ public final class RunIntoMethodActionSupport {
             debugger.getCurrentThread().resume();
             //((JPDADebuggerImpl) debugger).resumeCurrentThread();
         } else {
-            //((JPDADebuggerImpl) debugger).resume();
-            Session session = ((JPDADebuggerImpl) debugger).getSession();
-            session.getEngineForLanguage ("Java").getActionsManager ().doAction (
-                ActionsManager.ACTION_CONTINUE
-            );
+            ((JPDADebuggerImpl) debugger).resume();
         }
     }
     
