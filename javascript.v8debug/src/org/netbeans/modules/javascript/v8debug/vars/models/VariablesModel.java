@@ -99,7 +99,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                                                                 TableModel,
                                                                 V8Debugger.Listener {
     
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     private static final String ICON_LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
     @StaticResource(searchClasspath = true)
     private static final String ICON_SCOPE = "org/netbeans/modules/javascript2/debug/resources/global_variable_16.png"; // NOI18N

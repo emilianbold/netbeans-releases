@@ -82,7 +82,6 @@ public class ClankMacroUsagesProducer {
     }
 
     public List<CsmReference> getMacroUsages(Interrupter interrupter) {
-        List<CsmReference> res = new ArrayList<>();        
         int stopFileIndex;
         FileImpl startFile =  Utils.getStartFile(curPreprocHandler.getState());
         if (startFile == null) {
@@ -99,68 +98,10 @@ public class ClankMacroUsagesProducer {
         FileBuffer buffer = startFile.getBuffer();
         if (ClankDriver.preprocess(buffer, curPreprocHandler, callback, interrupter)) {
             ClankDriver.ClankFileInfo foundFileInfo = callback.getFoundFileInfo();
-            if (foundFileInfo != null) {
-                addPreprocessorDirectives(fileImpl, res, foundFileInfo);
-                addMacroExpansions(fileImpl, res, startFile, foundFileInfo);
-            }
+            return ClankMacroUsagesSupport.getMacroUsages(fileImpl, startFile, foundFileInfo);
+        } else {
+            return Collections.emptyList();
         }
-        Collections.sort(res, new Comparator<CsmReference>() {
-            @Override
-            public int compare(CsmReference o1, CsmReference o2) {
-                return o1.getStartOffset() - o2.getStartOffset();
-            }
-        });
-        return res;
-    }
-
-
-    private static void addPreprocessorDirectives(FileImpl curFile, List<CsmReference> res, ClankDriver.ClankFileInfo cache) {
-        assert res != null;
-        assert curFile != null;
-        assert cache != null;
-        for (ClankDriver.ClankPreprocessorDirective cur : cache.getPreprocessorDirectives()) {
-            if (cur instanceof ClankMacroDirective) {
-                addMacro(curFile, res, (ClankMacroDirective)cur);
-            }
-        }
-    }
-
-    private static void addMacroExpansions(FileImpl curFile, List<CsmReference> res, FileImpl startFile, ClankDriver.ClankFileInfo cache) {
-        for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
-            ClankMacroDirective directive = cur.getReferencedMacro();
-            if (directive != null) {
-                res.add(MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset()+cur.getMacroNameLength(), startFile, directive));
-            } else {
-                // TODO: process invalid macro definition
-                assert false : "Not found referenced ClankMacroDirective "+cur;
-            }
-        }
-        for(ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
-            ClankMacroDirective directive = cur.getReferencedMacro();
-            if (directive != null) {
-                res.add(MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), startFile, directive));
-            } else {
-                // TODO: process invalid macro definition
-                assert false : "Not found referenced ClankMacroDirective "+cur;
-            }
-        }
-    }
-
-    private static void addMacro(FileImpl curFile, List<CsmReference> res, ClankMacroDirective ppDirective) {
-        if (!ppDirective.isDefined()) {
-            // only #define are handled by old model, not #undef
-            return;
-        }
-        CsmMacro.Kind kind = CsmMacro.Kind.DEFINED;
-        List<CharSequence> params = ppDirective.getParameters();
-        CharSequence name = ppDirective.getMacroName();
-        String body = "";
-        int startOffset = ppDirective.getDirectiveStartOffset();
-        int endOffset = ppDirective.getDirectiveEndOffset();
-        int macroNameOffset = ppDirective.getMacroNameOffset();
-        CsmMacro impl = MacroImpl.create(name, params, body/*sb.toString()*/, curFile, startOffset, endOffset, kind);
-        MacroDeclarationReference macroDeclarationReference = new MacroDeclarationReference(curFile, impl, macroNameOffset);
-        res.add(macroDeclarationReference);
     }
 
     private static final class FileMacroUsagesCallback implements ClankDriver.ClankPreprocessorCallback {
