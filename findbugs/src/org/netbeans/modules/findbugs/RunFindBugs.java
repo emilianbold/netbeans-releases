@@ -350,11 +350,15 @@ public class RunFindBugs {
                                 continue;
                             }
                         }
-                        int[] span = spanForEnclosingMethod(info, js, sourceLine.getStartLine());
-                        if (span != null && span[0] != (-1)) {
-                            LazyFixList fixes = prepareFixes(b, inEditor, sourceFile, -1, span);
-                            result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), fixes, sourceFile, span[0], span[1]));
-                            continue;
+                        if (info != null || js != null) {
+                            int[] span = spanForEnclosingMethod(info, js, sourceLine.getStartLine());
+                            if (span != null && span[0] != (-1)) {
+                                LazyFixList fixes = prepareFixes(b, inEditor, sourceFile, -1, span);
+                                result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), fixes, sourceFile, span[0], span[1]));
+                                continue;
+                            }
+                        } else {
+                            LOG.log(Level.WARNING, "No source for {0}", sourceFile.getPath());
                         }
                     }
                     if (sourceLine.getStartLine() >= 0) {
@@ -395,6 +399,11 @@ public class RunFindBugs {
 
     private static void addByElementAnnotation(BugInstance b, CompilationInfo info, FileObject sourceFile, JavaSource js, List<ErrorDescription> result, boolean globalPreferences) {
         int[] span = null;
+        if (info == null && js == null) {
+            LOG.log(Level.WARNING, "No source for {0}", sourceFile.getPath());
+            return;
+        }
+
         FieldAnnotation fieldAnnotation = b.getPrimaryField();
 
         if (fieldAnnotation != null) {
@@ -526,7 +535,7 @@ public class RunFindBugs {
                 }
             }
         };
-        
+
         runInJavac(info, js, new TaskImpl());
 
         return result;
