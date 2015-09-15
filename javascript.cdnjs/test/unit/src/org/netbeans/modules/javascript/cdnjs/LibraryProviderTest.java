@@ -54,10 +54,10 @@ public class LibraryProviderTest {
 
     @BeforeClass
     public static void initProxy() {
-//        System.setProperty("http.proxyHost", "www-proxy.uk.oracle.com"); // NOI18N
-//        System.setProperty("http.proxyPort", "80"); // NOI18N
-//        System.setProperty("https.proxyHost", "www-proxy.uk.oracle.com"); // NOI18N
-//        System.setProperty("https.proxyPort", "80"); // NOI18N
+        System.setProperty("http.proxyHost", "www-proxy.uk.oracle.com"); // NOI18N
+        System.setProperty("http.proxyPort", "80"); // NOI18N
+        System.setProperty("https.proxyHost", "www-proxy.uk.oracle.com"); // NOI18N
+        System.setProperty("https.proxyPort", "80"); // NOI18N
     }
 
     /**
