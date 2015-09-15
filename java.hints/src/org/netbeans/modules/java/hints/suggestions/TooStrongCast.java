@@ -199,7 +199,7 @@ public class TooStrongCast {
                 }
             } 
             if (!info.getTypeUtilities().isCastable(casteeType, tm) || 
-                !info.getTypeUtilities().isCastable(castType, tm)) {
+                !info.getTypeUtilities().isCastable(tm, castType)) {
                 continue;
             }
             if (exp.isNotRedundant() ? 
