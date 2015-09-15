@@ -177,8 +177,18 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         class R implements Runnable {
             List<FolderChildrenPair> positioned = null;
             RefreshMode op;
+            Task prevTask = null;
             @Override
             public void run() {
+                if (prevTask != null) {
+                    // We need to ensure that refresh tasks for one
+                    // FolderChildren do not run in parallel. And because the
+                    // tasks can be processed by different request processors if
+                    // the folder is moved to another filesystem, we have to
+                    // wait for previously posted task here.
+                    prevTask.waitFinished();
+                    prevTask = null;
+                }
                 if (op == RefreshMode.DEEP) {
                     positioned = getPositionedFolderChildrenPairs(); //#229746
                     op = RefreshMode.DEEP_LATER;
@@ -230,7 +240,10 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             run.run();
         } else {
             run.op = operation;
-            refTask = DataNodeUtils.reqProcessor().post(run);
+            synchronized (this) {
+                run.prevTask = refTask;
+                refTask = DataNodeUtils.reqProcessor(folder.getPrimaryFile()).post(run);
+            }
         }
     }
 
