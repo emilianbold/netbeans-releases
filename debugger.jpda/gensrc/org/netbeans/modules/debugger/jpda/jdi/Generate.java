@@ -1252,6 +1252,20 @@ public class Generate {
                 return catchJDWPException;
             }
         }
+        if (com.sun.jdi.Method.class.getName().equals(className)) {
+            if (methodName.equals("bytecodes")) {
+                String catchJDWPException = "            try {\n"+
+                                            "    "+exec+
+                                            "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                            "                if (iex.errorCode() == 113) { // INTERNAL, see https://netbeans.org/bugzilla/show_bug.cgi?id=255298\n"+
+                                            "                    throw new InternalExceptionWrapper(iex);\n"+
+                                            "                } else {\n"+
+                                            "                    throw iex; // re-throw the original\n"+
+                                            "                }\n"+
+                                            "            }\n";
+                return catchJDWPException;
+            }
+        }
         return exec;
     }
     

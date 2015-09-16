@@ -117,6 +117,7 @@ public class ExpressionPool {
             }
             return expressions.get(exprLocation);
         } catch (InternalExceptionWrapper ex) {
+            logger.log(Level.INFO, "No expression at '"+url+"', JDI internal error", ex);
             return null;
         } catch (ObjectCollectedExceptionWrapper ex) {
             return null;
