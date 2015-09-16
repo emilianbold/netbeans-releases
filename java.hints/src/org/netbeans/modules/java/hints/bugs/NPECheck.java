@@ -137,6 +137,26 @@ public class NPECheck {
         return null;
     }
     
+    @TriggerPattern("for ($type $var : $expr) $stmts$")
+    public static ErrorDescription enhancedFor(HintContext ctx) {
+        TreePath colExpr = ctx.getVariables().get("$expr");
+        if (colExpr == null) {
+            return null;
+        }
+        State r =  computeExpressionsState(ctx).get(colExpr.getLeaf());
+        if (r == NULL || r == NULL_HYPOTHETICAL) {
+            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_DereferencingNull");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        }
+
+        if (r == State.POSSIBLE_NULL_REPORT) {
+            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_PossiblyDereferencingNull");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        }
+        return null;
+    }
     
     @TriggerPattern("$select.$variable")
     public static ErrorDescription memberSelect(HintContext ctx) {

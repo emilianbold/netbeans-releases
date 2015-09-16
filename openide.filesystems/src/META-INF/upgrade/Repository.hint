@@ -1,8 +1,10 @@
+"Use FileUtil to access configuration":
 org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().findResource($p) :: $p instanceof java.lang.String
 =>
 org.openide.filesystems.FileUtil.getConfigFile($p)
 ;;
 
+"Use FileUtil to access configuration":
 org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().getRoot()
 =>
 org.openide.filesystems.FileUtil.getConfigRoot()

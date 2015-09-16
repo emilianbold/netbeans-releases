@@ -1,18 +1,22 @@
+"Use Utilities API for URI/File conversion":
 $f.toURI() :: $f instanceof java.io.File
 =>
 org.openide.util.Utilities.toURI($f)
 ;;
 
+"Use Utilities API for URI/File conversion":
 new java.io.File($u) :: $u instanceof java.net.URI
 =>
 org.openide.util.Utilities.toFile($u)
 ;;
 
+"Use Utilities API for URI/File conversion":
 new java.io.File($u.getPath()) :: $u instanceof java.net.URI
 =>
 <!warning='Unsafe File/URI conversion'>
 ;;
 
+"Use Utilities API for URI/File conversion":
 new java.io.File($u.getPath()) :: $u instanceof java.net.URL
 =>
 <!warning='Unsafe File/URL conversion'>

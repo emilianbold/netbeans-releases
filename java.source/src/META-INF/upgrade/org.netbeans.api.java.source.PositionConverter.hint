@@ -42,10 +42,12 @@
  * made subject to such option by the copyright holder.
  */
 
+"Use Parsing API to get embedded offset":
    $info.getPositionConverter().getJavaSourcePosition($offset) :: $info instanceof org.netbeans.api.java.source.CompilationInfo && $offset instanceof int
 => $info.getSnapshot().getEmbeddedOffset($offset)
 ;;
 
+"Use Parsing API to get original offset":
    $info.getPositionConverter().getOriginalPosition($offset) :: $info instanceof org.netbeans.api.java.source.CompilationInfo && $offset instanceof int
 => $info.getSnapshot().getOriginalOffset($offset)
 ;;
