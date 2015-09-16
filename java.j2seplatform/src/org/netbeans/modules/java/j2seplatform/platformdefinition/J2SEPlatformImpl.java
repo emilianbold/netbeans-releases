@@ -74,7 +74,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -267,7 +266,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
             if (cp != null) {
                 return cp;
             }
-            if (new SpecificationVersion("1.9").compareTo(getSpecification().getVersion())<=0) {    //NOI18N
+            if (new SpecificationVersion("9").compareTo(getSpecification().getVersion())<=0) {    //NOI18N
                 cp = Util.createModulePath(getInstallFolders());
             }
             if (cp == null) {

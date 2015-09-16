@@ -76,6 +76,8 @@ public class Util {
     public static final String PROTO_HTTPS = "https";            //NOI18N
     public static final String PROTO_FILE = "file";              //NOI18N
     private static final String JFXRT_PATH = "lib/jfxrt.jar";    //NOI18N
+    private static final SpecificationVersion OLD_JDK9 = new SpecificationVersion("1.9");   //NOI18N
+    private static final SpecificationVersion NEW_JDK9 = new SpecificationVersion("9");     //NOI18N
 
     private static final Logger LOG = Logger.getLogger(Util.class.getName());
     //Properties used by IDE which should be fixed not to use resolved symlink
@@ -197,7 +199,7 @@ public class Util {
          if (version == null) {
              version = "1.1";
          }
-         return makeSpec(version);
+         return fixJDK9SpecVersion(makeSpec(version));
     }
 
 
@@ -388,6 +390,12 @@ public class Util {
         }
         // Nothing decent in it at all; use zero.
         return new SpecificationVersion("0"); // NOI18N
+    }
+
+    private static SpecificationVersion fixJDK9SpecVersion(@NonNull final SpecificationVersion version) {
+        return  OLD_JDK9.equals(version) ?
+                NEW_JDK9 :
+                version;
     }
 
     @CheckForNull

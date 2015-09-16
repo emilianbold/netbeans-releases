@@ -121,7 +121,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
     private static final Logger LOG = Logger.getLogger(J2SEPlatformCustomizer.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(J2SEPlatformCustomizer.class);
-    private static final SpecificationVersion JDK_19 = new SpecificationVersion("1.9"); //NOI18N
+    private static final SpecificationVersion JDK_19 = new SpecificationVersion("9"); //NOI18N
 
     private static final String CUSTOMIZERS_PATH =
         "org-netbeans-api-java/platform/j2seplatform/customizers/";  //NOI18N

@@ -836,9 +836,6 @@ public final class PlatformUiSupport {
             implements ComboBoxModel, ListDataListener {
         private static final long serialVersionUID = 1L;
 
-        private static final String VERSION_PREFIX = "1."; // the version prefix // NOI18N
-        private static final int INITIAL_VERSION_MINOR = minor(SourceLevelQuery.MINIMAL_SOURCE_LEVEL);
-
         private final ComboBoxModel platformComboBoxModel;
         private final SpecificationVersion minimalSpecificationVersion;
         private SpecificationVersion selectedSourceLevel;
@@ -943,20 +940,18 @@ public final class PlatformUiSupport {
                 boolean selSourceLevelValid = false;
                 if (platform != null) {
                     SpecificationVersion version = platform.getSpecification().getVersion();
-                    int index = getMinimalIndex(version);
-                    SpecificationVersion template =
-                            new SpecificationVersion(VERSION_PREFIX + Integer.toString(index++));
+                    SpecificationVersion current = getMinimalIndex(version);
                     boolean origSourceLevelValid = false;
 
-                    while (template.compareTo(version) <= 0) {
-                        if (template.equals(originalSourceLevel)) {
+                    while (current.compareTo(version) <= 0) {
+                        if (current.equals(originalSourceLevel)) {
                             origSourceLevelValid = true;
                         }
-                        if (template.equals(selectedSourceLevel)) {
+                        if (current.equals(selectedSourceLevel)) {
                             selSourceLevelValid = true;
                         }
-                        sLevels.add(new SourceLevelKey(template));
-                        template = new SpecificationVersion(VERSION_PREFIX + Integer.toString(index++));
+                        sLevels.add(new SourceLevelKey(current));
+                        current = incJavaSpecVersion(current);
                     }
                     if (originalSourceLevel != null && !origSourceLevelValid) {
                         if (originalSourceLevel.equals(selectedSourceLevel)) {
@@ -974,20 +969,17 @@ public final class PlatformUiSupport {
             return sourceLevelCache;
         }
 
-        private int getMinimalIndex(SpecificationVersion platformVersion) {
-            int index = INITIAL_VERSION_MINOR;
+        private SpecificationVersion getMinimalIndex(SpecificationVersion platformVersion) {
+            SpecificationVersion min = SourceLevelQuery.MINIMAL_SOURCE_LEVEL;
             if (minimalSpecificationVersion != null) {
-                SpecificationVersion min = new SpecificationVersion(
-                            VERSION_PREFIX + Integer.toString(index));
                 while (min.compareTo(platformVersion) <= 0) {
                     if (min.compareTo(minimalSpecificationVersion) >= 0) {
-                        return index;
+                        return min;
                     }
-                    min = new SpecificationVersion(
-                            VERSION_PREFIX + Integer.toString(++index));
+                    min = incJavaSpecVersion(min);
                 }
             }
-            return index;
+            return min;
         }
 
         private boolean shouldChangePlatform(SpecificationVersion selectedSourceLevel,
@@ -1012,8 +1004,35 @@ public final class PlatformUiSupport {
 
         private static int minor(@NonNull final SpecificationVersion specVer) {
             final String s = specVer.toString();
-            final int split = s.indexOf('.');
-            return Integer.parseInt(split < 0 ? s : s.substring(split+1));
+            final int split = s.indexOf('.');   //NOI18N
+            return split < 0 ? 0 : Integer.parseInt(s.substring(split+1));
+        }
+
+        private static int major(@NonNull final SpecificationVersion specVer) {
+            final String s = specVer.toString();
+            final int split = s.indexOf('.');   //NOI18N
+            return Integer.parseInt(split < 0 ? s : s.substring(0, split));
+        }
+
+        private static SpecificationVersion incJavaSpecVersion(@NonNull final SpecificationVersion version) {
+            int major = major (version);
+            int minor = minor (version);
+            if (major == 1) {
+                if (minor == 8) {
+                    major = minor + 1;
+                    minor = -1;
+                } else {
+                    minor += 1;
+                }
+            } else {
+                major += 1;
+            }
+            return minor == -1 ?
+                    new SpecificationVersion(Integer.toString(major)) :
+                    new SpecificationVersion(String.format(
+                        "%d.%d",    //NOI18N
+                        major,
+                        minor));
         }
     }
 
