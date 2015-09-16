@@ -140,9 +140,17 @@ public abstract class TokenStreamProducer {
                     false); //cache only unfiltered
         }
 
-//        public static Parameters createForMacroUsages() {
-//            return new Parameters(false, true, YesNoInterested.NEVER, false, true, false, false);
-//        }
+        public static Parameters createForMacroUsages() {
+            return new Parameters(
+                    YesNoInterested.NEVER,
+                    false,
+                    YesNoInterested.INTERESTED,
+                    YesNoInterested.INTERESTED,
+                    YesNoInterested.NEVER,
+                    false,
+                    false
+            );
+        }
 
         @Override
         public String toString() {
