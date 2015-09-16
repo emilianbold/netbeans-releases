@@ -49,6 +49,8 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnitStab;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
+import org.netbeans.modules.cnd.dwarfdump.source.CompileLineOrigin;
+import org.netbeans.modules.cnd.dwarfdump.source.DefaultDriver;
 
 /**
  *
@@ -85,9 +87,12 @@ public class StabIndexSection extends ElfSection {
         long StabStrtab = 0;
         long StrTabSize = 0;
         //System.out.println("N\tr_offset\tr_info\tr_addend");
+        String compileDir = ""; //NOI18N
         String source = ""; //NOI18N
         String line = ""; //NOI18N
         String object = ""; //NOI18N
+        String lastUndef = ""; //NOI18N
+        String cuName = ""; //NOI18N
         boolean isMain = false;
         int mainLine = 0;
         int state = 1;
@@ -123,15 +128,22 @@ public class StabIndexSection extends ElfSection {
                     case N_SO:
                         //System.err.println("Source file\t"+s);
                         if (state != 1) {
-                            list.add(new CompilationUnitStab(source, line, object, isMain, mainLine, lang));
+                            list.add(createCompilationUnitStab(compileDir, source, line, object, isMain, mainLine, lang, cuName));
+                            compileDir = ""; //NOI18N
                             source = ""; //NOI18N
                             line = ""; //NOI18N
                             object = ""; //NOI18N
+                            cuName = ""; //NOI18N
                             isMain = false;
                             mainLine = 0;
                             lang = 0;
                         }
-                        source += s;
+                        if (compileDir.isEmpty()) {
+                            cuName = lastUndef;
+                            compileDir = s;
+                        } else {
+                            source = s;
+                        }
                         state = 1;
                         if (lang == 0 && desc != 0) {
                             lang = desc;
@@ -157,6 +169,10 @@ public class StabIndexSection extends ElfSection {
                         isMain = true;
                         mainLine = value;
                         break;
+                    case N_UNDF:
+                        //System.err.println(""+type+" "+s);
+                        lastUndef = s;
+                        break;
                     default:
                         //System.err.println(""+type+" "+s);
                         break;
@@ -164,9 +180,35 @@ public class StabIndexSection extends ElfSection {
             }
         }
         if (state >= 1) {
-            list.add(new CompilationUnitStab(source, line, object, isMain, mainLine, lang));
+            list.add(createCompilationUnitStab(compileDir, source, line, object, isMain, mainLine, lang, cuName));
         }
         return null;
     }
 
+    private CompilationUnitStab createCompilationUnitStab(String compileDir, String sourceName, String line, String objectFile, boolean hasMain, int mainLine, int desc, String lastUndef) {
+        if (lastUndef.length() > 0 && !sourceName.endsWith(lastUndef)) {
+            // try to find source file instead of .y or .l
+            int i = line.indexOf(';');
+            if (i > 0) {
+                String compileLine = line.substring(i+1).trim();
+                if (compileLine.length() > 0) {
+                    DefaultDriver driver = new DefaultDriver();
+                    for(String s : driver.splitCommandLine(compileLine, CompileLineOrigin.DwarfCompileLine)) {
+                        if (s.endsWith(lastUndef)) {
+                            //System.err.println("Fix source name ["+sourceName+"]->["+s+"]");
+                            sourceName = s;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        String trueSource;
+        if (sourceName.startsWith("/")) { // NOI18N
+            trueSource = sourceName;
+        } else {
+            trueSource = compileDir + sourceName;
+        }
+        return new CompilationUnitStab(trueSource, line, objectFile, hasMain, mainLine, desc);
+    }
 }
