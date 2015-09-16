@@ -206,11 +206,13 @@ public final class Context {
         }
         
         // Replace the old indent
-        if (offset < oldIndentEndOffset) {
-            doc.remove(offset, oldIndentEndOffset - offset);
-        }
-        if (newIndentString.length() > 0) {
-            doc.insertString(offset, newIndentString, null);
+        if (!doc.getText(offset, oldIndentEndOffset - offset).equals(newIndentString)) {
+            if (offset < oldIndentEndOffset) {
+                doc.remove(offset, oldIndentEndOffset - offset);
+            }
+            if (newIndentString.length() > 0) {
+                doc.insertString(offset, newIndentString, null);
+            }
         }
     }
     
