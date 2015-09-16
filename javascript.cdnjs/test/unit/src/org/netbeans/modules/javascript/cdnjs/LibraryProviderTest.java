@@ -43,14 +43,19 @@ package org.netbeans.modules.javascript.cdnjs;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * Tests of a {@code LibraryProvider} class.
  *
  * @author Jan Stola
  */
-public class LibraryProviderTest {
+public class LibraryProviderTest extends NbTestCase {
+
+    public LibraryProviderTest(String name) {
+        super(name);
+    }
 
     @BeforeClass
     public static void initProxy() {
@@ -66,6 +71,7 @@ public class LibraryProviderTest {
      * then a test of the class {@code LibraryProvider} itself.
      */
     @Test
+    @RandomlyFails
     public void testCDNJSResponseStructure() {
         String searchTerm = "knockout"; // NOI18N
         LibraryProvider provider = LibraryProvider.getInstance();

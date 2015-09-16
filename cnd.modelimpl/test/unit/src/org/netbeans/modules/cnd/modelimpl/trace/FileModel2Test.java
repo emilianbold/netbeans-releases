@@ -132,6 +132,16 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz197997.cc");
     }
     
+    protected TraceModelFileFilter getProjectFileFilter() {
+        if (true) return super.getProjectFileFilter();
+        return new TraceModelFileFilter() {
+            @Override
+            public boolean isProjectFile(String filename) {
+                return filename.endsWith("iz191446.cc");
+            }
+        };
+    }
+    
     public void test191446() throws Exception {
         // #191446 - no code assistance for elementes #include'ed in namespace body
         performTest("iz191446.cc");

@@ -1,6 +1,6 @@
-#changeset:   15695:ffc5167c3f2f
+#changeset:   15703:1a40f7737bba
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Wed Sep 16 00:01:36 2015 +0300
-#summary:     fixed path.root_name(), path.root_directory() and path.root_path for remote + added test
-9C83889E77EA39056757E38EA33E2820C2B6EC5C clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Wed Sep 16 15:11:16 2015 +0300
+#summary:     set needComments for macro as well
+09A3160AABFD64441C5B0427D0C9B61D2A64146B clank_0.3.6.zip
