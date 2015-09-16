@@ -79,8 +79,7 @@ public class ClankFileInfoQuerySupport {
                 DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + fileImpl.getAbsolutePath())); //NOI18N
             } else if (handlers.size() == 1) {
                 PreprocHandler handler = handlers.iterator().next();
-                ClankMacroUsagesProducer producer = ClankMacroUsagesProducer.createImpl(fileImpl, handler);
-                out.addAll(producer.getMacroUsages(interrupter));
+                out.addAll(ClankTokenStreamProducer.getMacroUsages(fileImpl, handler, interrupter));
             } else {
                 TreeSet<CsmReference> result = new TreeSet<>(CsmOffsetable.OFFSET_COMPARATOR);
                 for (PreprocHandler handler : handlers) {
@@ -88,8 +87,7 @@ public class ClankFileInfoQuerySupport {
                         break;
                     }
                     // ask for concurrent entry if absent
-                    ClankMacroUsagesProducer producer = ClankMacroUsagesProducer.createImpl(fileImpl, handler);
-                    result.addAll(producer.getMacroUsages(interrupter));
+                    result.addAll(ClankTokenStreamProducer.getMacroUsages(fileImpl, handler, interrupter));
                 }
                 out = new ArrayList<>(result);
             }

@@ -92,6 +92,12 @@ public final class ClankDriver {
       return cache.prepareCachesIfPossible();
     }
 
+    public static void prepareCachesIfPossible(ClankDriver.ClankFileInfo fileInfo) {
+        if (fileInfo instanceof ClankDriverImpl.APTTokenStreamCacheImplementation) {
+            ((ClankDriverImpl.APTTokenStreamCacheImplementation) fileInfo).prepareCachesIfPossible();
+        }
+    }
+
     public static boolean preprocess(APTFileBuffer buffer,
             PreprocHandler ppHandler,
             ClankPreprocessorCallback callback, Interrupter interrupter) {

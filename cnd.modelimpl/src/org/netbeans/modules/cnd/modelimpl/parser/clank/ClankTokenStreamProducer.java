@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.parser.clank;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.event.ChangeListener;
@@ -97,6 +98,20 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     
     public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean fromEnsureParsed) {
         return new ClankTokenStreamProducer(file, newFileContent, fromEnsureParsed);
+    }
+
+    public static List<CsmReference> getMacroUsages(FileImpl file, PreprocHandler handler, Interrupter interrupter) {
+        FileContent newFileContent = FileContent.getHardReferenceBasedCopy(file.getCurrentFileContent(), true);
+        // TODO: we do NOT need file content at all here
+        ClankTokenStreamProducer tsp = new ClankTokenStreamProducer(file, newFileContent, false);
+        PreprocHandler.State ppState = handler.getState();
+        String contextLanguage = file.getContextLanguage(ppState);
+        String contextLanguageFlavor = file.getContextLanguageFlavor(ppState);
+        tsp.prepare(handler, contextLanguage, contextLanguageFlavor, false);
+        TokenStreamProducer.Parameters params = TokenStreamProducer.Parameters.createForMacroUsages();
+        List<CsmReference> res = tsp.getMacroUsages(params, interrupter);
+        tsp.release();
+        return res;
     }
 
     @Override
@@ -169,6 +184,23 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           tokenStream = languageFilter.getFilteredStream(new APTCommentsFilter(tokenStream));
         }
         return tokenStream;
+    }
+
+    private List<CsmReference> getMacroUsages(TokenStreamProducer.Parameters parameters, Interrupter interrupter) {
+        PreprocHandler ppHandler = getCurrentPreprocHandler();
+        int fileIndex = ClankDriver.extractTokenStream(ppHandler).getFileIndex();
+        FileImpl fileImpl = getMainFile();
+        FileTokenStreamCallback callback = new FileTokenStreamCallback(
+                ppHandler,
+                parameters,
+                fileImpl,
+                fileIndex);
+        if (ClankDriver.preprocess(fileImpl.getBuffer(), ppHandler, callback, interrupter)) {
+            ClankDriver.ClankFileInfo foundFileInfo = callback.getFoundFileInfo();
+            return ClankMacroUsagesSupport.getMacroUsages(fileImpl, getStartFile(), foundFileInfo);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     private void cacheMacroUsagesInFileIfNeed(Parameters parameters, ClankDriver.ClankFileInfo foundFileInfo) {
@@ -380,7 +412,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                       "{0} expected {1}", stopFileImpl.getAbsolutePath(), exitedFrom);// NOI18N
               foundTokens = ClankDriver.extractPreparedCachedTokenStream(ppHandler);
               foundFileInfo = exitedFrom;
-              assert foundTokens.hasTokenStream();
+              if (foundFileInfo != null && parameters.needTokens == YesNoInterested.NEVER) {
+                  ClankDriver.prepareCachesIfPossible(foundFileInfo);
+              }
+              assert parameters.needTokens == YesNoInterested.NEVER || foundTokens.hasTokenStream();
               // stop all activity
               alreadySeenInterestedFileEnter = State.EXITED;
               return false;
