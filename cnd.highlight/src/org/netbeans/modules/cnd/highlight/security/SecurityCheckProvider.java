@@ -164,7 +164,7 @@ public final class SecurityCheckProvider extends CsmErrorProvider implements Cod
     
     @Override
     public synchronized Collection<CodeAudit> getAudits() {
-        if (audits == null) {
+        if (audits == null || audits.isEmpty()) {
             FunctionsXmlService service = FunctionsXmlService.getInstance();
             List<CodeAudit> result = new ArrayList<>(service.getChecksCount());
             for (FunctionsXmlService.Category category : service.getCategories(FunctionsXmlService.Level.UNSAFE)) {
