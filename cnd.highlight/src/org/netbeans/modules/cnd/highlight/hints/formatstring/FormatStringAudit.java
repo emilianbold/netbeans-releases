@@ -142,7 +142,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
                             
                             State state = State.DEFAULT;
                             boolean formatFlag = false;  // detect was format string already processed
-                            StringBuilder formatString = new StringBuilder();
+                            StringBuilder formatString = null;
                             int paramOffset = -1;
                             int bracketsCounter = 0;
                             int formatStringOffset = -1;
@@ -192,13 +192,19 @@ public class FormatStringAudit extends AbstractCodeAudit {
                                         params.add(new Parameter(paramBuf.toString(), paramOffset, !skipMacro));
                                         paramOffset = -1;
                                     }
-                                    result.add(new FormattedPrintFunction(file, formatStringOffset, formatString.toString(), params));
+                                    result.add(new FormattedPrintFunction(file
+                                                                         ,formatStringOffset
+                                                                         ,(formatString == null) ? "" : formatString.toString()
+                                                                         ,params));
                                     return;
                                 } else if (state == State.IN_PARAM && tokenId.equals(CppTokenId.STRING_LITERAL) && !formatFlag) {
                                     params = new ArrayList<>();
+                                    if (formatString == null) {
+                                        formatString = new StringBuilder();
+                                    }
                                     formatString.append(token.text().toString());
                                     formatStringOffset = docTokenSequence.offset();
-                                } else if (state == State.IN_PARAM && !formatFlag && tokenId.equals(CppTokenId.COMMA)) {
+                                } else if (state == State.IN_PARAM && !formatFlag && formatString != null && tokenId.equals(CppTokenId.COMMA)) {
                                     formatFlag = true;
                                 } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
                                     if (paramBuf.length() > 0) {

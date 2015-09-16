@@ -336,10 +336,13 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         Collection<CsmProject> projects = getModel().projects();
         int expectedNrProjects = projects.size();
         getModel().scheduleReparse(projects);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+        for (int i = 0; i < 20; i++) {
+            sleep(1000);
+            projects = getModel().projects();
+            if (projects.size() == expectedNrProjects) {
+                //System.err.println("scheduleReparse took "+(i+1)+" sec");
+                break;
+            }
         }
         projects = getModel().projects();
         assertEquals("projects " + projects, expectedNrProjects, projects.size());

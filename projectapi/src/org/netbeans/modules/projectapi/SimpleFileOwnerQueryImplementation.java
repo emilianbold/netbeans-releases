@@ -64,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -133,6 +134,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         deserialize();
         while (f != null) {
             boolean folder = f.isFolder();
+            final URI[] furi = new URI[1];
             if (folder) {
                 synchronized (cacheLock) {
                     if (cacheInvalid) { 
@@ -151,7 +153,9 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                     }
                 }
                 folders.add(f);
-                if (!forbiddenFolders.contains(f.getPath())) {
+                if (!forbiddenFolders.contains(f.getPath()) &&
+                    !hasRoot(externalOwners.keySet(), f, folder, furi) &&
+                    !hasRoot(deserializedExternalOwners.keySet(), f, folder, furi)) {
                     Project p;
                     try {
                         p = ProjectManager.getDefault().findProject(f);
@@ -173,9 +177,8 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                     }
                 }
             }
-            
-            if (!externalOwners.isEmpty() && (folder || externalRootsIncludeNonFolders)) {
-                URI externalOwnersURI = externalOwners.get(f.toURI());
+            if (hasRoot(externalOwners.keySet(), f, folder, furi)) {
+                URI externalOwnersURI = externalOwners.get(furi[0]);
 
                 if (externalOwnersURI != null) {
                     if (externalOwnersURI == UNOWNED_URI) {
@@ -201,8 +204,8 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                     }
                 }
             }
-            if (!deserializedExternalOwners.isEmpty() && (folder || externalRootsIncludeNonFolders)) {
-                FileObject externalOwner = deserializedExternalOwners.get(f.toURI());
+            if (hasRoot(deserializedExternalOwners.keySet(), f, folder, furi)) {
+                FileObject externalOwner = deserializedExternalOwners.get(furi[0]);
                 if (externalOwner != null && externalOwner.isValid()) {
                     try {
                         // Note: will be null if there is no such project.
@@ -220,12 +223,24 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                     }
                 }
             }
-            
+
             f = f.getParent();
         }
         return null;
     }
-    
+
+
+    private static boolean hasRoot(
+            @NonNull final Set<URI> extRoots,
+            @NonNull final FileObject file,
+            final boolean folder,
+            @NonNull final URI[] furi) {
+        if (extRoots.isEmpty() || !(folder || externalRootsIncludeNonFolders)) {
+            return false;
+        }
+        furi[0] = file.toURI();
+        return extRoots.contains(furi[0]);
+    }
     /**
      * Map from external source roots to the owning project directories.
      */
