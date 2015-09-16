@@ -1,33 +1,40 @@
+"Deprecated API call":
 $f.isReadOnly() :: $f instanceof org.openide.filesystems.FileObject
 =>
 !$f.canWrite()
 ;;
 
+"Use FileObject.toURI":
 $f.getURL().toURI() :: $f instanceof org.openide.filesystems.FileObject
 =>
 $f.toURI()
 ;;
 
+"Use FileObject.toURI":
 java.net.URI.create($f.getURL().toString()) :: $f instanceof org.openide.filesystems.FileObject
 =>
 $f.toURI()
 ;;
 
+"Use FileObject.toURI":
 new java.net.URI($f.getURL().toString()) :: $f instanceof org.openide.filesystems.FileObject
 =>
 $f.toURI()
 ;;
 
+"Use FileObject.toURI":
 java.net.URI.create($f.getURL().toExternalForm()) :: $f instanceof org.openide.filesystems.FileObject
 =>
 $f.toURI()
 ;;
 
+"Use FileObject.toURI":
 new java.net.URI($f.getURL().toExternalForm()) :: $f instanceof org.openide.filesystems.FileObject
 =>
 $f.toURI()
 ;;
 
+"Use FileObject.toURL":
 $f.getURL() :: $f instanceof org.openide.filesystems.FileObject
 =>
 $f.toURL()

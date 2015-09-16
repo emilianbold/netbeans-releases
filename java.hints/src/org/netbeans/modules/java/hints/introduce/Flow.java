@@ -610,7 +610,16 @@ public class Flow {
             }
 
             this.referenceTarget = oldQName;
-            return constVal;
+            boolean retain = false;
+            switch (node.getKind()) {
+                case OR_ASSIGNMENT:
+                    retain = constVal == Boolean.TRUE;
+                    break;
+                case AND_ASSIGNMENT:
+                    retain = constVal == Boolean.FALSE;
+                    break;
+            }
+            return retain ? constVal : null;
         }
 
         

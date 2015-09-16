@@ -1,8 +1,10 @@
+"Use getMessage in place of getString":
 org.openide.util.NbBundle.getBundle($c).getString($k) :: $c instanceof java.lang.Class
 =>
 org.openide.util.NbBundle.getMessage($c, $k)
 ;;
 
+"Use getMessage to format parameters":
 java.text.MessageFormat.format(org.openide.util.NbBundle.getMessage($c, $k), new Object[] {$params$})
 =>
 org.openide.util.NbBundle.getMessage($c, $k, $params$)

@@ -79,6 +79,7 @@ import org.netbeans.spi.project.support.ant.PathMatcher;
 import org.netbeans.spi.project.support.ant.PathMatcher;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -851,7 +852,7 @@ public final class SourcesHelper {
                 if (loc.isFolder()) {
                     try {
                         Project other = ProjectManager.getDefault().findProject(loc);
-                        if (other != null) {
+                        if (other != null && !ProjectConvertors.isConvertorProject(other)) {
                             // This is a foreign project; we cannot own it. Skip it.
                             continue;
                         }
