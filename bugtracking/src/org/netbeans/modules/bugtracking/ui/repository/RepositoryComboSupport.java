@@ -649,7 +649,6 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
     public void refreshRepositoryModel() {
         LOG.finer("refreshRepositoryModel()");                          //NOI18N
-        Thread.dumpStack();
         rp.post(new Runnable() {
             @Override
             public void run() {
