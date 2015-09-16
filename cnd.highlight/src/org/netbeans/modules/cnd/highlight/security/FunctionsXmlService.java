@@ -87,6 +87,12 @@ public class FunctionsXmlService {
                     instance = new FunctionsXmlService();
                 }
             }            
+        } else if (instance.getChecksCount() == 0) {
+            synchronized (FunctionsXmlService.class) {
+                if (instance.getChecksCount() == 0) {
+                    instance.parseXml();
+                }
+            }
         }
         return instance;
     }
