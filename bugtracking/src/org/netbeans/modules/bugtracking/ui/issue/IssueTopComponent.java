@@ -405,9 +405,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     if(issue != null) {
                         if(controller != null) {
                             issuePanelRemove(controller.getComponent());
+                            unregisterListeners();
                             controller.closed();
                         }
-                        unregisterListeners();
                         instanceContent.remove(issue.getIssue());
                     }
                     issue = repo.createNewIssue();
