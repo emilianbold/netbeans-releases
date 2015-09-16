@@ -2,90 +2,148 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Project Properties Window: Run</title>
+<title>Project Properties Window: JavaScript Libraries: Bower</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-08-07</p>
-<p><a id="org.netbeans.modules.web.clientproject.ui.customizer.RunPanel" name="org.netbeans.modules.web.clientproject.ui.customizer.RunPanel"></a></p>
-<div id="NBCSH4349"><!-- infolevel="all" infotype="General" --><a id="sthref578" name="sthref578"></a>
-<h1>Project Properties Window: Run</h1>
+<p>Beta Draft: 2015-09-14</p>
+<p><a id="org.netbeans.modules.javascript.bower.ui.libraries.LibrariesPanel" name="org.netbeans.modules.javascript.bower.ui.libraries.LibrariesPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref583" name="sthref583"></a>
+<h1>Project Properties Window: JavaScript Libraries: Bower</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You open the HTML5/JS Project Properties dialog box by right-clicking any HTML5/JS project node in the Projects window and choosing Properties.</p>
-<p>The Run page enables you to specify the target browser and the page that opens in the browser when you run the project. In this page you can specify the following options. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1953">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>The Bower page in the Project Properties window enables you to add, edit, update or remove Bower libraries from your project.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t8">Element</th>
-<th align="left" valign="bottom" id="r1c2-t8">Description</th>
+<th align="left" valign="bottom" id="r1c1-t10">Value</th>
+<th align="left" valign="bottom" id="r1c2-t10">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t8" headers="r1c1-t8">
-<p>Browser</p>
+<td align="left" id="r2c1-t10" headers="r1c1-t10">
+<p>Regular</p>
 </td>
-<td align="left" headers="r2c1-t8 r1c2-t8">Select the browser that the IDE uses to run the application.
-<p>The following options are available when Chrome with NetBeans Integration or Embedded WebKit Browser are selected.</p>
-<ul>
-<li>Auto-refresh. When selected, the browser page is automatically reloaded when the HTML file or any files that are used by the HTML file are saved.</li>
-<li>Synchronize Navigator and browser element highlighting. When selected, when your cursor hovers over an element in the Navigator of the IDE the corresponding element is highlighted in the browser. When deselected the element in the browser is not highlighted when the element in the Navigator is selected.</li>
-</ul>
-</td>
+<td align="left" headers="r2c1-t10 r1c2-t10">Select this tab to view, add, edit, update, or remove the details for Bower dependencies that the project requires when it is run.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t8" headers="r1c1-t8">
-<p>Start File</p>
+<td align="left" id="r3c1-t10" headers="r1c1-t10">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Package</p>
 </td>
-<td align="left" headers="r3c1-t8 r1c2-t8">The file that is displayed in the browser when you run the application. The default page is typically <code dir="ltr">index.html</code>.</td>
+<td align="left" headers="r3c1-t10 r1c2-t10">Displays the name of a Bower dependency.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t8" headers="r1c1-t8">
-<p>Web Server</p>
+<td align="left" id="r4c1-t10" headers="r1c1-t10">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Required Version</p>
 </td>
-<td align="left" headers="r4c1-t8 r1c2-t8">Select one of the following server options from the drop-down list.</td>
+<td align="left" headers="r4c1-t10 r1c2-t10">Displays the version of the package that is required to be installed on your machine.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t8" headers="r1c1-t8">
-<p>Lightweight Embedded</p>
+<td align="left" id="r5c1-t10" headers="r1c1-t10">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Installed Version</p>
 </td>
-<td align="left" headers="r5c1-t8 r1c2-t8">Select this option to use the lightweight embedded web server. When you run the project the IDE will open the browser to the application index page on localhost.
-<p>This option is the default.</p>
-</td>
+<td align="left" headers="r5c1-t10 r1c2-t10">Displays the version of the package installed on your machine.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t8" headers="r1c1-t8">
-<p>External</p>
-</td>
-<td align="left" headers="r6c1-t8 r1c2-t8">Select this option to use a server installation that is hosting the application. If you select this option you need to specify the URL for the application. When you run the project the IDE will attempt to open the specified URL in the browser. It is not possible to manage the external server from the IDE.</td>
+<td align="left" id="r6c1-t10" headers="r1c1-t10">&nbsp;&nbsp;&nbsp;&nbsp;Latest Version</td>
+<td align="left" headers="r6c1-t10 r1c2-t10">Displays the most recent released version of the Bower dependency.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t8" headers="r1c1-t8">
-<p>Web Root</p>
+<td align="left" id="r7c1-t10" headers="r1c1-t10">
+<p>Development</p>
 </td>
-<td align="left" headers="r7c1-t8 r1c2-t8">This option is only available when you use the Embedded Lightweight web server. If no web root is specified the URL for the project will be http://localhost:&lt;PORT_NUMBER&gt;. You should specify a web root property if you want to run multiple projects simultaneously.</td>
+<td align="left" headers="r7c1-t10 r1c2-t10">Select this tab to view, add, edit, update, or remove the details for Bower dependencies that are required for the execution of the project (for example, testing tools).</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t10" headers="r1c1-t10">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Package</p>
+</td>
+<td align="left" headers="r8c1-t10 r1c2-t10">Displays the name of a Bower dependency.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t10" headers="r1c1-t10">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Required Version</p>
+</td>
+<td align="left" headers="r9c1-t10 r1c2-t10">Displays the version of the package that is required to be installed on your machine.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t10" headers="r1c1-t10">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Installed Version</p>
+</td>
+<td align="left" headers="r10c1-t10 r1c2-t10">Displays the version of the package installed on your machine.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t10" headers="r1c1-t10">&nbsp;&nbsp;&nbsp;&nbsp;Latest Version</td>
+<td align="left" headers="r11c1-t10 r1c2-t10">Displays the most recent released version of the Bower dependency.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH4356" name="NBCSH4356"></a>
+<p>You can use the following buttons to the right of the table:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t11">Element</th>
+<th align="left" valign="bottom" id="r1c2-t11">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t11" headers="r1c1-t11">
+<p>Add</p>
+</td>
+<td align="left" headers="r2c1-t11 r1c2-t11">Click to add a Bower dependency on the specified package.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t11" headers="r1c1-t11">Edit</td>
+<td align="left" headers="r3c1-t11 r1c2-t11">Click to edit the installed and the required version of a Bower dependency.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t11" headers="r1c1-t11">
+<p>Remove</p>
+</td>
+<td align="left" headers="r4c1-t11 r1c2-t11">Select a package in the table and click Remove to remove it.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t11" headers="r1c1-t11">
+<p>Update</p>
+</td>
+<td align="left" headers="r5c1-t11 r1c2-t11">Select a package in the table and click Update to update the details.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t11" headers="r1c1-t11">Move to</td>
+<td align="left" headers="r6c1-t11 r1c2-t11"></td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t11" headers="r1c1-t11">&nbsp;&nbsp;&nbsp;&nbsp;Development</td>
+<td align="left" headers="r7c1-t11 r1c2-t11">Click to move the selected package to the Development tab.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t11" headers="r1c1-t11">&nbsp;&nbsp;&nbsp;&nbsp;Regular</td>
+<td align="left" headers="r8c1-t11 r1c2-t11">Click to move the selected package to the Regular tab.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t11" headers="r1c1-t11">&nbsp;&nbsp;&nbsp;&nbsp;Optional</td>
+<td align="left" headers="r9c1-t11 r1c2-t11">Click to move the selected package to the Optional tab.</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="sthref584" name="sthref584"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1952">
-<param name="text" value="<html><u>&quot;Running an HTML5 Application&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2272">
+<param name="text" value="<html><u>&quot;Creating JavaScript Files&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
