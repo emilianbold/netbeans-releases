@@ -2,27 +2,19 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>New HTML5 Application Wizard: Cordova Support</title>
+<title>New HTML5/JS Application Wizard: Mobile Platforms</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-08-07</p>
-<p><a id="org.netbeans.modules.cordova.template.CordovaTemplate$CordovaWizardPanel" name="org.netbeans.modules.cordova.template.CordovaTemplate$CordovaWizardPanel"></a></p>
-<div id="NBCSH4400"><!-- infolevel="all" infotype="General" --><a id="sthref587" name="sthref587"></a>
-<h1>New HTML5 Application Wizard: Cordova Support</h1>
+<p>Beta Draft: 2015-09-14</p>
+<p><a id="org.netbeans.modules.cordova.wizard.CordovaSetupPanel" name="org.netbeans.modules.cordova.wizard.CordovaSetupPanel"></a></p>
+<div id="NBCSH4380"><!-- infolevel="all" infotype="General" --><a id="sthref595" name="sthref595"></a>
+<h1>New HTML5/JS Application Wizard: Mobile Platforms</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The New HTML5 Application wizard creates a new project for developing an HTML5 application with HTML, CSS and JavaScript. 
+<p>You use this panel of the New HTML5/JS Application wizard to specify the details of the SDK for the mobile platform for the application. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1950">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>In the Cordova Support page you can specify the details that are saved in the <code dir="ltr">config.xml</code> file of the project. You can edit the <code dir="ltr">config.xml</code> details later in the source editor or in the Cordova category of the Project Properties window. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2504">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -35,36 +27,37 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t17">Option</th>
-<th align="left" valign="bottom" id="r1c2-t17">Description</th>
+<th align="left" valign="bottom" id="r1c1-t22">Value</th>
+<th align="left" valign="bottom" id="r1c2-t22">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t17" headers="r1c1-t17">
-<p>Application ID</p>
+<td align="left" id="r2c1-t22" headers="r1c1-t22">
+<p>Android SDK Location</p>
 </td>
-<td align="left" headers="r2c1-t17 r1c2-t17">Type the the unique identifier for the application.
-<p>Use reverse domain syntax (<code dir="ltr">com.coolappz.HTML5Application</code>) to ensure the widest possible platform support.</p>
+<td align="left" headers="r2c1-t22 r1c2-t22">Specifies the location of the local installation of the Android SDK. You can use the Browse button to locate the folder that contains the SDK on your local system.
+<p>If the ANDROID_HOME environment property is set and points to the Android SDK directory, the IDE will use the value of this property as a default Android SDK location.</p>
+<p>If the SDK is not installed, you can click Download Android SDK to open the download page for the SDK in your browser.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t17" headers="r1c1-t17">
-<p>Application Name</p>
+<td align="left" id="r3c1-t22" headers="r1c1-t22">
+<p>iOS Code Sign Identity</p>
 </td>
-<td align="left" headers="r3c1-t17 r1c2-t17">Type the name of the application.</td>
+<td align="left" headers="r3c1-t22 r1c2-t22">Type the iOS code sign identity in the text field. This option is only enabled on Mac OS.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t17" headers="r1c1-t17">
-<p>Version</p>
+<td align="left" id="r4c1-t22" headers="r1c1-t22">
+<p>iOS Provisioning Profile</p>
 </td>
-<td align="left" headers="r4c1-t17 r1c2-t17">Specify the version of the application.</td>
+<td align="left" headers="r4c1-t22 r1c2-t22">Select the iOS provisioning profile from the drop-down list. This options is only enabled on Mac OS.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH4404" name="NBCSH4404"></a>
+<a id="NBCSH4384" name="NBCSH4384"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

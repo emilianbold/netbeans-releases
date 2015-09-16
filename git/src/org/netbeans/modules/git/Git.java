@@ -125,7 +125,8 @@ public final class Git {
 
             @Override
             public File getTopmostManagedAncestor (File file) {
-                return Git.this.getTopmostManagedAncestor(file);
+                // skip exceptions - hidden folders, we already think the file is under a repository.
+                return Git.this.getTopmostManagedAncestor(file, true);
             }
         }, Logger.getLogger("org.netbeans.modules.git.RootsToFile"), statisticsFrequency); //NOI18N
         ModuleLifecycleManager.getInstance().disableOtherModules();
@@ -294,6 +295,10 @@ public final class Git {
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
 
     public File getTopmostManagedAncestor (File file) {
+        return getTopmostManagedAncestor(file, false);
+    }
+    
+    private File getTopmostManagedAncestor (File file, boolean noExceptions) {
         long t = System.currentTimeMillis();
         LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
         if(unversionedParents.contains(file)) {
@@ -324,7 +329,7 @@ public final class Git {
                 LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
                 break;
             }
-            if (VersioningSupport.isExcluded(file)) break;
+            if (!noExceptions && VersioningSupport.isExcluded(file)) break;
             // is the folder a special one where metadata should not be looked for?
             boolean forbiddenFolder = Utils.isForbiddenFolder(file.getAbsolutePath());
             if (!forbiddenFolder && GitUtils.repositoryExistsFor(file)) {
