@@ -76,7 +76,9 @@ public class RepositoryComboRenderer extends DefaultListCellRenderer {
         String text;
         Repository repo = null;
         if (value == null) {
-            text = null;
+            text = null;        
+        } else if (value instanceof String && ((String) value).trim().equals("")) {
+            text = (String) value;            
         } else if (value instanceof Repository) {
             repo = (Repository) value;
             text = repo.getDisplayName();
