@@ -327,7 +327,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
             String path = FileUtil.getRelativePath(tuple.root, fo);
             path = addTargetPath(path, tuple.resource);
             createAndCopy(fo, tuple.destinationRoot, path);
-            AdditionalDestination add = project.getLookup().lookup(AdditionalDestination.class);
+                AdditionalDestination add = project.getLookup().lookup(AdditionalDestination.class);
             if (add != null) {
                 add.copy(fo, path);
             }
@@ -406,9 +406,13 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                         break;
                     }
                 }
-                if (!included && res.isFiltering()) {
+                if (!included) {
                     LOG.log(Level.FINE, "findResource for {0} : Not included {1}, {2} ", new Object[] {child.getPath(), included, res});
-                    continue;
+                    if(res.isFiltering()) {
+                        continue;
+                    } else {
+                        break; 
+                    }
                 }
                 List<String> excls = new ArrayList<String>(res.getExcludes());
                 excls.addAll(Arrays.asList(DirectoryScanner.DEFAULTEXCLUDES));

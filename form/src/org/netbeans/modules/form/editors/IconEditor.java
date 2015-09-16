@@ -69,6 +69,7 @@ import org.netbeans.modules.form.FormDesignValue;
 import org.netbeans.modules.form.FormDesignValueAdapter;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormProperty;
+import org.netbeans.modules.form.FormUtils;
 
 /**
  * PropertyEditor for Icons. Depends on existing DataObject for images.
@@ -94,6 +95,8 @@ public class IconEditor extends PropertyEditorSupport
      */
     private static final String[] DEFAULT_DIRS = { "resources", "resource", "images" }; // NOI18N
 
+    private static String noneText = FormUtils.getBundleString("CTL_NoComponent"); // NOI18N;
+
     /**
      * Resource name of the current package (uses / as separator but does not
      * contain the initial /). Short file names are resolved against this
@@ -102,7 +105,6 @@ public class IconEditor extends PropertyEditorSupport
     private String currentPackage;
     private String[] currentFiles;
 
-    //private FormModel formModel;
     private FileObject sourceFile;
     private boolean externalIconsAllowed = true;
 
@@ -154,6 +156,8 @@ public class IconEditor extends PropertyEditorSupport
                     return resName;
             }
             else return nbIcon.getName();
+        } else if (val == null) {
+            return noneText;
         }
         return ""; // NOI18N
     }
@@ -287,6 +291,22 @@ public class IconEditor extends PropertyEditorSupport
         return null;
     }
 
+    private List<FileObject> getCurrentPackageFolders() {
+        List<FileObject> folders;
+        if (currentPackage != null) {
+            FileObject srcFile = getSourceFile();
+            folders = ClassPath.getClassPath(srcFile, ClassPath.SOURCE)
+                    .findAllResources(currentPackage);
+            if (folders == null || folders.isEmpty()) {
+                folders = ClassPath.getClassPath(srcFile, ClassPath.EXECUTE)
+                    .findAllResources(currentPackage);
+            }
+        } else {
+            folders = Collections.EMPTY_LIST;
+        }
+        return folders;
+    }
+
     /**
      * Sets the "current folder" which is used to resolve short file names, its
      * content is offered via getTags(), and it is also selected in the custom
@@ -311,7 +331,9 @@ public class IconEditor extends PropertyEditorSupport
     }
 
     private void setCurrentPackage(String pkg) {
-        currentPackage = pkg;
+        if (pkg != null || (currentPackage != null && !currentPackage.equals(""))) {
+            currentPackage = pkg;
+        } // don't set null if there is initial default ""
         currentFiles = null;
     }
 
@@ -329,11 +351,34 @@ public class IconEditor extends PropertyEditorSupport
 
     FileObject getDefaultResourceFolder() {
         FileObject srcFile = getSourceFile();
+        // first do maven check - prefer src/main/resources folder
+        ClassPath cp = ClassPath.getClassPath(srcFile, ClassPath.SOURCE);
+        if (cp != null) {
+            FileObject[] sourceRoots = cp.getRoots();
+            if (sourceRoots != null && sourceRoots.length >= 2) {
+                for (FileObject root : sourceRoots) {
+                    if (!FileUtil.isParentOf(root, srcFile) && root.getName().equals("resources") // NOI18N
+                            && root.getParent() != null && root.getParent().getName().equals("main") // NOI18N
+                            && root.getParent().getParent() != null && root.getParent().getParent().getName().equals("src")) { // NOI18N
+                        String pkgResName = cp.getResourceName(srcFile.getParent());
+                        if (pkgResName != null) {
+                            FileObject folder = root.getFileObject(pkgResName);
+                            if (folder != null) {
+                                return folder; // same package under resources root
+                            }
+                        }
+                        return root; // just the resources root (despite it means default package)
+                    }
+                }
+            }
+        }
+        // check some usual subdirs under current form package
         for (String dir : DEFAULT_DIRS) {
             FileObject folder = srcFile.getParent().getFileObject(dir);
             if (folder != null)
                 return folder;
         }
+        // default to current form's package
         return srcFile.getParent();
     }
 
@@ -347,19 +392,25 @@ public class IconEditor extends PropertyEditorSupport
      * @return names of files (without path) available in current folder
      */
     private String[] getAvailableFileNames() {
-        FileObject folder = getCurrentFolder();
-        if (folder != null) {
-            List<String> list = new LinkedList<String>();
-            for (FileObject fo : folder.getChildren()) {
-                if (isImageFile(fo))
-                    list.add(fo.getNameExt());
-            }
-            String[] fileNames = new String[list.size()];
-            list.toArray(fileNames);
-            Arrays.sort(fileNames);
-            return fileNames;
+        List<FileObject> folders = getCurrentPackageFolders();
+        if (folders == null || folders.isEmpty()) {
+            return null;
         }
-        return null;
+
+        Set<String> namesSet = new HashSet<>();
+        for (FileObject folder : folders) {
+            for (FileObject fo : folder.getChildren()) {
+                if (isImageFile(fo)) {
+                    namesSet.add(fo.getNameExt());
+                }
+            }
+        }
+        String[] fileNames = namesSet.toArray(new String[namesSet.size()]);
+        Arrays.sort(fileNames);
+        String[] namesWithNone = new String[fileNames.length + 1];
+        namesWithNone[0] = noneText;
+        System.arraycopy(fileNames, 0, namesWithNone, 1, fileNames.length);
+        return namesWithNone;
     }
 
     static boolean isImageFile(FileObject fo) {
@@ -373,8 +424,9 @@ public class IconEditor extends PropertyEditorSupport
     }
 
     private NbImageIcon createIconFromText(String txt) {
-        if (txt == null || "".equals(txt.trim())) // NOI18N
+        if (txt == null || "".equals(txt.trim()) || txt.equals(noneText)) { // NOI18N
             return null;
+        }
 
         if (!txt.contains("/") && !txt.contains("\\") && !txt.contains(":")) { // NOI18N
              // just a file name within current folder 
