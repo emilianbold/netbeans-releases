@@ -155,7 +155,7 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
 
         treeView = new BeanTreeView();
         treeView.setPopupAllowed(false);
-        treeView.setDefaultActionAllowed(false);
+        treeView.setDefaultActionAllowed(true);
         treeView.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
         treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ClassPathFileChooser.class, "ACSN_FileSelectorTreeView")); // NOI18N
         treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClassPathFileChooser.class, "ACSD_FileSelectorTreeView")); // NOI18N
@@ -251,7 +251,7 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
     public void setSelectedFile(FileObject file) {
         if (file != null) {
             if (getRoot(file) == null) {
-                throw new IllegalArgumentException("File not within the classpath."); // NOI18N
+                return;
             }
             selectFileNode(file);
         }
@@ -413,6 +413,9 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
             FileObject nodeFO = fileFromNode(n);
             if (nodeFO == fo) {
                 try {
+                    if (fo.isFolder()) {
+                        explorerManager.setExploredContext(n); // to expand the folder
+                    }
                     explorerManager.setSelectedNodes(new Node[] { n });
                 }
                 catch (PropertyVetoException ex) { // should not happen
@@ -487,7 +490,7 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
         return nodes;
     }
 
-    private static Node createPackageRootNode(FileObject rootFO, Project project, Filter filter) {
+    private Node createPackageRootNode(FileObject rootFO, Project project, Filter filter) {
         Node origNode;
         try {
             origNode = DataObject.find(rootFO).getNodeDelegate();
@@ -516,28 +519,49 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
     private static SourceGroup getSourceGroup(FileObject file, Project prj) {
         Sources src = ProjectUtils.getSources(prj);
         for (SourceGroup g : src.getSourceGroups("java")) { // NOI18N
-            if (file == g.getRootFolder())
+            if (file == g.getRootFolder()) {
                 return g;
+            }
+        }
+        for (SourceGroup g : src.getSourceGroups("Resources")) { // NOI18N
+            if (file == g.getRootFolder()) {
+                return g;
+            }
         }
         return null;
     }
 
-    private static class FilteredNode extends FilterNode {
+    private class FilteredNode extends FilterNode {
         FilteredNode(Node original, String displayName, Filter filter) {
-            super(original, new FilteredChildren(original, filter));
+            super(original, original.isLeaf() ? Children.LEAF : new FilteredChildren(original, filter));
             if (displayName != null) {
                 disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME);
                 setDisplayName(displayName);
             }
         }
+
+        @Override
+        public Action getPreferredAction() {
+            if (isLeaf()) { // double click on file will invoke OK button
+                return new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (okButton.isEnabled()) {
+                            okButton.doClick();
+                        }
+                    }
+                };
+            }
+            return null;
+        }
     }
 
     /**
-     * A mutualy recursive children that ensure propagation of the
-     * filter to deeper levels of hiearachy. That is, it creates
+     * A mutually recursive children that ensure propagation of the
+     * filter to deeper levels of hierarchy. That is, it creates
      * FilteredNodes filtered by the same filter.
      */
-    public static class FilteredChildren extends FilterNode.Children {
+    public class FilteredChildren extends FilterNode.Children {
         private Filter filter;
 
         public FilteredChildren(Node original, Filter filter) {

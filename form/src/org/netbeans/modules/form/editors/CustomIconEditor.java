@@ -154,8 +154,9 @@ public class CustomIconEditor extends javax.swing.JPanel {
             FileObject sourceFile = propertyEditor.getSourceFile();
             ClassPath cp = ClassPath.getClassPath(sourceFile, ClassPath.SOURCE);
             if (cp != null) {
-                setPackageRoot(cp.findOwnerRoot(sourceFile));
-                setPackage(propertyEditor.getDefaultResourceFolder());
+                FileObject defaultFolder = propertyEditor.getDefaultResourceFolder();
+                setPackageRoot(cp.findOwnerRoot(defaultFolder));
+                setPackage(defaultFolder);
             } else {
                 externalRadio.setSelected(true);
                 classPathRadio.setEnabled(false);
@@ -251,23 +252,21 @@ public class CustomIconEditor extends javax.swing.JPanel {
                             FileObject fob = findSourceRootOf(roots, pkgName);
                             if (fob == null) {
                                 folder = null;
-                                cp = sourceCP;
                             } else {
                                 folder = fob;
                                 cp = ClassPath.getClassPath(fob, ClassPath.SOURCE);
                             }
                         }
                     }
+                } else if (cp.findAllResources(pkgName).size() > 1) {
+                    folder = null; // if the package exists under more roots, e.g. in maven project, we don't know which one to pick
                 }
             }
-            if (folder == null)
+            if (folder == null) {
                 folder = propertyEditor.getDefaultResourceFolder();
-            FileObject root = cp.findOwnerRoot(folder);
-            if (root == null) {
-                setPackageRoot(sourceCP.findOwnerRoot(sourceFile));
-            } else {
-                setPackageRoot(root);
+                cp = sourceCP;
             }
+            setPackageRoot(cp.findOwnerRoot(folder));
             setPackage(folder);
         }
     }
@@ -710,7 +709,12 @@ public class CustomIconEditor extends javax.swing.JPanel {
                     },
                     false, true);
         try {
-            chooser.setSelectedFile(selectedCPFile);
+            if (selectedCPFile != null) {
+                chooser.setSelectedFile(selectedCPFile);
+            } else {
+                chooser.setSelectedFile(selectedPackage);
+                chooser.setSelectedFile(null);
+            }
         } catch (IllegalArgumentException iaex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iaex);
         }

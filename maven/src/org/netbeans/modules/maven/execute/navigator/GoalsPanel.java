@@ -137,6 +137,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     private final transient ExplorerManager explorerManager = new ExplorerManager();
     
     private final BeanTreeView treeView;
+    private final Object PROJECT_LOCK = new Object();
     private NbMavenProject current;
     private Project currentP;
     private final TapPanel filtersPanel;
@@ -184,8 +185,10 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     }
 
     void navigate(DataObject d) {
-        if (current != null) {
-            current.removePropertyChangeListener(pchadapter);
+        synchronized (PROJECT_LOCK) {
+            if (current != null) {
+                current.removePropertyChangeListener(pchadapter);
+            }
         }
         NbMavenProject n = null;
 
@@ -210,9 +213,11 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             return;
         }
          
-        current = n;
-        currentP = p;
-        current.addPropertyChangeListener(pchadapter);
+        synchronized (PROJECT_LOCK) {
+            current = n;
+            currentP = p;
+            current.addPropertyChangeListener(pchadapter);
+        }
         showWaitNode();
         RequestProcessor.getDefault().post(this);
     }
@@ -221,11 +226,15 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     public void run() {
         //#164852 somehow a folder dataobject slipped in, test mimetype to avoid that.
         // the root cause of the problem is unknown though
-        if (currentP != null ) { //NOI18N
+        Project cp;
+        synchronized(PROJECT_LOCK) {
+            cp = currentP;
+        }
+        if (cp != null ) { //NOI18N
          
-            NbMavenProject mpp = currentP.getLookup().lookup(NbMavenProject.class);
+            NbMavenProject mpp = cp.getLookup().lookup(NbMavenProject.class);
             if (mpp != null) {
-                final Children ch = Children.create(new PluginChildren(currentP), true);
+                final Children ch = Children.create(new PluginChildren(cp), true);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -253,11 +262,13 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
      * 
      */
     void release() {
-        if (current != null) {
-            current.removePropertyChangeListener(pchadapter);
+        synchronized(PROJECT_LOCK) {
+            if (current != null) {
+                current.removePropertyChangeListener(pchadapter);
+            }
+            current = null;
+            currentP = null;
         }
-        current = null;
-        currentP = null;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
