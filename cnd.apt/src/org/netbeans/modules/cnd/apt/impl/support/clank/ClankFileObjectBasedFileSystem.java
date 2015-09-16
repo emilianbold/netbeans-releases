@@ -205,17 +205,8 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
             int group = 0; // TODO: provide access to group if needed
             perms permissions = perms.valueOf(perms.all_all); // TODO: get real permissions
             file_type type;
-            boolean isLink;
-            try {
-                isLink = fo.isSymbolicLink();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                isLink=false; // TODO: better error processing?
-            }
-
-            if (isLink) {
-                type = file_type.symlink_file;
-            } else if (fo.isFolder()) {
+            // follow links! remote isFolder does
+            if (fo.isFolder()) {
                 type = file_type.directory_file;
             } else if (fo.isData()) {
                 type = file_type.regular_file;

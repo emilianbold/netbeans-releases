@@ -115,7 +115,7 @@ public class HelperUtility {
         at org.netbeans.modules.nativeexecution.api.util.ConnectionManager.initiateConnection(ConnectionManager.java:407)
         Also the code below and comment (see 235998:3c427e2d4185) says that we can be here erlier then connection is
         */
-        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+        if (!ConnectionManager.getInstance().isConnectedTo(env, false)) {
             log.log(Level.FINE, env.toString() + " is not connected", //NOI18N
                     new IllegalStateException(env.toString() + " is not connected")); // NOI18N
         }
