@@ -258,9 +258,9 @@ public class getTopmostTest extends NbTestCase {
         
         // test
         assertEquals(userDir.getParentFile(), Git.getInstance().getRepositoryRoot(userDir.getParentFile()));
-        assertNull(Git.getInstance().getRepositoryRoot(userDir));
-        assertNull(Git.getInstance().getRepositoryRoot(r1));
-        assertNull(Git.getInstance().getRepositoryRoot(r1f1));
+        assertNull(mvcs.getTopmostManagedAncestor(userDir));
+        assertNull(mvcs.getTopmostManagedAncestor(r1));
+        assertNull(mvcs.getTopmostManagedAncestor(r1f1));
 
         Git.getInstance().versionedFilesChanged();
         f.set(Utils.class, null);
@@ -278,8 +278,10 @@ public class getTopmostTest extends NbTestCase {
         Git.getInstance().versionedFilesChanged();
         assertEquals(r1, Git.getInstance().getRepositoryRoot(r1));
         assertEquals(r1, Git.getInstance().getRepositoryRoot(r1f1));
-        assertNull(Git.getInstance().getRepositoryRoot(r1fld1));
-        assertNull(Git.getInstance().getRepositoryRoot(r1fld1f1));
+        assertEquals(userDir.getParentFile(), mvcs.getTopmostManagedAncestor(r1));
+        assertEquals(userDir.getParentFile(), mvcs.getTopmostManagedAncestor(r1f1));
+        assertNull(mvcs.getTopmostManagedAncestor(r1fld1));
+        assertNull(mvcs.getTopmostManagedAncestor(r1fld1f1));
 
         // logic in VersioningManager used to mark all parents of an excluded tree as unversioned too - that's obviously wrong
         // we want to exclude only userdir, not the whole disk
