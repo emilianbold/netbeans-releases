@@ -56,7 +56,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -73,6 +77,8 @@ public final class ExtraProjectJavadocForBinaryQueryImpl extends ProjectOpenedHo
 
     private static final String REF_START = "file.reference."; //NOI18N
     private static final String JAVADOC_START = "javadoc.reference."; //NOI18N
+    private static final Pattern REMOTE_POTOCOL = Pattern.compile("^http(s)?:.*"); //NOI18N
+    private static final Logger LOG = Logger.getLogger(ExtraProjectJavadocForBinaryQueryImpl.class.getName());
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -147,24 +153,39 @@ public final class ExtraProjectJavadocForBinaryQueryImpl extends ProjectOpenedHo
                 if (entry.getKey().startsWith(REF_START)) {
                     String val = entry.getKey().substring(REF_START.length());
                     String sourceKey = JAVADOC_START + val;
-                    String source[] = stripJARPath(props.get(sourceKey));
+                    String sourceValue = props.get(sourceKey);
                     File bin = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), entry.getValue());
                     URL binURL = FileUtil.urlForArchiveOrDir(bin);
-                    if (source[0] != null && binURL != null) {
-                        File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source[0]);
-                        // #138349 - ignore non existing paths or entries with undefined IDE variables
-                        if (src.exists()) {
+                    if (sourceValue != null && binURL != null) {
+                        if (isRemoteJavaDoc(sourceValue)) {
                             try {
-                                URL url = FileUtil.urlForArchiveOrDir(src);
-                                if (url != null) {
-                                    if (source[1] != null) {
-                                        assert url.toExternalForm().endsWith("!/") : url.toExternalForm();  //NOI18N
-                                        url = new URL(url.toExternalForm()+source[1]);
-                                    }
-                                    result.put(binURL, url);
-                                }
+                                result.put(binURL, new URL(sourceValue));
                             } catch (MalformedURLException ex) {
-                                Exceptions.printStackTrace(ex);
+                                LOG.log(
+                                    Level.INFO,
+                                    "Ignoring invalid javadoc root: {0} for binary: {1}",   //NOI18N
+                                    new Object[]{
+                                        sourceValue,
+                                        bin.getAbsolutePath()
+                                    });
+                            }
+                        } else {
+                            final String source[] = stripJARPath(props.get(sourceKey));
+                            File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source[0]);
+                            // #138349 - ignore non existing paths or entries with undefined IDE variables
+                            if (src.exists()) {
+                                try {
+                                    URL url = FileUtil.urlForArchiveOrDir(src);
+                                    if (url != null) {
+                                        if (source[1] != null) {
+                                            assert url.toExternalForm().endsWith("!/") : url.toExternalForm();  //NOI18N
+                                            url = new URL(url.toExternalForm()+source[1]);
+                                        }
+                                        result.put(binURL, url);
+                                    }
+                                } catch (MalformedURLException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
                             }
                         }
                     }
@@ -230,8 +251,12 @@ public final class ExtraProjectJavadocForBinaryQueryImpl extends ProjectOpenedHo
         }
         
     }
-        
-    
+
+    private static boolean isRemoteJavaDoc(@NonNull final String javadoc) {
+        return REMOTE_POTOCOL.matcher(javadoc).matches();
+    }
+
+
     private class ExtraResult implements JavadocForBinaryQuery.Result {
         private URL binaryroot;
         private ChangeSupport chs = new ChangeSupport(this);
