@@ -682,7 +682,8 @@ public class PropertiesOpen extends CloneableOpenSupport
                     dataObj = (PropertiesDataObject) evt.getSource();
                 }
                 if (dataObj != null) {
-                    if (dataObj.getCookieSet0().getCookie(OpenCookie.class) != dataObj.getOpenSupport()) {
+                    OpenCookie cookie = dataObj.getCookieSet0().getCookie(OpenCookie.class);
+                    if (cookie != dataObj.getOpenSupport()) {
                         PropertyChangeListener l = weakEnvPropListeners.remove(dataObj);
                         VetoableChangeListener v = weakEnvVetoListeners.remove(dataObj);
                         if (l!=null) {
@@ -690,6 +691,10 @@ public class PropertiesOpen extends CloneableOpenSupport
                         }
                         if (v!=null) {
                             dataObj.removeVetoableChangeListener(v);
+                        }
+                        // remove old open cookie
+                        if (cookie != null) {
+                            dataObj.getCookieSet0().remove(cookie);
                         }
                         //Adds new OpenCookie to this dataObj
                         dataObj.getCookieSet0().add(dataObj.getOpenSupport());
@@ -707,7 +712,8 @@ public class PropertiesOpen extends CloneableOpenSupport
                     dataObj = (PropertiesDataObject) evt.getSource();
                 }
                 if (dataObj != null) {
-                    if (dataObj.getCookieSet0().getCookie(OpenCookie.class) != dataObj.getOpenSupport()) {
+                    OpenCookie cookie = dataObj.getCookieSet0().getCookie(OpenCookie.class);
+                    if (cookie != dataObj.getOpenSupport()) {
                         PropertyChangeListener l = weakEnvPropListeners.remove(dataObj);
                         VetoableChangeListener v = weakEnvVetoListeners.remove(dataObj);
                         if (l!=null) {
@@ -715,6 +721,10 @@ public class PropertiesOpen extends CloneableOpenSupport
                         }
                         if (v!=null) {
                             dataObj.removeVetoableChangeListener(v);
+                        }
+                        // remove old open cookie
+                        if (cookie != null) {
+                            dataObj.getCookieSet0().remove(cookie);
                         }
                         //Adds new OpenCookie to this dataObj
                         dataObj.getCookieSet0().add(dataObj.getOpenSupport());
