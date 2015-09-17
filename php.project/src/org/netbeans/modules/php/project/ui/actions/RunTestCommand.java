@@ -50,8 +50,7 @@ import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.ui.actions.tests.GoToTest;
 import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -72,8 +71,7 @@ public class RunTestCommand extends Command implements Displayable {
     public void invokeActionInternal(Lookup context) {
         FileObject testClass = findTest(context);
         if (testClass == null) {
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(NbBundle.getMessage(RunTestCommand.class, "MSG_TestNotFound")));
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RunTestCommand.class, "MSG_TestNotFound"));
             return;
         }
         getProject().getLookup().lookup(ActionProvider.class).invokeAction(RunFileCommand.ID, Lookups.fixed(testClass));
