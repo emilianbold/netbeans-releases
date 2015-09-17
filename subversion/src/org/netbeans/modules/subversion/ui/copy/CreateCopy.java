@@ -137,7 +137,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         copyToRepositoryPaths.setupBehavior(browserPurposeMessage, browserMode, new BrowserAction[] { new CreateFolderAction(defaultFolderName)} , Browser.BROWSER_HELP_ID_COPY, null);                
         copyToRepositoryPaths.addPropertyChangeListener(this);
 
-        setupUrlComboBox(repositoryFile, panel.urlComboBox);
+        setupUrlComboBox(repositoryFile, panel.urlComboBox, false);
         panel.messageTextArea.getDocument().addDocumentListener(this);
         ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         

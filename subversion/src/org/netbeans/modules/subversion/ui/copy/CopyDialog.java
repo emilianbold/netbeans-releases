@@ -111,12 +111,13 @@ public abstract class CopyDialog {
         dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CopyDialog.class, "CTL_Title"));                // NOI18N
     }
 
-    protected void setupUrlComboBox (RepositoryFile repositoryFile, JComboBox cbo) {
+    protected void setupUrlComboBox (RepositoryFile repositoryFile, JComboBox cbo,
+            boolean preselectRepositoryFile) {
         if(cbo==null) {
             return;
         }
         List<String> recentFolders = new LinkedList<String>(Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CopyDialog.class.getName()));
-        Map<String, String> comboItems = setupModel(cbo, repositoryFile, recentFolders);
+        Map<String, String> comboItems = setupModel(cbo, repositoryFile, recentFolders, preselectRepositoryFile);
         cbo.setRenderer(new LocationRenderer(comboItems));
         getUrlComboBoxes().add(cbo);
     }    
@@ -170,7 +171,8 @@ public abstract class CopyDialog {
      * @param recentFolders
      * @return 
      */
-    static Map<String, String> setupModel (JComboBox cbo, RepositoryFile repositoryFile, List<String> recentFolders) {
+    static Map<String, String> setupModel (JComboBox cbo, RepositoryFile repositoryFile,
+            List<String> recentFolders, boolean preselectCurrentFile) {
         Map<String, String> locations = new HashMap<String, String>(Math.min(recentFolders.size(), 10));
         List<String> model = new LinkedList<String>();
         // all category in the model is sorted by name ignoring case
@@ -249,6 +251,9 @@ public abstract class CopyDialog {
         ComboBoxModel rootsModel = new DefaultComboBoxModel(model.toArray(new String[model.size()]));
         cbo.setModel(rootsModel);        
         JTextComponent comp = (JTextComponent) cbo.getEditor().getEditorComponent();
+        if (preselectCurrentFile) {
+            preselectedPath = repositoryFile.getPath();
+        }
         if (preselectedPath != null) {
             comp.setText(preselectedPath);
             if (pathInBranch != null) {

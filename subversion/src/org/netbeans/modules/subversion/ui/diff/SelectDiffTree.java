@@ -87,7 +87,7 @@ public class SelectDiffTree extends CopyDialog implements PropertyChangeListener
         this.repositoryFile = repositoryFile;       
         
         SelectDiffTreePanel panel = getSelectDiffTreePanel ();
-        setupUrlComboBox(repositoryFile, panel.urlComboBox);
+        setupUrlComboBox(repositoryFile, panel.urlComboBox, true);
         
         repositoryPaths = 
             new RepositoryPaths(
