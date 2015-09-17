@@ -120,10 +120,13 @@ public final class CodeStyleUtils {
                 decapitalize = true;
             }
         }
-        if (suffix != null && CharSequenceUtilities.endsWith(name, suffix)) {
+        if (suffix != null && suffix.length() > 0 && CharSequenceUtilities.endsWith(name, suffix)) {
             end = end - suffix.length();
         }
-        String result = sb.substring(start, end);
+        // in the case that prefix + suffix overlap in the name, do not strip anything (the computer
+        // could not decide whether prefix is desirable to retain or suffix is). The same for empty 
+        // basename.
+        String result = start <= end ? sb.substring(start, end) : name.toString();
         if(decapitalize) {
             return getDecapitalizedName(result);
         } else {
