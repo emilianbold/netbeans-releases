@@ -44,11 +44,13 @@ package org.netbeans.modules.php.nette.tester.coverage;
 
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.coverage.FileMetrics;
 
 public final class CoverageImpl implements Coverage {
 
+    @NullAllowed
     private final List<File> files;
 
 
@@ -58,7 +60,7 @@ public final class CoverageImpl implements Coverage {
 
     @Override
     public List<File> getFiles() {
-        return Collections.unmodifiableList(files);
+        return files != null ? Collections.unmodifiableList(files) : Collections.<File>emptyList();
     }
 
     //~ Inner classes
