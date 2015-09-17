@@ -565,10 +565,10 @@ public class PullAction extends ContextAction {
                     } catch (HgException ex) {
                         Mercurial.LOG.log(Level.FINE, null, ex);
                     }
+                    update = HgModuleConfig.getDefault().isPullWithUpdate();
                     if (currentBranch == null) {
                         supp.setDisplayName(Bundle.MSG_PullAction_progress_updating());
                     } else {
-                        update = askForUpdate(currentBranch);
                         if (update) {
                             supp.setDisplayName(Bundle.MSG_PullAction_progress_updatingBranch(currentBranch));
                         }
@@ -654,30 +654,6 @@ public class PullAction extends ContextAction {
                 mergeAccepted = HgUtils.confirmDialog(
                         PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); //NOI18N
             }
-        }
-
-        @NbBundle.Messages({
-            "LBL_PullAction_updateQuestion_title=Update After Pull"
-        })
-        private boolean askForUpdate (String branchName) {
-            HgModuleConfig config = HgModuleConfig.getDefault();
-            boolean update = config.isPullWithUpdate();
-            if (!update) {
-                UpdateAfterPull panel = new UpdateAfterPull(branchName);
-                Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                        panel,
-                        Bundle.LBL_PullAction_updateQuestion_title(),
-                        NotifyDescriptor.YES_NO_OPTION,
-                        NotifyDescriptor.QUESTION_MESSAGE,
-                        new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION },
-                        NotifyDescriptor.YES_OPTION
-                ));
-                if (value == NotifyDescriptor.YES_OPTION) {
-                    update = true;
-                    config.setPullWithUpdate(panel.cbUpdateAlways.isSelected());
-                }
-            }
-            return update;
         }
     }
 

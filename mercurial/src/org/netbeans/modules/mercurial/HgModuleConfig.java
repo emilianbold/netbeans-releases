@@ -668,7 +668,7 @@ public class HgModuleConfig {
     }
 
     public boolean isPullWithUpdate () {
-        return getPreferences().getBoolean(KEY_PULL_WITH_UPDATE, false);
+        return getPreferences().getBoolean(KEY_PULL_WITH_UPDATE, true);
     }
 
     public void setPullWithUpdate (boolean pullWithUpdate) {
