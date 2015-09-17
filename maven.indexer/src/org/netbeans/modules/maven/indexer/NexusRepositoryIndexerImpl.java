@@ -1804,17 +1804,18 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         
     }
     
-    private WagonHelper.WagonFetcher createFetcher(Wagon wagon, TransferListener listener, AuthenticationInfo authenticationInfo, ProxyInfo proxyInfo) {
+    private WagonHelper.WagonFetcher createFetcher(final Wagon wagon, TransferListener listener, AuthenticationInfo authenticationInfo, ProxyInfo proxyInfo) {
         if(isDiag()) {
             return new WagonHelper.WagonFetcher(wagon, listener, authenticationInfo, proxyInfo) {
                 @Override
                 public InputStream retrieve(String name) throws IOException, FileNotFoundException {
-                    if(name.contains("properties") && System.getProperty("maven.diag.index.properties") != null) { // NOI18N
-                        LOGGER.log(Level.INFO, "maven indexer will use local properties file: {0}", System.getProperty("maven.diag.index.properties")); // NOI18N
-                        return new FileInputStream(new File(System.getProperty("maven.diag.index.properties"))); // NOI18N
-                    } else if(name.contains(".gz") && System.getProperty("maven.diag.index.gz") != null) { // NOI18N
-                        LOGGER.log(Level.INFO, "maven indexer will use gz file: {0}", System.getProperty("maven.diag.index.gz")); // NOI18N
-                        return new FileInputStream(new File(System.getProperty("maven.diag.index.gz"))); // NOI18N
+                    String id = wagon.getRepository().getId();
+                    if(name.contains("properties") && System.getProperty("maven.diag.index.properties." + id) != null) { // NOI18N
+                        LOGGER.log(Level.INFO, "maven indexer will use local properties file: {0}", System.getProperty("maven.diag.index.properties." + id)); // NOI18N
+                        return new FileInputStream(new File(System.getProperty("maven.diag.index.properties." + id))); // NOI18N
+                    } else if(name.contains(".gz") && System.getProperty("maven.diag.index.gz." + id) != null) { // NOI18N
+                        LOGGER.log(Level.INFO, "maven indexer will use gz file: {0}", System.getProperty("maven.diag.index.gz." + id)); // NOI18N
+                        return new FileInputStream(new File(System.getProperty("maven.diag.index.gz." + id))); // NOI18N
                     }
                     return super.retrieve(name);
                 }

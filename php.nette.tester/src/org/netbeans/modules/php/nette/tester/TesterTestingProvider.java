@@ -44,7 +44,6 @@ package org.netbeans.modules.php.nette.tester;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import org.netbeans.modules.php.api.editor.PhpClass.Method;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -66,6 +65,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 public final class TesterTestingProvider implements PhpTestingProvider {
 
@@ -137,13 +137,13 @@ public final class TesterTestingProvider implements PhpTestingProvider {
 
     @Override
     public Locations.Line parseFileFromOutput(String line) {
-        Matcher matcher = TapParser.FILE_LINE_PATTERN.matcher(line);
-        if (matcher.find()) {
-            File file = new File(matcher.group(1));
+        Pair<String, Integer> fileLine = TapParser.getFileLine(line);
+        if (fileLine != null) {
+            File file = new File(fileLine.first());
             if (file.isFile()) {
                 FileObject fo = FileUtil.toFileObject(file);
                 assert fo != null;
-                return new Locations.Line(fo, Integer.valueOf(matcher.group(2)));
+                return new Locations.Line(fo, fileLine.second());
             }
         }
         return null;

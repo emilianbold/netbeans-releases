@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
+import org.openide.util.Pair;
 
 public class TapParserTest extends NbTestCase {
 
@@ -187,6 +188,52 @@ public class TapParserTest extends NbTestCase {
         assertNull(testCase.getDiff());
         assertEquals("Calculator-Nette-Tester/test/Calculator.test.phpt", testCase.getFile());
         assertEquals(71, testCase.getLine());
+        assertEquals(100L, testCase.getTime());
+    }
+
+    public void testGetFile() {
+        Pair<String, Integer> fileLine = TapParser.getFileLine("in nette-tester/tests/Greeting2.test.phpt(15) Tester\\Assert::same()");
+        assertNotNull(fileLine);
+        assertEquals("nette-tester/tests/Greeting2.test.phpt", fileLine.first());
+        assertEquals(15, fileLine.second().intValue());
+        fileLine = TapParser.getFileLine("# in nette-tester/tests/Greeting2.test.phpt(15) Tester\\Assert::same()");
+        assertNotNull(fileLine);
+        assertEquals("nette-tester/tests/Greeting2.test.phpt", fileLine.first());
+        assertEquals(15, fileLine.second().intValue());
+        fileLine = TapParser.getFileLine("1  0.0002  257184  {main}(  )  .../Calculator.divide.test.phpt : 10");
+        assertNotNull(fileLine);
+        assertEquals(".../Calculator.divide.test.phpt", fileLine.first());
+        assertEquals(10, fileLine.second().intValue());
+        fileLine = TapParser.getFileLine("# 1  0.0002  257184  {main}(  )  .../Calculator.divide.test.phpt : 10");
+        assertEquals(".../Calculator.divide.test.phpt", fileLine.first());
+        assertEquals(10, fileLine.second().intValue());
+        fileLine = TapParser.getFileLine("unknown");
+        assertNull(fileLine);
+        fileLine = TapParser.getFileLine("# unknown");
+        assertNull(fileLine);
+    }
+
+    public void testParseIssue255351() throws Exception {
+        TestSuiteVo suite = new TapParser()
+                .parse(getFileContent("nette-tester-tap-issue-255351.log"), 100L);
+        assertEquals("Tests", suite.getName());
+        assertEquals(null, suite.getFile());
+
+        List<TestCaseVo> testCases = suite.getTestCases();
+        assertEquals(1, testCases.size());
+
+        TestCaseVo testCase = testCases.get(0);
+        assertEquals("test/src/Calculator.divide.test.phpt", testCase.getName());
+        assertEquals(TestCase.Status.FAILED, testCase.getStatus());
+        assertEquals("Exited with error code 255 (expected 0)"
+                + " ( ! )  Warning: require(/home/gapon/NetBeansProjects/Calculator-Nette-Tester5/test/src/../vendor/autoload.php):"
+                + " failed to open stream: No such file or directory"
+                + " in /home/gapon/NetBeansProjects/Calculator-Nette-Tester5/test/src/Calculator.divide.test.phpt"
+                + " on line  44", testCase.getMessage());
+        assertEquals(Arrays.asList("1  0.0002  257184  {main}(  )  .../Calculator.divide.test.phpt : 0"), testCase.getStackTrace());
+        assertNull(testCase.getDiff());
+        assertEquals(".../Calculator.divide.test.phpt", testCase.getFile());
+        assertEquals(0, testCase.getLine());
         assertEquals(100L, testCase.getTime());
     }
 
