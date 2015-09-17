@@ -1,6 +1,6 @@
-#changeset:   15703:1a40f7737bba
+#changeset:   15714:60e175d9bfc7
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Sep 16 15:11:16 2015 +0300
-#summary:     set needComments for macro as well
-09A3160AABFD64441C5B0427D0C9B61D2A64146B clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Thu Sep 17 20:42:20 2015 +0300
+#summary:     trying to localize iz #255337 - [newcodemodel] preprocessor states differ on 1
+91F81ED36683E7DA584C97FACA3DA8E21F6EBAE4 clank_0.3.6.zip
