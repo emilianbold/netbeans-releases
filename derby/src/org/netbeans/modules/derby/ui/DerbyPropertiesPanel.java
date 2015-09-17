@@ -48,6 +48,8 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -377,6 +379,8 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     
     private static class RegisterSampleDatabase {
 
+        private static final Logger LOG = Logger.getLogger(RegisterSampleDatabase.class.getName());
+        
         private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
         private static final String CONN_NAME = "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/sample [app on APP]";  // NOI18N
         private boolean registered;
@@ -412,10 +416,12 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                         if ((drvsArray.length > 0) && (ConnectionManager.getDefault().getConnection(CONN_NAME) == null)) {
                             DerbyDatabases.createSampleDatabase();
                         }
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    } catch (DatabaseException de) {
-                        Exceptions.printStackTrace(de);
+                    } catch (IOException | DatabaseException ioe) {
+                        LOG.log(Level.INFO, "", ioe);
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(
+                                "Failed to ceate sample database:\n" + ioe.getLocalizedMessage(),
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
                     } finally {
                         JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);
                     }

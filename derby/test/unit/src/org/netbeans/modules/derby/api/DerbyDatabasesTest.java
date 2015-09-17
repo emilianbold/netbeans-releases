@@ -49,11 +49,11 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import javax.xml.ws.Holder;
 import org.netbeans.modules.derby.DerbyDatabasesImpl;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.test.TestBase;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -118,7 +118,7 @@ public class DerbyDatabasesTest extends TestBase {
             @Override
             public void run() {
                 try {
-                    DerbyDatabasesImpl.getDefault().extractSampleDatabase("newdb");
+                    DerbyDatabasesImpl.getDefault().extractSampleDatabase("newdb", false);
                     File newDBDir = new File(systemHome, "newdb");
                     Set sampleDBFiles = new HashSet(Arrays.asList(newDBDir.list()));
 
@@ -133,7 +133,9 @@ public class DerbyDatabasesTest extends TestBase {
         });
     }
 
-    public void testDatabaseNotExtractedToExistingDirectoryIssue80122() throws Exception {
+    public void testDatabaseNotExtractedToExistingDirectoryIssue80122() {
+        final Holder<Boolean> exceptionHappend = new Holder<>(false);
+        
         Lookups.executeWith(sampleDBLookup, new Runnable() {
 
             @Override
@@ -141,19 +143,59 @@ public class DerbyDatabasesTest extends TestBase {
                 try {
                     File sampleDir = new File(systemHome, "sample");
                     sampleDir.mkdirs();
+                    
+                    FileUtil.toFileObject(sampleDir).createData("test.file");
 
-                    assertEquals("There should be no files in the sample directory", 0, sampleDir.listFiles().length);
+                    assertEquals("There should be no files in the sample directory", 1, sampleDir.listFiles().length);
 
-                    DerbyDatabasesImpl.getDefault().extractSampleDatabase("sample");
-
-                    assertEquals("Should not have extracted the sample database to an existing directory", 0, sampleDir.listFiles().length);
+                    DerbyDatabasesImpl.getDefault().extractSampleDatabase("sample", false);
                 } catch (IOException ex) {
-                    throw new RuntimeException(ex);
+                    exceptionHappend.value = true;
                 }
             }
         });
+        
+        assertTrue("Extracting sample db was interrupted", exceptionHappend.value);
     }
 
+    public void testDatabaseNotExtractedIfDBExists() {
+        final Holder<Boolean> exceptionHappend = new Holder<>(false);
+        
+        Lookups.executeWith(sampleDBLookup, new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    DerbyDatabasesImpl.getDefault().extractSampleDatabase("sample1", true);
+                    DerbyDatabasesImpl.getDefault().extractSampleDatabase("sample1", true);
+                } catch (IOException ex) {
+                    exceptionHappend.value = true;
+                }
+            }
+        });
+        
+        assertTrue("Extracting sample db was interrupted", exceptionHappend.value);
+    }
+    
+    public void testDatabaseSilentlyNotExtractedIfExists() {
+        final Holder<Boolean> exceptionHappend = new Holder<>(false);
+        
+        Lookups.executeWith(sampleDBLookup, new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    DerbyDatabasesImpl.getDefault().extractSampleDatabase("sample2", false);
+                    DerbyDatabasesImpl.getDefault().extractSampleDatabase("sample2", false);
+                } catch (IOException ex) {
+                    exceptionHappend.value = true;
+                }
+            }
+        });
+        
+        assertFalse("Extracting sample db was not interrupted", exceptionHappend.value);
+    }
+    
     public static final class SampleDatabaseLocator extends InstalledFileLocator {
 
         public File directory;
