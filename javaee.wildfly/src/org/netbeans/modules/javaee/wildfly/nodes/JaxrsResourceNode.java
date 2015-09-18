@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javaee.wildfly.nodes;
 
-import java.awt.Image;
-import javax.swing.Action;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
+import org.netbeans.modules.javaee.wildfly.config.WildflyJaxrsResource;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.actions.SystemAction;
 
 /**
- * 
- * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
+ *
+ * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2015 Red Hat, inc.
  */
-public class WildflyDestinationNode extends AbstractNode {
+public class JaxrsResourceNode extends AbstractNode {
 
-    public WildflyDestinationNode(String name, MessageDestination destination, Lookup lookup) {
+    public JaxrsResourceNode(WildflyJaxrsResource resource, Lookup lookup) {
         super(Children.LEAF);
-        getCookieSet().add(new UndeployModuleCookieImpl(destination.getName(), lookup));
-        setDisplayName(destination.getName());
-        setName(name);
-        setShortDescription(destination.getName());
     }
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return new SystemAction[]{
-            SystemAction.get(UndeployModuleAction.class)
-        };
-    }
-
-    @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage(Util.JMS_ICON);
-    }
-
-    @Override
-    public Image getOpenedIcon(int type) {
-        return ImageUtilities.loadImage(Util.JMS_ICON);
-    }
-
+    
 }
