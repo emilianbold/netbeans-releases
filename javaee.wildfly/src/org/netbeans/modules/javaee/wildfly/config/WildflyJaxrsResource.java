@@ -42,25 +42,34 @@
 package org.netbeans.modules.javaee.wildfly.config;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2015 Red Hat, inc.
  */
 public class WildflyJaxrsResource {
-    private final List<String> methods;
+
+    private final String serverUrl;
     private final String className;
     private final String path;
+    private final Set<String> httpMethods = new HashSet<>();
 
-    public WildflyJaxrsResource(List<String> methods, String className, String path) {
-        this.methods = methods;
+    public WildflyJaxrsResource(String className, String path, String serverUrl, List<String> methods) {
         this.className = className;
         this.path = path;
+        this.httpMethods.addAll(methods);
+        this.serverUrl = serverUrl;
     }
 
-    public List<String> getMethods() {
-        return Collections.unmodifiableList(methods);
+    public void addMethods(List<String> methods) {
+        this.httpMethods.addAll(methods);
+    }
+
+    public Set<String> getMethods() {
+        return Collections.unmodifiableSet(httpMethods);
     }
 
     public String getClassName() {
@@ -69,5 +78,9 @@ public class WildflyJaxrsResource {
 
     public String getPath() {
         return path;
+    }
+
+    public String getServerUrl() {
+        return serverUrl;
     }
 }

@@ -59,14 +59,14 @@ import org.openide.util.Lookup;
  * @author Michal Mocnak
  * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
-public class WildflyDeploymentDestinationsChildren extends WildflyAsyncChildren implements Refreshable {
+public class WildflyDeploymentChildren extends WildflyAsyncChildren implements Refreshable {
 
-    private static final Logger LOGGER = Logger.getLogger(WildflyDeploymentDestinationsChildren.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildflyDeploymentChildren.class.getName());
 
     private final Lookup lookup;
     private final String  deployment;
 
-    public WildflyDeploymentDestinationsChildren(Lookup lookup, String deployment) {
+    public WildflyDeploymentChildren(Lookup lookup, String deployment) {
         this.lookup = lookup;
         this.deployment = deployment;
     }
@@ -75,18 +75,19 @@ public class WildflyDeploymentDestinationsChildren extends WildflyAsyncChildren 
     public void updateKeys() {
         setKeys(new Object[]{Util.WAIT_NODE});
         getExecutorService().submit(new WildflyDestinationsNodeUpdater(), 0);
-
+        getExecutorService().submit(new WildflyDestinationsNodeUpdater(), 0);
     }
 
     class WildflyDestinationsNodeUpdater implements Runnable {
 
-        List<WildflyDestinationNode> keys = new ArrayList<WildflyDestinationNode>();
+        List keys = new ArrayList();
 
         @Override
         public void run() {
             try {
                 WildflyDeploymentManager dm = lookup.lookup(WildflyDeploymentManager.class);
                 keys.addAll(dm.getClient().listDestinationForDeployment(lookup, deployment));
+                keys.addAll(dm.getClient().listJaxrsResources(lookup, deployment));
             } catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
@@ -110,7 +111,9 @@ public class WildflyDeploymentDestinationsChildren extends WildflyAsyncChildren 
         if (key instanceof WildflyDestinationNode) {
             return new Node[]{(WildflyDestinationNode) key};
         }
-
+        if (key instanceof WildflyJaxrsResourceNode) {
+            return new Node[]{(WildflyJaxrsResourceNode) key};
+        }
         if (key instanceof String && key.equals(Util.WAIT_NODE)) {
             return new Node[]{Util.createWaitNode()};
         }

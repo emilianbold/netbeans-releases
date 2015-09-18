@@ -41,19 +41,38 @@
  */
 package org.netbeans.modules.javaee.wildfly.nodes;
 
+import java.awt.Image;
 import org.netbeans.modules.javaee.wildfly.config.WildflyJaxrsResource;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2015 Red Hat, inc.
  */
-public class JaxrsResourceNode extends AbstractNode {
+public class WildflyJaxrsResourceNode extends AbstractNode {
 
-    public JaxrsResourceNode(WildflyJaxrsResource resource, Lookup lookup) {
-        super(Children.LEAF);
+    public WildflyJaxrsResourceNode(WildflyJaxrsResource resource, Lookup lookup) {
+        super(new WildflyJaxrsResourceMethodsChildren(resource.getServerUrl(), resource.getMethods()));
+        String resourceName;
+        if(resource.getClassName().indexOf('.') > 0) {
+            resourceName = resource.getClassName().substring(resource.getClassName().lastIndexOf('.') + 1);
+        } else {
+            resourceName = resource.getClassName();
+        }
+        setDisplayName(String.format("%s [%s]", resourceName, resource.getPath()));
+        setDisplayName(String.format("%s [%s]", resourceName, resource.getPath()));
+        setDisplayName(String.format("%s [%s]", resourceName, resource.getPath()));
     }
-    
+            
+    @Override
+    public Image getIcon(int type) {
+        return ImageUtilities.loadImage(Util.JAXRS_ICON);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return ImageUtilities.loadImage(Util.JAXRS_ICON);
+    }
 }
