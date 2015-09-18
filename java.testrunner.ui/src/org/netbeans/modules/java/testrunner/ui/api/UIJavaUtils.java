@@ -132,10 +132,10 @@ public final class UIJavaUtils {
 	for (TypeElement typeElement : typeElements) {
 	    List<? extends Element> allMethods = compilationController.getElements().getAllMembers(typeElement);
 	    for (Element method : allMethods) {
-		if (method.getSimpleName().contentEquals(node.getTestcase().getName())) {
+		if (node.getTestcase().getName().endsWith(method.getSimpleName().toString())) {
 		    try {
 			TypeElement enclosingTypeElement = compilationController.getElementUtilities().enclosingTypeElement(method);
-			String originalPath = FileUtil.toFile(fo2open[0]).getCanonicalPath();
+			String originalPath = FileUtil.toFile(fo2open[0]).getAbsolutePath();
 			String elementFQP = element.toString().replaceAll("\\.", Matcher.quoteReplacement(File.separator)); //NOI18N
 			String newPath = originalPath.substring(0, originalPath.indexOf(elementFQP)) + enclosingTypeElement.getQualifiedName().toString().replaceAll("\\.", Matcher.quoteReplacement(File.separator)) + ".java"; //NOI18N
 			fo2open[0] = FileUtil.toFileObject(new File(newPath));
@@ -160,7 +160,7 @@ public final class UIJavaUtils {
 					    if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo2open[0].getName())) {
 						List<? extends ExecutableElement> methodElements = ElementFilter.methodsIn(element.getEnclosedElements());
 						for (Element child : methodElements) {
-						    if (child.getSimpleName().contentEquals(node.getTestcase().getName())) {
+						    if (node.getTestcase().getName().endsWith(child.getSimpleName().toString())) {
 							long pos = trees.getSourcePositions().getStartPosition(compilationUnitTree, trees.getTree(child));
 							line[0] = compilationUnitTree.getLineMap().getLineNumber(pos);
 							break;
@@ -177,7 +177,7 @@ public final class UIJavaUtils {
 			    }
 			}
 			break;
-		    } catch (IOException ex) {
+		    } catch (Exception ex) {
 			Exceptions.printStackTrace(ex);
 		    }
 		}

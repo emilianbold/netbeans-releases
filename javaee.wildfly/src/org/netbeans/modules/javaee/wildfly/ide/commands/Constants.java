@@ -244,6 +244,12 @@ public class Constants {
     public static final String INPUT_STREAM_INDEX = "input-stream-index";// NOI18N
     public static final String INTERFACE = "interface";// NOI18N
     public static final String ITERATIVE = "iterative";// NOI18N
+    public static final String JAXRS_SUBSYSTEM = "jaxrs";// NOI18N
+    public static final String JAXRS_RESOURCE = "jaxrs-resource";// NOI18N
+    public static final String JAXRS_RESOURCE_CLASSNAME = "resource-class";// NOI18N
+    public static final String JAXRS_RESOURCE_PATH = "resource-path";// NOI18N
+    public static final String JAXRS_RESOURCE_METHOD = "jaxrs-resource-method";// NOI18N
+    public static final String JAXRS_RESOURCE_METHODS = "resource-methods";// NOI18N
     public static final String JSON_FORMATTER = "json-formatter";// NOI18N
     public static final String JVM = "jvm";// NOI18N
     public static final String LDAP = "ldap";// NOI18N
@@ -448,6 +454,7 @@ public class Constants {
     public static final String SELECT = "select";// NOI18N
     public static final String SERVER_LOGGER = "server-logger";// NOI18N
     public static final String SERVER_NAME = "server-name";// NOI18N
+    public static final String SHOW_RESOURCES = "show-resources";// NOI18N
     public static final String SHUTDOWN = "shutdown";// NOI18N
     public static final String SKIP_MISSING_GROUPS = "skip-missing-groups";// NOI18N
     public static final String SOCKET_BINDING = "socket-binding";// NOI18N
