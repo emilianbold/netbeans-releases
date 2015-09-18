@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -52,6 +53,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -89,6 +91,9 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
 
     protected TestModelHelper getTestModelHelper(){
         return helper;
+    }
+
+    protected void parsingTime(TraceModel.TestResult time) {
     }
 
     protected void performTest(String source) throws Exception {
@@ -175,6 +180,12 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         super.setUp();
         super.clearWorkDir();
         helper = new TestModelHelper(cleanCache, getProjectFileFilter());
+        helper.addParsingTimeResultListener(new TraceModel.ParsingTimeResultListener() {
+            @Override
+            public void notifyParsingTime(TraceModel.TestResult parsingTime) {
+                parsingTime(parsingTime);
+            }
+        });
         assertNotNull("Model must be valid", getTraceModel().getModel()); // NOI18N
         postSetUp();
     }
@@ -219,6 +230,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     protected static class FilteredPrintStream extends PrintStream {
         public FilteredPrintStream(File file) throws FileNotFoundException {
             super(file);
+        }
+
+        public FilteredPrintStream(OutputStream stream) {
+            super(stream);
         }
 
         @Override
@@ -286,7 +301,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         File workDir = getWorkDir();
 
         File output = new File(workDir, goldenDataFileName);
-        PrintStream streamOut = new PrintStream(output) {
+        PrintStream streamOut = new PrintStream(new BufferedOutputStream(new FileOutputStream(output))) {
 
             @Override
             public void print(String s) {
@@ -300,7 +315,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             }
         };
         File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
-        PrintStream streamErr = goldenErrFileName == null ? System.err : new FilteredPrintStream(error) {
+        PrintStream streamErr = goldenErrFileName == null ? System.err : new FilteredPrintStream(new BufferedOutputStream(new FileOutputStream(error))) {
 
             @Override
             public void print(String s) {
