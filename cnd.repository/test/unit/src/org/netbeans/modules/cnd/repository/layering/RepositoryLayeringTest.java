@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.cnd.repository.layering;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.fail;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -144,8 +144,8 @@ public class RepositoryLayeringTest extends TraceModelTestBase {
         File[] prevLayers = setLayers(layerFiles);
         try {
 
-            PrintStream streamOut = new PrintStream(dump);
-            final PrintStream streamErr = new FilteredPrintStream(err);
+            PrintStream streamOut = new PrintStream(new BufferedOutputStream(new FileOutputStream(dump)));
+            final PrintStream streamErr = new FilteredPrintStream(new BufferedOutputStream(new FileOutputStream(err)));
 
             DiagnosticExceptoins.Hook hook = new DiagnosticExceptoins.Hook() {
                 @Override

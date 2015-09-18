@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
@@ -134,14 +135,21 @@ class NoMatchingConstructor extends AbstractCodeAudit {
                 for (CsmMember member : parentClass.getMembers()) {
                     if (CsmKindUtilities.isConstructor(member)) {
                         CsmConstructor testedCtor = (CsmConstructor) member;
-                        if (testedCtor.getParameters().isEmpty()) {
+                        Collection<CsmParameter> parameters = testedCtor.getParameters();
+                        if (parameters.isEmpty()) {
                             CsmFunctionDefinition definition = testedCtor.getDefinition();
                             if (definition != null) {
                                 flag = (definition.getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.DELETE);
                             }
                             break;
                         } else {
-                            flag = true;
+                            CsmParameter first = parameters.iterator().next();
+                            if (first.getInitialValue() != null || first.isVarArgs()) {
+                                CsmFunctionDefinition definition = testedCtor.getDefinition();
+                                flag = (definition.getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.DELETE);
+                            } else {
+                                flag = true;
+                            }
                         }
                     }
                 }

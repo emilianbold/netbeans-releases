@@ -54,11 +54,12 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
  *
  * @author Vladimir Voskresensky
  */
-public final class TestModelHelper {
+public final class TestModelHelper implements TraceModel.ParsingTimeResultListener {
     private static final Object LOCK = new Object();
     private final TraceModel traceModel;
     private CharSequence projectName;
     private NativeProject platformProject;
+    private TraceModel.ParsingTimeResultListener delegate;
     /**
      * Creates a new instance of TestModelHelper
      */
@@ -70,12 +71,17 @@ public final class TestModelHelper {
         synchronized (LOCK) {
             traceModel = new TraceModel(clearCache, filter);
         }
+        traceModel.addParsingTimeResultListener(this);
     }
     
     public TraceModel getTraceModel() {
         return traceModel;
     }
     
+    public void addParsingTimeResultListener(TraceModel.ParsingTimeResultListener delegate) {
+        this.delegate = delegate;
+    }
+
     public void initParsedProject(String projectRoot, 
             List<String> sysIncludes, List<String> usrIncludes, List<String> libProjectsPaths) throws Exception {
         synchronized (LOCK) {
@@ -138,5 +144,12 @@ public final class TestModelHelper {
     @Override
     public String toString() {
         return "TestModelHelper{" + "projectName=" + projectName + '}';
+    }
+
+    @Override
+    public void notifyParsingTime(TraceModel.TestResult parsingTime) {
+        if (delegate != null) {
+            delegate.notifyParsingTime(parsingTime);
+        }
     }
 }
