@@ -764,16 +764,18 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     }
 
     private static final class RemoveSources implements Function<URL,Collection<URL>> {
-        private final Project prj;
         private final Set<URL> sourceRoots;
+        private final Project prj;
 
         RemoveSources(final AntProjectHelper helper) {
-            this.prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
             sourceRoots = new HashSet<>();
-            for (SourceGroup sg : ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                final FileObject root = sg.getRootFolder();
-                if (root != null) {
-                    sourceRoots.add(root.toURL());
+            this.prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+            if (prj != null) {
+                for (SourceGroup sg : ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                    final FileObject root = sg.getRootFolder();
+                    if (root != null) {
+                        sourceRoots.add(root.toURL());
+                    }
                 }
             }
         }
