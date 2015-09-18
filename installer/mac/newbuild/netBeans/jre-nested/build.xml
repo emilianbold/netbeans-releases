@@ -78,7 +78,7 @@ TOMCAT_ID="${tomcat.id}"
         <echo message="Building jre-nested-${jre.version.string.long}.pkg into ${basedir}/../../build/jre-nested-${jre.version.string.long}.pkg"/>        
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="pkgbuild --root ${builddir}/jre/jre${jre.version.string.long}.jre/Contents/Home/ --scripts ${scriptsdir} --identifier jre-nested ${sign.option} --install-location '/${app.name}/Contents/Resources/NetBeans/bin/jre' ${basedir}/../../build/jre-nested-${jre.version.string.long}.pkg"/>
+            <arg value="pkgbuild --root ${builddir}/jre/jre${jre.version.string.long}.jre/Contents/Home/ --scripts ${scriptsdir} --identifier org.netbeans.ide.nested-jre.${nb.id} ${sign.option} --install-location '/${app.name}/Contents/Resources/NetBeans/bin/jre' ${basedir}/../../build/jre-nested-${jre.version.string.long}.pkg"/>
         </exec>
     </target>    
     

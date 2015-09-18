@@ -197,7 +197,7 @@ public final class UndoManager {
         final RefactoringSession session = refactoringSession;
         //System.out.println("************* Starting UNDO");
         LinkedList<UndoItem> undoitems = undoList.get(session);
-        if (undoitems != null) {
+        if (undoitems != null && !undoitems.isEmpty()) {
             final LinkedList<UndoItem> undo = undoitems;
             if(!autoConfirm) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(UndoManager.class, "MSG_ReallyUndo", getUndoDescription(session)), NbBundle.getMessage(UndoManager.class, "MSG_ConfirmUndo"), NotifyDescriptor.YES_NO_OPTION);

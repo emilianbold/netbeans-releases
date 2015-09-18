@@ -43,8 +43,12 @@
 package org.netbeans.modules.team.ide;
 
 import java.awt.Dimension;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -76,9 +80,11 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -89,6 +95,7 @@ import org.openide.windows.WindowManager;
 public class IDEServicesImpl implements IDEServices {
     private static final Logger LOG = Logger.getLogger(IDEServicesImpl.class.getName());
     private final RequestProcessor RP = new RequestProcessor("Netbeans IDE Services for Team"); // IDE
+    private Method fillStackTraceAnalyzer;
 
     @Override
     public boolean providesOpenDocument() {
@@ -309,6 +316,49 @@ public class IDEServicesImpl implements IDEServices {
             LifecycleManager.getDefault().markForRestart();
         }
         LifecycleManager.getDefault().exit();
+    }
+
+    @Override
+    public boolean providesOpenInStackAnalyzer() {
+        if(fillStackTraceAnalyzer != null) {
+            return true;
+        }
+        try {
+            TopComponent win = WindowManager.getDefault ().findTopComponent ("AnalyzeStackTopComponent");
+            if(win != null) {
+                Class c = win.getClass();            
+                fillStackTraceAnalyzer = c.getDeclaredMethod("fill", BufferedReader.class);            
+                fillStackTraceAnalyzer.setAccessible(true);
+                return true;
+            }
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+
+    @Override
+    public void openInStackAnalyzer(BufferedReader s) {
+        assert fillStackTraceAnalyzer != null;
+        try {
+            TopComponent win = WindowManager.getDefault ().findTopComponent ("AnalyzeStackTopComponent");
+            assert win != null;
+            if(win != null) {
+                win.open();
+                win.requestActive();
+                fillStackTraceAnalyzer.invoke(win, s);
+            }
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private static class SwingXBusyIcon extends PainterIcon implements BusyIcon {

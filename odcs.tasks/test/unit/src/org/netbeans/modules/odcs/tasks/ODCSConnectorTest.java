@@ -56,7 +56,7 @@ public class ODCSConnectorTest extends NbTestCase {
     public static Test suite() {
         return NbModuleSuite.emptyConfiguration()  
                 .addTest(ODCSTaskTestCase.class)
-                .addTest(ODCSQueryTestCase.class)
+//                .addTest(ODCSQueryTestCase.class)
                 .gui(false)
                 .suite();
     }

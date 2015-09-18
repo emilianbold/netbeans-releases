@@ -1,9 +1,45 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.selenium2.webclient;
+package org.netbeans.modules.selenium2.webclient.protractor.wizard;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,7 +50,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.selenium2.api.Selenium2Support;
 import org.netbeans.modules.selenium2.spi.Selenium2SupportImpl;
@@ -28,27 +63,17 @@ import org.openide.util.NbBundle;
  *
  * @author Theofanis Oikonomou
  */
-@TemplateRegistrations( {
-    @TemplateRegistration(folder = "SeleniumTests",
-        displayName = "#SeleniumMochaTestCase_displayName",
-        content = "SeleneseMochaTest.js.template",
-        description = "SeleneseMochaTestWebclient.html",
-        position = 20,
-        scriptEngine = "freemarker",
-        category = "html5"),
-    @TemplateRegistration(folder = "SeleniumTests",
+@TemplateRegistration(folder = "SeleniumTests",
         displayName = "#SeleniumJasmineTestCase_displayName",
         content = "SeleneseJasmineTest.js.template",
         description = "SeleneseJasmineTestWebclient.html",
         position = 30,
         scriptEngine = "freemarker",
-        category = "html5")
-})
-@NbBundle.Messages({"SeleniumMochaTestCase_displayName=Selenium Mocha Test Case",
-    "SeleniumJasmineTestCase_displayName=Selenium Jasmine Test Case",
+        category = "selenium-types")
+@NbBundle.Messages({"SeleniumJasmineTestCase_displayName=Selenium Jasmine Test Case",
     "# {0} - project",
     "NO_SELENIUM_SUPPORT=No Selenium 2.0 support for project {0}"})
-public class Selenium2WebClientTestWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewJasmineTestcaseWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private transient WizardDescriptor.Panel panel;
@@ -80,6 +105,7 @@ public class Selenium2WebClientTestWizardIterator implements WizardDescriptor.In
         this.wiz = wizard;
         Project project = Templates.getProject(wiz);
         Selenium2SupportImpl selenium2Support = Selenium2Support.findSelenium2Support(project);
+        Templates.setTargetName(wizard, "newSeleneseJasmineTest"); // NOI18N
         if (selenium2Support != null){
             panel = selenium2Support.createTargetChooserPanel(wiz);
             panel.getComponent();

@@ -76,6 +76,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -668,7 +669,7 @@ public class BinaryAnalyser {
         final ClassFileProcessor cfp = cfg.createProcessor(classFile);
         this.delete (cfp.getClassName());
         final UsagesData<ClassName> usages = cfp.analyse();
-        final String classNameType = cfp.getClassName() + DocumentUtil.encodeKind(getElementKind(classFile));
+        final String classNameType = cfp.getClassName() + DocumentUtil.encodeKind(getElementKind(classFile), isLocal(classFile));
         final Pair<String,String> pair = Pair.<String,String>of(classNameType, null);
         addReferences (pair, usages);
     }
@@ -686,7 +687,7 @@ public class BinaryAnalyser {
         this.refs.add(Pair.<Pair<String,String>,Object[]>of(name, cr));
     }
 
-    private ElementKind getElementKind(@NonNull final ClassFile cf) {
+    private static ElementKind getElementKind(@NonNull final ClassFile cf) {
         if (cf.isEnum()) {
             return ElementKind.ENUM;
         } else if (cf.isAnnotation()) {
@@ -696,6 +697,10 @@ public class BinaryAnalyser {
         } else {
             return ElementKind.CLASS;
         }
+    }
+
+    private static boolean isLocal(@NonNull final ClassFile cf) {
+        return cf.getEnclosingMethod() != null;
     }
     //</editor-fold>
 
@@ -1196,14 +1201,18 @@ public class BinaryAnalyser {
                                     err.getMessage()
                                 });
                         return true;
-                    } catch (IllegalArgumentException iae) {
+                    } catch (RuntimeException re) {
+                        if (re instanceof NoSuchElementException) {
+                            //Valid for Enumeration.nextElement
+                            throw (NoSuchElementException) re;
+                        }
                         if (!brokenLogged) {
                             LOGGER.log(
                                     Level.INFO,
                                     "Broken zip file: {0}, reason: {1}",    //NOI18N
                                     new Object[]{
                                         zipFile.getName(),
-                                        iae.getMessage()
+                                        re.getMessage()
                                     });
                             brokenLogged = true;
                         }

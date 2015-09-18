@@ -68,14 +68,12 @@ import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.WhereUsedBinaryElement;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
-import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters;
 import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters.ReadWrite;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,6 +81,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
 
 /**
  *
@@ -93,8 +92,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     private boolean fromLibrary;
     private final WhereUsedQuery refactoring;
     
-    public static final boolean DEPENDENCIES = Boolean.getBoolean("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies");     //NOI18N
-    
+    public static final boolean DEPENDENCIES;
+    static {
+        String prop = System.getProperty("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies"); //NOI18N
+        DEPENDENCIES = prop == null ? true : prop.equalsIgnoreCase("true"); //NOI18N
+    }
     private volatile CancellableTask queryTask;
 
     /** Creates a new instance of WhereUsedQuery */
@@ -175,6 +177,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                         isSearchOverloadedMethods(),
                         isFindUsages(),
                         customScope.isDependencies(),
+                        isSearchInComments(),
                         null, cancelRequested);
                 fileSet.addAll(relevantFiles);
             }
@@ -206,7 +209,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                             isFindDirectSubclassesOnly(),
                             isFindOverridingMethods(),
                             isSearchOverloadedMethods(),
-                            isFindUsages(), customScope.isDependencies(), packages, cancelRequested);
+                            isFindUsages(), customScope.isDependencies(),
+                            isSearchInComments(), packages, cancelRequested);
                     fileSet.addAll(relevantFiles);
                 }
             }
@@ -221,6 +225,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     isSearchOverloadedMethods(),
                     isFindUsages(),
                     false,
+                    isSearchInComments(),
                     null,
                     cancelRequested);
         }
@@ -231,7 +236,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             final TreePathHandle tph, final ClasspathInfo cpInfo,
             final boolean isFindSubclasses, final boolean isFindDirectSubclassesOnly,
             final boolean isFindOverridingMethods, final boolean isSearchOverloadedMethods,
-            final boolean isFindUsages, final boolean isIncludeDependencies, final Set<NonRecursiveFolder> folders,
+            final boolean isFindUsages, final boolean isIncludeDependencies, final boolean isSearchInComments, final Set<NonRecursiveFolder> folders,
             final AtomicBoolean cancel) {
         final ClassIndex idx = cpInfo.getClassIndex();
         final Set<FileObject> sourceSet = new TreeSet<>(new FileComparator());
@@ -284,7 +289,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 }
                 if (el.getKind().isField()) {
                     //get field references from index
-                    sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType, resourceType));
+                    final ElementHandle<TypeElement> handle = ElementHandle.create((TypeElement) el.getEnclosingElement());
+                    sourceSet.addAll(idx.getResources(handle, EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType, resourceType));
+                    if(isSearchInComments && cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE).contains(file)) {
+                        sourceSet.add(file);
+                    }
                 } else if (el.getKind().isClass() || el.getKind().isInterface()) {
                     if (isFindSubclasses || isFindDirectSubclassesOnly) {
                         EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
@@ -370,7 +379,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 if (cp.contains(fo)) {
                     filteredSources.add(fo);
                 } else {
-                    LOG.log(Level.FINE, "Filtered out: {0}", fo.getNameExt());
+                    LOG.log(Level.FINE, "Filtered out: {0}", fo.getNameExt()); //NOI18N
                 }
                 if (cancel != null && cancel.get()) {
                     return Collections.<FileObject>emptySet();
@@ -486,35 +495,46 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     private boolean isSearchOverloadedMethods() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_OVERLOADED);
     }
+    private boolean isSearchInComments() {
+        return refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS);
+    }
     private boolean isSearchFromBaseClass() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS);
     }
 
     @Override
+    @NbBundle.Messages({"READ_FILTER=Read filter", "WRITE_FILTER=Write filter",
+                        "IMPORT_FILTER=Import filter",
+                        "READ_WRITE_FILTER=Read/Write filter",
+                        "COMMENT_FILTER=Comment filter",
+                        "SOURCE_FILTER=Source filter",
+                        "BINARY_FILTER=Binary filter", "TEST_FILTER=Test filter",
+                        "DEPENDENCY_FILTER=Dependency filter",
+                        "PLATFORM_FILTER=Platform filter"})
     public void addFilters(FiltersDescription filtersDescription) {
-        filtersDescription.addFilter(JavaWhereUsedFilters.ReadWrite.READ.getKey(), "Read filter", true,
-                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_read.png", false));
-        filtersDescription.addFilter(JavaWhereUsedFilters.ReadWrite.WRITE.getKey(), "Write filter", true,
-                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_write.png", false));
-        filtersDescription.addFilter(JavaWhereUsedFilters.ReadWrite.READ_WRITE.getKey(), "Read/Write filter", true,
-                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_readwrite.png", false));
-        filtersDescription.addFilter(JavaWhereUsedFilters.IMPORT.getKey(), "Import filter", true,
-                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_import.png", false));
-        filtersDescription.addFilter(JavaWhereUsedFilters.COMMENT.getKey(), "Comment filter", true,
-                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_comment.png", false));
-        filtersDescription.addFilter(JavaWhereUsedFilters.SOURCEFILE.getKey(), "Source filter", true,
-                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_source.png", false));
+        filtersDescription.addFilter(JavaWhereUsedFilters.ReadWrite.READ.getKey(), READ_FILTER(), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_read.png", false)); //NOI18N
+        filtersDescription.addFilter(JavaWhereUsedFilters.ReadWrite.WRITE.getKey(), WRITE_FILTER(), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_write.png", false)); //NOI18N
+        filtersDescription.addFilter(JavaWhereUsedFilters.ReadWrite.READ_WRITE.getKey(), READ_WRITE_FILTER(), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_readwrite.png", false)); //NOI18N
+        filtersDescription.addFilter(JavaWhereUsedFilters.IMPORT.getKey(), IMPORT_FILTER(), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_import.png", false)); //NOI18N
+        filtersDescription.addFilter(JavaWhereUsedFilters.COMMENT.getKey(), COMMENT_FILTER(), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_comment.png", false)); //NOI18N
+        filtersDescription.addFilter(JavaWhereUsedFilters.SOURCEFILE.getKey(), SOURCE_FILTER(), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_source.png", false)); //NOI18N
         if(DEPENDENCIES) {
-            filtersDescription.addFilter(JavaWhereUsedFilters.BINARYFILE.getKey(), "Binary filter", true,
-                    ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/clazz.png", false));
+            filtersDescription.addFilter(JavaWhereUsedFilters.BINARYFILE.getKey(), BINARY_FILTER(), true,
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/clazz.png", false)); //NOI18N
         }
-        filtersDescription.addFilter(JavaWhereUsedFilters.TESTFILE.getKey(), "Test filter", true,
-                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_test.png", false));
+        filtersDescription.addFilter(JavaWhereUsedFilters.TESTFILE.getKey(), TEST_FILTER(), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_test.png", false)); //NOI18N
         if(DEPENDENCIES) {
-            filtersDescription.addFilter(JavaWhereUsedFilters.DEPENDENCY.getKey(), "Dependency filter", true,
-                    ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_binary.gif", false));
-            filtersDescription.addFilter(JavaWhereUsedFilters.PLATFORM.getKey(), "Platform filter", true,
-                    ImageUtilities.loadImageIcon("org/netbeans/modules/java/platform/resources/platform.gif", false));
+            filtersDescription.addFilter(JavaWhereUsedFilters.DEPENDENCY.getKey(), DEPENDENCY_FILTER(), true,
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_binary.gif", false)); //NOI18N
+            filtersDescription.addFilter(JavaWhereUsedFilters.PLATFORM.getKey(), PLATFORM_FILTER(), true,
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/java/platform/resources/platform.gif", false)); //NOI18N
         }
     }
 
@@ -592,7 +612,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             AtomicBoolean inImport = new AtomicBoolean();
             if (isFindUsages()) {
                 Collection<WhereUsedElement> foundElements;
-                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, cancelled, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS), isSearchOverloadedMethods(), fromTest, fromPlatform, fromDependency, inImport);
+                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, cancelled, isSearchInComments(), isSearchOverloadedMethods(), fromTest, fromPlatform, fromDependency, inImport);
                 findVisitor.scan(cu, element);
                 foundElements = findVisitor.getElements();
                 boolean usagesInComments = findVisitor.usagesInComments();
@@ -612,6 +632,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     }
                     if(usagesInComments) {
                         usedFilters.add(JavaWhereUsedFilters.COMMENT.getKey());
+                    }
+                    if(inImport.get()) {
+                        usedFilters.add(JavaWhereUsedFilters.IMPORT.getKey());
                     }
                     if(DEPENDENCIES) {
                         if(fromDependency) {

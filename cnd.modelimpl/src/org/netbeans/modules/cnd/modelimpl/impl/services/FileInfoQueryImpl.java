@@ -333,7 +333,10 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                           out = APTFileInfoQuerySupport.getMacroUsages(fileImpl, interrupter);
                         }
                         if (lastParsedTime == fileImpl.getLastParsedTime()) {
-                            fileImpl.setLastMacroUsages(out);
+                            // cache only if calc wasn't interrupted
+                            if (!interrupter.cancelled()) {
+                                fileImpl.setLastMacroUsages(out);
+                            }
                         }
                     } catch (FileNotFoundException ex) {
                         // file could be removed
@@ -578,12 +581,19 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 while(it.hasNext()){
                     APTIncludeHandler.IncludeInfo info = it.next();
                     int offset = info.getIncludeDirectiveOffset();
+                    int includeNdx = info.getIncludedDirFileIndex();
                     CsmInclude find = null;
+                    int currentIncludeIndex = 1;
                     for(CsmInclude inc : startFile.getIncludes()){
                         if (offset == inc.getStartOffset()){
                             find = inc;
                             break;
                         }
+                        if (includeNdx == currentIncludeIndex) {
+                            find = inc;
+                            break;
+                        }
+                        currentIncludeIndex++;
                     }
                     if (find != null) {
                         res.add(find);

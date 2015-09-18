@@ -46,7 +46,6 @@ import java.util.concurrent.ConcurrentMap;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -83,7 +82,7 @@ public final class SessionProgress implements Cancellable {
     private SessionProgress(Session session) {
         this.session = session;
         String displayName = NbBundle.getMessage(SessionProgress.class, "LBL_Progress_Connecting", session.getName());
-        h = ProgressHandleFactory.createHandle(displayName, this);
+        h = ProgressHandle.createHandle(displayName, this);
     }
 
     @Override

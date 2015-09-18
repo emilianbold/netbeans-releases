@@ -60,6 +60,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.createprojectapi.ClientSideProjectGenerator;
 import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectProperties;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.ProjectConvertor;
 import org.netbeans.spi.project.ui.support.ProjectConvertors;
@@ -87,16 +89,19 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
     public Result isProject(FileObject projectDirectory) {
         assert projectDirectory != null;
         String displayName = null;
+        String fileName = null;
         for (String jsonFile : JSON_FILES) {
             FileObject file = projectDirectory.getFileObject(jsonFile);
             if (file == null) {
                 continue;
             }
+            fileName = file.getNameExt();
             displayName = getDisplayName(file);
             if (StringUtilities.hasText(displayName)) {
                 break;
             }
         }
+        assert fileName != null : getChildrenNames(projectDirectory);
         if (!StringUtilities.hasText(displayName)) {
             // should not happen often
             displayName = projectDirectory.getNameExt();
@@ -106,7 +111,7 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             ProjectConvertors.createFileEncodingQuery());
         return new Result(
                 transientLkp,
-                new Factory(projectDirectory, displayName, (Closeable) transientLkp),
+                new Factory(projectDirectory, displayName, (Closeable) transientLkp, fileName),
                 displayName,
                 ImageUtilities.image2Icon(ImageUtilities.loadImage(ClientSideProject.HTML5_PROJECT_ICON)));
     }
@@ -127,9 +132,25 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
         return null;
     }
 
+    private Object getChildrenNames(FileObject projectDirectory) {
+        StringBuilder sb = new StringBuilder();
+        for (FileObject child : projectDirectory.getChildren()) {
+            if (sb.length() > 0) {
+                sb.append(", "); // NOI18N
+            }
+            sb.append(child.getNameExt());
+        }
+        return sb.toString();
+    }
+
     //~ Inner classes
 
     private static final class Factory implements Callable<Project> {
+
+        private static final UsageLogger PROJECT_CONVERTOR_USAGE_LOGGER = new UsageLogger.Builder(ClientSideProjectUtilities.USAGE_LOGGER_NAME)
+                .message(ClientSideProjectConvertor.class, "USG_PROJECT_CONVERTOR") // NOI18N
+                .firstMessageOnly(false)
+                .create();
 
         private static final String[] KNOWN_SITE_ROOTS = new String[] {
             "public", // NOI18N
@@ -142,20 +163,24 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
         private final FileObject projectDirectory;
         private final String displayName;
         private final Closeable transientLkp;
+        private final String fileName;
 
 
-        Factory(FileObject projectDirectory, String displayName, Closeable transientLkp) {
+        Factory(FileObject projectDirectory, String displayName, Closeable transientLkp, String fileName) {
             assert projectDirectory != null;
             assert displayName != null : projectDirectory;
             assert transientLkp != null : projectDirectory;
+            assert fileName != null : projectDirectory;
             this.projectDirectory = projectDirectory;
             this.displayName = displayName;
             this.transientLkp = transientLkp;
+            this.fileName = fileName;
         }
 
         @Override
         public Project call() throws Exception {
             transientLkp.close();
+            PROJECT_CONVERTOR_USAGE_LOGGER.log(fileName);
             return ClientSideProjectGenerator.createProject(new CreateProjectProperties(projectDirectory, displayName)
                     .setSourceFolder("") // NOI18N
                     .setSiteRootFolder(detectSiteRoot())

@@ -766,6 +766,8 @@ public class Reindenter implements IndentTask {
                 token = findFirstNonWhitespaceToken(startOffset, lastPos);
                 if (token == null || token.token().id() != JavaTokenId.COLON) {
                     currentIndent = getContinuationIndent(path, currentIndent);
+                } else {
+                    currentIndent += cs.getLabelIndent();
                 }
                 break;
             default:

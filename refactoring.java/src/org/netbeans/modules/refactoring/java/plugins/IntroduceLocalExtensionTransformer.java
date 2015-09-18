@@ -1168,7 +1168,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         WRAP_PATTERNS = new LinkedHashMap<>();
         
         WRAP_PATTERNS.put(new SourceVersionAcceptor(SourceVersion.RELEASE_8), "{ return Arrays.stream({VAR0}).map(({VAR1} t) -> new {VAR2}(t)).toArray({VAR2}[]::new); }");
-        WRAP_PATTERNS.put(new SourceVersionAcceptor(SourceVersion.RELEASE_7),
+        WRAP_PATTERNS.put(new SourceVersionAcceptor(SourceVersion.RELEASE_2),
                   "{ {VAR2}[] result = new {VAR2}[{VAR0}.length];\n"
                 + "for (int i = 0; i < {VAR0}.length; i++) {\n"
                 + "    result[i] = new {VAR2}({VAR0}[i]);\n"

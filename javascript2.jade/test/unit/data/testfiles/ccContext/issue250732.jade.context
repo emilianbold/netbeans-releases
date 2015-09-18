@@ -2,7 +2,7 @@
 [TAG_AND_KEYWORD]html
   head
     title=[NONE] title
-[TAG_AND_KEYWORD]    link([ATTRIBUTE]rel='stylesheet'[NONE],[ATTRIBUTE] href='/stylesheets/style.css'[NONE])
+[TAG_AND_KEYWORD]    link([ATTRIBUTE]rel='stylesheet', href='/stylesheets/style.css')[NONE]
 [TAG_AND_KEYWORD]  body
     block[NONE] content
 [TAG_AND_KEYWORD]    [CSS_CLASS].just

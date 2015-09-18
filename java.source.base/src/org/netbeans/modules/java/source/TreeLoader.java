@@ -197,7 +197,7 @@ public class TreeLoader extends LazyTreeLoader {
                             couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
                             jc.skipAnnotationProcessing = true;
                             jti.analyze(jti.enter(jti.parse(jfo)));
-                            if (persist) {
+                            if (persist && log.nerrors == 0) {
                                 final File classFolder = getClassFolder(jfm, clazz);
                                 if (classFolder != null) {
                                     jfm.handleOption(OPTION_OUTPUT_ROOT, Collections.singletonList(classFolder.getPath()).iterator()); //NOI18N

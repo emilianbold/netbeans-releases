@@ -548,6 +548,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             if (jsTestingProvider != null) {
                 ClientSideProjectUtilities.setJsTestingProvider(project, jsTestingProvider);
             }
+            // selenium testing provider
+            String seleniumTestingProvider = properties.getSeleniumTestingProvider();
+            if (seleniumTestingProvider != null) {
+                ClientSideProjectUtilities.setSeleniumTestingProvider(project, seleniumTestingProvider);
+            }
         }
 
         @NbBundle.Messages({

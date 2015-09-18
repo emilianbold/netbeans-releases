@@ -120,6 +120,9 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
             return null;
         }
         if (span != null) {
+            if (pane.getCaret() == null) {
+                return null;
+            }
             span[0] = pane.getSelectionStart();
             span[1] = pane.getSelectionEnd();
             span[2] = pane.getCaretPosition();

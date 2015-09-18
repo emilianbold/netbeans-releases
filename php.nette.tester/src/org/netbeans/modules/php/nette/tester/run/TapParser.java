@@ -45,12 +45,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
+import org.openide.util.Pair;
 
 public final class TapParser {
 
@@ -58,17 +62,20 @@ public final class TapParser {
         NOT_OK,
     }
 
-    public static final Pattern FILE_LINE_PATTERN = Pattern.compile("in ([^(]+)\\((\\d+)\\).*"); // NOI18N
-
+    private static final Pattern FILE_LINE_PATTERN_1 = Pattern.compile("(?:\\# )?in (?<FILE>[^(]+)\\((?<LINE>\\d+)\\).*"); // NOI18N
+    // #255351
+    private static final Pattern FILE_LINE_PATTERN_2 = Pattern.compile("(?<FILE>\\S+)\\s+\\:\\s+(?<LINE>\\d+)$"); // NOI18N
     private static final String OK_PREFIX = "ok "; // NOI18N
     private static final String NOT_OK_PREFIX = "not ok "; // NOI18N
     private static final String FAILED_PREFIX = "Failed: "; // NOI18N
     private static final String SKIP_MARK = " #skip"; // NOI18N
     private static final String HELLIP = "... "; // NOI18N
+    private static final String XDEBUG_CALLSTACK = "Call Stack"; // NOI18N
+    private static final String XDEBUG_HEADER = "#  Time  Memory  Function  Location"; // NOI18N
     private static final Pattern DIFF_LINE_PATTERN = Pattern.compile("diff \"([^\"]+)\" \"([^\"]+)\""); // NOI18N
 
     private final TestSuiteVo testSuite = new TestSuiteVo();
-    private final List<String> commentLines = new ArrayList<>();
+    private final Set<String> commentLines = new LinkedHashSet<>();
 
     private TestCaseVo testCase = null;
     private int testCaseCount = 0;
@@ -83,19 +90,37 @@ public final class TapParser {
                 || line.startsWith(NOT_OK_PREFIX);
     }
 
+    @CheckForNull
+    public static Pair<String, Integer> getFileLine(String line) {
+        Matcher matcher = FILE_LINE_PATTERN_1.matcher(line);
+        boolean success = matcher.matches();
+        if (!success) {
+            matcher = FILE_LINE_PATTERN_2.matcher(line);
+            success = matcher.find();
+        }
+        if (success) {
+            return Pair.of(matcher.group("FILE"), Integer.valueOf(matcher.group("LINE"))); // NOI18N
+        }
+        return null;
+    }
+
     public TestSuiteVo parse(String input, long runtime) {
         for (String line : input.split("\\r?\\n|\\r")) { // NOI18N
-            parseLine(line.trim());
+            if (!parseLine(line.trim())) {
+                break;
+            }
         }
         processComments();
         setTimes(runtime);
         return testSuite;
     }
 
-    private void parseLine(String line) {
-        if (line.startsWith("1..") // NOI18N
-                || line.startsWith("TAP version ")) { // NOI18N
-            return;
+    private boolean parseLine(String line) {
+        if (line.startsWith("1..")) { // NOI18N
+            return false;
+        }
+        if (line.startsWith("TAP version ")) { // NOI18N
+            return true;
         }
         if (line.startsWith(OK_PREFIX)) {
             processComments();
@@ -123,6 +148,7 @@ public final class TapParser {
         } else {
             processComment(line);
         }
+        return true;
     }
 
     private boolean isSkippedTest(String line) {
@@ -132,10 +158,14 @@ public final class TapParser {
 
     private void processComment(String line) {
         assert line.startsWith("#") : line;
-        line = line.substring(1).trim();
+        // #255351 remove html
+        String processedline = line.substring(1).replaceAll("<[^>]+>", " ").trim(); // NOI18N
+        if (!StringUtils.hasText(processedline)) {
+            return;
+        }
         switch (state) {
             case NOT_OK:
-                commentLines.add(line);
+                commentLines.add(processedline);
                 break;
             default:
                 assert false : "Unknown state: " + state;
@@ -147,23 +177,38 @@ public final class TapParser {
             return;
         }
         assert testCase != null;
-        // last line
-        int lastIndex = commentLines.size() - 1;
-        String lastLine = commentLines.get(lastIndex);
-        setFileLine(lastLine);
-        commentLines.remove(lastIndex);
-        // rest
+        List<String> lines = new ArrayList<>(commentLines);
+        commentLines.clear();
+        // line with file & line
+        String lineWithFileLine = null;
+        while (!lines.isEmpty()) {
+            int lastIndex = lines.size() - 1;
+            String line = lines.get(lastIndex);
+            lines.remove(lastIndex);
+            Pair<String, Integer> fileLine = getFileLine(line);
+            if (fileLine == null) {
+                continue;
+            }
+            lineWithFileLine = line;
+            setFileLine(fileLine);
+            break;
+        }
+        // content
         StringBuilder message = null;
         List<String> stackTrace = new ArrayList<>();
-        while (!commentLines.isEmpty()) {
-            String line = commentLines.get(0);
-            commentLines.remove(0);
-            if (line.isEmpty()) {
-                // ignore empty lines
-            } else if (FILE_LINE_PATTERN.matcher(line).matches()) { // NOI18N
+        boolean lineSet = false;
+        while (!lines.isEmpty()) {
+            String line = lines.get(0);
+            lines.remove(0);
+            if (XDEBUG_CALLSTACK.equals(line)
+                    || XDEBUG_HEADER.equals(line)) {
+                continue;
+            }
+            Pair<String, Integer> fileLine = getFileLine(line);
+            if (fileLine != null) {
                 stackTrace.add(line);
-                stackTrace.addAll(processStackTrace(commentLines));
-                commentLines.clear();
+                stackTrace.addAll(processStackTrace(lines));
+                lines.clear();
             } else if (line.startsWith("diff \"")) { // NOI18N
                 processDiff(line);
             } else {
@@ -186,7 +231,7 @@ public final class TapParser {
             testCase.setMessage(message.toString());
         }
         // append file with line number
-        stackTrace.add(lastLine);
+        stackTrace.add(lineWithFileLine);
         testCase.setStackTrace(stackTrace);
         // reset
         state = null;
@@ -216,19 +261,15 @@ public final class TapParser {
         testCaseCount++;
     }
 
-    private void setFileLine(String line) {
-        Matcher matcher = FILE_LINE_PATTERN.matcher(line);
-        if (!matcher.matches()) {
-            assert false : line;
-            return;
-        }
+    private void setFileLine(Pair<String, Integer> fileLine) {
+        assert fileLine != null;
         assert testCase != null;
-        String file = matcher.group(1);
-        String fileLine = matcher.group(2);
-        assert file != null : line;
+        String file = fileLine.first();
+        Integer row = fileLine.second();
+        assert file != null : row;
         testCase.setFile(file);
-        assert fileLine != null : line;
-        testCase.setLine(Integer.valueOf(fileLine));
+        assert row != null : row;
+        testCase.setLine(row);
     }
 
     private void setTimes(long runtime) {

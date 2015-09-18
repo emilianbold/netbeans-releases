@@ -45,10 +45,10 @@
 package org.netbeans.modules.tomcat5.util;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
@@ -59,7 +59,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import org.openide.filesystems.FileUtil;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility class.
@@ -67,7 +68,9 @@ import org.openide.filesystems.FileUtil;
  * @author sherold
  */
 public final class Utils {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
+
     /** Creates a new instance of Utils */
     private Utils() {
         super();
@@ -88,7 +91,7 @@ public final class Utils {
     }
     
     /** Return true if a Tomcat server is running on the specifed port */
-    public static boolean pingTomcat(int port, int timeout, String serverHeader) {
+    public static boolean pingTomcat(int port, int timeout, String serverHeader, String managerUrl) {
         // checking whether a socket can be created is not reliable enough, see #47048
         Socket socket = new Socket();
         try {
@@ -134,6 +137,8 @@ public final class Utils {
                             } else if (server.contains("Sun-Java-System/Web-Services-Pack-1.4")) {  // NOI18N
                                 // it is probably Tomcat with JWSDP installed
                                 return true;
+                            } else if (managerUrl != null) {
+                                return pingTomcatManager(managerUrl, port, timeout);
                             }
                         }
                         return false;
@@ -147,6 +152,26 @@ public final class Utils {
                 socket.close();
             }
         } catch (IOException ioe) {
+            return false;
+        }
+    }
+
+    public static boolean pingTomcatManager(String managerUrl, int port, int timeout) {
+        try {
+            HttpURLConnection conn = (HttpURLConnection) new URL(managerUrl).openConnection();
+            try {
+                int response = conn.getResponseCode();
+                return response == HttpURLConnection.HTTP_OK
+                        || response == HttpURLConnection.HTTP_FORBIDDEN
+                        || response == HttpURLConnection.HTTP_UNAUTHORIZED;
+            } finally {
+                conn.disconnect();
+            }
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return false;
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
             return false;
         }
     }

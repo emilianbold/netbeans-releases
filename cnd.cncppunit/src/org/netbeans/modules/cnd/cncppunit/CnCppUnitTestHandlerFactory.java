@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.cncppunit;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactory;
 import org.netbeans.modules.cnd.testrunner.spi.TestRecognizerHandler;
 import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
@@ -65,12 +66,15 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     private static String CPP_UNIT = "Cpp Unit Test"; // NOI18N
     private static boolean firstSuite = true;
 
+    @Override
     public List<TestRecognizerHandler> createHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
+        final CppUnitHandler cppUnitHandler = new CppUnitHandler();
 
         // CppUnit
-        result.add(new CppUnitHandler());
-
+        result.add(cppUnitHandler.new CppUnitTestFinishedHandler());
+        result.add(cppUnitHandler.new CppUnitTestFailedHandler());
+        result.add(cppUnitHandler.new CppUnitSuiteFinishedHandler());
         // CUnit
         result.add(new CUnitSuiteStartingHandler());
         result.add(new CUnitSuiteFinishedHandler());
@@ -102,7 +106,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
             } else {
                 manager.displayReport(session, session.getReport(0));
             }
-            String suiteName = matcher.group(1);
+            String suiteName = getMatcher().group(1);
             session.addSuite(new TestSuite(suiteName));
             manager.displaySuiteRunning(session, suiteName);
         }
@@ -116,7 +120,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
 
         @Override
         public void updateUI(Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(matcher.group(1), C_UNIT, session);
+            Testcase testcase = new Testcase(getMatcher().group(1), C_UNIT, session);
             if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
                     session.getCurrentTestCase().getTrouble() != null)) {
                 testcase.setTimeMillis(0);
@@ -134,7 +138,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
 
         @Override
         public void updateUI(Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(matcher.group(1), C_UNIT, session);
+            Testcase testcase = new Testcase(getMatcher().group(1), C_UNIT, session);
             testcase.setTimeMillis(0);
             testcase.setClassName(session.getCurrentSuite().getName());
 
@@ -147,7 +151,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     static class CUnitSuiteFinishedHandler extends TestRecognizerHandler {
 
         public CUnitSuiteFinishedHandler() {
-            super("(--)?Run Summary: ", true); //NOI18N
+            super("(--)?Run Summary: ", false, true); //NOI18N
         }
 
         @Override
@@ -162,43 +166,24 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     // CppUnit tests output support
     //
 
-    static class CppUnitHandler extends TestRecognizerHandler {
-
-        private final List<TestRecognizerHandler> handlers;
+    static class CppUnitHandler {
 
         private String currentSuiteName;
         private boolean currentSuiteFinished = false;
 
         public CppUnitHandler() {
-            super("(((.*)::(.+) : .*)|(Run: )|(OK \\())"); //NOI18N
-
-            handlers = new ArrayList<TestRecognizerHandler>();
-            handlers.add(new CppUnitTestFinishedHandler());
-            handlers.add(new CppUnitTestFailedHandler());
-            handlers.add(new CppUnitSuiteFinishedHandler());
         }
-
-        @Override
-        public void updateUI(Manager manager, TestSession session) {
-            String line = matcher.group(0);
-            for (TestRecognizerHandler handler : handlers) {
-                if (handler.matches(line)) {
-                    handler.updateUI(manager, session);
-                    break;
-                }
-            }
-        }
-
-        class CppUnitTestFinishedHandler extends TestRecognizerHandler {
+            
+        class CppUnitTestFinishedHandler extends StartEndHandler {
 
             public CppUnitTestFinishedHandler() {
-                super("(.*)::(.+) : OK"); //NOI18N
+                super("(?<suite>.*)::(?<test>.+)", ".* : OK"); //NOI18N
             }
 
             @Override
-            public void updateUI( Manager manager, TestSession session) {
+            public void updateUI(Manager manager, TestSession session) {
 
-                String suiteName = matcher.group(1);
+                String suiteName = getMatcher().group("suite"); //NOI18N
 
                 final TestSuite currentSuite = session.getCurrentSuite();
                 if (currentSuite == null) {
@@ -218,7 +203,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
                 }
                 currentSuiteName = suiteName;
 
-                Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
+                Testcase testcase = new Testcase(getMatcher().group("test"), CPP_UNIT, session); //NOI18N
                 if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
                         session.getCurrentTestCase().getTrouble() != null)) {
                     testcase.setTimeMillis(0);
@@ -228,16 +213,16 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
             }
         }
 
-        class CppUnitTestFailedHandler extends TestRecognizerHandler {
+        class CppUnitTestFailedHandler extends StartEndHandler {
 
             public CppUnitTestFailedHandler() {
-                super("(.*)::(.+) : (.*)"); //NOI18N
-            }
+                super("(?<suite>.*)::(?<test>.+).*", ".* : (?<reason>.*)"); //NOI18N
+    }
 
             @Override
             public void updateUI( Manager manager, TestSession session) {
 
-                String suiteName = matcher.group(1);
+                String suiteName = getMatcher().group("suite"); //NOI18N
 
                 final TestSuite currentSuite = session.getCurrentSuite();
                 if (currentSuite == null) {
@@ -256,12 +241,12 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
                 }
                 currentSuiteName = suiteName;
 
-                Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
+                Testcase testcase = new Testcase(getMatcher().group("test"), CPP_UNIT, session); //NOI18N
                 testcase.setTimeMillis(0);
                 testcase.setClassName(suiteName);
 
                 testcase.setTrouble(new Trouble(true));
-                String message = matcher.group(3); // NOI18N
+                String message = getMatcher().group("reason"); // NOI18N
                 testcase.getTrouble().setStackTrace(getStackTrace(message ,"")); // NOI18N
 
                 session.addTestCase(testcase);
@@ -271,7 +256,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
         class CppUnitSuiteFinishedHandler extends TestRecognizerHandler {
 
             public CppUnitSuiteFinishedHandler() {
-                super("((Run: )|(OK \\())"); //NOI18N
+                super(".*((Run: )|(OK \\()).*"); //NOI18N
             }
 
             @Override

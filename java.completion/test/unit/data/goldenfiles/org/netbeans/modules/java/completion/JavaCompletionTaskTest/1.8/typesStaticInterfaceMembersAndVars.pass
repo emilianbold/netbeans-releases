@@ -16,6 +16,7 @@ long
 new
 return
 short
+strictfp
 switch
 synchronized
 throw

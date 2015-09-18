@@ -81,6 +81,8 @@ import org.openide.windows.OutputWriter;
 public class PatchAction extends NodeAction {
     
     private static final String PREF_RECENT_PATCH_PATH = "patch.recentPatchDir";
+    // for tests
+    private static boolean skipReport = false;
 
     /** Creates a new instance of PatchAction */
     public PatchAction() {
@@ -237,6 +239,10 @@ public class PatchAction extends NodeAction {
                 }
                 appliedFiles.add(fo);
                 backups.put(fo, backup);
+            }
+            
+            if (skipReport) {
+                return failed.isEmpty();
             }
             
             String message = failed.size() > 0 ? NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedPartially") : NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully");

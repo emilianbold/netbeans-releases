@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.nodejs.ui.options;
 
@@ -84,6 +84,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
             firstOpening = false;
             getPanel().setNode(getNodeJsOptions().getNode());
             getPanel().setNodeSources(getNodeJsOptions().getNodeSources());
+            getPanel().setStopAtFirstLine(getDebuggerOptions().isBreakAtFirstLine());
             getPanel().setLiveEdit(getDebuggerOptions().isLiveEdit());
             getPanel().setNpm(getNodeJsOptions().getNpm());
             getPanel().setExpress(getNodeJsOptions().getExpress());
@@ -98,6 +99,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
             public void run() {
                 getNodeJsOptions().setNode(getPanel().getNode());
                 getNodeJsOptions().setNodeSources(getPanel().getNodeSources());
+                getDebuggerOptions().setBreakAtFirstLine(getPanel().isStopAtFirstLine());
                 getDebuggerOptions().setLiveEdit(getPanel().isLiveEdit());
                 getNodeJsOptions().setNpm(getPanel().getNpm());
                 getNodeJsOptions().setExpress(getPanel().getExpress());
@@ -111,6 +113,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
             getPanel().setNode(getNodeJsOptions().getNode());
             getPanel().setNodeSources(getNodeJsOptions().getNodeSources());
+            getPanel().setStopAtFirstLine(getDebuggerOptions().isBreakAtFirstLine());
             getPanel().setLiveEdit(getDebuggerOptions().isLiveEdit());
             getPanel().setNpm(getNodeJsOptions().getNpm());
             getPanel().setExpress(getNodeJsOptions().getExpress());
@@ -153,12 +156,15 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         if (saved == null ? current != null : !saved.equals(current)) {
             return true;
         }
+        if (getDebuggerOptions().isBreakAtFirstLine() != getPanel().isStopAtFirstLine()) {
+            return true;
+        }
         if (getDebuggerOptions().isLiveEdit() != getPanel().isLiveEdit()) {
             return true;
         }
         saved = getNodeJsOptions().getNpm();
         current = getPanel().getNpm().trim();
-        if (saved == null ? current != null : !saved.equals(current)) {
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
             return true;
         }
         saved = getNodeJsOptions().getExpress();

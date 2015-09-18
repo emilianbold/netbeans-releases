@@ -62,6 +62,7 @@ import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProvider;
 import org.netbeans.modules.selenium2.webclient.api.Utilities;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -76,6 +77,11 @@ public class Selenium2WebClientSupportImpl extends Selenium2SupportImpl {
     static final Logger LOGGER = Logger.getLogger(Selenium2WebClientSupportImpl.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(Selenium2WebClientSupportImpl.class.getName(), 1);
     private WizardDescriptor wizard;
+    
+    /** Logger of selenium testing provider for HTML 5 project type usage. */
+    private static final UsageLogger USAGE_LOGGER = new UsageLogger.Builder("org.netbeans.ui.metrics.selenium2")  // NOI18N
+            .message(Selenium2WebClientSupportImpl.class, "USG_SELENIUM2") // NOI18N
+            .firstMessageOnly(true).create();
 
     @Override
     public boolean isSupportActive(Project p) {
@@ -162,6 +168,7 @@ public class Selenium2WebClientSupportImpl extends Selenium2SupportImpl {
                 SeleniumTestingProvider provider = SeleniumTestingProviders.getDefault().getSeleniumTestingProvider(p, true);
                 if(provider != null) {
                     provider.runTests(activatedFOs);
+                    USAGE_LOGGER.log(provider.getIdentifier());
                 }
             }
         });

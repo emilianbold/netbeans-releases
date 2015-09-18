@@ -532,7 +532,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         object = new CantInstantiate(c);
                         return null;
                     } catch (LinkageError x) { // #174055 + NoClassDefFoundError
-                        LOGGER.log(Level.INFO, "Cannot create " + object, x);
+                        LOGGER.log(Level.FINE, "Cannot create " + object, x); //NOI18N
                         object = new CantInstantiate(c);
                         return null;
                     }

@@ -76,6 +76,7 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
@@ -118,6 +119,10 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     
     public RunJarPanel(ModelHandle2 handle, NbMavenProjectImpl project, ProjectCustomizer.Category category) {
         initComponents();
+        boolean isVMOptionsWrap = MavenSettings.getDefault().isVMOptionsWrap();
+        wrapCheckBox.setSelected(isVMOptionsWrap);
+        txtVMOptions.setLineWrap(isVMOptionsWrap);
+        
         this.category = category;
         this.handle = handle;
         this.project = project;
@@ -328,6 +333,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         jScrollPane1 = new javax.swing.JScrollPane();
         txtVMOptions = new javax.swing.JTextArea();
         customizeOptionsButton = new javax.swing.JButton();
+        wrapCheckBox = new javax.swing.JCheckBox();
 
         lblMainClass.setLabelFor(txtMainClass);
         org.openide.awt.Mnemonics.setLocalizedText(lblMainClass, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_MainClass")); // NOI18N
@@ -370,6 +376,14 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             }
         });
 
+        wrapCheckBox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(wrapCheckBox, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "RunJarPanel.wrapCheckBox.text")); // NOI18N
+        wrapCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                wrapCheckBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -386,18 +400,20 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblHint)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtWorkDir, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtArguments, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtMainClass, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(comConfiguration, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(btnWorkDir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnMainClass, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(customizeOptionsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                    .addComponent(txtWorkDir)
+                    .addComponent(txtArguments)
+                    .addComponent(txtMainClass)
+                    .addComponent(comConfiguration, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(wrapCheckBox))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(btnWorkDir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnMainClass, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(customizeOptionsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -421,12 +437,18 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                     .addComponent(btnWorkDir))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblVMOptions)
-                    .addComponent(customizeOptionsButton)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 55, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblHint)
-                .addGap(40, 40, 40))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblVMOptions)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 55, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblHint)
+                        .addGap(40, 40, 40))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(customizeOptionsButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(wrapCheckBox)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
 
         txtMainClass.getAccessibleContext().setAccessibleDescription("Main class");
@@ -465,6 +487,12 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             Logger.getLogger(RunJarPanel.class.getName()).log(Level.WARNING, "Cannot parse vm options.", e); // NOI18N
         }
     }//GEN-LAST:event_customizeOptionsButtonActionPerformed
+
+    private void wrapCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wrapCheckBoxActionPerformed
+        boolean selected = wrapCheckBox.isSelected();
+        MavenSettings.getDefault().setVMOptionsWrap(selected);
+        txtVMOptions.setLineWrap(selected);
+    }//GEN-LAST:event_wrapCheckBoxActionPerformed
 
     void applyChanges() {
         String newMainClass = txtMainClass.getText().trim();
@@ -639,6 +667,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private javax.swing.JTextField txtMainClass;
     private javax.swing.JTextArea txtVMOptions;
     private javax.swing.JTextField txtWorkDir;
+    private javax.swing.JCheckBox wrapCheckBox;
     // End of variables declaration//GEN-END:variables
 
     private void setupConfigurations() {

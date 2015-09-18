@@ -316,7 +316,7 @@ public class ForkedJavaOverride extends Java {
                             out.flush();
                         } else {
                             synchronized (this) {
-                                if (c == '\n') {
+                                if (c == '\n') {                                    
                                     String str = currentLine.toString(encoding);
                                     int len = str.length();
                                     if (len > 0 && str.charAt(len - 1) == '\r') {
@@ -335,11 +335,15 @@ public class ForkedJavaOverride extends Java {
                                     }
                                     log(str, logLevel);
                                     currentLine.reset();
-                                } else {
+                                } else {                                    
                                     currentLine.write(c);
-                                    flusher.schedule(250);
+                                    if(currentLine.size() > 8192) {
+                                        flusher.run();
+                                    } else {
+                                        flusher.schedule(250);
+                                    }
                                 }
-                            }
+                            }    
                         }
                     }
                 } finally {

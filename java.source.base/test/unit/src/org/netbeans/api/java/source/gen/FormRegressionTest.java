@@ -46,8 +46,11 @@ package org.netbeans.api.java.source.gen;
 import java.io.File;
 import java.io.IOException;
 import com.sun.source.tree.*;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
 import static org.netbeans.api.java.source.JavaSource.*;
@@ -120,8 +123,7 @@ public class FormRegressionTest extends GeneratorTestMDRCompat {
             "\n" +
             "        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());\n" +
             "        getContentPane().setLayout(layout);\n" +
-            "        layout.setHorizontalGroup(\n" +
-            "            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)\n" +
+            "        layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)\n" +
             "            .addGroup(layout.createSequentialGroup()\n" +
             "                .addContainerGap()\n" +
             "                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)\n" +
@@ -143,8 +145,7 @@ public class FormRegressionTest extends GeneratorTestMDRCompat {
             "                        .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))\n" +
             "                .addContainerGap(16, Short.MAX_VALUE))\n" +
             "        );\n" +
-            "        layout.setVerticalGroup(\n" +
-            "            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)\n" +
+            "        layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)\n" +
             "            .addGroup(layout.createSequentialGroup()\n" +
             "                .addContainerGap()\n" +
             "                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)\n" +
@@ -200,6 +201,8 @@ public class FormRegressionTest extends GeneratorTestMDRCompat {
                 .replace("javax.swing.WindowConstants", "WindowConstants")
                 .replaceFirst(Pattern.quote("\n\n"), Matcher.quoteReplacement(imports));
 
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("importInnerClasses", true);
         JavaSource src = getJavaSource(testFile);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
@@ -213,6 +216,7 @@ public class FormRegressionTest extends GeneratorTestMDRCompat {
             
         };
         src.runModificationTask(task).commit();
+        preferences.remove("importInnerClasses");
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);

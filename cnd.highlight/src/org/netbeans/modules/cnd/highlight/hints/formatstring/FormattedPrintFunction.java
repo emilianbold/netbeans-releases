@@ -64,7 +64,17 @@ class FormattedPrintFunction {
     private final ArrayList<Parameter> parameters;
     private final String formatString;
     private final int offset;
-
+    private static final boolean STRICT_TYPE_CHECKS;
+    
+    static {
+        String doStrictCheck = System.getProperty("printf.check.strict"); //NOI18N
+        if (doStrictCheck != null) {
+            STRICT_TYPE_CHECKS = Boolean.parseBoolean(doStrictCheck);
+        } else {
+            STRICT_TYPE_CHECKS = false;
+        }
+    }
+    
     public FormattedPrintFunction(CsmFile file, int offset, String formatString, ArrayList<Parameter> parameters) {
         this.file = file;
         this.offset = offset;
@@ -103,14 +113,16 @@ class FormattedPrintFunction {
                         pIndex++;
                     }
                     if (pIndex < parameters.size()) {
-                        type = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
-                        if (type != null) {
-                            String fType = info.getFullType();
-                            List<String> validFlags = Utilities.typeToFormat(type);
-                            if (!validFlags.isEmpty() && !validFlags.contains(fType)) {
-                                result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
-                            } else if (validFlags.isEmpty() && !fType.equals("p")) {  // NOI18N
-                                result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
+                        if (parameters.get(pIndex).resolveType()) {
+                            type = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
+                            if (type != null) {
+                                String fType = info.getFullType();
+                                List<String> validFlags = Utilities.typeToFormat(type);
+                                if (!validFlags.isEmpty() && !validFlags.contains(fType)) {
+                                    result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
+                                } else if (validFlags.isEmpty() && !fType.equals("p") && STRICT_TYPE_CHECKS) {  // NOI18N
+                                    result.add(new FormatError(FormatError.FormatErrorType.TYPE_MISMATCH, type, fType, info.startOffset, info.endOffset));
+                                }
                             }
                         }
                     }
@@ -220,23 +232,48 @@ class FormattedPrintFunction {
                                          ,handler);
 
         if (handler.type != null) {
-            if (handler.type.getClassifier().getKind().equals(CsmDeclaration.Kind.TYPEDEF)) {
-                switch (handler.type.getCanonicalText().toString()) {
-                    case "intmax_t":   // NOI18N
-                    case "uintmax_t":  // NOI18N
-                    case "size_t":     // NOI18N
-                    case "ptrdiff_t":  // NOI18N
-                    case "wint_t":     // NOI18N
-                    case "wchar_t":    // NOI18N
+            CsmClassifier clsf;
+            CsmDeclaration.Kind kind;
+            CsmClassifier handlerClassifier = null;
+            CsmType handlerType = handler.type;
+            if ((clsf = handlerType.getClassifier()) != null && (kind = clsf.getKind()) != null && kind.equals(CsmDeclaration.Kind.TYPEDEF)) {
+                switch (handlerType.getCanonicalText().toString()) {
+                    case "intmax_t":    case "intmax_t*":   // NOI18N
+                    case "uintmax_t":   case "uintmax_t*":  // NOI18N
+                    case "size_t":      case "size_t*":     // NOI18N
+                    case "ptrdiff_t":   case "ptrdiff_t*":  // NOI18N
+                    case "wint_t":      case "wint_t*":     // NOI18N
+                    case "wchar_t":     case "wchar_t*":    // NOI18N
                         break;
                     default:
-                        CsmClassifier cer = CsmClassifierResolver.getDefault().getTypeClassifier(handler.type, file, offset, true);
-                        return cer.getName().toString().replace("const", "").replace("&", "");  // NOI18N
+                        handlerClassifier = CsmClassifierResolver.getDefault().getTypeClassifier(handlerType, file, offset, true);
+                        break;
                 }
+            } 
+            if (handlerClassifier == null) {
+                handlerClassifier = handlerType.getClassifier();
             }
-            return handler.type.getCanonicalText().toString().replace("const", "").replace("&", "");  // NOI18N
+            StringBuilder result = new StringBuilder(handlerClassifier.getName().toString().replace("const", "").replace("&", ""));  // NOI18N
+            for (int i = 0, limit = getReferenceDepth(handlerType); i < limit; i++) {
+                result.append("*");  // NOI18N
+            }
+            return result.toString();
         }
         return null;
+    }
+    
+    private int getReferenceDepth(CsmType type) {
+        if (!type.isPointer()) {
+            return 0;
+        }
+        int depth = 0;
+        CharSequence typeText = type.getCanonicalText();
+        for (int i = 0, limit = typeText.length(); i < limit; i++) {
+            if ((typeText.charAt(i) ^ '*') == 0) {  // NOI18N
+                depth++;
+            }
+        }
+        return depth;
     }
 
     private static class DummyResolvedTypeHandler implements CsmExpressionResolver.ResolvedTypeHandler {
@@ -246,7 +283,7 @@ class FormattedPrintFunction {
         @Override
         public void process(CsmType resolvedType) {
             type = resolvedType;
-        }        
+        }
     }
     
     /*

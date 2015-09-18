@@ -126,6 +126,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
@@ -383,11 +384,13 @@ abstract public class CsmCompletionQuery {
                     csmFile = CsmUtilities.getCsmFile(baseDocument, true, false);
                 }
 
+                final boolean processAsExpression = CsmKindUtilities.isExpression(expression);
+                
                 CsmCompletionTokenProcessor tp;
 
                 CsmScope passedScope = null;
 
-                if (CsmKindUtilities.isExpression(expression)) {
+                if (processAsExpression) {
                     passedScope = ((CsmExpression) expression).getScope();
                     tp = processTokensInExpression((CsmExpression) expression, task.isFindTypeTask());
                 } else {
@@ -398,7 +401,7 @@ abstract public class CsmCompletionQuery {
                     try {
                         pushResolveContext(CsmResolveContext.create(csmFile, startOffset));
 
-                        CsmCompletionExpression exp = tp.getResultExp();
+                        CsmCompletionExpression exp = getResultExpression(tp, processAsExpression, task.isFindTypeTask());
 
                         Context ctx = getResolvedContext(
                                 null,
@@ -743,8 +746,8 @@ abstract public class CsmCompletionQuery {
                 CppTokenId.LPAREN.fixedText() + expression.getExpandedText().toString() + CppTokenId.RPAREN.fixedText() :
                 expression.getExpandedText().toString();
 
-        int exprStartOffset = expression.getStartOffset();
-        int exprEndOffset = exprStartOffset + expressionText.length();
+        int exprStartOffset = expression.getStartOffset() - (keepWholeAst ? 1 : 0);
+        int exprEndOffset = exprStartOffset + expressionText.length() + (keepWholeAst ? 1 : 0);
 
         final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(exprEndOffset, exprStartOffset);
         TokenHierarchy<String> hi = TokenHierarchy.create(
@@ -775,6 +778,17 @@ abstract public class CsmCompletionQuery {
         }
 
         return tp;
+    }
+    
+    private CsmCompletionExpression getResultExpression(CsmCompletionTokenProcessor tp, boolean processedAsExpression, boolean keepWholeAst) {
+        if (processedAsExpression && keepWholeAst) {
+            // See implementation of processTokensInExpression
+            CsmCompletionExpression resultExp = tp.getResultExp();
+            if (resultExp != null && resultExp.getParameterCount() == 1 && resultExp.getExpID() == CsmCompletionExpression.PARENTHESIS) {
+                return resultExp.getParameter(0);
+            }
+        }
+        return tp.getResultExp();
     }
 
     abstract protected boolean isProjectBeeingParsed(boolean openingSource);
@@ -1120,7 +1134,8 @@ abstract public class CsmCompletionQuery {
     }
 
     private static CsmType getOverloadedOperatorReturnType(CsmType type, CsmFile contextFile, int offset, CsmFunction.OperatorKind operator, int level) {
-        if (type == null || type.isPointer() || type.getArrayDepth() > 0) {
+        // Note: in case of performance issues merge isPointer() and getClassifier() calls into one
+        if (type == null || type.getArrayDepth() > 0 || isPointer(type)) {
             return null;
         }
         CsmType opType = null;
@@ -1450,9 +1465,10 @@ abstract public class CsmCompletionQuery {
         private CsmType findExpressionType(final CsmOffsetable expression) {
             if (expression != null && !antiLoop.contains(expression)) {
 
+                final boolean processAsExpression = CsmKindUtilities.isExpression(expression);
                 CsmCompletionTokenProcessor tp;
 
-                if (CsmKindUtilities.isExpression(expression)) {
+                if (processAsExpression) {
                     tp = processTokensInExpression((CsmExpression) expression, true);
                 } else {
                     long docVersion = DocumentUtilities.getDocumentVersion(getBaseDocument());
@@ -1461,7 +1477,7 @@ abstract public class CsmCompletionQuery {
 
                 if (!checkErrorTokenState(tp)) {
                     antiLoop.add(expression);
-                    CsmCompletionExpression exp = tp.getResultExp();
+                    CsmCompletionExpression exp = getResultExpression(tp, processAsExpression, true);
                     return resolveType(exp);
                 }
             }

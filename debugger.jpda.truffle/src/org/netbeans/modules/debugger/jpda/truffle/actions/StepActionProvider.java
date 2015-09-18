@@ -44,10 +44,15 @@ package org.netbeans.modules.debugger.jpda.truffle.actions;
 
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
+import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.StepRequest;
 import java.io.InvalidObjectException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
@@ -58,9 +63,12 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.actions.JPDADebuggerActionProvider;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
@@ -143,10 +151,38 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
             Exceptions.printStackTrace(ex);
         }
         */
+        killJavaStep(debugger);
         if (stepCmd > 0) {
             debugger.resumeCurrentThread();
         } else {
             debugger.resume();
+        }
+    }
+    
+    // Kill any pending Java step...
+    private static void killJavaStep(JPDADebuggerImpl debugger) {
+        VirtualMachine vm = debugger.getVirtualMachine();
+        if (vm == null) {
+            return ;
+        }
+        EventRequestManager erm = vm.eventRequestManager();
+        List<StepRequest> stepRequests;
+        try {
+            stepRequests = EventRequestManagerWrapper.stepRequests(erm);
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
+            return ;
+        }
+        if (stepRequests.isEmpty()) {
+            return ;
+        }
+        stepRequests = new ArrayList<>(stepRequests);
+        for (StepRequest sr : stepRequests) {
+            try {
+                EventRequestManagerWrapper.deleteEventRequest(erm, sr);
+                debugger.getOperator().unregister(sr);
+            } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                     InvalidRequestStateExceptionWrapper ex) {
+            }
         }
     }
 

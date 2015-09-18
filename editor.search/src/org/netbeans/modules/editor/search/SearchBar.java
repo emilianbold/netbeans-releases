@@ -865,47 +865,24 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         if (isClosingSearchType()) {
             caretPosition = getActualTextComponent().getCaretPosition();
         }
-        if (regexp.isSelected()) {
-            Pattern pattern;
-            String patternErrorMsg = null;
-            try {
-                pattern = Pattern.compile(incrementalSearchText);
-            } catch (PatternSyntaxException e) {
-                pattern = null;
-                patternErrorMsg = e.getDescription();
-            }
-            if (pattern != null) {
-                // valid regexp
-                incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
-                org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
-                showNumberOfMatches(findSupport, -1);
-            } else {
-                // invalid regexp
-                incSearchTextField.setForeground(INVALID_REGEXP);
-                org.netbeans.editor.Utilities.setStatusBoldText(getActualTextComponent(), NbBundle.getMessage(
-                        SearchBar.class, "incremental-search-invalid-regexp", patternErrorMsg)); //NOI18N
-                showNumberOfMatches(findSupport, 0);
-            }
+        if (findSupport.incSearch(searchProps.getProperties(), caretPosition) || empty) {
+            // text found - reset incremental search text field's foreground
+            incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
+            org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
+            showNumberOfMatches(findSupport, -1);
+            lastIncrementalSearchWasSuccessful = true;
         } else {
-            if (findSupport.incSearch(searchProps.getProperties(), caretPosition) || empty) {
-                // text found - reset incremental search text field's foreground
-                incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
-                org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
-                showNumberOfMatches(findSupport, -1);
-                lastIncrementalSearchWasSuccessful = true;
-            } else {
                 // text not found - indicate error in incremental search
-                // text field with red foreground
-                incSearchTextField.setForeground(NOT_FOUND);
-                org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), NbBundle.getMessage(
-                        SearchBar.class, "find-not-found", incrementalSearchText),
-                        StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND); //NOI18N
-                if (lastIncrementalSearchWasSuccessful) {
-                    Toolkit.getDefaultToolkit().beep();
-                    lastIncrementalSearchWasSuccessful = false;
-                }
-                showNumberOfMatches(findSupport, 0);
+            // text field with red foreground
+            incSearchTextField.setForeground(NOT_FOUND);
+            org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), NbBundle.getMessage(
+                    SearchBar.class, "find-not-found", incrementalSearchText),
+                    StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND); //NOI18N
+            if (lastIncrementalSearchWasSuccessful) {
+                Toolkit.getDefaultToolkit().beep();
+                lastIncrementalSearchWasSuccessful = false;
             }
+            showNumberOfMatches(findSupport, 0);
         }
     }
 

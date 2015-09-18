@@ -141,7 +141,7 @@
 		<tocitem text="Using the SendTo Script Utility">
 			<tocitem text="About the SendTo Utility" target="sendto-about" />
 			<tocitem text="SendTo Scripts" target="sendto-script" />
-			<tocitem text="SendTo Validation Scripts" />
+			<tocitem text="SendTo Validation Scripts" target="sendto-vscript"/>
 			<tocitem text="Creating and Modifying Scripts" target="sendto-createmodify" />
 			<tocitem text="Executing Scripts" target="sendto-execute" />
 		</tocitem>

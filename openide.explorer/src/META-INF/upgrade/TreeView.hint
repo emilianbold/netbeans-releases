@@ -1,3 +1,4 @@
+"Useless API call":
 $v.setUseSubstringInQuickSearch($b) :: $v instanceof org.openide.explorer.view.TreeView
 =>
 ;;

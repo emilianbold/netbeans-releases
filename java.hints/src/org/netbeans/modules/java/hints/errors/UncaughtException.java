@@ -241,10 +241,12 @@ public final class UncaughtException implements ErrorRule<Void> {
                 Element jdkClose = info.getElementUtilities().findElement("java.lang.AutoCloseable.close()"); // NOI18N
                 if (jdkClose != null && jdkClose.getKind() == ElementKind.METHOD) { 
                     Element definedClose = info.getElementUtilities().getImplementationOf((ExecutableElement)jdkClose, (TypeElement)decl.asElement());
-                    TypeMirror varClose = info.getTypes().asMemberOf(decl, definedClose);
-                    if (isValidType(varClose) && varClose.getKind() == TypeKind.EXECUTABLE) {
-                        ExecutableType etype = (ExecutableType)varClose;
-                        uncaught = new ArrayList(etype.getThrownTypes());
+                    if (definedClose != null) {
+                        TypeMirror varClose = info.getTypes().asMemberOf(decl, definedClose);
+                        if (isValidType(varClose) && varClose.getKind() == TypeKind.EXECUTABLE) {
+                            ExecutableType etype = (ExecutableType)varClose;
+                            uncaught = new ArrayList(etype.getThrownTypes());
+                        }
                     }
                 }
             }

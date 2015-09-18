@@ -42,7 +42,13 @@
 
 package org.netbeans.modules.project.ui.groups;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.PrintStream;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
 import org.openide.util.NbBundle.Messages;
@@ -50,6 +56,8 @@ import static org.netbeans.modules.project.ui.groups.Bundle.*;
 import org.netbeans.spi.sendopts.Arg;
 import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.ArgsProcessor;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 public class GroupOptionProcessor implements ArgsProcessor {
     @Arg(longName="open-group")
@@ -92,6 +100,7 @@ public class GroupOptionProcessor implements ArgsProcessor {
             }
             throw new CommandException(2, GroupOptionProcessor_no_such_group(openOption));
         } else if (closeOption) {
+            supressWinsysLazyLoading();
             Group.setActiveGroup(null, false);
         } else if (listOption) {
             int max_size = GroupOptionProcessor_column_id().length();

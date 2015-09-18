@@ -150,8 +150,8 @@ public class CPPParserEx extends CPPParser {
     //Change statementTrace from cppparser.g directly 
     //private final boolean trace = Boolean.getBoolean("cnd.parser.trace");
     //private TokenStreamSelector selector = new TokenStreamSelector();
-    protected CPPParserEx(TokenStream stream, CppParserActionEx callback) {
-        super(stream, callback);
+    protected CPPParserEx(TokenStream stream, CppParserActionEx callback, int initialBufferCapacity) {
+        super(stream, callback, initialBufferCapacity);
         assert callback != null;
         this.action = callback;
     }
@@ -182,15 +182,20 @@ public class CPPParserEx extends CPPParser {
         assert (ts != null);
         assert (fileName != null);
         CPPParserEx parser;
+        int initialBufferCapacity = getInitialBufferCapacity(ts);
         if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-            parser = new CPPStraightParserEx(ts, callback);
+            parser = new CPPStraightParserEx(ts, callback, initialBufferCapacity);
         } else {
-            parser = new CPPParserEx(ts, callback);
+            parser = new CPPParserEx(ts, callback, initialBufferCapacity);
         }
         parser.init(fileName.toString(), flags);
         return parser;
     }    
 
+    private static int getInitialBufferCapacity(TokenStream ts) {
+        return TokenBuffer.INITIAL_BUFFER_SIZE;
+    }
+    
     @Override
     protected final void init(String filename, int flags) {
         /*if( trace ) {

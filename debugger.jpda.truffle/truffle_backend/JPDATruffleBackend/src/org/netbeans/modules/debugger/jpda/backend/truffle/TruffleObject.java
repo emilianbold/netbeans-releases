@@ -49,9 +49,9 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Property;
-import com.oracle.truffle.js.runtime.objects.JSObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -72,7 +72,7 @@ public class TruffleObject {
         this.visualizer = visualizer;
         this.name = name;
         this.object = object;
-        this.displayValue = visualizer.displayValue(object, DISPLAY_TRIM);
+        this.displayValue = (visualizer != null) ? visualizer.displayValue(object, DISPLAY_TRIM) : Objects.toString(object);
         if (object instanceof String) {
             this.type = String.class.getSimpleName();
         } else if (object instanceof Number) {
@@ -85,13 +85,13 @@ public class TruffleObject {
     
     public Object[] getChildren() {
         // TODO: Handle arrays in a special way
-        return getChildrenJS();
+        return getChildrenGeneric();
     }
     
     private static boolean isLeaf(Object object) {
-        return isLeafJS(object);
+        return isLeafGeneric(object);
     }
-    
+    /*
     private static boolean isLeafJS(Object object) {
         if (object instanceof DynamicObject) {
             DynamicObject dobj = (DynamicObject) object;
@@ -101,7 +101,7 @@ public class TruffleObject {
             return true;
         }
     }
-    
+    */
     private static boolean isLeafGeneric(Object object) {
         if (object instanceof DynamicObject) {
             if (((DynamicObject) object).getShape().getPropertyCount() > 0 ) {//||
@@ -114,7 +114,7 @@ public class TruffleObject {
             return true;
         }
     }
-    
+    /*
     private Object[] getChildrenJS() {
         //if (object instanceof JSObject) {
         //    JSObject jso = (JSObject) object;
@@ -133,7 +133,7 @@ public class TruffleObject {
             return null;
         }
     }
-    
+    */
     private Object[] getChildrenGeneric() {
         if (object instanceof DynamicObject) {
             DynamicObject dobj = (DynamicObject) object;

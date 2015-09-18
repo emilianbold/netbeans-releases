@@ -1771,6 +1771,17 @@ public final class WebProject implements Project {
         }
 
         @Override
+        public void fileFolderCreated(FileEvent fe) {
+            try {
+                if (!handleResource(fe)) {
+                    handleCopyFileToDestDir(fe.getFile());
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+        }
+
+        @Override
         public void fileDataCreated(FileEvent fe) {
             checkPreprocessors(fe.getFile());
             try {
@@ -2017,6 +2028,11 @@ public final class WebProject implements Project {
                             if (file != null) {
                                 fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
                             }
+                        }
+                    } else {
+                        File file = FileUtil.toFile(destFile);
+                        if (file != null) {
+                            fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
                         }
                     }
                 }

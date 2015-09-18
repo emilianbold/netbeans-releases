@@ -955,19 +955,15 @@ class SQLExecutionHelper {
     }
 
     void setTotalCount(ResultSet countresultSet, DataViewPageContext pageContext) {
+        Integer count = null;
         try {
-            if (countresultSet == null) {
-                pageContext.setTotalRows(-1);
-                pageContext.setTotalRows(-1);
-            } else {
-                if (countresultSet.next()) {
-                    int count = countresultSet.getInt(1);
-                    pageContext.setTotalRows(count);
-                }
+            if (countresultSet != null && countresultSet.next()) {
+                count = countresultSet.getInt(1);
             }
         } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Could not get total row count ", ex); // NOI18N
+            LOGGER.log(Level.INFO, "Could not get total row count ", ex); // NOI18N
         }
+        pageContext.setTotalRows(count != null ? count : -1);
     }
 
     private String appendLimitIfRequired(DataViewPageContext pageContext,

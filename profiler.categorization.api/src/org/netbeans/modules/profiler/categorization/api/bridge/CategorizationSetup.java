@@ -56,7 +56,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Bachorik
  */
-@ServiceProvider(service = SessionListener.class)
+//@ServiceProvider(service = SessionListener.class)
 public class CategorizationSetup extends SessionListener.Adapter {
 
     @Override

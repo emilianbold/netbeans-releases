@@ -115,6 +115,11 @@ public final class ContextualPatch {
             if(ph != null && patches.size() > 0) {
                 ph.switchToDeterminate(patches.size());
             }
+            // the patches must be resorted in order to correctly apply the changes
+            // all copies/renames must take precedence before the actual modifications
+            // of the source files. Because in copies and renames the original
+            // file's content must not be changed before the copy takes place.
+            resortPatches(patches);
             for (int i = 0; i < patches.size(); i++) {
                 SinglePatch patch = patches.get(i);
                 try {
@@ -123,13 +128,52 @@ public final class ContextualPatch {
                         ph.progress(patch.targetPath, i + 1);
                     }
                     report.add(new PatchReport(patch.targetFile, computeBackup(patch.rename ? patch.sourceFile : patch.targetFile), patch.binary, PatchStatus.Patched, null));
+                    patch.applied = true;
                 } catch (Exception e) {
                     report.add(new PatchReport(patch.targetFile, null, patch.binary, PatchStatus.Failure, e));
                 }
             }
+            applyPendingDeletes(patches, report);
             return report;
         } finally {
             if (patchReader != null) try { patchReader.close(); } catch (IOException e) {}
+        }
+    }
+
+    private void resortPatches (List<SinglePatch> patches) {
+        Collections.sort(patches, new Comparator<SinglePatch>() {
+            
+            @Override
+            public int compare (SinglePatch p1, SinglePatch p2) {
+                if (p1.copy && !p2.copy) {
+                    return -1;
+                } else if (!p1.copy && p2.copy) {
+                    return 1;
+                } else if (p1.rename && !p2.rename) {
+                    return -1;
+                } else if (!p1.rename && p2.rename) {
+                    return 1;
+                }
+                return 0;
+            }
+        });
+    }
+
+    private void applyPendingDeletes (List<SinglePatch> patches, List<PatchReport> report) throws IOException {
+        for (SinglePatch patch : patches) {
+            if (patch.rename && patch.applied) {
+                FileObject src = FileUtil.toFileObject(patch.sourceFile);
+                if (src != null) {
+                    FileLock lock = src.lock();
+                    try {
+                        src.delete(lock);
+                    } catch (IOException ex) {
+                        report.add(new PatchReport(patch.sourceFile, null, patch.binary, PatchStatus.Failure, ex));
+                    } finally {
+                        lock.releaseLock();
+                    }
+                }
+            }
         }
     }
     
@@ -222,18 +266,6 @@ public final class ContextualPatch {
          * so the FileSystem could be notified of any file changes being made.
          */
         FileObject fo = null;
-        if (patch.rename) {
-            FileObject src = FileUtil.toFileObject(patch.sourceFile);
-            FileObject target = FileUtil.toFileObject(patch.targetFile.getParentFile());
-            if (src != null && target != null) {
-                FileLock lock = src.lock();
-                try {
-                    fo = src.move(lock, target, patch.targetFile.getName(), null);
-                } finally {
-                    lock.releaseLock();
-                }
-            }
-        }
         if (fo == null) {
             fo = FileUtil.toFileObject(patch.targetFile);
         }
@@ -401,6 +433,11 @@ public final class ContextualPatch {
                 patch.rename = true;
             } else if (line.startsWith("rename to ")) {
                 patch.targetPath = line.substring(10);
+            } else if (line.startsWith("copy from ")) {
+                patch.sourcePath = line.substring(10);
+                patch.copy = true;
+            } else if (line.startsWith("copy to ")) {
+                patch.targetPath = line.substring(8);
             }
         }
         return patch;
@@ -764,9 +801,11 @@ public final class ContextualPatch {
         File        targetFile;                 // computed later
         boolean     noEndingNewline;            // resulting file should not end with a newline
         boolean     binary;                  // binary patches contain one encoded Hunk
+        boolean     copy;
         boolean     rename;
         String      sourcePath;
         File        sourceFile;                 // computed later
+        boolean     applied;
     }
 
     public static enum PatchStatus { Patched, Missing, Failure };

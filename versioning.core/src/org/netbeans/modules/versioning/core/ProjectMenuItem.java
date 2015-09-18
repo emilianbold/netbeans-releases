@@ -57,7 +57,6 @@ import org.netbeans.modules.diff.PatchAction;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -250,12 +249,10 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         @Override
         @NbBundle.Messages("LBL_ProjectPopupMenu_Initializing=Initializing...")
         public JPopupMenu getPopupMenu() {
-            if (!initialized) {
-                final Node[] nodes = this.nodes;
-                final VersioningSystem owner = this.owner;
+            if (nodes != null && !initialized) {
                 initialized = true;
                 if (SYNC_MENU) {
-                    Action[] actions = getActions(nodes, owner);
+                    Action[] actions = getActions();
                     addVersioningSystemItems(actions);
                     if (owner == null) {
                         addNoVCSMenu(actions);
@@ -269,28 +266,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                     Utils.postParallel(new Runnable() {
                         @Override
                         public void run () {
-                            final Action[] actions;
-                            if (nodes == null) {
-                                LOG.log(Level.WARNING, "Null nodes, context menu not showing.");
-                                EventQueue.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run () {
-                                        JPopupMenu popup = getPopupMenu();
-                                        boolean display = popup.isVisible();
-                                        popup.setVisible(false);
-                                        removeAll();
-                                        if (isShowing()) {
-                                            JMenuItem item = new JMenuItem();
-                                            Mnemonics.setLocalizedText(item, NbBundle.getMessage(VersioningMainMenu.class, "LBL_NoneAvailable"));  // NOI18N                                 
-                                            item.setEnabled(false);
-                                            add(item);
-                                            popup.setVisible(display);
-                                        }
-                                    }
-                                });
-                                return;
-                            }
-                            actions = getActions(nodes, owner);
+                            final Action[] actions = getActions();
                             EventQueue.invokeLater(new Runnable() {
                                 @Override
                                 public void run () {
@@ -340,7 +316,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
             return false;
         }
 
-        private Action[] getActions (Node[] node, VersioningSystem owner) {
+        private Action[] getActions () {
             Action[] actions;
             if (owner == null) {
                 // default Versioning menu (Import into...)

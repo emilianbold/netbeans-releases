@@ -376,6 +376,9 @@ public class GsfCompletionProvider implements CompletionProvider {
         @Override
         protected boolean canFilter(JTextComponent component) {
             filterPrefix = null;
+            if (component.getCaret() == null) {
+                return false;
+            }
             int newOffset = component.getSelectionStart();
             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                 if (isTruncated || !isFilterable) {

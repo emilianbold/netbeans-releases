@@ -71,6 +71,8 @@ import org.openide.util.lookup.ServiceProviders;
     @ServiceProvider(service = CodeAuditProvider.class, position = 1300)
 })
 public final class SecurityCheckProvider extends CsmErrorProvider implements CodeAuditProvider {
+    public static final String WARNING_SECURITY_ANNOTATION_TYPE = "org-netbeans-modules-cnd-highlight-security-warning";  // NOI18N
+    public static final String ERROR_SECURITY_ANNOTATION_TYPE = "org-netbeans-modules-cnd-highlight-security-error";  // NOI18N
     public static final String NAME = "Security"; //NOI18N
     private Collection<CodeAudit> audits;
     private final AuditPreferences myPreferences;
@@ -100,6 +102,25 @@ public final class SecurityCheckProvider extends CsmErrorProvider implements Cod
         } else {
             myPreferences = new AuditPreferences(preferences.node(NAME));
         }
+    }
+    
+    @Override
+    protected boolean validate(Request request) {
+        CsmFile file = request.getFile();
+        if (file == null){
+            return false;
+        }
+        for(CodeAudit audit : getAudits()) {
+            if (audit.isEnabled()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean hasHintControlPanel() {
+        return true;
     }
     
     @Override
@@ -143,26 +164,26 @@ public final class SecurityCheckProvider extends CsmErrorProvider implements Cod
     
     @Override
     public synchronized Collection<CodeAudit> getAudits() {
-        if (audits == null) {
+        if (audits == null || audits.isEmpty()) {
             FunctionsXmlService service = FunctionsXmlService.getInstance();
             List<CodeAudit> result = new ArrayList<>(service.getChecksCount());
             for (FunctionsXmlService.Category category : service.getCategories(FunctionsXmlService.Level.UNSAFE)) {
                 String id = FunctionsXmlService.Level.UNSAFE.getLevel() + category.getName(); // NOI18N
                 String name = "(" + FunctionsXmlService.Level.UNSAFE.name().toUpperCase(Locale.getDefault()) + ") " + category.getName(); // NOI18N
                 String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+category.getName()+".description"); // NOI18N
-                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.UNSAFE, category, id, name, description, "error", true, myPreferences)); // NOI18N
+                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.UNSAFE, category, id, name, description, "error", ERROR_SECURITY_ANNOTATION_TYPE, true, myPreferences)); // NOI18N
             }
             for (FunctionsXmlService.Category category : service.getCategories(FunctionsXmlService.Level.AVOID)) {
                 String id = FunctionsXmlService.Level.AVOID.getLevel() + category.getName(); // NOI18N
                 String name = "(" + FunctionsXmlService.Level.AVOID.name().toUpperCase(Locale.getDefault()) + ") " + category.getName(); // NOI18N
                 String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+category.getName()+".description"); // NOI18N
-                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.AVOID, category, id, name, description, "warning", true, myPreferences)); // NOI18N
+                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.AVOID, category, id, name, description, "warning", WARNING_SECURITY_ANNOTATION_TYPE, true, myPreferences)); // NOI18N
             }
             for (FunctionsXmlService.Category category : service.getCategories(FunctionsXmlService.Level.CAUTION)) {
                 String id = FunctionsXmlService.Level.CAUTION.getLevel() + category.getName(); // NOI18N
                 String name = "(" + FunctionsXmlService.Level.CAUTION.name().toUpperCase(Locale.getDefault()) + ") " + category.getName(); // NOI18N
                 String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+category.getName()+".description"); // NOI18N
-                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.CAUTION, category, id, name, description, "warning", false, myPreferences)); // NOI18N
+                result.add(new FunctionUsageAudit(FunctionsXmlService.Level.CAUTION, category, id, name, description, "warning", WARNING_SECURITY_ANNOTATION_TYPE, false, myPreferences)); // NOI18N
             }
             
             Collections.sort(result, new Comparator<CodeAudit>(){

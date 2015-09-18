@@ -478,14 +478,16 @@ final class ResultPanelTree extends JPanel implements ExplorerManager.Provider, 
         }
         boolean selectedEncountered = selected.equals(suite);
         for (Node child : suite.getChildren().getNodes()) {
-            TestMethodNode testMethod = (TestMethodNode) child;
-            if (!selectedEncountered && isSelected(testMethod, selected)) {
-                selectedEncountered = true;
-                continue;
-            }
-            if (selectedEncountered && testMethod.failed()) {
-                selectAndActivateNode(testMethod);
-                return;
+            if (child instanceof TestMethodNode) {
+                TestMethodNode testMethod = (TestMethodNode) child;
+                if (!selectedEncountered && isSelected(testMethod, selected)) {
+                    selectedEncountered = true;
+                    continue;
+                }
+                if (selectedEncountered && testMethod.failed()) {
+                    selectAndActivateNode(testMethod);
+                    return;
+                }
             }
         }
         List<TestsuiteNode> failedSuites = getFailedSuiteNodes(suite);
@@ -503,7 +505,7 @@ final class ResultPanelTree extends JPanel implements ExplorerManager.Provider, 
 
         }
     }
-
+    
     private boolean isSelected(TestMethodNode testMethod, Node selected) {
        if (testMethod.equals(selected)) {
            return true;

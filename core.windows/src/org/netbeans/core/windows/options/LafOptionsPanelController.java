@@ -59,7 +59,6 @@ import org.openide.util.Lookup;
     keywordsCategory="Appearance/LaF",
     location = "Appearance"
 )
-@org.openide.util.NbBundle.Messages({"Laf_DisplayName=Look and Feel", "KW_LafOptions=Look and feel"})
 public class LafOptionsPanelController extends OptionsPanelController {
 
     private LafPanel panel;

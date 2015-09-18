@@ -534,10 +534,18 @@ public final class MethodWrapper {
         }
         Object retValue = null;
         try {
-            byte[] ret;
+            try {
+                byte[] ret;
             ret = a.bytecodes();
             retValue = ret;
             return ret;
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 113) { // INTERNAL, see https://netbeans.org/bugzilla/show_bug.cgi?id=255298
+                    throw new InternalExceptionWrapper(iex);
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             retValue = ex;
             if (ex.errorCode() != 101) { // Ignore ABSENT_INFORMATION

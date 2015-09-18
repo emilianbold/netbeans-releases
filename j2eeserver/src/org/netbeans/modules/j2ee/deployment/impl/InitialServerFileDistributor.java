@@ -229,9 +229,11 @@ public class InitialServerFileDistributor extends ServerProgress {
                     continue;
                 }
 
-                ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
+                FileObject dest = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
                 if (sourceFO.isData()) {
                     copyFile(sourceFO, dir, relativePath);
+                } else if (dest != null && sourceFO.isFolder()) {
+                    FileUtil.createFolder(dest, new File(relativePath).getName());
                 }
             }
         } catch (Exception e) {

@@ -233,7 +233,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
 //            TransformTask transformJavadoc = new TransformTask(changeJavaDocParamsTransformer, treePathHandle);
 //            problem = JavaPluginUtils.chainProblems(problem, createAndAddElements(a, transformJavadoc, elements, refactoring));
             TransformTask transform = new TransformTask(changeParamsTransformer, treePathHandle);
-            problem = JavaPluginUtils.chainProblems(problem, createAndAddElements(a, transform, elements, refactoring));
+            problem = JavaPluginUtils.chainProblems(problem, createAndAddElements(a, transform, elements, refactoring, getClasspathInfo(refactoring)));
             problem = JavaPluginUtils.chainProblems(problem, changeParamsTransformer.getProblem());
         }
         fireProgressListenerStop();

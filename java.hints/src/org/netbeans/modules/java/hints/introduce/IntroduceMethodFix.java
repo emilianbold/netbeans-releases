@@ -299,8 +299,15 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         IntroduceMethodFix imf = null;
         if (viableTargets != null && !viableTargets.isEmpty()) {
             for (TargetDescription target : viableTargets) {
+                if (target.type == null) {
+                    continue;
+                }
+                final TypeElement resolvedType = target.type.resolve(info);
+                if (resolvedType == null) {
+                    continue;
+                }
                 Set<String> cNames = new HashSet<>();
-                outer: for (ExecutableElement ee : ElementFilter.methodsIn(target.type.resolve(info).getEnclosedElements())) {
+                outer: for (ExecutableElement ee : ElementFilter.methodsIn(resolvedType.getEnclosedElements())) {
                     List<? extends TypeMirror> pTypes = ((ExecutableType) ee.asType()).getParameterTypes();
                     if (pTypes.size() == paramsVariables.size()) {
                         Iterator<? extends TypeMirror> pTypesIt = pTypes.iterator();

@@ -42,10 +42,16 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +61,9 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -79,7 +88,11 @@ import org.openide.util.NbBundle;
  */
 public class MissingReturnStatement implements ErrorRule<Void> {
 
-    private static final Set<String> CODES = new HashSet<String>(Arrays.asList("compiler.err.missing.ret.stmt"));
+    private static final Set<String> CODES = new HashSet<String>(Arrays.asList(
+            "compiler.err.missing.ret.stmt",
+            "compiler.err.prob.found.req/compiler.misc.incompatible.ret.type.in.lambda/compiler.misc.missing.ret.val",
+            "compiler.err.prob.found.req/compiler.misc.incompatible.ret.type.in.lambda/compiler.misc.inconvertible.types"
+            ));
 
     @Override
     public Set<String> getCodes() {
@@ -89,10 +102,11 @@ public class MissingReturnStatement implements ErrorRule<Void> {
     @Override
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         TreePath method = null;
-        TreePath tp = compilationInfo.getTreeUtilities().pathFor(offset); //XXX: the passed treePath is for offset + 1
+        TreePath tp = compilationInfo.getTreeUtilities().pathFor(offset + 1);
 
         while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
-            if (tp.getLeaf().getKind() == Kind.METHOD) {
+            Kind kind = tp.getLeaf().getKind();
+            if (kind == Kind.METHOD || kind == Kind.LAMBDA_EXPRESSION) {
                 method = tp;
                 break;
             }
@@ -103,17 +117,41 @@ public class MissingReturnStatement implements ErrorRule<Void> {
         if (method == null) {
             return null;
         }
-
-        MethodTree mt = (MethodTree) tp.getLeaf();
-
-        if (mt.getReturnType() == null) {
-            return null;
+        
+        if (method.getLeaf().getKind() == Kind.METHOD) {
+            MethodTree mt = (MethodTree) tp.getLeaf();
+            if (mt.getReturnType() == null) {
+                return null;
+            }
+        } else if (method.getLeaf().getKind() == Kind.LAMBDA_EXPRESSION) {
+            LambdaExpressionTree let = (LambdaExpressionTree)method.getLeaf();
+            TreePath bodyPath = new TreePath(method, let.getBody());
+            if (let.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+                TypeMirror m = compilationInfo.getTrees().getTypeMirror(
+                    bodyPath);
+                if (m == null) {
+                    return null;
+                }
+                if (m.getKind() == TypeKind.ERROR) {
+                    m = compilationInfo.getTrees().getOriginalType((ErrorType)m);
+                }
+                if (m.getKind() != TypeKind.VOID) {
+                    // do not offer to add return for something, which already has
+                    // some type
+                    return null;
+                }
+            } else if (Utilities.exitsFromAllBranchers(compilationInfo, bodyPath)) {
+                // do not add return, returns are already there.
+                return null;
+            }
         }
 
         List<Fix> result = new ArrayList<Fix>(2);
 
         result.add(new FixImpl(compilationInfo.getSnapshot().getSource(), TreePathHandle.create(tp, compilationInfo)));
-        result.add(new ChangeMethodReturnType.FixImpl(compilationInfo, tp, TypeMirrorHandle.create(compilationInfo.getTypes().getNoType(TypeKind.VOID)), "void").toEditorFix());
+        if (method.getLeaf().getKind() == Kind.METHOD) {
+            result.add(new ChangeMethodReturnType.FixImpl(compilationInfo, tp, TypeMirrorHandle.create(compilationInfo.getTypes().getNoType(TypeKind.VOID)), "void").toEditorFix());
+        }
 
         return result;
     }
@@ -155,19 +193,53 @@ public class MissingReturnStatement implements ErrorRule<Void> {
                     wc.toPhase(Phase.RESOLVED);
 
                     TreePath method = methodHandle.resolve(wc);
-                    Element methodEl = method != null ? wc.getTrees().getElement(method) : null;
+                    TypeMirror type;
+                    BlockTree body;
+                    TreeMaker make = wc.getTreeMaker();
+                    
+                    if (method.getLeaf().getKind() == Kind.METHOD) {
+                        Element methodEl = method != null ? wc.getTrees().getElement(method) : null;
 
-                    if (methodEl == null || methodEl.getKind() != ElementKind.METHOD) {
-                        return ;
-                    }
+                        if (methodEl == null || methodEl.getKind() != ElementKind.METHOD) {
+                            return ;
+                        }
+                    
+                        assert method.getLeaf().getKind() == Kind.METHOD;
 
-                    assert method.getLeaf().getKind() == Kind.METHOD;
-
-                    BlockTree body = ((MethodTree) method.getLeaf()).getBody();
-                    if (body == null) {
+                        body = ((MethodTree) method.getLeaf()).getBody();
+                        if (body == null) {
+                            return;
+                        }
+                        type = ((ExecutableElement) methodEl).getReturnType();
+                    } else if (method.getLeaf().getKind() == Kind.LAMBDA_EXPRESSION) {
+                        LambdaExpressionTree let = (LambdaExpressionTree)method.getLeaf();
+                        if (let.getBody() == null) {
+                            return;
+                        }
+                        if (let.getBody().getKind() == Kind.BLOCK) {
+                            body = (BlockTree)let.getBody();
+                        } else if (let.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+                            body = make.Block(Collections.singletonList(
+                                    make.ExpressionStatement((ExpressionTree)let.getBody())), false);
+                            wc.rewrite(let.getBody(), body);
+                        } else {
+                            // surround in braces
+                            body = make.Block(Collections.singletonList((StatementTree)let.getBody()), false);
+                            wc.rewrite(let.getBody(), body);
+                        }
+                        TypeMirror t = wc.getTrees().getTypeMirror(method);
+                        if (t == null || t.getKind() != TypeKind.DECLARED) {
+                            return;
+                        }
+                        ExecutableType et = wc.getTypeUtilities().getDescriptorType((DeclaredType)t);
+                        if (!Utilities.isValidType(et)) {
+                            return;
+                        }
+                        type = et.getReturnType();
+                    } else {
                         return;
                     }
-                    TypeMirror type = ((ExecutableElement) methodEl).getReturnType();
+                    
                     TypeKind kind = type.getKind();
                     Object value;
                     if (kind.isPrimitive()) {
@@ -182,7 +254,6 @@ public class MissingReturnStatement implements ErrorRule<Void> {
                         value = null;
                     }
 
-                    TreeMaker make = wc.getTreeMaker();
                     LiteralTree nullValue = make.Literal(value);
 
                     wc.tag(nullValue, Utilities.TAG_SELECT);

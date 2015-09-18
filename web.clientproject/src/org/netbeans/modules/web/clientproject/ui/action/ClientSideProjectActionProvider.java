@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.web.clientproject.ui.action;
 
@@ -92,6 +92,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             new BuildToolsCommand(project, COMMAND_BUILD),
             new BuildToolsCommand(project, COMMAND_REBUILD),
             new BuildToolsCommand(project, COMMAND_CLEAN),
+            new BuildToolsCommand(project, COMMAND_TEST_SINGLE),
 
             new CopyCommand(project),
             new MoveCommand(project),
@@ -148,10 +149,10 @@ public class ClientSideProjectActionProvider implements ActionProvider {
     @Override
     public void invokeAction(final String commandId, final Lookup lookup) {
         final Command command = getCommand(commandId);
-        LifecycleManager.getDefault().saveAll();
         EXECUTOR.submit(new Runnable() {
             @Override
             public void run() {
+                LifecycleManager.getDefault().saveAll();
                 AtomicBoolean warnUser = new AtomicBoolean(true);
                 tryBuildTools(commandId);
                 tryPlatform(commandId, lookup, warnUser);

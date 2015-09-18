@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.apt.support;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import org.clang.tools.services.support.FileInfoCallback;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
@@ -78,8 +77,6 @@ public final class ClankDriver {
       Collection<MacroUsage> getMacroUsages();
 
       FileGuard getFileGuard();
-
-      Map<Integer, ClankMacroDirective> getMacroDefinitions();
     }
 
     public static int extractFileIndex(PreprocHandler ppHandler) {
@@ -95,6 +92,12 @@ public final class ClankDriver {
       return cache.prepareCachesIfPossible();
     }
 
+    public static void prepareCachesIfPossible(ClankDriver.ClankFileInfo fileInfo) {
+        if (fileInfo instanceof ClankDriverImpl.APTTokenStreamCacheImplementation) {
+            ((ClankDriverImpl.APTTokenStreamCacheImplementation) fileInfo).prepareCachesIfPossible();
+        }
+    }
+
     public static boolean preprocess(APTFileBuffer buffer,
             PreprocHandler ppHandler,
             ClankPreprocessorCallback callback, Interrupter interrupter) {
@@ -105,13 +108,13 @@ public final class ClankDriver {
         private final int startOfset;
         private final int endOfset;
         private final int macroNameLength;
-        private final /*SourceLocation*/int referencedMacroID;
+        private final ClankMacroDirective referencedMacro;
         
-        public MacroExpansion(FileInfoCallback.MacroExpansionInfo expansion) {
+        public MacroExpansion(FileInfoCallback.MacroExpansionInfo expansion, ClankMacroDirective referencedDirective) {
             startOfset = expansion.getStartOffset();
             endOfset = expansion.getEndOffset();
             macroNameLength = expansion.getMacroNameLength();
-            referencedMacroID = expansion.getReferencedMacroLocation();
+            referencedMacro = referencedDirective;
         }
 
         public int getStartOfset() {
@@ -126,20 +129,20 @@ public final class ClankDriver {
             return macroNameLength;
         }
 
-        public int getReferencedMacroID() {
-            return referencedMacroID;
+        public ClankMacroDirective getReferencedMacro() {
+            return referencedMacro;
         }
     }
 
     public static final class MacroUsage {
         private final int startOfset;
         private final int endOfset;
-        private final /*SourceLocation*/int referencedMacroID;
+        private final ClankMacroDirective referencedMacro;
 
-        public MacroUsage(FileInfoCallback.MacroUsageInfo usage) {
-            startOfset = usage.getStartOffset();
-            endOfset = usage.getEndOffset();
-            referencedMacroID = usage.getReferencedMacroLocation();
+        public MacroUsage(int startOfset, int endOfset, ClankMacroDirective referencedDirective) {
+            this.startOfset = startOfset;
+            this.endOfset = endOfset;
+            referencedMacro = referencedDirective;
         }
 
         public int getStartOfset() {
@@ -150,8 +153,8 @@ public final class ClankDriver {
             return endOfset;
         }
 
-        public int getReferencedMacroID() {
-            return referencedMacroID;
+        public ClankMacroDirective getReferencedMacro() {
+            return referencedMacro;
         }
     }
 
@@ -218,6 +221,7 @@ public final class ClankDriver {
       ResolvedPath getResolvedPath();
       CharSequence getSpellingName();
       boolean isAngled();
+      boolean isRecursive();
     }
 
     public interface ClankPreprocessorCallback {
@@ -243,6 +247,7 @@ public final class ClankDriver {
        */
       boolean onExit(ClankFileInfo exitedFrom, ClankFileInfo exitedTo);
 
+      boolean needPPDirectives();
       boolean needTokens();
       boolean needSkippedRanges();
       boolean needMacroExpansion();
@@ -254,7 +259,6 @@ public final class ClankDriver {
        * @param directive
        */
       void onErrorDirective(ClankFileInfo directiveOwner, ClankErrorDirective directive);
-      void onMacroDefineDirective(ClankFileInfo directiveOwner, ClankMacroDirective directive);
     }
 
     public interface ClankFileInfo {
@@ -262,6 +266,14 @@ public final class ClankDriver {
       int getFileIndex();
       ClankInclusionDirective getInclusionDirective();
       int[] getSkippedRanges();
+
+      Collection<ClankPreprocessorDirective> getPreprocessorDirectives();
+
+      Collection<MacroExpansion> getMacroExpansions();
+
+      Collection<MacroUsage> getMacroUsages();
+
+      FileGuard getFileGuard();
     }
 
     ////////////////////////////////////////////////////////////////////////////

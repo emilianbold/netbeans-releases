@@ -68,6 +68,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -80,6 +82,7 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
@@ -202,7 +205,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
     private void listMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listMouseReleased
         importClass( 
                 getSelected(), 
-                (evt.getModifiers() & InputEvent.ALT_MASK) > 0,
+                (evt.getModifiers() & (org.openide.util.Utilities.isMac() ? InputEvent.META_MASK : InputEvent.ALT_MASK)) > 0,
                 (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0);
     }//GEN-LAST:event_listMouseReleased
 
@@ -212,7 +215,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
              ks.getKeyCode() == KeyEvent.VK_SPACE ) {
             importClass( 
                     getSelected(),
-                    (evt.getModifiers() & InputEvent.ALT_MASK) > 0,
+                    (evt.getModifiers() & (org.openide.util.Utilities.isMac() ? InputEvent.META_MASK : InputEvent.ALT_MASK)) > 0,
                     (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0);
         }
     }//GEN-LAST:event_listKeyReleased
@@ -278,8 +281,19 @@ public class ImportClassPanel extends javax.swing.JPanel {
                         return ;
                     CompilationUnitTree cut = wc.getCompilationUnit();
                     
-                    if ( useFqn && replaceSimpleName(fqn, wc) ) {                        
-                        return;
+                    if ( useFqn ) {
+                        if ( replaceSimpleName(fqn, wc) )
+                            return;
+                        Document doc = wc.getDocument();
+                        if (doc instanceof BaseDocument) {
+                            try {
+                                int[] block = Utilities.getIdentifierBlock((BaseDocument)doc, position);
+                                doc.remove(block[0], block[1] - block[0]);
+                                doc.insertString(block[0], fqn, null);
+                                return;
+                            } catch (BadLocationException ex) {
+                            }
+                        }
                     }
                     
                     // Test whether already imported                    

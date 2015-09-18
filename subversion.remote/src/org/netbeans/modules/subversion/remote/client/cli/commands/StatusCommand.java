@@ -270,7 +270,8 @@ public class StatusCommand extends SvnCommand {
             if (ENTRY_ELEMENT_NAME.equals(qName)) {                        
                 values = new HashMap<>();
                 String path = elementAttributes.getValue(PATH_ATTRIBUTE);
-                path = Paths.get(path).toAbsolutePath().normalize().toString();
+                //path = Paths.get(path).toAbsolutePath().normalize().toString();
+                path = VCSFileProxySupport.getResource(files[0], path).normalizeFile().getPath();
                 values.put(PATH_ATTRIBUTE,      path);
             } else if (WC_ST_ELEMENT_NAME.equals(qName)) {                                
                 values.put(WC_ITEM_ATTR,        elementAttributes.getValue(ITEM_ATTRIBUTE));

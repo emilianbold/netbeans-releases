@@ -43,6 +43,8 @@ Contributor(s):
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-cnd-cpp-parser_annotation_err.xml" url="parser_annotation_err.xml"/>
             <file name="org-netbeans-modules-cnd-highligh-semantic-markoccurrences.xml" url="occurrence_annotation.xml"/>
+            <file name="org-netbeans-modules-cnd-highlight-security-error.xml" url="security_err.xml"/>
+            <file name="org-netbeans-modules-cnd-highlight-security-warning.xml" url="security_warn.xml"/>
         </folder>
         <folder name="text">
             <folder name="x-h">
@@ -166,7 +168,7 @@ Contributor(s):
    
     <folder name="CND">
         <folder name="SecurityChecks">
-            <file name="C_Lib_Functions" url="../security/resources/C_Lib_Functions.xml"/>
+            <file name="C_Lib_Functions" url="nbresloc:/org/netbeans/modules/cnd/highlight/security/resources/C_Lib_Functions.xml"/>
         </folder>
     </folder>
     

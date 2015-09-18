@@ -77,6 +77,90 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
  * @author Vladimir Voskresensky
  */
 public abstract class TokenStreamProducer {
+    
+    public static enum YesNoInterested {
+        ALWAYS,
+        NEVER,
+        INTERESTED
+    }
+    
+    // in fact used only in clank mode
+    public static class Parameters {
+
+        public final YesNoInterested needTokens;
+        public final YesNoInterested needPPDirectives;
+        public final YesNoInterested needSkippedRanges;
+        public final YesNoInterested needMacroExpansion;
+        public final boolean needComments;
+        public final boolean triggerParsingActivity;
+        public final boolean applyLanguageFilter;
+        
+        private Parameters(YesNoInterested needTokens, boolean triggerParsingActivity, 
+                YesNoInterested needPPDirectives, YesNoInterested needMacroExpansion, YesNoInterested needSkippedRanges, 
+                boolean needComments, boolean applyLanguageFilter) {
+            this.triggerParsingActivity = triggerParsingActivity;
+            this.needPPDirectives = needPPDirectives;
+            this.needSkippedRanges = needSkippedRanges;
+            this.needTokens = needTokens;
+            this.needMacroExpansion = needMacroExpansion;
+            this.needComments = needComments;
+            this.applyLanguageFilter = applyLanguageFilter;
+        }
+
+        public static Parameters createForParsing(boolean triggerParsingActivity, String language) {
+            return new Parameters(
+                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED, 
+                    triggerParsingActivity, 
+                    YesNoInterested.ALWAYS, 
+                    APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.NEVER : YesNoInterested.ALWAYS,
+                    YesNoInterested.ALWAYS,
+                    APTLanguageSupport.FORTRAN.equals(language), // no comments needed for just parsing except fortran
+                    true);
+        }
+
+        public static Parameters createForParsingAndTokenStreamCaching(boolean triggerParsingActivity) {
+            return new Parameters(
+                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
+                    triggerParsingActivity, 
+                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
+                    APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.INTERESTED : YesNoInterested.ALWAYS,
+                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
+                    true, // we need comments for macro views
+                    false); //cache only unfiltered
+        }
+
+        public static Parameters createForTokenStreamCaching() {
+            return new Parameters(
+                    YesNoInterested.INTERESTED, 
+                    false, 
+                    YesNoInterested.NEVER, 
+                    YesNoInterested.INTERESTED, // we need start/end expansion toknes
+                    YesNoInterested.INTERESTED, 
+                    true, // we need comments for macro views
+                    false); //cache only unfiltered
+        }
+
+        public static Parameters createForMacroUsages() {
+            return new Parameters(
+                    YesNoInterested.NEVER,
+                    false,
+                    YesNoInterested.INTERESTED,
+                    YesNoInterested.INTERESTED,
+                    YesNoInterested.NEVER,
+                    false,
+                    false
+            );
+        }
+
+        @Override
+        public String toString() {
+            return "needTokens=" + needTokens + ", needPPDirectives=" + needPPDirectives + //NOI18N
+                    ", needSkippedRanges=" + needSkippedRanges + ", needMacroExpansion=" + needMacroExpansion + //NOI18N
+                    ", needComments=" + needComments + ", triggerParsingActivity=" + triggerParsingActivity + //NOI18N
+                    ", applyLanguageFilter=" + applyLanguageFilter; //NOI18N
+        }
+    }
+    
     private PreprocHandler curPreprocHandler;
     private FileImpl startFile;
     private String language = APTLanguageSupport.GNU_CPP;
@@ -109,7 +193,7 @@ public abstract class TokenStreamProducer {
 
     public abstract TokenStream getTokenStreamOfIncludedFile(PreprocHandler.State includeOwnerState, CsmInclude include, Interrupter interrupter);
 
-    public abstract TokenStream getTokenStream(boolean triggerParsingActivity, boolean filterOutComments, boolean applyLanguageFilter, Interrupter interrupter);
+    public abstract TokenStream getTokenStream(Parameters parameters, Interrupter interrupter);
     
     /** must be called when TS was completely consumed */
     public abstract FilePreprocessorConditionState release();
@@ -141,7 +225,7 @@ public abstract class TokenStreamProducer {
         return fileImpl;
     }    
 
-    public FileImpl getStartFile() {
+    protected FileImpl getStartFile() {
         if (startFile != null) {
             return startFile;
         }
@@ -161,7 +245,7 @@ public abstract class TokenStreamProducer {
         return fromEnsureParsed;
     }
     
-    public CodePatch getFixCode() {
+    protected CodePatch getCodePatch() {
         return codePatch;
     }
 

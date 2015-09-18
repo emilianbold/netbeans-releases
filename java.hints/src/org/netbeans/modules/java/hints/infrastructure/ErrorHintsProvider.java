@@ -88,6 +88,7 @@ import org.netbeans.modules.java.hints.jdk.ConvertToLambda;
 import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
+import org.netbeans.modules.java.source.parsing.Hacks;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -137,6 +138,75 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         return computeErrors(info, doc, null, mimeType);
     }
     
+    ErrorDescription processRule(CompilationInfo info, Integer forPosition, Diagnostic d, String code, Map<String, List<ErrorRule>> code2Rules,
+            Map<Class, Data> data, Document doc, boolean processDefault) throws IOException {
+        List<ErrorRule> rules = code2Rules.get(code);
+
+        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+            ERR.log(ErrorManager.INFORMATIONAL, "code= " + code);
+            ERR.log(ErrorManager.INFORMATIONAL, "rules = " + rules);
+        }
+
+        LazyFixList ehm;
+        String desc = d.getMessage(null);
+
+        if (rules != null) {
+            int pos = (int) getPrefferedPosition(info, d);
+            TreePath path = info.getTreeUtilities().pathFor(pos + 1);
+            Data ruleData = new Data();
+            for (ErrorRule r : rules) {
+                if (!(r instanceof OverrideErrorMessage)) {
+                    continue;
+                }
+                OverrideErrorMessage rcm = (OverrideErrorMessage) r;
+                String msg = rcm.createMessage(info, d.getCode(), pos, path, ruleData);
+                if (msg != null) {
+                    if (msg.isEmpty()) {
+                        // ignore the error
+                        return null;
+                    }
+                    desc = msg;
+                    if (ruleData.getData() != null) {
+                        data.put(rcm.getClass(), ruleData);
+                    }
+                    break;
+                }
+            }
+            ehm = new CreatorBasedLazyFixList(info.getFileObject(), code, pos, rules, data);
+        } else if (processDefault) {
+            ehm = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
+        } else {
+            return null;
+        }
+        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+            ERR.log(ErrorManager.INFORMATIONAL, "ehm=" + ehm);
+        }
+
+        final Position[] range = getLine(info, d, doc, (int) getPrefferedPosition(info, d), (int) d.getEndPosition());
+
+        if (isCanceled()) {
+            return null;
+        }
+
+        if (range[0] == null || range[1] == null) {
+            return null;
+        }
+
+        if (forPosition != null) {
+            try {
+                int posRowStart = org.netbeans.editor.Utilities.getRowStart((NbEditorDocument) doc, forPosition);
+                int errRowStart = org.netbeans.editor.Utilities.getRowStart((NbEditorDocument) doc, range[0].getOffset());
+                if (posRowStart != errRowStart) {
+                    return null;
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return ErrorDescriptionFactory.createErrorDescription(errorKind2Severity.get(d.getKind()), desc, ehm, doc, range[0], range[1]);
+    }
+    
     /**
      * @param forPosition position for ehich errors would be computed
      * @return errors for line specified by forPosition
@@ -157,92 +227,59 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
 
         Map<Class, Data> data = new HashMap<Class, Data>();
 
-        OUTER: for (Diagnostic d : errors) {
-            if (ConvertToDiamondBulkHint.CODES.contains(d.getCode())) {
+        OUTER: for (Diagnostic _d : errors) {
+            if (ConvertToDiamondBulkHint.CODES.contains(_d.getCode())) {
                 if (isJava) continue; //handled separatelly in the hint
                 if (!ConvertToDiamondBulkHint.isHintEnabled()) continue; //disabled
             }
             
-            if (ConvertToLambda.CODES.contains(d.getCode())) {
+            if (ConvertToLambda.CODES.contains(_d.getCode())) {
                 continue;
             }
-            
-            if (isCanceled())
-                return null;
 
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
-                ERR.log(ErrorManager.INFORMATIONAL, "d = " + d );
-            
+                ERR.log(ErrorManager.INFORMATIONAL, "d = " + _d );
             Map<String, List<ErrorRule>> code2Rules = RulesManager.getInstance().getErrors(mimeType);
             
-            List<ErrorRule> rules = code2Rules.get(d.getCode());
-            
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "code= " + d.getCode());
-                ERR.log(ErrorManager.INFORMATIONAL, "rules = " + rules);
-            }
-            
-            LazyFixList ehm;
-            String desc = d.getMessage(null);
+            List<String> composedCodes = Collections.singletonList(_d.getCode());
+            Diagnostic[] nested = Hacks.getNestedDiagnostics(_d);
+            NESTED: {
+                if (nested != null) {
+                    composedCodes = new ArrayList<>(nested.length + 1);
+                    composedCodes.add(_d.getCode());
 
-            if (rules != null) {
-                int pos = (int)getPrefferedPosition(info, d);
-                TreePath path = info.getTreeUtilities().pathFor(pos + 1);
-                Data ruleData  = new Data();
-                for (ErrorRule r : rules) {
-                    if (!(r instanceof OverrideErrorMessage)) {
-                        continue;
+                    StringBuilder b = new StringBuilder();
+                    b.append(_d.getCode());
+                    for (Diagnostic d2 : nested) {
+
+                        if (isCanceled())
+                            return null;
+
+                        String code = d2.getCode();
+                        b.append("/"); // NOI18N
+                        b.append(code);
+
+                        ErrorDescription ed = processRule(info, forPosition, _d, b.toString(), code2Rules, data, doc, false);
+                        if (ed != null) {
+                            descs.add(ed);
+                            break NESTED;
+                        }
                     }
-                    OverrideErrorMessage rcm = (OverrideErrorMessage)r;
-                    String msg = rcm.createMessage(info, d.getCode(), pos, path, ruleData);
-                    if (msg != null) {
-                        if (msg.isEmpty()) {
-                            // ignore the error
-                            continue OUTER;
-                        }
-                        desc = msg;
-                        if (ruleData.getData() != null) {
-                            data.put(rcm.getClass(), ruleData);
-                        }
-                        break;
-                    } 
                 }
-                ehm = new CreatorBasedLazyFixList(info.getFileObject(), d.getCode(), pos, rules, data);
-            } else {
-                ehm = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
-            }
-            
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
-                ERR.log(ErrorManager.INFORMATIONAL, "ehm=" + ehm);
-            
-            final Position[] range = getLine(info, d, doc, (int)getPrefferedPosition(info, d), (int)d.getEndPosition());
-
-            if (isCanceled())
-                return null;
-            
-            if (range[0] == null || range[1] == null)
-                continue;
-
-            if (forPosition != null) {
-                try {
-                    int posRowStart = org.netbeans.editor.Utilities.getRowStart((NbEditorDocument) doc, forPosition);
-                    int errRowStart = org.netbeans.editor.Utilities.getRowStart((NbEditorDocument) doc, range[0].getOffset());
-                    if (posRowStart != errRowStart) {
-                        continue;
-                    }
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (isCanceled()) {
+                    return null;
+                }
+                ErrorDescription ed = processRule(info, forPosition, _d, _d.getCode(), code2Rules, data, doc, true);
+                if (ed != null) {
+                    descs.add(ed);
                 }
             }
-            
-            descs.add(ErrorDescriptionFactory.createErrorDescription(errorKind2Severity.get(d.getKind()), desc, ehm, doc, range[0], range[1]));
-        }
-        
-        if (isCanceled())
+        }        
+        if (isCanceled()) {
             return null;
-
+        }
         Set<Severity> disabled = org.netbeans.modules.java.hints.spiimpl.Utilities.disableErrors(info.getFileObject());
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>(descs.size());
+        List<ErrorDescription> result = new ArrayList<>(descs.size());
 
         for (ErrorDescription ed : descs) {
             if (!disabled.contains(ed.getSeverity())) {

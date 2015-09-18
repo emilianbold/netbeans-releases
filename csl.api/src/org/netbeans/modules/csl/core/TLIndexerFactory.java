@@ -288,23 +288,38 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 filteredErrors = new ArrayList(gsfParserResult.getDiagnostics());
             }
             // must translate diagnostics offsets into file/document offsets.
+            boolean errorTooLargeForParser = false; 
             for (Error err : filteredErrors) {
                 int startPos = err.getStartPosition();
                 startPos = gsfParserResult.getSnapshot().getOriginalOffset(startPos);
                 String ek = Integer.toString(startPos) + ":" + err.getKey(); // NOI18N
+                
+                //Guess if there is parsing error too large
+                if ("PARSING".equals(err.getKey()) && err.getDescription() != null && err.getDescription().contains("too large")) {
+                    errorTooLargeForParser = true;
+                }
                 if (!seenErrorKeys.add(ek)) {
                     continue;
                 }
+                
                 simplifiedErrors.add(simplify(err, startPos));
             }
             storedErrors.addAll(simplifiedErrors);
             
-            if (!storedErrors.isEmpty()) {
+            if (!storedErrors.isEmpty() && !(storedErrors.size() == 1 && errorTooLargeForParser)) {
                 List<Integer> lineStartOffsets = lineStartOffsetsCache.get(indexable);
 
                 if (lineStartOffsets == null) {
                     lineStartOffsetsCache.put(indexable, getLineStartOffsets(gsfParserResult.getSnapshot().getSource()));
                 }                
+            } else if (storedErrors.size() == 1 && errorTooLargeForParser) {
+                List<Integer> lineStartOffsets = lineStartOffsetsCache.get(indexable);
+
+                if (lineStartOffsets == null) {
+                    lineStartOffsets = new ArrayList<>();
+                    lineStartOffsets.add(0);
+                    lineStartOffsetsCache.put(indexable, getLineStartOffsets(gsfParserResult.getSnapshot().getSource()));
+                }   
             }
         }
         

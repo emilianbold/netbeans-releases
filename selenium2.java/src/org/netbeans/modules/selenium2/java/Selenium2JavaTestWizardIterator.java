@@ -70,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
     description="SeleneseITJava.html",
     position=10,
     scriptEngine = "freemarker",
-    category = "junit")
+    category = "selenium-types")
 @Messages({"SeleniumTestCase_displayName=Selenium Test Case",
     "# {0} - project",
     "NO_SELENIUM_SUPPORT=No Selenium 2.0 support for project {0}"})

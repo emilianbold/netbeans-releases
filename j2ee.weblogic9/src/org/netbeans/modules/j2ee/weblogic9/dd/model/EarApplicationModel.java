@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -63,6 +64,12 @@ import org.xml.sax.SAXException;
  * @author Petr Hejl
  */
 public final class EarApplicationModel extends BaseDescriptorModel {
+
+    private static final Pattern SCHEMA_1031 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-application/1\\.[0-3]/weblogic-application\\.xsd"); // NOI18N
+
+    private static final Pattern SCHEMA_1211 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-application/1\\.[4-6]/weblogic-application\\.xsd"); // NOI18N
+
+    private static final Pattern SCHEMA_1221 = Pattern.compile("http://xmlns\\.oracle\\.com/weblogic/weblogic-application/1\\.[7]/weblogic-application\\.xsd"); // NOI18N
 
     private final WeblogicApplication bean;
 
@@ -98,7 +105,16 @@ public final class EarApplicationModel extends BaseDescriptorModel {
 
         String ns = doc.getDocumentElement().getNamespaceURI();
         if ("http://xmlns.oracle.com/weblogic/weblogic-application".equals(ns)) { // NOI18N
-            return new EarApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.ear1031.WeblogicApplication.createGraph(doc));
+            String value = doc.getDocumentElement().getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation"); // NOI18N
+            if (SCHEMA_1031.matcher(value).matches()) {
+                return new EarApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.ear1031.WeblogicApplication.createGraph(doc));
+            } else if (SCHEMA_1211.matcher(value).matches()) {
+                return new EarApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.ear1211.WeblogicApplication.createGraph(doc));
+            } else if (SCHEMA_1221.matcher(value).matches()) {
+                return new EarApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.ear1221.WeblogicApplication.createGraph(doc));
+            } else {
+                return new EarApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.ear1221.WeblogicApplication.createGraph(doc));
+            }
         } else if ("http://www.bea.com/ns/weblogic/weblogic-application".equals(ns)) { // NOI18N
             return new EarApplicationModel(org.netbeans.modules.j2ee.weblogic9.dd.ear1030.WeblogicApplication.createGraph(doc));
         }
@@ -107,7 +123,11 @@ public final class EarApplicationModel extends BaseDescriptorModel {
     
     public static EarApplicationModel generate(@NullAllowed Version serverVersion) {
         if (serverVersion != null) {
-            if (serverVersion.isAboveOrEqual(VERSION_10_3_1)) {
+            if (serverVersion.isAboveOrEqual(VERSION_12_2_1)) {
+                return generate1221();
+            } else if (serverVersion.isAboveOrEqual(VERSION_12_1_1)) {
+                return generate1211();
+            } else if (serverVersion.isAboveOrEqual(VERSION_10_3_1)) {
                 return generate1031();
             } else if (serverVersion.isAboveOrEqual(VERSION_10_3_0)) {
                 return generate1030();
@@ -137,5 +157,19 @@ public final class EarApplicationModel extends BaseDescriptorModel {
         webLogicApplication.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
         webLogicApplication.setAttributeValue("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/javaee_5.xsd http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.0/weblogic-application.xsd"); // NOI18N
         return new EarApplicationModel(webLogicApplication);
-    } 
+    }
+
+    private static EarApplicationModel generate1211() {
+        org.netbeans.modules.j2ee.weblogic9.dd.ear1211.WeblogicApplication webLogicApplication = new org.netbeans.modules.j2ee.weblogic9.dd.ear1211.WeblogicApplication();
+        webLogicApplication.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
+        webLogicApplication.setAttributeValue("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/javaee_5.xsd http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.4/weblogic-application.xsd"); // NOI18N
+        return new EarApplicationModel(webLogicApplication);
+    }
+
+    private static EarApplicationModel generate1221() {
+        org.netbeans.modules.j2ee.weblogic9.dd.ear1221.WeblogicApplication webLogicApplication = new org.netbeans.modules.j2ee.weblogic9.dd.ear1221.WeblogicApplication();
+        webLogicApplication.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
+        webLogicApplication.setAttributeValue("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/javaee_5.xsd http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.7/weblogic-application.xsd"); // NOI18N
+        return new EarApplicationModel(webLogicApplication);
+    }
 }

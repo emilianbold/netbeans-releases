@@ -678,7 +678,7 @@ public final class ReferencesSupport {
     /**
      * Searches for macro.
      *
-     * @param macroUsages - list of macros
+     * @param macroUsages - SORTED (!) list of macros
      * @param offset - macro offset
      * @return macro
      */
@@ -703,7 +703,9 @@ public final class ReferencesSupport {
         if (index >= 0) {
             CsmReference macroRef = macroUsages.get(index);
             CsmObject csmItem = macroRef.getReferencedObject();
-            assert csmItem != null : "referenced macro is null. ref " + macroRef + ", file " + macroRef.getContainingFile() + ", name " + macroRef.getText();
+            if (csmItem == null) {
+                CndUtils.assertTrueInConsole(false, "referenced macro is null. ref " + macroRef + ", file " + macroRef.getContainingFile() + ", name " + macroRef.getText());
+            }
             return csmItem;
         }
         return null;

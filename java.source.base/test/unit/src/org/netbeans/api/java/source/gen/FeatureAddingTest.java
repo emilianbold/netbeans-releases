@@ -97,6 +97,7 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "import java.io.File;\n\n" +
             "public class Test {\n" +
+            "\n" + 
             "    int a;\n" +
             "    \n" + 
             "    /* comment */\n" +
@@ -200,6 +201,7 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
             "import java.io.File;\n" +
             "\n" +
             "public class Test {\n" +
+            "\n" +
             "    String s;\n" +
             "}\n";
 

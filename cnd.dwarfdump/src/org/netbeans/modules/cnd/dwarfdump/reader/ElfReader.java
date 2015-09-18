@@ -224,7 +224,8 @@ public class ElfReader extends ByteStreamReader {
         //skip time stump
         readInt();
         // read string table
-        long symbolTableOffset = shiftIvArchive+readInt();
+        int startSymbolTable = readInt();
+        long symbolTableOffset = shiftIvArchive+startSymbolTable;
         int symbolTableEntries = readInt();
         long stringTableOffset = symbolTableOffset+symbolTableEntries*18;
         int stringTableLength = (int)(shiftIvArchive + lengthIvArchive - stringTableOffset);
@@ -238,19 +239,24 @@ public class ElfReader extends ByteStreamReader {
         elfHeader.e_shoff = getFilePointer();
         // read string table
         long pointer = getFilePointer();
-        seek(stringTableOffset);
-        byte[] strings = new byte[stringTableLength];
-        read(strings);
-        stringTableSection = new StringTableSection(this, strings);
-        sharedLibraries = new SharedLibraries();
-        for(String string : stringTableSection.getStrings()){
-            //_libhello4lib_dll_iname
-            if (string.endsWith("_dll_iname") && string.startsWith("_")) { //NOI18N
-                String lib = string.substring(1,string.length()-10)+".dll"; //NOI18N
-                sharedLibraries.addDll(lib);
+        if (startSymbolTable != 0) {
+            seek(stringTableOffset);
+            byte[] strings = new byte[stringTableLength];
+            read(strings);
+            stringTableSection = new StringTableSection(this, strings);
+            sharedLibraries = new SharedLibraries();
+            for(String string : stringTableSection.getStrings()){
+                //_libhello4lib_dll_iname
+                if (string.endsWith("_dll_iname") && string.startsWith("_")) { //NOI18N
+                    String lib = string.substring(1,string.length()-10)+".dll"; //NOI18N
+                    sharedLibraries.addDll(lib);
+                }
             }
+            seek(pointer);
+        } else {
+            stringTableSection = new StringTableSection(this, new byte[0]);
+            sharedLibraries = new SharedLibraries();
         }
-        seek(pointer);
     }
     
     private boolean readMachoHeader() throws IOException{

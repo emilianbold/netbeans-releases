@@ -252,7 +252,7 @@ class ModelElementFactory {
             newObject.setDocumentation(docHolder.getDocumentation(aNode));
         }
         parent.addProperty(name.getName(), newObject);
-        if (newObject.hasExactName()) {
+        if (newObject.hasExactName() && newObject.getDeclarationName() != null) {
             newObject.addOccurrence(newObject.getDeclarationName().getOffsetRange());
         }
         return newObject;

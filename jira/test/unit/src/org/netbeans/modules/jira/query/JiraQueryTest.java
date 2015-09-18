@@ -124,8 +124,8 @@ public class JiraQueryTest extends NbTestCase {
     }
 
     private void executeFilter(JiraFilter fd, int issuesCount) {
-        JiraQuery q = new JiraQuery("testfilter", JiraTestUtil.getRepository(), fd);
-        q.refresh();        
+        JiraQuery q = new JiraQuery("testfilter", JiraTestUtil.getRepository(), null);
+        q.refresh(fd);        
         Collection<NbJiraIssue> issues = q.getIssues();
         assertNotNull(issues);
         assertEquals(issuesCount, issues.size());

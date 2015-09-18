@@ -1375,16 +1375,21 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         
         @Override
         public JComponent getToolbarRepresentation() {
-            Document doc = getEditorPane().getDocument();
-            if (doc instanceof NbDocument.CustomToolbar) {
-                if (bar == null) {
-                    bar = ((NbDocument.CustomToolbar)doc).createToolbar(getEditorPane());
+            JToolBar toolBar = bar;
+            if (toolBar == null) {
+                JEditorPane lPane = getEditorPane();
+                if (lPane != null) {
+                    Document doc = lPane.getDocument();
+                    if (doc instanceof NbDocument.CustomToolbar) {
+                        toolBar = ((NbDocument.CustomToolbar)doc).createToolbar(lPane);
+                    }
                 }
+                if (toolBar == null) {
+                    toolBar = new JToolBar();
+                }
+                bar = toolBar;
             }
-            if (bar == null) {
-                bar = new JToolBar();
-            }
-            return bar;
+            return toolBar;
         }
 
         @Override

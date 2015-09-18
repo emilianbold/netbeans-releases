@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>com-jcraft-jsch.jar</runtime-relative-path>
-                <binary-origin>external/jsch-0.1.51.jar</binary-origin>
+                <binary-origin>external/jsch-0.1.53.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

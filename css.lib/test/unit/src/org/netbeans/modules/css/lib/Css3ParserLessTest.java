@@ -896,4 +896,29 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "  color: fade(@a; @b);\n"
                 + "}");
     }
+    
+    public void testMathExpWithUnits() {
+        assertParses("@fa-li-width: (30em / 14);");
+    }
+    
+    public void testInterpolationWithLength() {
+        assertParses(".@{fa-css-prefix}-500px:before {padding: 10;}");
+    }
+    
+    public void testIdentBeforeLessAnd() {
+        assertParses(".badge {\n"
+                + "  display: inline-block;\n"
+                + "  &:after {\n"
+                + "    display: none;\n"
+                + "  }\n"
+                + "\n"
+                + "  a& {\n"
+                + "    &:hover,\n"
+                + "    &:focus {\n"
+                + "      text-decoration: none;\n"
+                + "    }\n"
+                + "  }\n"
+                + "}\n"
+                );
+    }
 }

@@ -52,8 +52,10 @@ import org.netbeans.modules.subversion.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -71,7 +73,11 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -164,34 +170,47 @@ public class UpdateAction extends ContextAction {
         return SVNRevision.HEAD;
     }
 
-    private static void update(Context ctx, SvnProgressSupport progress, String contextDisplayName, SVNRevision revision) {
+    private void update(Context ctx, SvnProgressSupport progress, String contextDisplayName, SVNRevision revision) {
                
         File[] roots = ctx.getRootFiles();
         
-        SVNUrl repositoryUrl = null;
-        try {
-            for (File root : roots) {
-                repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
-                if(repositoryUrl != null) {
-                    break;
-                } else {
-                    Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{root});
+        Map<File, List<File>> rootsPerCheckout = new HashMap<>();
+        for (File root : roots) {
+            File topManaged = Subversion.getInstance().getTopmostManagedAncestor(root);
+            if (topManaged != null) {
+                List<File> files = rootsPerCheckout.get(topManaged);
+                if (files == null) {
+                    files = new ArrayList<>();
+                    rootsPerCheckout.put(topManaged, files);
                 }
+                files.add(root);
             }
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
-            return;
-        }        
-        if (repositoryUrl == null) {
+        }
+        if (rootsPerCheckout.isEmpty()) {
             return;
         }
-
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         cache.refreshCached(ctx);
-        update(roots, progress, contextDisplayName, repositoryUrl, revision);
+        for (Map.Entry<File, List<File>> e : rootsPerCheckout.entrySet()) {
+            List<File> files = e.getValue();
+            try {
+                if (rootsPerCheckout.size() > 1) {
+                    contextDisplayName = getContextDisplayName(files);
+                }
+                File root = files.get(0);
+                SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+                if(repositoryUrl == null) {
+                    Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{root});
+                    continue;
+                }
+                update(e.getKey(), files.toArray(new File[files.size()]), progress, contextDisplayName, repositoryUrl, revision);
+            } catch (SVNClientException ex) {
+                SvnClientExceptionHandler.notifyException(ex, true, true);
+            }
+        }
     }
 
-    private static void update(File[] roots, final SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl, final SVNRevision revision) {
+    private static void update (File checkoutRoot, File[] roots, final SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl, final SVNRevision revision) {
         File[][] split = Utils.splitFlatOthers(roots);
         final List<File> recursiveFiles = new ArrayList<File>();
         final List<File> flatFiles = new ArrayList<File>();
@@ -268,16 +287,17 @@ public class UpdateAction extends ContextAction {
         } catch (SVNClientException e1) {
             progress.annotate(e1);
         } finally {            
-            openResults(listener.getResults(), repositoryUrl, contextDisplayName);                
+            openResults(listener.getResults(), repositoryUrl, contextDisplayName,
+                    checkoutRoot == null ? "" : checkoutRoot.getAbsolutePath());                
         }
     }
 
-    private static void openResults(final List<FileUpdateInfo> resultsList, final SVNUrl url, final String contextDisplayName) {
+    private static void openResults(final List<FileUpdateInfo> resultsList, final SVNUrl url, final String contextDisplayName, final String checkoutRoot) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 UpdateResults results = new UpdateResults(resultsList, url, contextDisplayName);
                 VersioningOutputManager vom = VersioningOutputManager.getInstance();
-                vom.addComponent(SvnUtils.decodeToString(url) + "-UpdateExecutor", results); // NOI18N
+                vom.addComponent(SvnUtils.decodeToString(url) + "-UpdateExecutor-" + checkoutRoot, results); // NOI18N
             }
         });
     }
@@ -363,7 +383,7 @@ public class UpdateAction extends ContextAction {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
-                update(context, this, contextDisplayName, null);
+                SystemAction.get(UpdateAction.class).update(context, this, contextDisplayName, null);
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
@@ -395,7 +415,8 @@ public class UpdateAction extends ContextAction {
             public void perform() {
 //                FileStatusCache cache = Subversion.getInstance().getStatusCache();
 //                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                update(new File[] {file}, this, file.getAbsolutePath(), repositoryUrl, null);
+                update(Subversion.getInstance().getTopmostManagedAncestor(file),
+                        new File[] {file}, this, file.getAbsolutePath(), repositoryUrl, null);
             }
         };
         support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
@@ -428,6 +449,22 @@ public class UpdateAction extends ContextAction {
             }
         }
         return ret;
+    }
+    
+    private String getContextDisplayName (List<File> files) {
+        Node[] nodes = new Node[files.size()];
+        for (int i = 0; i < files.size(); ++i) {
+            final File file = files.get(i);
+            nodes[i] = new AbstractNode(Children.LEAF, Lookups.fixed(file)) {
+
+                @Override
+                public String getName () {
+                    return file.getName();
+                }
+                
+            };
+        }
+        return getContextDisplayName(nodes);
     }
     
     private static class UpdateOutputListener implements ISVNNotifyListener {

@@ -56,6 +56,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -72,6 +73,8 @@ public class Utilities {
     /** MIME types of files for which we have a special support in Navigator. */
     private static final Collection<String> NAVIGATOR_MIME_TYPES = new HashSet(
             Arrays.asList(new String[]{"text/html", "text/xhtml"})); // NOI18N
+    /** {@code RequestProcessor} for this class. */
+    private static RequestProcessor RP = new RequestProcessor(Utilities.class);
 
     /**
      * Determines whether the given MIME type corresponds to a content
@@ -147,20 +150,30 @@ public class Utilities {
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                FileObject selectedFile = selectedEditorFile();
-                                // Do not touch editor when it is switched to a related file
-                                if ((selectedFile == null)
-                                        || !isStyledMimeType(selectedFile.getMIMEType())
-                                        || !DependentFileQuery.isDependent(fob, selectedFile)) {
-                                    try {
-                                        DataObject dob = DataObject.find(fob);
-                                        EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
-                                        if (editor != null) {
-                                            editor.open();
+                                final FileObject selectedFile = selectedEditorFile();
+                                RP.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        // Do not touch editor when it is switched to a related file
+                                        if ((selectedFile == null)
+                                                || !isStyledMimeType(selectedFile.getMIMEType())
+                                                || !DependentFileQuery.isDependent(fob, selectedFile)) {
+                                            EventQueue.invokeLater(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    try {
+                                                        DataObject dob = DataObject.find(fob);
+                                                        EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
+                                                        if (editor != null) {
+                                                            editor.open();
+                                                        }
+                                                    } catch (DataObjectNotFoundException ex) {
+                                                    }
+                                                }
+                                            });
                                         }
-                                    } catch (DataObjectNotFoundException ex) {
                                     }
-                                }
+                                });
                             }
                         });
                     }

@@ -71,7 +71,8 @@ import org.openide.filesystems.FileObject;
     @ProjectType(id="org-netbeans-modules-maven/jar"), // NOI18N
     @ProjectType(id="org-netbeans-modules-maven/war"), // NOI18N
     @ProjectType(id="org-netbeans-modules-maven/ejb"), // NOI18N
-    @ProjectType(id="org-netbeans-modules-maven/nbm") // NOI18N
+    @ProjectType(id="org-netbeans-modules-maven/nbm"), // NOI18N
+    @ProjectType(id="org-netbeans-modules-maven/nbm-application") // NOI18N
 })
 
 public class ProjectProfilerTypeUtilsImpl extends BaseProfilerTypeUtilsImpl {

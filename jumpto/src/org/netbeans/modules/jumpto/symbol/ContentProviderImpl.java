@@ -223,7 +223,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         synchronized(this) {
             final SymbolDescriptorAttrCopier acp = currentSearch.getAttribute(SymbolDescriptorAttrCopier.class);
             final boolean correctCase = acp == null || acp.hasCorrectCase();
-            if (currentSearch.isNarrowing(searchType, text, scope, correctCase)) {
+            if (currentSearch.isNarrowing(searchType, name, scope, correctCase)) {
                 currentSearch.filter(searchType, name, null);
                 enableOK(panel.revalidateModel());
                 return false;

@@ -507,6 +507,7 @@ public class OptionsPanel extends JPanel {
 
         Set<String> keywords = new HashSet<String>();
 	keywords.add(location.toUpperCase());
+        keywords.add(tabTitle.toUpperCase());
 	Enumeration<String> attributes = keywordsFO.getAttributes();
 	while(attributes.hasMoreElements()) {
 	    String attribute = attributes.nextElement();
@@ -724,6 +725,7 @@ public class OptionsPanel extends JPanel {
                                         if (exactTabIndex == tabIndex
 						&& (exactTabTitle == null || (exactTabTitle != null && pane.getTitleAt(tabIndex).equals(exactTabTitle)))) {
                                             pane.setSelectedIndex(tabIndex);
+                                            setCurrentCategory(categoryModel.getCategory(id), null);
                                         }
 					matchedKeywords = getAllMatchedKeywords(tabWords, stWords);
 					categoryModel.getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
@@ -743,6 +745,11 @@ public class OptionsPanel extends JPanel {
 					categoryModel.getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                                     }
                                 }
+                            }
+                            // above we tried to find an exact match and were conservative about selecting a specific tab, so if
+                            // the search term is found and no tab is yet selected make sure at least last one found gets selected
+                            if (!foundInNoTab && pane != null && pane.getSelectedIndex() == -1) {
+                                pane.setSelectedIndex(exactTabIndex);
                             }
                             if(foundInNoTab) {
                                 handleNotFound(id, exactCategory, exactTabTitle);
@@ -826,6 +833,12 @@ public class OptionsPanel extends JPanel {
 
         @Override
         public void quickSearchCanceled() {
+            if(!text2search.trim().isEmpty()) {
+                // we got a call from GuickSearch.SearchFieldListener.searchForNode(),
+                // so call quickSearchUpdate ourselves.
+                quickSearchUpdate("");
+                return;
+            }
             clearAllinQS();
             if (searchTC.hasFocus()) {
                 showHint(false);

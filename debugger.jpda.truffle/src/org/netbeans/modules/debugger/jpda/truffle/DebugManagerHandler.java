@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.debugger.jpda.truffle;
 
+import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
@@ -54,9 +55,15 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
+import com.sun.jdi.VirtualMachine;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
@@ -107,6 +114,8 @@ class DebugManagerHandler implements JPDABreakpointListener {
     private static final String ACCESSOR_DEBUGGER_ACCESS = "debuggerAccess";    // NOI18N
     private static final String ACCESSOR_EXECUTION_HALTED = "executionHalted";  // NOI18N
     
+    private static final Map<JPDADebugger, Boolean> dbgStepInto = Collections.synchronizedMap(new WeakHashMap<JPDADebugger, Boolean>());
+
     private final JPDADebugger debugger;
     private final AtomicBoolean inited = new AtomicBoolean(false);
     private ClassType accessorClass;
@@ -120,6 +129,19 @@ class DebugManagerHandler implements JPDABreakpointListener {
         this.breakpointsHandler = new TruffleBreakpointsHandler(debugger);
     }
     
+    static void execStepInto(JPDADebugger debugger, boolean doStepInto) {
+        if (doStepInto) {
+            dbgStepInto.put(debugger, doStepInto);
+        } else {
+            dbgStepInto.remove(debugger);
+        }
+    }
+    
+    private boolean isStepInto() {
+        Boolean stepInto = dbgStepInto.get(debugger);
+        return stepInto != null && stepInto;
+    }
+    
     @Override
     public void breakpointReached(JPDABreakpointEvent event) {
         LOG.log(Level.FINE, "Engine created breakpoint hit: {0}", event);
@@ -130,6 +152,10 @@ class DebugManagerHandler implements JPDABreakpointListener {
                 }
                 if (accessorClass == null) {
                     // No accessor
+                    return ;
+                }
+                if (debugManager != null) {
+                    // Initialized already
                     return ;
                 }
                 //event.getThread();
@@ -154,14 +180,21 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     //if (!TRUFFLE_JS_ENGINE_CLASS_NAME.equals(engineClasstype.name())) {
                     //    return ;
                     //}
+                    VirtualMachine vm = ((JPDADebuggerImpl) debugger).getVirtualMachine();
+                    if (vm == null) {
+                        return ;
+                    }
+                    BooleanValue doStepInto = vm.mirrorOf(isStepInto());
                     Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(
                             accessorClass,
                             ACCESSOR_SET_UP_DEBUG_MANAGER_FOR,
                             //"(L"+TRUFFLE_JS_ENGINE_CLASS_NAME.replace('.', '/')+";)Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
                             //"(L"+ScriptEngine.class.getName().replace('.', '/')+";)Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
-                            "(L"+Object.class.getName().replace('.', '/')+";)Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
+                            "(L"+Object.class.getName().replace('.', '/')+";Z)Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
                     ThreadReference tr = thread.getThreadReference();
-                    Object ret = ClassTypeWrapper.invokeMethod(accessorClass, tr, debugManagerMethod, Collections.singletonList(engineValue), ObjectReference.INVOKE_SINGLE_THREADED);
+                    List<Value> dmArgs = Arrays.asList(engineValue, doStepInto);
+                    LOG.log(Level.FINE, "Setting engine and step into = {0}", isStepInto());
+                    Object ret = ClassTypeWrapper.invokeMethod(accessorClass, tr, debugManagerMethod, dmArgs, ObjectReference.INVOKE_SINGLE_THREADED);
                     if (!(ret instanceof ObjectReference)) {
                         LOG.log(Level.WARNING, "Could not start up debugger manager for "+engineValue);
                         return ;

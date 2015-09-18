@@ -234,7 +234,9 @@ public final class CsmEventDispatcher {
             {
                 NativeFileItem item = event.getNativeFileItem();
                 CndUtils.assertNotNullInConsole(item, "NativeFileItem should not be null: " + event); //NOI18N
-                dispatch(event, item.getNativeProject());
+                if (item != null) {
+                    dispatch(event, item.getNativeProject());
+                }
                 break;
             }
             case FILE_DELETED:
@@ -246,26 +248,28 @@ public final class CsmEventDispatcher {
             {
                 FileObject fo = event.getFileObject();
                 CndUtils.assertNotNullInConsole(fo, "FileObject should not be null: " + event); //NOI18N
-                CsmFile[] files = model.findFiles(FSPath.toFSPath(fo), false, false);
-                Set<ProjectBase> handledProjects = new HashSet<>();
-                for (int i = 0; i < files.length; ++i) {
-                    FileImpl file = (FileImpl) files[i];
-                    ProjectBase project = file.getProjectImpl(true);
-                    if (project != null) {
-                        handledProjects.add(project);
-                        CsmEvent.Kind kind = (event.getKind() == CsmEvent.Kind.FILE_INDEXED) ? CsmEvent.Kind.FILE_CHANGED : event.getKind();
-                        dispatch(CsmEvent.createFileEvent(kind, fo), project);
+                if (fo != null) {
+                    CsmFile[] files = model.findFiles(FSPath.toFSPath(fo), false, false);
+                    Set<ProjectBase> handledProjects = new HashSet<>();
+                    for (int i = 0; i < files.length; ++i) {
+                        FileImpl file = (FileImpl) files[i];
+                        ProjectBase project = file.getProjectImpl(true);
+                        if (project != null) {
+                            handledProjects.add(project);
+                            CsmEvent.Kind kind = (event.getKind() == CsmEvent.Kind.FILE_INDEXED) ? CsmEvent.Kind.FILE_CHANGED : event.getKind();
+                            dispatch(CsmEvent.createFileEvent(kind, fo), project);
+                        }
                     }
-                }
-                if (event.getKind() == CsmEvent.Kind.FILE_CREATED || event.getKind() == CsmEvent.Kind.FILE_INDEXED) {
-                    Collection<CsmProject> ownerCsmProjects = CsmUtilities.getOwnerCsmProjects(fo);
-                    for (CsmProject prj : ownerCsmProjects) {
-                        if (prj instanceof ProjectBase) {
-                            ProjectBase project = (ProjectBase) prj;
-                            if (!handledProjects.contains(project)) {
-                                dispatch(event.getKind() == CsmEvent.Kind.FILE_INDEXED
-                                        ? CsmEvent.createFileEvent(CsmEvent.Kind.FILE_CREATED, fo)
-                                        : event, project);
+                    if (event.getKind() == CsmEvent.Kind.FILE_CREATED || event.getKind() == CsmEvent.Kind.FILE_INDEXED) {
+                        Collection<CsmProject> ownerCsmProjects = CsmUtilities.getOwnerCsmProjects(fo);
+                        for (CsmProject prj : ownerCsmProjects) {
+                            if (prj instanceof ProjectBase) {
+                                ProjectBase project = (ProjectBase) prj;
+                                if (!handledProjects.contains(project)) {
+                                    dispatch(event.getKind() == CsmEvent.Kind.FILE_INDEXED
+                                            ? CsmEvent.createFileEvent(CsmEvent.Kind.FILE_CREATED, fo)
+                                            : event, project);
+                                }
                             }
                         }
                     }
@@ -279,16 +283,20 @@ public final class CsmEventDispatcher {
             {
                 NativeProject nativeProject = event.getNativeProject();
                 CndUtils.assertNotNullInConsole(nativeProject, "NativeProject should not be null: " + event); //NOI18N
-                dispatch(event, nativeProject);
+                if (nativeProject != null) {
+                    dispatch(event, nativeProject);
+                }
                 break;
             }
             case FILES_IN_SOURCE_ROOT_DELETED:
             {
                 FileObject fo = event.getFileObject();
                 CndUtils.assertNotNullInConsole(fo, "FileObject should not be null: " + event); //NOI18N
-                Collection<CsmProject> projects = CsmUtilities.getOwnerCsmProjects(fo);
-                for (CsmProject project : projects) {
-                    dispatch(event, project);
+                if (fo != null) {
+                    Collection<CsmProject> projects = CsmUtilities.getOwnerCsmProjects(fo);
+                    for (CsmProject project : projects) {
+                        dispatch(event, project);
+                    }
                 }
                 break;
             }
@@ -348,9 +356,9 @@ public final class CsmEventDispatcher {
     }
 
     private void dispatchAll(CsmEvent event) {
-        Collection<CsmEventListener> listenersCopy;
+        Collection<CsmEventListener> listenersCopy = new ArrayList<>();
         synchronized (listenersLock) {
-            listenersCopy = listeners.values();
+            listenersCopy.addAll(listeners.values());
         }
         for (CsmEventListener l : listenersCopy) {
             l.fireEvent(event);

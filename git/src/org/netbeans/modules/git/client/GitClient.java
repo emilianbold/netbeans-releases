@@ -968,7 +968,9 @@ public final class GitClient {
                                 if (repositoryInfoRefreshNeeded) {
                                     LOG.log(Level.FINER, "Refreshing repository info after: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
                                     RepositoryInfo info = RepositoryInfo.getInstance(repositoryRoot);
-                                    assert info != null : "Repository info is null: " + repositoryRoot + " === " + Git.getInstance().getRepositoryRoot(repositoryRoot);
+//                                    assert info != null : "Repository info is null: " + repositoryRoot + " === " + Git.getInstance().getRepositoryRoot(repositoryRoot)
+//                                            + " === " + Git.getInstance().getTopmostManagedAncestor(repositoryRoot)
+//                                            + " === " + GitUtils.getGitFolderForRoot(repositoryRoot).exists();
                                     info.refresh();
                                 }
                             }

@@ -66,7 +66,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.css.prep.sass.SassExecutable;
+import org.netbeans.modules.css.prep.sass.SassCli;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -78,10 +78,8 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords={"css", "preprocessors", "sass", "#CssPrepOptionsPanel.keywords.preprocessing"},
-        location=CssPreprocessors.OPTIONS_PATH, tabTitle="#CssPrepOptionsPanel.name")
+        location=CssPreprocessors.OPTIONS_CATEGORY, tabTitle="#CssPrepOptionsPanel.name")
 public final class SassOptionsPanel extends JPanel {
-
-    private static final long serialVersionUID = 268356546654654L;
 
     private static final Logger LOGGER = Logger.getLogger(SassOptionsPanel.class.getName());
 
@@ -99,7 +97,8 @@ public final class SassOptionsPanel extends JPanel {
         "SassOptionsPanel.path.hint=Full path of Sass executable (typically {0} or {1}).",
     })
     private void init() {
-        sassPathHintLabel.setText(Bundle.SassOptionsPanel_path_hint(SassExecutable.EXECUTABLE_LONG_NAME, SassExecutable.EXECUTABLE_NAME));
+        String[] executableNames = SassCli.getExecutableNames();
+        sassPathHintLabel.setText(Bundle.SassOptionsPanel_path_hint(executableNames[0], executableNames[1]));
 
         // listeners
         sassPathTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
@@ -251,7 +250,7 @@ public final class SassOptionsPanel extends JPanel {
 
     @NbBundle.Messages("SassOptionsPanel.executable.notFound=No Sass executable found.")
     private void sassPathSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sassPathSearchButtonActionPerformed
-        List<String> sassPaths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_LONG_NAME, SassExecutable.EXECUTABLE_NAME);
+        List<String> sassPaths = FileUtils.findFileOnUsersPath(SassCli.getExecutableNames());
         if (sassPaths.isEmpty()) {
             StatusDisplayer.getDefault().setStatusText(Bundle.SassOptionsPanel_executable_notFound());
         } else {

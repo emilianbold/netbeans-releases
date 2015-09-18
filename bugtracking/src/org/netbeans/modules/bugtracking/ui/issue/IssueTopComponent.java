@@ -188,6 +188,16 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         } else {
             if(defaultRepository == null) {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, false);
+                if(!IssueTopComponent.this.isShowing()) {
+                    try {
+                        // ensure issue exists when TC is opened so 
+                        // that we can notify the issue implementation about issue being opened
+                        IssueTopComponent.this.open();
+                        IssueTopComponent.this.requestActive();
+                    } finally {
+                        UIUtils.setWaitCursor(false);                        
+                    }
+                }
             } else {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository.getRepository());
             }
@@ -380,6 +390,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 return true;
             }
         };
+        UIUtils.setWaitCursor(true);
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueTopComponent.class, "CTL_PreparingIssue"), c); // NOI18N
         prepareTask = rp.post(new Runnable() {
             @Override
@@ -394,9 +405,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     if(issue != null) {
                         if(controller != null) {
                             issuePanelRemove(controller.getComponent());
+                            unregisterListeners();
                             controller.closed();
                         }
-                        unregisterListeners();
                         instanceContent.remove(issue.getIssue());
                     }
                     issue = repo.createNewIssue();
@@ -420,15 +431,22 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         public void run() {
                             controller = getController();
                             issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
-                            controller.opened(); // XXX TC wasn't realy opened
                             registerListeners();
                             revalidate();
                             repaint();
 
                             focusFirstEnabledComponent();
+                            
+                            if(!IssueTopComponent.this.isShowing()) {
+                                // ensure issue exists when TC is opened so 
+                                // that we can notify the issue implementation about issue being opened
+                                IssueTopComponent.this.open();
+                                IssueTopComponent.this.requestActive();
+                            }
                         }
                     });
                 } finally {
+                    UIUtils.setWaitCursor(false);
                     setVisible(preparingLabel, false);
                     handle.finish();
                     prepareTask = null;

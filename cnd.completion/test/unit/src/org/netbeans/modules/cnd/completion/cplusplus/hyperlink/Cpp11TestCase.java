@@ -403,4 +403,14 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug249463.cpp", 17, 25, "bug249463.cpp", 3, 9);
         performTest("bug249463.cpp", 18, 27, "bug249463.cpp", 3, 9);
     }
+    
+    public void testBug255064() throws Exception {
+        // Bug 255064 - Forward strongly typed enum hides its definition
+        performTest("bug255064.cpp", 9, 45, "bug255064.cpp", 3, 9);
+    }
+    
+    public void testBug244177_2() throws Exception {
+        // Bug 244177 - Unresolved decltype inside decltype
+        performTest("bug244177_2.cpp", 4, 30, "bug244177_2.h", 3, 9);
+    }
 }

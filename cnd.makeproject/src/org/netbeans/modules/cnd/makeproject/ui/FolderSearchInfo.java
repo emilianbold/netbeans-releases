@@ -151,14 +151,12 @@ public final class FolderSearchInfo extends SearchInfoDefinition {
         @Override
         public boolean pathMatches(FileObject fileObject) {
             if (delegate.pathMatches(fileObject)) {
-                if (fileObject.getMIMEType().contains("text/")) { // NOI18N
                     for (SearchFilterDefinition filter : options.getFilters()) {
                         if (!filter.searchFile(fileObject)) {
                             return false;
                         }
                     }
                     return true;
-                }
             }
             return false;
         }

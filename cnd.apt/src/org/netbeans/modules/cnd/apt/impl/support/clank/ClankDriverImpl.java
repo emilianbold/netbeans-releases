@@ -43,9 +43,11 @@ package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.AbstractList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.ClankPreprocessorServices;
@@ -112,6 +114,15 @@ public class ClankDriverImpl {
             PreprocHandler ppHandler,
             final ClankDriver.ClankPreprocessorCallback callback,
             final org.netbeans.modules.cnd.support.Interrupter interrupter) {
+
+        if (APTTraceFlags.TRACE_PREPROC || APTTraceFlags.TRACE_PREPROC_STACKS) {
+            String text = "Preprocessing " + buffer; //NOI18N
+            if (APTTraceFlags.TRACE_PREPROC_STACKS) {
+                new Exception(text).printStackTrace(System.err);
+            } else {
+                System.err.println(text);
+            }
+        }        
         try {
             // TODO: prepare buffers mapping
             // note that for local files no "file://" prefix is added
@@ -120,7 +131,7 @@ public class ClankDriverImpl {
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
             settings.WorkName = path;
             boolean fortranFlavor = APTToClankCompilationDB.isFortran(ppHandler);
-            settings.KeepCommentsTokens = callback.needComments() || fortranFlavor;
+            settings.KeepCommentsTokens = callback.needComments();
             settings.GenerateDiagnostics = true;
             PrintWriter printWriter = null;
             if (CndUtils.isUnitTestMode() && !fortranFlavor) {
@@ -141,13 +152,8 @@ public class ClankDriverImpl {
             Map<StringRef, MemoryBuffer> remappedBuffers = getRemappedBuffers();
             MemoryBuffer fileContent;
             StringRef file = new StringRef(path);
-            if (fortranFlavor) {
-                char[] chars = fixFortranTokens(buffer);
-                fileContent = ClankMemoryBufferImpl.create(chars);
-            } else {
-                char[] chars = buffer.getCharBuffer();
-                fileContent = ClankMemoryBufferImpl.create(chars);
-            }
+            char[] chars = fortranFlavor ? fixFortranTokens(buffer) : buffer.getCharBuffer();
+            fileContent = ClankMemoryBufferImpl.create(path, chars);
             remappedBuffers = new HashMap<StringRef, MemoryBuffer>(remappedBuffers);
             remappedBuffers.put(file, fileContent);
             ClankPreprocessorServices.preprocess(Collections.singleton(db), settings, remappedBuffers);
@@ -323,7 +329,7 @@ public class ClankDriverImpl {
         return includeHandler.getInclStackIndex();
     }
 
-    public static final class ArrayBasedAPTTokenStream implements APTTokenStream, TokenStream {
+    public static final class ArrayBasedAPTTokenStream extends AbstractList<APTToken> implements APTTokenStream, TokenStream {
 
         private int index;
         private final int lastIndex;
@@ -345,8 +351,28 @@ public class ClankDriverImpl {
         }
 
         @Override
+        public APTToken get(int index) {
+            return tokens[index];
+        }
+        
+        public List<APTToken> toList() {
+            return this;
+        }
+
+        @Override
+        public int size() {
+            if (tokens.length == 0) {
+                return 0;
+            } else if (tokens[tokens.length-1] == APTUtils.EOF_TOKEN) {
+                return tokens.length-1;
+            } else {
+                return tokens.length ;
+            }
+        }
+
+        @Override
         public String toString() {
             return APTUtils.debugString(new ArrayBasedAPTTokenStream(tokens)).toString();
         }
-    }
+    }    
 }

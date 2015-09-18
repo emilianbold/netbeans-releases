@@ -70,6 +70,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.java.Utilities;
+import static org.netbeans.modules.java.hints.errors.Utilities.findOwningExecutable;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
@@ -86,7 +87,8 @@ public final class AddCast implements ErrorRule<Void> {
             "compiler.err.cant.apply.symbol", // NOI18N
             "compiler.err.cant.apply.symbol.1", // NOI18N
             "compiler.err.cant.resolve.location.args", // NOI18N
-            "compiler.err.cant.apply.symbols")); // NOI18N
+            "compiler.err.cant.apply.symbols",
+            "compiler.err.prob.found.req/compiler.misc.incompatible.ret.type.in.lambda/compiler.misc.inconvertible.types")); // NOI18N
     
     static void computeType(CompilationInfo info, int offset, List<TypeMirror> targetType, TreePath[] typeTree, ExpressionTree[] expression, Tree[] leaf) {
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
@@ -116,13 +118,32 @@ public final class AddCast implements ErrorRule<Void> {
             if (scope.getKind() == Kind.RETURN) {
                 TreePath parents = path;
                 
-                while (parents != null && parents.getLeaf().getKind() != Kind.METHOD)
+                while (parents != null && 
+                    (parents.getLeaf().getKind() != Kind.METHOD && parents.getLeaf().getKind() != Kind.LAMBDA_EXPRESSION)) {
                     parents = parents.getParentPath();
-                
+                }                
                 if (parents != null) {
-                    Tree returnTypeTree = ((MethodTree) parents.getLeaf()).getReturnType();
-                    if (returnTypeTree != null && (found = ((ReturnTree) scope).getExpression()) != null) {
-                        expected = Collections.singletonList(info.getTrees().getTypeMirror(new TreePath(parents, returnTypeTree)));
+                    Tree p = parents.getLeaf();
+                    TypeMirror returnType = null;
+                    if (p.getKind() == Kind.METHOD) {
+                        Tree returnTypeTree = ((MethodTree) parents.getLeaf()).getReturnType();
+                        if (returnTypeTree != null) {
+                            returnType = info.getTrees().getTypeMirror(new TreePath(parents, returnTypeTree));
+                        }
+                    } else if (p.getKind() == Kind.LAMBDA_EXPRESSION) {
+                        TypeMirror lambdaType = info.getTrees().getTypeMirror(parents);
+                        if (org.netbeans.modules.java.hints.errors.Utilities.isValidType(lambdaType) &&
+                            lambdaType.getKind() == TypeKind.DECLARED) {
+                            ExecutableType et = info.getTypeUtilities().getDescriptorType((DeclaredType)lambdaType);
+                            if (et != null && 
+                                org.netbeans.modules.java.hints.errors.Utilities.isValidType(et.getReturnType()) &&
+                                et.getReturnType().getKind() != TypeKind.VOID) {
+                                returnType = et.getReturnType();
+                            }
+                        }
+                    }
+                    if (returnType != null && (found = ((ReturnTree) scope).getExpression()) != null) {
+                        expected = Collections.singletonList(returnType);
                         resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
                     }
                 }

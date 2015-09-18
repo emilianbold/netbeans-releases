@@ -7,13 +7,6 @@ Copyright &copy; 2015 Oracle and/or its affiliates. All rights reserved.
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
     <link href="../ide.css" type="text/css" rel="StyleSheet">
     <meta content="Helen" name="generator">
-<style type="text/css">
-<!--
-p {
-  margin-bottom: 0.08in;
-}
--->
-</style>
     <title>Working with JNI</title>
   </head>
   <body>
@@ -90,14 +83,14 @@ p {
           Generating boilerplate code to call Java methods or access Java fields from the native
           side.
         </td>
-        <td width="50%">
-          When a Java method is called, first the Java class where the method is defined is found,
-          then the method itself is found, and then it is called. For the IDE&nbsp;to find both
-          class and method, you must provide their JNI signatures.<br>
-           Use the&nbsp;context menu&nbsp;to automatically generate that code with the correct
-          signatures&nbsp;automatically. &nbsp;Right-click a Java method and choose Mixed
-          Development &gt;&nbsp;&nbsp;Copy JNI&nbsp;Signature. &nbsp;The generated content is
-          created in your clipboard and you can paste it where appropriate?
+        <td width="50%">          
+          Use the&nbsp;context menu&nbsp;to automatically generate code. Right-click a Java entity and choose Mixed
+          Development &gt; Copy JNI Signature. &nbsp;The signature of the entity is copied
+          into your clipboard and you can paste it where appropriate. 
+          <p>
+          The same works for boilerplate code to access (set or get) Java fields or call Java methods. 
+          Right-click on a Java field or method, then select Mixed Development &gt; Copy call method code 
+          / Copy get field code / Copy set field code. The requested code is then copied into the clipboard.</p>
         </td>
       </tr>
       <tr>

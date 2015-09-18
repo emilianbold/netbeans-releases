@@ -133,7 +133,7 @@ public class PushDownTransformer extends RefactoringVisitor {
         final Element el = workingCopy.getTrees().getElement(getCurrentPath());
         for (int i = 0; i<members.length; i++) {
             Element member = members[i].getElementHandle().resolve(workingCopy);
-            if (el.equals(member)) {
+            if (el != null && el.equals(member)) {
                 String isSuper = node.getExpression().toString();
                 if (isSuper.equals("super") || isSuper.endsWith(".super")) { //NOI18N
                     
@@ -188,16 +188,37 @@ public class PushDownTransformer extends RefactoringVisitor {
         // Check if from visitClass and return changed tree, otherwise rewrite
         if(inSuperClass) {
             final Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            for (int i = 0; i<members.length; i++) {
-                if(members[i].getGroup() != MemberInfo.Group.IMPLEMENTS) {
-                    Element member = members[i].getElementHandle().resolve(workingCopy);
-                    if (el.equals(member)) {
-                        problem = MoveTransformer.createProblem(problem, false, ERR_PushDown_UsedInSuper(member.getSimpleName(), source.getSimpleName()));
+            if(el != null) {
+                for (int i = 0; i<members.length; i++) {
+                    if(members[i].getGroup() != MemberInfo.Group.IMPLEMENTS && !members[i].isMakeAbstract()) {
+                        Element member = members[i].getElementHandle().resolve(workingCopy);
+                        if (el.equals(member)) {
+                            problem = MoveTransformer.createProblem(problem, false, ERR_PushDown_UsedInSuper(member.getSimpleName(), source.getSimpleName()));
+                        }
                     }
                 }
             }
         }
         return super.visitIdentifier(node, source);
+    }
+
+    @Override
+    public Tree visitMethod(MethodTree node, Element p) {
+        // Do not scan methods that are being moved
+        if(inSuperClass) {
+            final Element el = workingCopy.getTrees().getElement(getCurrentPath());
+            if(el != null) {
+                for (int i = 0; i<members.length; i++) {
+                    if(members[i].getGroup() != MemberInfo.Group.IMPLEMENTS) {
+                        Element member = members[i].getElementHandle().resolve(workingCopy);
+                        if (el.equals(member)) {
+                            return node;
+                        }
+                    }
+                }
+            }
+        }
+        return super.visitMethod(node, p);
     }
 
     @NbBundle.Messages({"# {0} - Member", "# {1} - Type", "ERR_PushDown_AlreadyExists={0} already exists in {1}."})

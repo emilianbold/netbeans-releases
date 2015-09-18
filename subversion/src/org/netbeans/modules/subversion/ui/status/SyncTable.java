@@ -189,6 +189,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "DeleteAction");
         table.getActionMap().put("DeleteAction", SystemAction.get(DeleteLocalAction.class));
+        table.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "slideOut");
     }
 
     void setDefaultColumnSizes() {

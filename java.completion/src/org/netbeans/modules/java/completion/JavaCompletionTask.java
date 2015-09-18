@@ -219,7 +219,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
     };
 
     private static final String[] BLOCK_KEYWORDS = new String[]{
-        ASSERT_KEYWORD, CLASS_KEYWORD, FINAL_KEYWORD, NEW_KEYWORD,
+        ASSERT_KEYWORD, CLASS_KEYWORD, FINAL_KEYWORD, NEW_KEYWORD, STRICT_KEYWORD,
         THROW_KEYWORD
     };
 
@@ -3088,13 +3088,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
             ClassIndex.NameKind kind = Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
             Iterable<Symbols> declaredSymbols = controller.getClasspathInfo().getClassIndex().getDeclaredSymbols(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
             for (Symbols symbols : declaredSymbols) {
-                if (Utilities.isExcludeMethods() && Utilities.isExcluded(symbols.getEnclosingType().getQualifiedName())
+                if (Utilities.isExcluded(symbols.getEnclosingType().getQualifiedName())
                         || excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType())
                         || isAnnonInner(symbols.getEnclosingType())) {
                     continue;
                 }
                 for (String name : symbols.getSymbols()) {
-                    results.add(itemFactory.createStaticMemberItem(symbols.getEnclosingType(), name, anchorOffset, env.addSemicolon(), env.getReferencesCount(), controller.getSnapshot().getSource()));
+                    if (!Utilities.isExcludeMethods() || !Utilities.isExcluded(symbols.getEnclosingType().getQualifiedName() + '.' + name)) {
+                        results.add(itemFactory.createStaticMemberItem(symbols.getEnclosingType(), name, anchorOffset, env.addSemicolon(), env.getReferencesCount(), controller.getSnapshot().getSource()));
+                    }
                 }
             }
         }
@@ -5380,9 +5382,12 @@ public final class JavaCompletionTask<T> extends BaseTask {
             Element el = ((DeclaredType)type).asElement();
             if (el.getKind().isClass() || el.getKind().isInterface()) {
                 List<? extends TypeParameterElement> typeParams = ((TypeElement)el).getTypeParameters();
-                if (!typeParams.isEmpty()) {
+                if (!typeParams.isEmpty() && !((DeclaredType)type).getTypeArguments().isEmpty()) {
                     for (TypeMirror typeArgument : ((DeclaredType)type).getTypeArguments()) {
-                        if (typeArgument.getKind() != TypeKind.TYPEVAR) {
+                        if (typeArgument.getKind() == TypeKind.WILDCARD) {
+                            typeArgument = ((WildcardType)typeArgument).getExtendsBound();
+                        }
+                        if (typeArgument == null || typeArgument.getKind() != TypeKind.TYPEVAR) {
                             return type;
                         }
                     }

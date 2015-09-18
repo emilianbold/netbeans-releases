@@ -75,29 +75,28 @@ public class FunctionsXmlService {
     public static final String ROOT_FOLDER = "CND"; // NOI18N
     public static final String CHECKS_FOLDER = "SecurityChecks"; // NOI18N
     
-    public enum Level {
-        UNSAFE(0),
-        AVOID(1),
-        CAUTION(2);
-        
-        private final int level;
-        
-        private Level(int level) {
-            this.level = level;
-        }
-        
-        public String getLevel() {
-            return Integer.toString(level);
-        }
-    }
+    private static volatile FunctionsXmlService instance;
     
     private final Map<Level, List<Category>> functions;
     private int counter = 0;
     
     public static FunctionsXmlService getInstance() {
-        return InstanceHolder.INSTANCE;
+        if (instance == null) {
+            synchronized (FunctionsXmlService.class) {
+                if (instance == null) {
+                    instance = new FunctionsXmlService();
+                }
+            }            
+        } else if (instance.getChecksCount() == 0) {
+            synchronized (FunctionsXmlService.class) {
+                if (instance.getChecksCount() == 0) {
+                    instance.parseXml();
+                }
+            }
+        }
+        return instance;
     }
-    
+        
     public List<Category> getCategories(Level level) {
         return functions.get(level);
     }
@@ -117,54 +116,56 @@ public class FunctionsXmlService {
     private void parseXml() {
         try {
             FileObject folder = FileUtil.getConfigFile(ROOT_FOLDER+"/"+CHECKS_FOLDER); // NOI18N
-            for (FileObject file : folder.getChildren()) {
-                Document doc = DocumentBuilderFactory.newInstance()
-                                            .newDocumentBuilder()
-                                            .parse(file.getInputStream());
+            if (folder != null && folder.isFolder()) {
+                for (FileObject file : folder.getChildren()) {
+                    Document doc = DocumentBuilderFactory.newInstance()
+                                                .newDocumentBuilder()
+                                                .parse(file.getInputStream());
 
-                NodeList levelNodes = doc.getElementsByTagName(LEVEL_TAG_NAME);
+                    NodeList levelNodes = doc.getElementsByTagName(LEVEL_TAG_NAME);
 
-                // iterate through all security levels
-                for (int i = 0, ilimit = levelNodes.getLength(); i < ilimit; i++) {
-                    Node levelNode = levelNodes.item(i);
-                    if (levelNode.getNodeType() == Node.ELEMENT_NODE) {
-                        NodeList categoryNodes = levelNode.getChildNodes();
+                    // iterate through all security levels
+                    for (int i = 0, ilimit = levelNodes.getLength(); i < ilimit; i++) {
+                        Node levelNode = levelNodes.item(i);
+                        if (levelNode.getNodeType() == Node.ELEMENT_NODE) {
+                            NodeList categoryNodes = levelNode.getChildNodes();
 
-                        // iterate through all categories within level
-                        for (int j = 0, jlimit = categoryNodes.getLength(); j < jlimit; j++) {
-                            Node categoryNode = categoryNodes.item(j);
-                            if (categoryNode.getNodeName().equals(CATEGORY_TAG_NAME) && categoryNode.getNodeType() == Node.ELEMENT_NODE) {
-                                String categoryName = ((Element) categoryNode).getAttribute(CATEGORY_TAG_ATTRIBUTES[0]);
-                                Category category = new Category(categoryName);
-                                NodeList funcNodes = categoryNode.getChildNodes();
+                            // iterate through all categories within level
+                            for (int j = 0, jlimit = categoryNodes.getLength(); j < jlimit; j++) {
+                                Node categoryNode = categoryNodes.item(j);
+                                if (categoryNode.getNodeName().equals(CATEGORY_TAG_NAME) && categoryNode.getNodeType() == Node.ELEMENT_NODE) {
+                                    String categoryName = ((Element) categoryNode).getAttribute(CATEGORY_TAG_ATTRIBUTES[0]);
+                                    Category category = new Category(categoryName);
+                                    NodeList funcNodes = categoryNode.getChildNodes();
 
-                                // iterate through all functions within category
-                                for (int k = 0, klimit = funcNodes.getLength(); k < klimit; k++) {
-                                    Node funcNode = funcNodes.item(k);
-                                    if (funcNode.getNodeName().equals(FUNCTION_TAG_NAME) && funcNode.getNodeType() == Node.ELEMENT_NODE) {
-                                        String fnName = ((Element) funcNode).getAttribute(FUNCTION_TAG_ATTRIBUTES[0]);
-                                        String header = ((Element) funcNode).getAttribute(FUNCTION_TAG_ATTRIBUTES[1]);
-                                        RvsdFunction func = new RvsdFunction(fnName, header);
-                                        counter++;
+                                    // iterate through all functions within category
+                                    for (int k = 0, klimit = funcNodes.getLength(); k < klimit; k++) {
+                                        Node funcNode = funcNodes.item(k);
+                                        if (funcNode.getNodeName().equals(FUNCTION_TAG_NAME) && funcNode.getNodeType() == Node.ELEMENT_NODE) {
+                                            String fnName = ((Element) funcNode).getAttribute(FUNCTION_TAG_ATTRIBUTES[0]);
+                                            String header = ((Element) funcNode).getAttribute(FUNCTION_TAG_ATTRIBUTES[1]);
+                                            RvsdFunction func = new RvsdFunction(fnName, header);
+                                            counter++;
 
-                                        NodeList alternatives = funcNode.getChildNodes();
-                                        // iterate through alternatives
-                                        for (int l = 0, limit = alternatives.getLength(); l < limit; l++) {
-                                            Node altNode = alternatives.item(l);
-                                            if (altNode.getNodeName().equals(ALTERNATIVE_TAG_NAME) && altNode.getNodeType() == Node.ELEMENT_NODE) {
-                                                if (altNode.getFirstChild().getNodeType() == Node.CDATA_SECTION_NODE) {
-                                                    func.addAlternative(altNode.getFirstChild().getNodeValue().trim());
-                                                } else {
-                                                    func.addAlternative(altNode.getFirstChild().getNodeValue());
+                                            NodeList alternatives = funcNode.getChildNodes();
+                                            // iterate through alternatives
+                                            for (int l = 0, limit = alternatives.getLength(); l < limit; l++) {
+                                                Node altNode = alternatives.item(l);
+                                                if (altNode.getNodeName().equals(ALTERNATIVE_TAG_NAME) && altNode.getNodeType() == Node.ELEMENT_NODE) {
+                                                    if (altNode.getFirstChild().getNodeType() == Node.CDATA_SECTION_NODE) {
+                                                        func.addAlternative(altNode.getFirstChild().getNodeValue().trim());
+                                                    } else {
+                                                        func.addAlternative(altNode.getFirstChild().getNodeValue());
+                                                    }
                                                 }
                                             }
+                                            category.addFunction(func);
                                         }
-                                        category.addFunction(func);
                                     }
+
+                                    Level value = toLevel(((Element) levelNode).getAttribute(LEVEL_TAG_ATTRIBUTES[0]));
+                                    functions.get(value).add(category);
                                 }
-                                
-                                Level value = toLevel(((Element) levelNode).getAttribute(LEVEL_TAG_ATTRIBUTES[0]));
-                                functions.get(value).add(category);
                             }
                         }
                     }
@@ -182,6 +183,22 @@ public class FunctionsXmlService {
             return Level.AVOID;
         } else {
             return Level.CAUTION;
+        }
+    }
+    
+    public enum Level {
+        UNSAFE(0),
+        AVOID(1),
+        CAUTION(2);
+        
+        private final int level;
+        
+        private Level(int level) {
+            this.level = level;
+        }
+        
+        public String getLevel() {
+            return Integer.toString(level);
         }
     }
     
@@ -239,9 +256,5 @@ public class FunctionsXmlService {
         public String getAlternativesString() {
             return text.toString();
         }
-    }
-    
-    private static class InstanceHolder {
-        public static final FunctionsXmlService INSTANCE = new FunctionsXmlService();
     }
 }

@@ -65,6 +65,7 @@ import org.netbeans.modules.git.client.GitProgressSupport.DefaultFileListener;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
@@ -148,6 +149,8 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                             LOG.log(Level.FINE, "Checking out commit: {0}", revision); //NOI18N
                             boolean failOnConflict = true;
                             boolean cont = true;
+                            // do we have conflicts, even before the checkout?
+                            boolean hadConflicts = !client.getConflicts(new File[0], getProgressMonitor()).isEmpty();
                             while (cont) {
                                 cont = false;
                                 try {
@@ -160,7 +163,7 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                                         LOG.log(Level.FINE, "Conflicts during checkout: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
                                     }
                                     File[] conflicts = getFilesInConflict(ex.getConflicts());
-                                    if (resolveConflicts(conflicts, failOnConflict)) {
+                                    if (resolveConflicts(conflicts, failOnConflict && !hadConflicts)) { // do not allow to merge with local unresolved conflicts
                                         cont = true;
                                         failOnConflict = false;
                                     }
@@ -239,5 +242,15 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
             }
         };
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, progressLabel);
+    }
+
+    @NbBundle.Messages(value = {"# {0} - repository state", "MSG_CheckoutRevisionAction.cannotCheckout.invalidState=Cannot checkout in the current repository state: {0}"})
+    protected final boolean canCheckout (RepositoryInfo info) {
+        boolean canCheckout = true;
+        if (!info.getRepositoryState().canCheckout()) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.MSG_CheckoutRevisionAction_cannotCheckout_invalidState(info.getRepositoryState()), NotifyDescriptor.INFORMATION_MESSAGE));
+            canCheckout = false;
+        }
+        return canCheckout;
     }
 }

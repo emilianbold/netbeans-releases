@@ -46,8 +46,10 @@ import java.awt.Color;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.lib.v8debug.PropertyLong;
 import org.netbeans.lib.v8debug.V8Command;
@@ -56,6 +58,8 @@ import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.V8Scope;
 import org.netbeans.lib.v8debug.commands.Scope;
+import org.netbeans.lib.v8debug.commands.SetVariableValue;
+import org.netbeans.lib.v8debug.vars.NewValue;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8Value;
@@ -77,8 +81,11 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakSet;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -92,7 +99,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                                                                 TableModel,
                                                                 V8Debugger.Listener {
     
-    @StaticResource(searchClasspath = true)
+    //@StaticResource(searchClasspath = true)
     private static final String ICON_LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
     @StaticResource(searchClasspath = true)
     private static final String ICON_SCOPE = "org/netbeans/modules/javascript2/debug/resources/global_variable_16.png"; // NOI18N
@@ -100,6 +107,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     protected final V8Debugger dbg;
     private final VarValuesLoader vvl;
     private volatile boolean topFrameRefreshed;
+    private final Set<Variable> refreshWhenLoaded = Collections.synchronizedSet(new WeakSet<Variable>());
 
     public VariablesModel(ContextProvider contextProvider) {
         dbg = contextProvider.lookupFirst(null, V8Debugger.class);
@@ -204,7 +212,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
             if (sobj == null) {
                 return EMPTY_CHILDREN;
             } else {
-                return getObjectChildren(sobj);
+                return getObjectChildren(sobj, sv.getScope());
             }
         } else {
             return EMPTY_CHILDREN;
@@ -212,6 +220,10 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     }
     
     protected final Object[] getObjectChildren(V8Object obj) {
+        return getObjectChildren(obj, null);
+    }
+    
+    protected final Object[] getObjectChildren(V8Object obj, V8Scope scope) {
         V8Object.Array array = obj.getArray();
         List<Object> children = null;
         if (array != null) {
@@ -221,7 +233,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 long index = indexIterator.nextIndex();
                 children.add(new Variable(Variable.Kind.ARRAY_ELEMENT,
                                           Long.toString(index),
-                                          array.getReferenceAt(index), null, true));
+                                          array.getReferenceAt(index), null, true, scope));
             }
         }
         Map<String, V8Object.Property> properties = obj.getProperties();
@@ -234,7 +246,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
         int chi = 0;
         for (String name : properties.keySet()) {
             V8Object.Property property = properties.get(name);
-            Variable var = new Variable(Variable.Kind.PROPERTY, name, property.getReference(), null, true);
+            Variable var = new Variable(Variable.Kind.PROPERTY, name, property.getReference(), null, true, scope);
             if (children != null) {
                 children.add(var);
             } else {
@@ -383,53 +395,144 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
         if (node == ROOT) {
             return "";
-        } else if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
-            if (node instanceof Variable) {
-                Variable var = (Variable) node;
-                try {
-                    boolean wasIncomplete = var.hasIncompleteValue();
-                    V8Value value = vvl.getValue(var);
-                    if (wasIncomplete && !hasChildren(value)) {
+        } else if (node instanceof Variable) {
+            Variable var = (Variable) node;
+            V8Value value = null;
+            EvaluationError ee = null;
+            try {
+                boolean wasIncomplete = var.hasIncompleteValue();
+                value = vvl.getValue(var);
+                if (wasIncomplete) {
+                    if (refreshWhenLoaded.remove(var)) {
+                        // Refresh isReadOnly():
+                        fireChangeEvent(new ModelEvent.TableValueChanged(VariablesModel.this, node, null));
+                    }
+                    if (!hasChildren(value)) {
                         fireChangeEvent(new ModelEvent.NodeChanged(VariablesModel.this, node, ModelEvent.NodeChanged.CHILDREN_MASK));
                     }
-                    return toHTML(V8Evaluator.getStringValue(value));
-                } catch (EvaluationError ex) {
-                    return toHTML(ex.getLocalizedMessage(), true, false, Color.red);
                 }
-            } else if (node instanceof ScopeValue) {
-                return "";
+            } catch (EvaluationError ex) {
+                ee = ex;
             }
-        } else if (Constants.LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
-            if (node instanceof Variable) {
-                Variable var = (Variable) node;
-                V8Value value;
-                try {
-                    boolean wasIncomplete = var.hasIncompleteValue();
-                    value = vvl.getValue(var);
-                    if (wasIncomplete && !hasChildren(value)) {
-                        fireChangeEvent(new ModelEvent.NodeChanged(VariablesModel.this, node, ModelEvent.NodeChanged.CHILDREN_MASK));
-                    }
-                } catch (EvaluationError ex) {
+            if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID) ||
+                Constants.LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
+                if (value != null) {
+                    return toHTML(V8Evaluator.getStringValue(value));
+                } else {
+                    return toHTML(ee.getLocalizedMessage(), true, false, Color.red);
+                }
+            } else if (Constants.LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
+                if (value != null) {
+                    return toHTML(V8Evaluator.getStringType(value));
+                } else {
                     return "";
                 }
-                return toHTML(V8Evaluator.getStringType(value));
-            } else if (node instanceof ScopeValue) {
-                return "";
             }
+        } else if (node instanceof ScopeValue) {
+            return "";
         }
         throw new UnknownTypeException(node);
     }
 
     @Override
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
-        // TODO
-        return true;
+        if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof Variable) {
+            Variable var = (Variable) node;
+            switch (var.getKind()) {
+                case ARGUMENT:
+                case LOCAL:
+                    return isReadOnlyType(var);
+                case ARRAY_ELEMENT:
+                    return true;
+                case PROPERTY:
+                    if (var.getScope() != null) {
+                        return isReadOnlyType(var);
+                    } else {
+                        return true;
+                    }
+                default:
+                    return isReadOnlyType(var);
+            }
+        } else {
+            return true;
+        }
+    }
+    
+    public boolean isReadOnlyType(Variable var) {
+        try {
+            V8Value value = var.getValue();
+            if (value == null) {
+                refreshWhenLoaded.add(var);
+                return true;
+            }
+            switch (value.getType()) {
+                case Context:
+                case Error:
+                case Frame:
+                case Function:
+                case Promise:
+                    return true;
+                default:
+                    return false;
+            }
+        } catch (EvaluationError ee) {
+            return true;
+        }
     }
 
     @Override
-    public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void setValueAt(final Object node, String columnID, Object value) throws UnknownTypeException {
+        if (!(value instanceof String)) {
+            throw new UnknownTypeException("Accepting String values only. Not "+value);
+        }
+        if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof Variable) {
+            final Variable var = (Variable) node;
+            CallFrame cf = dbg.getCurrentFrame();
+            if (cf == null) {
+                return ;
+            }
+            V8Scope scope = var.getScope();
+            long scopeNumber;
+            long frameNumber;
+            if (scope != null) {
+                scopeNumber = scope.getIndex();
+                if (scope.getFrameIndex().hasValue()) {
+                    frameNumber = scope.getFrameIndex().getValue();
+                } else {
+                    frameNumber = cf.getFrame().getIndex().getValue();
+                }
+            } else {
+                scopeNumber = 0;
+                frameNumber = cf.getFrame().getIndex().getValue();
+            }
+            final V8Value evalVal;
+            try {
+                evalVal = V8Evaluator.evaluate(dbg, (String) value);
+            } catch (EvaluationError ee) {
+                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(ee.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                return ;
+            }
+            long newHandle = evalVal.getHandle();
+            dbg.sendCommandRequest(V8Command.SetVariableValue,
+                                   new SetVariableValue.Arguments(var.getName(),
+                                                                  new NewValue(newHandle),
+                                                                  scopeNumber,
+                                                                  frameNumber),
+                                   new V8Debugger.CommandResponseCallback() {
+                @Override
+                public void notifyResponse(V8Request request, V8Response response) {
+                    if (response != null) {
+                        String errorMessage = response.getErrorMessage();
+                        if (errorMessage != null) {
+                            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(errorMessage, NotifyDescriptor.ERROR_MESSAGE));
+                        } else {
+                            vvl.updateValue(var, evalVal);
+                            fireChangeEvent(new ModelEvent.TableValueChanged(VariablesModel.this, node, null, ModelEvent.TableValueChanged.VALUE_MASK));
+                        }
+                    }
+                }
+            });
+        }
     }
 
     @Override

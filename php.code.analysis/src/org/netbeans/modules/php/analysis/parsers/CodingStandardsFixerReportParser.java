@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -166,8 +167,8 @@ public final class CodingStandardsFixerReportParser extends DefaultHandler {
     }
 
     private String formatDescription(String description) {
-        description = description.replaceAll("      (.+\n)", "$1"); // NOI18N
-        return String.format("<pre>%s</pre>", description); // NOI18N
+        String replaced = description.replaceAll("      (.+\n)", "$1"); // NOI18N
+        return String.format("<pre>%s</pre>", replaced); // NOI18N
     }
 
     private String getCurrentFile(String fileName) {
@@ -185,7 +186,7 @@ public final class CodingStandardsFixerReportParser extends DefaultHandler {
     //~ Getters
 
     public List<Result> getResults() {
-        return results;
+        return Collections.unmodifiableList(results);
     }
 
 }

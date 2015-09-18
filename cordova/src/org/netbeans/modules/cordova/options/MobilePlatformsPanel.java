@@ -58,12 +58,14 @@ import org.netbeans.modules.cordova.CordovaPlatform.Version;
 import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.platforms.spi.ProvisioningProfile;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
+@OptionsPanelController.Keywords(keywords={"#KW.MobilePlatformsPanel"}, location="Html5", tabTitle= "Mobile Platforms")
 final class MobilePlatformsPanel extends javax.swing.JPanel {
 
     private final MobilePlatformsOptionsPanelController controller;

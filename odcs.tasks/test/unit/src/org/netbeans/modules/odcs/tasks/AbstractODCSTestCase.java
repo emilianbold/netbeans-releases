@@ -54,6 +54,7 @@ import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.logging.Level;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevAttribute;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -84,9 +85,10 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
     protected static final String TEST_COMPONENT2 = "Component2";
     protected static final String TEST_COMPONENT3 = "Component3";
     
-    protected static final String TEST_USER1 = "odcs_testuser1@netbeans.org";
-    protected static final String TEST_USER2 = "odcs_testuser2@netbeans.org";
+    protected static final String TEST_USER1 = "tina.testsuite";
+    protected static final String TEST_USER2 = "tom.testsuite";
     private static String username;
+    private static String url;
             
     protected TaskRepository taskRepository;
     protected CloudDevRepositoryConnector rc;
@@ -112,6 +114,9 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
                 proxyHost = br.readLine();
                 proxyPort = br.readLine();
 
+                url = br.readLine();
+                assert url != null && !url.trim().isEmpty();
+                url = url.endsWith("/") ? url + "s/qa-dev_netbeans-test/tasks" : url + "/s/qa-dev_netbeans-test/tasks";
                 br.close();
                 
                 if(proxyPort != null && proxyHost != null) {
@@ -141,9 +146,8 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
         trm = new TaskRepositoryManager();
         rc = ODCS.getInstance().getRepositoryConnector(); // reuse the only one RC instance
         
-        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-        taskRepository = new TaskRepository(rc.getConnectorKind(), "http://developer.us.oracle.com/qa-dev/s/qa-dev_netbeans-test/tasks");
-        
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());        
+        taskRepository = new TaskRepository(rc.getConnectorKind(), url);
         
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(username, passw);
         taskRepository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
@@ -165,7 +169,16 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
 
     public TaskData createTaskData(String summary, String desc, String typeName) throws CoreException, MalformedURLException, IOException {
         TaskData data = ODCSUtil.createTaskData(taskRepository);
-        RepositoryConfiguration conf = ODCS.getInstance().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+        
+        CloudDevClient client = ODCS.getInstance().getCloudDevClient(taskRepository);        
+        RepositoryConfiguration conf;
+        try {
+            conf = client.getRepositoryConfiguration(false, nullProgressMonitor);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            throw t;
+        }
+        
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
         ta.setValue(summary);

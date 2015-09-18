@@ -52,7 +52,7 @@ import org.clang.lex.Token;
 import org.clang.tools.services.support.FileInfoCallback;
 import static org.clank.java.std.*;
 import org.clank.support.Unsigned;
-import org.llvm.adt.aliases.SmallVectorChar;
+import org.llvm.adt.SmallString;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteIdToken;
@@ -76,7 +76,7 @@ class ClankToAPTToken implements APTToken {
         int nrTokens = toks.size();
         Token[] tokens = toks.$array();
         APTToken[] out = new APTToken[nrTokens];
-        SmallVectorChar spell = new SmallVectorChar(1024);
+        SmallString spell = new SmallString(1024);
 
         // cache for last function-like macro expansion range
         long lastExpansionRange = -1L;
@@ -176,7 +176,7 @@ class ClankToAPTToken implements APTToken {
         return out;
     }
 
-    static APTToken convert(Preprocessor PP, Token token, /*uint*/ int offset, SmallVectorChar spell, boolean needLineColumns) {
+    static APTToken convert(Preprocessor PP, Token token, /*uint*/ int offset, SmallString spell, boolean needLineColumns) {
         if (token.is(tok.TokenKind.eof)) {
             return APTUtils.EOF_TOKEN;
         } else {

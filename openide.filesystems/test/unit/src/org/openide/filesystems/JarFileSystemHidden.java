@@ -63,7 +63,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -347,6 +349,65 @@ public class JarFileSystemHidden extends NbTestCase {
             }
         } finally {
             fos.close();
+        }
+    }
+
+    public void testToFileNotUsingURLMapper() throws Exception {
+
+        MockServices.setServices(CheckUrlMapper.class);
+        try {
+            CheckUrlMapper m = Lookup.getDefault().lookup(CheckUrlMapper.class);
+            assertNotNull(m);
+            m.clear();
+
+            File f = new File(getWorkDir(), "some.jar");
+            JarOutputStream jos = new JarOutputStream(new FileOutputStream(f));
+            jos.putNextEntry(new JarEntry("text.txt"));
+            jos.close();
+
+            CharSequence log = Log.enable(JarFileSystem.class.getName(), Level.FINE);
+            JarFileSystem fs = new JarFileSystem(f);
+
+            FileObject fo = fs.getRoot().getFileObject("text.txt");
+            File file = FileUtil.toFile(fo);
+
+            assertNotNull("FileObject for archived file should exist", fo);
+            assertNull("java.io.File for archived file should not exist", file);
+            assertTrue("URLMapper should not be used in FileUtil.toFile",
+                    m.getCalls() == 0);
+            m.clear();
+        } finally {
+            MockServices.setServices();
+        }
+    }
+
+    /**
+     * Used in {@link #testToFileNotUsingURLMapper()}. To check that NO URL
+     * mappers are used in {@link FileUtil#toFile(FileObject) } when the passed
+     * FileObject represents a JAR archived file (which is sure not to have
+     * {@link java.io.File} representation).
+     */
+    public static class CheckUrlMapper extends URLMapper {
+
+        private int calls = 0;
+
+        @Override
+        public URL getURL(FileObject fo, int type) {
+            calls += 1;
+            return null;
+        }
+
+        @Override
+        public FileObject[] getFileObjects(URL url) {
+            return null;
+        }
+
+        void clear() {
+            calls = 0;
+        }
+
+        int getCalls() {
+            return calls;
         }
     }
 }

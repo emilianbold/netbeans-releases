@@ -1,9 +1,11 @@
+"Obsolete bug workaround":
 javax.swing.JFileChooser $c = new javax.swing.JFileChooser();
 org.openide.filesystems.FileUtil.preventFileChooserSymlinkTraversal($c, null)
 =>
 javax.swing.JFileChooser $c = new javax.swing.JFileChooser()
 ;;
 
+"Obsolete bug workaround":
 org.openide.filesystems.FileUtil.preventFileChooserSymlinkTraversal($c, $d)
 =>
 $c.setCurrentDirectory($d)

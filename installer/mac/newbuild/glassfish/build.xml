@@ -78,7 +78,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Building glassfish-${glassfish.id}.pkg into ${basedir}/../build/glassfish-${glassfish.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; pkgbuild --root ${appdir} --scripts ${scriptsdir} --identifier glassfish --install-location ${install.dir}/glassfish-${glassfish.id} ${basedir}/../build/glassfish-${glassfish.id}.pkg"/>
+            <arg value="cd ${basedir} ; pkgbuild --root ${appdir} --scripts ${scriptsdir} --identifier glassfish.${glassfish.id} --install-location ${install.dir}/glassfish-${glassfish.id} ${basedir}/../build/glassfish-${glassfish.id}.pkg"/>
         </exec>
     </target>
     

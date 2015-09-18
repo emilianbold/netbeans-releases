@@ -173,7 +173,7 @@ public final class CslEditorKit extends NbEditorKit {
     protected void initDocument(BaseDocument doc) {
         // XXX This appears in JavaKit, not sure why, but doing it just in case.
         //do not ask why, fire bug in the IZ:
-        CodeTemplateManager.get(doc);
+//        CodeTemplateManager.get(doc);
     }
 
     @Override

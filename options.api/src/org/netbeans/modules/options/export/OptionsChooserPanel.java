@@ -435,7 +435,7 @@ public final class OptionsChooserPanel extends JPanel {
         double currentBuildNumber;
         String nbBuildNumber = System.getProperty("netbeans.buildnumber"); // NOI18N
         try {
-            currentBuildNumber = Double.parseDouble(getOptionsExportModel().getBuildNumber(nbBuildNumber));
+            currentBuildNumber = Double.parseDouble(getOptionsExportModel().parseBuildNumber(nbBuildNumber));
         } catch (NumberFormatException nfe) {
             LOGGER.log(Level.INFO, "Could not parse netbeans.buildnumber: {0}", nbBuildNumber);  //NOI18N
             currentBuildNumber = 201403101706.0;  // default to build date of 8.0 version
@@ -606,16 +606,11 @@ public final class OptionsChooserPanel extends JPanel {
             File selectedFile = fileChooserBuilder.showOpenDialog();
             if (selectedFile != null) {
                 if (selectedFile.isDirectory() && !new File(selectedFile, "config").exists()) {  //NOI18N
-                    // #163142 - ask for confirmation when selected folder doesn't seem to be a valid userdir
+                    // #248610 - notify the user that the selected folder is not a valid userdir, as trying to load it might cause OOME
                     String message = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.invalid.userdir", selectedFile);
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                            message,
-                            NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.invalid.userdir.title"),
-                            NotifyDescriptor.YES_NO_OPTION);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
-                    if (!NotifyDescriptor.YES_OPTION.equals(nd.getValue())) {
-                        return;
-                    }
+                    return;
                 }
                 txtFile.setText(selectedFile.getAbsolutePath());
                 setOptionsExportModel(new OptionsExportModel(selectedFile));

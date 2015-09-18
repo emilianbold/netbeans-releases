@@ -28,6 +28,7 @@ long
 new
 return
 short
+strictfp
 super
 switch
 synchronized

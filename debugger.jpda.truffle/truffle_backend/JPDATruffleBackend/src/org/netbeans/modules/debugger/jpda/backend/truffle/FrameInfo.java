@@ -6,16 +6,14 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.js.runtime.JSFrameUtil;
+import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +27,8 @@ final class FrameInfo {
     final String topFrame;
     final Object thisObject;
 
-    public FrameInfo(MaterializedFrame frame, Visualizer visualizer, Node astNode) {
+    public FrameInfo(MaterializedFrame frame, Visualizer visualizer, Node astNode,
+                     List<FrameInstance> stack) {
         this.frame = frame;
         Object[] arguments = frame.getArguments();
         FrameDescriptor frameDescriptor = frame.getFrameDescriptor();
@@ -47,15 +46,27 @@ final class FrameInfo {
         slotNames = new String[slots.length];
         slotTypes = new String[slots.length];
         for (int i = 0; i < slots.length; i++) {
-            slotNames[i] = visualizer.displayIdentifier(slots[i]); // slots[i].getIdentifier().toString();
+            if (visualizer != null) {
+                slotNames[i] = visualizer.displayIdentifier(slots[i]); // slots[i].getIdentifier().toString();
+            } else {
+                slotNames[i] = slots[i].getIdentifier().toString();
+            }
             slotTypes[i] = slots[i].getKind().toString();
         }
         //System.err.println("FrameInfo: arguments = "+Arrays.toString(arguments));
         //System.err.println("           identifiers = "+frameDescriptor.getIdentifiers());
-        if (frame instanceof VirtualFrame) {
-            Object thisObj = JSFrameUtil.getThisObj((VirtualFrame) frame);
+        if (false /* TODO: frame instanceof VirtualFrame*/) {
+            /* TODO: Find "this"
+            Object thisObj;
+            try {
+                thisObj = JSFrameUtil.getThisObj((VirtualFrame) frame);
+            } catch (ArrayIndexOutOfBoundsException aioobex) {
+                aioobex.printStackTrace();
+                thisObj = null;
+            }
             //System.err.println("           this = "+thisObj);
             thisObject = thisObj;
+            */
         } else if (arguments.length > 1) {
             thisObject = arguments[0];
         } else {
@@ -74,15 +85,32 @@ final class FrameInfo {
         System.err.println("    "+slotNames[i]+" = "+JPDATruffleAccessor.getSlotValue(frame, slots[i]));
         }
          */
-        ArrayList<FrameInstance> stackTraceArr = new ArrayList<>();
-        Truffle.getRuntime().iterateFrames((FrameInstance fi) -> {
+        List<FrameInstance> frames = null;
+        int n = stack.size();
+        for (int i = 0; i < n; i++) {
+            FrameInstance fi = stack.get(i);
             // Filter frames with null call node. How should we display them?
-            if (fi.getCallNode() == null) {
-                return false;
+            Node node = fi.getCallNode();
+            SourceSection ss;
+            if (node == null ||
+                ((ss = node.getSourceSection()) == null && (ss = node.getEncapsulatingSourceSection()) == null) ||
+                ss.getSource() == null) {
+                
+                if (frames == null) {
+                    frames = new ArrayList<>();
+                    for (int j = 0; j < i; j++) {
+                        frames.add(stack.get(j));
+                    }
+                }
+            } else if (frames != null) {
+                frames.add(fi);
             }
-            return stackTraceArr.add(fi);
-        });
-        stackTrace = stackTraceArr.toArray(new FrameInstance[]{});
+        }
+        if (frames == null) {
+            frames = stack;
+        }
+        stackTrace = frames.toArray(new FrameInstance[frames.size()]);
+        
         /*
         String[] stackNames = new String[stackTrace.length];
         for (int i = 0; i < stackTrace.length; i++) {
@@ -91,7 +119,11 @@ final class FrameInfo {
         }*/
         //System.err.println("  stack trace = "+Arrays.toString(stackTrace));
         //System.err.println("  stack names = "+Arrays.toString(stackNames));
-        topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget()) + "\n" + visualizer.displayMethodName(astNode) + "\n" + visualizer.displaySourceLocation(astNode) + "\n" + position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;
+        if (visualizer != null) {
+            topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget()) + "\n" + visualizer.displayMethodName(astNode) + "\n" + visualizer.displaySourceLocation(astNode) + "\n" + position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;
+        } else {
+            topFrame = astNode.getRootNode().getCallTarget().toString() + "\n" + astNode.toString() + "\n" + astNode.getSourceSection().getShortDescription() + "\n" + position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;
+        }
         //System.err.println("  top frame = \n'"+topFrame+"'");
     }
     

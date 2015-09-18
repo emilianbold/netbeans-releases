@@ -563,6 +563,7 @@ class AntGrammar implements GrammarQuery {
         String propPrefix;
         String wholeText = ctx.getNodeValue();
         int replaceLen;
+        String suffix = "";
         
         if (content.charAt(content.length() - 1) == '$') { // NOI18N
             header = content + '{';
@@ -578,6 +579,7 @@ class AntGrammar implements GrammarQuery {
             int closingBrace = wholeText.indexOf('}', content.length()); // NOI18N
             if (closingBrace == -1) {
                 replaceLen = content.length();
+                suffix = wholeText.substring(replaceLen);
             } else {
                 // only delete the text up to the closing brace
                 replaceLen = closingBrace + 1;
@@ -588,14 +590,25 @@ class AntGrammar implements GrammarQuery {
         // the context should not be returned (#38342)
         boolean shortHeader = ctx.getNodeType() == Node.TEXT_NODE;
         List<GrammarResult> list = new ArrayList<GrammarResult>();
+        int pl = propPrefix.length();
         for (int i = 0; i < props.length; i++) {
             if (props[i].startsWith(propPrefix)) {
                 String text = header + props[i] + '}';
                 String all = "${" + props[i] + "}";
+                int l = 0;
                 if (shortHeader) {
                     assert text.startsWith(content) : "text=" + text + " content=" + content;
                     text = text.substring(content.length());
                 }
+                for (; l < suffix.length() && l + pl < props[i].length(); l++) {
+                    if (suffix.charAt(l) != props[i].charAt(l + pl)) {
+                        break;
+                    }
+                }
+                if (shortHeader && (content.length() <= replaceLen)) {
+                    l = -content.length();
+                }
+                replaceLen += l;
                 list.add(new MyText(text, all, replaceLen));
             }
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.nodejs.util;
 
@@ -76,7 +76,14 @@ public final class NodeJsUtils {
     private static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.javascript.nodejs"; // NOI18N
     private static final UsageLogger NPM_INSTALL_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
             .message(NodeJsUtils.class, "USG_NPM_INSTALL") // NOI18N
-            .unrepeated(true)
+            .create();
+    private static final UsageLogger NPM_RUN_SCRIPT_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
+            .message(NodeJsUtils.class, "USG_NPM_RUN_SCRIPT") // NOI18N
+            .firstMessageOnly(false)
+            .create();
+    private static final UsageLogger NPM_LIBRARY_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
+            .message(NodeJsUtils.class, "USG_NPM_LIBRARY") // NOI18N
+            .firstMessageOnly(false)
             .create();
 
 
@@ -85,6 +92,14 @@ public final class NodeJsUtils {
 
     public static void logUsageNpmInstall() {
         NPM_INSTALL_USAGE_LOGGER.log();
+    }
+
+    public static void logUsageNpmRunScript(String script) {
+        NPM_RUN_SCRIPT_USAGE_LOGGER.log(script);
+    }
+
+    public static void logUsageNpmLibrary(String type, String name, String version) {
+        NPM_LIBRARY_USAGE_LOGGER.log(type, name, version);
     }
 
     public static String getProjectDisplayName(Project project) {

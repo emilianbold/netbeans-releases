@@ -123,15 +123,8 @@ public class IssueAction extends SystemAction {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        UIUtils.setWaitCursor(true);
-                        try {
-                            final IssueTopComponent tc = new IssueTopComponent();
-                            tc.initNewIssue(repository, !repositoryGiven, file);
-                            tc.open();
-                            tc.requestActive();
-                        } finally {
-                            UIUtils.setWaitCursor(false);
-                        }
+                        final IssueTopComponent tc = new IssueTopComponent();
+                        tc.initNewIssue(repository, !repositoryGiven, file);
                     }
                 });
             }

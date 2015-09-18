@@ -50,6 +50,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -228,6 +229,24 @@ public class CheckoutRevisionCommand extends GitCommand {
         } catch (IOException ex) {
             throw new GitException(ex);
         }
+    }
+    
+    @Override
+    protected boolean prepareCommand () throws GitException {
+        boolean canExecute = super.prepareCommand();
+        if (canExecute) {
+            Repository repository = getRepository();
+            try {
+                if (!failOnConflict && repository.readDirCache().hasUnmergedPaths()) {
+                    String message = MessageFormat.format(Utils.getBundle(GitCommand.class).getString("MSG_Error_CannotCheckoutHasConflicts"), repository.getWorkTree()); //NOI18N
+                    monitor.preparationsFailed(message);
+                    throw new GitException(message);
+                }
+            } catch (IOException ex) {
+                throw new GitException(ex);
+            }
+        }
+        return canExecute;
     }
 
     @Override

@@ -74,6 +74,11 @@ public final class CsmModelAccessor {
         return (aModel == null) ? CsmModelState.OFF : aModel.getState();
     }
 
+    public static boolean isModelAlive() {
+        final CsmModelState modelState = CsmModelAccessor.getModelState();
+        return modelState == CsmModelState.ON || modelState == CsmModelState.SUSPENDED;
+    }
+
     private static class ModelStub implements CsmModel {
 
         @Override

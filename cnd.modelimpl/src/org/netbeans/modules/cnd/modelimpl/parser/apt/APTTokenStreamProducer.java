@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -100,11 +101,12 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
 
     @Override
     public TokenStream getTokenStreamOfIncludedFile(PreprocHandler.State includeOwnerState, CsmInclude include, Interrupter interrupter) {
+        int includeDirFileIndex = findIncludeDirectiveFileIndex(include);
         FileImpl ownerFile = getMainFile();
         FileImpl includedFile = (FileImpl) include.getIncludeFile();
         LinkedList<PPIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(includeOwnerState);
         CharSequence includedAbsPath = includedFile.getAbsolutePath();
-        reverseInclStack.addLast(new IncludeInfoImpl(include, includedFile.getFileSystem(), includedAbsPath));
+        reverseInclStack.addLast(new IncludeInfoImpl(include, includedFile.getFileSystem(), includedAbsPath, includeDirFileIndex));
         ProjectBase projectImpl = includedFile.getProjectImpl(true);
         if (projectImpl == null) {
             return includedFile.getTokenStream(0, Integer.MAX_VALUE, 0, true);
@@ -115,6 +117,19 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         // using restored preprocessor handler, ask included file for parsing token stream filtered by language
         TokenStream includedFileTS = createParsingTokenStreamForHandler(includedFile, restorePreprocHandlerFromIncludeStack, true);
         return includedFileTS;
+    }
+
+    private int findIncludeDirectiveFileIndex(CsmInclude include) {
+        final CsmFile containingFile = include.getContainingFile();
+        final Collection<CsmInclude> includes = containingFile.getIncludes();
+        int includeDirFileIndex = 0;
+        for (CsmInclude incl : includes) {
+            if (incl == include) {
+                return includeDirFileIndex;
+            }
+            ++includeDirFileIndex;
+        }
+        return -1;
     }
 
     private static final boolean REMEMBER_RESTORED = TraceFlags.CLEAN_MACROS_AFTER_PARSE && 
@@ -227,7 +242,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
     }
 
     @Override
-    public TokenStream getTokenStream(boolean triggerParsingActivity, boolean filterOutComments, boolean applyLanguageFilter, Interrupter interrupter) {
+    public TokenStream getTokenStream(Parameters parameters, Interrupter interrupter) {
         FileImpl fileImpl = getMainFile();
         PreprocHandler preprocHandler = getCurrentPreprocHandler();
         // use full APT for generating token stream
@@ -246,17 +261,17 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         pcBuilder = new APTBasedPCStateBuilder(fileImpl.getAbsolutePath());
         // ask for concurrent entry if absent
         APTFileCacheEntry aptCacheEntry = fileImpl.getAPTCacheEntry(ppState, Boolean.FALSE);
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, fullAPT, fileImpl, preprocHandler, triggerParsingActivity, pcBuilder, aptCacheEntry);
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, fullAPT, fileImpl, preprocHandler, parameters.triggerParsingActivity, pcBuilder, aptCacheEntry);
         walker.setFileContent(getFileContent()); // NO
         if (TraceFlags.DEBUG) {
             System.err.println("doParse " + fileImpl.getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
         }
         TokenStream tsOut;
-        if (applyLanguageFilter) {
+        if (parameters.applyLanguageFilter) {
             APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppState);
             tsOut = walker.getFilteredTokenStream(languageFilter);
         } else {
-            tsOut = walker.getTokenStream(filterOutComments);
+            tsOut = walker.getTokenStream(!parameters.needComments);
         }
         if (isAllowedToCacheOnRelease()) {
           cachePair = Pair.of(ppState, aptCacheEntry);
@@ -320,12 +335,14 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         private final CsmInclude include;
         private final FileSystem fs;
         private final CharSequence path;
+        private final int includedDirFileIndex;
 
-        IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path) {
+        IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path, int includedDirFileIndex) {
             this.line = include.getStartPosition().getLine();
             this.include = include;
             this.fs = fs;
             this.path = path;
+            this.includedDirFileIndex = includedDirFileIndex;
         }
 
         @Override
@@ -357,6 +374,12 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         public String toString() {
             return "restore " + include + " from line " + line + " in file " + include.getContainingFile(); // NOI18N
         }
+
+        @Override
+        public int getIncludedDirFileIndex() {
+            return includedDirFileIndex;
+        }
+        
     }
 
 }

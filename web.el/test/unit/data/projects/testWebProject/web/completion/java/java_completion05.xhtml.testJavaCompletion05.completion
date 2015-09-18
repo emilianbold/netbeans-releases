@@ -4,7 +4,4 @@ Code completion result for source line:
 ------------------------------------
 CLASS      BigDecimal                                 java.math.BigDecimal
 CLASS      BigInteger                                 java.math.BigInteger
-CLASS      BitSieve                                   java.math.BitSieve
 CLASS      MathContext                                java.math.MathContext
-CLASS      MutableBigInteger                          java.math.MutableBigInteger
-CLASS      SignedMutableBigInteger                    java.math.SignedMutableBigInteger

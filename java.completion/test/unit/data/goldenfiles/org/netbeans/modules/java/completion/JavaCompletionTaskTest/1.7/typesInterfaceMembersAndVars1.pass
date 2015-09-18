@@ -24,6 +24,7 @@ long
 new
 return
 short
+strictfp
 switch
 synchronized
 this

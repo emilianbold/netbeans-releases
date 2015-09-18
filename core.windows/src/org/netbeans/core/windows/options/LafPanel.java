@@ -74,7 +74,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
-@OptionsPanelController.Keywords(keywords={"#KW_WindowOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName_WinSys")
+@OptionsPanelController.Keywords(keywords={"#KW_LafOptions"}, location="Appearance", tabTitle="#Laf_DisplayName")
 public class LafPanel extends javax.swing.JPanel {
 
     protected final LafOptionsPanelController controller;

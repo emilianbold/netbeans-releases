@@ -107,7 +107,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -194,7 +194,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.85</specification-version>
+                        <specification-version>1.89</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -320,7 +320,8 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.selenium2.webclient</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.mocha</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.protractor</friend>
                 <friend>org.netbeans.modules.web.client.kit</friend>
                 <package>org.netbeans.modules.javascript.nodejs.api</package>
             </friend-packages>

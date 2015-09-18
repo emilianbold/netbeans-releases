@@ -120,6 +120,7 @@ import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer.
 import org.netbeans.modules.cnd.modelimpl.content.project.ProjectComponent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
@@ -1742,8 +1743,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (isDisposing() || startProject.isDisposing()) {
             return null;
         }
-        final CsmModelState modelState = ModelImpl.instance().getState();
-        if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+        if (!CsmModelAccessor.isModelAlive()) {
             if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
                 System.err.printf("prepareIncludedFile: %s file [%s] is interrupted on closing model%n", file, this.getName());
             }
@@ -3559,6 +3559,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false); // NOI18N
     public static final int GATHERING_MACROS = 0;
     public static final int GATHERING_TOKENS = 1;
+    public static final boolean DO_NOT_TRCE_DUMMY_FORWARD_CLASSIFIER = DebugUtils.getBoolean("cnd.dump.skip.dummy.forward.classifier", false); // NOI18N
 
     ////////////////////////////////////////////////////////////////////////////
     /**
@@ -3793,6 +3794,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
             for (Map.Entry<CharSequence, CsmDeclaration> f : set.entrySet()) {
+                if (DO_NOT_TRCE_DUMMY_FORWARD_CLASSIFIER) {
+                    if (ForwardClass.isForwardClass(f.getValue()) || ForwardEnum.isForwardEnum(f.getValue())) {
+                        continue;
+                    }
+                }
                 printStream.println("\t\t" + f.getValue() + " from " + f.getKey()); //NOI18N
             }
         }

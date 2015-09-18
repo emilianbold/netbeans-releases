@@ -845,7 +845,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             // cursor keys
             if ((e.isControlDown() || e.isMetaDown()) && !e.isAltDown() && !e.isShiftDown()) {
                 // duplicating
-                DuplicateAction.performAction(formDesigner.getSelectedNodes(), keyCode);
+                if (!getFormModel().hasPendingEvents()) { // don't duplicate when events from previous duplication might not be processed yet
+                    DuplicateAction.performAction(formDesigner.getSelectedNodes(), keyCode);
+                }
                 e.consume();
                 return;
             }

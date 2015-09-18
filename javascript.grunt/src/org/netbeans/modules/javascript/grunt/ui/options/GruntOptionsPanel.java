@@ -64,6 +64,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
 import org.netbeans.modules.javascript.grunt.util.FileUtils;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
@@ -72,6 +73,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
+@OptionsPanelController.Keywords(keywords={"#KW.GruntOptionsPanel"}, location="Html5", tabTitle= "Grunt")
 public class GruntOptionsPanel extends JPanel implements HelpCtx.Provider {
 
     private static final Logger LOGGER = Logger.getLogger(GruntOptionsPanel.class.getName());

@@ -322,12 +322,12 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
      * if applicable and relevant.
      */
     private void handleCopyFileToDestDir(Tuple tuple, FileObject fo, Project project) throws IOException {
-        if (tuple != null && !tuple.resource.isFiltering()) {
+        if (tuple != null) {
             //TODO what to do with filtering? for now ignore..
             String path = FileUtil.getRelativePath(tuple.root, fo);
             path = addTargetPath(path, tuple.resource);
             createAndCopy(fo, tuple.destinationRoot, path);
-            AdditionalDestination add = project.getLookup().lookup(AdditionalDestination.class);
+                AdditionalDestination add = project.getLookup().lookup(AdditionalDestination.class);
             if (add != null) {
                 add.copy(fo, path);
             }
@@ -365,7 +365,9 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     }
 
     private Tuple findResource(List<Resource> resources, Project prj, NbMavenProject nbproj, FileObject child, boolean test) {
+        LOG.log(Level.FINE, "findResource for {0}", child.getPath());        
         if (resources == null) {
+            LOG.log(Level.FINE, "findResource for {0} : No Resources", child.getPath());
             return null;
         }
         FileObject target;
@@ -375,9 +377,12 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         if (stamp.exists()) {
             target = FileUtil.toFileObject(fil);
         } else {
+            LOG.log(Level.FINE, "findResource for {0} : No Stamp", child.getPath());
             // no compile on save stamp, means no copying, classes don't get copied/compiled either.
             return null;
         }
+        
+        logResources(child, resources);
 
         resourceLoop:
         for (Resource res : resources) {
@@ -402,20 +407,37 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                     }
                 }
                 if (!included) {
-                    break;
+                    LOG.log(Level.FINE, "findResource for {0} : Not included {1}, {2} ", new Object[] {child.getPath(), included, res});
+                    if(res.isFiltering()) {
+                        continue;
+                    } else {
+                        break; 
+                    }
                 }
                 List<String> excls = new ArrayList<String>(res.getExcludes());
                 excls.addAll(Arrays.asList(DirectoryScanner.DEFAULTEXCLUDES));
                 for (String excl : excls) {
                     if (DirectoryScanner.match(excl, path)) {
+                        LOG.log(Level.FINER, "findResource for {0} : Excluded {1}, {2} ", new Object[] {child.getPath(), included, res});
                         continue resourceLoop;
                     }
                 }
-
+                LOG.log(Level.FINE, "findResource for {0} : Returns {1}, {2}, {3} ", new Object[] {child.getPath(), res, fo.getPath(), target});
                 return new Tuple(res, fo, target);
+            } else {
+                LOG.log(Level.FINE, "findResource {0} does not apply to file {1}", new Object[]{res, child.getPath()});
             }
         }
+        LOG.log(Level.FINE, "findResource for {0} : Retuerns Null", child.getPath());
         return null;
+    }
+
+    protected void logResources(FileObject fo, List<Resource> resources) {
+        if(LOG.isLoggable(Level.FINE)) {
+            for (Resource res : resources) {
+                LOG.log(Level.FINE, " {0}", res);
+            }
+        }
     }
 
     /** Returns the destination file or folder

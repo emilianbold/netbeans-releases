@@ -58,6 +58,8 @@ import org.netbeans.modules.cnd.utils.ComponentType;
 public class APTTraceFlags {
 
     public static final boolean USE_CLANK;
+    public static final boolean TRACE_PREPROC = Boolean.getBoolean("apt.clank.trace.pp"); // NOI18N
+    public static final boolean TRACE_PREPROC_STACKS = Boolean.getBoolean("apt.clank.trace.pp.stacks"); // NOI18N
 
     static {
         String propUseClank = System.getProperty("apt.use.clank"); //NOI18N
@@ -87,6 +89,8 @@ public class APTTraceFlags {
             Logger.getLogger(APTTraceFlags.class.getName()).log(Level.INFO, "C/C++ code model: using {0} preprocessor", (USE_CLANK ? "new" : "old")); //NOI18N
         }
     }
+    
+    public static final boolean DEFERRED_MACRO_USAGES = DebugUtils.getBoolean("apt.deferred.macro.usages", true); // NOI18N
 
     public static final boolean ALWAYS_USE_NB_FS = DebugUtils.getBoolean("apt.always.use.filesystem", false); // NOI18N
     

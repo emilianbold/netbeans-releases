@@ -199,7 +199,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     try {
                         projectsBeingCreated.add(nativeProject);
                         prj = ProjectImpl.createInstance(this, nativeProject, name);
-                        putProject2Map(id, prj);
+                        if (prj != null) {
+                            putProject2Map(id, prj);
+                        }
                     } finally {
                         projectsBeingCreated.remove(nativeProject);
                     }
@@ -226,8 +228,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     try {
                         projectsBeingCreated.add(id);
                         prj = ProjectImpl.createInstance(this, id, name);
-                        putProject2Map(id, prj);
-                        fireOpened = true;
+                        if (prj != null) {
+                            putProject2Map(id, prj);
+                            fireOpened = true;
+                        }
                     } finally {
                         projectsBeingCreated.remove(id);
                     }
@@ -386,7 +390,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     @Override
     public Cancellable enqueue(Runnable task, CharSequence name) {
-        return enqueueOrCreate(true, userTasksProcessor, task, clientTaskPrefix + " :" + name); // NOI18N
+        return enqueueOrCreate(userTasksProcessor, task, clientTaskPrefix + " :" + name, false); // NOI18N
     }
 
     public static ModelImpl instance() {
@@ -394,11 +398,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     public RequestProcessor.Task enqueueModelTask(Runnable task, String name) {
-        return enqueueOrCreate(true, modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
+        return enqueueOrCreate(modelProcessor, task, modelTaskPrefix + ": " + name, false); // NOI18N
     }
 
     public RequestProcessor.Task createModelTask(Runnable task, String name) {
-        return enqueueOrCreate(true, modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
+        return enqueueOrCreate(modelProcessor, task, modelTaskPrefix + ": " + name, false); // NOI18N
     }
 
     public static boolean isModelRequestProcessorThread() {
@@ -406,15 +410,24 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     public void waitModelTasks() {
-        RequestProcessor.Task task = enqueueModelTask(new Runnable() {
+        RequestProcessor.Task task = enqueueOrCreate(modelProcessor, new Runnable() {
             @Override
             public void run() {
             }
-        }, "wait finished other tasks"); //NOI18N
+        }, "wait finished other tasks", true); //NOI18N
         task.waitFinished();
     }
 
-    private RequestProcessor.Task enqueueOrCreate(boolean post, RequestProcessor processor, final Runnable task, final String taskName) {
+    private RequestProcessor.Task enqueueOrCreate(RequestProcessor processor, final Runnable task, final String taskName, boolean force) {
+        if (!force) {
+            if (!CsmModelAccessor.isModelAlive()) {
+                if (TraceFlags.TRACE_MODEL_STATE) {
+                    System.err.println("Reject task ["+taskName+"] on model closing"); // NOI18N
+                }
+                return null;
+            }
+        }
+
         if (TraceFlags.TRACE_182342_BUG) {
             new Exception(taskName).printStackTrace(System.err);
         }
@@ -432,7 +445,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 }
             }
         };
-        return post ? processor.post(r) : processor.create(r);
+        return  processor.post(r);
     }
 
     @Override
@@ -542,22 +555,17 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.closing");
         }
-        waitModelTasks();
         setState(CsmModelState.CLOSING);
+        ParserThreadManager.instance().shutdown();
     }
 
     public void shutdown() {
-
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.shutdown");
         }
-        waitModelTasks();
         setState(CsmModelState.CLOSING);
-
-        // it's now done in ProjectBase.setDisposed()
-        // unregisterProjectListeners();
-
         ParserThreadManager.instance().shutdown();
+        waitModelTasks();
 
         if (TraceFlags.CHECK_MEMORY) {
             LowMemoryNotifier.instance().removeListener(this);
@@ -589,7 +597,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         RepositoryUtils.shutdown();
 
         ModelSupport.instance().setModel(null);
-        waitModelTasks();
     }
 
     @Override
@@ -833,67 +840,73 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     @Override
-    public void scheduleReparse(Collection<CsmProject> projects) {
-        CndFileUtils.clearFileExistenceCache();
-        ParserQueue.instance().clearParseWatch();
-        ClankDriver.invalidateAll();
-        APTFileCacheManager.invalidateAll();
-        APTSystemStorage.dispose();
-        Collection<LibProjectImpl> libs = new HashSet<>();
-        Collection<ProjectBase> toReparse = new HashSet<>();
-        for (CsmProject csmProject : projects) {
-            if (csmProject instanceof ProjectBase) {
-                ProjectBase project = (ProjectBase) csmProject;
-                toReparse.add(project);
-                for (CsmProject csmLib : project.getLibraries()) {
-                    if (csmLib instanceof LibProjectImpl) {
-                        LibProjectImpl lib = (LibProjectImpl) csmLib;
-                        if (!libs.contains(lib)) {
-                            libs.add(lib);
+    public void scheduleReparse(final Collection<CsmProject> projects) {
+        enqueueModelTask(
+        new Runnable() {
+            @Override
+            public void run() {
+                CndFileUtils.clearFileExistenceCache();
+                ParserQueue.instance().clearParseWatch();
+                ClankDriver.invalidateAll();
+                APTFileCacheManager.invalidateAll();
+                APTSystemStorage.dispose();
+                Collection<LibProjectImpl> libs = new HashSet<>();
+                Collection<ProjectBase> toReparse = new HashSet<>();
+                for (CsmProject csmProject : projects) {
+                    if (csmProject instanceof ProjectBase) {
+                        ProjectBase project = (ProjectBase) csmProject;
+                        toReparse.add(project);
+                        for (CsmProject csmLib : project.getLibraries()) {
+                            if (csmLib instanceof LibProjectImpl) {
+                                LibProjectImpl lib = (LibProjectImpl) csmLib;
+                                if (!libs.contains(lib)) {
+                                    libs.add(lib);
+                                }
+                            }
                         }
                     }
                 }
-            }
-        }
-        for(CsmProject csmProject : projects()) {
-            if (!projects.contains(csmProject)) {
-                if (csmProject instanceof ProjectBase) {
-                    ProjectBase project = (ProjectBase) csmProject;
-                    for (CsmProject csmLib : project.getLibraries()) {
-                        if (csmLib instanceof LibProjectImpl) {
-                            libs.remove((LibProjectImpl)csmLib);
+                for(CsmProject csmProject : projects()) {
+                    if (!projects.contains(csmProject)) {
+                        if (csmProject instanceof ProjectBase) {
+                            ProjectBase project = (ProjectBase) csmProject;
+                            for (CsmProject csmLib : project.getLibraries()) {
+                                if (csmLib instanceof LibProjectImpl) {
+                                    libs.remove((LibProjectImpl)csmLib);
+                                }
+                            }
                         }
                     }
                 }
+                for (LibProjectImpl lib : libs) {
+                    lib.initFields();
+                }
+                Collection<Object> platformProjects = new ArrayList<>();
+                for (ProjectBase projectBase : toReparse) {
+                    final Object platformProject = projectBase.getPlatformProject();
+                    if (platformProject != null) {
+                        platformProjects.add(platformProject);
+                        closeProject(platformProject, true);
+                    }
+                }
+                for (LibProjectImpl lib : libs) {
+                    Object platformProject = lib.getPlatformProject();
+                    CndUtils.assertTrue(platformProject != null || lib.isDisposing(), "No Platform project for ", lib);
+                    // lib can be already closed when last project was closed in the loop above
+                    if (platformProject != null) {
+                        closeProject(platformProject, true);
+                    }
+                }
+                LibraryManager.cleanLibrariesData(libs);
+                for (Object platformProject : platformProjects) {
+                    ProjectBase newPrj = (ProjectBase) _getProject(platformProject);
+                    if (newPrj != null) { // VK: at least once I've got NPE here: might be already closed?
+                        newPrj.scheduleReparse();
+                        ListenersImpl.getImpl().fireProjectOpened(newPrj);
+                    }
+                }
             }
-        }
-        for (LibProjectImpl lib : libs) {
-            lib.initFields();
-        }
-        Collection<Object> platformProjects = new ArrayList<>();
-        for (ProjectBase projectBase : toReparse) {
-            final Object platformProject = projectBase.getPlatformProject();
-            if (platformProject != null) {
-                platformProjects.add(platformProject);
-                closeProject(platformProject, true);
-            }
-        }
-        for (LibProjectImpl lib : libs) {
-            Object platformProject = lib.getPlatformProject();
-            CndUtils.assertTrue(platformProject != null || lib.isDisposing(), "No Platform project for ", lib);
-            // lib can be already closed when last project was closed in the loop above
-            if (platformProject != null) {
-                closeProject(platformProject, true);
-            }
-        }
-        LibraryManager.cleanLibrariesData(libs);
-        for (Object platformProject : platformProjects) {
-            ProjectBase newPrj = (ProjectBase) _getProject(platformProject);
-            if (newPrj != null) { // VK: at least once I've got NPE here: might be already closed?
-                newPrj.scheduleReparse();
-                ListenersImpl.getImpl().fireProjectOpened(newPrj);
-            }
-        }
+        }, "Reparse projects"); // NOI18N
     }
 
     private static final class Lock {}

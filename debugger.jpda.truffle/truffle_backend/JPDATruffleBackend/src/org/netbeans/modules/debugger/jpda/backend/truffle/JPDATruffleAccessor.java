@@ -44,7 +44,6 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
-import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.debug.Breakpoint;
 import com.oracle.truffle.api.debug.DebugSupportException;
 import com.oracle.truffle.api.debug.DebugSupportProvider;
@@ -58,18 +57,16 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.impl.Accessor;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.vm.TruffleVM;
-import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -77,7 +74,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import javax.script.ScriptEngine;
 
 /**
  * Truffle accessor for JPDA debugger.
@@ -158,8 +154,9 @@ public class JPDATruffleAccessor extends Object {
     }*/
     
     //static JPDATruffleDebugManager setUpDebugManagerFor(ScriptEngine engine) {
-    static JPDATruffleDebugManager setUpDebugManagerFor(/*ExecutionEvent*/Object event) {
-        Debugger debugger = ((ExecutionEvent) event).getDebugger();
+    static JPDATruffleDebugManager setUpDebugManagerFor(/*ExecutionEvent*/Object event, boolean doStepInto) {
+        ExecutionEvent execEvent = (ExecutionEvent) event;
+        Debugger debugger = execEvent.getDebugger();
         TruffleVM tvm;
         try {
             Field vmField = debugger.getClass().getDeclaredField("vm");
@@ -169,7 +166,10 @@ public class JPDATruffleAccessor extends Object {
                  NoSuchFieldException | SecurityException ex) {
             throw new RuntimeException(ex);
         }
-        debugManager = JPDATruffleDebugManager.setUp(debugger, tvm);
+        if (doStepInto) {
+            execEvent.prepareStepInto();
+        }
+        debugManager = JPDATruffleDebugManager.setUp(debugger, tvm, (ExecutionEvent) event);
         return debugManager;
     }
     
@@ -199,8 +199,9 @@ public class JPDATruffleAccessor extends Object {
     static /*FrameInfo*/Object getFrameInfo(/*SuspendedEvent*/Object suspendedEvent) {
         SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
         Node node = evt.getNode();
-        Visualizer visualizer = getDebugSupport(node).getVisualizer();
-        return new FrameInfo(evt.getFrame(), visualizer, node);
+        DebugSupportProvider debugSupport = getDebugSupport(node);
+        Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
+        return new FrameInfo(evt.getFrame(), visualizer, node, evt.getStack());
     }
     
     static void setStep(/*SuspendedEvent*/Object suspendedEvent, int stepCmd) {
@@ -222,20 +223,44 @@ public class JPDATruffleAccessor extends Object {
     
     private static TruffleLanguage getLanguage(Node node) {
         try {
-            Field apiField = Accessor.class.getDeclaredField("API");
-            apiField.setAccessible(true);
-            Object api = apiField.get(null);
+            Field spiField = Accessor.class.getDeclaredField("SPI");
+            spiField.setAccessible(true);
+            Object spi = spiField.get(null);
             Field nodesField = Accessor.class.getDeclaredField("NODES");
             nodesField.setAccessible(true);
             Object nodes = nodesField.get(null);
             Method findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguage", RootNode.class);
             findLanguageMethod.setAccessible(true);
-            Class languageClass = (Class) findLanguageMethod.invoke(nodes, node.getRootNode());
+            Node rootNode = node.getRootNode();
+            if (rootNode == null) {
+                rootNode = node;
+            }
+            Class languageClass = (Class) findLanguageMethod.invoke(nodes, rootNode);
+            /*
+            System.err.println("languageClass = "+languageClass+", node = "+node+", root node = "+node.getRootNode());
+            System.err.println("root node's class = "+node.getRootNode().getClass());
+            Field rnLangField = RootNode.class.getDeclaredField("language");
+            rnLangField.setAccessible(true);
+            Object rnLangClass = rnLangField.get(node.getRootNode());
+            System.err.println("Root node's language class = "+rnLangClass);
+            */
+            if (languageClass == null) {
+                System.err.println("languageClass = "+languageClass+", node = "+node+", root node = "+rootNode);
+                System.err.println("root node's class = "+rootNode.getClass());
+                return null;
+            }
             
-            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguage", TruffleVM.class, Class.class);
+            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguage", Object.class, Class.class);
             findLanguageMethod.setAccessible(true);
-            Object tl = findLanguageMethod.invoke(api, debugManager.getTruffleVM(), languageClass);
-            return (TruffleLanguage) tl;
+            Object tl = findLanguageMethod.invoke(spi, debugManager.getTruffleVM(), languageClass);
+            
+            // TODO: What to do with Env?
+            
+            if (tl instanceof TruffleLanguage) {
+                return (TruffleLanguage) tl;
+            } else {
+                return null;
+            }
         } catch (IllegalAccessException | IllegalArgumentException |
                  NoSuchFieldException | NoSuchMethodException |
                  SecurityException | InvocationTargetException ex) {
@@ -247,6 +272,9 @@ public class JPDATruffleAccessor extends Object {
     
     private static DebugSupportProvider getDebugSupport(Node node) {
         TruffleLanguage tl = getLanguage(node);
+        if (tl == null) {
+            return null;
+        }
         try {
             Method getDebugSupportMethod = TruffleLanguage.class.getDeclaredMethod("getDebugSupport");
             getDebugSupportMethod.setAccessible(true);
@@ -278,6 +306,7 @@ public class JPDATruffleAccessor extends Object {
     static Object getSlotValue(Object frameObj, Object slotObj) {
         Frame frame = (Frame) frameObj;
         FrameSlot slot = (FrameSlot) slotObj;
+        /* Does not work in some cases, throws FrameSlotTypeException
         switch(slot.getKind()) {
             case Boolean:   return FrameUtil.getBooleanSafe(frame, slot);
             case Byte:      return FrameUtil.getByteSafe(frame, slot);
@@ -287,11 +316,18 @@ public class JPDATruffleAccessor extends Object {
             case Long:      return FrameUtil.getLongSafe(frame, slot);
             case Object:    Object obj = FrameUtil.getObjectSafe(frame, slot);
                             //Node node = frame.materialize().getFrameDescriptor().
-                            Node node = Truffle.getRuntime().getCurrentFrame().getCallNode();   // TODO find frame's node
-                            Visualizer visualizer = getDebugSupport(node).getVisualizer();
-                            //return context.getVisualizer().displayValue(context, obj);
-                            String name = visualizer.displayIdentifier(slot);
+                            FrameInstance fi = Truffle.getRuntime().getCurrentFrame();
+                            Node node = (fi != null) ? fi.getCallNode() : null;   // TODO find frame's node
+                            DebugSupportProvider debugSupport = (node != null) ? getDebugSupport(node) : null;
+                            Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
+                            String name;
+                            if (visualizer != null) {
+                                name = visualizer.displayIdentifier(slot);
+                            } else {
+                                name = slot.getIdentifier().toString();
+                            }
                             TruffleObject to = new TruffleObject(visualizer, name, obj);
+                            //return context.getVisualizer().displayValue(context, obj);
                             //System.err.println("TruffleObject: "+to);
                             //System.err.println("  children Generic = "+Arrays.toString(to.getChildrenGeneric()));
                             //System.err.println("  children JS = "+Arrays.toString(to.getChildrenJS()));
@@ -299,6 +335,46 @@ public class JPDATruffleAccessor extends Object {
             case Illegal:   
             default:        return null;
         }
+        */
+        if (frame.isBoolean(slot)) {
+            return FrameUtil.getBooleanSafe(frame, slot);
+        }
+        if (frame.isByte(slot)) {
+            return FrameUtil.getByteSafe(frame, slot);
+        }
+        if (frame.isDouble(slot)) {
+            return FrameUtil.getDoubleSafe(frame, slot);
+        }
+        if (frame.isFloat(slot)) {
+            return FrameUtil.getFloatSafe(frame, slot);
+        }
+        if (frame.isInt(slot)) {
+            return FrameUtil.getIntSafe(frame, slot);
+        }
+        if (frame.isLong(slot)) {
+            return FrameUtil.getLongSafe(frame, slot);
+        }
+        if (frame.isObject(slot)) {
+            Object obj = FrameUtil.getObjectSafe(frame, slot);
+            //Node node = frame.materialize().getFrameDescriptor().
+            FrameInstance fi = Truffle.getRuntime().getCurrentFrame();
+            Node node = (fi != null) ? fi.getCallNode() : null;   // TODO find frame's node
+            DebugSupportProvider debugSupport = (node != null) ? getDebugSupport(node) : null;
+            Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
+            String name;
+            if (visualizer != null) {
+                name = visualizer.displayIdentifier(slot);
+            } else {
+                name = slot.getIdentifier().toString();
+            }
+            TruffleObject to = new TruffleObject(visualizer, name, obj);
+            //return context.getVisualizer().displayValue(context, obj);
+            //System.err.println("TruffleObject: "+to);
+            //System.err.println("  children Generic = "+Arrays.toString(to.getChildrenGeneric()));
+            //System.err.println("  children JS = "+Arrays.toString(to.getChildrenJS()));
+            return to;
+        }
+        return null;
     }
     
     /*
@@ -331,14 +407,25 @@ public class JPDATruffleAccessor extends Object {
         Object[] thiss = new Object[n];
         for (int i = 0; i < n; i++) {
             FrameInstance fi = frames[i];
-            Visualizer visualizer = getDebugSupport(fi.getCallNode()).getVisualizer();
+            DebugSupportProvider debugSupport = getDebugSupport(fi.getCallNode());
+            Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
             //TruffleFrame tf = new TruffleFrame();
-            frameInfos.append(visualizer.displayCallTargetName(fi.getCallTarget()));
-            frameInfos.append('\n');
-            frameInfos.append(visualizer.displayMethodName(fi.getCallNode()));
-            frameInfos.append('\n');
-            frameInfos.append(visualizer.displaySourceLocation(fi.getCallNode()));
-            frameInfos.append('\n');
+            if (visualizer != null) {
+                frameInfos.append(visualizer.displayCallTargetName(fi.getCallTarget()));
+                frameInfos.append('\n');
+                frameInfos.append(visualizer.displayMethodName(fi.getCallNode()));
+                frameInfos.append('\n');
+                frameInfos.append(visualizer.displaySourceLocation(fi.getCallNode()));
+                frameInfos.append('\n');
+            } else {
+                frameInfos.append(fi.getCallTarget().toString());
+                frameInfos.append('\n');
+                frameInfos.append(fi.getCallNode().toString());
+                frameInfos.append('\n');
+                SourceSection ss = fi.getCallNode().getSourceSection();
+                frameInfos.append((ss != null) ? ss.getShortDescription() : "unknown");
+                frameInfos.append('\n');
+            }
             if (fi.getCallNode() == null) {
                 /* frames with null call nodes are filtered out by JPDATruffleDebugManager.FrameInfo
                 System.err.println("Frame with null call node: "+fi);
@@ -359,11 +446,12 @@ public class JPDATruffleAccessor extends Object {
             frameInfos.append("\n\n");
             
             codes[i] = position.code;
-            
+            /*
+             TODO Find "this"
             Frame f = fi.getFrame(FrameInstance.FrameAccess.READ_ONLY, false);
             if (f instanceof VirtualFrame) {
                 thiss[i] = JSFrameUtil.getThisObj((VirtualFrame) f);
-            }
+            }*/
         }
         return new Object[] { frameInfos.toString(), codes, thiss };
     }
@@ -547,9 +635,14 @@ public class JPDATruffleAccessor extends Object {
         FrameSlot[] frameSlots = slotsArr.toArray(new FrameSlot[]{});
         String[] slotNames = new String[slots.length];
         String[] slotTypes = new String[slots.length];
-        Visualizer visualizer = getDebugSupport(fi.getCallNode()).getVisualizer();//debugManager.getVisualizer();
+        DebugSupportProvider debugSupport = getDebugSupport(fi.getCallNode());
+        Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
         for (int i = 0; i < frameSlots.length; i++) {
-            slotNames[i] = visualizer.displayIdentifier(frameSlots[i]);// slots[i].getIdentifier().toString();
+            if (visualizer != null) {
+                slotNames[i] = visualizer.displayIdentifier(frameSlots[i]);// slots[i].getIdentifier().toString();
+            } else {
+                slotNames[i] = frameSlots[i].getIdentifier().toString();
+            }
             slotTypes[i] = frameSlots[i].getKind().toString();
         }
         slots[0] = frame;
@@ -570,28 +663,30 @@ public class JPDATruffleAccessor extends Object {
                     Thread.sleep(Long.MAX_VALUE);
                 } catch (InterruptedException iex) {}
                 accessLoopSleeping = false;
-                //System.err.println("AccessLoop: steppingIntoTruffle = "+steppingIntoTruffle+", isSteppingInto = "+isSteppingInto+", stepIntoPrepared = "+stepIntoPrepared);
-                /*
+                System.err.println("AccessLoop: steppingIntoTruffle = "+steppingIntoTruffle+", isSteppingInto = "+isSteppingInto+", stepIntoPrepared = "+stepIntoPrepared);
+                
                 if (steppingIntoTruffle != 0) {
                     if (steppingIntoTruffle > 0) {
                         if (!stepIntoPrepared) {
                             try {
-                                debugManager.getDebugger().prepareStepInto(1);
+                                debugManager.prepareExecStepInto();
                             } catch (IllegalStateException isex) {
-                                forceStepInto();
+                                //forceStepInto();
+                                isex.printStackTrace();
                             }
                             stepIntoPrepared = true;
-                            //System.err.println("Prepared step into and continue.");
+                            System.err.println("Prepared step into and continue.");
                         }
                         isSteppingInto = true;
                     } else {
                         // un-prepare step into, if possible.
+                        debugManager.prepareExecContinue();
                         isSteppingInto = false;
                     }
                     steppingIntoTruffle = 0;
                     continue;
-                }*/
-                //System.err.println("accessLoopRunning = "+accessLoopRunning+", possible debugger access...");
+                }
+                System.err.println("accessLoopRunning = "+accessLoopRunning+", possible debugger access...");
                 if (accessLoopRunning) {
                     debuggerAccess();
                 }

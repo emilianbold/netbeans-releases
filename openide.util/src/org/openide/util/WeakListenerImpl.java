@@ -643,7 +643,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
             } catch (Exception ex) { // from invoke(), should not happen
                 // #151415 - ignore exception from AbstractPreferences if node has been removed
                 if (!"removePreferenceChangeListener".equals(methodName) && !"removeNodeChangeListener".equals(methodName)) {  //NOI18N
-                    String errMessage = "Problem encountered while calling " + methodClass + "." + methodName + "(...) on " + src + "\n" + ref.getImplementator(); // NOI18N
+                    String errMessage = "Problem encountered while calling " + methodClass + "." + methodName + "(" + remove + ") on " + src + "\n" + ref.getImplementator(); // NOI18N
                     LOG.warning( errMessage );
                     //detailed logging needed in some cases
                     boolean showErrMessage = ex instanceof InvocationTargetException

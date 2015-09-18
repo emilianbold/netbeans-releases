@@ -83,6 +83,7 @@ import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.branch.CherryPickAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.git.utils.JGitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
@@ -358,6 +359,9 @@ public class CommitAction extends SingleRepositoryAction {
 
         private GitRevisionInfo commit (Collection<File> commitCandidates, String message, GitUser author, GitUser commiter, boolean amend) throws GitException {
             try {
+                if (!JGitUtils.isUserSetup(getRepositoryRoot()) && askToPersistUser(author)) {
+                    JGitUtils.persistUser(getRepositoryRoot(), author);
+                }
                 GitRevisionInfo info = getClient().commit(
                         state == GitRepositoryState.MERGING_RESOLVED || state == GitRepositoryState.CHERRY_PICKING_RESOLVED
                                 ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]),
@@ -373,6 +377,21 @@ public class CommitAction extends SingleRepositoryAction {
             StringBuilder sb = new StringBuilder('\n');
             GitUtils.printInfo(sb, info);
             getLogger().outputLine(sb.toString());
+        }
+
+        @NbBundle.Messages({
+            "LBL_CommitAction.askToPersistAuthor.title=Set Repository User",
+            "# {0} - author",
+            "MSG_CommitAction.askToPersistAuthor=Repository does not have fully specified user yet.\n\n"
+                    + "Do you want to set {0} as the default author?"
+        })
+        private boolean askToPersistUser (GitUser author) {
+            return DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                    Bundle.MSG_CommitAction_askToPersistAuthor(author.toString()),
+                    Bundle.LBL_CommitAction_askToPersistAuthor_title(),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE
+            )) == NotifyDescriptor.YES_OPTION;
         }
     }    
 

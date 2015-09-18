@@ -140,13 +140,13 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
             } else {
                 // XXX: need the embedding token (i.e. JavaTokenId.JAVADOC_COMMENT*)
                 // and fire a change in its whole area
-                affectedArea = new int [] { tc.offset(), Integer.MAX_VALUE };
+                affectedArea = new int [] { tc.offset(), evt.affectedEndOffset() };
             }
         } else {
             // The change may or may not involve javadoc, so reset everyting.
             // It would be more efficient to traverse the changed area and
             // find out whether it really involves javadoc or not.
-            affectedArea = new int [] { tc.offset(), Integer.MAX_VALUE };
+            affectedArea = new int [] { tc.offset(), evt.affectedEndOffset() };
         }
         
         if (affectedArea != null) {

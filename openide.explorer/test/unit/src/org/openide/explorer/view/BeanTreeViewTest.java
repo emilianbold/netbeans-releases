@@ -302,10 +302,10 @@ public class BeanTreeViewTest extends NbTestCase {
                 assertNotNull("After removal: one node should be selected, but there are none.", tree.getSelectionPath());
             }
 
-            public void tryGc() {
+            public void tryGc() throws InterruptedException, InvocationTargetException {
                 // somewhere around here it's time to remove the destroyed node from children
                 // the same as DataObject and FolderChildren work
-                EventQueue.invokeLater(new Runnable() {
+                EventQueue.invokeAndWait(new Runnable() {
                     @Override
                     public void run () {
                         List<String> newKeys = new ArrayList<String>(Arrays.asList(childrenNames));

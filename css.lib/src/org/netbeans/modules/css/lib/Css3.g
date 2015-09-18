@@ -483,8 +483,8 @@ bodyItem
         | (cp_mixin_call ws? SEMI)=> {isLessSource()}? cp_mixin_call
         | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call
     	| rule
-        | (sass_map)=> sass_map
         | (cp_variable ws? COLON)=> cp_variable_declaration
+        | (sass_map)=> sass_map
         | at_rule
         //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
         | {isCssPreprocessorSource()}? importItem
@@ -693,7 +693,6 @@ declaration
     | (cp_mixin_declaration)=>cp_mixin_declaration
     | (cp_mixin_call)=> cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?    
-    | {isLessSource()}? LESS_AND pseudo
     | {isCssPreprocessorSource()}? at_rule
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_extend
@@ -736,7 +735,7 @@ simpleSelectorSequence
 
 //predicate
 esPred
-    : HASH_SYMBOL | HASH | DOT | LBRACKET | COLON | DCOLON | SASS_EXTEND_ONLY_SELECTOR
+    : HASH_SYMBOL | HASH | DOT | LBRACKET | COLON | DCOLON | SASS_EXTEND_ONLY_SELECTOR | {isCssPreprocessorSource()}? LESS_AND
     ;
 
 typeSelector
@@ -754,6 +753,7 @@ elementSubsequent
     (
         {isScssSource()}? sass_extend_only_selector
         | {isLessSource()}? less_selector_interpolation_exp
+        | {isCssPreprocessorSource()}? LESS_AND (IDENT | NUMBER)*
     	| cssId
     	| cssClass
         | slAttribute
@@ -793,7 +793,7 @@ cssClass
 
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
-    : IDENT | GEN | (LESS_AND+ (IDENT | NUMBER)*) | STAR
+    : IDENT | GEN | LESS_AND | STAR
     ;
 
 slAttribute
@@ -1131,7 +1131,7 @@ cp_mixin_declaration
 cp_mixin_call
     :
     (
-        {isLessSource()}? (DOT cp_mixin_name | HASH | AT_IDENT) (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
+        {isLessSource()}? (DOT cp_mixin_name | HASH | AT_IDENT | LESS_AND) ((pseudo)=>pseudo | (ws? LPAREN)=>(ws? LPAREN ws? cp_mixin_call_args? RPAREN))?
         |
         {isScssSource()}? SASS_INCLUDE ws cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? (ws? cp_mixin_block)?
     )
@@ -1223,7 +1223,7 @@ less_condition_operator
     ;
 
 less_selector_interpolation_exp :
-    less_selector_interpolation (less_selector_interpolation_exp | IDENT | MINUS)?
+    less_selector_interpolation (less_selector_interpolation_exp | ( IDENT | MINUS | DIMENSION | LENGTH)+)?
     ;
 
 less_selector_interpolation
@@ -1233,7 +1233,7 @@ less_selector_interpolation
 
 //SCSS interpolation expression
 sass_selector_interpolation_exp :
-    (IDENT | MINUS)? sass_interpolation_expression_var (sass_selector_interpolation_exp | ( IDENT | MINUS | DIMENSION)+)?
+    (IDENT | MINUS)? sass_interpolation_expression_var (sass_selector_interpolation_exp | ( IDENT | MINUS | DIMENSION | LENGTH)+)?
     ;
 
 sass_interpolation_expression_var

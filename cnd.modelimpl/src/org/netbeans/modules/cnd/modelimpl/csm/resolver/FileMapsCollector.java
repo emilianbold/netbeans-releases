@@ -313,7 +313,7 @@ public final class FileMapsCollector {
     }
 
     private static void gatherMaps(CsmFile file, int stopAtOffset, MapsCollection out) {
-        if (file == null || out.antiLoop.contains(file)) {
+        if (file == null  || !file.isValid() || out.antiLoop.contains(file)) {
             return;
         }
         out.antiLoop.add(file);

@@ -112,7 +112,7 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
+                .addGap(0, 0, 0)
                 .addComponent(lbl_usagesof)
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -120,13 +120,13 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
                     .addComponent(c_usages)
                     .addComponent(c_subclasses)
                     .addComponent(c_directOnly)
-                    .addComponent(label, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))
-                .addGap(12, 12, 12))
+                    .addComponent(label, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lbl_usagesof)
                     .addComponent(label))
@@ -138,7 +138,7 @@ public class WhereUsedPanelClass extends WhereUsedPanel.WhereUsedInnerPanel {
                 .addComponent(c_subclasses)
                 .addGap(6, 6, 6)
                 .addComponent(c_directOnly)
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

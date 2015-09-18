@@ -67,12 +67,36 @@ public class PushDownTest extends RefactoringTestBase {
     public PushDownTest(String name) {
         super(name);
     }
+    
+    public void testPushDownMethodUsed() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
+                new File("pushdown/B.java", "package pushdown; public class B { public int fact() { return 1; } public void printSomething() { System.out.print(fact()); } }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1,2}, -1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { public int fact() { return 1; } public void printSomething() { System.out.print(fact()); } }"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B { public int fact() { return 1; } public void printSomething() { System.out.print(fact()); } }"),
+                new File("pushdown/B.java", "package pushdown; public class B {}"));
+    }
+    
+    public void testPushDownMethodMakeAbstractUsed() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
+                new File("pushdown/B.java", "package pushdown; public class B { public int fact() { return 1; } public void printSomething() { System.out.print(fact()); } }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1,2}, -1, Boolean.TRUE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { public int fact() { return 1; } public void printSomething() { System.out.print(fact()); } }"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B { public int fact() { return 1; } public void printSomething() { System.out.print(fact()); } }"),
+                new File("pushdown/B.java", "package pushdown; public abstract class B { public abstract int fact(); public abstract void printSomething(); }"));
+    }
 
     public void test103592a() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
                 new File("pushdown/B.java", "package pushdown; public class B { int f, g = f; }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE, new Problem(false, "f is referenced by B."));
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE, new Problem(false, "f is referenced by B."));
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { int f; }"),
                 new File("pushdown/B.java", "package pushdown; public class B { int g = f; }"));
@@ -82,7 +106,7 @@ public class PushDownTest extends RefactoringTestBase {
         writeFilesAndWaitForScan(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
                 new File("pushdown/B.java", "package pushdown; public class B { public void m1() { } public void m2() { m1(); } }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE, new Problem(false, "m1 is referenced by B."));
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE, new Problem(false, "m1 is referenced by B."));
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { public void m1() { } }"),
                 new File("pushdown/B.java", "package pushdown; public class B {public void m2() { m1(); } }"));
@@ -109,7 +133,7 @@ public class PushDownTest extends RefactoringTestBase {
                         + "    private class ClassC extends ClassB {\n"
                         + "    }\n"
                         + "}"));
-        performPushDown(src.getFileObject("pushdown/A.java"), -1, source.indexOf("ClassB") +1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/A.java"), new int[]{-1}, source.indexOf("ClassB") +1, Boolean.FALSE);
         verifyContent(src, new File("pushdown/A.java", "package pushdown;\n"
                 + "\n"
                 + "public class A {\n"
@@ -134,7 +158,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/A.java", "package pushdown; public interface A { int a(); }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
                 new File("pushdown/B.java", "package pushdown; public class B implements A { @Override public int a() { return 1; } }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public interface A { int a(); }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B { public int a() { return 1; } }"),
@@ -147,7 +171,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
                 new File("pushdown/B.java", "package pushdown; import java.io.IOException; public class B { public int a() throws IOException { return 1; } }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; import java.io.IOException; public class A extends B { public int a() throws IOException { return 1; } }"),
                 new File("pushdown/C.java", "package pushdown; import java.io.IOException; public class C extends B { public int a() throws IOException { return 1; } }"),
@@ -159,7 +183,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
                 new File("pushdown/B.java", "package pushdown; public class B { /** * This is a method */ public int a() { return 1; } }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { /** * This is a method */ public int a() { return 1; } }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B { /** * This is a method */ public int a() { return 1; } }"),
@@ -171,7 +195,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
                 new File("pushdown/B.java", "package pushdown; public class B { /** * This is a method */ public int a() { return 1; } }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.TRUE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.TRUE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { /** * This is a method */ public int a() { return 1; } }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B { /** * This is a method */ public int a() { return 1; } }"),
@@ -183,7 +207,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
                 new File("pushdown/B.java", "package pushdown; public class B { public int a; }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { public int a; }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B { public int a; }"),
@@ -194,7 +218,7 @@ public class PushDownTest extends RefactoringTestBase {
         writeFilesAndWaitForScan(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { private void foo() { super.a = 3; } }"),
                 new File("pushdown/B.java", "package pushdown; public class B { public int a; }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { public int a;  private void foo() { a = 3; } }"),
                 new File("pushdown/B.java", "package pushdown; public class B {}"));
@@ -204,7 +228,7 @@ public class PushDownTest extends RefactoringTestBase {
         writeFilesAndWaitForScan(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { private void foo() { int a = 4; super.a = 3; } }"),
                 new File("pushdown/B.java", "package pushdown; public class B { public int a; }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { public int a;  private void foo() { int a = 4; this.a = 3; } }"),
                 new File("pushdown/B.java", "package pushdown; public class B {}"));
@@ -214,7 +238,7 @@ public class PushDownTest extends RefactoringTestBase {
         writeFilesAndWaitForScan(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { private void foo() { new Runnable() { @Override public void run() { int a = 5; System.out.println(A.super.a); } }; } }"),
                 new File("pushdown/B.java", "package pushdown; public class B { public int a; }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { public int a;  private void foo() { new Runnable() { @Override public void run() { int a = 5; System.out.println(A.this.a); } }; } }"),
                 new File("pushdown/B.java", "package pushdown; public class B {}"));
@@ -225,7 +249,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
                 new File("pushdown/B.java", "package pushdown; public class B { public int a() { return 1; } }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.TRUE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.TRUE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { public int a() { return 1; } }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B { public int a() { return 1; } }"),
@@ -237,7 +261,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/A.java", "package pushdown; public class A extends B {} class Nested { }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
                 new File("pushdown/B.java", "package pushdown; public class B { public int a() { return 1; } }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { public int a() { return 1; } } class Nested { }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B { public int a() { return 1; } }"),
@@ -249,7 +273,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
                 new File("pushdown/B.java", "package pushdown; public class B { public int a() { return 1; } }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { public int a() { return 1; } }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B { public int a() { return 1; } }"),
@@ -262,7 +286,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pdown/C.java", "package pdown; import pushdown.B; public class C extends B { }"),
                 new File("pushdown/B.java", "package pushdown; public class B implements I { public void i() { } }"),
                 new File("pushdown/I.java", "package pushdown; public interface I { public void i(); }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), -1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{-1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pdown/A.java", "package pdown; import pushdown.B;import pushdown.I; public class A extends B implements I { }"),
                 new File("pdown/C.java", "package pdown; import pushdown.B;import pushdown.I; public class C extends B implements I { }"),
@@ -276,7 +300,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/C.java", "package pushdown; public class C extends B { }"),
                 new File("pushdown/B.java", "package pushdown; public class B implements I { public void i() { } }"),
                 new File("pushdown/I.java", "package pushdown; public interface I { public void i(); }"));
-        performPushDown(src.getFileObject("pushdown/B.java"), -1, -1, Boolean.FALSE);
+        performPushDown(src.getFileObject("pushdown/B.java"), new int[]{-1}, -1, Boolean.FALSE);
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B implements I { }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B implements I { }"),
@@ -284,7 +308,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/I.java", "package pushdown; public interface I { public void i(); }"));
     }
     
-    private void performPushDown(FileObject source, final int memberNr, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
+    private void performPushDown(FileObject source, final int[] memberNrs, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PushDownRefactoring[] r = new PushDownRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -306,20 +330,25 @@ public class PushDownTest extends RefactoringTestBase {
                 TypeMirror superclass = classEl.getSuperclass();
                 TypeElement superEl = (TypeElement) info.getTypes().asElement(superclass);
                 
-                MemberInfo[] members = new MemberInfo[1];
-                Tree member;
-                if (memberNr >= 0) {
-                    member = classTree.getMembers().get(memberNr);
-                } else {
-                    member = classTree.getImplementsClause().get(Math.abs(memberNr)-1);
+                MemberInfo[] members = new MemberInfo[memberNrs.length];
+                for (int i = 0; i < memberNrs.length; i++) {
+                    int memberNr = memberNrs[i];
+                    
+                    Tree member;
+                    if (memberNr >= 0) {
+                        member = classTree.getMembers().get(memberNr);
+                    } else {
+                        member = classTree.getImplementsClause().get(Math.abs(memberNr)-1);
+                    }
+                    Element el = info.getTrees().getElement(new TreePath(classPath, member));
+                    if (memberNr <0) {
+                        members[i] = MemberInfo.create(el, info, MemberInfo.Group.IMPLEMENTS);
+                    } else {
+                        members[i] = MemberInfo.create(el, info);
+                    }
+                    members[i].setMakeAbstract(makeAbstract);
+                
                 }
-                Element el = info.getTrees().getElement(new TreePath(classPath, member));
-                if (memberNr <0) {
-                    members[0] = MemberInfo.create(el, info, MemberInfo.Group.IMPLEMENTS);
-                } else {
-                    members[0] = MemberInfo.create(el, info);
-                }
-                members[0].setMakeAbstract(makeAbstract);
 
                 r[0] = new PushDownRefactoring(TreePathHandle.create(classEl, info));
                 r[0].setMembers(members);

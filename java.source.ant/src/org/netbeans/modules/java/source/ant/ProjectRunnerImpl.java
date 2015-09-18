@@ -107,6 +107,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.openide.loaders.DataObject;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Union2;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -119,31 +121,19 @@ import org.openide.util.lookup.InstanceContent;
 public class ProjectRunnerImpl implements JavaRunnerImplementation {
 
     private static final Logger LOG = Logger.getLogger(ProjectRunnerImpl.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(ProjectRunnerImpl.class);
     
     public boolean isSupported(String command, Map<String, ?> properties) {
         return locateScript(command) != null;
     }
 
-    public ExecutorTask execute(String command, Map<String, ?> properties) throws IOException {
+    public ExecutorTask execute(final String command, final Map<String, ?> properties) throws IOException {
         if (QUICK_CLEAN.equals(command)) {
             return clean(properties);
         }
-        
-        String[] projectName = new String[1];
-        Map<String,String> antProps = computeProperties(command, properties, projectName);
-        
-        FileObject script = buildScript(command, false);
-        AntProjectCookie apc = new FakeAntProjectCookie(AntScriptUtils.antProjectCookieFor(script), command, projectName[0]);
-        AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
-        Properties props = execenv.getProperties();
-        props.putAll(antProps);
-        props.put("nb.wait.for.caches", "true");
-        if (properties.containsKey("maven.disableSources")) {
-            props.put("maven.disableSources", String.valueOf(properties.get("maven.disableSources")));
-        }
-        execenv.setProperties(props);
-
-        return AntTargetExecutor.createTargetExecutor(execenv).execute(apc, null);
+        final ExecutorTask res = new WrapperTask(new Work(command, properties));
+        RP.execute(res);
+        return res;
     }
 
     static Map<String,String> computeProperties(String command, Map<String, ?> properties, String[] projectNameOut) {
@@ -814,5 +804,102 @@ out:                for (FileObject root : exec.getRoots()) {
             return delegate.getAttribute(name);
         }
 
+    }
+
+    private final class Work implements Runnable {
+        private final String command;
+        private final Map<String,?> properties;
+        //@GuardedBy("this")
+        private Union2<ExecutorTask,Throwable> result;
+        //@GuardedBy("this")
+        private boolean stopped;
+
+        Work(
+            final String command,
+            Map<String,?> properties) {
+            this.command = command;
+            this.properties = properties;
+        }
+
+        @Override
+        public void run() {
+            try {
+                String[] projectName = new String[1];
+                Map<String,String> antProps = computeProperties(command, properties, projectName);
+                FileObject script = buildScript(command, false);
+                AntProjectCookie apc = new FakeAntProjectCookie(AntScriptUtils.antProjectCookieFor(script), command, projectName[0]);
+                AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
+                Properties props = execenv.getProperties();
+                props.putAll(antProps);
+                props.put("nb.wait.for.caches", "true");
+                if (properties.containsKey("maven.disableSources")) {
+                    props.put("maven.disableSources", String.valueOf(properties.get("maven.disableSources")));
+                }
+                execenv.setProperties(props);
+                setResult(Union2.<ExecutorTask,Throwable>createFirst(AntTargetExecutor.createTargetExecutor(execenv).execute(apc, null)));
+            } catch (Throwable t) {
+                setResult(Union2.<ExecutorTask,Throwable>createSecond(t));
+                if (t instanceof ThreadDeath) {
+                    throw (ThreadDeath)t;
+                }
+            }
+        }
+
+        private synchronized void setResult(final Union2<ExecutorTask,Throwable> result) {
+            this.result = result;
+            if (stopped && result.hasFirst()) {
+                result.first().stop();
+            }
+            this.notifyAll();
+        }
+
+        private synchronized Union2<ExecutorTask,Throwable> getResult() {
+            while (result == null) {
+                try {
+                    wait();
+                } catch (InterruptedException ie) {
+                    return null;
+                }
+            }
+            return result;
+        }
+
+        private synchronized void stop() {
+            if (result != null && result.hasFirst()) {
+                result.first().stop();
+            } else {
+                stopped = true;
+            }
+        }
+    }
+
+    private final class WrapperTask extends ExecutorTask {
+        private final Work work;
+
+        WrapperTask(final Work work) {
+            super(work);
+            this.work = work;
+        }
+
+        @Override
+        public void stop() {
+            work.stop();
+        }
+
+        @Override
+        public int result() {
+            final Union2<ExecutorTask, Throwable> result = work.getResult();
+            return result == null || result.hasSecond() ?
+                    -1 :
+                    result.first().result();
+        }
+
+        @Override
+        public InputOutput getInputOutput() {
+            final Union2<ExecutorTask, Throwable> result = work.getResult();
+            return result == null || result.hasSecond() ?
+                    InputOutput.NULL :
+                    result.first().getInputOutput();
+        }
     }
 }

@@ -51,6 +51,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.ReleasableHighlightsContainer;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -65,7 +66,7 @@ import org.openide.util.WeakListeners;
  * @author Miloslav Metelka
  */
 public class WhitespaceHighlighting extends AbstractHighlightsContainer
-implements DocumentListener, LookupListener
+implements ReleasableHighlightsContainer, DocumentListener, LookupListener
 {
     
     static final int FIRST_CHAR = 0; // First character on line
@@ -258,6 +259,11 @@ implements DocumentListener, LookupListener
                         fcs.getFontColors(TRAILING_ATTRS_FCS_NAME));
             }
         }
+    }
+
+    @Override
+    public void released() {
+        doc.removeDocumentListener(this);
     }
 
     private final class HS implements HighlightsSequence {

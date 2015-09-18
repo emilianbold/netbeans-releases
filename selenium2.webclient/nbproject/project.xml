@@ -58,15 +58,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.javascript.nodejs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>0</release-version>
-                        <specification-version>0.15</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.options.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -227,6 +218,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.selenium2.webclient.mocha</friend>
                 <friend>org.netbeans.modules.selenium2.webclient.protractor</friend>
+                <friend>org.netbeans.modules.web.clientproject</friend>
                 <package>org.netbeans.modules.selenium2.webclient.api</package>
                 <package>org.netbeans.modules.selenium2.webclient.spi</package>
             </friend-packages>

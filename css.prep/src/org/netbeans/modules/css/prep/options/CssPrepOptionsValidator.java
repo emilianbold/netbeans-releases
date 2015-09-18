@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.prep.options;
 
 import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.sass.SassExecutable;
+import org.netbeans.modules.css.prep.sass.SassCli;
 import org.netbeans.modules.css.prep.util.StringUtils;
 import org.netbeans.modules.web.common.api.ValidationResult;
 
@@ -61,7 +61,7 @@ public final class CssPrepOptionsValidator {
             // no warning in dialog, project problems will catch it
             return this;
         }
-        String warning = SassExecutable.validate(sassPath);
+        String warning = SassCli.validate(sassPath);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message("sass.path", warning)); // NOI18N
         }

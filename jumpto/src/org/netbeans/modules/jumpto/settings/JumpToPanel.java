@@ -44,9 +44,12 @@ package org.netbeans.modules.jumpto.settings;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 
 
 
+@OptionsPanelController.Keywords(keywords = {"#AdvancedOption_Keywords_GoTo"}, location = OptionsDisplayer.EDITOR, tabTitle="#AdvancedOption_DisplayName_GoTo")
 final class JumpToPanel extends javax.swing.JPanel implements ActionListener {
 
     private final JumpToOptionsPanelController controller;
@@ -156,6 +159,12 @@ final class JumpToPanel extends javax.swing.JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        controller.changed();
+        boolean isChanged = false;
+        HighlightingSettings settings = HighlightingSettings.getDefault();
+        if ((HighlightingSettings.Mode)highlight.getSelectedItem() != settings.getMode()
+                || (HighlightingSettings.Type)by.getSelectedItem() != settings.getType()) {
+            isChanged = true;
+        }
+        controller.changed(isChanged);
     }
 }

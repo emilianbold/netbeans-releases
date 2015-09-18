@@ -288,6 +288,34 @@ public class ErrorDescriptionFactory {
         
         return new ErrorDescription(file, id, description, details, severity, fixes, errorBounds);
     }
+    
+    /**Create a new {@link ErrorDescription} with the given parameters.
+     *
+     * @param id an optional ID of the {@link ErrorDescription}. Should represent a "type" of an error/warning.
+     *           It is recommended that providers prefix the ID with their unique prefix.
+     * @param severity the desired {@link Severity}
+     * @param customType custom annotation type
+     * @param description the text of the error/warning
+     * @param details optional "more details" describing the error/warning
+     * @param fixes a collection of {@link Fix}es that should be shown for the error/warning
+     * @param file for which the {@link ErrorDescription} should be created
+     * @param errorBounds start and end position of the error/warning
+     * @return a newly created {@link ErrorDescription} based on the given parameters
+     * @since 1.39
+     */
+    public static @NonNull ErrorDescription createErrorDescription(@NullAllowed String id, @NonNull Severity severity, @NullAllowed String customType, @NonNull String description, @NullAllowed CharSequence details,  @NonNull List<Fix> fixes, @NonNull Document doc, @NonNull Position start, @NonNull Position end) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("fixes", fixes);
+        Parameters.notNull("doc", doc);
+        Parameters.notNull("start", start);
+        Parameters.notNull("end", end);
+        
+        DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        FileObject file = od != null ? od.getPrimaryFile() : null;
+        
+        return new ErrorDescription(file, id, description, details, severity, customType, new StaticFixList(fixes), HintsControllerImpl.linePart(doc, start, end));
+    }
 
     /**
      * Converts "normal" list of {@link Fix}es into {@link LazyFixList}

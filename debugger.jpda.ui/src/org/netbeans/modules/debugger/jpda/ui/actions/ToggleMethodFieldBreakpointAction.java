@@ -78,16 +78,21 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
     private static final String[] BREAKPOINT_ANNOTATION_TYPES = new String[] {
         "Breakpoint_broken",
         "Breakpoint",
+        "Breakpoint_stroke",
         "CondBreakpoint_broken",
         "CondBreakpoint",
+        "CondBreakpoint_stroke",
         "DisabledBreakpoint",
         "DisabledCondBreakpoint",
+        "DisabledBreakpoint_stroke",
         "ClassBreakpoint",
         "DisabledClassBreakpoint",
         "DisabledFieldBreakpoint",
         "DisabledMethodBreakpoint",
         "FieldBreakpoint",
         "MethodBreakpoint",
+        "CurrentExpressionLine",
+        "CurrentExpression",
     };
     
     private Object action;
@@ -98,7 +103,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         setEnabled (true);
         putValue("default-action", true);
         putValue("supported-annotation-types", BREAKPOINT_ANNOTATION_TYPES);
-        putValue("default-action-excluded-annotation-types", BREAKPOINT_ANNOTATION_TYPES);
+        //putValue("default-action-excluded-annotation-types", BREAKPOINT_ANNOTATION_TYPES);
     }
     
     public Object getAction () {

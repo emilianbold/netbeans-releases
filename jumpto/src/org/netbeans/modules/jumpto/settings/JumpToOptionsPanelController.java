@@ -60,7 +60,6 @@ import org.openide.util.Lookup;
         keywordsCategory = "Editor/GoTo",
         position=2311
 )
-@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_GoTo=Go To", "AdvancedOption_Keywords_GoTo=goto,symbol,file,type"})
 public final class JumpToOptionsPanelController extends OptionsPanelController {
 
     private JumpToPanel panel;
@@ -126,11 +125,11 @@ public final class JumpToOptionsPanelController extends OptionsPanelController {
         return panel;
     }
 
-    void changed() {
+    void changed(boolean isChanged) {
         if (!changed) {
-            changed = true;
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
+        changed = isChanged;
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 

@@ -99,7 +99,9 @@ public final class NewProjectIterator extends BasicWizardIterator {
         "org.openide.loaders", // NOI18N
         "org.openide.dialogs", // NOI18N
         "org.openide.util", // NOI18N
+        "org.openide.util.ui", // NOI18N
         "org.openide.util.lookup", // NOI18N
+        "org.netbeans.api.templates", // NOI18N
         "org.netbeans.modules.projectuiapi", // NOI18N
         "org.netbeans.modules.projectapi", // NOI18N
         "org.openide.awt", // NOI18N

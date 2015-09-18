@@ -742,7 +742,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     private transient InstanceContent ic;
     private transient Lookup localLookup;
     private transient Lookup full;
-    final private transient Lookup.Result<GlassfishModuleFactory>
+    private final transient Lookup.Result<GlassfishModuleFactory>
             lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(
             GlassfishModuleFactory.class);;
     private transient Collection<? extends GlassfishModuleFactory>
@@ -753,6 +753,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     // API instance
     private ServerInstance commonInstance;
     private GlassfishInstanceProvider instanceProvider;
+
+    // GuardedBy("lookupResult")
+    private Node fullNode;
     
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -1704,7 +1707,12 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     @Override
     public Node getFullNode() {
         Logger.getLogger("glassfish").finer("Creating GF Instance node [FULL]"); // NOI18N
-        return new Hk2InstanceNode(this, true);
+        synchronized (lookupResult) {
+            if (fullNode == null) {
+                fullNode = new Hk2InstanceNode(this, true);
+            }
+            return fullNode;
+        }
     }
 
     @Override

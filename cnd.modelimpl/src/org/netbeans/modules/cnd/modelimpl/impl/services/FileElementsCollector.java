@@ -227,7 +227,7 @@ public class FileElementsCollector {
     }
 
     private void gatherFileMaps(Set<CsmFile> visitedFiles, CsmFile file, int startOffset, int endOffset) {
-        if( visitedFiles.contains(file) ) {
+        if( !file.isValid() || visitedFiles.contains(file) ) {
             return;
         }
         visitedFiles.add(file);

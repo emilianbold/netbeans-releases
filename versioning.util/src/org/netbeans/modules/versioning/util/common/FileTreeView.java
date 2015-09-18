@@ -166,6 +166,7 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
                 showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(view.getOutline()));
             }
         });
+        view.getOutline().getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "slideOut");
         viewComponent = new ViewContainer(em);
         viewComponent.add(view, BorderLayout.CENTER);
         viewComponent.addAncestorListener(this);

@@ -42,7 +42,9 @@
 package org.netbeans.modules.cnd.modelimpl.parser.clank;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -56,6 +58,7 @@ import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.util.Exceptions;
 
@@ -67,13 +70,36 @@ public class ClankFileInfoQuerySupport {
 
     public static List<CsmReference> getMacroUsages(FileImpl fileImpl, Interrupter interrupter) {
         List<CsmReference> out = new ArrayList<>();
-        for(CsmReference reference : fileImpl.getReferences()) {
+        if (APTTraceFlags.DEFERRED_MACRO_USAGES) {
+            Collection<PreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
             if (interrupter.cancelled()) {
                 return out;
             }
-            CsmObject referencedObject = reference.getReferencedObject();
-            if (CsmKindUtilities.isMacro(referencedObject)) {
-                out.add(reference);
+            if (handlers.isEmpty()) {
+                DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + fileImpl.getAbsolutePath())); //NOI18N
+            } else if (handlers.size() == 1) {
+                PreprocHandler handler = handlers.iterator().next();
+                out.addAll(ClankTokenStreamProducer.getMacroUsages(fileImpl, handler, interrupter));
+            } else {
+                TreeSet<CsmReference> result = new TreeSet<>(CsmOffsetable.OFFSET_COMPARATOR);
+                for (PreprocHandler handler : handlers) {
+                    if (interrupter.cancelled()) {
+                        break;
+                    }
+                    // ask for concurrent entry if absent
+                    result.addAll(ClankTokenStreamProducer.getMacroUsages(fileImpl, handler, interrupter));
+                }
+                out = new ArrayList<>(result);
+            }
+        } else {
+            for (CsmReference reference : fileImpl.getReferences()) {
+                if (interrupter.cancelled()) {
+                    return out;
+                }
+                CsmObject referencedObject = reference.getReferencedObject();
+                if (CsmKindUtilities.isMacro(referencedObject)) {
+                    out.add(reference);
+                }
             }
         }
         return out;
@@ -91,7 +117,7 @@ public class ClankFileInfoQuerySupport {
         
     public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
         assert APTTraceFlags.USE_CLANK;
-        TokenStream ts = fileImpl.getTokenStream(offset, offset, code, true);
+        TokenStream ts = fileImpl.getTokenStreamForMacroExpansion(offset, offset, code, true);
         ts = new APTCommentsFilter(ts);
 
         StringBuilder sb = new StringBuilder(""); // NOI18N

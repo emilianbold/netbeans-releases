@@ -37,6 +37,11 @@
  */
 package org.netbeans.modules.openide.loaders;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
 
 /** Currently allows to share RP for nodes used by different packages
@@ -45,12 +50,42 @@ import org.openide.util.RequestProcessor;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class DataNodeUtils {
-    private static final RequestProcessor RP = new RequestProcessor("Data System Nodes", 10); // NOI18N
-    
+    private static final RequestProcessor RP = new RequestProcessor("Data System Nodes"); // NOI18N
+
+    private static final Map<FileSystem, RequestProcessor> FS_TO_RP
+            = new WeakHashMap<FileSystem, RequestProcessor>();
+
     private DataNodeUtils() {
     }
 
     public static RequestProcessor reqProcessor() {
         return RP;
+    }
+
+    /**
+     * Get request processor for a file.
+     *
+     * @param fo Some FileObject.
+     * @return Request Processor (newly) assigned to the file's filesystem.
+     */
+    public static RequestProcessor reqProcessor(FileObject fo) {
+        if (fo == null) {
+            return RP;
+        }
+        FileSystem fs;
+        try {
+            fs = fo.getFileSystem();
+            synchronized (FS_TO_RP) {
+                RequestProcessor rp = FS_TO_RP.get(fs);
+                if (rp == null) {
+                    rp = new RequestProcessor("Data System Nodes for " //NOI18N
+                            + fs.getDisplayName());
+                    FS_TO_RP.put(fs, rp);
+                }
+                return rp;
+            }
+        } catch (FileStateInvalidException ex) {
+            return RP;
+        }
     }
 }

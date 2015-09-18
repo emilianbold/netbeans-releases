@@ -52,7 +52,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.swing.Action;
 import javax.swing.BoxLayout;
@@ -334,9 +334,9 @@ public class ShelveChangesAction extends SingleRepositoryAction {
         }
 
         private JComponent[] getMenu (VCSContext context, boolean popup) {
-            final Map.Entry<File, File[]> actionRoots = getActionRoots(context);
-            if (actionRoots != null) {
-                final File root = actionRoots.getKey();
+            Set<File> actionRoots = GitUtils.getRepositoryRoots(context);
+            if (actionRoots.size() == 1) {
+                final File root = actionRoots.iterator().next();
                 RepositoryInfo info = RepositoryInfo.getInstance(root);
                 final List<GitRevisionInfo> stashes = info.getStashes();
                 if (!stashes.isEmpty()) {

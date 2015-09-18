@@ -91,6 +91,7 @@ public class Field6Test extends GeneratorTestBase {
             "package hierbas.del.litoral;\n\n" +
             "import java.io.*;\n\n" +
             "public class Test {\n" +
+            "\n" +
             "    int field1;\n" +
             "    public void taragui() {\n" +
             "    }\n" +

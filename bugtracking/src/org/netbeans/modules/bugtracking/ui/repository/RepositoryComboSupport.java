@@ -248,6 +248,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         this.refFile = refFile;
         this.preselectSingleRepo = preselectSingleRepo;
 
+        this.comboBox.setModel(comboBoxModel = new RepositoryComboModel());
+        this.comboBox.setRenderer(new RepositoryComboRenderer());
+        
         defaultRepoComputationPending = (defaultRepo == null);
 
         progress.set(Progress.INITIALIZED);
@@ -297,8 +300,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
          * this is also the right time for manipulation with GUI:
          */
         checkOldComboBoxModel(comboBox);
-        this.comboBox.setModel(comboBoxModel = new RepositoryComboModel());
-        this.comboBox.setRenderer(new RepositoryComboRenderer());
+        this.comboBox.setModel(comboBoxModel = new RepositoryComboModel());        
         setComboBoxData(new Object[] {LOADING_REPOSITORIES});
 
         updateProgress(Progress.STARTED);

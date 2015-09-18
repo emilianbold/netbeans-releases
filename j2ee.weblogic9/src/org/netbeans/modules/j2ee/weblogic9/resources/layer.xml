@@ -126,6 +126,8 @@ made subject to such option by the copyright holder.
                     </folder>
                     <folder name="WAR">
                         <file name="WEB-INF\weblogic.xml"/>
+                        <!-- 210324 -->
+                        <file name="WEB-INF\weblogic-ejb-jar.xml"/>
                     </folder>
                     <folder name="EJB">
                         <file name="META-INF\weblogic-ejb-jar.xml"/>

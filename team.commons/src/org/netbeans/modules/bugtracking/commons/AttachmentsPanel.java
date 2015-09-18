@@ -49,8 +49,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -66,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import static javax.swing.Action.NAME;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
@@ -74,13 +77,19 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.LayoutStyle;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
@@ -89,6 +98,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.Places;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -377,6 +388,10 @@ public class AttachmentsPanel extends JPanel {
     private JPopupMenu menuFor(Attachment attachment, LinkButton patchButton) {
         JPopupMenu menu = new JPopupMenu();
         menu.add(attachment.getOpenAction());
+        Action openInStackAnalyzerAction = attachment.getOpenInStackAnalyzerAction();
+        if(openInStackAnalyzerAction != null) {
+            menu.add(openInStackAnalyzerAction);
+        }
         menu.add(attachment.getSaveAction());
         if (attachment.isPatch() && hasPatchUtils()) {
             Action action = attachment.getApplyPatchAction();
@@ -608,6 +623,11 @@ public class AttachmentsPanel extends JPanel {
         return ideServices != null && ideServices.providesPatchUtils();
     }
 
+    private static boolean hasStackTraceUtils() {
+        IDEServices ideServices = Support.getInstance().getIDEServices();
+        return ideServices != null && ideServices.providesOpenInStackAnalyzer();
+    }
+
     public static interface Attachment {
 
         public boolean isPatch ();
@@ -620,6 +640,8 @@ public class AttachmentsPanel extends JPanel {
         
         public Action getDeleteAction ();
 
+        public Action getOpenInStackAnalyzerAction();
+                
         public String getDesc ();
 
         public String getFilename ();
@@ -638,6 +660,7 @@ public class AttachmentsPanel extends JPanel {
         private OpenAttachmentAction openAttachmentAction;
         private SaveAttachmentAction saveAttachmentAction;
         private ApplyPatchAction applyPatchAction;
+        private OpenInStackAnalyzerAction openStacktraceAction;
         @Override
         public Action getOpenAction () {
             if (openAttachmentAction == null) {
@@ -666,6 +689,18 @@ public class AttachmentsPanel extends JPanel {
             return saveAttachmentAction;
         }
 
+        @Override
+        public Action getOpenInStackAnalyzerAction() {
+            if(Boolean.getBoolean("bugtracking.experimental.issue.openInStackAnalyzer") && hasStackTraceUtils()) {
+                if (openStacktraceAction == null) {
+                    openStacktraceAction = new OpenInStackAnalyzerAction();
+                }
+                return openStacktraceAction;
+            } else {
+                return null;
+            }
+        }
+        
         @Override
         public Action getDeleteAction () {
             return null;
@@ -719,6 +754,106 @@ public class AttachmentsPanel extends JPanel {
             });
         }
 
+        public void openInStackAnalyzer() {
+            String progressFormat = NbBundle.getMessage(OpenAttachmentAction.class, "Attachment.open.progress");    //NOI18N
+            String progressMessage = MessageFormat.format(progressFormat, getFilename());
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+            handle.start();
+            handle.switchToIndeterminate();
+            Support.getInstance().getParallelRP().post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        final IDEServices ideServices = Lookup.getDefault().lookup(IDEServices.class);
+                        if(ideServices == null || !ideServices.providesOpenInStackAnalyzer()) {
+                            return;
+                        }
+                        final File file = saveToTempFile();
+                        if(file.length() > 1024 * 1024) {
+                            long size = file.length();
+                            Object[] arr = {
+                                getFilename(),                                
+                                new Long (size), // bytes
+                                new Long (size / 1024 + 1), // kilobytes
+                                new Long (size / (1024 * 1024)), // megabytes
+                                new Long (size / (1024 * 1024 * 1024)), // gigabytes
+                            };
+                            DialogDescriptor c = new DialogDescriptor(
+                                    NbBundle.getMessage(AttachmentPanel.class, "MSG_ObjectIsTooBig", arr), 
+                                    NbBundle.getMessage(AttachmentPanel.class, "CTL_TooBig"), 
+                                    true, 
+                                    DialogDescriptor.YES_NO_OPTION, DialogDescriptor.NO_OPTION, null);
+                            if(DialogDisplayer.getDefault().notify(c) != NotifyDescriptor.YES_OPTION) {
+                                return; 
+                            }
+                        }
+                        
+                        if(isBinary(file)) {
+                            DialogDescriptor c = new DialogDescriptor(
+                                    NbBundle.getMessage(AttachmentPanel.class, "MSG_BinaryContent", new Object[] {getFilename()}), 
+                                    NbBundle.getMessage(AttachmentPanel.class, "CTL_BinaryContent"), 
+                                    true, 
+                                    DialogDescriptor.YES_NO_OPTION, DialogDescriptor.NO_OPTION, null);
+                            if(DialogDisplayer.getDefault().notify(c) != NotifyDescriptor.YES_OPTION) {
+                                return;
+                            }
+                            return;
+                        }
+                        
+                        final BufferedReader fr = new BufferedReader(new FileReader(file));
+//                        final StringBuilder sb = new StringBuilder();
+//                        String ln = fr.readLine();
+//                        while(ln != null) {
+//                            sb.append(ln);
+//                            ln = fr.readLine();
+//                            if(ln != null) {
+//                                sb.append("\n"); // NOI18N
+//                            }
+//                        }
+                        
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    ideServices.openInStackAnalyzer(fr);
+                                } finally {
+                                    if(fr != null) {
+                                        try {
+                                            // relying on this beeing called synchronously
+                                            fr.close();
+                                        } catch (IOException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } catch (IOException ioex) {
+                        LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                    } finally {
+                        handle.finish();
+                    }
+                }
+
+                private boolean isBinary(File file) {
+                    FileObject fo = FileUtil.toFileObject(file);
+                    try {
+                        DataObject dao = DataObject.find(fo);
+                        if (dao.getCookie(EditorCookie.class) == null) {
+                            return true;
+                        }
+                    }catch (DataObjectNotFoundException e) {
+                        // not found, continue
+                    }
+                    String mime = fo.getMIMEType();
+                    if (mime != null && mime.equals("application/octet-stream")) {
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+        
         private void saveToFile() {
             final File file = new FileChooserBuilder(AttachmentsPanel.class)
                     .setFilesOnly(true).showSaveDialog();
@@ -808,6 +943,22 @@ public class AttachmentsPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 open();
+            }
+        }
+
+        private class OpenInStackAnalyzerAction extends AbstractAction {
+            public OpenInStackAnalyzerAction() {
+                putValue(NAME,  NbBundle.getMessage(
+                                   OpenAttachmentAction.class,
+                                   "Attachment.OpenInStackAction.name"));   //NOI18N
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                IDEServices ideServices = Lookup.getDefault().lookup(IDEServices.class);
+                if(ideServices != null && ideServices.providesOpenInStackAnalyzer()) {
+                    openInStackAnalyzer();                    
+                }
             }
         }
 

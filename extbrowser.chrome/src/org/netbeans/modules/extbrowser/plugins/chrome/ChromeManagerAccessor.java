@@ -127,6 +127,15 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
          */
         @Override
         public ExtensionManager.ExtensitionStatus isInstalled() {
+            // Allows to skip the detection of Chrome extension
+            String status = System.getProperty("netbeans.chrome.connector.status"); // NOI18N
+            if (status != null) {
+                try {
+                    return ExtensionManager.ExtensitionStatus.valueOf(status);
+                } catch (IllegalArgumentException iaex) {
+                    LOGGER.log(Level.INFO, iaex.getMessage(), iaex);
+                }
+            }
             while (true) {
                 ExtensionManager.ExtensitionStatus result = isInstalledImpl();
                 if (result == ExtensionManager.ExtensitionStatus.DISABLED) {

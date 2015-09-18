@@ -44,29 +44,12 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
-import com.oracle.truffle.api.ExecutionContext;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.debug.Debugger;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameInstance;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrument.Visualizer;
+import com.oracle.truffle.api.debug.ExecutionEvent;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.vm.TruffleVM;
-import com.oracle.truffle.js.engine.TruffleJSEngine;
-import com.oracle.truffle.js.runtime.JSContext;
-import com.oracle.truffle.js.runtime.JSFrameUtil;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-import javax.script.ScriptEngine;
 
 /**
  *
@@ -82,8 +65,9 @@ class JPDATruffleDebugManager {
     //private final TruffleVM.Language language;
     private final Debugger debugger;
     private final TruffleVM tvm;
+    private final ExecutionEvent execEvent;
 
-    public JPDATruffleDebugManager(Debugger debugger, TruffleVM tvm) {
+    public JPDATruffleDebugManager(Debugger debugger, TruffleVM tvm, ExecutionEvent event) {
         //super(dbgClient);
         //this.engine = engine;
         //this.context = context;
@@ -93,6 +77,7 @@ class JPDATruffleDebugManager {
         //language = getLanguage(engine);
         this.debugger = debugger; // DebugEngine.create(dbgClient, language);
         this.tvm = tvm;
+        this.execEvent = event;
         /*
         startExecution(null);
         prepareContinue();
@@ -109,11 +94,11 @@ class JPDATruffleDebugManager {
         return null; // Initialize TruffleJSEngine class only.
     }
 
-    static JPDATruffleDebugManager setUp(Debugger debugger, TruffleVM tvm) {
+    static JPDATruffleDebugManager setUp(Debugger debugger, TruffleVM tvm, ExecutionEvent event) {
         //System.err.println("JPDATruffleDebugManager.setUp()");
         //JSContext jsContext = ((TruffleJSEngine) engine).getJSContext();
         //ScriptContext context = engine.getContext();
-        JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(debugger, tvm);
+        JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(debugger, tvm, event);
                 //engine, jsContext, new JPDADebugClient(getLanguage(engine)));
         //jsContext.setDebugContext(new JPDADebugContext(jsContext, debugManager));
         //jsContext.addNodeProber(new JPDAJSNodeProber(jsContext, debugManager, ));
@@ -232,6 +217,10 @@ class JPDATruffleDebugManager {
         SourceSection sourceSection = node.getSourceSection();
         if (sourceSection == null) {
             sourceSection = node.getEncapsulatingSourceSection();
+        }
+        if (sourceSection == null) {
+            System.err.println("Node without sourceSection! node = "+node+", of class: "+node.getClass());
+            throw new IllegalStateException("Node without sourceSection! node = "+node+", of class: "+node.getClass());
         }
         int line = sourceSection.getStartLine();
         Source source = sourceSection.getSource();
@@ -445,5 +434,17 @@ class JPDATruffleDebugManager {
         
     }
     */
+
+    void prepareExecStepInto() {
+        System.err.println("prepareExecStepInto()...");
+        execEvent.prepareStepInto();
+        System.err.println("prepareExecStepInto() DONE.");
+    }
+
+    void prepareExecContinue() {
+        System.err.println("prepareExecContinue()...");
+        execEvent.prepareContinue();
+        System.err.println("prepareExecContinue() DONE.");
+    }
     
 }

@@ -321,7 +321,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      *
      * @param  nodes  nodes selected when the Create Test action was invoked
      */
-    @NbBundle.Messages({"CommonTestsCfgOfCreate_Title=Create Tests",
+    @NbBundle.Messages({"CommonTestsCfgOfCreate_Title=Create/Update Tests",
         "LBL_OK=OK",
         "AN_OK=Confirm options",
         "AD_OK=Confirm options"
@@ -355,7 +355,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
                         new Object[] {btnOK, DialogDescriptor.CANCEL_OPTION},
                         btnOK,                      //initial value
                         DialogDescriptor.DEFAULT_ALIGN,
-                        new HelpCtx(CommonTestsCfgOfCreate.class),
+                        new HelpCtx("org.netbeans.modules.gsf.testrunner.CommonTestsCfgOfCreate"),
                         (ActionListener) null
                 ));
         removeChangeListener(changeListener);
@@ -604,7 +604,10 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             shouldShowClassToTestInfo = testCreatorConfiguration.showClassToTestInfo();
         }
         lblClassToTest.setVisible(shouldShowClassToTestInfo);
-        lblClassToTestValue.setVisible(shouldShowClassToTestInfo);
+        if(lblClassToTestValue != null) {
+            // single class/package was selected by the user
+            lblClassToTestValue.setVisible(shouldShowClassToTestInfo);
+        }
         return shouldShowClassToTestInfo;
     }
     

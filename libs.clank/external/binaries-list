@@ -1,6 +1,6 @@
-#changeset:   15359:e091d48db2e3
+#changeset:   15714:60e175d9bfc7
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Aug 07 15:51:11 2015 +0200
-#summary:     extra fix after 15337:01eaf71eb9fe
-05D079C8352DA7A77245577B4FE3E55DC7390D87 clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Thu Sep 17 20:42:20 2015 +0300
+#summary:     trying to localize iz #255337 - [newcodemodel] preprocessor states differ on 1
+91F81ED36683E7DA584C97FACA3DA8E21F6EBAE4 clank_0.3.6.zip

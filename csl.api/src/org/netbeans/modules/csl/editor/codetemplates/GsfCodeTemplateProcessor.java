@@ -64,6 +64,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -76,6 +77,8 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
     private CodeTemplateInsertRequest   request;
     private volatile ParserResult                cInfo = null;
     private volatile Snapshot                    snapshot = null;
+    
+    private static final RequestProcessor RP = new RequestProcessor(GsfCodeTemplateProcessor.class.getName(), 1, false, false);
 
     private GsfCodeTemplateProcessor(CodeTemplateInsertRequest request) {
         this.request = request;
@@ -153,7 +156,7 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
             final JTextComponent c = request.getComponent();
 
             //final int caretOffset = c.getCaret().getDot();
-            Source js = Source.create (c.getDocument());
+            final Source js = Source.create (c.getDocument());
 
             if (c.getDocument() instanceof BaseDocument) {
                 BaseDocument doc = (BaseDocument) c.getDocument();
@@ -162,32 +165,38 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
                 }
             }
             if (js != null) {
-                try {
-                    final AtomicBoolean done = new AtomicBoolean();
-                    final Thread me = Thread.currentThread();
-                    ParserManager.parseWhenScanFinished(
-                        Collections.<Source> singleton (js),
-                        new UserTask () {
-                            public void run (ResultIterator resultIterator) throws IOException, ParseException {
-                                if (!Thread.currentThread().equals(me)) {
-                                    return;
+                final RequestProcessor.Task newTask = RP.create(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            final AtomicBoolean done = new AtomicBoolean();
+                            final Thread me = Thread.currentThread();
+                            ParserManager.parseWhenScanFinished(
+                                    Collections.<Source>singleton(js),
+                                    new UserTask() {
+                                public void run(ResultIterator resultIterator) throws IOException, ParseException {
+                                    if (!Thread.currentThread().equals(me)) {
+                                        return;
+                                    }
+                                    Parser.Result parserResult = resultIterator.getParserResult(c.getCaretPosition());
+                                    if (!(parserResult instanceof ParserResult)) {
+                                        return;
+                                    }
+                                    cInfo = (ParserResult) parserResult;
+                                    snapshot = parserResult.getSnapshot();
+                                    done.set(true);
                                 }
-                                Parser.Result parserResult = resultIterator.getParserResult (c.getCaretPosition ());
-                                if(!(parserResult instanceof ParserResult)) {
-                                    return ;
-                                }
-                                cInfo = (ParserResult)parserResult;
-                                snapshot = parserResult.getSnapshot ();
-                                done.set(true);
                             }
+                            );
+                            if (!done.get()) {
+                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
+                            }
+                        } catch (ParseException ioe) {
+                            Exceptions.printStackTrace(ioe);
                         }
-                    );
-                    if (!done.get()) {
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
                     }
-                } catch (ParseException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+                });
+                newTask.schedule(0);
             }
         }
         return cInfo != null;

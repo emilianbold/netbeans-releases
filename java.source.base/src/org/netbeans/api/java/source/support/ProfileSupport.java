@@ -615,7 +615,7 @@ public class ProfileSupport {
             @CheckForNull
             protected URL map(@NonNull final FileObject fo) {
                 final String relative = FileObjects.convertFolder2Package(
-                        FileObjects.stripExtension(FileObjects.getRelativePath(cacheRoot, FileUtil.toFile(fo))));
+                        FileObjects.stripExtension(FileObjects.getRelativePath(cacheRoot, FileUtil.toFile(fo))), File.separatorChar);
                 final FileObject sourceFile = SourceUtils.getFile(
                     ElementHandleAccessor.getInstance().create(ElementKind.CLASS, relative),
                     resolveCps);
@@ -857,7 +857,13 @@ public class ProfileSupport {
                     }
                 }
             } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                LOG.log(
+                        Level.INFO,
+                        "Cannot read class: {0}, reason: {1}",  //NOI18N
+                        new Object[]{
+                            sb,
+                            ioe.getMessage()
+                        });
             }
             return res;
         }

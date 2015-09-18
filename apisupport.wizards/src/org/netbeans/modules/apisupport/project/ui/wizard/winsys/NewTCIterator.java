@@ -344,6 +344,7 @@ public final class NewTCIterator extends BasicWizardIterator {
             fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
             fileChanges.add(fileChanges.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, WindowManager.class.getName()));
             fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
+            fileChanges.add(fileChanges.addModuleDependency("org.openide.util.ui")); //NOI18N
             fileChanges.add(fileChanges.addModuleDependency("org.openide.util.lookup")); //NOI18N
             fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
             if (propertiesPersistence) {

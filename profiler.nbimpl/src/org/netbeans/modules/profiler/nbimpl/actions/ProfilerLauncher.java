@@ -57,6 +57,7 @@ import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.global.Platform;
 import org.netbeans.modules.profiler.HeapDumpWatch;
 import org.netbeans.modules.profiler.actions.ProfilingSupport;
+import org.netbeans.modules.profiler.api.GestureSubmitter;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
@@ -124,6 +125,11 @@ public class ProfilerLauncher {
             
             if (isAttach()) {
                 final AttachSettings aSettings = getAttachSettings();
+                
+                // Log profiler usage
+                if (project == null) GestureSubmitter.logAttachExternal(pSettings, aSettings);
+                else GestureSubmitter.logAttachApp(project, pSettings, aSettings);
+                
                 ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                     public void run() { profiler.attachToApp(pSettings, aSettings); }
                 });
@@ -135,6 +141,9 @@ public class ProfilerLauncher {
                     ProfilerDialogs.displayError(Bundle.ProfilerLauncher_unsupportedProject(ProjectUtilities.getDisplayName(project)));
                     return false;
                 }
+                
+                // Log profiler usage
+                GestureSubmitter.logProfileApp(project, pSettings);
                 
                 final Session s = newSession(command, getContext());
                 if (s != null) {
