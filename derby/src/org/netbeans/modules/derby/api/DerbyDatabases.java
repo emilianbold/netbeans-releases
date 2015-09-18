@@ -190,8 +190,8 @@ public final class DerbyDatabases {
      * @throws IOException if the Derby system home directory does not exist
      *         and it cannot be created.
      */
-    public static DatabaseConnection createSampleDatabase(String databaseName, boolean failOnExistingDB) throws DatabaseException, IOException {
-        return IMPL.createSampleDatabase(databaseName, failOnExistingDB);
+    public static DatabaseConnection createSampleDatabase(String databaseName) throws DatabaseException, IOException {
+        return IMPL.createSampleDatabase(databaseName, false);
     }
 
 }
