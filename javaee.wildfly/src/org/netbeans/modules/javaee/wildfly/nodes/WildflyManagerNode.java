@@ -86,7 +86,7 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     private static final String ADMIN_URL_WILDFLY = "/console"; //NOI18N
     private static final String HTTP_HEADER = "http://";
 
-    public WildflyManagerNode( Children children, Lookup lookup) {
+    public WildflyManagerNode(Children children, Lookup lookup) {
         super(children);
         this.lookup = lookup;
         this.isWidlfy = getDeploymentManager().getProperties().isWildfly();
