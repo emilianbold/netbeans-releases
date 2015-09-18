@@ -104,20 +104,20 @@ import org.openide.util.CharSequences;
  */
 public class TraceModel extends TraceModelBase {
 
-    private static final class TestResult {
+    public static final class TestResult {
 
         private long time;
         private long lineCount;
 
-        public TestResult() {
+        private TestResult() {
             this(0);
         }
 
-        public TestResult(long time) {
+        private TestResult(long time) {
             this.setTime(time);
         }
 
-        public TestResult(long time, long lineCount) {
+        private TestResult(long time, long lineCount) {
             this.setTime(time);
             this.setLineCount(lineCount);
         }
@@ -134,7 +134,7 @@ public class TraceModel extends TraceModelBase {
             return time;
         }
 
-        public void setTime(long time) {
+        private void setTime(long time) {
             this.time = time;
         }
 
@@ -146,11 +146,11 @@ public class TraceModel extends TraceModelBase {
             return lineCount >= 0;
         }
 
-        public void setLineCount(long lineCount) {
+        private void setLineCount(long lineCount) {
             this.lineCount = lineCount;
         }
 
-        public void accumulate(TestResult toAdd) {
+        private void accumulate(TestResult toAdd) {
             time += toAdd.time;
             if (isLineCountValid()) {
                 if (toAdd.isLineCountValid()) {
@@ -161,6 +161,15 @@ public class TraceModel extends TraceModelBase {
             }
         }
     }
+
+    public interface ParsingTimeResultListener {
+        void notifyParsingTime(TestResult parsingTime);
+    }
+
+    void addParsingTimeResultListener(ParsingTimeResultListener listener) {
+        parsingTimeResultListener = listener;
+    }
+
     private static final int APT_REPEAT_TEST = Integer.getInteger("apt.repeat.test", 3).intValue(); // NOI18N
 
     public static void main(String[] args) {
@@ -247,6 +256,13 @@ public class TraceModel extends TraceModelBase {
             }
         }
     };
+    private ParsingTimeResultListener parsingTimeResultListener;
+
+    private void notifyPrseTime(TestResult total) {
+        if (parsingTimeResultListener != null) {
+            parsingTimeResultListener.notifyParsingTime(total);
+        }
+    }
 
     @Override
     protected void shutdown(boolean clearCache) {
@@ -531,6 +547,7 @@ public class TraceModel extends TraceModelBase {
         long t = System.currentTimeMillis();
         TestResult total = test();
         total.time = System.currentTimeMillis() - t;
+        notifyPrseTime(total);
 
         if (testRawPerformance) {
             print("Take one finished."); // NOI18N
