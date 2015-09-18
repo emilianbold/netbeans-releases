@@ -66,6 +66,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -73,6 +75,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.OpenSupport;
@@ -92,8 +95,72 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
     private static final Logger LOG = Logger.getLogger(COSRedirectorImpl.class.getName());
     private static final boolean ENABLED;
+    private static final boolean ENABLED_REMOTE;
     private static final int L1_CACHE_SIZE = 10;
-    private final static long INVALID_INODE = -1L;
+    private final static FileKey INVALID_INODE = FileKey.createInvalid();
+
+    private static class FileKey {
+
+        private final int fs;
+        private final long dev;
+        private final long inode;
+
+        private FileKey(int fs, long dev, long inode) {
+            this.fs = fs;
+            this.dev = dev;
+            this.inode = inode;
+        }
+
+        public static FileKey createLocal(long fileID) {
+            return new FileKey(0, 0, fileID);
+        }
+
+        public static FileKey createRemote(FileSystem fs, CndFileSystemProvider.CndStatInfo statInfo) {
+            return new FileKey(System.identityHashCode(fs), statInfo.device, statInfo.inode);
+        }
+
+        private static FileKey createInvalid() {
+            return new FileKey(0, 0, -1);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 47 * hash + this.fs;
+            hash = 47 * hash + (int) (this.dev ^ (this.dev >>> 32));
+            hash = 47 * hash + (int) (this.inode ^ (this.inode >>> 32));
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FileKey other = (FileKey) obj;
+            if (this.fs != other.fs) {
+                return false;
+            }
+            if (this.dev != other.dev) {
+                return false;
+            }
+            if (this.inode != other.inode) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "Key{" + "fs=" + fs + ", dev=" + dev + ", inode=" + inode + '}';
+        }
+    }
 
     private static final Method getDataObjectMethod;
 
@@ -120,9 +187,10 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             e.printStackTrace(System.err);
         }
         ENABLED = enabled;
+        ENABLED_REMOTE = enabled && CndUtils.getBoolean("nb.cosredirector.remote", true); //NOI18N
     }
-    private final Map<Long, COSRedirectorImpl.Storage> imap = new HashMap<Long, COSRedirectorImpl.Storage>();
-    private final LinkedList<Long> cache = new LinkedList<Long>();
+    private final Map<FileKey, COSRedirectorImpl.Storage> imap = new HashMap<FileKey, COSRedirectorImpl.Storage>();
+    private final LinkedList<FileKey> cache = new LinkedList<FileKey>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     
     @Override
@@ -146,7 +214,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 return aCes;
             }
         }
-        long inode = getINode(dobj);
+        FileKey inode = getINode(dobj);
         if (inode == INVALID_INODE) {
             return null;
         } 
@@ -173,7 +241,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         return aCes;
     }
 
-    private Storage findOrCreateINodeList(long inode) {
+    private Storage findOrCreateINodeList(FileKey inode) {
         assert inode != INVALID_INODE;
         COSRedirectorImpl.Storage list;
         lock.writeLock().lock();
@@ -202,7 +270,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         }
         COSRedirectorImpl.Storage storage = getCachedStorage(dobj);
         // calculate out of lock if needed
-        long inode = INVALID_INODE;
+        FileKey inode = INVALID_INODE;
         if (storage == null) {
             inode = getINode(dobj);
         }
@@ -213,16 +281,16 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 if (storage == null) {
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.log(Level.FINE, "clear not existing for inode={0}:dobj={1}\nimap.get={2} cache.contains={3} cache.size={4}, imap.size={5}\n", 
-                                new Object[] {(Long)inode, dobj, imap.get(inode), cache.contains((Long)inode), cache.size(), imap.size()});
+                                new Object[] {inode, dobj, imap.get(inode), cache.contains(inode), cache.size(), imap.size()});
                     }                     
                     return;
                 }
             }
             storage.clear();
-            cache.remove((Long) inode);
+            cache.remove(inode);
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "clear for inode={0}:dobj={1}\nimap.get={2} cache.contains={3} cache.size={4}, imap.size={5}\n", 
-                        new Object[] {(Long)inode, dobj, imap.get(inode), cache.contains((Long)inode), cache.size(), imap.size()});
+                        new Object[] {inode, dobj, imap.get(inode), cache.contains(inode), cache.size(), imap.size()});
             }            
         } finally {
             lock.writeLock().unlock();
@@ -232,7 +300,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
     private COSRedirectorImpl.Storage getCachedStorage(DataObject dobj) {
         lock.writeLock().lock();
         try {
-            for (long n : cache) {
+            for (FileKey n : cache) {
                 COSRedirectorImpl.Storage storage = imap.get(n);
                 if (storage != null) {
                     if (storage.hasDataObject(dobj)) {
@@ -249,10 +317,6 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
     private DataObject getDataObjectIfApplicable(CloneableOpenSupport.Env env) {
         if (!ENABLED) {
-            return null;
-        }
-        // disable on windows for now
-        if (Utilities.isWindows()) {
             return null;
         }
         if (!(env instanceof OpenSupport.Env)) {
@@ -281,8 +345,11 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             return null;
         }
         try {
-            if (!CndFileUtils.isLocalFileSystem(primaryFile.getFileSystem())) {
-                return null;
+            if (CndFileUtils.isLocalFileSystem(primaryFile.getFileSystem())) {
+                // disable on windows (for local files) for now
+                if (Utilities.isWindows()) {
+                    return null;
+                }
             }
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
@@ -300,7 +367,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         private Storage() {
         }
 
-        private synchronized boolean addDataObject(long origINode, DataObject dao, CloneableOpenSupport cos) {
+        private synchronized boolean addDataObject(FileKey origINode, DataObject dao, CloneableOpenSupport cos) {
             Iterator<COSRedirectorImpl.StorageItem> iterator = list.iterator();
             boolean found = false;
             while (iterator.hasNext()) {
@@ -395,7 +462,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         }
     }
 
-    private static StorageItem createItem(Storage owner, long origINode, DataObject dao, CloneableOpenSupport origCOS) {
+    private static StorageItem createItem(Storage owner, FileKey origINode, DataObject dao, CloneableOpenSupport origCOS) {
         FileObject primaryFile = dao.getPrimaryFile();
         StorageItem out = new COSRedirectorImpl.StorageItem(owner, origINode, dao, primaryFile, origCOS);
         dao.addPropertyChangeListener(out);
@@ -403,10 +470,31 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         return out;
     }
     
-    private static long getINode(DataObject dao) {
+    private static FileKey getINode(DataObject dao) {
         if (!dao.isValid()) {
             return INVALID_INODE;
         }
+        FileObject fo = dao.getPrimaryFile();
+        try {
+            FileSystem fs = fo.getFileSystem();
+            if (CndFileSystemProvider.isRemote(fs)) {
+                if (ENABLED_REMOTE) {
+                    try {
+                        FileObject canonicalFO = fo.getCanonicalFileObject();
+                        CndFileSystemProvider.CndStatInfo statInfo = CndFileSystemProvider.getStatInfo(canonicalFO);
+                        return FileKey.createRemote(fs, statInfo);
+                    } catch (IOException ex) {
+                        ex.printStackTrace(System.err);
+                    }
+                } else {
+                    return INVALID_INODE;
+                }
+            }
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return INVALID_INODE;
+        }
+
         BasicFileAttributes attrs = null;
         try {
             Path path = FileSystems.getDefault().getPath(FileUtil.getFileDisplayName(dao.getPrimaryFile()));
@@ -426,9 +514,9 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         if (attrs != null) {
             key = attrs.fileKey();
         }
-        long inode = INVALID_INODE;
+        FileKey inode = INVALID_INODE;
         if (key != null) {
-            inode = key.hashCode();
+            inode = FileKey.createLocal(key.hashCode());
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "getInode {0}[{1}], {2}", new Object[] {key, dao, inode});
             }
@@ -439,13 +527,13 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
     private static final class StorageItem implements PropertyChangeListener, FileChangeListener {
 
         private final DataObject dao;
-        private final long origINode;
+        private final FileKey origINode;
         private final AtomicBoolean removed = new AtomicBoolean(false);
         private final CloneableOpenSupport origCOS;
         private final Storage owner;
         private final FileObject file;
 
-        private StorageItem(Storage owner, long origINode, DataObject dao, FileObject primaryFile, CloneableOpenSupport cos) {
+        private StorageItem(Storage owner, FileKey origINode, DataObject dao, FileObject primaryFile, CloneableOpenSupport cos) {
             this.owner = owner;
             this.dao = dao;
             this.file = primaryFile;
@@ -506,7 +594,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         }
 
         private void checkAndUpdateIfNeeded() {
-            long curINode = getINode(dao);
+            FileKey curINode = getINode(dao);
             // track file remove followed by create with the same name
             // also handles file removes where curInode is invalid
             if (origINode != curINode) {
