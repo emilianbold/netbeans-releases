@@ -3287,7 +3287,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     break;
                 case METHOD:
                     et = (ExecutableType) asMemberOf(e, actualType, types);
-                    if (addCast && itemFactory instanceof TypeCastableItemFactory) {
+                    if (addCast && itemFactory instanceof TypeCastableItemFactory
+                            && !types.isSubtype(type, e.getEnclosingElement().asType())
+                            && type.getKind() == TypeKind.DECLARED && !eu.alreadyDefinedIn(e.getSimpleName(), et, (TypeElement)((DeclaredType)type).asElement())) {
                         results.add(((TypeCastableItemFactory<T>)itemFactory).createTypeCastableExecutableItem(env.getController(), (ExecutableElement) e, et, actualType, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, actualType), smartTypes), env.assignToVarPos(), false));
                     } else {
                         results.add(itemFactory.createExecutableItem(env.getController(), (ExecutableElement) e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, actualType), smartTypes), env.assignToVarPos(), false));
@@ -5327,7 +5329,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             Element el = ((DeclaredType)type).asElement();
             if (el.getKind().isClass() || el.getKind().isInterface()) {
                 List<? extends TypeParameterElement> typeParams = ((TypeElement)el).getTypeParameters();
-                if (!typeParams.isEmpty() && !((DeclaredType)type).getTypeArguments().isEmpty()) {
+                if (!typeParams.isEmpty() && !original.getTypeArguments().isEmpty()) {
                     for (TypeMirror typeArgument : ((DeclaredType)type).getTypeArguments()) {
                         if (typeArgument.getKind() == TypeKind.WILDCARD) {
                             typeArgument = ((WildcardType)typeArgument).getExtendsBound();
