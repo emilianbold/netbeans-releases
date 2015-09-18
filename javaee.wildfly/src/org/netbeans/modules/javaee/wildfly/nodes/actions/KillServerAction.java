@@ -46,7 +46,18 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+
 import static org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE;
+
+import java.awt.event.ActionEvent;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import javax.swing.Action;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -63,16 +74,27 @@ public class KillServerAction extends CookieAction {
 
     @Override
     protected void performAction(Node[] nodes) {
-        if ((nodes == null) || (nodes.length < 1)) {
+        if ((nodes == null) || (nodes.length != 1)) {
             return;
         }
-        if (killer.killServers()) {
-            for (Node node : nodes) {
-//                ServerInstance si = (ServerInstance) node.getCookie(ServerInstance.class);
-//                if (si != null) {
-//                    si.refresh();
-//                }
+        Future<Boolean> killed = Executors.newSingleThreadExecutor().submit(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return killer.killServers();
             }
+        });
+        try {
+            if (killed.get(10, TimeUnit.SECONDS)) {
+                //Ugly Hack
+                for (Action action : nodes[0].getActions(false)) {
+                    if ("org.netbeans.modules.j2ee.deployment.impl.ui.actions.RefreshAction".equals(action.getClass().getName())) {
+                        action.actionPerformed(new ActionEvent(nodes[0], 1, "refresh"));
+                        return;
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
