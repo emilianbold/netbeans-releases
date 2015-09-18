@@ -158,7 +158,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
         @Override
         public String toString() {
-            return "Key{" + "fs=" + fs + ", dev=" + dev + ", inode=" + inode + '}';
+            return "Key{" + "fs=" + fs + ", dev=" + dev + ", inode=" + inode + '}'; // NOI18N
         }
     }
 
