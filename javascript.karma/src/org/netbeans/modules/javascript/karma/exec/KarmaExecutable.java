@@ -381,6 +381,7 @@ public class KarmaExecutable {
                     }
                 }
             }
+            testRunner.logMessageToTestResultsWindowOutputView(line);
             return Collections.singletonList(ConvertedLine.forText(line, outputListener));
         }
 
