@@ -803,7 +803,7 @@ public class RemoteServices {
             if (listeners == null) {
                 return null;
             }
-            return listeners.get(listenerClass);
+            return new HashSet<>(listeners.get(listenerClass));
         }
         
         private synchronized boolean isEmpty() {
@@ -1014,6 +1014,18 @@ public class RemoteServices {
                 } catch (ObjectCollectedExceptionWrapper ocex) {
                     Exceptions.printStackTrace(ocex);
                 } catch (VMDisconnectedExceptionWrapper vmdex) {
+                }
+                JPDADebugger dbg = ci.getThread().getDebugger();
+                synchronized (loggingListeners) {
+                    LoggingListeners ll = loggingListeners.get(dbg);
+                    if (ll != null) { // should be so
+                        Set<LoggingListenerCallBack> listeners = ll.getListeners(component, listenerClass);
+                        for (LoggingListenerCallBack llcb : listeners) {
+                            if (listener.equals(llcb.getListenerObject())) {
+                                ll.remove(component, listenerClass, llcb);
+                            }
+                        }
+                    }
                 }
             }
         }, ServiceType.AWT);
@@ -1288,6 +1300,8 @@ public class RemoteServices {
     public static interface LoggingListenerCallBack {
         
         public void eventsData(/*JavaComponentInfo ci,*/ String[] data, String[] stack);
+        
+        public ObjectReference getListenerObject();
         
     }
     

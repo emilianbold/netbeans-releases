@@ -191,7 +191,7 @@ public final class DerbyDatabases {
      *         and it cannot be created.
      */
     public static DatabaseConnection createSampleDatabase(String databaseName) throws DatabaseException, IOException {
-        return IMPL.createSampleDatabase(databaseName);
+        return IMPL.createSampleDatabase(databaseName, false);
     }
 
 }

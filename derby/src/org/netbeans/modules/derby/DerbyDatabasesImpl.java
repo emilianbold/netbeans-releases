@@ -300,7 +300,7 @@ public final class DerbyDatabasesImpl {
      *         and it cannot be created.
      */
     public  DatabaseConnection createSampleDatabase() throws DatabaseException, IOException, IllegalStateException {
-        extractSampleDatabase("sample"); // NOI18N
+        extractSampleDatabase("sample", false); // NOI18N
         return registerDatabase("sample", "app", "APP", "app", true); // NOI18N
     }
 
@@ -324,12 +324,12 @@ public final class DerbyDatabasesImpl {
      * @throws IOException if the Derby system home directory does not exist
      *         and it cannot be created.
      */
-    public  DatabaseConnection createSampleDatabase(String databaseName) throws DatabaseException, IOException {
+    public  DatabaseConnection createSampleDatabase(String databaseName, boolean existingDBisError) throws DatabaseException, IOException {
         if (databaseName == null) {
             throw new NullPointerException("The databaseName parameter cannot be null"); // NOI18N
         }
 
-        extractSampleDatabase(databaseName);
+        extractSampleDatabase(databaseName, existingDBisError);
         return registerDatabase(databaseName, "app", "APP", "app", true); // NOI18N
     }
 
@@ -356,21 +356,12 @@ public final class DerbyDatabasesImpl {
         List<String> res = new ArrayList<String>();
         while (children.hasMoreElements()) {
             FileObject candidate = children.nextElement();
-            if (checkDatabase(candidate)) {
+            if (Util.isDerbyDatabase(candidate)) {
                 Logger.getLogger(DerbyServerNode.class.getName()).fine(candidate.getName() + " added into Databases in " + databaseHome);
                 res.add(candidate.getName());
             }
         }
         return res;
-    }
-
-    private  boolean checkDatabase(FileObject candidate) {
-        if (candidate.isFolder()) {
-            FileObject sp = candidate.getFileObject("service.properties");
-            return sp != null && FileUtil.toFile(sp) != null;
-        } else {
-            return false;
-        }
     }
 
     /** XXX - should be part of API, add into DerbyDatabases
@@ -464,7 +455,7 @@ public final class DerbyDatabasesImpl {
      *
      * <p>Not public because used in tests.</p>
      */
-     public synchronized void extractSampleDatabase(String databaseName) throws IOException{
+     public synchronized void extractSampleDatabase(String databaseName, boolean existingDBisError) throws IOException{
         File systemHomeFile = ensureSystemHome();
         File sourceFO = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", "org.netbeans.modules.derby", false); // NOI18N
         FileObject systemHomeFO = FileUtil.toFileObject(systemHomeFile);
@@ -472,6 +463,24 @@ public final class DerbyDatabasesImpl {
         if (sampleFO == null) {
             sampleFO = systemHomeFO.createFolder(databaseName);
             Util.extractZip(sourceFO, sampleFO);
+        } else {
+            if(! Util.isDerbyDatabase(sampleFO)) {
+                if(sampleFO.getChildren().length != 0) {
+                    throw new IOException(String.format(
+                            "Directory for sample database already exists and is not empty: '%s'",
+                            FileUtil.toFile(sampleFO).getAbsolutePath()
+                    ));
+                } else {
+                    Util.extractZip(sourceFO, sampleFO);
+                }
+            } else {
+                if (existingDBisError) {
+                    throw new IOException(String.format(
+                            "Target database already exists: '%s'",
+                            FileUtil.toFile(sampleFO).getAbsolutePath()
+                    ));
+                }
+            }
         }
     }
 
