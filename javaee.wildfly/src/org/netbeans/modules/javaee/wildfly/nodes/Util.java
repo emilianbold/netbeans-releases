@@ -84,6 +84,10 @@ public class Util {
             = "org/netbeans/modules/javaee/wildfly/resources/appclient.gif"; // NOI18N
     public static final String JAVAMAIL_ICON
             = "org/netbeans/modules/javaee/wildfly/resources/javamail.gif";// NOI18N
+    public static final String JAXRS_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/restservice.png";// NOI18N
+    public static final String JAXRS_METHOD_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/method.png";// NOI18N
     public static final String JMS_ICON
             = "org/netbeans/modules/javaee/wildfly/resources/jms.gif";// NOI18N
     public static final String RESOURCES_ICON
