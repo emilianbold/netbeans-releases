@@ -62,12 +62,12 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(service = SelectionTreeBuilder.class, projectType = {
-    "org-netbeans-modules-j2ee-earproject", // NOI18N
-    "org-netbeans-modules-web-project", // NOI18N
-    "org-netbeans-modules-maven/ear", // NOI18N
-    "org-netbeans-modules-maven/war" // NOI18N
-})
+//@ProjectServiceProvider(service = SelectionTreeBuilder.class, projectType = {
+//    "org-netbeans-modules-j2ee-earproject", // NOI18N
+//    "org-netbeans-modules-web-project", // NOI18N
+//    "org-netbeans-modules-maven/ear", // NOI18N
+//    "org-netbeans-modules-maven/war" // NOI18N
+//})
 public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
     public PlainWebSelectionTreeBuilder(Project project) {
         this(project, true);

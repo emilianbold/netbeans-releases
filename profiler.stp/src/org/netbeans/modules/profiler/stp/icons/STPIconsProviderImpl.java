@@ -48,7 +48,7 @@ import org.netbeans.modules.profiler.spi.IconsProvider;
  *
  * @author Jiri Sedlacek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.IconsProvider.class)
+//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.IconsProvider.class)
 public final class STPIconsProviderImpl extends IconsProvider.Basic {
     
     @Override

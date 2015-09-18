@@ -51,10 +51,10 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(service = CategoryBuilder.class, projectTypes = {
-    @ProjectType(id = "org-netbeans-modules-j2ee-earproject"),
-    @ProjectType(id = "org-netbeans-modules-web-project")
-})
+//@ProjectServiceProvider(service = CategoryBuilder.class, projectTypes = {
+//    @ProjectType(id = "org-netbeans-modules-j2ee-earproject"),
+//    @ProjectType(id = "org-netbeans-modules-web-project")
+//})
 public class WebCategoryBuilder extends CategoryBuilder {
 
     public WebCategoryBuilder(Project proj) {

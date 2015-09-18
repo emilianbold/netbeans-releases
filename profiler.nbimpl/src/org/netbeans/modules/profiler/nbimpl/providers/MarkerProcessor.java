@@ -78,15 +78,15 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(service=CategoryDefinitionProcessor.class, projectTypes={
-    @ProjectType(id="org-netbeans-modules-java-j2seproject"),
-    @ProjectType(id="org-netbeans-modules-ant-freeform", position=1202),
-    @ProjectType(id="org-netbeans-modules-apisupport-project"),
-    @ProjectType(id="org-netbeans-modules-apisupport-project-suite"),
-    @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
-    @ProjectType(id="org-netbeans-modules-web-project"),
-    @ProjectType(id="org-netbeans-modules-maven")
-})
+//@ProjectServiceProvider(service=CategoryDefinitionProcessor.class, projectTypes={
+//    @ProjectType(id="org-netbeans-modules-java-j2seproject"),
+//    @ProjectType(id="org-netbeans-modules-ant-freeform", position=1202),
+//    @ProjectType(id="org-netbeans-modules-apisupport-project"),
+//    @ProjectType(id="org-netbeans-modules-apisupport-project-suite"),
+//    @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
+//    @ProjectType(id="org-netbeans-modules-web-project"),
+//    @ProjectType(id="org-netbeans-modules-maven")
+//})
 final public class MarkerProcessor extends CategoryDefinitionProcessor implements Marker {
 
     private final static Logger LOGGER = Logger.getLogger(MarkerProcessor.class.getName());
