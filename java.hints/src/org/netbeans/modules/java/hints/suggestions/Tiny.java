@@ -282,7 +282,11 @@ public class Tiny {
             List<StatementTree> newStatements = new ArrayList<StatementTree>();
 
             newStatements.addAll(statements.subList(0, current));
-            newStatements.add(make.Variable(var.getModifiers(), var.getName(), var.getType(), null));
+            newStatements.add(
+                make.asReplacementOf(
+                    make.Variable(var.getModifiers(), var.getName(), var.getType(), null),
+                    var)
+            );
             newStatements.add(make.ExpressionStatement(make.Assignment(make.Identifier(var.getName()), var.getInitializer())));
             newStatements.addAll(statements.subList(current + 1, statements.size()));
 
