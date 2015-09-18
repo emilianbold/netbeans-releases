@@ -248,7 +248,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
                         ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
                             new FormatStringErrorInfoImpl(doc
                                                          ,CsmHintProvider.NAME, getID()
-                                                         ,Utilities.getMessageForError(error)
+                                                         ,getName()+"\n"+Utilities.getMessageForError(error)
                                                          ,severity
                                                          ,error));
                     } else {

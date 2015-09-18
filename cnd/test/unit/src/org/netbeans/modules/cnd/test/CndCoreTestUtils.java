@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.test;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -152,8 +154,8 @@ public class CndCoreTestUtils {
     }      
 
     public static void copyToFile(File resource, File toFile) throws IOException {
-        InputStream is = new FileInputStream(resource);
-        OutputStream outs = new FileOutputStream(toFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(resource));
+        OutputStream outs = new BufferedOutputStream(new FileOutputStream(toFile));
         int read;
         while ((read = is.read()) != (-1)) {
             outs.write(read);

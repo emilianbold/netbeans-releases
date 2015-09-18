@@ -263,7 +263,7 @@ class FormattedPrintFunction {
     }
     
     private int getReferenceDepth(CsmType type) {
-        if (!type.isPointer()) {
+        if (!type.isPointer() && type.getArrayDepth() == 0) {
             return 0;
         }
         int depth = 0;
