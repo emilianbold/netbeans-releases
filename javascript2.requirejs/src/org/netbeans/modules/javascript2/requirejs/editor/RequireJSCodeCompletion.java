@@ -383,6 +383,10 @@ public class RequireJSCodeCompletion implements CompletionProvider {
     private boolean isClientCode(Project project, FileObject source) {
         boolean result = false;
         String path = source.getPath();
+        if (project == null) {
+            // ???? probably this is not posible
+            return true;
+        }
         if (FileUtil.isParentOf(project.getProjectDirectory(), source)) {
             path = path.substring(project.getProjectDirectory().getPath().length());
         }
