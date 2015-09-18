@@ -161,14 +161,15 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     @Override
     public JavaFileObject getJavaFileForInput (Location l, String className, JavaFileObject.Kind kind) {
         final String[] namePair = FileObjects.getParentRelativePathAndName(className);
-        namePair[1] = namePair[1] + kind.extension;
         for( ClassPath.Entry root : this.cp.entries()) {
             try {
                 Archive  archive = provider.getArchive (root.getURL(), cacheFile);
                 if (archive != null) {
                     Iterable<JavaFileObject> files = archive.getFiles(namePair[0], ignoreExcludes?null:root, null, filter);
                     for (JavaFileObject e : files) {
-                        if (namePair[1].equals(e.getName())) {
+                        final String ename = e.getName();
+                        if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
+                            kind == FileObjects.getKind(FileObjects.getExtension(ename))) {
                             return e;
                         }
                     }

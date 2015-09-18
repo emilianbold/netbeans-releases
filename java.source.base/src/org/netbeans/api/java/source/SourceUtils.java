@@ -87,6 +87,8 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 
 import javax.swing.SwingUtilities;
+import javax.tools.JavaFileManager;
+import javax.tools.StandardLocation;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -1199,6 +1201,34 @@ public class SourceUtils {
             path = path.getParentPath();
         }
         return refs;
+    }
+    
+    public static Set<String> getModuleNames(CompilationInfo info, final @NonNull Set<? extends ClassIndex.SearchScopeType> scope) {
+        Set<String> ret = new HashSet<>();
+        JavaFileManager jfm = info.impl.getJavacTask().getContext().get(JavaFileManager.class);
+        if (jfm != null) {
+            List<JavaFileManager.Location> toSearch = new ArrayList<>();
+            for (ClassIndex.SearchScopeType s : scope) {
+                if (s.isSources()) {
+                    toSearch.add(StandardLocation.MODULE_SOURCE_PATH);
+                }
+                if (s.isDependencies()) {
+                    toSearch.add(StandardLocation.MODULE_PATH);
+                    toSearch.add(StandardLocation.UPGRADE_MODULE_PATH);
+                    toSearch.add(StandardLocation.SYSTEM_MODULE_PATH);
+                }
+            }
+            try {
+                for (JavaFileManager.Location searchLocation : toSearch) {
+                    for (Set<JavaFileManager.Location> locations : jfm.listModuleLocations(searchLocation)) {
+                        for (JavaFileManager.Location location : locations) {
+                            ret.add(jfm.inferModuleName(location));
+                        }
+                    }
+                }
+            } catch (IOException ioe) {}
+        }
+        return ret;
     }
 
     // --------------- Helper methods of getFile () -----------------------------

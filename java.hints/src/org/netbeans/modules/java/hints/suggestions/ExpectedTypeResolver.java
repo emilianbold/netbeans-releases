@@ -61,6 +61,7 @@ import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ErroneousTree;
+import com.sun.source.tree.ExportsTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -77,12 +78,15 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.ProvidesTree;
+import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.SwitchTree;
@@ -95,6 +99,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.UnionTypeTree;
+import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
@@ -1369,6 +1374,31 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
 
     @Override
     public List<? extends TypeMirror> visitWildcard(WildcardTree node, Object p) {
+        return null;
+    }
+
+    @Override
+    public List<? extends TypeMirror> visitModule(ModuleTree node, Object p) {
+        return null;
+    }
+
+    @Override
+    public List<? extends TypeMirror> visitExports(ExportsTree node, Object p) {
+        return null;
+    }
+
+    @Override
+    public List<? extends TypeMirror> visitProvides(ProvidesTree node, Object p) {
+        return null;
+    }
+
+    @Override
+    public List<? extends TypeMirror> visitRequires(RequiresTree node, Object p) {
+        return null;
+    }
+
+    @Override
+    public List<? extends TypeMirror> visitUses(UsesTree node, Object p) {
         return null;
     }
 }

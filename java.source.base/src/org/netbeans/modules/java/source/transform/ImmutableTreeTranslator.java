@@ -533,6 +533,21 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree visitErroneous(ErroneousTree tree, Object p) {
 	return rewriteChildren(tree);
     }
+    public Tree visitModule(ModuleTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
+    public Tree visitExports(ExportsTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
+    public Tree visitProvides(ProvidesTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
+    public Tree visitRequires(RequiresTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
+    public Tree visitUses(UsesTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
     public Tree visitOther(Tree tree, Object p) {
 	throw new Error("Tree not overloaded: "+tree);
     }
@@ -1283,10 +1298,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	return tree;
     }
 
-    private Tree rewriteChildren(MemberReferenceTree node) {
+    protected Tree rewriteChildren(MemberReferenceTree node) {
         ExpressionTree qualifierExpression = (ExpressionTree) translate(node.getQualifierExpression());
         List<ExpressionTree> typeArguments = (List<ExpressionTree>) translate(node.getTypeArguments());
-
         if (qualifierExpression != node.getQualifierExpression() ||
             typeArguments != node.getTypeArguments())
         {
@@ -1297,5 +1311,68 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    node = n;
 	}
 	return node;
+    }
+
+    private Tree rewriteChildren(ModuleTree tree) {
+        ExpressionTree name = (ExpressionTree) translate(tree.getName());
+        List<? extends DirectiveTree> directives = translate(tree.getDirectives());
+    	if (name != tree.getName() || !directives.equals(tree.getDirectives())) {
+	    ModuleTree n = make.Module(name, directives);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+	}
+	return tree;
+    }
+
+    private Tree rewriteChildren(ExportsTree tree) {
+        ExpressionTree name = (ExpressionTree) translate(tree.getExportName());
+        List<? extends ExpressionTree> moduleNames = translate(tree.getModuleNames());
+    	if (name != tree.getExportName()|| !moduleNames.equals(tree.getModuleNames())) {
+	    ExportsTree n = make.Exports(name, moduleNames);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+	}
+	return tree;
+    }
+
+    private Tree rewriteChildren(ProvidesTree tree) {
+        ExpressionTree serviceName = (ExpressionTree) translate(tree.getServiceName());
+        ExpressionTree implName = (ExpressionTree) translate(tree.getImplementationName());
+    	if (serviceName != tree.getServiceName()|| implName != tree.getImplementationName()) {
+	    ProvidesTree n = make.Provides(serviceName, implName);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+	}
+	return tree;
+    }
+
+    private Tree rewriteChildren(RequiresTree tree) {
+        ExpressionTree name = (ExpressionTree) translate(tree.getModuleName());
+    	if (name != tree.getModuleName()) {
+	    RequiresTree n = make.Requires(tree.isPublic(), name);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+	}
+	return tree;
+    }
+
+    private Tree rewriteChildren(UsesTree tree) {
+        ExpressionTree name = (ExpressionTree) translate(tree.getServiceName());
+    	if (name != tree.getServiceName()) {
+	    UsesTree n = make.Uses(name);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+	}
+	return tree;
     }
 }

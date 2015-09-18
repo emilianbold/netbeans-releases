@@ -219,6 +219,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                     if (type == Type.PKG_INFO) {
                         documentNameTextField.setText (template.getName ());
                     }
+                    else if (type == Type.MODULE_INFO) {
+                        documentNameTextField.setText (template.getName ());
+                    }
                     else {
                         //Ordinary file
                         final String baseName = NEW_CLASS_PREFIX + template.getName ();

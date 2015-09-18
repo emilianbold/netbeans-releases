@@ -1076,7 +1076,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             super.visitBinary(tree, EnumSet.of(UseTypes.READ));
             return null;
         }
-
+                
         @Override
         public Void visitClass(ClassTree tree, EnumSet<UseTypes> d) {
             tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
