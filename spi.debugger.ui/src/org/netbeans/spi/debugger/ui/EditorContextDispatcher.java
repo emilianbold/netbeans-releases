@@ -325,6 +325,9 @@ public final class EditorContextDispatcher {
             }
         }
         StyledDocument document = editorCookie.getDocument();
+        if (document == null) {
+            return Collections.emptySet();
+        }
         Set<String> mimeTypes = null;
         ((AbstractDocument) document).readLock();
         try {
