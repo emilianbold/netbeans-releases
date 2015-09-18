@@ -693,12 +693,17 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     private void injectEventSpy(final BeanRunConfig clonedConfig) {
         //TEMP 
         String mavenPath = clonedConfig.getProperties().get(CosChecker.MAVENEXTCLASSPATH);
+        File jar = InstalledFileLocator.getDefault().locate("maven-nblib/netbeans-eventspy.jar", "org.netbeans.modules.maven", false);
         if (mavenPath == null) {
             mavenPath = "";
         } else {
-            mavenPath = (Utilities.isWindows() ? ";" : ":") + mavenPath;
+            String delimiter = Utilities.isWindows() ? ";" : ":";
+            if(mavenPath.contains(jar + delimiter)) {
+                // invoked by output view > rerun? see also issue #249971
+                return;
+            }
+            mavenPath = delimiter + mavenPath;
         }
-        File jar = InstalledFileLocator.getDefault().locate("maven-nblib/netbeans-eventspy.jar", "org.netbeans.modules.maven", false);
         //netbeans-eventspy.jar comes first on classpath
         mavenPath = jar.getAbsolutePath() + mavenPath;
         clonedConfig.setProperty(CosChecker.MAVENEXTCLASSPATH, mavenPath);
