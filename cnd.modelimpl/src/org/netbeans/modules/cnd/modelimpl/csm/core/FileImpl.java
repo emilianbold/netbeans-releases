@@ -651,6 +651,7 @@ public final class FileImpl implements CsmFile,
             FileContentSignature oldSignature = null;
             boolean tryPartialReparse = (handlers == PARTIAL_REPARSE_HANDLERS);
             boolean triggerParsingActivity = (handlers != DUMMY_HANDLERS);
+            final ProjectBase projectImpl = getProjectImpl(true);
             if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
                 handlers = getPreprocHandlersForParse(Interrupter.DUMMY);
             }
@@ -800,6 +801,8 @@ public final class FileImpl implements CsmFile,
                 if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
                     System.err.printf("after ensureParsed: %s file is interrupted on closing model%n", this.getAbsolutePath());
                 }
+                disposeAll(true);
+                projectImpl.invalidatePreprocState(this.getAbsolutePath());
                 synchronized (changeStateLock) {
                     state = State.INITIAL;
                     addRemoveModifiedFile(false);

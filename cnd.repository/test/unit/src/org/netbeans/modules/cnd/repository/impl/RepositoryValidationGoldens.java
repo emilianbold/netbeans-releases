@@ -31,7 +31,9 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 
@@ -62,8 +64,8 @@ public class RepositoryValidationGoldens extends RepositoryValidationBase {
         
         setGoldenDirectory(workDir.getAbsolutePath());
         
-        PrintStream streamOut = new PrintStream(new File(workDir, nimi + ".out"));
-        PrintStream streamErr = new FilteredPrintStream(new File(workDir, nimi + ".err"));
+        PrintStream streamOut = new PrintStream(new BufferedOutputStream(new FileOutputStream(new File(workDir, nimi + ".out"))));
+        PrintStream streamErr = new FilteredPrintStream(new BufferedOutputStream(new FileOutputStream(new File(workDir, nimi + ".err"))));
 
         List<String> args = find();
         assert args.size() > 0;
