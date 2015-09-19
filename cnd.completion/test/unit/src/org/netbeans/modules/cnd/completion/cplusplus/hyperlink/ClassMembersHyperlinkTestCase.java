@@ -1177,6 +1177,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug252581.cpp", 21, 16, "bug252581.cpp", 6, 9);
     }
     
+    public void testBug255328() throws Exception {
+        // Bug 255328 - inaccuracy tests: C struct initialization
+        performTest("bug255328.cpp", 15, 39, "bug255328.cpp", 6, 4);
+        performTest("bug255328.cpp", 16, 25, "bug255328.cpp", 6, 4);
+        performTest("bug255328.cpp", 17, 42, "bug255328.cpp", 6, 4);
+        performTest("bug255328.cpp", 17, 27, "bug255328.cpp", 2, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
