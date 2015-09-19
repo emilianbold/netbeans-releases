@@ -93,7 +93,7 @@ import org.openide.util.Lookup.Provider;
     "ForwardCategoryDistributionPanel_MethodCategoriesString=Method categories",
     "ForwardCategoryDistributionPanel_DescrString=Shows a per category distribution of the time spent in the selected method"
 })
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule.class)
+//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule.class)
 public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalModule {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 

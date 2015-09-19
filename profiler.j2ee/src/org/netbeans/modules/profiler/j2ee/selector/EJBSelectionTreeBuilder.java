@@ -61,12 +61,12 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(service = SelectionTreeBuilder.class, projectType = {
-    "org-netbeans-modules-j2ee-earproject", // NOI18N
-    "org-netbeans-modules-j2ee-ejbjarproject", // NOI18N
-    "org-netbeans-modules-maven/ear", // NOI18N
-    "org-netbeans-modules-maven/ejb" // NOI18N
-})
+//@ProjectServiceProvider(service = SelectionTreeBuilder.class, projectType = {
+//    "org-netbeans-modules-j2ee-earproject", // NOI18N
+//    "org-netbeans-modules-j2ee-ejbjarproject", // NOI18N
+//    "org-netbeans-modules-maven/ear", // NOI18N
+//    "org-netbeans-modules-maven/ejb" // NOI18N
+//})
 public class EJBSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
     public EJBSelectionTreeBuilder(Project project) {
         this(project, true);

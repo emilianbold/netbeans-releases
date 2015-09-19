@@ -154,7 +154,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
-    @ServiceProvider(service=TaskConfiguratorProvider.class)
+//    @ServiceProvider(service=TaskConfiguratorProvider.class)
     public static class ConfiguratorProvider implements TaskConfiguratorProvider {
         public ConfiguratorProvider() {
         }

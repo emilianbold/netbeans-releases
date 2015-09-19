@@ -64,19 +64,19 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Bachorik
  */
-@ServiceProvider(service=SelectionTreeBuilderFactoryProvider.class)
+//@ServiceProvider(service=SelectionTreeBuilderFactoryProvider.class)
 public class SelectionTreeBuilderFactoryImpl extends SelectionTreeBuilderFactoryProvider {
-    @ProjectServiceProvider(service=SelectionTreeBuilder.class,
-        projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject"), // NOI18N
-                        @ProjectType(id="org-netbeans-modules-j2ee-earproject"), // NOI18N
-                        @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"), // NOI18N
-                        @ProjectType(id="org-netbeans-modules-web-project"), // NOI18N
-                        @ProjectType(id="org-netbeans-modules-apisupport-project"), // NOI18N
-                        @ProjectType(id="org-netbeans-modules-apisupport-project-suite"), // NOI18N
-                        @ProjectType(id="org-netbeans-modules-ant-freeform", position=1200), // NOI18N
-                        @ProjectType(id="org-netbeans-modules-maven") // NOI18N
-        }
-    )
+//    @ProjectServiceProvider(service=SelectionTreeBuilder.class,
+//        projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject"), // NOI18N
+//                        @ProjectType(id="org-netbeans-modules-j2ee-earproject"), // NOI18N
+//                        @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"), // NOI18N
+//                        @ProjectType(id="org-netbeans-modules-web-project"), // NOI18N
+//                        @ProjectType(id="org-netbeans-modules-apisupport-project"), // NOI18N
+//                        @ProjectType(id="org-netbeans-modules-apisupport-project-suite"), // NOI18N
+//                        @ProjectType(id="org-netbeans-modules-ant-freeform", position=1200), // NOI18N
+//                        @ProjectType(id="org-netbeans-modules-maven") // NOI18N
+//        }
+//    )
     public static class PackageTreeBuilder extends PackageSelectionTreeViewBuilder {
         public PackageTreeBuilder(Project project) {
             super(project);

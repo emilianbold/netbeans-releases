@@ -74,7 +74,7 @@ import org.openide.util.Lookup;
     "HttpRequestTrackerPanel_RequestTrackerString=HTTP Request tracker",
     "HttpRequestTrackerPanel_RequestTrackerDescr=Shows URLs of all HTTP Requests the selected method has participated in"
 })
-@org.openide.util.lookup.ServiceProvider(service=ProjectAwareStatisticalModule.class)
+//@org.openide.util.lookup.ServiceProvider(service=ProjectAwareStatisticalModule.class)
 public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
