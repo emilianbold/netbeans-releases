@@ -46,8 +46,10 @@ package org.netbeans.modules.cnd.completion.csm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -99,6 +101,11 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmFinderFactory;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
+import org.netbeans.modules.cnd.utils.MutableObject;
+import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 
 /**
@@ -576,7 +583,6 @@ public class CsmContextUtilities {
     public static CsmClass getClass(CsmContext context, boolean checkFunDefition, boolean inScope) {
         CsmClass clazz = null;
 
-        // TODO: Note that common initializers also supported in CompletionSupport.findExactVarType method!
         // Support of common initializers and GCC extension - designated initializers (bug 240016)
         if (CsmKindUtilities.isVariable(context.getLastObject()) && CsmContextUtilities.isInInitializerList(context, context.getOffset())) {
             CsmVariable var = (CsmVariable) context.getLastObject();
@@ -584,64 +590,9 @@ public class CsmContextUtilities {
             CsmClassifier classifier = CsmBaseUtilities.getOriginalClassifier(var.getType().getClassifier(), var.getContainingFile());
 
             if (classifier != null && CsmKindUtilities.isClass(classifier)) {
-                CsmExpression expression = var.getInitialValue();
-                if (expression != null) {
-                    CsmCacheMap cache = CsmCacheManager.getClientCache(CsmContextUtilities.class, CACHE_INITIALIZER);
-                    ObjectKey key = new ObjectKey(var);
-                    boolean[] found = new boolean[] { false };
-                    TokenSequence<TokenId> cppts = (TokenSequence<TokenId>)CsmCacheMap.getFromCache(cache, key, found);
-                    if (cppts != null || !found[0]) {
-                        if (cppts == null) {
-                            CharSequence expressionText = expression.getExpandedText();
-                            TokenHierarchy<CharSequence> hi = TokenHierarchy.create(expressionText, CppTokenId.languageCpp());
-                            List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
-                            // Go from inner to outer TSes
-                            for (int i = tsList.size() - 1; i >= 0; i--) {
-                                TokenSequence<?> ts = tsList.get(i);
-                                final Language<?> lang = ts.languagePath().innerLanguage();
-                                if (CndLexerUtilities.isCppLanguage(lang, false)) {
-                                    @SuppressWarnings("unchecked") // NOI18N
-                                    TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
-                                    cppts = uts;
-                                }
-                            }
-                            if (cache != null) {
-                                cache.put(key, CsmCacheMap.toValue(cppts, Integer.MAX_VALUE));
-                            }
-                        }
-                        if (cppts != null) {
-                            cppts.move(context.getOffset() - expression.getStartOffset());
-                            List<Token<TokenId>> identSequence = new ArrayList<Token<TokenId>>(); // for example: { a : { .b= { c : ...
-                            cppts.movePrevious();
-                            while (checkValidInitializerIdent(cppts)) {
-                               identSequence.add(0, cppts.token());
-                               int level = 0;
-                               while (cppts.movePrevious() && cppts.token() != null && level >= 0) {
-                                   if (CppTokenId.LBRACE.equals(cppts.token().id())) {
-                                       --level;
-                                   } else if (CppTokenId.RBRACE.equals(cppts.token().id())) {
-                                       ++level;
-                                   }
-                               }
-                               if (level < 0) {
-                                   // Lets find first ident before '{'
-                                   findToken(
-                                       cppts,
-                                       true,
-                                       false,
-                                       Arrays.asList(CppTokenId.IDENTIFIER),
-                                       CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT, CppTokenId.COLON, CppTokenId.EQ
-                                   );
-                               }
-                            }
-
-                            if (!identSequence.isEmpty()) {
-                                identSequence.remove(identSequence.size() - 1); // remove last because we are providing context for it!
-                                clazz = resolveInitializerContext(identSequence, (CsmClass) classifier);
-                            }
-                        }
-                    }
-                }
+                FileObject fObj = var.getContainingFile().getFileObject();
+                CsmFinder finder = (fObj != null) ? CsmFinderFactory.getDefault().getFinder(fObj) : null;
+                clazz = getContextClassInInitializer(var, (CsmClass) classifier, context.getOffset(), finder);
             }
         }
 
@@ -680,6 +631,203 @@ public class CsmContextUtilities {
         }
         return clazz;
     }
+    
+    public static CsmClass getContextClassInInitializer(CsmVariable var, CsmClass varCls, int offset, CsmFinder finder) {
+        CsmExpression expression = var.getInitialValue();
+        if (expression != null) {
+            CsmClass result = null;
+            CsmCacheMap cache = CsmCacheManager.getClientCache(CsmContextUtilities.class, CACHE_INITIALIZER);
+            boolean[] found = new boolean[] { false };
+            ObjectKey tsKey = new ObjectKey(var);
+            TokenSequence<TokenId> cppts = (TokenSequence<TokenId>)CsmCacheMap.getFromCache(cache, tsKey, found);
+            if (cppts != null || !found[0]) {
+                if (cppts == null) {
+                    CharSequence expressionText = expression.getExpandedText();
+                    TokenHierarchy<CharSequence> hi = TokenHierarchy.create(expressionText, CppTokenId.languageCpp());
+                    List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
+                    // Go from inner to outer TSes
+                    for (int i = tsList.size() - 1; i >= 0; i--) {
+                        TokenSequence<?> ts = tsList.get(i);
+                        final Language<?> lang = ts.languagePath().innerLanguage();
+                        if (CndLexerUtilities.isCppLanguage(lang, false)) {
+                            @SuppressWarnings("unchecked") // NOI18N
+                            TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
+                            cppts = uts;
+                        }
+                    }
+                    if (cache != null) {
+                        cache.put(tsKey, CsmCacheMap.toValue(cppts, Integer.MAX_VALUE));
+                    }
+                }
+                if (cppts != null) {
+                    CsmClass contextClass = varCls;
+                    int contextArrayDepth = var.getType().getArrayDepth();
+
+                    cppts.move(offset - expression.getStartOffset());
+                    cppts.movePrevious();
+                    if (checkValidInitializerIdent(cppts) || (cppts.token() != null && !CppTokenId.IDENTIFIER.equals(cppts.token().id()))) {
+                        List<InitPathItem> pathSequence = new ArrayList<InitPathItem>(); // for example: { a : { .b= { c : ...
+
+                        String innerClass = null; // { .ptr = & (MyClass) {.field = 0} }
+                                                  //             ^ 
+                                                  
+                        MutableObject<Integer> skipped = new MutableObject<Integer>(0);
+                        boolean foundPosition = true;
+                        while (foundPosition && innerClass == null) {
+                            foundPosition = findInitializerStart(cppts);
+                            Token<TokenId> ident = getInitializerIdentToken(cppts);
+                            foundPosition |= findUpperInitializer(cppts, skipped);
+                            innerClass = getInitializerInnerClassName(cppts);
+                            if (foundPosition) {
+                                pathSequence.add(0, new InitPathItem(ident, skipped.value));
+                            }
+                        }
+                        final boolean finishedSuccessfully = !cppts.movePrevious() || innerClass != null;
+                        if (finishedSuccessfully && !pathSequence.isEmpty()) {
+                            pathSequence.remove(pathSequence.size() - 1); // remove last because we are providing context for it!
+                            if (innerClass != null) {
+                                if (finder != null) {
+                                    CsmClassifier castedCls = CompletionSupport.getClassFromName(finder, innerClass, true);
+                                    castedCls = CsmBaseUtilities.getOriginalClassifier(castedCls, var.getContainingFile());
+                                    if (CsmKindUtilities.isClass(castedCls)) {
+                                        contextClass = (CsmClass) castedCls;
+                                        contextArrayDepth = 0;
+                                    } else {
+                                        contextClass = null; // no class found!
+                                    }
+                                } else {
+                                    contextClass = null; // finder is not provided!
+                                }
+                            }
+                            result = resolveInitializerContext(pathSequence, contextClass, contextArrayDepth);
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+        return null;
+    }
+    
+    private static boolean findInitializerStart(TokenSequence<TokenId> cppts) {
+        int level = 0;
+        boolean moved = false;
+        do {
+            if (CppTokenId.LBRACE.equals(cppts.token().id())) {
+                --level;
+            } else if (CppTokenId.RBRACE.equals(cppts.token().id())) {
+                ++level;
+            } else if (CppTokenId.LPAREN.equals(cppts.token().id())) {
+                --level;
+            } else if (CppTokenId.RPAREN.equals(cppts.token().id())) {
+                ++level;
+            } else if (CppTokenId.LBRACKET.equals(cppts.token().id())) {
+                --level;
+            } else if (CppTokenId.RBRACKET.equals(cppts.token().id())) {
+                ++level;
+            } else if (CppTokenId.COMMA.equals(cppts.token().id())) {
+                if (level == 0) {
+                    break;
+                }
+            }
+        } while (level >= 0 && (moved = cppts.movePrevious()));
+        return moved && cppts.token() != null 
+            && (CppTokenId.LBRACE.equals(cppts.token().id()) || CppTokenId.COMMA.equals(cppts.token().id()));
+    }
+    
+    private static boolean findUpperInitializer(TokenSequence<TokenId> cppts, MutableObject<Integer> skippedHolder) {
+        int level = 0;
+        int skipped = 0;
+        do {
+            if (CppTokenId.LBRACE.equals(cppts.token().id())) {
+                --level;
+            } else if (CppTokenId.RBRACE.equals(cppts.token().id())) {
+                ++level;
+            } else if (CppTokenId.LPAREN.equals(cppts.token().id())) {
+                --level;
+            } else if (CppTokenId.RPAREN.equals(cppts.token().id())) {
+                ++level;
+            } else if (CppTokenId.LBRACKET.equals(cppts.token().id())) {
+                --level;
+            } else if (CppTokenId.RBRACKET.equals(cppts.token().id())) {
+                ++level;
+            } else if (CppTokenId.COMMA.equals(cppts.token().id())) {
+                if (level == 0) {
+                    ++skipped;
+                }
+            }
+        } while (level >= 0 && cppts.movePrevious());
+        skippedHolder.value = skipped;
+        if (level < 0) {
+            return cppts.token() != null 
+                && CppTokenId.LBRACE.equals(cppts.token().id()) 
+                && cppts.movePrevious();
+        }
+        return false;
+    }
+    
+    private static Token<TokenId> getInitializerIdentToken(TokenSequence<TokenId> cppts) {
+        int index = cppts.index();
+        Token<TokenId> ident = null;
+        findToken(
+            cppts,
+            false,
+            false,
+            Arrays.asList(CppTokenId.IDENTIFIER),
+            CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT, CppTokenId.DOT
+        );
+        if (checkValidInitializerIdent(cppts)) {
+            ident = cppts.token();
+        }
+        cppts.moveIndex(index);
+        cppts.moveNext();
+        return ident;
+    }
+    
+    private static String getInitializerInnerClassName(TokenSequence<TokenId> cppts) {
+        int index = cppts.index();
+        Token<TokenId> rParen = findToken(
+            cppts,
+            true,
+            false,
+            Arrays.asList(CppTokenId.RPAREN),
+            CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
+        );
+        if (rParen != null) {
+            List<Token<TokenId>> nameTokens = new LinkedList<Token<TokenId>>();
+            int level = 1;
+            while (level > 0 && cppts.movePrevious() && cppts.token() != null) {
+                if (CppTokenId.LBRACE.equals(cppts.token().id())) {
+                    --level;
+                } else if (CppTokenId.RBRACE.equals(cppts.token().id())) {
+                    ++level;
+                } else if (CppTokenId.LPAREN.equals(cppts.token().id())) {
+                    --level;
+                } else if (CppTokenId.RPAREN.equals(cppts.token().id())) {
+                    ++level;
+                } else if (CppTokenId.LBRACKET.equals(cppts.token().id())) {
+                    --level;
+                } else if (CppTokenId.RBRACKET.equals(cppts.token().id())) {
+                    ++level;
+                }
+                if (level > 0) {
+                    if (!isTokenOneOf(cppts.token(), CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT)) {
+                        nameTokens.add(0, cppts.token());
+                    }
+                }
+            }
+            if (!nameTokens.isEmpty() && isTokenOneOf(cppts.token(), CppTokenId.LPAREN)) {
+                StringBuilder sb = new StringBuilder();
+                for (Token<TokenId> nameToken : nameTokens) {
+                    sb.append(nameToken.text());
+                }
+                return sb.toString();
+            }
+        }
+        cppts.moveIndex(index);
+        cppts.moveNext();
+        return null;
+    }
 
     private static boolean checkValidInitializerIdent(TokenSequence<TokenId> cppts) {
         // checks if we are at identifier in initializers like:
@@ -706,23 +854,53 @@ public class CsmContextUtilities {
         return false;
     }
 
-    private static CsmClass resolveInitializerContext(List<Token<TokenId>> identSequence, CsmClass context) {
-        for (Token<TokenId> ident : identSequence) {
+    private static CsmClass resolveInitializerContext(List<InitPathItem> pathSequence, CsmClass initialContext, int initialArrayDepth) {
+        if (initialContext == null) {
+            return null;
+        }
+        CsmClass context = initialContext;
+        int contextArrayDepth = initialArrayDepth;
+        for (InitPathItem item : pathSequence) {
             CsmClassifier classifier = null;
-            if (ident.text() != null) {
-                String fieldName = ident.text().toString();
+            int arrayDepth = 0;
+            if (item.isIdentBased()) {
+                String fieldName = item.ident.text().toString();
                 for (CsmMember csmMember : context.getMembers()) {
                     if (CsmKindUtilities.isField(csmMember) && fieldName.equals(csmMember.getName().toString())) {
                         CsmType fieldType = ((CsmField)csmMember).getType();
                         if (fieldType != null) {
                             classifier = CsmBaseUtilities.getOriginalClassifier(fieldType.getClassifier(), fieldType.getContainingFile());
+                            arrayDepth = fieldType.getArrayDepth(); // TODO: do something like CsmBaseUtilities.isPointer
                         }
                         break;
+                    }
+                }
+            } else {
+                if (contextArrayDepth > 0) {
+                    --contextArrayDepth;
+                    continue;
+                } else {
+                    int counter = 0;
+                    Iterator<CsmMember> memberIter = context.getMembers().iterator();
+                    while (counter < item.position && memberIter.hasNext()) {
+                        memberIter.next();
+                        ++counter;
+                    }
+                    if (memberIter.hasNext()) {
+                        CsmMember member = memberIter.next();
+                        if (CsmKindUtilities.isField(member)) {
+                            CsmType fieldType = ((CsmField) member).getType();
+                            if (fieldType != null) {
+                                classifier = CsmBaseUtilities.getOriginalClassifier(fieldType.getClassifier(), fieldType.getContainingFile());
+                                arrayDepth = fieldType.getArrayDepth(); // TODO: do something like CsmBaseUtilities.isPointer
+                            }
+                        }
                     }
                 }
             }
             if (CsmKindUtilities.isClass(classifier)) {
                 context = (CsmClass) classifier;
+                contextArrayDepth = arrayDepth;
             }
             if (classifier == null) {
                 context = null; // error happened
@@ -777,7 +955,40 @@ public class CsmContextUtilities {
 
         return result;
     }
+    
+    private static boolean isTokenOneOf(Token<TokenId> token, TokenId ... tokens) {
+        if (token != null) {
+            for (TokenId tokId : tokens) {
+                if (tokId.equals(token.id())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
+    private static final class InitPathItem  {
+        
+        public final Token<TokenId> ident;
+        
+        public final int position;
+
+        public InitPathItem(Token<TokenId> ident, int position) {
+            this.ident = ident;
+            this.position = position;
+        }
+        
+        public boolean isIdentBased() {
+            return ident != null && ident.text() != null;
+        }
+
+        @Override
+        public String toString() {
+            return isIdentBased() ? ("[" + ident.text() + ", " + position + "]") // NOI18N
+                : "[" + position + "]"; // NOI18N
+        }
+    }
+    
     public static CsmFunction getFunction(CsmContext context, boolean inScope) {
         CsmFunction result = null;
         for (int i = context.size() - 1; 0 <= i; --i) {

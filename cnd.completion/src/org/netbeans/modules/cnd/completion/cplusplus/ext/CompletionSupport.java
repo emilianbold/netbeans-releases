@@ -1632,39 +1632,14 @@ public final class CompletionSupport implements DocumentListener {
             // probably in initializer of variable, like
             // struct AAA a[] = { { .field = 1}, { .field = 2}};
             CsmVariable varObj = (CsmVariable) context.getLastObject();
-            String expr = varObj.getInitialValue().getText().toString();
-            if(findLCurlsNumberBeforPosition(expr, pos - varObj.getInitialValue().getStartOffset()) > 1) {
-                int pos2 = findLastAssignmentBeforPosition(expr, pos - varObj.getInitialValue().getStartOffset());
-                int pos3 = findLastTypeCastBeforPosition(expr, pos - varObj.getInitialValue().getStartOffset());
-                if(pos2 != -1 && pos3 < pos2) {
-                    CsmType type = findExactVarType(file, var, varObj.getInitialValue().getStartOffset() + pos2, refContext);
-                    if(type != null) {
-                        String varName = expr.substring(pos2);
-                        varName = varName.substring(1, varName.indexOf("=")).trim(); // NOI18N
-                        CsmClassifier cls = type.getClassifier();
-                        if(cls != null) {
-                            cls = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, file);
-                            if (CsmKindUtilities.isClass(cls)) {
-                                for (CsmMember csmMember : ((CsmClass)cls).getMembers()) {
-                                    if(CsmKindUtilities.isField(csmMember) && csmMember.getName().toString().equals(varName)) {
-                                        return ((CsmField)csmMember).getType();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else if (pos3 != -1) {
-                    String typeName = expr.substring(pos3 + 1);
-                    int indexOfRBracket = typeName.indexOf(")"); // NOI18N
-                    if (indexOfRBracket > 0) {
-                        typeName = typeName.substring(0, indexOfRBracket);
-                        CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
-                        if (cls != null) {
-                            CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false);
-                            return type;
-                        }
-                    }
-                }            }
+            CsmClassifier varCls = CsmBaseUtilities.getOriginalClassifier(varObj.getType().getClassifier(), file);
+            if (CsmKindUtilities.isClass(varCls)) {
+                CsmClass contextClass = CsmContextUtilities.getContextClassInInitializer(varObj, (CsmClass) varCls, pos, getFinder());
+                if (contextClass != null) {
+                    // Note that we can extract type from CsmField if necessary
+                    return CsmCompletion.createType(contextClass, 0, 0, 0, false);
+                }
+            }
             if (CsmOffsetUtilities.isInObject(varObj.getInitialValue(), pos)) {
                 CsmType type = varObj.getType();
                 if (type.getArrayDepth() > 0) {
@@ -1739,64 +1714,6 @@ public final class CompletionSupport implements DocumentListener {
                expression.getExpID() == CsmCompletionExpression.UNARY_OPERATOR ||
                expression.getExpID() == CsmCompletionExpression.CONSTANT ||
                expression.getExpID() == CsmCompletionExpression.METHOD;
-    }
-
-    private int findLCurlsNumberBeforPosition(String s, int pos) {
-        int cursor = -1;
-        int cursNumber = 0;
-        while(true) {
-            cursor = s.indexOf('{', cursor + 1); // NOI18N
-            if(cursor != -1 && cursor < pos) {
-                cursNumber++;
-            } else {
-                break;
-            }
-        }
-        return cursNumber;
-    }
-
-    private int findLastAssignmentBeforPosition(String s, int pos) {
-        int cursor = pos;
-        int level = 0;
-        while(true) {
-            if(cursor == -1) {
-                return -1;
-            }
-            if(s.charAt(cursor) == '}') { // NOI18N
-                level++;
-            }
-            if(s.charAt(cursor) == '{') { // NOI18N
-                level--;
-            }
-            if(level == -1) {
-                if(s.charAt(cursor) == '.') { // NOI18N
-                    return cursor;
-                }
-            }
-            cursor--;
-        }
-    }
-
-    private int findLastTypeCastBeforPosition(String s, int pos) {
-        int cursor = pos;
-        int level = 0;
-        while (true) {
-            if (cursor == -1) {
-                return -1;
-            }
-            if (s.charAt(cursor) == '}') { // NOI18N
-                level++;
-            }
-            if (s.charAt(cursor) == '{') { // NOI18N
-                level--;
-            }
-            if (level == -1) {
-                if (s.charAt(cursor) == '(') { // NOI18N
-                    return cursor;
-                }
-            }
-            cursor--;
-        }
     }
 
     private static CsmScope getContextScope(Context context) {
