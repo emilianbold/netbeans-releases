@@ -51,10 +51,10 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(service = CategoryBuilder.class, projectTypes = {
-    @ProjectType(id = "org-netbeans-modules-j2ee-earproject"),
-    @ProjectType(id = "org-netbeans-modules-j2ee-ejbjarproject")
-})
+//@ProjectServiceProvider(service = CategoryBuilder.class, projectTypes = {
+//    @ProjectType(id = "org-netbeans-modules-j2ee-earproject"),
+//    @ProjectType(id = "org-netbeans-modules-j2ee-ejbjarproject")
+//})
 public class EJBCategoryBuilder extends CategoryBuilder {
 
     public EJBCategoryBuilder(Project proj) {

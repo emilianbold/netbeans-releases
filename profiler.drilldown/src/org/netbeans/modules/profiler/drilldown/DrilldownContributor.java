@@ -67,7 +67,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Bachorik
  */
-@ServiceProvider(service = org.netbeans.lib.profiler.ui.LiveResultsWindowContributor.class)
+//@ServiceProvider(service = org.netbeans.lib.profiler.ui.LiveResultsWindowContributor.class)
 public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
 
     private static final Logger LOGGER = Logger.getLogger(DrilldownContributor.class.getName());

@@ -59,7 +59,7 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Bachorik
  */
-@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.lib.profiler.results.cpu.cct.CCTResultsFilter.EvaluatorProvider.class), @org.openide.util.lookup.ServiceProvider(service=DrillDownFactory.class)})
+//@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.lib.profiler.results.cpu.cct.CCTResultsFilter.EvaluatorProvider.class), @org.openide.util.lookup.ServiceProvider(service=DrillDownFactory.class)})
 public class DrillDownFactory implements CCTResultsFilter.EvaluatorProvider {
     private static class WeakEvaluator extends WeakReference<CCTResultsFilter.Evaluator> implements Evaluator {
         public WeakEvaluator(Evaluator referent, ReferenceQueue<? super Evaluator> q) {

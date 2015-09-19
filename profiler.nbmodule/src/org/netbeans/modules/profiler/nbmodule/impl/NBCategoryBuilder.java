@@ -51,9 +51,9 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(service = CategoryBuilder.class, projectTypes={
-    @ProjectType(id="org-netbeans-modules-apisupport-project")
-})
+//@ProjectServiceProvider(service = CategoryBuilder.class, projectTypes={
+//    @ProjectType(id="org-netbeans-modules-apisupport-project")
+//})
 public class NBCategoryBuilder extends CategoryBuilder {
 
     public NBCategoryBuilder(Project proj) {
