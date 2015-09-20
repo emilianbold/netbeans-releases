@@ -1138,37 +1138,41 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         PropertyChangeListener list = new java.beans.PropertyChangeListener() { // NOI18N
             @Override
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        diffChanged();
-                        initGlobalSizes();
-                        jEditorPane1.onUISettingsChanged();
-                        getComponent().revalidate();
-                        getComponent().repaint();
-                    }
-                });
+                if ("font".equals(evt.getPropertyName())) {
+                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            diffChanged();
+                            initGlobalSizes();
+                            jEditorPane1.onUISettingsChanged();
+                            getComponent().revalidate();
+                            getComponent().repaint();
+                        }
+                    });
+                }
             }
         };
         propertyChangeListeners.put(jEditorPane1.getEditorPane(), list);
-        jEditorPane1.getEditorPane().addPropertyChangeListener("font", WeakListeners.propertyChange(list, "font", jEditorPane1.getEditorPane())); //NOI18N
+        jEditorPane1.getEditorPane().addPropertyChangeListener(WeakListeners.propertyChange(list, jEditorPane1.getEditorPane())); //NOI18N
         list = new java.beans.PropertyChangeListener() { // NOI18N
             @Override
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        diffChanged();
-                        initGlobalSizes();
-                        jEditorPane2.onUISettingsChanged();
-                        getComponent().revalidate();
-                        getComponent().repaint();
-                    }
-                });
+                if ("font".equals(evt.getPropertyName())) {
+                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            diffChanged();
+                            initGlobalSizes();
+                            jEditorPane2.onUISettingsChanged();
+                            getComponent().revalidate();
+                            getComponent().repaint();
+                        }
+                    });
+                }
             }
         };
         propertyChangeListeners.put(jEditorPane2.getEditorPane(), list);
-        jEditorPane2.getEditorPane().addPropertyChangeListener("font", WeakListeners.propertyChange(list, "font", jEditorPane2.getEditorPane())); //NOI18N
+        jEditorPane2.getEditorPane().addPropertyChangeListener(WeakListeners.propertyChange(list, jEditorPane2.getEditorPane())); //NOI18N
     }
 
     private synchronized void diffChanged() {
