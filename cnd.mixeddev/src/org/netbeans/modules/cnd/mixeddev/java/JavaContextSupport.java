@@ -463,26 +463,29 @@ public final class JavaContextSupport {
     }
             
     private static List<CharSequence> renderExpression(ExpressionTree expr) {
-        List<CharSequence> exprParts = new ArrayList<CharSequence>();
-        
-        do {
-            switch (expr.getKind()) {
-                case MEMBER_SELECT:
-                    exprParts.add(0, ((MemberSelectTree) expr).getIdentifier());
-                    expr = ((MemberSelectTree) expr).getExpression();
-                    break;
-                    
-                case IDENTIFIER:
-                    exprParts.add(0, ((IdentifierTree) expr).getName());
-                    expr = null;
-                    break;
-                    
-                default:
-                    expr = null;
-            }
-        } while (expr != null);
-        
-        return exprParts;
+        if (expr != null) {
+            List<CharSequence> exprParts = new ArrayList<CharSequence>();
+
+            do {
+                switch (expr.getKind()) {
+                    case MEMBER_SELECT:
+                        exprParts.add(0, ((MemberSelectTree) expr).getIdentifier());
+                        expr = ((MemberSelectTree) expr).getExpression();
+                        break;
+
+                    case IDENTIFIER:
+                        exprParts.add(0, ((IdentifierTree) expr).getName());
+                        expr = null;
+                        break;
+
+                    default:
+                        expr = null;
+                }
+            } while (expr != null);
+
+            return exprParts;
+        }
+        return Collections.emptyList();
     }    
     
     private static boolean isOverloaded(TreePath mtdTreePath, String mtdName) {
