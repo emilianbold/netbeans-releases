@@ -52,6 +52,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 @ActionID(
         category = "File",
@@ -64,6 +65,7 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_CloseOtherProjectsAction=C&lose Other Projects")
 public final class CloseOtherProjectsAction implements ActionListener {
 
+    private static final RequestProcessor RP = new RequestProcessor(CloseAllProjectsAction.class);
     private final List<Project> selectedProjects;
 
     public CloseOtherProjectsAction(List<Project> selectedProjects) {
@@ -72,12 +74,17 @@ public final class CloseOtherProjectsAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        OpenProjects manager = OpenProjects.getDefault();
-        List<Project> openProjects = new ArrayList<Project>(Arrays.asList(manager.getOpenProjects()));
-        openProjects.removeAll(selectedProjects);
-        if (!openProjects.isEmpty()) {
-            Project[] otherProjectsToBeClosed = openProjects.toArray(new Project[openProjects.size()]);
-            manager.close(otherProjectsToBeClosed);
-        }
+        RP.post(new Runnable() { //#249720
+            @Override
+            public void run() { 
+                OpenProjects manager = OpenProjects.getDefault();
+                List<Project> openProjects = new ArrayList<Project>(Arrays.asList(manager.getOpenProjects()));
+                openProjects.removeAll(selectedProjects);
+                if (!openProjects.isEmpty()) {
+                    Project[] otherProjectsToBeClosed = openProjects.toArray(new Project[openProjects.size()]);
+                    manager.close(otherProjectsToBeClosed);
+                }
+            }
+        });    
     }
 }
