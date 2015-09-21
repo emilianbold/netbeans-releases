@@ -1,6 +1,6 @@
-#changeset:   15714:60e175d9bfc7
+#changeset:   15724:13d92d3ad56d
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Sep 17 20:42:20 2015 +0300
-#summary:     trying to localize iz #255337 - [newcodemodel] preprocessor states differ on 1
-91F81ED36683E7DA584C97FACA3DA8E21F6EBAE4 clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Mon Sep 21 19:24:27 2015 +0300
+#summary:     Wrap any passed FS to use caches
+B4005BE1B5E701F2DF428F8431FA24C4FB2CBD9A clank_0.3.6.zip
