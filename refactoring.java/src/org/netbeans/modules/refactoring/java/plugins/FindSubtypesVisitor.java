@@ -45,8 +45,8 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -72,40 +72,63 @@ public class FindSubtypesVisitor extends FindVisitor {
         if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             return super.visitClass(node, elementToFind);
         }
+        Trees trees = workingCopy.getTrees();
+        Types types = workingCopy.getTypes();
+        TypeMirror type2 = elementToFind.asType();
+        type2 = types.erasure(type2);
+        
         if (recursive) {
-            if (isSubtype(getCurrentPath(), elementToFind)) {
-                addUsage(getCurrentPath());
+            TypeMirror type1 = trees.getTypeMirror(getCurrentPath());
+            if (type1 != null) {
+                type1 = types.erasure(type1);
+                if (isSubtype(type1, type2)) {
+                    addUsage(getCurrentPath());
+                }
             }
         } else {
             TypeElement el = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
-            Types types = workingCopy.getTypes();
-            if (el.getSuperclass()!=null && types.isSameType(types.erasure(el.getSuperclass()), types.erasure(elementToFind.asType())) || containsType(el.getInterfaces(), elementToFind.asType())) {
+            if (el.getSuperclass()!=null && types.isSameType(types.erasure(el.getSuperclass()), type2) || containsType(el.getInterfaces(), type2)) {
                 addUsage(getCurrentPath());
-            } 
+            }
         }
         return super.visitClass(node, elementToFind);
     }
     
+    @Override
+    public Tree visitLambdaExpression(LambdaExpressionTree node, Element elementToFind) {
+        if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            return super.visitLambdaExpression(node, elementToFind);
+        }
+        Trees trees = workingCopy.getTrees();
+        Types types = workingCopy.getTypes();
+        TypeMirror type1 = trees.getTypeMirror(getCurrentPath());
+        if(type1 == null) {
+            return super.visitLambdaExpression(node, elementToFind);
+        }
+        type1 = types.erasure(type1);
+        TypeMirror type2 = elementToFind.asType();
+        type2 = types.erasure(type2);
+        
+        if (types.isSameType(type1, type2) || (recursive && isSubtype(type1, type2))) {
+            addUsage(getCurrentPath());
+        }
+        return super.visitLambdaExpression(node, elementToFind);
+    }
+    
     private boolean containsType(List<? extends TypeMirror> list, TypeMirror t) {
         Types types = workingCopy.getTypes();
-        t = types.erasure(t);
         for (TypeMirror m:list) {
             if (types.isSameType(t, types.erasure(m))) {
                 return true;
-            };
+            }
         }
         return false;
     }
     
-    protected boolean isSubtype(TreePath t1, Element t2) {
+    protected boolean isSubtype(TypeMirror type1, TypeMirror type2) {
         Types types = workingCopy.getTypes();
-        Trees trees = workingCopy.getTrees();
-        TypeMirror tm1 = trees.getTypeMirror(t1);
-        if (tm1 == null) {
-            return false;
-        }
-        tm1 = types.erasure(tm1);
-        TypeMirror tm2 = types.erasure(t2.asType());
+        TypeMirror tm1 = type1;
+        TypeMirror tm2 = type2;
 
         return types.isSubtype(tm1, tm2) && !types.isSameType(tm1, tm2);
     }
