@@ -60,6 +60,7 @@ import org.llvm.support.sys.fs;
 import org.llvm.support.sys.fs.UniqueID;
 import org.llvm.support.sys.fs.file_type;
 import org.llvm.support.sys.fs.perms;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.spi.APTBufferProvider;
 import org.netbeans.modules.cnd.debug.DebugUtils;
@@ -92,7 +93,7 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
     private final APTBufferProvider bufferProvider;
 
     private ClankFileObjectBasedFileSystem() {
-        if (DebugUtils.getBoolean("apt.use.buffer.fs", true)) { // NOI18N
+        if (APTTraceFlags.ALWAYS_USE_BUFFER_BASED_FILES) { // NOI18N
             bufferProvider = Lookup.getDefault().lookup(APTBufferProvider.class);
             if (bufferProvider == null) {
                 Exceptions.printStackTrace(new IllegalStateException("No providers found for " + APTBufferProvider.class.getName())); //NOI18N
