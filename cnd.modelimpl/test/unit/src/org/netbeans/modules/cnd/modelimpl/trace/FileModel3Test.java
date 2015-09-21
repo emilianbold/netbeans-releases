@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+
 /**
  * some tests extracted from sputnik/contrib/codemodeltests
  * @author Vladimir Voskresensky
@@ -72,11 +74,19 @@ public class FileModel3Test extends TraceModelTestBase {
     }    
 
     public void test_cross_inclusionA() throws Exception {
-        performTest("cross_inclusionA.h");
+        if (APTTraceFlags.USE_CLANK) {
+            performTestWithForcedPathSeparator("cross_inclusionA.h", '/');
+        } else {
+            performTest("cross_inclusionA.h");
+        }
     }    
 
     public void test_cross_inclusionB() throws Exception {
-        performTest("cross_inclusionB.h");
+        if (APTTraceFlags.USE_CLANK) {
+            performTestWithForcedPathSeparator("cross_inclusionB.h", '/');
+        } else {
+            performTest("cross_inclusionB.h");
+        }
     }    
     
     public void test_delay() throws Exception {
