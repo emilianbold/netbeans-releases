@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
 public class WLDeploymentFactory implements DeploymentFactory {
 
     public static final String SERVER_ID = "WebLogic9"; // NOI18N
-    
+
     public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
 
     public static final int DEFAULT_PORT = 7001;
@@ -87,7 +87,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
     public static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
 
     public static final Version VERSION_11 = Version.fromJsr277NotationWithFallback("11"); // NOI18N
-    
+
     public static final Version VERSION_1212 = Version.fromJsr277NotationWithFallback("12.1.2"); // NOI18N
 
     public static final Version VERSION_1221 = Version.fromJsr277NotationWithFallback("12.2.1"); // NOI18N
@@ -144,6 +144,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
         return getUrl(config.getHost(), config.getPort(),
                 config.getServerHome().getAbsolutePath(), domain == null ? null : domain.getAbsolutePath());
     }
+
     public static String getUrl(String host, int port, String serverHome, String domainHome) {
         StringBuilder sb = new StringBuilder(WLDeploymentFactory.URI_PREFIX);
         sb.append(host).append(":").append(port).append(":").append(serverHome); // NOI18N
