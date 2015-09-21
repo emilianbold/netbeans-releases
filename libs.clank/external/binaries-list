@@ -1,6 +1,6 @@
-#changeset:   15724:13d92d3ad56d
+#changeset:   15726:2d11a55f8966
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Sep 21 19:24:27 2015 +0300
-#summary:     Wrap any passed FS to use caches
-B4005BE1B5E701F2DF428F8431FA24C4FB2CBD9A clank_0.3.6.zip
+#date:        Mon Sep 21 22:41:34 2015 +0300
+#summary:     PERF: faster StdMap specializations
+8119065D1F46CC2507AF20E2B0152FABA78A325B clank_0.3.6.zip
