@@ -48,6 +48,7 @@ import java.io.PrintStream;
 import java.util.List;
 import static junit.framework.TestCase.assertNotNull;
 import org.netbeans.junit.Manager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 import org.openide.util.Exceptions;
@@ -57,7 +58,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-//@RandomlyFails
+@RandomlyFails
 public class IncrementalParseRepositoryComposite extends RepositoryValidationBase {
     private static final RequestProcessor RP = new RequestProcessor("Sleep");
     private volatile boolean isShutdown = false;
