@@ -729,23 +729,21 @@ public class OutputDocument implements Document, Element, ChangeListener {
             if (!consumed) {
                 consumed = true;
 
-                int lineStartFirst; // read this value under lock, #252025
                 // update lastFired info
                 synchronized (getLines().readLock()) {
                     lastFiredLineCount = getLines().getLineCount();
                     lastFiredLength = getLines().getCharCount() + inBuffer.length();
-                    lineStartFirst = getLines().getLineStart(first);
-                }
 
-                // fill event info
-                if (first < lastFiredLineCount) {
-                    offset = lineStartFirst;
-                    lineCount = lastFiredLineCount - first;
-                    length = lastFiredLength - offset;
-                } else {
-                    lineCount = 0;
-                    length = 0;
-                    offset = 0;
+                    // fill event info
+                    if (first < lastFiredLineCount) {
+                        offset = getLines().getLineStart(first);
+                        lineCount = lastFiredLineCount - first;
+                        length = lastFiredLength - offset;
+                    } else {
+                        lineCount = 0;
+                        length = 0;
+                        offset = 0;
+                    }
                 }
             }
         }
