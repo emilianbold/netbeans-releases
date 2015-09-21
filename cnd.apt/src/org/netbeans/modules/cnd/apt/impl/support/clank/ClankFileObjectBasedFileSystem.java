@@ -50,6 +50,10 @@ import org.clang.basic.vfs.directory_iterator;
 import org.clank.java.std;
 import org.clank.java.std_errors;
 import org.clank.java.std_ptr;
+import static org.clank.support.Casts.$char;
+import org.clank.support.Native;
+import org.clank.support.aliases.char$ptr;
+import org.llvm.adt.SmallString;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.Twine;
 import org.llvm.support.ErrorOr;
@@ -60,12 +64,16 @@ import org.llvm.support.sys.fs;
 import org.llvm.support.sys.fs.UniqueID;
 import org.llvm.support.sys.fs.file_type;
 import org.llvm.support.sys.fs.perms;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import static org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileSystemProviderImpl.RFS_PREFIX;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.spi.APTBufferProvider;
-import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -82,17 +90,17 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
     private static final AtomicLong totalStatTime  = TRACE_TIME ? new AtomicLong() : null;
     private static final AtomicLong totalStatCount = TRACE_TIME ? new AtomicLong() : null;
 
-    private static final ClankFileObjectBasedFileSystem INSTANCE = new ClankFileObjectBasedFileSystem();
+    private static final FileSystem LOCAL_FS = CndFileUtils.getLocalFileSystem();
 
     public static ClankFileObjectBasedFileSystem getInstance() {
-        return INSTANCE;
+        return new ClankFileObjectBasedFileSystem();
     }
 
     /** if null, then FileObject based file will be used */
     private final APTBufferProvider bufferProvider;
 
     private ClankFileObjectBasedFileSystem() {
-        if (DebugUtils.getBoolean("apt.use.buffer.fs", true)) { // NOI18N
+        if (APTTraceFlags.ALWAYS_USE_BUFFER_BASED_FILES) { // NOI18N
             bufferProvider = Lookup.getDefault().lookup(APTBufferProvider.class);
             if (bufferProvider == null) {
                 Exceptions.printStackTrace(new IllegalStateException("No providers found for " + APTBufferProvider.class.getName())); //NOI18N
@@ -161,10 +169,27 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         throw new UnsupportedOperationException("Not supported yet."); // TODO: implement? // NOI18N
     }
 
-
-    private static String toCharSequence(Twine twine) {
-        std.string str = twine.str();
-        return str.toJavaString();
+    private final SmallString BufString = new SmallString(512);
+    private final StringRef BufRef = new StringRef();
+    private final StringBuilder BufBuilder = new StringBuilder();
+    private CharSequence toCharSequence(Twine twine) {
+        BufString.clear();
+        BufBuilder.setLength(0);
+        StringRef StrRef = twine.toStringRef(BufString, BufRef);        
+        int Len = StrRef.size();
+        if (BufString.size() > 0) {
+            assert Len == BufString.size();
+            byte[] $array = BufString.$array();
+            for (int i = 0; i < Len; i++) {
+                BufBuilder.append($char($array[i]));
+            }
+        } else {
+            char$ptr data = StrRef.data();
+            for (int i = 0; i < Len; i++) {
+                BufBuilder.append($char(data.$at(i)));
+            }
+        }
+        return BufBuilder;
     }
     
 
@@ -178,11 +203,22 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
     }
 
     private FileObject getFileObject(Twine Path) {
-        String strPath = toCharSequence(Path);
-        return CndFileSystemProvider.urlToFileObject(strPath);
+        CharSequence strPath = toCharSequence(Path);
+        if (CharSequenceUtils.startsWith(strPath, RFS_PREFIX)) {
+            FileSystem urlToFileSystem = CndFileSystemProvider.urlToFileSystem(strPath);
+            if (urlToFileSystem != null) {
+                if (CndFileUtils.isExistingFile(urlToFileSystem, ClankFileSystemProviderImpl.getPathFromUrl(strPath).toString())) {
+                    return CndFileSystemProvider.urlToFileObject(strPath);
+                }
+            }
+        } else if (CndFileUtils.exists(LOCAL_FS, strPath.toString())) {
+            return CndFileSystemProvider.urlToFileObject(strPath);
+        }
+        return null;
     }
 
     private ErrorOr<Status> getStatus(ClankFileObjectBasedFile file) {
+        CndUtils.assertTrueInConsole(false, "why it was asked? We changed clank to ask status from FS by Path and then open file when exists");
         long time = TRACE_TIME ? System.currentTimeMillis() : 0;
         ErrorOr<Status> result = getStatus(file.getFileObject());
         if (TRACE_TIME) {

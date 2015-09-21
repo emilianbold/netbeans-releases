@@ -354,6 +354,10 @@ public final class CndFileUtils {
         return getFlags(getLocalFileSystem(), file.getAbsolutePath(), true).exist;
     }
 
+    public static boolean exists(FileSystem fs, String absolutePath) {
+        return getFlags(fs, absolutePath, true).exist;
+    }
+
     public static boolean isExistingFile(String filePath) {
         return isExistingFile(getLocalFileSystem(), filePath);
     }

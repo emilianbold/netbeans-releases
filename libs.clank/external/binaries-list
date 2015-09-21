@@ -1,6 +1,6 @@
-#changeset:   15714:60e175d9bfc7
+#changeset:   15726:2d11a55f8966
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Sep 17 20:42:20 2015 +0300
-#summary:     trying to localize iz #255337 - [newcodemodel] preprocessor states differ on 1
-91F81ED36683E7DA584C97FACA3DA8E21F6EBAE4 clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Mon Sep 21 22:41:34 2015 +0300
+#summary:     PERF: faster StdMap specializations
+8119065D1F46CC2507AF20E2B0152FABA78A325B clank_0.3.6.zip

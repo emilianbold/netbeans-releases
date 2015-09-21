@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.project.ui.actions;
+package org.netbeans.modules.javascript2.editor;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle.Messages;
-import org.openide.util.RequestProcessor;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-@ActionID(
-        category = "File",
-        id = "org.netbeans.modules.project.ui.actions.CloseOtherProjectsAction"
-        )
-@ActionRegistration(
-        displayName = "#CTL_CloseOtherProjectsAction"
-        )
-@ActionReference(path = "Menu/File", position = 750)
-@Messages("CTL_CloseOtherProjectsAction=C&lose Other Projects")
-public final class CloseOtherProjectsAction implements ActionListener {
-
-    private static final RequestProcessor RP = new RequestProcessor(CloseAllProjectsAction.class);
-    private final List<Project> selectedProjects;
-
-    public CloseOtherProjectsAction(List<Project> selectedProjects) {
-        this.selectedProjects = selectedProjects;
+/**
+ *
+ * @author Petr Pisl
+ */
+public class JsCodeCompletionIssue254609Test extends JsCodeCompletionBase {
+    
+    public JsCodeCompletionIssue254609Test(String testName) {
+        super(testName);
+    }
+    
+    public void testIssue254609_01() throws Exception {
+        checkCompletion("testfiles/completion/issue254609/issue254609Test.js", "n^;//test1", false);
+    }
+    
+    public void testIssue254609_02() throws Exception {
+        checkCompletion("testfiles/completion/issue254609/issue254609Test.js", "n^;//test2", false);
+    }
+    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "testfiles/completion/issue254609")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 
     @Override
-    public void actionPerformed(ActionEvent ev) {
-        RP.post(new Runnable() { //#249720
-            @Override
-            public void run() { 
-                OpenProjects manager = OpenProjects.getDefault();
-                List<Project> openProjects = new ArrayList<Project>(Arrays.asList(manager.getOpenProjects()));
-                openProjects.removeAll(selectedProjects);
-                if (!openProjects.isEmpty()) {
-                    Project[] otherProjectsToBeClosed = openProjects.toArray(new Project[openProjects.size()]);
-                    manager.close(otherProjectsToBeClosed);
-                }
-            }
-        });    
+    protected boolean classPathContainsBinaries() {
+        return true;
     }
 }
