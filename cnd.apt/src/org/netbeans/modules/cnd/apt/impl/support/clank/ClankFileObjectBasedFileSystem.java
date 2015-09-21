@@ -218,7 +218,6 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
     }
 
     private ErrorOr<Status> getStatus(ClankFileObjectBasedFile file) {
-        CndUtils.assertTrueInConsole(false, "why it was asked? We changed clank to ask status from FS by Path and then open file when exists");
         long time = TRACE_TIME ? System.currentTimeMillis() : 0;
         ErrorOr<Status> result = getStatus(file.getFileObject());
         if (TRACE_TIME) {
