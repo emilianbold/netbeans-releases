@@ -331,7 +331,13 @@ public class ProfilesPanel extends javax.swing.JPanel {
                 XMLUtil.write(doc, fos, "UTF-8"); //NOI18N
                 fos.close();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                NotifyDescriptor nd = new NotifyDescriptor(
+                        NbBundle.getMessage(ProfilesPanel.class, "Export.io.error", ex.getLocalizedMessage()), 
+                        NbBundle.getMessage(ProfilesPanel.class, "Export.failed.title"), 
+                        NotifyDescriptor.DEFAULT_OPTION, 
+                        NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION);
+                LOG.log(Level.INFO, "Failed to export bindings", ex);
+                DialogDisplayer.getDefault().notify(nd);
             }
         }
 
