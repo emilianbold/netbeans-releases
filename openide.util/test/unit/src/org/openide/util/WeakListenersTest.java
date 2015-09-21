@@ -46,6 +46,9 @@ package org.openide.util;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -63,6 +66,7 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.colorchooser.DefaultColorSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
@@ -343,6 +347,107 @@ public class WeakListenersTest extends NbTestCase {
         assertGC ("Weak listener can go away as well", weakRef);
     }
     
+    public void testNameListenersCombined() {
+        Logger WL_LOG = Logger.getLogger(WeakListenerImpl.class.getName());
+        class WLLogHandler extends Handler {
+            
+            private String warnings;
+
+            @Override
+            public void publish(LogRecord record) {
+                if (Level.WARNING.intValue() <= record.getLevel().intValue()) {
+                    if (warnings == null) {
+                        warnings = record.toString();
+                    } else {
+                        warnings += "\n" + record.toString();
+                    }
+                }
+            }
+
+            @Override
+            public void flush() {}
+
+            @Override
+            public void close() throws SecurityException {}
+            
+            String getWarnings() {
+                return warnings;
+            }
+            
+        }
+        WLLogHandler wlLogHandler = new WLLogHandler();
+        WL_LOG.addHandler(wlLogHandler);
+        VetoableChangeSupport vcs = new VetoableChangeSupport(this);
+        DefaultColorSelectionModel dcsm = new DefaultColorSelectionModel();
+        VListener v1 = new VListener ();
+        VListener v2 = new VListener ();
+        VListener v3 = new VListener ();
+        VListener v4 = new VListener ();
+        CListener c1 = new CListener();
+        CListener c2 = new CListener();
+        CListener c3 = new CListener();
+        CListener c4 = new CListener();
+        
+        vcs.addVetoableChangeListener (WeakListeners.vetoableChange(v1, vcs));
+        vcs.addVetoableChangeListener ("name", WeakListeners.vetoableChange (v2, "name", vcs));
+        vcs.addVetoableChangeListener ("name3", WeakListeners.vetoableChange (v3, "name3", vcs));
+        vcs.addVetoableChangeListener (WeakListeners.vetoableChange (v4, vcs));
+        dcsm.addChangeListener(WeakListeners.change(c1, dcsm));
+        dcsm.addChangeListener(WeakListeners.change(c2, dcsm));
+        dcsm.addChangeListener(WeakListeners.change(c3, dcsm));
+        dcsm.addChangeListener(WeakListeners.change(c4, dcsm));
+    
+        //System.err.println("V1:");
+        Reference<?> refV1 = new WeakReference<Object>(v1);
+        v1 = null;
+        assertGC ("Listener can be GC", refV1);
+        
+        //System.err.println("C1:");
+        Reference<?> refC1 = new WeakReference<Object>(c1);
+        c1 = null;
+        assertGC ("Listener can be GC", refC1);
+        
+        //System.err.println("V2:");
+        Reference<?> refV2 = new WeakReference<Object>(v2);
+        v2 = null;
+        assertGC ("Listener can be GC", refV2);
+        
+        //System.err.println("C2:");
+        Reference<?> refC2 = new WeakReference<Object>(c2);
+        c2 = null;
+        assertGC ("Listener can be GC", refC2);
+        
+        //System.err.println("V3:");
+        Reference<?> refV3 = new WeakReference<Object>(v3);
+        v3 = null;
+        assertGC ("Listener can be GC", refV3);
+        
+        //System.err.println("V4:");
+        Reference<?> refV4 = new WeakReference<Object>(v4);
+        v4 = null;
+        assertGC ("Listener can be GC", refV4);
+        
+        //System.err.println("C3:");
+        Reference<?> refC3 = new WeakReference<Object>(c3);
+        c3 = null;
+        assertGC ("Listener can be GC", refC3);
+        
+        //System.err.println("ALL:");
+        Reference<?> refVcs = new WeakReference<Object>(vcs);
+        vcs = null;
+        Reference<?> refDcsm = new WeakReference<Object>(dcsm);
+        dcsm = null;
+        
+        assertGC ("Source can be GC", refVcs);
+        assertGC ("Source can be GC", refDcsm);
+        
+        String warnings = wlLogHandler.getWarnings();
+        if (warnings != null) {
+            System.err.println(warnings);
+        }
+        assertNull(warnings, warnings);
+    }
+    
     
     public void testSourceCanBeGarbageCollected () {
         javax.swing.JButton b = new javax.swing.JButton ();
@@ -571,6 +676,20 @@ public class WeakListenersTest extends NbTestCase {
         }
     } // end of Listener
     
+    private static final class VListener implements VetoableChangeListener {
+
+        @Override
+        public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+        }
+    }
+
+    private static final class CListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+        }
+    }
+
     private static final class ImplEventContext extends javax.naming.InitialContext 
     implements javax.naming.event.EventContext {
         public javax.naming.event.NamingListener listener;

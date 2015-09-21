@@ -537,9 +537,11 @@ abstract class WeakListenerImpl implements java.util.EventListener {
     */
     private static final class ListenerReference extends WeakReference<Object> implements Runnable {
         private static Class<?> lastClass;
+        private static Class<?> lastNClass;
         private static String lastMethodName;
+        private static String lastNMethodName;
         private static Method lastRemove;
-        private static Method lastNamedRemove;
+        private static Method lastNRemove;
         private static final Object LOCK = new Object();
         WeakListenerImpl weakListener;
         private String name;
@@ -595,14 +597,16 @@ abstract class WeakListenerImpl implements java.util.EventListener {
             String methodName = ref.removeMethodName();
 
             synchronized (LOCK) {
-                if (lastClass == methodClass) {
-                    if (name == null) {
+                if (name == null) {
+                    if (lastClass == methodClass) {
                         if (lastRemove != null && methodName.equals(lastMethodName)) {
                             remove = lastRemove;
                         }
-                    } else {
-                        if (lastNamedRemove != null && methodName.equals(lastMethodName)) {
-                            remove = lastNamedRemove;
+                    }
+                } else {
+                    if (lastNClass == methodClass) {
+                        if (lastNRemove != null && methodName.equals(lastNMethodName)) {
+                            remove = lastNRemove;
                         }
                     }
                 }
@@ -622,12 +626,14 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                     return;
                 } else {
                     synchronized (LOCK) {
-                        lastClass = methodClass;
-                        lastMethodName = methodName;
                         if (name == null) {
+                            lastClass = methodClass;
+                            lastMethodName = methodName;
                             lastRemove = remove;
                         } else {
-                            lastNamedRemove = remove;
+                            lastNClass = methodClass;
+                            lastNMethodName = methodName;
+                            lastNRemove = remove;
                         }
                     }
                 }
