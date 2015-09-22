@@ -1656,7 +1656,7 @@ public class MetaComponentCreator {
                     prefix + 1, prefix + 2, prefix + 3, prefix + 4
                 });
                 changes.put("model", propValue); // NOI18N
-                changes.put(JavaCodeGenerator.AUX_TYPE_PARAMETERS, "<Object>"); // NOI18N
+                changes.put(JavaCodeGenerator.AUX_TYPE_PARAMETERS, "<String>"); // NOI18N
             }
 
         } else if (comp instanceof JList) {
@@ -1669,7 +1669,7 @@ public class MetaComponentCreator {
                     defaultModel.addElement(prefix + i); // NOI18N
                 }
                 changes.put("model", defaultModel); // NOI18N
-                changes.put(JavaCodeGenerator.AUX_TYPE_PARAMETERS, "<Object>"); // NOI18N
+                changes.put(JavaCodeGenerator.AUX_TYPE_PARAMETERS, "<String>"); // NOI18N
             }
         } else if (comp instanceof JTextArea) {
             JTextArea textArea = (JTextArea)comp;
