@@ -1806,7 +1806,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         if (!TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
                             addToQueue = true;
                             clearPrevState = clean.get();
-                            if (true) {
+                            if (false) {
                                 // PERF: moved out of sync block to prepare caches before adding to Queue
                                 ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean.get(),
                                         clean.get() ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
