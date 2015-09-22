@@ -477,9 +477,12 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         // if there are any (else include the source dir(s) as a fallback for the I18N wizard to work).
         Set<URL> urls = new LinkedHashSet<>();
         urls.addAll(createCompileClasspath(compilationUnitEl));
-        final SourceForBinaryQueryImpl sfbqImpl = FileOwnerQuery.getOwner(helper.getProjectDirectory()).getLookup().lookup(SourceForBinaryQueryImpl.class);
-        for (URL src : createSourcePath(packageRoots)) {
-            urls.addAll(sfbqImpl.findBinaryRoots(src));
+        final Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+        if (prj != null) {
+            final SourceForBinaryQueryImpl sfbqImpl = prj.getLookup().lookup(SourceForBinaryQueryImpl.class);
+            for (URL src : createSourcePath(packageRoots)) {
+                urls.addAll(sfbqImpl.findBinaryRoots(src));
+            }
         }
         return new ArrayList<>(urls);
     }
