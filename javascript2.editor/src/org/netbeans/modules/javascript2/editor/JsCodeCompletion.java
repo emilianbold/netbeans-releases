@@ -172,7 +172,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 default:
                     break;
             }
-            if (context == CompletionContext.EXPRESSION || context == CompletionContext.OBJECT_MEMBERS || context == CompletionContext.OBJECT_PROPERTY && !request.prefix.isEmpty()) {
+            if ((context == CompletionContext.EXPRESSION || context == CompletionContext.OBJECT_MEMBERS || context == CompletionContext.OBJECT_PROPERTY) && !request.prefix.isEmpty()) {
                 Collection<? extends IndexResult> indexResults = JsIndex.get(fileObject).query(JsIndex.FIELD_BASE_NAME, request.prefix, QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
                 for (IndexResult indexResult : indexResults) {
                     IndexedElement indexElement = IndexedElement.create(indexResult);
