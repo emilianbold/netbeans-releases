@@ -127,13 +127,7 @@ public class RADComponentRenameRefactoringSupport implements RenameSupport.Refac
     }
 
     private static boolean emptyOrWhite(String s){
-        if(s==null){
-            return true;
-        }
-        if(s.trim().length()<0){
-            return true;
-        }
-        return false;
+        return s == null || s.trim().length() == 0;
     }
 
     private static class MemberVisitor

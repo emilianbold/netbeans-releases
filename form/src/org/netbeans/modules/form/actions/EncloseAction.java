@@ -83,8 +83,8 @@ public class EncloseAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
-        List comps = getComponents(nodes);
-        return ((comps != null) && getContainer(comps) != null);
+        List<RADComponent> comps = getComponents(nodes);
+        return comps != null && getContainer(comps) != null && enclosableComponents(comps);
     }
 
     @Override
@@ -129,6 +129,21 @@ public class EncloseAction extends NodeAction {
             }
         }
         return commonParent;
+    }
+
+    private boolean enclosableComponents(List<RADComponent> components) {
+        FormModel formModel = null;
+        String[] compIds = new String[components.size()];
+        int i = 0;
+        for (RADComponent metacomp : components) {
+            compIds[i++] = metacomp.getId();
+            if (formModel == null) {
+                formModel = metacomp.getFormModel();
+            }
+        }
+        FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
+        return formDesigner != null && formDesigner.getLayoutDesigner() != null
+            && formDesigner.getLayoutDesigner().canEncloseInContainer(compIds);
     }
 
     private static List<CategoryInfo> getCategoryInfos() {
