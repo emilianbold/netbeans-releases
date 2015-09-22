@@ -2198,6 +2198,36 @@ public final class LayoutDesigner implements LayoutConstants {
         return index - d;
     }
 
+    public boolean canEncloseInContainer(String[] compIds) {
+        LayoutComponent commonContainer = null;
+        LayoutInterval commonRoot = null;
+        for (String id : compIds) {
+            LayoutComponent comp = layoutModel.getLayoutComponent(id);
+            if (comp == null) {
+                return false;
+            }
+            LayoutComponent cont = comp.getParent();
+            if (cont == null) {
+                return false;
+            }
+            if (commonContainer == null) {
+                commonContainer = cont;
+            } else if (commonContainer != cont) {
+                return false;
+            }
+            LayoutInterval root = LayoutInterval.getRoot(comp.getLayoutInterval(HORIZONTAL));
+            if (root == null) {
+                return false;
+            }
+            if (commonRoot == null) {
+                commonRoot = root;
+            } else if (commonRoot != root) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void encloseInContainer(String[] compIds, String contId) {
         LayoutComponent enclosingCont = layoutModel.getLayoutComponent(contId);
         if (enclosingCont == null) {
