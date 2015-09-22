@@ -442,9 +442,9 @@ public final class Startup {
         buf.append("Nb."); //NOI18N
         buf.append(UIManager.getLookAndFeel().getID());
         if (UIUtils.isXPLF()) {
-            if (isWindows8()) {
+            if (isWindows8() || isWindows10()) {
                 buf.append("Windows8LFCustoms"); //NOI18N
-            } else if (isWindowsVista() || isWindows7() || isWindows8()) {
+            } else if (isWindowsVista() || isWindows7()) {
                 buf.append("VistaLFCustoms"); //NOI18N
             } else {
                 buf.append("XPLFCustoms"); //NOI18N
@@ -467,7 +467,7 @@ public final class Startup {
             switch (Arrays.asList(knownLFs).indexOf(UIManager.getLookAndFeel().getID())) {
                 case 1 :
                     if (UIUtils.isXPLF()) {
-                        if( isWindows8() ) {
+                        if( isWindows8() || isWindows10() ) {
                             result = new Windows8LFCustoms();
                         } else if (isWindowsVista() || isWindows7()) {
                             result = new VistaLFCustoms();
@@ -493,7 +493,7 @@ public final class Startup {
                 default :
                     // #79401 check if it's XP style LnF, for example jGoodies
                     if (UIUtils.isXPLF()) {
-                        if (isWindows8()) {
+                        if (isWindows8() || isWindows10()) {
                             result = new Windows8LFCustoms();
                         } else if (isWindowsVista() || isWindows7()) {
                             result = new VistaLFCustoms();
@@ -574,6 +574,12 @@ public final class Startup {
         String osName = System.getProperty ("os.name");
         return osName.indexOf("Windows 8") >= 0
             || (osName.equals( "Windows NT (unknown)" ) && "6.2".equals( System.getProperty("os.version") ));
+    }
+
+    private static boolean isWindows10() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Windows 10") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "10.0".equals( System.getProperty("os.version") ));
     }
 
     private static boolean isMac() {
