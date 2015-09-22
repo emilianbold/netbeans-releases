@@ -267,7 +267,7 @@ public final class ResultBar extends JComponent implements ActionListener{
                 // contains aborted tests -> abort color
                 light = abortedTestsLight;
                 dark = abortedTestsDark;
-            } else if(100.0f - passedPercentage - abortedPercentage - skippedPercentage > 0.0) {
+            } else if(100.0f - passedPercentage - abortedPercentage - skippedPercentage > 0.0001) {
                 // contains failed tests -> red
                 light = notCoveredLight;
                 dark = notCoveredDark;
