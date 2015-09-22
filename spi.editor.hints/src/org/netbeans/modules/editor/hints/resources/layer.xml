@@ -81,7 +81,7 @@ made subject to such option by the copyright holder.
     
     <folder name="Shortcuts">
 
-        <file name="O-Enter.shadow">
+        <file name="O-ENTER.shadow">
            <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance"/>
         </file>   
         
