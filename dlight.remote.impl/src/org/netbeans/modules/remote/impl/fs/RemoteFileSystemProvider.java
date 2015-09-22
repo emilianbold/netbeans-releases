@@ -275,6 +275,9 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         }
 
         int idx = url.indexOf(":/"); // NOI18N
+        if (idx < 0) {
+            idx = url.indexOf('/');
+        }
 
         String envPart;
         if (idx < 0) {
