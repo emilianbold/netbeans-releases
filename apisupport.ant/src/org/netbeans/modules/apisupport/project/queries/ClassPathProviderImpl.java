@@ -65,9 +65,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.Evaluator;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -85,6 +87,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -100,38 +103,52 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     public ClassPathProviderImpl(NbModuleProject project) {
         this.project = project;
     }
-    
-    private ClassPath boot;
-    private ClassPath source;
-    private ClassPath compile;
-    private ClassPath execute;
-    private ClassPath processor;
-    private ClassPath testSource;
-    private ClassPath testCompile;
-    private ClassPath testExecute;
-    private ClassPath testProcessor;
-    private ClassPath funcTestSource;
-    private ClassPath funcTestCompile;
-    private ClassPath funcTestExecute;
-    private ClassPath funcTestProcessor;
-    private Map<FileObject,ClassPath> extraCompilationUnitsCompile = null;
-    private Map<FileObject,ClassPath> extraCompilationUnitsExecute = null;
+
+    private final Object cpLock = new Object();
+    private volatile ClassPath boot;
+    private volatile ClassPath source;
+    private volatile ClassPath compile;
+    private volatile ClassPath execute;
+    private volatile ClassPath processor;
+    private volatile ClassPath testSource;
+    private volatile ClassPath testCompile;
+    private volatile ClassPath testExecute;
+    private volatile ClassPath testProcessor;
+    private volatile ClassPath funcTestSource;
+    private volatile ClassPath funcTestCompile;
+    private volatile ClassPath funcTestExecute;
+    private volatile ClassPath funcTestProcessor;
+    private volatile Map<FileObject,ClassPath> extraCompilationUnitsCompile = null;
+    private volatile Map<FileObject,ClassPath> extraCompilationUnitsExecute = null;
 
     private static final Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
 
-    public @Override ClassPath findClassPath(FileObject file, String type) {
+    @CheckForNull
+    @Override
+    public ClassPath findClassPath(
+            @NonNull final FileObject file,
+            @NonNull final String type) {
         if (type.equals(ClassPath.BOOT)) {
-            if (boot == null) {
-                boot = ClassPathFactory.createClassPath(ClassPathSupport.createProxyClassPathImplementation(
-                        createPathFromProperty(BOOTCLASSPATH_PREPEND),
-                        createPathFromProperty(Evaluator.NBJDK_BOOTCLASSPATH),
-                        createFxPath()));
-            }            
-            return boot;
+            ClassPath bcp = boot;
+            if (bcp == null) {
+                bcp = runGuarded(new Mutex.Action<ClassPath>() {
+                    @Override
+                    public ClassPath run() {
+                        if (boot == null) {
+                            boot = ClassPathFactory.createClassPath(ClassPathSupport.createProxyClassPathImplementation(
+                                    createPathFromProperty(BOOTCLASSPATH_PREPEND),
+                                    createPathFromProperty(Evaluator.NBJDK_BOOTCLASSPATH),
+                                    createFxPath()));
+                        }
+                        return boot;
+                    }
+                });
+            }
+            return bcp;
         }
-        FileObject srcDir = project.getSourceDirectory();
-        FileObject testSrcDir = project.getTestSourceDirectory("unit");
-        FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
+        final FileObject srcDir = project.getSourceDirectory();
+        final FileObject testSrcDir = project.getTestSourceDirectory("unit");
+        final FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
         @NonNull File dir = project.getClassesDirectory();
         // #164282: workaround for not refreshed FS cache
         dir = FileUtil.normalizeFile(dir);
@@ -140,87 +157,195 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         dir = FileUtil.normalizeFile(dir);
         FileObject testClassesDir = dir.exists() ? FileUtil.toFileObject(dir) : null;
         File moduleJar;
-        URL generatedClasses = FileUtil.urlForArchiveOrDir(project.getGeneratedClassesDirectory());
-        URL generatedUnitTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("unit"));
-        URL generatedFunctionalTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("qa-functional"));
+        final URL generatedClasses = FileUtil.urlForArchiveOrDir(project.getGeneratedClassesDirectory());
+        final URL generatedUnitTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("unit"));
+        final URL generatedFunctionalTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("qa-functional"));
         String fileU = file.toURL().toString();
         if (srcDir != null && generatedClasses != null &&
                 (FileUtil.isParentOf(srcDir, file) || file == srcDir || fileU.startsWith(generatedClasses.toString()))) {
             // Regular sources.
             if (type.equals(ClassPath.COMPILE)) {
-                if (compile == null) {
-                    compile = ClassPathFactory.createClassPath(createCompileClasspath());
-                    LOG.log(Level.FINE, "compile/execute-time classpath for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, compile});
+                ClassPath ccp = compile;
+                if (ccp == null) {
+                    ccp = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (compile == null) {
+                                compile = ClassPathFactory.createClassPath(createCompileClasspath());
+                                LOG.log(Level.FINE, "compile/execute-time classpath for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, compile});
+                            }
+                            return compile;
+                        }
+                    });
                 }
-                return compile;
+                return ccp;
             } else if (type.equals(ClassPath.EXECUTE)) {
-                if (execute == null) {
-                    execute = ClassPathFactory.createClassPath(createExecuteClasspath());
+                ClassPath ecp = execute;
+                if (ecp == null) {
+                    ecp = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (execute == null) {
+                                execute = ClassPathFactory.createClassPath(createExecuteClasspath());
+                            }
+                            return execute;
+                        }
+                    });
                 }
-                return execute;
+                return ecp;
             } else if (type.equals(ClassPath.SOURCE)) {
-                if (source == null) {
-                    source = ClassPathSupport.createClassPath(srcDir.toURL(), generatedClasses);
+                ClassPath scp = source;
+                if (scp == null) {
+                    scp = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (source == null) {
+                                source = ClassPathSupport.createClassPath(srcDir.toURL(), generatedClasses);
+                            }
+                            return source;
+                        }
+                    });
                 }
-                return source;
+                return scp;
             } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
-                if (processor == null) {
-                    processor = ClassPathFactory.createClassPath(createProcessorPath());
+                ClassPath pcp = processor;
+                if (pcp == null) {
+                    pcp = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (processor == null) {
+                                processor = ClassPathFactory.createClassPath(createProcessorPath());
+                            }
+                            return processor;
+                        }
+                    });
                 }
-                return processor;
+                return pcp;
             }
         } else if (testSrcDir != null && generatedUnitTestClasses != null &&
                 (FileUtil.isParentOf(testSrcDir, file) || file == testSrcDir || fileU.startsWith(generatedUnitTestClasses.toString()))) {
             // Unit tests.
             // XXX refactor to use project.supportedTestTypes
             if (type.equals(ClassPath.COMPILE)) {
-                if (testCompile == null) {
-                    testCompile = ClassPathFactory.createClassPath(createTestCompileClasspath("unit"));
-                    LOG.log(Level.FINE, "compile-time classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testCompile});
+                ClassPath tcp = testCompile;
+                if (tcp == null) {
+                    tcp = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (testCompile == null) {
+                                testCompile = ClassPathFactory.createClassPath(createTestCompileClasspath("unit"));
+                                LOG.log(Level.FINE, "compile-time classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testCompile});
+                            }
+                            return testCompile;
+                        }
+                    });
                 }
-                return testCompile;
+                return tcp;
             } else if (type.equals(ClassPath.EXECUTE)) {
-                if (testExecute == null) {
-                    testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
-                    LOG.log(Level.FINE, "runtime classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testExecute});
+                ClassPath te = testExecute;
+                if (te == null) {
+                    te = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (testExecute == null) {
+                                testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
+                                LOG.log(Level.FINE, "runtime classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testExecute});
+                            }
+                            return testExecute;
+                        }
+                    });
                 }
-                return testExecute;
+                return te;
             } else if (type.equals(ClassPath.SOURCE)) {
-                if (testSource == null) {
-                    testSource = ClassPathSupport.createClassPath(testSrcDir.toURL(), generatedUnitTestClasses);
+                ClassPath tscp = testSource;
+                if (tscp == null) {
+                    tscp = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (testSource == null) {
+                                testSource = ClassPathSupport.createClassPath(testSrcDir.toURL(), generatedUnitTestClasses);
+                            }
+                            return testSource;
+                        }
+                    });
                 }
-                return testSource;
+                return tscp;
             } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
-                if (testProcessor == null) {
-                    testProcessor = ClassPathFactory.createClassPath(createTestProcessorPath("unit"));  //NOI18N
+                ClassPath tp = testProcessor;
+                if (tp == null) {
+                    tp = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (testProcessor == null) {
+                                testProcessor = ClassPathFactory.createClassPath(createTestProcessorPath("unit"));  //NOI18N
+                            }
+                            return testProcessor;
+                        }
+                    });
                 }
-                return testProcessor;
+                return tp;
             }
         } else if (funcTestSrcDir != null && generatedFunctionalTestClasses != null &&
                 (FileUtil.isParentOf(funcTestSrcDir, file) || file == funcTestSrcDir || fileU.startsWith(generatedFunctionalTestClasses.toString()))) {
             // Functional tests.
             if (type.equals(ClassPath.SOURCE)) {
-                if (funcTestSource == null) {
-                    funcTestSource = ClassPathSupport.createClassPath(funcTestSrcDir.toURL(), generatedFunctionalTestClasses);
+                ClassPath fts = funcTestSource;
+                if (fts == null) {
+                    fts = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (funcTestSource == null) {
+                                funcTestSource = ClassPathSupport.createClassPath(funcTestSrcDir.toURL(), generatedFunctionalTestClasses);
+                            }
+                            return funcTestSource;
+                        }
+                    });
                 }
-                return funcTestSource;
+                return fts;
             } else if (type.equals(ClassPath.COMPILE)) {
                 // See #42331.
-                if (funcTestCompile == null) {
-                    funcTestCompile = ClassPathFactory.createClassPath(createTestCompileClasspath("qa-functional"));
-                    LOG.log(Level.FINE, "compile-time classpath for func tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, funcTestCompile});
+                ClassPath ftc = funcTestCompile;
+                if (ftc == null) {
+                    ftc = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (funcTestCompile == null) {
+                                funcTestCompile = ClassPathFactory.createClassPath(createTestCompileClasspath("qa-functional"));
+                                LOG.log(Level.FINE, "compile-time classpath for func tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, funcTestCompile});
+                            }
+                            return funcTestCompile;
+                        }
+                    });
                 }
-                return funcTestCompile;
+                return ftc;
             } else if (type.equals(ClassPath.EXECUTE)) {
-                if (funcTestExecute == null) {
-                    funcTestExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("qa-functional"));
+                ClassPath fte = funcTestExecute;
+                if (fte == null) {
+                    fte = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (funcTestExecute == null) {
+                                funcTestExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("qa-functional"));
+                            }
+                            return funcTestExecute;
+                        }
+                    });
                 }
-                return funcTestExecute;
+                return fte;
             } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
-                if (funcTestProcessor == null) {
-                    funcTestProcessor = ClassPathFactory.createClassPath(createTestProcessorPath("qa-functional"));  //NOI18N
+                ClassPath ftp = funcTestProcessor;
+                if (ftp == null) {
+                    ftp = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (funcTestProcessor == null) {
+                                funcTestProcessor = ClassPathFactory.createClassPath(createTestProcessorPath("qa-functional"));  //NOI18N
+                            }
+                            return funcTestProcessor;
+                        }
+                    });
                 }
-                return funcTestProcessor;
+                return ftp;
             }
         } else if (classesDir != null && (classesDir.equals(file) || FileUtil.isParentOf(classesDir,file))) {
             if (ClassPath.EXECUTE.equals(type)) {
@@ -231,11 +356,20 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
         } else if (testClassesDir != null && (testClassesDir.equals(file) || FileUtil.isParentOf(testClassesDir,file))) {
             if (ClassPath.EXECUTE.equals(type)) {
-                if (testExecute == null) {
-                    testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
-                    LOG.log(Level.FINE, "runtime classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testExecute});
+                ClassPath te = testExecute;
+                if (te == null) {
+                    te = runGuarded(new Mutex.Action<ClassPath>() {
+                        @Override
+                        public ClassPath run() {
+                            if (testExecute == null) {
+                                testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
+                                LOG.log(Level.FINE, "runtime classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testExecute});
+                            }
+                            return testExecute;
+                        }
+                    });
                 }
-                return testExecute;
+                return te;
             }
         } else if (FileUtil.getArchiveFile(file) != null &&
                 FileUtil.toFile(FileUtil.getArchiveFile(file)).equals(moduleJar = project.getModuleJarLocation())) {
@@ -346,8 +480,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         if (extraCompilationUnitsCompile != null) {
             return;
         }
-        extraCompilationUnitsCompile = new HashMap<FileObject,ClassPath>();
-        extraCompilationUnitsExecute = new HashMap<FileObject,ClassPath>();
+        final Map<FileObject,ClassPath> _extraCompilationUnitsCompile = new HashMap<FileObject,ClassPath>();
+        final Map<FileObject,ClassPath> _extraCompilationUnitsExecute = new HashMap<FileObject,ClassPath>();
         for (Map.Entry<FileObject,Element> entry : project.getExtraCompilationUnits().entrySet()) {
             final FileObject pkgroot = entry.getKey();
             Element pkgrootEl = entry.getValue();
@@ -355,8 +489,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             assert classpathEl != null : "no <classpath> in " + pkgrootEl;
             final String classpathS = XMLUtil.findText(classpathEl);
             if (classpathS == null) {
-                extraCompilationUnitsCompile.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
-                extraCompilationUnitsExecute.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
+                _extraCompilationUnitsCompile.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
+                _extraCompilationUnitsExecute.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
             } else {
                 class CPI implements ClassPathImplementation, PropertyChangeListener, AntProjectListener {
                     final Set<String> relevantProperties = new HashSet<String>();
@@ -397,7 +531,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     public @Override void propertiesChanged(AntProjectEvent ev) {}
                 }
                 ClassPathImplementation ecuCompile = new CPI();
-                extraCompilationUnitsCompile.put(pkgroot, ClassPathFactory.createClassPath(ecuCompile));
+                _extraCompilationUnitsCompile.put(pkgroot, ClassPathFactory.createClassPath(ecuCompile));
                 // Add <built-to> dirs and JARs for ClassPath.EXECUTE.
                 List<PathResourceImplementation> extraEntries = new ArrayList<PathResourceImplementation>();
                 for (Element kid : XMLUtil.findSubElements(pkgrootEl)) {
@@ -412,10 +546,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     }
                     addPathFromProjectEvaluated(extraEntries, text);
                 }
-                extraCompilationUnitsExecute.put(pkgroot, ClassPathFactory.createClassPath(
+                _extraCompilationUnitsExecute.put(pkgroot, ClassPathFactory.createClassPath(
                         ClassPathSupport.createProxyClassPathImplementation(ecuCompile, ClassPathSupport.createClassPathImplementation(extraEntries))));
             }
         }
+        extraCompilationUnitsExecute = Collections.unmodifiableMap(_extraCompilationUnitsExecute);
+        extraCompilationUnitsCompile = Collections.unmodifiableMap(_extraCompilationUnitsCompile);
     }
     
     /**
@@ -634,5 +770,16 @@ next:       for (PathResourceImplementation pri : resources) {
             this.jfx = null;
             this.listeners.firePropertyChange(PROP_RESOURCES, null, null);
         }
-    }    
+    }
+
+    private <T> T runGuarded(@NonNull final Mutex.Action<T> action) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<T>(){
+            @Override
+            public T run() {
+                synchronized(cpLock) {
+                    return action.run();
+                }
+            }
+        });
+    }
 }
