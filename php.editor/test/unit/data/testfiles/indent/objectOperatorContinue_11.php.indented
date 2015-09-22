@@ -7,6 +7,6 @@
                     ->where('a.date_deleted is null')
                     ->execute(foo('test',
                             'pojd na pivo nebo rum',
-                            ^));
+^                            ));
         }
     }

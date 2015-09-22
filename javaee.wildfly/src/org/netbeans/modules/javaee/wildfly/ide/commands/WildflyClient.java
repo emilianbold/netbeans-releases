@@ -138,6 +138,7 @@ import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagement
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildBytes;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildEmptyList;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildString;
+import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.WILDFLY_10_0_0;
 
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.javaee.wildfly.config.WildflyJaxrsResource;
@@ -166,10 +167,12 @@ public class WildflyClient {
     private static final String DATASOURCES_SUBSYSTEM = "datasources"; // NOI18N
     private static final String MAIL_SUBSYSTEM = "mail"; // NOI18N
     private static final String MESSAGING_SUBSYSTEM = "messaging"; // NOI18N
+    private static final String MESSAGING_ACTIVEMQ_SUBSYSTEM = "messaging-activemq"; // NOI18N
     private static final String RESOURCE_ADAPTER_SUBSYSTEM = "resource-adapters"; // NOI18N
 
     private static final String DATASOURCE_TYPE = "data-source"; // NOI18N
     private static final String HORNETQ_SERVER_TYPE = "hornetq-server"; // NOI18N
+    private static final String MESSAGING_ACTIVEMQ_SERVER_TYPE = "server"; // NOI18N
     private static final String MAIL_SESSION_TYPE = "mail-session"; // NOI18N
     private static final String JMSQUEUE_TYPE = "jms-queue"; // NOI18N
     private static final String JMSTOPIC_TYPE = "jms-topic"; // NOI18N
@@ -690,12 +693,12 @@ public class WildflyClient {
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(DEPLOYMENT, deployment);
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
+            values.put(SUBSYSTEM, getMessagingSubsystem());
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, ADDRESS), path);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, RECURSIVE_DEPTH), 0);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), HORNETQ_SERVER_TYPE);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), getMessagingServerType());
 
             // ModelNode
             Object response = executeOnModelNode(cl, readHornetQServers);
@@ -723,12 +726,12 @@ public class WildflyClient {
             setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, OP), READ_CHILDREN_NAMES_OPERATION);
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
+            values.put(SUBSYSTEM, getMessagingSubsystem());
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, ADDRESS), path);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, RECURSIVE_DEPTH), 0);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), HORNETQ_SERVER_TYPE);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), getMessagingServerType());
 
             // ModelNode
             Object response = executeOnModelNode(cl, readHornetQServers);
@@ -757,8 +760,8 @@ public class WildflyClient {
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(DEPLOYMENT, deployment);
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
-            values.put(HORNETQ_SERVER_TYPE, serverName);
+            values.put(SUBSYSTEM, getMessagingSubsystem());
+            values.put(getMessagingServerType(), serverName);
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readQueues, ADDRESS), path);
@@ -802,8 +805,8 @@ public class WildflyClient {
             setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, OP), READ_CHILDREN_RESOURCES_OPERATION);
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
-            values.put(HORNETQ_SERVER_TYPE, serverName);
+            values.put(SUBSYSTEM, getMessagingSubsystem());
+            values.put(getMessagingServerType(), serverName);
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readQueues, ADDRESS), path);
@@ -851,7 +854,7 @@ public class WildflyClient {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
+            values.put(SUBSYSTEM, getMessagingSubsystem());
             values.put("hornetq-server", "default");
             if (destination.getType() == Type.QUEUE) {
                 values.put("jms-queue", destination.getName());
@@ -1065,12 +1068,12 @@ public class WildflyClient {
             setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, OP), READ_CHILDREN_NAMES_OPERATION);
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
+            values.put(SUBSYSTEM, getMessagingSubsystem());
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, ADDRESS), path);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, RECURSIVE_DEPTH), 0);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), HORNETQ_SERVER_TYPE);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), getMessagingServerType());
 
             // ModelNode
             Object response = executeOnModelNode(cl, readHornetQServers);
@@ -1098,8 +1101,8 @@ public class WildflyClient {
                     READ_CHILDREN_RESOURCES_OPERATION);
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
-            values.put(HORNETQ_SERVER_TYPE, hornetqServerName);
+            values.put(SUBSYSTEM, getMessagingSubsystem());
+            values.put(getMessagingServerType(), hornetqServerName);
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readConnectionFactories, ADDRESS), path);
@@ -1268,5 +1271,19 @@ public class WildflyClient {
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
+    }
+    
+    private String getMessagingSubsystem() {
+        if(version.compareTo(WILDFLY_10_0_0) >= 0) {
+            return MESSAGING_ACTIVEMQ_SUBSYSTEM;
+        }
+        return MESSAGING_SUBSYSTEM;
+    }
+
+    private String getMessagingServerType() {
+        if(version.compareTo(WILDFLY_10_0_0) >= 0) {
+            return MESSAGING_ACTIVEMQ_SERVER_TYPE;
+        }
+        return HORNETQ_SERVER_TYPE;
     }
 }
