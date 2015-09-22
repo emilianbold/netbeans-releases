@@ -47,7 +47,7 @@ import org.openide.modules.OnStop;
  * Manages a module's lifecycle. Remember that an installer is optional and
  * often not needed at all.
  */
-@OnStop
+//@OnStop
 public class Installer implements Runnable {
     @Override
     public void run() {
