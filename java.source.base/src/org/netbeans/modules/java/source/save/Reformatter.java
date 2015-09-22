@@ -3363,21 +3363,34 @@ public class Reformatter implements ReformatTask {
                                 lastIdx = idx + 1;
                                 maxCount--;
                                 count--;
+                                beforeCnt--;
                             }
                             if ((idx = text.lastIndexOf('\n')) >= 0) { //NOI18N
                                 if (idx > lastIdx)
                                     addDiff(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }
-                            if (lastIdx > 0) {
-                                String ind = getIndent();
-                                if (!ind.contentEquals(text.substring(lastIdx)))
-                                    addDiff(new Diff(offset + lastIdx, tokens.offset(), ind));
-                                col = indent();
+                            if (lastIdx == 0 && count < 0 && after != 1) {
+                                count = 0;
                             }
+                            String ind;
+                            if (pendingDiff != null) {
+                                pendingDiff.text = beforeCnt < 0 ? getIndent() : getNewlines(count) + getIndent();
+                                if (!pendingDiff.text.contentEquals(pendingText)) {
+                                    addDiff(pendingDiff);
+                                    pendingDiff = null;
+                                }
+                                ind = after == 3 ? SPACE : beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
+                            } else {
+                                ind = after == 3 ? SPACE : getNewlines(count) + getIndent();
+                            }
+                            if (!ind.contentEquals(text.substring(lastIdx)))
+                                addDiff(new Diff(offset + lastIdx, tokens.offset(), ind));
                             lastToken = null;
+                            col = after == 3 ? col + 1 : indent();
                         }
                         reformatComment();
+                        count = 0;
                         after = 3;
                         break;
                     case JAVADOC_COMMENT:
@@ -3464,7 +3477,13 @@ public class Reformatter implements ReformatTask {
                                     addDiff(new Diff(offset, tokens.offset(), indent));
                             } else if (lastIdx > 0 && lastIdx < lastToken.length()) {
                                 pendingText = text.substring(lastIdx);
-                                pendingDiff = new Diff(offset + lastIdx, tokens.offset(), null);
+                                String indent = getIndent();
+                                if (!indent.contentEquals(pendingText)) {
+                                    addDiff(new Diff(offset + lastIdx, tokens.offset(), indent));
+                                    pendingText = null;
+                                } else {
+                                    pendingDiff = new Diff(offset + lastIdx, tokens.offset(), null);
+                                }
                             }
                             lastToken = null;
                         }
