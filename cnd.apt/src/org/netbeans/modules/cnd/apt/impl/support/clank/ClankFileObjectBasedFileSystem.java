@@ -203,16 +203,20 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
     }
 
     private FileObject getFileObject(Twine Path) {
-        CharSequence strPath = toCharSequence(Path);
+        String strPath = toCharSequence(Path).toString(); // we could leave it CharSeqience, but normalize() methods take String...
         if (CharSequenceUtils.startsWith(strPath, RFS_PREFIX)) {
             FileSystem urlToFileSystem = CndFileSystemProvider.urlToFileSystem(strPath);
             if (urlToFileSystem != null) {
-                if (CndFileUtils.isExistingFile(urlToFileSystem, ClankFileSystemProviderImpl.getPathFromUrl(strPath).toString())) {
+                strPath = CndFileUtils.normalizeAbsolutePath(urlToFileSystem, strPath);
+                if (CndFileUtils.exists(urlToFileSystem, ClankFileSystemProviderImpl.getPathFromUrl(strPath).toString())) {
                     return CndFileSystemProvider.urlToFileObject(strPath);
                 }
             }
-        } else if (CndFileUtils.exists(LOCAL_FS, strPath.toString())) {
-            return CndFileSystemProvider.urlToFileObject(strPath);
+        } else {
+            strPath = CndFileUtils.normalizeAbsolutePath(LOCAL_FS, strPath.toString());
+            if (CndFileUtils.exists(LOCAL_FS, strPath)) {
+                return CndFileSystemProvider.urlToFileObject(strPath);
+            }
         }
         return null;
     }
