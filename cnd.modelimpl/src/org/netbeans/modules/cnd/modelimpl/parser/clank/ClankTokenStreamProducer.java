@@ -265,16 +265,16 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
         
-        private boolean valueOf(YesNoInterested param) {
+        private boolean valueOf(/*YesNoInterested*/int param) {
             switch (param) {
-                case ALWAYS:
+                case YesNoInterested.ALWAYS:
                     return true;
-                case NEVER:
+                case YesNoInterested.NEVER:
                     return false;
-                case INTERESTED:
+                case YesNoInterested.INTERESTED:
                     return insideInterestedFile;
                 default:
-                    throw new AssertionError(param.name());
+                    throw new AssertionError("unknown" + param);
 
             }
         }

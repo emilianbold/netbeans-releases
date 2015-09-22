@@ -78,25 +78,28 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
  */
 public abstract class TokenStreamProducer {
     
-    public static enum YesNoInterested {
-        ALWAYS,
-        NEVER,
-        INTERESTED
+    public static final class YesNoInterested {
+        public static final int ALWAYS      = 0;
+        public static final int NEVER       = 1;
+        public static final int INTERESTED  = 2;
+
+        private YesNoInterested() {
+        }
     }
     
     // in fact used only in clank mode
     public static class Parameters {
 
-        public final YesNoInterested needTokens;
-        public final YesNoInterested needPPDirectives;
-        public final YesNoInterested needSkippedRanges;
-        public final YesNoInterested needMacroExpansion;
+        public final /*YesNoInterested*/int needTokens;
+        public final /*YesNoInterested*/int needPPDirectives;
+        public final /*YesNoInterested*/int needSkippedRanges;
+        public final /*YesNoInterested*/int needMacroExpansion;
         public final boolean needComments;
         public final boolean triggerParsingActivity;
         public final boolean applyLanguageFilter;
         
-        private Parameters(YesNoInterested needTokens, boolean triggerParsingActivity, 
-                YesNoInterested needPPDirectives, YesNoInterested needMacroExpansion, YesNoInterested needSkippedRanges, 
+        private Parameters(/*YesNoInterested*/int needTokens, boolean triggerParsingActivity, 
+                /*YesNoInterested*/int needPPDirectives, /*YesNoInterested*/int needMacroExpansion, /*YesNoInterested*/int needSkippedRanges, 
                 boolean needComments, boolean applyLanguageFilter) {
             this.triggerParsingActivity = triggerParsingActivity;
             this.needPPDirectives = needPPDirectives;
