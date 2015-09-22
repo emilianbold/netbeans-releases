@@ -1,6 +1,6 @@
-#changeset:   15726:2d11a55f8966
+#changeset:   15727:db8989cb930a
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Sep 21 22:41:34 2015 +0300
-#summary:     PERF: faster StdMap specializations
-8119065D1F46CC2507AF20E2B0152FABA78A325B clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Tue Sep 22 16:07:43 2015 +0300
+#summary:     fixed #255481 - inaccuracy tests: regression in Python
+266E6F59C67F78B1044BD8E026D2940DE322904E clank_0.3.6.zip
