@@ -313,13 +313,23 @@ abstract public class CsmCompletion {
      * be garbage collected.
      */
     public static CsmType createType(CsmClassifier cls, int ptrDepth, int refDepth, int arrayDepth, boolean _const) {
+        return createType(cls, ptrDepth, refDepth, arrayDepth, _const, CsmKindUtilities.isTemplateParameter(cls));
+    }
+    
+    /** Create new type or get the existing one from the cache. The cache holds
+     * the arrays with the increasing array depth for the particular class
+     * as the members. Simple class is used for the caching to make it independent
+     * on the real completion classes that can become obsolete and thus should
+     * be garbage collected.
+     */
+    public static CsmType createType(CsmClassifier cls, int ptrDepth, int refDepth, int arrayDepth, boolean _const, boolean templateBased) {
         if (cls == null) {
             return null;
         }
         if (CsmKindUtilities.isClosureClassifier(cls)) {
             return new CompletionClosureType(((CsmClosureClassifier) cls).getLambda(), refDepth, _const);
         }
-        return new BaseType(cls, ptrDepth, refDepth, arrayDepth, _const);
+        return new BaseType(cls, ptrDepth, refDepth, arrayDepth, _const, templateBased);
     }
 
     public static CsmNamespace getProjectNamespace(CsmProject project, CsmNamespace ns) {
@@ -623,8 +633,13 @@ abstract public class CsmCompletion {
         protected int pointerDepth;
         protected int reference; // nothing, & or && as in C++11
         protected boolean _const;
-
+        protected boolean templateBased;
+        
         private BaseType(CsmClassifier clazz, int pointerDepth, int reference, int arrayDepth, boolean _const) {
+            this(clazz, pointerDepth, reference, arrayDepth, _const, CsmKindUtilities.isTemplateParameter(clazz));
+        }
+
+        private BaseType(CsmClassifier clazz, int pointerDepth, int reference, int arrayDepth, boolean _const, boolean templateBased) {
             this.clazz = clazz;
             this.arrayDepth = arrayDepth;
             this.pointerDepth = pointerDepth;
@@ -634,6 +649,7 @@ abstract public class CsmCompletion {
             }
             this.reference = reference;
             this._const = _const;
+            this.templateBased = templateBased;
             if (arrayDepth < 0) {
                 throw new IllegalArgumentException("Array depth " + arrayDepth + " < 0."); // NOI18N
             }
@@ -743,7 +759,7 @@ abstract public class CsmCompletion {
 
         @Override
         public boolean isTemplateBased() {
-            return CsmKindUtilities.isTemplateParameter(clazz);
+            return templateBased;
         }
 
         @Override

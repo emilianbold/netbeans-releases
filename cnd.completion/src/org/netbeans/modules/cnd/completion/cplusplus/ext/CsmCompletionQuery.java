@@ -2532,7 +2532,14 @@ abstract public class CsmCompletionQuery {
                                     ptrDepth++;
                                 }
 
-                                lastType = CsmCompletion.createType(getClassifier(lastNestedType, contextFile, endOffset), ptrDepth, getReferenceValue(lastNestedType), lastNestedType.getArrayDepth(), lastNestedType.isConst());
+                                lastType = CsmCompletion.createType(
+                                    getClassifier(lastNestedType, contextFile, endOffset), 
+                                    ptrDepth, 
+                                    getReferenceValue(lastNestedType), 
+                                    lastNestedType.getArrayDepth(), 
+                                    lastNestedType.isConst(), 
+                                    lastNestedType.isTemplateBased()
+                                );
                             }
                         }
                     // TODO: need to convert lastType into reference based on item token '&' or '*'
