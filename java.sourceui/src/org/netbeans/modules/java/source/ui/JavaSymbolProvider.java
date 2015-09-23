@@ -179,6 +179,13 @@ public class JavaSymbolProvider implements SymbolProvider {
             } else {
                 restriction = null;
             }
+            final boolean scanInProgress = SourceUtils.isScanInProgress();
+            if (scanInProgress) {
+                // ui message
+                final String warningKind = NbBundle.getMessage(JavaSymbolProvider.class, "LBL_SymbolKind");
+                final String message = NbBundle.getMessage(JavaSymbolProvider.class, "LBL_ScanInProgress_warning", warningKind);
+                result.setMessage(message);
+            }
             try {
                 final ClassIndexManager manager = ClassIndexManager.getDefault();
 
@@ -248,6 +255,9 @@ public class JavaSymbolProvider implements SymbolProvider {
             }
             catch (InterruptedException ie) {
                 return;
+            }
+            if (scanInProgress) {
+                result.pendingResult();
             }
         } finally {
             cleanup();
