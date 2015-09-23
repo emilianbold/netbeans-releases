@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1095,6 +1096,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 checkConsistency(false);
             }
             CreateFilesWorker worker = new CreateFilesWorker(this, readOnlyRemovedFilesSet, validator);
+            if (TraceFlags.SORT_PARSED_FILES) {
+                Collections.sort(sources, NATIVE_FILE_ITEMS_COMPARATOR);
+            }
             worker.createProjectFilesIfNeed(sources, true);
             if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){
                 worker.createProjectFilesIfNeed(headers, false);
@@ -3880,4 +3884,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         printStream.flush();
     }
 
+    private static final Comparator<NativeFileItem> NATIVE_FILE_ITEMS_COMPARATOR = new Comparator<NativeFileItem>() {
+        @Override
+        public int compare(NativeFileItem o1, NativeFileItem o2) {
+            return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
+        }
+    };
 }
