@@ -135,7 +135,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         super(j2eeModule, version, isWildFly);
         this.jbossFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss.xml"); // NOI18N;
         getJboss();
-        if (deploymentDescriptorDO == null) {
+        if (deploymentDescriptorDO == null && jbossFile != null) {
             try {
                 deploymentDescriptorDO = deploymentDescriptorDO.find(FileUtil.toFileObject(jbossFile));
                 deploymentDescriptorDO.addPropertyChangeListener(this);
@@ -161,7 +161,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
      *
      * @return jboss graph or null if the jboss.xml file is not parseable.
      */
-    public synchronized Jboss getJboss() {
+    private final synchronized Jboss getJboss() {
         if (jboss == null) {
             try {
                 if (jbossFile!= null && jbossFile.exists()) {

@@ -187,20 +187,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             boolean qualsError = false;
                             while (templateQualIter.hasPrevious()) {
                                 Qualificator paramQual = templateQualIter.previous();
-                                if (!targetQualIter.hasPrevious()) {
+                                Qualificator actualQual = null;
+                                while (targetQualIter.hasPrevious() && !paramQual.equals(actualQual)) {
+                                    actualQual = targetQualIter.previous();
+                                }
+                                if (paramQual.equals(actualQual)) {
+                                    targetQualIter.remove();
+                                } else if (!targetQualIter.hasPrevious()) {
                                     if (Qualificator.REFERENCE.equals(paramQual)) {
                                         continue;
                                     } else if (Qualificator.RVALUE_REFERENCE.equals(paramQual)) {
                                         continue;
                                     }
-                                    if (strategy.canSkipError(DeduceTemplateTypeStrategy.Error.MatchQualsError)) {
-                                        qualsError = true;
-                                        break;
-                                    } else {
-                                        return null; // TODO: or existing results if they exists?
-                                    }
-                                }
-                                if (!targetQualIter.previous().equals(paramQual)) {
                                     if (strategy.canSkipError(DeduceTemplateTypeStrategy.Error.MatchQualsError)) {
                                         qualsError = true;
                                         break;
@@ -214,10 +212,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                 continue;
                             }
 
-                            List<Qualificator> remainingQualifiers = new ArrayList<>();
-                            while (targetQualIter.hasPrevious()) {
-                                remainingQualifiers.add(0, targetQualIter.previous());
-                            }
+                            List<Qualificator> remainingQualifiers = targetTypeQuals;
 
                             boolean newConst = remainingQualifiers.contains(Qualificator.CONST);
                             int newPtrDepth = howMany(remainingQualifiers, Qualificator.POINTER);

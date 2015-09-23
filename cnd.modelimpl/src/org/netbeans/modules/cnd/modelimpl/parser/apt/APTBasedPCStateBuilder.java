@@ -164,7 +164,7 @@ public final class APTBasedPCStateBuilder implements APTParseFileWalker.EvalCall
                 break;
             }
         }
-        return CsmCorePackageAccessor.get().createPCState(this.name, offsets);
+        return FilePreprocessorConditionState.build(this.name, offsets);
     }
 
     @Override

@@ -229,7 +229,7 @@ public final class FilePreprocessorConditionState {
         return offsets[offsets.length-1] == ERROR_DIRECTIVE_MARKER;
     }
     
-    static FilePreprocessorConditionState build(CharSequence name, int[] offsets) {
+    public static FilePreprocessorConditionState build(CharSequence name, int[] offsets) {
         // TODO: copy offsets?
         FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(name, offsets);
         if (CndUtils.isDebugMode()) {

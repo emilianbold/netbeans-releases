@@ -83,7 +83,8 @@ public class MakefileSupport {
     public static List<MakefileElement> parseFile(FileObject fileObject) throws ParseException {
         Source source = Source.create(fileObject);
         if (source == null) {
-            throw new IllegalArgumentException("Valid file expected, got " + fileObject); // NOI18N
+            new IllegalArgumentException("Valid file expected, got " + fileObject).printStackTrace(System.err); // NOI18N
+            return Collections.emptyList();
         } else {
             return parse(source);
         }

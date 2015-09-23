@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
  * @author Vladimir Kvashim
  */
 public class TraceFlags {
+    public static final boolean SORT_PARSED_FILES = DebugUtils.getBoolean("cnd.model.parse.sorted", false);
     public static final boolean PARSE_ENABLED = DebugUtils.getBoolean("cnd.model.parse.enable", true);
     public static final boolean MERGE_EVENTS = DebugUtils.getBoolean("cnd.model.merge.events", true);
     public static final boolean USE_PARSER_API = DebugUtils.getBoolean("cnd.model.parser.api", false);

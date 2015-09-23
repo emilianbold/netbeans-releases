@@ -217,7 +217,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
     @Override
     public FilePreprocessorConditionState release() {
-        return CsmCorePackageAccessor.get().createPCState(getMainFile().getAbsolutePath(), skipped);
+        return FilePreprocessorConditionState.build(getMainFile().getAbsolutePath(), skipped);
     }
 
     private static final class FileTokenStreamCallback implements ClankPreprocessorCallback {
@@ -331,7 +331,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                               inclFileOwner = aStartProject;
                           }
                       }
-                      assert inclFileOwner != null;
+                      if (inclFileOwner == null) {
+                          new IllegalStateException("Can not resolve #include file owner for " + resolvedPath).printStackTrace(); //NOI18N
+                          return;
+                      }
                       if (CndUtils.isDebugMode()) {
                           CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
                       }
@@ -435,7 +438,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                       System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project%n", inclPath, inclFileOwner.getName());
                     }
                   } else {
-                    FilePreprocessorConditionState pcState = CsmCorePackageAccessor.get().createPCState(inclPath, exitedFrom.getSkippedRanges());
+                    FilePreprocessorConditionState pcState = FilePreprocessorConditionState.build(inclPath, exitedFrom.getSkippedRanges());
                     PreprocessorStatePair ppStatePair = new PreprocessorStatePair(inclState, pcState);
                     inclFileOwner.postIncludeFile(aStartProject, currentInclusion, inclPath, ppStatePair, null);
                   }
