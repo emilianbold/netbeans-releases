@@ -380,7 +380,7 @@ public final class FileImpl implements CsmFile,
         return getProjectImpl(true).getNativeFileItem(getUID());
     }
 
-    private ProjectBase _getProject(boolean assertNotNull) {
+     private ProjectBase _getProject(boolean assertNotNull) {
         Object o = projectRef;
         if (o instanceof ProjectBase) {
             return (ProjectBase) o;

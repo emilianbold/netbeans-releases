@@ -132,7 +132,6 @@ public abstract class CsmCorePackageAccessor {
     //  access to FilePreprocessorConditionState methods
     ////////////////////////////////////////////////////////////////////////////
     
-    public abstract FilePreprocessorConditionState createPCState(CharSequence file, int[] deadBlocks);
     public abstract int[] getPCStateDeadBlocks(FilePreprocessorConditionState pcState);
     
     ////////////////////////////////////////////////////////////////////////////

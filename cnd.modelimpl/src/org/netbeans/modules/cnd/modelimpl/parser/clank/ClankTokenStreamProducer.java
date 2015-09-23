@@ -217,7 +217,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
     @Override
     public FilePreprocessorConditionState release() {
-        return CsmCorePackageAccessor.get().createPCState(getMainFile().getAbsolutePath(), skipped);
+        return FilePreprocessorConditionState.build(getMainFile().getAbsolutePath(), skipped);
     }
 
     private static final class FileTokenStreamCallback implements ClankPreprocessorCallback {
@@ -438,7 +438,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                       System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project%n", inclPath, inclFileOwner.getName());
                     }
                   } else {
-                    FilePreprocessorConditionState pcState = CsmCorePackageAccessor.get().createPCState(inclPath, exitedFrom.getSkippedRanges());
+                    FilePreprocessorConditionState pcState = FilePreprocessorConditionState.build(inclPath, exitedFrom.getSkippedRanges());
                     PreprocessorStatePair ppStatePair = new PreprocessorStatePair(inclState, pcState);
                     inclFileOwner.postIncludeFile(aStartProject, currentInclusion, inclPath, ppStatePair, null);
                   }
