@@ -489,7 +489,7 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(
                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING, null));
         try {
-            if (client.addMessageDestinations(destinations)) {
+            if (client.addMessageDestinations(destinations, getInstanceProperties())) {
                 progress.fireProgressEvent(null, new WildflyDeploymentStatus(
                         ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.COMPLETED, null));
             }

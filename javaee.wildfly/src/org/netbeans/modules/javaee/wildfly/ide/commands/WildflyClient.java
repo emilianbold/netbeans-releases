@@ -43,16 +43,19 @@ package org.netbeans.modules.javaee.wildfly.ide.commands;
 
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.ADD;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.ADDRESS;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.ATTRIBUTES_ONLY;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.BYTES;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CHILD_TYPE;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.COMPOSITE;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CONTENT;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CONTROLLER_PROCESS_STATE_STARTING;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CONTROLLER_PROCESS_STATE_STOPPING;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CORE_SERVICE;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT_REDEPLOY_OPERATION;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT_UNDEPLOY_OPERATION;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.EXPRESSION;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.INCLUDE_DEFAULTS;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.INCLUDE_RUNTIME;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.JAXRS_SUBSYSTEM;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.OP;
@@ -151,7 +154,10 @@ import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbComponentNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyJaxrsResourceNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyWebModuleNode;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /**
  *
@@ -162,6 +168,7 @@ public class WildflyClient {
     private static final Logger LOGGER = Logger.getLogger(WildflyClient.class.getName());
 
     private static final String SERVER_STATE = "server-state"; // NOI18N
+    private static final String SERVER_ENVIRONMENT = "server-environment";// NOI18N
     private static final String WEB_SUBSYSTEM = "undertow"; // NOI18N
     private static final String EJB3_SUBSYSTEM = "ejb3"; // NOI18N
     private static final String DATASOURCES_SUBSYSTEM = "datasources"; // NOI18N
@@ -169,6 +176,7 @@ public class WildflyClient {
     private static final String MESSAGING_SUBSYSTEM = "messaging"; // NOI18N
     private static final String MESSAGING_ACTIVEMQ_SUBSYSTEM = "messaging-activemq"; // NOI18N
     private static final String RESOURCE_ADAPTER_SUBSYSTEM = "resource-adapters"; // NOI18N
+
 
     private static final String DATASOURCE_TYPE = "data-source"; // NOI18N
     private static final String HORNETQ_SERVER_TYPE = "hornetq-server"; // NOI18N
@@ -258,7 +266,7 @@ public class WildflyClient {
             try {
                 this.client = createClient(cl, version, serverAddress, serverPort, handler);
             } catch (Throwable ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
                 return null;
             }
         }
@@ -289,7 +297,7 @@ public class WildflyClient {
         }
     }
 
-    public synchronized boolean isServerRunning() {
+    public synchronized boolean isServerRunning(String homeDir, String configFile) {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             // ModelNode
@@ -299,9 +307,19 @@ public class WildflyClient {
             setModelNodeChildString(cl, getModelNodeChild(cl, statusOperation, NAME), SERVER_STATE);
             // ModelNode
             Object response = executeAsync(cl, statusOperation, null).get();
-            return SUCCESS.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, OUTCOME)))
+            if (SUCCESS.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, OUTCOME)))
                     && !CONTROLLER_PROCESS_STATE_STARTING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)))
-                    && !CONTROLLER_PROCESS_STATE_STOPPING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)));
+                    && !CONTROLLER_PROCESS_STATE_STOPPING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)))) {
+                Pair<String, String> paths = getServerPaths(cl);
+                if (paths != null) {
+                    String homeDirNorm = homeDir == null ? null : FileUtil.normalizePath(homeDir);
+                    String configFileNorm = configFile == null ? null : FileUtil.normalizePath(configFile);
+                    return paths.first().equals(homeDirNorm) && paths.second().equals(configFileNorm);
+                }
+                return true;
+            } else {
+                return false;
+            }
         } catch (InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex.getTargetException());
             close();
@@ -665,6 +683,37 @@ public class WildflyClient {
         }
     }
 
+    private Pair<String, String> getServerPaths(WildflyDeploymentFactory.WildFlyClassLoader cl) {
+        try {
+            // ModelNode
+            final Object readEnvironment = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readEnvironment, OP), READ_RESOURCE_OPERATION);
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
+            values.put(CORE_SERVICE, SERVER_ENVIRONMENT);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readEnvironment, ADDRESS), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readEnvironment, INCLUDE_RUNTIME), true);
+            setModelNodeChild(cl, getModelNodeChild(cl, readEnvironment, INCLUDE_DEFAULTS), true);
+            setModelNodeChild(cl, getModelNodeChild(cl, readEnvironment, ATTRIBUTES_ONLY), true);
+            // ModelNode
+            Object response = executeOnModelNode(cl, readEnvironment);
+            if (isSuccessfulOutcome(cl, response)) {
+                // ModelNode
+                Object environment = readResult(cl, response);
+                String homeDir = modelNodeAsString(cl, getModelNodeChild(cl, environment, "home-dir"));
+                String configDir = modelNodeAsString(cl, getModelNodeChild(cl, environment, "config-file"));
+
+                if (homeDir != null && configDir != null) {
+                    return Pair.of(FileUtil.normalizePath(homeDir), FileUtil.normalizePath(configDir));
+                }
+            }
+            return null;
+        } catch (IOException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
+            return null;
+        }
+    }
+
     public Collection<WildflyDestinationNode> listDestinations(Lookup lookup) throws IOException {
         List<MessageDestination> destinations = listDestinations();
         List<WildflyDestinationNode> modules = new ArrayList<>(destinations.size());
@@ -840,8 +889,9 @@ public class WildflyClient {
         }
     }
 
-    public boolean addMessageDestinations(final Collection<WildflyMessageDestination> destinations) throws IOException {
-        boolean result = isServerRunning();
+    public boolean addMessageDestinations(final Collection<WildflyMessageDestination> destinations, InstanceProperties ip) throws IOException {
+        boolean result = isServerRunning(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR),
+                ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
         if (result) {
             for (WildflyMessageDestination destination : destinations) {
                 result = result && addMessageDestination(destination);
