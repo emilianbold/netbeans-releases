@@ -2186,7 +2186,17 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 indent(out, indent).append("WITH MAPPING:\n"); // NOI18N
                 for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : instantiation.getMapping().entrySet()) {
                     indent(out, indent).append("[").append(entry.getKey()).append("]=>{"); // NOI18N
-                    out.append(entry.getValue()).append("}\n"); // NOI18N
+                    if (CsmKindUtilities.isTypeBasedSpecalizationParameter(entry.getValue())) {
+                        CsmType mappedType = ((CsmTypeBasedSpecializationParameter) entry.getValue()).getType();
+                        if (isInstantiatedType(mappedType)) {
+                            CsmType unfoldedType = unfoldOriginalType(mappedType);
+                            out.append("INSTANTIATED ").append(unfoldedType).append("}\n"); // NOI18N
+                        } else {
+                            out.append(mappedType).append("}\n"); // NOI18N
+                        }
+                    } else {
+                        out.append(entry.getValue()).append("}\n"); // NOI18N
+                    }
                 }
             }
             if (instantiationHappened()) {

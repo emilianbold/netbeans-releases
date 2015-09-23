@@ -3095,13 +3095,15 @@ abstract public class CsmCompletionQuery {
             // Handle decltypes
             if (lastType != null && instantiations != null && lastType.isTemplateBased()) {
                 assert !instantiations.isEmpty() : "Instantiations must not be empty"; //NOI18N
+                // FIXME: what about nested classifiers based on template type? Like "_Tp::something".
+                // For now getClassifier() returns UnresolvedClass for such types.
                 CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);
                 if (CsmKindUtilities.isTemplateParameter(cls)) {
                     CsmType resolvedType = resolveTemplateParameter((CsmTemplateParameter) cls, instantiations);
                     if (resolvedType != null) {
                         lastType = resolvedType;
                     }
-                }
+                }   
             }
 
             if (!findType) {
