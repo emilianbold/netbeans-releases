@@ -258,6 +258,18 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 }
             }
         }
+        if (!isInSources) {
+            String relativePath = EditorContextBridge.getRelativePath(className);
+            String classURL = getDebugger().getEngineContext().getURL(relativePath, true);
+            if (classURL != null && !classURL.equals(breakpoint.getURL())) {
+                // Silently ignore breakpoints from other sources that resolve to a different URL.
+                logger.log(Level.FINE,
+                       "LineBreakpoint {0} NOT submitted, because it's URL ''{1}'' differes from class ''{2}'' URL ''{3}''.",
+                       new Object[]{breakpoint, breakpoint.getURL(), className, classURL});
+                return ;
+            }
+        }
+        /*
         // Test if className exists in project sources:
         if (!isInSources && classExistsInSources(className, getDebugger().getEngineContext().getProjectSourceRoots())) {
             logger.log(Level.FINE,
@@ -265,6 +277,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                        new Object[]{breakpoint, breakpoint.getURL(), className});
             return ;
         }
+        */
         if (isInSources && sourcePath != null && !isEnabled(sourcePath, preferredSourceRoot)) {
             String reason = NbBundle.getMessage(LineBreakpointImpl.class,
                                                 "MSG_DifferentPrefferedSourceRoot",
