@@ -71,6 +71,7 @@ import java.util.Set;
 import java.util.Stack;
 import jdk.nashorn.internal.ir.ExecuteNode;
 import jdk.nashorn.internal.ir.ForNode;
+import jdk.nashorn.internal.ir.LabelNode;
 import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
@@ -499,7 +500,8 @@ public class ModelVisitor extends PathNodeVisitor {
                 || previousVisited instanceof VarNode
                 || previousVisited instanceof BinaryNode
                 || previousVisited instanceof PropertyNode
-                || previousVisited instanceof CatchNode)) {
+                || previousVisited instanceof CatchNode
+                || previousVisited instanceof LabelNode)) {
             //boolean declared = previousVisited instanceof CatchNode;
             addOccurence(identNode, false);
         }

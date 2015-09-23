@@ -160,7 +160,7 @@ class WildflyStartRunnable implements Runnable {
                         .append(" -Djava.util.logging.manager=org.jboss.logmanager.LogManager");
             }
         }
-        if(platform.getSpecification().getVersion().compareTo(JDK_18) < 0) {
+        if (platform.getSpecification().getVersion().compareTo(JDK_18) < 0) {
             javaOptsBuilder.append(" -XX:MaxPermSize=256m");
         }
         if ("64".equals(platform.getSystemProperties().get("sun.arch.data.model"))) {
@@ -212,13 +212,31 @@ class WildflyStartRunnable implements Runnable {
 
         }
         javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
-        if(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null ) {
+        if (ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null) {
             File configFile = new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
-            if(configFile.exists() && configFile.getParentFile().exists() && configFile.getParentFile().getParentFile().exists()) {
+            if (configFile.exists() && configFile.getParentFile().exists() && configFile.getParentFile().getParentFile().exists()) {
                 String baseDir = configFile.getParentFile().getParentFile().getAbsolutePath();
-                if(!baseDir.equals(ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR))) {
+                if (!baseDir.equals(ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR))) {
                     javaOptsBuilder.append(" -Djboss.server.base.dir=").append(baseDir);
                 }
+            }
+        }
+        if (ip.getProperty(WildflyPluginProperties.PROPERTY_ADMIN_PORT) != null) {
+            try {
+                int adminPort = Integer.parseInt(ip.getProperty(WildflyPluginProperties.PROPERTY_ADMIN_PORT));
+                if (WildflyPluginUtils.WILDFLY_10_0_0.compareTo(dm.getServerVersion()) <= 0) {
+                    javaOptsBuilder.append(" -Djboss.management.http.port=").append(adminPort);
+                } else {
+                    javaOptsBuilder.append(" -Djboss.management.native.port=").append(adminPort);
+                }
+            } catch (NumberFormatException ex) {
+            }
+        }
+        if (ip.getProperty(WildflyPluginProperties.PROPERTY_PORT) != null) {
+            try {
+                int httpConnectorPort = Integer.parseInt(ip.getProperty(WildflyPluginProperties.PROPERTY_PORT));
+                javaOptsBuilder.append(" -Djboss.http.port=").append(httpConnectorPort);
+            } catch (NumberFormatException ex) {
             }
         }
         for (StartupExtender args : StartupExtender.getExtenders(
@@ -230,7 +248,7 @@ class WildflyStartRunnable implements Runnable {
 
         // create new environment for server
         javaOpts = javaOptsBuilder.toString();
-        Logger.getLogger("global").log(Level.INFO,  JAVA_OPTS + "={0}", javaOpts);
+        Logger.getLogger("global").log(Level.INFO, JAVA_OPTS + "={0}", javaOpts);
         String javaHome = getJavaHome(platform);
 
         String envp[] = new String[]{
@@ -384,8 +402,8 @@ class WildflyStartRunnable implements Runnable {
         logManagerPath.append(File.separatorChar).append("org").append(File.separatorChar).append("jboss");
         logManagerPath.append(File.separatorChar).append("logmanager").append(File.separatorChar).append("main");
         FileObject logManagerDir = FileUtil.toFileObject(new File(logManagerPath.toString()));
-        for(FileObject child : logManagerDir.getChildren()) {
-            if(child.isData() && "jar".equalsIgnoreCase(child.getExt())) {
+        for (FileObject child : logManagerDir.getChildren()) {
+            if (child.isData() && "jar".equalsIgnoreCase(child.getExt())) {
                 return child.getPath();
             }
         }
