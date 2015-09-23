@@ -4,3 +4,4 @@ $('div[t|itle="hello"]')
 ------------------------------------
 ATTRIBUTE  tabindex                                   null
 ATTRIBUTE  title                                      null
+ATTRIBUTE  translate                                  null
