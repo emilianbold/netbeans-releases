@@ -1016,7 +1016,8 @@ public final class ModuleManager extends Modules {
         }
         Module host = modulesByName.get(codeNameBase);
         if (host != null && host.isEnabled()) {
-            throw new IllegalStateException("Module " + host.getCodeName() + " is already enabled");
+            Util.err.info("Module " + host.getCodeName() + " is already enabled");
+            return;
         }
         Collection<Module> frags = fragmentModules.get(codeNameBase);
         if (frags == null) {
@@ -1474,7 +1475,6 @@ public final class ModuleManager extends Modules {
         return res;
     }
 
-
     /** Simulate what would happen if a set of modules were to be enabled.
      * None of the listed modules may be autoload modules, nor eager, nor currently enabled,
      * though they may be fixed (if they have not yet been enabled).
@@ -1507,6 +1507,7 @@ public final class ModuleManager extends Modules {
     public List<Module> simulateEnable(Set<Module> modules) throws IllegalArgumentException {
         return simulateEnable(modules, true);
     }
+    
     final List<Module> simulateEnable(Set<Module> modules, boolean honorAutoloadEager) throws IllegalArgumentException {
         List<String> cnbs = mdc.simulateEnable(modules);
         if (cnbs != null) {
@@ -1568,6 +1569,17 @@ public final class ModuleManager extends Modules {
             Util.err.warning("Cyclic module dependencies, will refuse to enable: " + deps); // NOI18N
             return Collections.<Module>emptyList();
         }
+    }
+    
+    public boolean hasToEnableCompatModules(Set<Module> modules) throws IllegalArgumentException {
+        List<Module> toEnable = simulateEnable(modules);
+        for (Module m : toEnable) {            
+            String fragmentHostCodeName = m.getFragmentHostCodeName();
+            if (fragmentHostCodeName != null && !fragmentHostCodeName.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private void maybeAddToEnableList(Set<Module> willEnable, Set<Module> mightEnable, Module m, boolean okToFail) {

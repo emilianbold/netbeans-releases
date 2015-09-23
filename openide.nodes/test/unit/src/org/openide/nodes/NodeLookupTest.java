@@ -44,6 +44,7 @@
 
 package org.openide.nodes;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -537,7 +538,67 @@ public class NodeLookupTest extends NbTestCase {
         assertEquals ("Edit is second", org.openide.cookies.EditCookie.class, ((Lookup.Item)res.allItems ().toArray ()[1]).getType ());
         
     }
-    
+
+    /**
+     * Test for bug 250817: Slowness and OutOfMemoryError when selecting 100+
+     * nodes.
+     *
+     * @throws Exception
+     */
+    public void testBug250817() throws Exception {
+        final CookieNode n = new CookieNode();
+        class CF implements CookieSet.Factory, org.openide.cookies.OpenCookie,
+                org.openide.cookies.ViewCookie {
+
+            @Override
+            public Node.Cookie createCookie(Class klass) {
+                assertFalse("Don't hold locks while querying nodes",
+                        Thread.holdsLock(n.getLookup()));
+                return this;
+            }
+
+            @Override
+            public void open() {
+            }
+
+            @Override
+            public void view() {
+            }
+        }
+        CF cf = new CF();
+        // init the node
+        n.cookieSet();
+
+        Lookup lookup = n.getLookup();
+
+        final Listener l = new Listener();
+        Lookup.Result res = lookup.lookupResult(Node.Cookie.class);
+        assertEquals("Empty", 0, res.allItems().size());
+        res.addLookupListener(l);
+
+        n.cookieSet().add(org.openide.cookies.OpenCookie.class, cf);
+        l.assertEvents("Changes in lookup as we added Open", -1, 1);
+
+        n.cookieSet().add(org.openide.cookies.ViewCookie.class, cf);
+
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                Lookup.Item item;
+                item = n.getLookup().lookupItem(new Lookup.Template(
+                        org.openide.cookies.ViewCookie.class));
+                l.assertEvents("Firing of change postponed", -1, 0);
+            }
+        });
+
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                l.assertEvents("Postponed event delivered", -1, 1);
+            }
+        });
+    }
+
     public void testItIsPossibleToWrapACookieSet () {
         final int[] cnt = { 0, 0 };
         CookieNode n = new CookieNode () {
