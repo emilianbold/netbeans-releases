@@ -55,13 +55,6 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Profiler.class)
 public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProfiler {
-
-    // remembered values for rerun and modify actions
-//    private ProfilerControlPanel2Support actionSupport;
-    
-//    public void storeProfilingProperties(Properties props) {
-//        getActionSupport().setProperties(props);
-//    }
     
     // Emits PROFILING_INACTIVE event to all listeners in case the profiling session
     // is not started/running after [millis], even though this is not a state change.
@@ -107,58 +100,5 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
             s.run();
         }
     }
-
-//    @Override
-//    public boolean attachToApp(ProfilingSettings profilingSettings, AttachSettings attachSettings) {
-//        // clear rerun
-//        getActionSupport().nullAll();
-//        return super.attachToApp(profilingSettings, attachSettings);
-//    }
-
-//    @Override
-//    public void modifyCurrentProfiling(ProfilingSettings profilingSettings) {
-//        Properties properties = getActionSupport().getProperties();
-//        
-//        if (properties!=null) {
-//            profilingSettings.store(properties); // Fix for http://www.netbeans.org/issues/show_bug.cgi?id=95651, update settings for ReRun
-//        }
-//        ProfilerLauncher.Session s = ProfilerLauncher.getLastSession();
-//        if (s != null) s.setProfilingSettings(profilingSettings);
-//
-//        super.modifyCurrentProfiling(profilingSettings);
-//    }
-
-//    Properties getCurrentProfilingProperties() {
-//        return getActionSupport().getProperties();
-//    }
-
-//    @Override
-//    protected void cleanupAfterProfiling() {
-//        stopLoadGenerator();
-//        super.cleanupAfterProfiling();
-//    }
-//    
-//    private void stopLoadGenerator() {
-//        Properties profilingProperties = getCurrentProfilingProperties();
-//
-//        if (profilingProperties != null) {
-//            LoadGenPlugin plugin = Lookup.getDefault().lookup(LoadGenPlugin.class);
-//
-//            if (plugin != null) {
-//                // TODO factor out the "profiler.loadgen.path" constant; also used ing J2EEProjectTypeProfiler
-//                String scriptPath = profilingProperties.getProperty("profiler.loadgen.path"); // NOI18N
-//
-//                if (scriptPath != null) {
-//                    plugin.stop(scriptPath);
-//                }
-//            }
-//        }
-//    }
-
-//    private synchronized ProfilerControlPanel2Support getActionSupport() {
-//        if (actionSupport == null) {
-//            actionSupport = new ProfilerControlPanel2Support();
-//        }
-//        return actionSupport;
-//    }
+    
 }
