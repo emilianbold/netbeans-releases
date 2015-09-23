@@ -104,6 +104,7 @@ public class JavaSymbolProvider implements SymbolProvider {
 
     private volatile boolean canceled;
 
+    @Override
     public String name() {
         return "java symbols";  //NOI18N
     }
@@ -195,7 +196,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                         Collections.<String>emptySet(),
                         Collections.<String>emptySet());
 
-                final Set<URL> rootUrls = new HashSet<URL>();
+                final Set<URL> rootUrls = new HashSet<>();
                 for(FileObject root : roots) {
                     if (canceled) {
                         return;
@@ -353,8 +354,9 @@ public class JavaSymbolProvider implements SymbolProvider {
     }
 
     private static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
-	if (type == null)
+	if (type == null) {
             return ""; //NOI18N
+        }
         return new TypeNameVisitor(varArg).visit(type, fqn);
     }
 
@@ -384,8 +386,9 @@ public class JavaSymbolProvider implements SymbolProvider {
                     DEFAULT_VALUE.append("<"); //NOI18N
                     while(it.hasNext()) {
                         visit(it.next(), p);
-                        if (it.hasNext())
+                        if (it.hasNext()) {
                             DEFAULT_VALUE.append(", "); //NOI18N
+                        }
                     }
                     DEFAULT_VALUE.append(">"); //NOI18N
                 }
@@ -408,8 +411,9 @@ public class JavaSymbolProvider implements SymbolProvider {
             Element e = t.asElement();
             if (e != null) {
                 String name = e.getSimpleName().toString();
-                if (!CAPTURED_WILDCARD.equals(name))
+                if (!CAPTURED_WILDCARD.equals(name)) {
                     return DEFAULT_VALUE.append(name);
+                }
             }
             DEFAULT_VALUE.append("?"); //NOI18N
             if (!insideCapturedWildcard) {
@@ -422,8 +426,9 @@ public class JavaSymbolProvider implements SymbolProvider {
                     bound = t.getUpperBound();
                     if (bound != null && bound.getKind() != TypeKind.NULL) {
                         DEFAULT_VALUE.append(" extends "); //NOI18N
-                        if (bound.getKind() == TypeKind.TYPEVAR)
+                        if (bound.getKind() == TypeKind.TYPEVAR) {
                             bound = ((TypeVariable)bound).getLowerBound();
+                        }
                         visit(bound, p);
                     }
                 }
@@ -441,8 +446,9 @@ public class JavaSymbolProvider implements SymbolProvider {
                 bound = t.getExtendsBound();
                 if (bound != null) {
                     DEFAULT_VALUE.append(" extends "); //NOI18N
-                    if (bound.getKind() == TypeKind.WILDCARD)
+                    if (bound.getKind() == TypeKind.WILDCARD) {
                         bound = ((WildcardType)bound).getSuperBound();
+                    }
                     visit(bound, p);
                 } else if (len == 0) {
                     bound = SourceUtils.getBound(t);
@@ -481,10 +487,12 @@ public class JavaSymbolProvider implements SymbolProvider {
        return sb.toString();
     }
 
+    @Override
     public void cancel() {
         canceled = true;
     }
 
+    @Override
     public void cleanup() {
         canceled = false;
     }
