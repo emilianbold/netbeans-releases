@@ -305,7 +305,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(label1, gridBagConstraints);
 
 
@@ -313,7 +313,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
 
         add(serverType, gridBagConstraints);
 
@@ -321,7 +321,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         //-------------- domain ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(domainLabel, gridBagConstraints);
 
@@ -330,7 +330,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(domainField, gridBagConstraints);
 
 
@@ -340,21 +340,22 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         add(domainPathLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(domainPathField, gridBagConstraints);
 
         //-------------- host ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(hostLabel, gridBagConstraints);
 
@@ -364,14 +365,14 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(hostField, gridBagConstraints);
 
 
         //-------------- port ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(portLabel, gridBagConstraints);
 
@@ -380,13 +381,13 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(portField, gridBagConstraints);
 
         //-------------- management port ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(managementPortLabel, gridBagConstraints);
 
@@ -395,14 +396,14 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(managementPortField, gridBagConstraints);
 
 
         //-------------- User ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(userLabel, gridBagConstraints);
 
@@ -411,7 +412,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(userField, gridBagConstraints);
 
 
@@ -419,7 +420,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         //-------------- Password ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(passwordLabel, gridBagConstraints);
 
@@ -428,7 +429,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(passwordField, gridBagConstraints);
 
         //-------------  panell to fill out free space ------------------------
