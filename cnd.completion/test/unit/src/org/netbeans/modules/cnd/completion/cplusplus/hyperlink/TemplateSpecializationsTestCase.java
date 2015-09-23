@@ -265,6 +265,12 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug246643.cpp", 21, 19, "bug246643.cpp", 6, 13);
     }
     
+    public void testBug255475() throws Exception {
+        // Bug 255475 - inaccuracy tests: regression in LiteSQL
+        performTest("bug255475.cpp", 16, 58, "bug255475.cpp", 11, 9);
+        performTest("bug255475.cpp", 17, 20, "bug255475.cpp", 6, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

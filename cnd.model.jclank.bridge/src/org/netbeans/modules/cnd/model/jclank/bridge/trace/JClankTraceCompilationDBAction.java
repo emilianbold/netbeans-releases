@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.cnd.model.jclank.bridge.trace;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,6 +56,7 @@ import org.netbeans.modules.cnd.model.jclank.bridge.impl.CsmJClankSerivicesImpl;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
@@ -72,20 +76,33 @@ public class JClankTraceCompilationDBAction extends JClankTraceProjectAbstractAc
         return false;
     }
 
+    private static final String DUMP_DB_PATH_PROP = "clank.dump.path"; // NOI18N
+    private static final String DUMP_DB_PATH = System.getProperty(DUMP_DB_PATH_PROP, "/var/tmp/db.out"); // NOI18N
     @Override
     protected void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err,
             ProgressHandle progress, final AtomicBoolean cancelled) {
-        raw_ostream llvm_out = new PrintWriter_ostream(out);
-        raw_ostream llvm_err = new PrintWriter_ostream(err);
-        ClankProgressHandler handle = new JClankProgressHandler(progress);
-        try {
-            for (NativeProject project : projects) {
-                CsmJClankSerivicesImpl.traceCompilationDB(Collections.singleton(project),
-                        llvm_out, llvm_err, handle, cancelled);
+        File file = new File(DUMP_DB_PATH);
+        file.getParentFile().mkdirs();
+
+        try (PrintWriter printWriter = new PrintWriter(file)) {
+            err.printf("Dumping into (%s):%s%n", DUMP_DB_PATH_PROP, DUMP_DB_PATH);// NOI18N
+            err.flush();
+            raw_ostream llvm_out = new PrintWriter_ostream(printWriter);
+            raw_ostream llvm_err = new PrintWriter_ostream(err);
+            ClankProgressHandler handle = new JClankProgressHandler(progress);
+            try {
+                for (NativeProject project : projects) {
+                    CsmJClankSerivicesImpl.traceCompilationDB(Collections.singleton(project),
+                            llvm_out, llvm_err, handle, cancelled);
+                }
+            } finally {
+                llvm_out.flush();
+                llvm_err.flush();
+                err.println("Done"); // NOI18N
+                err.flush();
             }
-        } finally {
-            llvm_out.flush();
-            llvm_err.flush();
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 }

@@ -229,8 +229,15 @@ public final class LibraryManager {
             if (res == null) {
                 if (resolvedPath.isDefaultSearchPath()) {
                     res = curFile.getProjectImpl(true);
-                    if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                        trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
+                    if (res != null) {
+                        if (resolvedPath.getFileSystem() == res.getFileSystem()) {
+                            if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
+                                trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
+                            }
+                        } else {
+                            res = null;
+                            CndUtils.assertTrue(false, "Wrong FS for " + resolvedPath + ": " + res.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
+                        }
                     }
                     // if (res != null && res.isArtificial()) { // TODO: update lib source roots here }
                 } else if (!baseProject.isArtificial()) {

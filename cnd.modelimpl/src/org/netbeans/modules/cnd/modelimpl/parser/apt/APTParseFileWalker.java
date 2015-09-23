@@ -401,7 +401,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         if (params.postIncludeState != null
                 && params.postIncludeState.hasPostIncludeMacroState()
                 && params.postIncludeState.hasDeadBlocks()) {
-            pcState = getCsmCorePackageAccessor().createPCState(params.includedPath, params.postIncludeState.getDeadBlocks());
+            pcState = FilePreprocessorConditionState.build(params.includedPath, params.postIncludeState.getDeadBlocks());
             params.preprocHandler.getMacroMap().setState(params.postIncludeState.getPostIncludeMacroState());
             foundInCache = true;
         }

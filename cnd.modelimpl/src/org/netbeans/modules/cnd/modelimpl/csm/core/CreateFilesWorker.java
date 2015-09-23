@@ -80,7 +80,7 @@ final class CreateFilesWorker {
 
         Set<CsmUID<CsmFile>> handledFiles = Collections.synchronizedSet(new HashSet<CsmUID<CsmFile>>(items.size()));
         int size = items.size();
-        int threads = CndUtils.getNumberCndWorkerThreads()*3;
+        int threads = TraceFlags.SORT_PARSED_FILES ? 1 : CndUtils.getNumberCndWorkerThreads()*3;
         CountDownLatch countDownLatch = new CountDownLatch(threads);
         int chunk = (size/threads) + 1;
         Iterator<NativeFileItem> it = items.iterator();
