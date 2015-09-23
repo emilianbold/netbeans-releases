@@ -1,6 +1,6 @@
-#changeset:   15727:db8989cb930a
+#changeset:   15746:9cad54aac2f3
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Tue Sep 22 16:07:43 2015 +0300
-#summary:     fixed #255481 - inaccuracy tests: regression in Python
-266E6F59C67F78B1044BD8E026D2940DE322904E clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Wed Sep 23 03:00:42 2015 +0300
+#summary:     JAVA: fixed misprint
+6E655079DAB13EED7E53AD961F24664274646299 clank_0.3.6.zip
