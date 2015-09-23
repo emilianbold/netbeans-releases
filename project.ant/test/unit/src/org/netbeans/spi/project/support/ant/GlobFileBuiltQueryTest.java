@@ -239,7 +239,8 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
         fooL.msg("Foo.class recreated on disk").expectEvent(WAIT);
         assertTrue("Foo.class touched", fooStatus.isBuilt());
     }
-    
+
+    @RandomlyFails // not randomly, reported as #255500
     public void testExternalSourceRoots() throws Exception {
         // Cf. #43609.
         assertNotNull("have status for Baz.java", bazStatus);

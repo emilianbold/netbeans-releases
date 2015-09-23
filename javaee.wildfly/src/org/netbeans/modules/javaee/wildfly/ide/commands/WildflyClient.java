@@ -266,7 +266,7 @@ public class WildflyClient {
             try {
                 this.client = createClient(cl, version, serverAddress, serverPort, handler);
             } catch (Throwable ex) {
-                LOGGER.log(Level.INFO, null, ex);
+                LOGGER.log(Level.WARNING, null, ex);
                 return null;
             }
         }
