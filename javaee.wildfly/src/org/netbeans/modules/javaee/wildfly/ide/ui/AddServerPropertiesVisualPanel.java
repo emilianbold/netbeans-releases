@@ -172,11 +172,19 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         String serverLocation = WildflyPluginProperties.getInstance().getInstallLocation();
         domainModel.setDomains(WildflyPluginUtils.getRegisteredDomains(serverLocation));
         String configLocation = WildflyPluginProperties.getInstance().getConfigLocation();
-        File domainDir = new File(configLocation).getParentFile().getParentFile();
-        if(domainModel.hasDomain(domainDir.getName())) {
-            domainModel.setSelectedItem(domainDir.getName());
+        File folder = new File(configLocation).getParentFile();
+        if (folder != null) {
+            folder = folder.getParentFile();
+        }
+        File domainDir = folder;
+        if (domainDir != null) {
+            if (domainModel.hasDomain(domainDir.getName())) {
+                domainModel.setSelectedItem(domainDir.getName());
+            } else {
+                domainModel.addDomain(domainDir.getName(), domainDir.getAbsolutePath());
+            }
         } else {
-            domainModel.addDomain(domainDir.getName(), domainDir.getAbsolutePath());
+            domainModel.setSelectedItem(null);
         }
         domainChanged();
     }
