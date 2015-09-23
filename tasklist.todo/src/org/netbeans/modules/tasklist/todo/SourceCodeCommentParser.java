@@ -224,7 +224,7 @@ final class SourceCodeCommentParser {
                 needor = true;
             }
 
-            if (blockStart != null) {
+            if (blockStart != null && !blockStart.isEmpty()) {
                 if (needor) {
                     sb.append('|');
                 }
