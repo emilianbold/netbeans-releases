@@ -44,11 +44,13 @@
 
 package org.openide.nodes;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import org.openide.util.Lookup.Template;
 import org.openide.util.lookup.AbstractLookup;
 
@@ -64,6 +66,7 @@ final class NodeLookup extends AbstractLookup {
      * that triggered LookupListener and PROP_COOKIE change.
      */
     static final ThreadLocal<Node> NO_COOKIE_CHANGE = new ThreadLocal<Node>();
+    private final AggregatingExecutor EXECUTOR = new AggregatingExecutor();
 
     /** Set of Classes that we have already queried <type>Class</type> */
     private java.util.Collection<Class> queriedCookieClasses = new ArrayList<Class>();
@@ -248,11 +251,46 @@ final class NodeLookup extends AbstractLookup {
 
                 // doing the setPairs under entryQueryMode guarantees that 
                 // FilterNode will ignore the change
-                setPairs(list);
+                setPairs(list, EXECUTOR);
             } finally {
                 NO_COOKIE_CHANGE.set(prev);
             }
         }
     }
 
+    /**
+     * Executor that collects all {@link Runnable}s passed to
+     * {@link #execute(Runnable)} method in EDT and invokes them later.
+     */
+    private static class AggregatingExecutor implements Executor, Runnable {
+
+        ArrayList<Runnable> list = new ArrayList<Runnable>();
+        private boolean scheduled = false;
+
+        @Override
+        public void execute(Runnable command) {
+            if (EventQueue.isDispatchThread()) {
+                list.add(command);
+                if (!scheduled) {
+                    scheduled = true;
+                    EventQueue.invokeLater(this);
+                }
+            } else {
+                command.run();
+            }
+        }
+
+        /**
+         * Process aggregated commands.
+         */
+        @Override
+        public void run() {
+            assert EventQueue.isDispatchThread();
+            for (Runnable r : list) {
+                r.run();
+            }
+            list = new ArrayList<Runnable>();
+            scheduled = false;
+        }
+    }
 }
