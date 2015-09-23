@@ -74,6 +74,7 @@ import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVector;
 import org.llvm.adt.aliases.SmallVectorImplChar;
 import org.llvm.support.raw_ostream;
+import org.llvm.support.sys.path;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl.ArrayBasedAPTTokenStream;
@@ -248,13 +249,16 @@ public final class ClankPPCallback extends FileInfoCallback {
         } else {
             CharSequence pathCharSeq = ClankFileSystemProviderImpl.getPathFromUrl(strFileEntryPath);
             pathCharSeq = CharSequences.create(pathCharSeq);
-            SrcMgr.CharacteristicKind fileDirFlavor = PP.getHeaderSearchInfo().getFileDirFlavor(fileEntry);            
             assert CndPathUtilities.isPathAbsolute(searchPath) : "expected to be abs path [" + searchPath + "]";
             CharSequence folder = CndFileUtils.normalizeAbsolutePath(fs, searchPath);
             folder = ClankFileSystemProviderImpl.getPathFromUrl(folder);
-            folder = FilePathCache.getManager().getString(CharSequences.create(folder));
-            // FIXME: for now consider user path as isDefaultSearchPath
-            boolean isDefaultSearchPath = (fileDirFlavor == SrcMgr.CharacteristicKind.C_User);
+            folder = FilePathCache.getManager().getString(CharSequences.create(folder));            
+            boolean isDefaultSearchPath = false;
+            if (!includeStack.isEmpty()) {
+                StringRef ownerName = new StringRef(includeStack.get(0).current.getName());
+                StringRef ownerDir = path.parent_path(ownerName);
+                isDefaultSearchPath = directive.getSearchPath().equals(ownerDir);
+            }
             return new ResolvedPath(fs, folder, pathCharSeq, isDefaultSearchPath, 0);
         }
     }

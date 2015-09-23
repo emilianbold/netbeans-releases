@@ -124,7 +124,7 @@ public final class ResolvedPath {
     }
 
     /**
-     * Returns true if path resolved from default path
+     * Returns true if the header is resolved against owner file directory
      */
     public boolean isDefaultSearchPath(){
         return isDefaultSearchPath;

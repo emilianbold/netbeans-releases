@@ -331,7 +331,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                               inclFileOwner = aStartProject;
                           }
                       }
-                      assert inclFileOwner != null;
+                      if (inclFileOwner == null) {
+                          new IllegalStateException("Can not resolve #include file owner for " + resolvedPath).printStackTrace(); //NOI18N
+                          return;
+                      }
                       if (CndUtils.isDebugMode()) {
                           CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
                       }
