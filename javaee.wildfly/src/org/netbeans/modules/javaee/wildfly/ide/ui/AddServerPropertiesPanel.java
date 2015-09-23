@@ -45,7 +45,6 @@ package org.netbeans.modules.javaee.wildfly.ide.ui;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -118,7 +117,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
                     continue;
                 }
 
-                try {
+                /*try {
                     String root = new File(property).getCanonicalPath();
 
                     if (root.equals(new File(path).getCanonicalPath())) {
@@ -129,7 +128,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
                 } catch (IOException ex) {
                     // It's normal behaviour when instance is something else then jboss instance
                     continue;
-                }
+                }*/
             }
 
             try{
