@@ -94,6 +94,10 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
         this.databaseUrl = databaseUrl;
         this.user = user;
         this.pwd = password;
+        wd = new WizardDescriptor(this, this);
+        // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
+        wd.setTitleFormat(new MessageFormat("{0}"));
+        wd.setTitle(NbBundle.getMessage(AddConnectionWizard.class, "PredefinedWizard.WizardTitle")); // NOI18N
         updateState(driver);
     }
 
@@ -104,17 +108,16 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
 
     public static DatabaseConnection showWizard(JDBCDriver driver, String databaseUrl, String user, String password) {
         AddConnectionWizard wiz = new AddConnectionWizard(driver, databaseUrl, user, password);
-        return wiz.openWizard();
+        wiz.showWizard();
+        return wiz.getResult();
     }
     
-    private DatabaseConnection openWizard() {
-        wd = new WizardDescriptor(this, this);
-        // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wd.setTitleFormat(new MessageFormat("{0}"));
-        wd.setTitle(NbBundle.getMessage(AddConnectionWizard.class, "PredefinedWizard.WizardTitle")); // NOI18N
+    private void showWizard() {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wd);
         dialog.setVisible(true);
-        dialog.toFront();
+    }
+    
+    private DatabaseConnection getResult() {
         boolean cancelled = wd.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
             assert getDatabaseConnection() != null : "DatabaseConnection found.";
@@ -124,15 +127,17 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
             }
             try {
                 ConnectionList.getDefault().add(getDatabaseConnection());
+                return getDatabaseConnection();
             } catch (DatabaseException ex) {
                 Logger.getLogger(AddConnectionWizard.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-                DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), ex.getMessage()); // NOI18N
+                DbUtilities.reportError(NbBundle.getMessage(ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), ex.getMessage()); // NOI18N
                 closeConnection();
             }
         }
-        return getDatabaseConnection();
+        return null;
     }
-
+    
+    
     public static interface Panel extends WizardDescriptor.Panel<AddConnectionWizard>{}
     
     /**

@@ -96,7 +96,7 @@ public class Util {
         }
 
         JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver",
-                "org.bar.BarDriver", new URL[]{new URL("file://foo/path/foo.jar")});
+                "org.bar.BarDriver", new URL[]{new URL("file:///foo/path/foo.jar")});
         JDBCDriverManager.getDefault().addDriver(driver);
 
         return driver;
@@ -104,7 +104,7 @@ public class Util {
 
     public static JDBCDriver createDummyDriverWithOtherJar() throws Exception {
         JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver",
-                "org.bar.BarDriver2", new URL[]{new URL("file://foo2/path/foo2.jar")});
+                "org.bar.BarDriver2", new URL[]{new URL("file:///foo2/path/foo2.jar")});
         JDBCDriverManager.getDefault().addDriver(driver);
 
         return driver;
