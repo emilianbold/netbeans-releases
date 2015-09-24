@@ -324,5 +324,14 @@ function ${name}(${parameters}) {
     <codetemplate abbreviation="lo"><code><![CDATA[${no-indent}window.location]]></code></codetemplate>
     <codetemplate abbreviation="hi"><code><![CDATA[${no-indent}window.history]]></code></codetemplate>
     <codetemplate abbreviation="win"><code><![CDATA[${no-indent}window]]></code></codetemplate>
-
+    <codetemplate abbreviation="be">
+        <code><![CDATA[beforeEach(function() {
+    ${cursor}
+});]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="ae">
+        <code><![CDATA[afterEach(function() {
+    ${cursor}
+});]]></code>
+    </codetemplate>
 </codetemplates>
