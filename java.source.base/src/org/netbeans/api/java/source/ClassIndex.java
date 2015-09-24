@@ -214,7 +214,13 @@ public final class ClassIndex {
         /**
          * The returned class contains references to the element type
          */
-        TYPE_REFERENCES,        
+        TYPE_REFERENCES,
+
+        /**
+         * The returned class contains a lambda implementation of given functional interface.
+         * @since 2.9
+         */
+        FUNCTIONAL_IMPLEMENTORS;
     };
     
     /**
@@ -831,8 +837,8 @@ public final class ClassIndex {
         final Set<ClassIndexImpl.UsageType> result = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
         for (ClassIndex.SearchKind sk : kind) {
             switch (sk) {
-                case METHOD_REFERENCES:                    
-                    result.add(ClassIndexImpl.UsageType.METHOD_REFERENCE);                    
+                case METHOD_REFERENCES:
+                    result.add(ClassIndexImpl.UsageType.METHOD_REFERENCE);
                     break;
                 case FIELD_REFERENCES:
                     result.add(ClassIndexImpl.UsageType.FIELD_REFERENCE);
@@ -859,6 +865,9 @@ public final class ClassIndex {
                         default:
                             throw new IllegalArgumentException ();                                        
                     }
+                    break;
+                case FUNCTIONAL_IMPLEMENTORS:
+                    result.add(ClassIndexImpl.UsageType.FUNCTIONAL_IMPLEMENTORS);
                     break;
                 default:
                     throw new IllegalArgumentException ();                    

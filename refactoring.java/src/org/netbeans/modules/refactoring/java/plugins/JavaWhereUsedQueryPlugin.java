@@ -56,6 +56,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -296,17 +297,27 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     }
                 } else if (el.getKind().isClass() || el.getKind().isInterface()) {
                     if (isFindSubclasses || isFindDirectSubclassesOnly) {
-                        EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
                         if (isFindDirectSubclassesOnly) {
+                            EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
+                            if (el.getKind() == ElementKind.INTERFACE) {
+                                searchKind.add(ClassIndex.SearchKind.FUNCTIONAL_IMPLEMENTORS);
+                            }
                             //get direct implementors from index
                             sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el), searchKind, searchScopeType, resourceType));
                         } else {
-                            Set<?> implementorsAsHandles = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el, cancel);
+                            Set<ElementHandle<TypeElement>> implementorsAsHandles = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el, cancel);
                             if (cancel != null && cancel.get()) {
                                 sourceSet.clear();
                                 return;
                             }
-                            sourceSet.addAll(SourceUtilsEx.getFiles((Collection<ElementHandle<? extends Element>>) implementorsAsHandles, cpInfo, cancel));
+                            sourceSet.addAll(SourceUtilsEx.getFiles((Collection<ElementHandle<? extends Element>>)(Collection<?>)implementorsAsHandles, cpInfo, cancel));
+                            if (el.getKind() == ElementKind.INTERFACE) {
+                                sourceSet.addAll(getFunctionalSubtypes(
+                                    ElementHandle.create((TypeElement)el),
+                                    implementorsAsHandles,
+                                    cpInfo,
+                                    searchScopeType));
+                            }
                         }
                     } else {
                         //get type references from index
@@ -548,6 +559,25 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         for (String string : usedFilters) {
             filtersDescription.enable(string);
         }
+    }
+
+    @NonNull
+    private static Collection<? extends FileObject> getFunctionalSubtypes(
+            @NonNull final ElementHandle<TypeElement> base,
+            @NonNull final Collection<ElementHandle<TypeElement>> subtypes,
+            @NonNull final ClasspathInfo cpInfo,
+            @NonNull final Set<ClassIndex.SearchScopeType> scope) {
+        assert base.getKind() == ElementKind.INTERFACE;
+        final ClassIndex index = cpInfo.getClassIndex();
+        final Set<ClassIndex.SearchKind> fncKind = EnumSet.of(ClassIndex.SearchKind.FUNCTIONAL_IMPLEMENTORS);
+        final Set<FileObject> result = new HashSet<>();
+        result.addAll(index.getResources(base, fncKind, scope));
+        for (ElementHandle<TypeElement> e : subtypes) {
+            if (e.getKind() == ElementKind.INTERFACE) {
+                result.addAll(index.getResources(e, fncKind, scope));
+            }
+        }
+        return result;
     }
 
     private class FindTask implements CancellableTask<CompilationController> {
