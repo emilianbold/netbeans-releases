@@ -227,6 +227,9 @@ public final class ComputeImports {
                 return null;
             }
             for (ElementHandle<TypeElement> typeName : typeNames) {
+                if (isCancelled())
+                    return null;
+
                 TypeElement te = info.getElements().getTypeElement(typeName.getQualifiedName());
                 
                 if (te == null) {
@@ -249,6 +252,9 @@ public final class ComputeImports {
             }
             
             for (final Symbols p : simpleNames) {
+                if (isCancelled())
+                    return null;
+
                 final TypeElement te = p.getEnclosingType().resolve(info);
                 final Set<String> idents = p.getSymbols();
                 if (te != null) {

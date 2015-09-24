@@ -895,7 +895,7 @@ public class ResourceSupport {
             return false;
         }
         ResourceSupport support = getResourceSupport(prop);
-        return !support.isExcludedProperty0(prop) && support.isResourceAutoMode();
+        return support != null ? !support.isExcludedProperty0(prop) && support.isResourceAutoMode() : false;
     }
 
     /**
@@ -912,8 +912,11 @@ public class ResourceSupport {
      */
     public static boolean isExcludedProperty(FormProperty prop) {
         assert isResourceableProperty(prop);
-        return Boolean.TRUE.equals(prop.getValue(EXCLUDE_FROM_RESOURCING)) ?
-                true : getResourceSupport(prop).isExcludedProperty1(prop);
+        if (Boolean.TRUE.equals(prop.getValue(EXCLUDE_FROM_RESOURCING))) {
+            return true;
+        }
+        ResourceSupport support = getResourceSupport(prop);
+        return support != null ? support.isExcludedProperty1(prop) : false;
     }
 
     private boolean isExcludedProperty0(FormProperty prop) {
@@ -923,7 +926,6 @@ public class ResourceSupport {
 
     private boolean isExcludedProperty1(FormProperty prop) {
         if (!Boolean.TRUE.equals(prop.getValue(EXCLUSION_DETERMINED))) {
-
             prop.setValue(EXCLUSION_DETERMINED, true);
             Object propOwner = prop.getPropertyContext().getOwner();
             Class type = null;
@@ -965,7 +967,7 @@ public class ResourceSupport {
     public static boolean isInjectedProperty(FormProperty prop) {
         if (isResourceableProperty(prop)) {
             ResourceSupport support = getResourceSupport(prop);
-            if (support.getAutoMode() == AUTO_INJECTION) {
+            if (support != null && support.getAutoMode() == AUTO_INJECTION) {
                 Object value;
                 try {
                     value = prop.getValue();

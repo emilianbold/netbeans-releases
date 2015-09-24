@@ -87,7 +87,8 @@ public abstract class ClassIndexImpl {
         SUPER_INTERFACE,
         FIELD_REFERENCE,
         METHOD_REFERENCE,
-        TYPE_REFERENCE;
+        TYPE_REFERENCE,
+        FUNCTIONAL_IMPLEMENTORS;
     }
 
     /**

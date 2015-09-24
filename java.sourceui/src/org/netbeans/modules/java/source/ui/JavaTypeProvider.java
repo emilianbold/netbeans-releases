@@ -315,7 +315,8 @@ public class JavaTypeProvider implements TypeProvider {
         final boolean scanInProgress = SourceUtils.isScanInProgress();
         if (scanInProgress) {
             // ui message
-            String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning");
+            final String warningKind = NbBundle.getMessage(JavaTypeProvider.class, "LBL_TypeKind");
+            final String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning", warningKind);
             res.setMessage(message);
         } else {
             res.setMessage(null);
