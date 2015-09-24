@@ -575,8 +575,14 @@ public class BrowserConsoleLogger implements Console.Listener {
             } else {
                 File file;
                 if (filePath.startsWith("file:/")) {                                // NOI18N
-                    URI uri = URI.create(filePath);
-                    if (uri.getQuery() != null || uri.getFragment() != null) {
+                    URI uri;
+                    try {
+                        // Issue 255536
+                        uri = new URI(filePath);
+                    } catch (URISyntaxException usex) {
+                        uri = null;
+                    }
+                    if (uri == null || uri.getQuery() != null || uri.getFragment() != null) {
                         // Remove the query and/or fragment
                         uri = WebUtils.stringToUrl(WebUtils.urlToString(new URL(filePath), true)).toURI();
                     }
