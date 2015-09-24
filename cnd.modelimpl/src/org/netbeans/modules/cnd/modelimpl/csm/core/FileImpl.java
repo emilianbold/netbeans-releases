@@ -328,6 +328,15 @@ public final class FileImpl implements CsmFile,
     private int guardEnd = -1;
 
     private volatile boolean disposed = false; // convert to flag field as soon as new flags appear
+    
+    /** 
+     * Contains reference to the project's  disposing flag.
+     * Introduced for optimization purposes - for FileImpl to be able to make a fast check
+     * without getting the project itself (nor hard-referencing of the project itself either).
+     * This strongly relates on the fact that the project stays in memory
+     * (we call RepositoryUtils.hang() but never RepositoryUtils.put() for the project)
+     */
+    private final AtomicBoolean projectDisposed;
 
     private final Interrupter interrupter = new Interrupter() {
         @Override
@@ -341,7 +350,7 @@ public final class FileImpl implements CsmFile,
     private long lastParsedCompilationUnitCRC;
 
     /** Cache the hash code */
-    private int hash = 0; // Default to 0
+    private final int hash;
     private Reference<List<CsmReference>> lastMacroUsages = null;
 
     /** For test purposes only */
@@ -354,6 +363,9 @@ public final class FileImpl implements CsmFile,
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert (projectUID instanceof KeyBasedUID); // this fact is used in write() and getInitId()
         this.fileBuffer = fileBuffer;
+        this.hash = calculateHashCode(project, fileBuffer.getAbsolutePath());
+        // NB: the below strongly relates on the fact that the project stays in memory
+        this.projectDisposed = project.getDisposingFlag();
 
         hasBrokenIncludes = new AtomicBoolean(false);
         this.currentFileContent = FileContent.createFileContent(FileImpl.this, FileImpl.this);
@@ -1831,8 +1843,8 @@ public final class FileImpl implements CsmFile,
         if (disposed) {
             return false;
         }
-        ProjectBase project = _getProject(false);
-        return project != null && project.isValid();
+        // NB: the below strongly relates on the fact that the project stays in memory
+        return projectDisposed.get();
     }
 
     @Override
@@ -2136,16 +2148,22 @@ public final class FileImpl implements CsmFile,
         parsingState = ParsingState.NOT_BEING_PARSED;
         guardStart = input.readInt();
         guardEnd = input.readInt();
+        ProjectBase project = _getProject(false);
+        this.hash = calculateHashCode(project, fileBuffer.getAbsolutePath());
+        // NB: the below strongly relates on the fact that the project stays in memory
+        this.projectDisposed = (project == null) ? new AtomicBoolean(false) : project.getDisposingFlag();
     }
 
     public
     @Override
     int hashCode() {
-        if (hash == 0) {   // we don't need sync here - at worst, we'll calculate the same value twice
-            String identityHashPath = getProjectImpl(true).getUniqueName() + "*" + getAbsolutePath(); // NOI18N
-            hash = identityHashPath.hashCode();
-        }
         return hash;
+    }
+
+    private static int calculateHashCode(ProjectBase p, CharSequence absPath) {
+        CharSequence projectId = (p == null) ? "" : p.getUniqueName(); // NOI18N
+        String identityHashPath = projectId + "*" + absPath; // NOI18N
+        return identityHashPath.hashCode();
     }
 
     public
