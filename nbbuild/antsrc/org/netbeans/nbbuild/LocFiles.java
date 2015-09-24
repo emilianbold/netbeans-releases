@@ -380,6 +380,9 @@ public final class LocFiles extends Task {
         if (name.equals("options-api_nb")) {
             return "org-netbeans-modules-options-api_nb";
         }
+        if (name.equals("uihandler_nb")) {
+            return "org-netbeans-modules-uihandler_nb";
+        }
         return name;
     }
 }
