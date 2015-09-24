@@ -1844,7 +1844,7 @@ public final class FileImpl implements CsmFile,
             return false;
         }
         // NB: the below strongly relates on the fact that the project stays in memory
-        return projectDisposed.get();
+        return !projectDisposed.get();
     }
 
     @Override
