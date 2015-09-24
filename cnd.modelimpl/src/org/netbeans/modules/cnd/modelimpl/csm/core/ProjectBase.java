@@ -2952,6 +2952,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /**
+     * Returns the disposing flag.
+     * Introduced for optimization purposes - for guys like FileImpl to be able to make a fast check
+     * without getting the project itself (nor hard-referencing of the project itself either).
+     * This strongly relates on the fact that the project stays in memory
+     * (we call RepositoryUtils.hang() but never RepositoryUtils.put() for the project)
+     */
+    AtomicBoolean getDisposingFlag() {
+            return disposing;
+    }
+
+    /**
      * called under disposeLock.writeLock() to clean up internals if needed
      */
     protected void onDispose() {
