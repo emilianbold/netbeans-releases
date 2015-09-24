@@ -148,7 +148,6 @@ org.netbeans.modules.profiler.j2se.J2SEProjectProfilingSupportProvider
 org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider
 org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities
 org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities$IntegrationUpdater
-org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder
 org.netbeans.modules.profiler.spi.java.AbstractJavaProfilerSource
 org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider
 org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider$Basic
