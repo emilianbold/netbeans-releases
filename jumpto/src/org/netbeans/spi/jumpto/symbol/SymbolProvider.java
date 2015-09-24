@@ -42,10 +42,10 @@
 
 package org.netbeans.spi.jumpto.symbol;
 
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.jumpto.symbol.SymbolComparator;
 import org.netbeans.modules.jumpto.symbol.SymbolProviderAccessor;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.util.Parameters;
@@ -141,7 +141,7 @@ public interface SymbolProvider {
                 @Override
                 @NonNull
                 public Result createResult(
-                    @NonNull final List<? super SymbolDescriptor> result,
+                    @NonNull final Collection<? super SymbolDescriptor> result,
                     @NonNull final String[] message,
                     @NonNull final Context context,
                     @NonNull final SymbolProvider provider) {
@@ -214,7 +214,7 @@ public interface SymbolProvider {
      */
     public static final class Result extends Object {
 
-        private final List<? super SymbolDescriptor> result;
+        private final Collection<? super SymbolDescriptor> result;
         private final String[] message;
         private final SymbolProvider provider;
         private String highlightText;
@@ -223,7 +223,7 @@ public interface SymbolProvider {
         private int retry;
 
         Result(
-                @NonNull final List<? super SymbolDescriptor> result,
+                @NonNull final Collection<? super SymbolDescriptor> result,
                 @NonNull final String[] message,
                 @NonNull final Context context,
                 @NonNull final SymbolProvider provider) {

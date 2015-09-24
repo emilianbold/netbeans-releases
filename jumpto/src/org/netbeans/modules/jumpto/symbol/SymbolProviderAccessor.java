@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.jumpto.symbol;
 
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
@@ -72,7 +72,7 @@ public abstract class SymbolProviderAccessor {
 
     @NonNull
     public abstract SymbolProvider.Result createResult(
-            @NonNull List<? super SymbolDescriptor> result,
+            @NonNull Collection<? super SymbolDescriptor> result,
             @NonNull String[] message,
             @NonNull Context context,
             @NonNull SymbolProvider provider);
