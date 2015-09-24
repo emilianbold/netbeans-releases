@@ -206,8 +206,12 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
 
     @Override
     public CsmDeclarationStatement getDeclaration() {
-        assert rangeBased && init instanceof CsmDeclarationStatement;
-        return (CsmDeclarationStatement) init;
+        if (init instanceof CsmDeclarationStatement) {
+            assert rangeBased;
+            return (CsmDeclarationStatement) init;
+        } else {
+            return null;
+        }
     }
 
     @Override
