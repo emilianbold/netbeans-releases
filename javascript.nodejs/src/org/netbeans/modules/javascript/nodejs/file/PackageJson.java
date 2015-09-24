@@ -147,9 +147,13 @@ public final class PackageJson {
     }
 
     public PackageJson.NpmDependencies getDependencies() {
+        @SuppressWarnings("unchecked")
         Map<Object, Object> dependencies = getContentValue(Map.class, FIELD_DEPENDENCIES);
+        @SuppressWarnings("unchecked")
         Map<Object, Object> devDependencies = getContentValue(Map.class, FIELD_DEV_DEPENDENCIES);
+        @SuppressWarnings("unchecked")
         Map<Object, Object> peerDependencies = getContentValue(Map.class, FIELD_PEER_DEPENDENCIES);
+        @SuppressWarnings("unchecked")
         Map<Object, Object> optionalDependencies = getContentValue(Map.class, FIELD_OPTIONAL_DEPENDENCIES);
         return new NpmDependencies(sanitizeDependencies(dependencies), sanitizeDependencies(devDependencies),
                 sanitizeDependencies(peerDependencies), sanitizeDependencies(optionalDependencies));
