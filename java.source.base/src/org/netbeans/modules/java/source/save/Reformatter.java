@@ -2116,26 +2116,31 @@ public class Reformatter implements ReformatTask {
                 }
                 accept(ELSE);
                 if (elseStat.getKind() == Tree.Kind.IF && cs.specialElseIf()) {
-                    space();
-                    scan(elseStat, p);
-                } else {
-                    WrapStyle wrapElse;
-                    boolean preserveNewLine = true;
-                    if (cs.specialElseIf() && elseStat.getKind() == Tree.Kind.BLOCK
-                            && ((BlockTree)elseStat).getStatements().size() == 1
-                            && ((BlockTree)elseStat).getStatements().get(0).getKind() == Tree.Kind.IF) {
-                        redundantIfBraces = CodeStyle.BracesGenerationStyle.ELIMINATE;
-                        wrapElse = CodeStyle.WrapStyle.WRAP_NEVER;
-                        preserveNewLine = false;
-                        lastIndent -= indentSize;
-                    } else {
-                        redundantIfBraces = cs.redundantIfBraces();
-                        if (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
-                            redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
-                        wrapElse = cs.wrapIfStatement();
+                    int index = tokens.index();
+                    int c = col;
+                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                    if (!spaces(1, false)) {
+                        scan(elseStat, p);
+                        return true;
                     }
-                    wrapStatement(wrapElse, redundantIfBraces, cs.spaceBeforeElseLeftBrace() ? 1 : 0, preserveNewLine, elseStat);
+                    rollback(index, c, d);
                 }
+                WrapStyle wrapElse;
+                boolean preserveNewLine = true;
+                if (cs.specialElseIf() && elseStat.getKind() == Tree.Kind.BLOCK
+                        && ((BlockTree)elseStat).getStatements().size() == 1
+                        && ((BlockTree)elseStat).getStatements().get(0).getKind() == Tree.Kind.IF) {
+                    redundantIfBraces = CodeStyle.BracesGenerationStyle.ELIMINATE;
+                    wrapElse = CodeStyle.WrapStyle.WRAP_NEVER;
+                    preserveNewLine = false;
+                    lastIndent -= indentSize;
+                } else {
+                    redundantIfBraces = cs.redundantIfBraces();
+                    if (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
+                        redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
+                    wrapElse = cs.wrapIfStatement();
+                }
+                wrapStatement(wrapElse, redundantIfBraces, cs.spaceBeforeElseLeftBrace() ? 1 : 0, preserveNewLine, elseStat);
             }
             return true;
         }
@@ -3111,6 +3116,7 @@ public class Reformatter implements ReformatTask {
                         lastWSToken = tokens.token();
                         break;
                     case LINE_COMMENT:
+                        containedNewLine = true;
                         if (lastWSToken != null) {
                             String spaces = after == 1 //after line comment
                                     ? getIndent()
@@ -3120,7 +3126,6 @@ public class Reformatter implements ReformatTask {
                             String text = lastWSToken.text().toString();
                             int idx = text.lastIndexOf('\n'); //NOI18N
                             if (idx >= 0) {
-                                containedNewLine = true;
                                 if (preserveNewline) {
                                     spaces = getNewlines(1) + getIndent();
                                     lastBlankLines = 1;
