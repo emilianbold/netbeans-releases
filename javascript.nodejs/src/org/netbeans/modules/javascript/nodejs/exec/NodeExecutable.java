@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.javascript.nodejs.exec;
@@ -597,7 +597,7 @@ public class NodeExecutable {
             List<File> sourceRoots = NodeJsUtils.getSourceRoots(project);
             List<File> siteRoots = NodeJsUtils.getSiteRoots(project);
             List<String> localPaths = new ArrayList<>(sourceRoots.size());
-            List<String> localPathsExclusionFilter = Collections.EMPTY_LIST;
+            List<String> localPathsExclusionFilter = Collections.emptyList();
             for (File src : sourceRoots) {
                 localPaths.add(src.getAbsolutePath());
                 for (File site : siteRoots) {
@@ -609,7 +609,7 @@ public class NodeExecutable {
                     }
                 }
             }
-            return new Connector.Properties(host, port, localPaths, Collections.EMPTY_LIST, localPathsExclusionFilter);
+            return new Connector.Properties(host, port, localPaths, Collections.<String>emptyList(), localPathsExclusionFilter);
         }
 
         @NbBundle.Messages({
@@ -672,13 +672,14 @@ public class NodeExecutable {
             this.sourceRoots = sourceRoots;
         }
 
+        @CheckForNull
         Pair<File, Integer> getOutputFileLine(String line) {
-            Matcher matcher = OUTPUT_FILE_LINE_PATTERN.matcher(line);
-            if (!matcher.find()) {
+            Pair<String, Integer> fileNameLine = getOutputFileNameLine(line);
+            if (fileNameLine == null) {
                 return null;
             }
-            String filepath = matcher.group("FILE"); // NOI18N
-            Integer lineNumber = Integer.valueOf(matcher.group("LINE")); // NOI18N
+            String filepath = fileNameLine.first();
+            Integer lineNumber = fileNameLine.second();
             // complete path?
             File file = new File(filepath);
             if (file.isFile()) {
@@ -692,6 +693,15 @@ public class NodeExecutable {
                 }
             }
             return null;
+        }
+
+        @CheckForNull
+        static Pair<String, Integer> getOutputFileNameLine(String line) {
+            Matcher matcher = OUTPUT_FILE_LINE_PATTERN.matcher(line.trim());
+            if (!matcher.find()) {
+                return null;
+            }
+            return Pair.of(matcher.group("FILE"), Integer.valueOf(matcher.group("LINE"))); // NOI18N
         }
 
     }

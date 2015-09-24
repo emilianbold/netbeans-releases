@@ -117,10 +117,10 @@ public final class PhpProjectConvertor implements ProjectConvertor {
             if (content instanceof JSONObject) {
                 return (JSONObject) content;
             }
-            LOGGER.log(Level.INFO, "Unexpected content of composer.json: {0}", FileUtil.toFile(jsonFile));
+            LOGGER.log(Level.FINE, "Unexpected content of composer.json: {0}", FileUtil.toFile(jsonFile));
             return null;
         } catch (ParseException | IOException ex) {
-            LOGGER.log(Level.INFO, jsonFile.getPath(), ex);
+            LOGGER.log(Level.FINE, jsonFile.getPath(), ex);
         }
         return null;
     }
