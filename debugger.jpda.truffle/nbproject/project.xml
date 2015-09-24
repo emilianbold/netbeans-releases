@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.debugger.jpda.truffle</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -191,7 +191,21 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.testng</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <public-packages/>
+            <extra-compilation-unit>
+                <package-root>truffle-backend</package-root>
+                <classpath>${module.classpath}:${truffle-backend.cp.extra}</classpath>
+                <built-to>build/bridge-classes</built-to>
+            </extra-compilation-unit>
         </data>
     </configuration>
 </project>
