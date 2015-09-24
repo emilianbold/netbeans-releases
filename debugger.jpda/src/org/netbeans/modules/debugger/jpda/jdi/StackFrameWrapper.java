@@ -342,7 +342,7 @@ public final class StackFrameWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void setValue(com.sun.jdi.StackFrame a, com.sun.jdi.LocalVariable b, com.sun.jdi.Value c) throws com.sun.jdi.InvalidTypeException, com.sun.jdi.ClassNotLoadedException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+    public static void setValue(com.sun.jdi.StackFrame a, com.sun.jdi.LocalVariable b, com.sun.jdi.Value c) throws com.sun.jdi.InvalidTypeException, com.sun.jdi.ClassNotLoadedException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
         if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
                     "com.sun.jdi.StackFrame",
@@ -365,6 +365,8 @@ public final class StackFrameWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
         } finally {
             if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
                 org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(

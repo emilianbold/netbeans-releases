@@ -60,6 +60,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocalVariableWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
@@ -170,7 +171,8 @@ class ObjectLocalVariable extends AbstractObjectVariable
     }
     
     @NbBundle.Messages({"# {0} - variable name",
-                        "MSG_VarNotVisibleInCurrentFrame=Variable {0} is not visible in the current stack frame."})
+                        "MSG_VarNotVisibleInCurrentFrame=Variable {0} is not visible in the current stack frame.",
+                        "MSG_ObjectWasCollected=Object was collected already."})
     protected final void setValue (Value value) throws InvalidExpressionException {
         try {
             CallStackFrame[] frames = thread.getCallStack(depth, depth + 1);
@@ -188,16 +190,14 @@ class ObjectLocalVariable extends AbstractObjectVariable
             }
             StackFrameWrapper.setValue (sf, local, value);
             setInnerValue(value);
-        } catch (AbsentInformationException aiex) {
-            throw new InvalidExpressionException(aiex);
-        } catch (InvalidTypeException ex) {
-            throw new InvalidExpressionException (ex);
-        } catch (ClassNotLoadedException ex) {
-            throw new InvalidExpressionException (ex);
-        } catch (InvalidStackFrameExceptionWrapper ex) {
-            throw new InvalidExpressionException (ex);
-        } catch (InternalExceptionWrapper ex) {
-        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (AbsentInformationException |
+                 InvalidTypeException |
+                 ClassNotLoadedException |
+                 InvalidStackFrameExceptionWrapper ex) {
+            throw new InvalidExpressionException(ex);
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            throw new InvalidExpressionException(Bundle.MSG_ObjectWasCollected(), ex);
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
         }
     }
     
