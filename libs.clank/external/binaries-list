@@ -1,6 +1,6 @@
-#changeset:   15746:9cad54aac2f3
+#changeset:   15754:a944084bb669
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Sep 23 03:00:42 2015 +0300
-#summary:     JAVA: fixed misprint
-6E655079DAB13EED7E53AD961F24664274646299 clank_0.3.6.zip
+#date:        Thu Sep 24 21:18:42 2015 +0300
+#summary:     add only interested file (check.one.file.only flag)
+5611C853FF266319AA66661202746C5B845D07C4 clank_0.3.6.zip

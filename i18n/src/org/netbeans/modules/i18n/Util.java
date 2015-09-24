@@ -171,16 +171,16 @@ public class Util {
      */
     public static String getResourceName(FileObject srcFile, FileObject resFile, char separator, boolean bpar) {
         // try SOURCE class-path first
-        ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE );
-        if (ecp!=null) {
-            String ret = ecp.getResourceName( resFile, separator, bpar);
-            if (ret != null) return ret;
-        }
-
         ClassPath scp = ClassPath.getClassPath( srcFile, ClassPath.SOURCE );
         if (scp!= null) {
             String ret = scp.getResourceName( resFile, separator, bpar);
             if (ret!=null) return ret;
+        }
+
+        ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE );
+        if (ecp!=null) {
+            String ret = ecp.getResourceName( resFile, separator, bpar);
+            if (ret != null) return ret;
         }
 
         ClassPath rcp = ClassPath.getClassPath( resFile, ClassPath.SOURCE );

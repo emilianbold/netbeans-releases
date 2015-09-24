@@ -1014,6 +1014,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<NativeFileItem> headers = new ArrayList<>();
         for (NativeFileItem item : nativeProject.getAllFiles()) {
             if (!item.isExcluded()) {
+                if (false) {
+                    String file = System.getProperty("check.one.file.only"); // NOI18N
+                    if (file != null && !file.contentEquals(item.getAbsolutePath())) {
+                        continue;
+                    }
+                }
                 switch (item.getLanguage()) {
                     case C:
                     case CPP:
@@ -2949,6 +2955,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public final boolean isDisposing() {
         return disposing.get();
+    }
+
+    /**
+     * Returns the disposing flag.
+     * Introduced for optimization purposes - for guys like FileImpl to be able to make a fast check
+     * without getting the project itself (nor hard-referencing of the project itself either).
+     * This strongly relates on the fact that the project stays in memory
+     * (we call RepositoryUtils.hang() but never RepositoryUtils.put() for the project)
+     */
+    AtomicBoolean getDisposingFlag() {
+            return disposing;
     }
 
     /**

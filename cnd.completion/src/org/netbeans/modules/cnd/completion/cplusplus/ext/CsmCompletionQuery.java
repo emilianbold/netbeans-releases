@@ -858,29 +858,14 @@ abstract public class CsmCompletionQuery {
     }
 
     // ================= help methods to generate CsmCompletionResult ==========
-    private String formatName(String name, boolean appendStar) {
-        return (name != null) ? (appendStar ? (name + '*') : name)
-                : (appendStar ? "*" : ""); // NOI18N
-    }
-
-    private String formatType(CsmType type, boolean useFullName, boolean appendColon) {
-        StringBuilder sb = new StringBuilder();
-        if (type != null) {
-//                sb.append(type.format(useFullName));
-            sb.append(type.getText());
-        }
-        if (appendColon) {
-            sb.append(CsmCompletion.SCOPE);
-        }
-        return sb.toString();
-    }
-
     private static String formatType(CsmType type, boolean useFullName,
             boolean appendDblComma, boolean appendStar) {
         StringBuilder sb = new StringBuilder();
-        if (type != null && type.getClassifier() != null) {
-//                sb.append(type.format(useFullName));
-            sb.append(useFullName ? type.getClassifier().getQualifiedName() : type.getClassifier().getName());
+        if (type != null) {
+            CsmClassifier classifier = type.getClassifier();
+            if (classifier != null) {
+                sb.append(useFullName ? classifier.getQualifiedName() : classifier.getName());
+            }
         }
         if (appendDblComma) {
             sb.append(CsmCompletion.SCOPE);
