@@ -128,6 +128,7 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
         if (packageJson == null) {
             return this;
         }
+        @SuppressWarnings("unchecked")
         Map<String, Object> allScripts = packageJson.getContentValue(Map.class, PackageJson.FIELD_SCRIPTS);
         if (allScripts == null
                 || allScripts.isEmpty()) {
