@@ -222,4 +222,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 252513 - Broken parsing for lambdas with explicit capture list
         performTest("bug252513.cpp");
     }
+    
+    public void testBug255545() throws Exception {
+        // Bug 255545 - decltype in initializer slightly breaks code model
+        performTest("bug255545.cpp");
+    }
 }
