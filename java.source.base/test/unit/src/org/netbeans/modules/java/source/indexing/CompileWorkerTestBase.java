@@ -102,7 +102,7 @@ public abstract class CompileWorkerTestBase extends NbTestCase {
             createdFiles.add(getWorkDir().toURI().relativize(created.toURI()).getPath());
         }
         
-        assertEquals(new HashSet<String>(Arrays.asList("cache/s1/java/14/classes/test/Test3.sig")), createdFiles);
+        assertEquals(new HashSet<String>(Arrays.asList("cache/s1/java/15/classes/test/Test3.sig")), createdFiles);
     }
     
     private ParsingOutput runIndexing(List<CompileTuple> files, List<CompileTuple> virtualFiles) throws Exception {
