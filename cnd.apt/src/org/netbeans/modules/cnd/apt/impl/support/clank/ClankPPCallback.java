@@ -52,17 +52,17 @@ import java.util.logging.Level;
 import org.clang.basic.FileEntry;
 import org.clang.basic.IdentifierInfo;
 import org.clang.basic.SourceManager;
-import org.clang.basic.SrcMgr;
 import org.clang.lex.DefMacroDirective;
+import org.clang.lex.DirectoryLookup;
 import org.clang.lex.MacroDirective;
 import org.clang.lex.MacroInfo;
 import org.clang.lex.Preprocessor;
-import org.clang.lex.Token;
 import org.clang.tools.services.support.FileInfo;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
 import org.clank.java.std;
 import static org.clank.java.std.$second_uint;
+import org.clank.java.std.vector;
 import org.clank.support.Casts;
 import static org.clank.support.Casts.toJavaString;
 import org.clank.support.Native;
@@ -72,7 +72,6 @@ import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.SmallString;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVector;
-import org.llvm.adt.aliases.SmallVectorImplChar;
 import org.llvm.support.raw_ostream;
 import org.llvm.support.sys.path;
 import org.netbeans.modules.cnd.antlr.TokenStream;
@@ -269,7 +268,11 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
-    protected boolean onNotFoundInclusionDirective(FileInfo curFile, StringRef FileName, SmallVectorImplChar RecoveryPath) {
+    protected boolean onNotFoundInclusionDirective(FileInfo curFile, StringRef FileName, SmallString RecoveryPath,
+            vector<DirectoryLookup> SearchedDirs, int SearchedFromIndex) {
+        if (!APTTraceFlags.FIX_NOT_FOUND_INCLUDES) {
+            return false;
+        }
         APTFileSearch fileSearch = includeHandler.getFileSearch();
         if (fileSearch != null) {
             char$ptr curFilePath = curFile.getName();
@@ -284,7 +287,7 @@ public final class ClankPPCallback extends FileInfoCallback {
                 return true;
             }
         }
-        return super.onNotFoundInclusionDirective(curFile, FileName, RecoveryPath);
+        return super.onNotFoundInclusionDirective(curFile, FileName, RecoveryPath, SearchedDirs, SearchedFromIndex);
     }
 
     @Override

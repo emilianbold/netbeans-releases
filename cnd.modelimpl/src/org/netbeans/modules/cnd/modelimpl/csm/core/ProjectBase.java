@@ -1014,6 +1014,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<NativeFileItem> headers = new ArrayList<>();
         for (NativeFileItem item : nativeProject.getAllFiles()) {
             if (!item.isExcluded()) {
+                if (false) {
+                    String file = System.getProperty("check.one.file.only"); // NOI18N
+                    if (file != null && !file.contentEquals(item.getAbsolutePath())) {
+                        continue;
+                    }
+                }
                 switch (item.getLanguage()) {
                     case C:
                     case CPP:

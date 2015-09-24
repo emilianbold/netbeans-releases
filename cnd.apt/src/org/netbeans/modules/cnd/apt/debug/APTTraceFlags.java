@@ -92,6 +92,7 @@ public class APTTraceFlags {
     
     public static final boolean DEFERRED_MACRO_USAGES = DebugUtils.getBoolean("apt.deferred.macro.usages", true); // NOI18N
 
+    public static final boolean FIX_NOT_FOUND_INCLUDES = DebugUtils.getBoolean("apt.fix.includes", true); // NOI18N
     public static final boolean ALWAYS_USE_NB_FS = DebugUtils.getBoolean("apt.always.use.filesystem", true); // NOI18N
     public static final boolean ALWAYS_USE_BUFFER_BASED_FILES = DebugUtils.getBoolean("apt.use.buffer.fs", true); // NOI18N
 
