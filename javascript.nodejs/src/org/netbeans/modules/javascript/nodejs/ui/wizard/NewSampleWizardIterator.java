@@ -158,7 +158,7 @@ public final class NewSampleWizardIterator extends BaseWizardIterator {
     }
 
     @Override
-    WizardDescriptor.Panel[] createPanels() {
+    WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
         return new WizardDescriptor.Panel[] {
             baseWizard.first(),
         };

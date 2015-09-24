@@ -105,7 +105,7 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
     }
 
     @Override
-    WizardDescriptor.Panel[] createPanels() {
+    WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
         return wizard.createPanels();
     }
 

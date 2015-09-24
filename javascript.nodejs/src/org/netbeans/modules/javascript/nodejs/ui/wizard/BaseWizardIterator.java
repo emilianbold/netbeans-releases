@@ -67,7 +67,7 @@ abstract class BaseWizardIterator implements WizardDescriptor.ProgressInstantiat
 
     abstract String getWizardTitle();
 
-    abstract WizardDescriptor.Panel[] createPanels();
+    abstract WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
 
     abstract String[] createSteps();
 

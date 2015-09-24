@@ -196,7 +196,9 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         }
         Object engines = content.get(PackageJson.FIELD_ENGINES);
         if (engines instanceof Map) {
-            if (((Map<String, Object>) engines).containsKey(PackageJson.FIELD_NODE)) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> engines2 = (Map<String, Object>) engines;
+            if (engines2.containsKey(PackageJson.FIELD_NODE)) {
                 Notifications.notifyNodeJsDetected(project);
             }
         }
