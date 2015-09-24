@@ -82,7 +82,7 @@ public enum JsTokenId implements TokenId {
     WHITESPACE(null, "whitespace"), // NOI18N
     EOL(null, "whitespace"), // NOI18N
 
-    LINE_COMMENT(null, "line-comment"), // NOI18N
+    LINE_COMMENT(null, "comment-line"), // NOI18N
     BLOCK_COMMENT(null, "comment"), // NOI18N
     DOC_COMMENT(null, "comment"), // NOI18N
 
