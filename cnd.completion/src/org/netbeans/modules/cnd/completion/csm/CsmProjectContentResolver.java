@@ -478,9 +478,16 @@ public final class CsmProjectContentResolver {
                         if (CsmKindUtilities.isNamespaceDefinition(elem2.getScope())) {
                             List<CsmFunction> funs = new ArrayList<CsmFunction>();
                             CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) elem2.getScope();
-                            fillFileLocalIncludeNamespaceFunctions(nsd.getNamespace(), strPrefix, match, currentFile, funs, needDeclFromUnnamedNS);
-                            for (CsmFunction fun : funs) {
-                                out.put(fun.getSignature(), fun);
+                            CsmNamespace namespace = nsd.getNamespace();
+                            // namespace can be null, for example in fortran - since ProgramImpl implements CsmNamespaceDefinition
+                            // and moreover it returns kind CsmDeclaration.Kind.NAMESPACE_DEFINITION
+                            // The latter looks strange, but now is 2 days to 8.1 code freeze, so changing this kind is too risky,
+                            // while checking for null is not :)
+                            if (namespace != null) {
+                                fillFileLocalIncludeNamespaceFunctions(namespace, strPrefix, match, currentFile, funs, needDeclFromUnnamedNS);
+                                for (CsmFunction fun : funs) {
+                                    out.put(fun.getSignature(), fun);
+                                }
                             }
                         }
                     }
