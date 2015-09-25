@@ -302,7 +302,7 @@ class HtmlLabelUI extends LabelUI {
                 iconY = ins.top + ((availH / 2) - (icon.getIconHeight() / 2)); // + 2;
             } else if (availH == icon.getIconHeight()) {
                 //They're an exact match, make it 0
-                iconY = 0;
+                iconY = ins.top;
             } else {
                 //Won't fit; make the top visible and cut the rest off (option:
                 //center it and clip it on top and bottom - probably even harder
