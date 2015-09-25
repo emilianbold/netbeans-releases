@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.config.mdb;
 
-import java.util.Set;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+@Multiple({
+    @Schema2Beans(
+        schema="../../../resources/jboss-web_10_0.xsd",
+        schemaType=SchemaType.XML_SCHEMA,
+        outputType=OutputType.TRADITIONAL_BASEBEAN,
+        validate=true,
+        attrProp=true,
+        removeUnreferencedNodes=true,
+        docRoot="jboss-web",
+        java5=true
+    ),
+    @Schema2Beans(
+        schema="../../../resources/wildfly-messaging-activemq-deployment_1_0.xsd",
+        schemaType=SchemaType.XML_SCHEMA,
+        outputType=OutputType.TRADITIONAL_BASEBEAN,
+        validate=true,
+        attrProp=true,
+        removeUnreferencedNodes=true,
+        docRoot="messaging-deployment",
+        java5=true
+    )
+})
+package org.netbeans.modules.javaee.wildfly.config.gen.wf10;
 
-/**
- *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2015 Red Hat, inc.
- */
-public interface MessageDestinationSupport {
-
-    MessageDestination createMessageDestination(String name, MessageDestination.Type type) throws UnsupportedOperationException, ConfigurationException;
-
-    Set<MessageDestination> getMessageDestinations() throws ConfigurationException;
-    
-}
+import org.netbeans.modules.schema2beans.Schema2Beans;
+import org.netbeans.modules.schema2beans.Schema2Beans.Multiple;
+import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
+import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
