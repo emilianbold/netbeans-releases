@@ -2402,10 +2402,10 @@ abstract public class CsmCompletionQuery {
                                         case 2:
                                             CsmType typ1 = resolveType(item.getParameter(0));
                                             if (typ1 != null && typ1.getArrayDepth() == 0) {
-                                                if (CsmCompletion.isPrimitiveClass(typ1.getClassifier())) {
+                                                if (CsmCompletion.safeIsPrimitiveClass(typ1, typ1.getClassifier())) {
                                                     CsmType typ2 = resolveType(item.getParameter(1));
                                                     if (typ2 != null && typ2.getArrayDepth() == 0) {
-                                                        if (CsmCompletion.isPrimitiveClass(typ2.getClassifier())) {
+                                                        if (CsmCompletion.safeIsPrimitiveClass(typ2, typ2.getClassifier())) {
                                                             lastType = sup.getCommonType(typ1, typ2);
                                                         }
                                                     }
@@ -2426,7 +2426,7 @@ abstract public class CsmCompletionQuery {
                                             break;
                                         case 1: // get the only one parameter
                                             CsmType typ = resolveType(item.getParameter(0));
-                                            if (typ != null && CsmCompletion.isPrimitiveClass(typ.getClassifier())) {
+                                            if (typ != null && CsmCompletion.safeIsPrimitiveClass(typ, typ.getClassifier())) {
                                                 lastType = typ;
                                             }
                                             break;

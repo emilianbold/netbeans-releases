@@ -55,6 +55,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -87,6 +89,8 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @version 1.00
  */
 abstract public class CsmCompletion {
+    
+    private static final Logger LOG = Logger.getLogger(CsmCompletion.class.getSimpleName());
 
     public static final int PUBLIC_LEVEL = 3;
     public static final int PROTECTED_LEVEL = 2;
@@ -226,6 +230,14 @@ abstract public class CsmCompletion {
 //        return (c.getPackageName().length() == 0)
 //               && isPrimitiveClassName(c.getName());
         return isPrimitiveClassName(c.getName().toString());
+    }
+    
+    public static boolean safeIsPrimitiveClass(CsmType type, CsmClassifier c) {
+        if (c != null) {
+            return isPrimitiveClass(c);
+        }
+        LOG.log(Level.WARNING, "Type {0} ({1}) doesn''t have classifier!", new Object[]{type, type.getClass().getName()});
+        return false;
     }
 //
 //    public static CsmClassifier getPrimitiveClass(String s) {
@@ -738,6 +750,7 @@ abstract public class CsmCompletion {
             if (clazz instanceof SimpleClass) {
                 return ((SimpleClass) clazz).clazz == null ? clazz : ((SimpleClass) clazz).clazz;
             } else {
+                assert clazz != null;
                 return clazz;
             }
         }

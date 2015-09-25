@@ -44,10 +44,11 @@
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -95,7 +96,7 @@ public class StopModuleCookieImpl implements StopModuleCookie {
                 try {
                     dm.getClient().stopModule(fileName);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getLogger(StopModuleCookieImpl.class.getName()).log(Level.INFO, null, ex);
                 }
                 handle.finish();
                 isRunning = false;

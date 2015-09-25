@@ -53,6 +53,9 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -140,7 +143,11 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
 
     @Override
     public CsmClassifier getClassifier() {
-        return (CsmClassifier) UIDCsmConverter.UIDtoCsmObject(parameter);
+        CsmTemplateParameter ref = UIDCsmConverter.UIDtoCsmObject(parameter);
+        if (CsmKindUtilities.isClassifier(ref)) {
+            return (CsmClassifier) ref;
+        }
+        return type.getClassifier(); // fallback
     }
 
     @Override

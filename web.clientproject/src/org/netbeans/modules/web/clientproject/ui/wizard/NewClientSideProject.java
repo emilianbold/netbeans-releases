@@ -52,11 +52,10 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class NewClientSideProject extends JPanel {
-
-    private static final long serialVersionUID = 6783546871135477L;
+public class NewClientSideProject extends JPanel implements HelpCtx.Provider {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final String projectNameTemplate;
@@ -68,6 +67,11 @@ public class NewClientSideProject extends JPanel {
 
         initComponents();
         initProjectNameAndLocation();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProject"); // NOI18N
     }
 
     private void initProjectNameAndLocation() {
