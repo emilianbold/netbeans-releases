@@ -2,76 +2,103 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Memory Snapshot</title>
+<title>Methods Snapshot Dialog</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-22</p>
-<p><a id="MemorySnapshot.HelpCtx" name="MemorySnapshot.HelpCtx"></a></p>
-<div id="NBCSH3374"><!-- infolevel="all" infotype="General" --><a id="sthref437" name="sthref437"></a>
-<h1>Memory Snapshot</h1>
+<p>Beta Draft: 2015-09-25</p>
+<p><a id="CpuSnapshot.HelpCtx" name="CpuSnapshot.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref449" name="sthref449"></a>
+<h1>Methods Snapshot Dialog</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to capture data on live objects, object allocation and liveness. The data captured in the snapshot depends upon the options that were selected for the profiling session. You can take a memory snapshot when you are analyzing memory usage. The snapshot is displayed in the main editor window. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG728">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Use to view and analyze data from an existing Methods snapshot.</p>
+<p>The snapshot toolbar contains the following options:</p>
 
-<table summary="Descriptions of Memory Snapshot window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t43">Element</th>
-<th align="left" valign="bottom" id="r1c2-t43">Description</th>
+<th align="left" valign="bottom" id="r1c1-t42">Element</th>
+<th align="left" valign="bottom" id="r1c2-t42">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t43" headers="r1c1-t43">
-<p>Memory Results</p>
+<td align="left" id="r2c1-t42" headers="r1c1-t42">
+<p><img width="20" height="20" src="img/export_snapshot.png" alt="Export snapshot icon" title="Export snapshot icon" />Export Selected Snapshot</p>
 </td>
-<td align="left" headers="r2c1-t43 r1c2-t43">Displays a list of classes (including array classes), with the total size and number of instances allocated at the time you took the snapshot.
-<p>If Record Stack Trace for Allocations was selected as a profiling option, you can display the stack traces for a specific class by right-clicking the name of the class and selecting <b>Show Allocation Stack Traces</b>. The stack traces are displayed in the <b>Allocation Stack Traces</b> tab.</p>
-</td>
+<td align="left" headers="r2c1-t42 r1c2-t42">Use to export the snapshot. The options that dynamically appear when you select this icon are based on the selected View options.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t43" headers="r1c1-t43">
-<p>Info</p>
+<td align="left" id="r3c1-t42" headers="r1c1-t42">
+<p><img width="17" height="18" src="img/compare_snapshot.png" alt="Compare snapshot icon" title="Compare snapshot icon" />Compare with another snapshot</p>
 </td>
-<td align="left" headers="r3c1-t43 r1c2-t43">Displays data on when the snapshot was taken, where it is saved, and the configuration of the profiling session.</td>
+<td align="left" headers="r3c1-t42 r1c2-t42">Use to compare two snapshots. When you click on this icon a Select Snapshot to Compare dialog with a list of your snapshots is displayed.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t43" headers="r1c1-t43">
-<p>Allocation Stack Traces</p>
+<td align="left" id="r4c1-t42" headers="r1c1-t42">
+<p>View</p>
 </td>
-<td align="left" headers="r4c1-t43 r1c2-t43">Displays a reverse call graph with all call paths leading to object allocations for the given class.
-<p>This tab is only available if <b>Record Stack Trace for Allocations</b> was selected as a profiling option.</p>
+<td align="left" headers="r4c1-t42 r1c2-t42"></td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t42" headers="r1c1-t42">
+<p><img width="14" height="15" src="img/forward_calls.png" alt="Forward calls icon" title="Forward calls icon" />Forward Calls</p>
 </td>
+<td align="left" headers="r5c1-t42 r1c2-t42">Use this icon to view forwards calls.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t42" headers="r1c1-t42">
+<p><img width="16" height="16" src="img/hot_spots.png" alt="Hot spots icon" title="Hot spots icon" />Hot Spots</p>
+</td>
+<td align="left" headers="r6c1-t42 r1c2-t42">Use this icon to view hot spots.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t42" headers="r1c1-t42">
+<p><img width="15" height="15" src="img/reverse_calls.png" alt="Reverse calls icon" title="Reverse calls icon" />Reverse Calls</p>
+</td>
+<td align="left" headers="r7c1-t42 r1c2-t42">Use this icon to view reverse calls.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t42" headers="r1c1-t42">
+<p><img width="29" height="17" src="img/select_threads.png" alt="Select threads icon" title="Select threads icon" />Select Threads</p>
+</td>
+<td align="left" headers="r8c1-t42 r1c2-t42">Use this icon to narrow the session scope to specific threads.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t42" headers="r1c1-t42">Aggregation</td>
+<td align="left" headers="r9c1-t42 r1c2-t42">Use the dropdown to change the granularity of the displayed results.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t42" headers="r1c1-t42">
+<p>Methods</p>
+</td>
+<td align="left" headers="r10c1-t42 r1c2-t42">Displays results according to the fully-qualified method names</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t42" headers="r1c1-t42">
+<p>Classes</p>
+</td>
+<td align="left" headers="r11c1-t42 r1c2-t42">Displays results for all methods of the same class aggregated in a single entry.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t42" headers="r1c1-t42">
+<p>Packages</p>
+</td>
+<td align="left" headers="r12c1-t42 r1c2-t42">ll methods of classes that belong to the same package are aggregated</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Right-click any class in the Memory Results tab or the Allocation Stack Traces tab and select Go To Source to load the source <code dir="ltr">.java</code> file of a class.</p>
-<a id="NBCSH3378" name="NBCSH3378"></a>
+<a id="sthref450" name="sthref450"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
-<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
-<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG659">
+<param name="text" value="<html><u>&quot;Testing and Profiling Java Application Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

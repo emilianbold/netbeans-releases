@@ -154,6 +154,16 @@ public final class MIMEResolverImpl {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
                 impl = null;
+            } catch (IllegalArgumentException ex) {
+                if (isUserDefined(fo)) {
+                    File f = FileUtil.toFile(fo);
+                    ERR.log(Level.INFO, "User-defined file association "//NOI18N
+                            + "settings are corrupted. Delete file "    //NOI18N
+                            + (f == null ? fo.getPath() : f.getPath()), ex);
+                    impl = null;
+                } else {
+                    throw ex;
+                }
             }
             if (impl == null) {
                 return Collections.emptyMap();

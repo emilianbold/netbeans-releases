@@ -2,27 +2,27 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Select Profiling Task: Filter Value Dialog Box</title>
+<title>New Profiling Point Wizard: Take Snapshot</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-22</p>
-<p><a id="PreferredInstrFilterPanel.HelpCtx" name="PreferredInstrFilterPanel.HelpCtx"></a></p>
-<div id="NBCSH3139"><!-- infolevel="all" infotype="General" --><a id="sthref404" name="sthref404"></a>
-<h1>Select Profiling Task: Filter Value Dialog Box</h1>
+<p>Beta Draft: 2015-09-25</p>
+<p><a id="TakeSnapshotCustomizer.HelpCtx" name="TakeSnapshotCustomizer.HelpCtx"></a></p>
+<div id="NBCSH3196"><!-- infolevel="all" infotype="General" --><a id="sthref404" name="sthref404"></a>
+<h1>New Profiling Point Wizard: Take Snapshot</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to view the classes that are to be profiled when you run the profiling session with the selected filter. 
+<p>Use to take profiling snapshots or heap dumps each time that the profiling point is hit. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG728">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Description of Filter Value dialog box command." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="31%" />
+<table summary="Descriptions of Take Snapshot options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,29 +33,74 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t10" headers="r1c1-t10">
-<p>To QuickFilter</p>
+<p>Name</p>
 </td>
-<td align="left" headers="r2c1-t10 r1c2-t10">Adds all listed classes to the QuickFilter and the Set Quick Filter dialog box open.</td>
+<td align="left" headers="r2c1-t10 r1c2-t10">Specifies the name that you want to use to identify the profiling point.
+<p>This name is used to identify the profiling point in the Profiling Points window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t10" headers="r1c1-t10">
+<p>Settings</p>
+</td>
+<td align="left" headers="r3c1-t10 r1c2-t10">Snapshot settings</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t10" headers="r1c1-t10">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Take</p>
+</td>
+<td align="left" headers="r4c1-t10 r1c2-t10">Specifies the type of snapshot that you want to take.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t10" headers="r1c1-t10">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Save</p>
+</td>
+<td align="left" headers="r5c1-t10 r1c2-t10">Specifies the location for the saved snapshots.
+<p>You can save snapshots to the default directory in your project or you can specify a location on your local system.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t10" headers="r1c1-t10">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Reset results after taking snapshot</p>
+</td>
+<td align="left" headers="r6c1-t10 r1c2-t10">Resets the collected profiling results after each snapshot is taken.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t10" headers="r1c1-t10">
+<p>Location</p>
+</td>
+<td align="left" headers="r7c1-t10 r1c2-t10">Specifies the name of the file and the line in the source code where you want to place the profiling point.
+<p>Click <b>Browse</b> to locate the file in your project.</p>
+<p>Select <b>Begin</b> or <b>End</b> to specify if the profiling point is hit when a thread hits the beginning of the line or reaches the end of the line.</p>
+</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Create a custom QuickFilter of specific classes by clicking <b>To QuickFilter</b>. The listed classes are added to the QuickFilter. In the Set Quick Filter dialog box that opens, you can choose the filter type and modify the list of filtered classes by entering the class or package names in the Filter Value text box. Choose <b>Quick filter</b> in the Filter drop-down list in the Basic settings pane of the Select Profiling Task window to apply the filter to the profiling session.</p>
-<a id="NBCSH3141" name="NBCSH3141"></a>
+<p>If you opened the New Profiling Point wizard by clicking in a line in a source file, the file and line are automatically set for you but you can modify the settings as needed.</p>
+<a id="NBCSH3203" name="NBCSH3203"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
-<param name="text" value="<html><u>&quot;Setting Profiling Filters&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1133">
-<param name="text" value="<html><u>&quot;Profiling a Web Application&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
+<param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

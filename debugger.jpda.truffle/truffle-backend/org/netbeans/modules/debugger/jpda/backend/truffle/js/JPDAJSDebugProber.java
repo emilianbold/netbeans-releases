@@ -51,11 +51,13 @@ import static com.oracle.truffle.api.instrument.StandardSyntaxTag.STATEMENT;
 import static com.oracle.truffle.api.instrument.StandardSyntaxTag.THROW;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeVisitor;
+/*
 import com.oracle.truffle.js.nodes.JavaScriptNode;
 import com.oracle.truffle.js.nodes.control.BlockNode;
 import com.oracle.truffle.js.nodes.control.SequenceNode;
 import com.oracle.truffle.js.nodes.control.ThrowNode;
 import com.oracle.truffle.js.nodes.function.JSFunctionCallNode;
+*/
 
 /**
  * JavaScript - specific node prober
@@ -68,6 +70,7 @@ public class JPDAJSDebugProber implements NodeVisitor, ASTProber {
 
     @Override
     public boolean visit(Node node) {
+        /*
         if (node instanceof JavaScriptNode && node.isInstrumentable()) {
             // Presume that all JS nodes can be probed
             final JavaScriptNode jsNode = (JavaScriptNode) node;
@@ -85,9 +88,10 @@ public class JPDAJSDebugProber implements NodeVisitor, ASTProber {
                 jsNode.probe().tagAs(THROW, null);
             }
         }
+        */
         return true;
     }
-    
+    /*
     private boolean isInBlock(JavaScriptNode node) {
         Node parent = node.getParent();
         if (parent instanceof InstrumentationNode) {
@@ -103,7 +107,7 @@ public class JPDAJSDebugProber implements NodeVisitor, ASTProber {
         }
         return parent instanceof SequenceNode;
     }
-
+    */
     @Override
     public void probeAST(Node node) {
         node.accept(this);

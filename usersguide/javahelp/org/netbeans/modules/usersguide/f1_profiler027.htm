@@ -2,27 +2,70 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Manage Calibration Data Dialog Box</title>
+<title>Memory Snapshot Comparison</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-22</p>
-<p><a id="ManageCalibration.HelpCtx" name="ManageCalibration.HelpCtx"></a></p>
-<div id="NBCSH3246"><!-- infolevel="all" infotype="General" --><a id="sthref422" name="sthref422"></a>
-<h1>Manage Calibration Data Dialog Box</h1>
+<p>Beta Draft: 2015-09-25</p>
+<p><a id="MemoryDiff.HelpCtx" name="MemoryDiff.HelpCtx"></a></p>
+<div id="NBCSH3379"><!-- infolevel="all" infotype="General" --><a id="sthref422" name="sthref422"></a>
+<h1>Memory Snapshot Comparison</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to calibrate the IDE with a specific Java platform. 
+<p>Use to display a comparison of two memory snapshots. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG696">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG784">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
+<p><b>Sampling Comparison</b></p>
+<p>If the <b>Quick (Sampled)</b> option was selected for the profiling session, the comparison provides details on the difference between the number of live objects in the two snapshots.</p>
 
-<table summary="Description of element in Find in Results dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="32%" />
+<table summary="Description of sampling comparison results in Memory Snapshot Comparison window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t27">Element</th>
+<th align="left" valign="bottom" id="r1c2-t27">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t27" headers="r1c1-t27">
+<p>Class Name - Live Objects</p>
+</td>
+<td align="left" headers="r2c1-t27 r1c2-t27">Displays the name of the class or live object.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t27" headers="r1c1-t27">
+<p>Live Bytes [%]</p>
+</td>
+<td align="left" headers="r3c1-t27 r1c2-t27">Provides a graphic display of the relative amount of memory currently occupied by the live object.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t27" headers="r1c1-t27">
+<p>Live Bytes</p>
+</td>
+<td align="left" headers="r4c1-t27 r1c2-t27">Displays the memory size in bytes that is currently occupied by the live object.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t27" headers="r1c1-t27">
+<p>Live Objects</p>
+</td>
+<td align="left" headers="r5c1-t27 r1c2-t27">Displays the exact difference between the number of live objects in the two snapshots.</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p><b>Allocations Comparison</b></p>
+<p>If <b>Record object creation</b> was selected for the profiling session, the comparison provides details on the total number of instances.</p>
+
+<table summary="Description of allocations comparison results in Memory Snapshot Comparison window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,57 +76,105 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t28" headers="r1c1-t28">
-<p>Java platforms available for profiling</p>
+<p>Class Name - Allocated Objects</p>
 </td>
-<td align="left" headers="r2c1-t28 r1c2-t28">This table displays a list of the available local and remote Java platforms and the date of the most recent calibration.</td>
+<td align="left" headers="r2c1-t28 r1c2-t28">Displays the name of the class or allocated object.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t28" headers="r1c1-t28">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Java Platform</p>
+<p>Bytes Allocated [%]</p>
 </td>
-<td align="left" headers="r3c1-t28 r1c2-t28">This column displays the name of the platform.
-<p>You can add or remove Java platforms in the Java Platform Manager.</p>
-</td>
+<td align="left" headers="r3c1-t28 r1c2-t28">Provides a graphic display of the relative amount of memory occupied by instances of the class.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t28" headers="r1c1-t28">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Last Calibrated</p>
+<p>Bytes Allocated</p>
 </td>
-<td align="left" headers="r4c1-t28 r1c2-t28">This column displays the date of the most recent calibration data for the platform.
-<p>No date is displayed if the file containing the calibration data for the platform is missing or corrupted.</p>
-</td>
+<td align="left" headers="r4c1-t28 r1c2-t28">Displays the memory size in bytes occupied by the instances of the class.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t28" headers="r1c1-t28">
-<p>Calibrate</p>
+<p>Objects Allocated</p>
 </td>
-<td align="left" headers="r5c1-t28 r1c2-t28">Click to run the calibration process for the selected Java platform.
-<p>The button is disabled if you select a remote Java platform.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t28" headers="r1c1-t28">
-<p>Java Platforms</p>
-</td>
-<td align="left" headers="r6c1-t28 r1c2-t28">Click to open the Java Platform Manager to add or remove a Java platform. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2385">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</td>
+<td align="left" headers="r5c1-t28 r1c2-t28">Displays the number of all instances of the class.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3252" name="NBCSH3252"></a>
+<p><b>Liveness Comparison</b></p>
+<p>If <b>Record both object creation and garbage collection</b> was selected for the profiling session, the comparison provides more detailed data on live instances.</p>
+
+<table summary="Description of liveness comparison results in Memory Snapshot Comparison window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t29">Element</th>
+<th align="left" valign="bottom" id="r1c2-t29">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t29" headers="r1c1-t29">
+<p>Class Name - Allocated Objects</p>
+</td>
+<td align="left" headers="r2c1-t29 r1c2-t29">Displays the name of the class or allocated object.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t29" headers="r1c1-t29">
+<p>Live Bytes [%]</p>
+</td>
+<td align="left" headers="r3c1-t29 r1c2-t29">Provides a graphic display of the relative amount of memory occupied by live instances of the class.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t29" headers="r1c1-t29">
+<p>Live Bytes</p>
+</td>
+<td align="left" headers="r4c1-t29 r1c2-t29">Displays the memory size in bytes that is currently occupied by the live instances of the class.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t29" headers="r1c1-t29">
+<p>Live Objects</p>
+</td>
+<td align="left" headers="r5c1-t29 r1c2-t29">Displays the number of current live instances of the class.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t29" headers="r1c1-t29">
+<p>Allocated Objects</p>
+</td>
+<td align="left" headers="r6c1-t29 r1c2-t29">Displays the number of all instances of the class created since the application was started or since the results were last reset.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t29" headers="r1c1-t29">
+<p>Average Age</p>
+</td>
+<td align="left" headers="r7c1-t29 r1c2-t29">Displays the average age in generations of live instances of the class.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t29" headers="r1c1-t29">
+<p>Generations</p>
+</td>
+<td align="left" headers="r8c1-t29 r1c2-t29">Displays the number of different generations (garbage collections survived) of live instances of the class.</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="NBCSH3395" name="NBCSH3395"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG689">
-<param name="text" value="<html><u>&quot;Starting a Profiling Session&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
