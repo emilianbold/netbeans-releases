@@ -2,213 +2,74 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Options Window: Java: Profiler</title>
+<title>Profile Class / Profile Method (Select Feature) Dialog</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-23</p>
-<p><a id="ProfilerOptions.Help" name="ProfilerOptions.Help"></a></p>
-<div id="NBCSH3268"><!-- infolevel="all" infotype="General" --><a id="sthref428" name="sthref428"></a>
-<h1>Options Window: Java: Profiler</h1>
+<p>Beta Draft: 2015-09-25</p>
+<p><a id="SelectFeatureDialog.HelpCtx" name="SelectFeatureDialog.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref431" name="sthref431"></a>
+<h1>Profile Class / Profile Method (Select Feature) Dialog</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to configure settings that effect the behavior of the IDE when profiling applications. Choose <b>Tools</b> &gt; <b>Options</b> from the main menu, click the Java category and then click the <b>Profiler</b> tab to access this panel. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG719">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Use to open a profiling session for either methods or classes profiling.</p>
 
-<table summary="Descriptions of Java profiler options in the Profiler panel of the Options window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="32%" />
+<table summary="Describes the options for profiling a class or method from a snapshot" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t32">Element</th>
-<th align="left" valign="bottom" id="r1c2-t32">Description</th>
+<th align="left" valign="bottom" id="r1c1-t35">Element</th>
+<th align="left" valign="bottom" id="r1c2-t35">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t32" headers="r1c1-t32">
-<p>General</p>
+<td align="left" id="r2c1-t35" headers="r1c1-t35">
+<p>Select the project to profile:</p>
 </td>
-<td align="left" headers="r2c1-t32 r1c2-t32">General profiling options.</td>
+<td align="left" headers="r2c1-t35 r1c2-t35">Choose the project from the drop down menu.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;Profiler Window</td>
-<td align="left" headers="r3c1-t32 r1c2-t32">Profiler window specific options.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show "No data collected yet" hint before first profiling session</td>
-<td align="left" headers="r4c1-t32 r1c2-t32">Select to show the hint before the first profiling session in the profiling window.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;Profiling</td>
-<td align="left" headers="r5c1-t32 r1c2-t32">Profiling session specific options.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t32" headers="r1c1-t32">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Profiling port</p>
+<td align="left" id="r3c1-t35" headers="r1c1-t35">
+<p>Profile project</p>
 </td>
-<td align="left" headers="r6c1-t32 r1c2-t32">Changes the communication port that the profiler listens to.
-<p>The default port is 5140.</p>
+<td align="left" headers="r3c1-t35 r1c2-t35">Use to launch the profiler with the select project.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t35" headers="r1c1-t35">
+<p>Attach to project</p>
 </td>
+<td align="left" headers="r4c1-t35 r1c2-t35">Use to attach to an already running project.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Manage calibration data</td>
-<td align="left" headers="r7c1-t32 r1c2-t32">Click to display a dialog to calibrate the IDE with a specific Java platform.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;Miscellaneous</td>
-<td align="left" headers="r8c1-t32 r1c2-t32">Other profiling options.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reset all "Do not show again" confirmations</td>
-<td align="left" headers="r9c1-t32 r1c2-t32">Click to reset all remembered not to show decisions.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t32" headers="r1c1-t32">Snapshots</td>
-<td align="left" headers="r10c1-t32 r1c2-t32">Snapshots profiling options.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;Snapshots</td>
-<td align="left" headers="r11c1-t32 r1c2-t32">Options available when a snapshot is taken during the profiling session.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r12c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When taking snapshot</td>
-<td align="left" headers="r12c1-t32 r1c2-t32">Specifies the way a snapshot is viewed and/or saved after it is taken.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r13c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When taking heap dump</td>
-<td align="left" headers="r13c1-t32 r1c2-t32">Specifies the way a snapshot is saved and eventually displayed in heap viewer.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r14c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;On OOME heap dump</td>
-<td align="left" headers="r14c1-t32 r1c2-t32">Specifies the way a snapshot is saved and eventually displayed in heap viewer when an OutOfMemoryError occurs.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r15c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;Snapshots Window</td>
-<td align="left" headers="r15c1-t32 r1c2-t32">Snapshot window specific options. Choose the option from the drop down list.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r16c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Open automatically</td>
-<td align="left" headers="r16c1-t32 r1c2-t32">Choose when to display the snapshots window by selecting one of the following options: <b>Never</b>, <b>On new profiling session</b>, <b>On show profiler window, On first saved snapshot</b>, <b>On each saved snapshot</b>.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r17c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Close automatically</td>
-<td align="left" headers="r17c1-t32 r1c2-t32">Choose when to close the snapshots window by selecting one of the following options: <b>Never</b>, <b>On close profiling session, On hide profiler window</b>.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r18c1-t32" headers="r1c1-t32">Engine</td>
-<td align="left" headers="r18c1-t32 r1c2-t32">Engine profiling options.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r19c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;Methods Profiling</td>
-<td align="left" headers="r19c1-t32 r1c2-t32">Methods specific profiling options.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r20c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;General (Sampled)</td>
-<td align="left" headers="r20c1-t32 r1c2-t32">Use to query stacks of running threads to estimate the slowest parts of the code.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r21c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sampling frequency</td>
-<td align="left" headers="r21c1-t32 r1c2-t32">Specify how often the application is sampled. The default value is 10 milliseconds.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r22c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Focused (Instrumented)</td>
-<td align="left" headers="r22c1-t32 r1c2-t32">Use to instrument and profile a limited subset of an application code.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r23c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Methods tracking</td>
-<td align="left" headers="r23c1-t32 r1c2-t32">Injects a "method entry" call at the beginning of each profiled method and a "method exit" call before each return when tracking methods.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r24c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exact call tree and timing</td>
-<td align="left" headers="r24c1-t32 r1c2-t32">Select to calculate the time spent in the method as the difference between the timestamp that is generated for each "method entry" and corresponding "method exit".</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r25c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exact call tree, sampled timing</td>
-<td align="left" headers="r25c1-t32 r1c2-t32">Select to calculate the time spent in the method as the difference between the timestamp that is generated for the "method entry" and corresponding "method exit" that fall approximately at the end of each sampling interval.
-<p>You must specify a sampling interval.</p>
-<p>For more about which option to choose, see the following NetBeans FAQ:</p>
-<p><a href="http://wiki.netbeans.org/FaqProfilerSampledInstrumentation"><code dir="ltr">Which method of tracking methods should I use, exact or sampled?</code></a></p>
+<td align="left" id="r5c1-t35" headers="r1c1-t35">
+<p>Select the feature to handle the action:</p>
 </td>
+<td align="left" headers="r5c1-t35 r1c2-t35">(Optional) Use to select a feature in case multiple profiling features can handle the action.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r26c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exclude time spent in Thread.sleep() and Object.wait()</td>
-<td align="left" headers="r26c1-t32 r1c2-t32">Select to omit profiling the Thread.sleep() and Object.wait() methods.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r27c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Profile new Threads/Runnables</td>
-<td align="left" headers="r27c1-t32 r1c2-t32">Select to instrument the code for any thread or runnable started after the application enters the root instrumentation method.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r28c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Limit number of profiled threads</td>
-<td align="left" headers="r28c1-t32 r1c2-t32">When selected, every time a thread that has not been previously registered enters the instrumented code, this counter is decremented. When it reaches zero, registration of new threads is stopped. Profiling data is collected only for the registered threads.
-<p>For more about when to use these option, see the following NetBeans FAQ: <a href="http://wiki.netbeans.org/FaqProfilerSingleAndMultiThreaded"><code dir="ltr">How can I profile all threads in a multi-threaded application?</code></a></p>
+<td align="left" id="r6c1-t35" headers="r1c1-t35">
+<p>Methods</p>
 </td>
+<td align="left" headers="r6c1-t35 r1c2-t35">Use to profile performance of the selected class or method.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r29c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Instrumentation Scheme</td>
-<td align="left" headers="r29c1-t32 r1c2-t32">Use to select an instrumentation scheme to limit the number of instrumented methods. (Usually, it is best if the number of instrumented methods and the number of methods actually called by the application when it is profiled are the same or very close.)
-<p>For more about instrumentation schemes, see the following NetBeans FAQ: <a href="http://wiki.netbeans.org/FaqProfilerInstrumentationSchemes"><code dir="ltr">How do I select an instrumentation scheme?</code></a></p>
+<td align="left" id="r7c1-t35" headers="r1c1-t35">
+<p>Objects</p>
 </td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r30c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Instrument</td>
-<td align="left" headers="r30c1-t32 r1c2-t32">Instruments <code dir="ltr">Method.invoke()</code>, <code dir="ltr">Getter/setter</code> methods, and empty methods. By default, these types of methods are not instrumented.
-<p>For more about instrumenting these methods, see the following NetBeans FAQ: <a href="http://wiki.netbeans.org/FaqProfilerInstrumentSpecialJavaMethods"><code dir="ltr">How do I instrument/not instrument special Java methods?</code></a></p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r31c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Method.invoke()</td>
-<td align="left" headers="r31c1-t32 r1c2-t32">Select to follow and instrument all calls done using Java Reflection (i.e. the java.lang.reflect.Method.invoke() call).</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r32c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Getter/setter methods</td>
-<td align="left" headers="r32c1-t32 r1c2-t32">Select to instrument getter/setter methods.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r33c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Empty methods</td>
-<td align="left" headers="r33c1-t32 r1c2-t32">Select to instrument methods which do not contain any executable code.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r34c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;Objects Profiling</td>
-<td align="left" headers="r34c1-t32 r1c2-t32">Objects specific profiling options.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r35c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Run garbage collection when getting memory results</td>
-<td align="left" headers="r35c1-t32 r1c2-t32">Use to enable running garbage collection after collecting profiling data.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r36c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;Threads Profiling</td>
-<td align="left" headers="r36c1-t32 r1c2-t32">Threads specific profiling options.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r37c1-t32" headers="r1c1-t32">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sample threads states</td>
-<td align="left" headers="r37c1-t32 r1c2-t32">When selected, thread states are updated periodically.</td>
+<td align="left" headers="r7c1-t35 r1c2-t35">Use to profile memory footprint and/or allocations of the selected class.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3280" name="NBCSH3280"></a>
+<a id="sthref432" name="sthref432"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG117">
-<param name="text" value="<html><u>&quot;Working with the Options Window&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG733">
-<param name="text" value="<html><u>&quot;Taking a Heap Dump&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG659">
+<param name="text" value="<html><u>&quot;Testing and Profiling Java Application Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

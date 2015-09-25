@@ -2,110 +2,79 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>New Profiling Point Wizard: Triggered Take Snapshot</title>
+<title>OQL Console</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-23</p>
-<p><a id="TriggeredTakeSnapshotCustomizer.HelpCtx" name="TriggeredTakeSnapshotCustomizer.HelpCtx"></a></p>
-<div id="NBCSH3212"><!-- infolevel="all" infotype="General" --><a id="sthref415" name="sthref415"></a>
-<h1>New Profiling Point Wizard: Triggered Take Snapshot</h1>
+<p>Beta Draft: 2015-09-25</p>
+<p><a id="OQLControllerUI.HelpCtx" name="OQLControllerUI.HelpCtx"></a></p>
+<div id="NBCSH3263"><!-- infolevel="all" infotype="General" --><a id="sthref415" name="sthref415"></a>
+<h1>OQL Console</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to take profiling snapshots or heap dumps when specific conditions are met. 
+<p>Use to write, execute, and save queries that are used to locate information from the Java heap. The OQL Console is a tab in the Heap window that is available when you load a snapshot of the heap. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG728">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG793">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Descriptions of triggered snapshot options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of elements of OQL Console window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t21">Element</th>
-<th align="left" valign="bottom" id="r1c2-t21">Description</th>
+<th align="left" valign="bottom" id="r1c1-t19">Element</th>
+<th align="left" valign="bottom" id="r1c2-t19">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t21" headers="r1c1-t21">
-<p>Name</p>
+<td align="left" id="r2c1-t19" headers="r1c1-t19">
+<p>Query Results</p>
 </td>
-<td align="left" headers="r2c1-t21 r1c2-t21">Specifies the name that you want to use to identify the profiling point.
-<p>This name is used to identify the profiling point in the Profiling Points window.</p>
+<td align="left" headers="r2c1-t19 r1c2-t19">Displays the results of the OQL query.
+<p>Click the result to examine the details of the object in the Heap window.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t21" headers="r1c1-t21">
-<p>Settings</p>
+<td align="left" id="r3c1-t19" headers="r1c1-t19">
+<p>Query Editor</p>
 </td>
-<td align="left" headers="r3c1-t21 r1c2-t21">Snapshot options</td>
+<td align="left" headers="r3c1-t19 r1c2-t19">Enables you to write and edit OQL queries.
+<p>When you open a Saved Query, the query is also displayed in this pane. You can save custom queries that you might want to run again.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t21" headers="r1c1-t21">
-<p>Take</p>
+<td align="left" id="r4c1-t19" headers="r1c1-t19">
+<p>Saved Queries</p>
 </td>
-<td align="left" headers="r4c1-t21 r1c2-t21">Specifies the type of snapshot that you want to take.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t21" headers="r1c1-t21">
-<p>Save</p>
-</td>
-<td align="left" headers="r5c1-t21 r1c2-t21">Specifies the location for the saved snapshots. You can save snapshots to the default directory in your project or you can specify a location on your local system.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t21" headers="r1c1-t21">
-<p>Reset results after taking snapshot</p>
-</td>
-<td align="left" headers="r6c1-t21 r1c2-t21">Resets the collected profiling results after each snapshot is taken.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t21" headers="r1c1-t21">
-<p>Time</p>
-</td>
-<td align="left" headers="r7c1-t21 r1c2-t21">Specifies the conditions that trigger the IDE to take the snapshot. Select a condition from the <b>Take When</b> drop-down list and select a value according to the type of condition that you select.
-<p>If you select <b>Take Once</b>, the IDE only takes the snapshot the first time that the selected condition is met.</p>
-<p>If you select <b>Take Every</b>, the IDE takes a snapshot each time that the selected condition is met.</p>
+<td align="left" headers="r4c1-t19 r1c2-t19">Displays saved sample OQL queries that are included with the IDE.
+<p>To run a sample query, select the query in the list and click <b>Open</b> to open the query and then click <b>Execute</b> in the Query Editor pane.</p>
+<p>You can select a saved query and click <b>Properties</b> to view additional details about the query.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3219" name="NBCSH3219"></a>
+<p>You can use any of the sample OQL queries or create a query to filter and select heap data to locate the information that you want from the Java heap. After you choose or write a query, you can run the query against the Java heap and view the results.</p>
+<a id="NBCSH3267" name="NBCSH3267"></a>
 <hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG783">
+<param name="text" value="<html><u>&quot;Working with Captured Profiling Results&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG733">
 <param name="text" value="<html><u>&quot;Taking a Heap Dump&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
-<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
-<param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
-<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
