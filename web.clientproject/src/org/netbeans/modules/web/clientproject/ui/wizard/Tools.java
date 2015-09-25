@@ -51,9 +51,10 @@ import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeListener;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class Tools extends JPanel {
+public class Tools extends JPanel implements HelpCtx.Provider {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -70,6 +71,11 @@ public class Tools extends JPanel {
         bowerJsonCheckBox.addItemListener(defaultItemListener);
         gruntfileCheckBox.addItemListener(defaultItemListener);
         gulpfileCheckBox.addItemListener(defaultItemListener);
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.Tools"); // NOI18N
     }
 
     public void addChangeListener(ChangeListener listener) {
