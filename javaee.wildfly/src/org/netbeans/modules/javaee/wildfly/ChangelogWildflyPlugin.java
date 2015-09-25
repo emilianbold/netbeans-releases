@@ -41,13 +41,15 @@
  */
 package org.netbeans.modules.javaee.wildfly;
 
+
 import java.util.MissingResourceException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Category;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -56,7 +58,7 @@ import org.openide.util.NbPreferences;
  * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class ChangelogWildflyPlugin {
-
+    private static final Logger LOGGER = Logger.getLogger(ChangelogWildflyPlugin.class.getName());
     private static final String VERSION_PREF = "version";
 
     public static void showChangelog() {
@@ -72,7 +74,7 @@ public class ChangelogWildflyPlugin {
                 prefs.putInt(VERSION_PREF, version);
             }
         } catch (MissingResourceException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }
 }
