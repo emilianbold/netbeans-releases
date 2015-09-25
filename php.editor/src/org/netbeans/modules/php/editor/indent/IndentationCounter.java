@@ -266,7 +266,7 @@ public class IndentationCounter {
                             }
                             if (continualIndent || indent) {
                                 ts.move(caretOffset);
-                                ts.moveNext();
+                                ts.movePrevious();
                                 int startExpression = LexUtilities.findStartTokenOfExpression(ts);
                                 if (startExpression != -1) {
                                     if (continualIndent) {

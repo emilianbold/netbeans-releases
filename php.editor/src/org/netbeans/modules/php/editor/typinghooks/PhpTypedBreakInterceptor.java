@@ -186,7 +186,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 sb.append("\n"); // NOI18N
                 sb.append(IndentUtils.createIndentString(doc, GsfUtilities.getLineIndent(doc, ts.offset())));
             }
-            context.setText(sb.toString(), 0, 1);
+            context.setText(sb.toString(), 0, sb.lastIndexOf("\n") != 0 ? sb.lastIndexOf("\n") : sb.toString().length());
             return;
         }
         // Support continual line comments
