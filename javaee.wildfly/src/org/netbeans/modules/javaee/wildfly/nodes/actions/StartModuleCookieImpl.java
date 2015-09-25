@@ -44,6 +44,8 @@
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
@@ -95,7 +97,7 @@ public class StartModuleCookieImpl implements StartModuleCookie {
                 try {
                     dm.getClient().startModule(fileName);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getLogger(StartModuleCookieImpl.class.getName()).log(Level.INFO, null, ex);
                 }
                 handle.finish();
                 isRunning = false;
