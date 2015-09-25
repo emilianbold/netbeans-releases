@@ -91,7 +91,14 @@ public class ClankMacroUsagesSupport {
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
             ClankDriver.ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
-                res.add(MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset() + cur.getMacroNameLength(), startFile, directive));
+                MacroReference macroRef = MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset() + cur.getMacroNameLength(), startFile, directive);
+                if (macroRef == null) {
+                    if (!curFile.isValid()) {
+                        break;
+                    }
+                } else {
+                    res.add(macroRef);
+                }
             } else {
                 // TODO: process invalid macro definition
                 assert false : "Not found referenced ClankMacroDirective " + cur;
@@ -100,7 +107,14 @@ public class ClankMacroUsagesSupport {
         for (ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
             ClankDriver.ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
-                res.add(MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), startFile, directive));
+                MacroReference macroRef = MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), startFile, directive);
+                if (macroRef == null) {
+                    if (!curFile.isValid()) {
+                        break;
+                    }
+                } else {
+                    res.add(macroRef);
+                }
             } else {
                 // TODO: process invalid macro definition
                 assert false : "Not found referenced ClankMacroDirective " + cur;
