@@ -44,13 +44,18 @@ package org.netbeans.modules.java.api.common.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -58,18 +63,26 @@ import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DataFilesProviderImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
+import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -378,6 +391,8 @@ public final class ProjectOperations {
         private boolean libraryWithinProject;
         //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
         private FileSystem configs;
+        //RELY: Valid only on original project after the notifyMoving was called
+        private Collection<Dependency> dependenciesToFix;
 
         Operations(
             @NonNull final Project project,
@@ -520,6 +535,7 @@ public final class ProjectOperations {
             rememberLibraryLocation();
             readPrivateProperties ();
             rememberConfigurations();
+            rememberDependencies();
             clean();
         }
 
@@ -535,6 +551,7 @@ public final class ProjectOperations {
             updateProjectProperties(nueName);
             refHelper.fixReferences(originalPath);
             restoreConfigurations(origOperations);
+            fixDependencies(origOperations);
             after(Callback.Operation.MOVE, nueName, Pair.<File, Project>of(originalPath,original));
         }
 
@@ -619,6 +636,40 @@ public final class ProjectOperations {
                     Exceptions.printStackTrace(ioe);
                 }
             }
+        }
+
+        private void rememberDependencies() {
+            final AntArtifactProvider aap = project.getLookup().lookup(AntArtifactProvider.class);
+            if (aap == null) {
+                return;
+            }
+            final Map<URI,Pair<AntArtifact,URI>> artifacts = createArtifactsMap(aap);
+            final Set<Project> dependencies = new HashSet<>();
+            for (Project prj : OpenProjects.getDefault().getOpenProjects()) {
+                final SubprojectProvider spp = prj.getLookup().lookup(SubprojectProvider.class);
+                if (spp != null && spp.getSubprojects().contains(project)) {
+                    dependencies.add(prj);
+                }
+            }
+            Collection<Dependency> toFix = new ArrayList<>();
+            for (Project depProject : dependencies) {
+                for (SourceGroup sg : ProjectUtils.getSources(depProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                    Set<URI> roots = classPathURIs(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.COMPILE));
+                    for (Map.Entry<URI,Pair<AntArtifact,URI>> e : artifacts.entrySet()) {
+                        if (roots.contains(e.getKey())) {
+                            final Dependency dep = new Dependency(
+                                    depProject,
+                                    sg,
+                                    e.getValue().first(),
+                                    e.getValue().second());
+                            if (dep.remove()) {
+                                toFix.add(dep);
+                            }
+                        }
+                    }
+                }
+            }
+            dependenciesToFix = toFix;
         }
 
         private void fixLibraryLocation(Operations original) throws IllegalArgumentException {
@@ -709,6 +760,15 @@ public final class ProjectOperations {
             }
         }
 
+        private void fixDependencies(final Operations original) {
+            final Collection<Dependency> toFix = original.dependenciesToFix;
+            if (toFix != null) {
+                for (Dependency dep : toFix) {
+                    dep.add(project);
+                }
+            }
+        }
+
         private void updateProjectProperties(@NonNull final String newName) {
             if (!updatedProps.isEmpty()) {
                 final ProjectInformation pi = ProjectUtils.getInformation(project);
@@ -759,6 +819,144 @@ public final class ProjectOperations {
             }
         }
 
+        @NonNull
+        private static Map<URI,Pair<AntArtifact,URI>> createArtifactsMap(@NonNull final AntArtifactProvider aap) {
+            final Map<URI,Pair<AntArtifact,URI>> res = new HashMap<>();
+            for (AntArtifact aa : aap.getBuildArtifacts()) {
+                for (URI uri : aa.getArtifactLocations()) {
+                    final URI absoluteURI = uri.isAbsolute() ?
+                            uri :
+                            resolve(aa.getProject().getProjectDirectory(), uri);
+                    res.put(absoluteURI, Pair.of(aa,uri));
+                }
+            }
+            return res;
+        }
+
+        @NonNull
+        private static URI resolve (
+                @NonNull final FileObject prjDir,
+                @NonNull final URI relative) {
+            return prjDir.toURI().resolve(relative).normalize();
+        }
+
+        @NonNull
+        private static Set<URI> classPathURIs(@NullAllowed final ClassPath cp) {
+            final Set<URI> res = new HashSet<>();
+            if (cp != null) {
+                for (ClassPath.Entry e : cp.entries()) {
+                    try {
+                        final URL rootUrl = e.getURL();
+                        URL fileURL = FileUtil.getArchiveFile(rootUrl);
+                        if (fileURL == null) {
+                            fileURL = rootUrl;
+                        }
+                        res.add(fileURL.toURI());
+                    } catch (URISyntaxException ex) {
+                        LOG.log(
+                                Level.WARNING,
+                                "Cannot convert to URI: {0}, reason: {1}",  //NOI18N
+                                new Object[]{
+                                    e.getURL(),
+                                    ex.getMessage()
+                                });
+                    }
+                }
+            }
+            return res;
+        }
+
+        private static class Dependency {
+            private final Project project;
+            private final SourceGroup root;
+            private final AntArtifact onArt;
+            private final URI onLoc;
+
+            Dependency(
+                @NonNull final Project project,
+                @NonNull final SourceGroup root,
+                @NonNull final AntArtifact onArt,
+                @NonNull final URI onLoc) {
+                this.project = project;
+                this.root = root;
+                this.onArt = onArt;
+                this.onLoc = onLoc;
+            }
+
+            boolean remove() {
+                final ClassPathModifier cpm = project.getLookup().lookup(ClassPathModifier.class);
+                boolean success = false;
+                if (cpm != null) {
+                    try {
+                        cpm.removeAntArtifacts(
+                                new AntArtifact[]{onArt},
+                                new URI[] {onLoc},
+                                root,
+                                ClassPath.COMPILE);
+                        success = true;
+                    } catch (IOException | UnsupportedOperationException ex) {
+                        LOG.log(
+                                Level.INFO,
+                                "Cannot fix dependencies in project: {0}",  //NOI18N
+                                ProjectUtils.getInformation(project).getDisplayName());
+                    }
+                }
+                return success;
+            }
+
+            boolean add(@NonNull final Project newProject) {
+                boolean success = false;
+                final AntArtifactProvider aap = newProject.getLookup().lookup(AntArtifactProvider.class);
+                final ClassPathModifier cpm = project.getLookup().lookup(ClassPathModifier.class);
+                if (aap != null && cpm != null) {
+                    AntArtifact newOn = null;
+                    URI newOnLoc = null;
+                    for (AntArtifact a : aap.getBuildArtifacts()) {
+                        if (Objects.equals(a.getType(), onArt.getType()) &&
+                            Objects.equals(a.getTargetName(), onArt.getTargetName()) &&
+                            Objects.equals(a.getCleanTargetName(), onArt.getCleanTargetName())) {
+                            newOn = a;
+                            int index = 0;
+                            final URI[] oal = onArt.getArtifactLocations();
+                            for (int i = 0; i < oal.length; i++) {
+                                if (oal[i].equals(onLoc)) {
+                                    index = i;
+                                    break;
+                                }
+                            }
+                            newOnLoc = a.getArtifactLocations()[index];
+                            break;
+                        }
+                    }
+                    if (newOn != null) {
+                        try {
+                            cpm.addAntArtifacts(
+                                    new AntArtifact[]{newOn},
+                                    new URI[] {newOnLoc},
+                                    root,
+                                    ClassPath.COMPILE);
+                            success = true;
+                        } catch (IOException | UnsupportedOperationException ex) {
+                            LOG.log(
+                                    Level.INFO,
+                                    "Cannot fix dependencies in project: {0}",  //NOI18N
+                                    ProjectUtils.getInformation(project).getDisplayName());
+                        }
+                    }
+                }
+                return success;
+            }
+
+            @Override
+            public String toString() {
+                return String.format(
+                    "%s in %s depends on %s in %s",   //NOI18N
+                    root.getName(),
+                    ProjectUtils.getInformation(project).getDisplayName(),
+                    onLoc,
+                    ProjectUtils.getInformation(onArt.getProject()).getDisplayName());
+            }
+        }
     }
 
 }
