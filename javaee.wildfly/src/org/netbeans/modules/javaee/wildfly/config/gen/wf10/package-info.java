@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly;
 
+@Multiple({
+    @Schema2Beans(
+        schema="../../../resources/jboss-web_10_0.xsd",
+        schemaType=SchemaType.XML_SCHEMA,
+        outputType=OutputType.TRADITIONAL_BASEBEAN,
+        validate=true,
+        attrProp=true,
+        removeUnreferencedNodes=true,
+        docRoot="jboss-web",
+        java5=true
+    ),
+    @Schema2Beans(
+        schema="../../../resources/wildfly-messaging-activemq-deployment_1_0.xsd",
+        schemaType=SchemaType.XML_SCHEMA,
+        outputType=OutputType.TRADITIONAL_BASEBEAN,
+        validate=true,
+        attrProp=true,
+        removeUnreferencedNodes=true,
+        docRoot="messaging-deployment",
+        java5=true
+    )
+})
+package org.netbeans.modules.javaee.wildfly.config.gen.wf10;
 
-import java.util.MissingResourceException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.Preferences;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.awt.NotificationDisplayer.Category;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-
-/**
- * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
- */
-public class ChangelogWildflyPlugin {
-    private static final Logger LOGGER = Logger.getLogger(ChangelogWildflyPlugin.class.getName());
-    private static final String VERSION_PREF = "version";
-
-    public static void showChangelog() {
-        try {
-            Preferences prefs = NbPreferences.forModule(ChangelogWildflyPlugin.class);
-            int version = Integer.parseInt(NbBundle.getMessage(ChangelogWildflyPlugin.class, VERSION_PREF));
-            if (prefs.getInt(VERSION_PREF, 5) < version) {
-                NotificationDisplayer.getDefault().notify(NbBundle.getMessage(ChangelogWildflyPlugin.class, "MSG_CHANGES_TITLE"),
-                        new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/wildfly.png")),
-                        new JLabel(NbBundle.getMessage(ChangelogWildflyPlugin.class, "MSG_CHANGES_SUMMARY")),
-                        new JLabel(NbBundle.getMessage(ChangelogWildflyPlugin.class, "MSG_CHANGES_DESC")),
-                        NotificationDisplayer.Priority.NORMAL, Category.INFO);
-                prefs.putInt(VERSION_PREF, version);
-            }
-        } catch (MissingResourceException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
-    }
-}
+import org.netbeans.modules.schema2beans.Schema2Beans;
+import org.netbeans.modules.schema2beans.Schema2Beans.Multiple;
+import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
+import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
