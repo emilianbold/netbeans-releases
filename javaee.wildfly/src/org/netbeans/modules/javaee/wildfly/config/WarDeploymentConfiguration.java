@@ -62,7 +62,7 @@ import org.netbeans.modules.javaee.wildfly.config.gen.EjbRefType;
 import org.netbeans.modules.javaee.wildfly.config.gen.JbossWeb;
 import org.netbeans.modules.javaee.wildfly.config.gen.MessageDestinationRefType;
 import org.netbeans.modules.javaee.wildfly.config.gen.ResourceRefType;
-import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
+import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupportImpl;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.modules.schema2beans.AttrProp;
 import org.netbeans.modules.schema2beans.Common;
@@ -368,7 +368,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                 //if it doesn't exist yet, create a new one
                 ResourceRefType newRR = new ResourceRefType();
                 newRR.setResRefName(name);
-                newRR.setJndiName(MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4);
+                newRR.setJndiName(MessageDestinationSupportImpl.CONN_FACTORY_JNDI_NAME_JB4);
                 modifiedJbossWeb.addResourceRef(newRR);
             }
         });
