@@ -800,7 +800,7 @@ public class RemoteServices {
     }
     
     private static List<RemoteClass> getRemoteClasses() throws IOException {
-        InputStream in = RemoteServices.class.getResourceAsStream(REMOTE_CLASSES_ZIPFILE);
+        InputStream in = openRemoteClasses();
         try {
             ZipInputStream zin = new ZipInputStream(in);
             ZipEntry ze;
@@ -840,6 +840,10 @@ public class RemoteServices {
         } finally {
             in.close();
         }
+    }
+
+    static InputStream openRemoteClasses() {
+        return RemoteServices.class.getResourceAsStream(REMOTE_CLASSES_ZIPFILE);
     }
     
     private static ArrayReference createTargetBytes(VirtualMachine vm, byte[] bytes,

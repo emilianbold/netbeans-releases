@@ -64,7 +64,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.api.vm.TruffleVM;
+import com.oracle.truffle.api.vm.PolyglotEngine;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -83,10 +83,10 @@ import java.util.List;
  * which submits breakpoints and calls methods of this class.
  * To be able to invoke methods via debugger at any time, use {@link AccessLoop}.
  * 
- * Creation of a TruffleVM instance is out of control for the debugger.
+ * Creation of a PolyglotEngine instance is out of control for the debugger.
  * Thus to intercept execution and suspension, we add Java method breakpoints into
- * <code>com.oracle.truffle.api.vm.TruffleVM.dispatchExecutionEvent()</code> and
- * <code>com.oracle.truffle.api.vm.TruffleVM.dispatchSuspendedEvent()</code> methods.
+ * <code>com.oracle.truffle.api.vm.PolyglotEngine.dispatchExecutionEvent()</code> and
+ * <code>com.oracle.truffle.api.vm.PolyglotEngine.dispatchSuspendedEvent()</code> methods.
  * 
  * @author Martin
  */
@@ -157,11 +157,11 @@ public class JPDATruffleAccessor extends Object {
     static JPDATruffleDebugManager setUpDebugManagerFor(/*ExecutionEvent*/Object event, boolean doStepInto) {
         ExecutionEvent execEvent = (ExecutionEvent) event;
         Debugger debugger = execEvent.getDebugger();
-        TruffleVM tvm;
+        PolyglotEngine tvm;
         try {
             Field vmField = debugger.getClass().getDeclaredField("vm");
             vmField.setAccessible(true);
-            tvm = (TruffleVM) vmField.get(debugger);
+            tvm = (PolyglotEngine) vmField.get(debugger);
         } catch (IllegalAccessException | IllegalArgumentException |
                  NoSuchFieldException | SecurityException ex) {
             throw new RuntimeException(ex);
@@ -252,7 +252,7 @@ public class JPDATruffleAccessor extends Object {
             
             findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguage", Object.class, Class.class);
             findLanguageMethod.setAccessible(true);
-            Object tl = findLanguageMethod.invoke(spi, debugManager.getTruffleVM(), languageClass);
+            Object tl = findLanguageMethod.invoke(spi, debugManager.getPolyglotEngine(), languageClass);
             
             // TODO: What to do with Env?
             

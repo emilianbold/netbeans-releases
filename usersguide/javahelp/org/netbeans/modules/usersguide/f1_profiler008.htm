@@ -2,27 +2,27 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Set Quick Filter Dialog Box</title>
+<title>New Profiling Point Wizard: Stopwatch</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-22</p>
-<p><a id="QuickFilterPanel.HelpCtx" name="QuickFilterPanel.HelpCtx"></a></p>
-<div id="NBCSH3135"><!-- infolevel="all" infotype="General" --><a id="sthref403" name="sthref403"></a>
-<h1>Set Quick Filter Dialog Box</h1>
+<p>Beta Draft: 2015-09-25</p>
+<p><a id="StopwatchCustomizer.HelpCtx" name="StopwatchCustomizer.HelpCtx"></a></p>
+<div id="NBCSH3189"><!-- infolevel="all" infotype="General" --><a id="sthref403" name="sthref403"></a>
+<h1>New Profiling Point Wizard: Stopwatch</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to specify classes or packages that you want to exclude or include when analyzing application performance. Unlike global filters or custom filter sets, a quick filter can be applied only to the current application. 
+<p>Use to obtain a timestamp each time that the profiling point is hit. You can obtain the length of time between two locations by selecting Timestamp and Duration and setting a start and a stop profiling point. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG740">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG745">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Descriptions of Set Quick Filter options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="33%" />
+<table summary="Descriptions of Stopwatch dialog box elements." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,35 +33,60 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t9" headers="r1c1-t9">
-<p>Filter Type</p>
+<p>Name</p>
 </td>
-<td align="left" headers="r2c1-t9 r1c2-t9">Excludes or includes the selected methods when you click <b>Exclusive</b> or <b>Inclusive</b>.
-<p>If Exclude is selected, none of the listed methods are profiled.</p>
-<p>If Include is selected, only the listed methods are profiled.</p>
+<td align="left" headers="r2c1-t9 r1c2-t9">Specifies the name that you want to use to identify the profiling point.
+<p>This name is used to identify the profiling point in the Profiling Points window.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t9" headers="r1c1-t9">
-<p>Filter Value</p>
+<p>Settings</p>
 </td>
-<td align="left" headers="r3c1-t9 r1c2-t9">Lists the classes and packages to include or exclude. You can type the name in the text area in the following formats:
-<ul>
-<li><code dir="ltr">java.*</code></li>
-<li><code dir="ltr">javax.swing</code></li>
-<li><code dir="ltr">javax.xml.parsers.SAXParser</code></li>
-</ul>
+<td align="left" headers="r3c1-t9 r1c2-t9">Snapshot setting</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t9" headers="r1c1-t9">
+<p>Timestamp</p>
+</td>
+<td align="left" headers="r4c1-t9 r1c2-t9">Retrieves a timestamp when the profiling point is hit.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t9" headers="r1c1-t9">
+<p>Timestamp and Duration</p>
+</td>
+<td align="left" headers="r5c1-t9 r1c2-t9">Finds the length of time between two paired timestamps.
+<p>If you select this option, you must specify the location for a starting point for the stopwatch and the location for the stopping point.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t9" headers="r1c1-t9">
+<p>Location</p>
+</td>
+<td align="left" headers="r6c1-t9 r1c2-t9">Specifies the name of the file and the line in the source code where you want to place the profiling point.
+<p>Click <b>Browse</b> to locate the file in your project.</p>
+<p>Select <b>Begin</b> or <b>End</b> to specify if the profiling point is hit when a thread hits the beginning of the line or reaches the end of the line.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3138" name="NBCSH3138"></a>
+<p>If you opened the New Profiling Point wizard by clicking in a line in a source file, the file and line are automatically set for you but you can modify the settings as needed.</p>
+<a id="NBCSH3195" name="NBCSH3195"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
-<param name="text" value="<html><u>&quot;Setting Profiling Filters&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
+<param name="text" value="<html><u>&quot;Setting a Profiling Point&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
@@ -70,6 +95,14 @@
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
 <param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

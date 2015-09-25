@@ -181,6 +181,7 @@ public class Generate {
 
         Map<String, Set<Class>> StackFrameExceptions = new LinkedHashMap<String, Set<Class>>();
         StackFrameExceptions.put("*", Collections.singleton((Class) com.sun.jdi.InvalidStackFrameException.class));
+        StackFrameExceptions.put("setValue", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
         StackFrameExceptions.put("visibleVariableByName", Collections.singleton((Class) com.sun.jdi.NativeMethodException.class));
         StackFrameExceptions.put("visibleVariables", Collections.singleton((Class) com.sun.jdi.NativeMethodException.class));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.StackFrame.class.getName(), StackFrameExceptions);

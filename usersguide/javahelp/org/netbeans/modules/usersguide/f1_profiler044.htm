@@ -2,146 +2,82 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Profiling Threads Window</title>
+<title>Heap Walker Dialog</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-22</p>
-<p><a id="ThreadsWindow.HelpCtx" name="ThreadsWindow.HelpCtx"></a></p>
-<div id="NBCSH3416"><!-- infolevel="all" infotype="General" --><a id="sthref439" name="sthref439"></a>
-<h1>Profiling Threads Window</h1>
+<p>Beta Draft: 2015-09-25</p>
+<p><a id="HeapWalker.HelpCtx" name="HeapWalker.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref453" name="sthref453"></a>
+<h1>Heap Walker Dialog</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to view detailed information about application thread activity during a profiling session. The Threads window is typically located in the main editor window of the IDE. 
+<p>Use to view an analysis of a heap dump. The dialog displays detailed information about the heap when the heap dump was saved. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG773">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG789">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>The Profiling Threads window contains the following toolbar commands:</p>
+<p>The dialog contains the following tabs for browsing information contained in the heap dump. Each tab contains additional buttons located on the right side of the dialog. These buttons enable you to modify information in the dialog.</p>
 
-<table summary="Descriptions of Profiling Threads window toolbar commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t47">Element</th>
-<th align="left" valign="bottom" id="r1c2-t47">Description</th>
+<th align="left" valign="bottom" id="r1c1-t44">Tab</th>
+<th align="left" valign="bottom" id="r1c2-t44">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t47" headers="r1c1-t47">
-<p>Save Current View</p>
-<p><img width="16" height="16" src="img/saveview.png" alt="Save Current View icon." title="Save Current View icon." /></p>
+<td align="left" id="r2c1-t44" headers="r1c1-t44">Summary</td>
+<td align="left" headers="r2c1-t44 r1c2-t44">Displays general information about the heap dump such as total numbers of classes and instances. The tab also provides information about the environment and system properties of the machine where the heap dump was taken.
+<p>Click the Inspect button to find objects by the retained size. You can click on an object returned by the query to view details about it in the Classes or Instances tab.</p>
 </td>
-<td align="left" headers="r2c1-t47 r1c2-t47">Saves the results as a <code dir="ltr">.png</code> image file.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t47" headers="r1c1-t47">
-<p>Zoom In</p>
-<p><img width="16" height="16" src="img/zoomin.png" alt="Zoom In icon." title="Zoom In icon." /></p>
+<td align="left" id="r3c1-t44" headers="r1c1-t44">
+<p>Classes</p>
 </td>
-<td align="left" headers="r3c1-t47 r1c2-t47">Increases the detail of the graph.</td>
+<td align="left" headers="r3c1-t44 r1c2-t44">Displays a list of classes with information about the number of instances of the class and the total size of the instances. You can click a class to view details in the Instances tab.
+<p>Click the Static Fields button to view the static fields of the selected class. Click Compare with another heap dump to select and then view the differences between two heap dumps.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t47" headers="r1c1-t47">
-<p>Zoom Out</p>
-<p><img width="16" height="16" src="img/zoomout.png" alt="Zoom Out icon." title="Zoom Out icon." /></p>
+<td align="left" id="r4c1-t44" headers="r1c1-t44">Instances</td>
+<td align="left" headers="r4c1-t44 r1c2-t44">Displays instances for a class you select in the Classes tab. For each instance, you can select an instance to browse:
+<ul>
+<li>the fields of the instance in the Fields browser.</li>
+<li>references to the instance in the Reference browser.</li>
+</ul>
+<p>You can hide or reveal individual panes by clicking the Instances, Fields and References buttons.</p>
+<p>You can right-click individual items in each of the panes to open a popup menu with additional commands.</p>
+<p>For objects that have a graphical representation such as UI elements, Heap Walker displays an image of the selected instance in addition to the textual values.</p>
 </td>
-<td align="left" headers="r4c1-t47 r1c2-t47">Decreases the detail of the graph.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t47" headers="r1c1-t47">
-<p>Scale To Fit</p>
-<p><img width="16" height="16" src="img/scaletofit.png" alt="Scale to Fit icon." title="Scale to Fit icon." /></p>
-</td>
-<td align="left" headers="r5c1-t47 r1c2-t47">Toggles between a scalable view and a fixed-scale view.</td>
+<td align="left" id="r5c1-t44" headers="r1c1-t44">OQL Console</td>
+<td align="left" headers="r5c1-t44 r1c2-t44">Displays the OQL editor, saved queries, and a window that displays the query results.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>The table in the Threads window contains columns that provide details about thread states and statistics about each thread. You can click the triangle in the far right column to invoke a menu to hide or display table columns. The following columns are available in the menu:</p>
-
-<table summary="Descriptions of Profiling Threads window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t48">Element</th>
-<th align="left" valign="bottom" id="r1c2-t48">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t48" headers="r1c1-t48">
-<p>Name</p>
-</td>
-<td align="left" headers="r2c1-t48 r1c2-t48">Name of thread.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t48" headers="r1c1-t48">
-<p>Thread States Timeline</p>
-</td>
-<td align="left" headers="r3c1-t48 r1c2-t48">Displays thread states over time.
-<p>States can be displayed for all threads, all live threads, or all finished threads according to the option that is selected in the View drop-down list in the toolbar.</p>
-<p>The status of each thread is represented by a color. The legend for the colors is located at the bottom of the Threads window.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t48" headers="r1c1-t48">
-<p>Running</p>
-</td>
-<td align="left" headers="r4c1-t48 r1c2-t48">Time spent in running state. The data is presented as total time and as a percentage of the total time.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t48" headers="r1c1-t48">
-<p>Sleeping</p>
-</td>
-<td align="left" headers="r5c1-t48 r1c2-t48">Time spent in sleeping state. The data is presented as total time and as a percentage of the total time.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t48" headers="r1c1-t48">
-<p>Wait</p>
-</td>
-<td align="left" headers="r6c1-t48 r1c2-t48">Time spent in waiting state. The data is presented as total time and as a percentage of the total time.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t48" headers="r1c1-t48">
-<p>Park</p>
-</td>
-<td align="left" headers="r7c1-t48 r1c2-t48">Time spent in parked state. The data is presented as total time and as a percentage of the total time.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t48" headers="r1c1-t48">
-<p>Monitor</p>
-</td>
-<td align="left" headers="r8c1-t48 r1c2-t48">Time spent in monitor state. The data is presented as total time and as a percentage of the total time.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t48" headers="r1c1-t48">
-<p>Total</p>
-</td>
-<td align="left" headers="r9c1-t48 r1c2-t48">Total of time spent in all states.</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<a id="NBCSH3433" name="NBCSH3433"></a>
+<a id="sthref454" name="sthref454"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
-<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG659">
+<param name="text" value="<html><u>&quot;Testing and Profiling Java Application Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
+<!-- -->
 <!-- -->
 <!-- Start Footer -->
 

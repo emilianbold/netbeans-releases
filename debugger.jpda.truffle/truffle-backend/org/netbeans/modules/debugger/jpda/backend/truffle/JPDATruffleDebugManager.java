@@ -49,7 +49,7 @@ import com.oracle.truffle.api.debug.ExecutionEvent;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.api.vm.TruffleVM;
+import com.oracle.truffle.api.vm.PolyglotEngine;
 
 /**
  *
@@ -62,12 +62,12 @@ class JPDATruffleDebugManager {
     //private final ScriptEngine engine;
     //private final ExecutionContext context;
     //private final TopFrameHolder topFrameHolder;
-    //private final TruffleVM.Language language;
+    //private final PolyglotEngine.Language language;
     private final Debugger debugger;
-    private final TruffleVM tvm;
+    private final PolyglotEngine tvm;
     private final ExecutionEvent execEvent;
 
-    public JPDATruffleDebugManager(Debugger debugger, TruffleVM tvm, ExecutionEvent event) {
+    public JPDATruffleDebugManager(Debugger debugger, PolyglotEngine tvm, ExecutionEvent event) {
         //super(dbgClient);
         //this.engine = engine;
         //this.context = context;
@@ -94,7 +94,7 @@ class JPDATruffleDebugManager {
         return null; // Initialize TruffleJSEngine class only.
     }
 
-    static JPDATruffleDebugManager setUp(Debugger debugger, TruffleVM tvm, ExecutionEvent event) {
+    static JPDATruffleDebugManager setUp(Debugger debugger, PolyglotEngine tvm, ExecutionEvent event) {
         //System.err.println("JPDATruffleDebugManager.setUp()");
         //JSContext jsContext = ((TruffleJSEngine) engine).getJSContext();
         //ScriptContext context = engine.getContext();
@@ -107,10 +107,10 @@ class JPDATruffleDebugManager {
     }
     
     /*
-    private static TruffleVM.Language getLanguage(ScriptEngine engine) {
-        Map<String, TruffleVM.Language> languages = TruffleVM.newVM().build().getLanguages();
+    private static PolyglotEngine.Language getLanguage(ScriptEngine engine) {
+        Map<String, PolyglotEngine.Language> languages = PolyglotEngine.newVM().build().getLanguages();
         List<String> languageMIMETypes = engine.getFactory().getMimeTypes();
-        TruffleVM.Language language = languages.get(languageMIMETypes.get(0));
+        PolyglotEngine.Language language = languages.get(languageMIMETypes.get(0));
         return language;
     }
     */
@@ -124,7 +124,7 @@ class JPDATruffleDebugManager {
         return debugger;
     }
     
-    TruffleVM getTruffleVM() {
+    PolyglotEngine getPolyglotEngine() {
         return tvm;
     }
     
@@ -273,10 +273,10 @@ class JPDATruffleDebugManager {
     /*
     private static class JPDADebugClient implements DebugClient {
         
-        private final TruffleVM.Language language;
+        private final PolyglotEngine.Language language;
         private TopFrameHolder topFrameHolder;
         
-        public JPDADebugClient(TruffleVM.Language language) {
+        public JPDADebugClient(PolyglotEngine.Language language) {
             this.language = language;
         }
 
@@ -315,7 +315,7 @@ class JPDATruffleDebugManager {
         }
 
         @Override
-        public TruffleVM.Language getLanguage() {
+        public PolyglotEngine.Language getLanguage() {
             return language;
         }
 

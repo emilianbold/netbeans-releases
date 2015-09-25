@@ -214,12 +214,12 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         JdbcUrl url = getSelectedJdbcUrl();
         
         if(wd.getUser() != null) {
-            userField.setText(connection.getUser());
+            userField.setText(wd.getUser());
         } else if (url.getSampleUser() != null) {
             userField.setText(url.getSampleUser());
         }
         if (wd.getPassword() != null) {
-            passwordField.setText(connection.getPassword());
+            passwordField.setText(wd.getPassword());
         } else if (url.getSamplePassword()!= null) {
             passwordField.setText(url.getSamplePassword());
         }
