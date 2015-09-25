@@ -260,7 +260,7 @@ public final class ImportClass implements ErrorRule<Void> {
 
                 ElementHandle<Element> eh = ElementHandle.create(element);
                 if (useFQN) {
-                    fixes.add(new UseFQN(info, file, fqn, eh, fqn, treePath, prefered, false));
+                    fixes.add(new UseFQN(info, file, fqn, eh, "Z#" + fqn, treePath, prefered, false));
                     fixes.add(UseFQN.createShared(info, file, fqn, eh, fqn, treePath, prefered));
                 } else {
                     fixes.add(new FixImport(file, fqn, ElementHandle.create(element), sort.toString(), 
@@ -459,7 +459,12 @@ public final class ImportClass implements ErrorRule<Void> {
                 Logger.getAnonymousLogger().warning(String.format("Attempt to change import for FQN: %s, but the import cannot be resolved in the current context", fqn));
                 return;
             }
-            IdentifierTree id = copy.getTreeMaker().Identifier(fqn);
+            Element el = toImport.resolve(copy);
+            if (el == null) {
+                return;
+            }
+            CharSequence elFQN = copy.getElementUtilities().getElementName(el, true);
+            IdentifierTree id = copy.getTreeMaker().Identifier(elFQN);
             copy.rewrite(replacePath.getLeaf(), id);
             
             for (TreePathHandle tph : additionalLocations) {
