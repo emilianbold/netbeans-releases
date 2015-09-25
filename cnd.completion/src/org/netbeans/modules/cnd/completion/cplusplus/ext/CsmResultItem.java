@@ -903,7 +903,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 typeColor = LFCustoms.getTextFgColor();
             } else {
                 typeName = CsmResultItem.getTypeName(returnType, instantiateTypes);
-                typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
+                typeColor = CsmResultItem.getTypeColor(returnType);
             }
         }
 
