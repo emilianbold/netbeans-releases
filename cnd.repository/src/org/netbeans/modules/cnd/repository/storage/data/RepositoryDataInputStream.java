@@ -127,7 +127,17 @@ public final class RepositoryDataInputStream extends DataInputStream implements 
     @Override
     public FileSystem readFileSystem() throws IOException {
         FSConverter fsConverter = layersConverterProvider.getReadFSConverter();
-        return fsConverter.layerToClient(readInt());
+        final int fsIdx = readInt();
+        final FileSystem fs = fsConverter.layerToClient(fsIdx);
+        if (fs == null) {
+            // I don't like this null check very much; but without it,
+            // once fileSystem was read or written as null, it will be null forever,
+            // code assistance not functional at all and even IDE restart doesn't help
+            // see NPEs #248225, #251527, #247726
+            // the assertion is moved to Storage.FSReadConverterImpl.layerToClient
+            throw new IOException("Can not restore file system from persistence", new NullPointerException()); //NOI18N            
+        }
+        return fs;
     }
 
     @Override

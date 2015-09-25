@@ -103,6 +103,7 @@ public class PersistentUtils {
 
     public static FileSystem readFileSystem(RepositoryDataInput input) throws IOException {
         FileSystem fs = input.readFileSystem();
+        assert fs != null;
 //        CharSequence rootUrl = PersistentUtils.readUTF(input, FilePathCache.getManager());
 //        FileSystem fs = CndFileUtils.urlToFileSystem(rootUrl);
         //assert (fs != null) : "Restored null file system for URL " + rootUrl;
