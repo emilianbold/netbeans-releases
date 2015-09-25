@@ -44,10 +44,11 @@
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -58,10 +59,6 @@ import org.openide.util.RequestProcessor.Task;
  * @author Michal Mocnak
  */
 public class UndeployModuleCookieImpl implements UndeployModuleCookie {
-
-    private static final int TIMEOUT = 30000;
-
-    private static final int POLLING_INTERVAL = 2000;
 
     private static final RequestProcessor PROCESSOR = new RequestProcessor("JBoss undeploy", 1); // NOI18N
 
@@ -97,7 +94,7 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
                 try {
                     dm.getClient().undeploy(fileName);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getLogger(UndeployModuleCookieImpl.class.getName()).log(Level.INFO, null, ex);
                 }
                 handle.finish();
                 isRunning = false;
