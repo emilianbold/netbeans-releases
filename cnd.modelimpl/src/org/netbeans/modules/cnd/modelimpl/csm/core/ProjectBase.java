@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -2882,7 +2883,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @param nameTokens name
      * @param owner an owner to get file and offset from
      */
-    public static CsmClass getDummyForUnresolved(CharSequence[] nameTokens, OffsetableBase owner) {
+    public static CsmClass getDummyForUnresolved(CharSequence[] nameTokens, CsmOffsetable owner) {
         if  (owner != null) {
             CsmFile file = owner.getContainingFile();
             if (file != null) {

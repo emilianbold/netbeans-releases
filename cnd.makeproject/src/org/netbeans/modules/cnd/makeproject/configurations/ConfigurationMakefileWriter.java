@@ -59,8 +59,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -708,7 +710,33 @@ public class ConfigurationMakefileWriter {
     public static void writeBuildTestTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         if (hasTests(projectDescriptor)) {
             bw.write("# Build Test Targets\n"); // NOI18N
-            bw.write(".build-tests-conf: .build-conf ${TESTFILES}\n"); // NOI18N
+            bw.write(".build-tests-conf: .build-tests-subprojects .build-conf ${TESTFILES}\n"); // NOI18N
+            bw.write(".build-tests-subprojects:\n"); // NOI18N
+
+            Set<MakeArtifact> subProjects = new HashSet<>();
+
+            for (Folder folder : getTests(projectDescriptor)) {
+                List<LinkerConfiguration> linkerConfigurations = getLinkerConfigurations(folder, conf);
+
+                for (LinkerConfiguration lc : linkerConfigurations) {
+                    LibrariesConfiguration librariesConfiguration = lc.getLibrariesConfiguration();
+
+                    for (LibraryItem item : librariesConfiguration.getValue()) {
+                        if (item instanceof LibraryItem.ProjectItem) {
+                            LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
+                            MakeArtifact makeArtifact = projectItem.getMakeArtifact();
+                            if (makeArtifact.getBuild()) {
+                                subProjects.add(makeArtifact);
+                            }
+                        }
+                    }
+                }
+
+            }
+            for (MakeArtifact makeArtifact : subProjects) {
+                bw.write("\tcd " + CndPathUtilities.escapeOddCharacters(CndPathUtilities.normalizeSlashes(makeArtifact.getWorkingDirectory())) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
+            }
+            bw.write("\n"); // NOI18N
         }
     }
 

@@ -326,7 +326,6 @@ org.apache.xerces.xs.PSVIProvider
 #201356
 org.netbeans.modules.profiler.api.ProfilerIDESettings
 org.netbeans.modules.profiler.api.icons.Icons
-org.netbeans.modules.profiler.drilldown.Installer
 org.netbeans.modules.profiler.heapwalk.ui.icons.HeapWalkerIconsProviderImpl
 org.netbeans.modules.profiler.impl.icons.IconsProviderImpl
 org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIconsProviderImpl
@@ -339,7 +338,6 @@ org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIconsProviderImpl
 org.netbeans.modules.profiler.snaptracer.impl.icons.TracerIconsProviderImpl
 org.netbeans.modules.profiler.spi.IconsProvider
 org.netbeans.modules.profiler.spi.IconsProvider$Basic
-org.netbeans.modules.profiler.stp.icons.STPIconsProviderImpl
 
 #200036
 org.netbeans.spi.project.libraries.NamedLibraryImplementation
