@@ -1363,7 +1363,12 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         @Override
         public Void visitLambdaExpression(LambdaExpressionTree node, EnumSet<UseTypes> p) {
             scan(node.getParameters(), EnumSet.of(UseTypes.WRITE));
-            scan(node.getBody(), EnumSet.noneOf(UseTypes.class));
+            if (node.getBody() instanceof IdentifierTree) {
+                TreePath tp = new TreePath(getCurrentPath(), node.getBody());
+                handlePossibleIdentifier(tp, EnumSet.of(UseTypes.READ));
+            } else {    
+                scan(node.getBody(), EnumSet.noneOf(UseTypes.class));
+            }
             return null;
         }
 
