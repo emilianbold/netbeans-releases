@@ -1488,6 +1488,9 @@ public final class FileImpl implements CsmFile,
         if (cacheTokens) {
             TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsingAndTokenStreamCaching(parseParams.triggerParsingActivity);
             TokenStream ts = parseParams.tsp.getTokenStream(tsParams, interrupter);
+            if (ts == null) { // can happen if the file became invalid
+                return null;
+            }
             List<APTToken> tokenList = APTUtils.toList(ts);
             pcState = parseParams.tsp.release();
             assertParamsReadyForCache(tsParams);
@@ -1497,6 +1500,9 @@ public final class FileImpl implements CsmFile,
         } else {
             TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsing(parseParams.triggerParsingActivity, parseParams.getLanguage());
             filteredTokenStream = parseParams.tsp.getTokenStream(tsParams, interrupter);
+            if (filteredTokenStream == null) { // can happen if the file became invalid
+                return null;
+            }
         }
 
         if (filteredTokenStream == null) {
