@@ -102,6 +102,7 @@ import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ExceptionStr;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.openide.util.Lookup;
@@ -895,8 +896,15 @@ public abstract class CsmResultItem implements CompletionItem {
 
         public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration, boolean instantiateTypes) {
             super(mtd, substituteExp, priotity, isDeclaration, instantiateTypes);
-            typeName = CsmResultItem.getTypeName(mtd.getReturnType(), instantiateTypes);
-            typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
+            CsmType returnType = mtd.getReturnType();
+            if (returnType == null) {
+                CndUtils.assertTrueInConsole(false, "Function return type is null for " + mtd); //NOI18N
+                typeName = "???"; //NOI18N
+                typeColor = LFCustoms.getTextFgColor();
+            } else {
+                typeName = CsmResultItem.getTypeName(returnType, instantiateTypes);
+                typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
+            }
         }
 
         public String getTypeName() {
