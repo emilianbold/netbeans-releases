@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.profiler.j2ee;
 
-import java.util.Properties;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport.SettingsCustomizer;
 import org.netbeans.modules.profiler.spi.project.ProfilingSettingsSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -60,49 +58,6 @@ import org.netbeans.spi.project.ProjectServiceProvider;
                         }
 )
 public class J2EEProfilingSettingsSupportProvider extends ProfilingSettingsSupportProvider.Default {
-    
-    private SettingsCustomizer configurator;
-    private LoadGenPanel loadGenConfig = null;
-    
-
-    @Override
-    public SettingsCustomizer getSettingsCustomizer() {
-        if (configurator == null) {
-            configurator = new SettingsCustomizer() {
-                    public LoadGenPanel getCustomSettingsPanel(boolean isAttach, boolean isModify) {
-                        if (isAttach || isModify) {
-                            return null; // TODO: would be better to show LoadGenPanel disabled for Modify Profile
-                        }
-
-                        if (loadGenConfig == null) {
-                            loadGenConfig = LoadGenPanel.instance();
-//                            loadGenConfig.addPropertyChangeListener(
-//                                    LoadGenPanel.PATH, WeakListeners.
-//                                    propertyChange(pcl, loadGenConfig));
-                        }
-
-                        loadGenConfig.attach((Project)getProject());
-
-                        return loadGenConfig;
-                    }
-
-                    public void loadCustomSettings(Properties properties) {
-                        if (loadGenConfig != null) {
-                            loadGenConfig.loadCustomSettings(properties);
-                        }
-                    }
-                    ;
-                    public void storeCustomSettings(Properties properties) {
-                        if (loadGenConfig != null) {
-                            loadGenConfig.storeCustomSettings(properties);
-                        }
-                    }
-                    ;
-                };
-        }
-
-        return configurator;
-    }
     
     public J2EEProfilingSettingsSupportProvider(Project project) {
         super(project);

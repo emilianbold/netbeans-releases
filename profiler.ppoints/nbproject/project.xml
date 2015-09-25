@@ -151,7 +151,6 @@
             <friend-packages>
                 <friend>oracle.jdevimpl.profiler.impl</friend>
                 <friend>org.netbeans.modules.profiler.nbimpl</friend>
-                <friend>org.netbeans.modules.profiler.stp</friend>
                 <package>org.netbeans.modules.profiler.ppoints</package>
                 <package>org.netbeans.modules.profiler.ppoints.ui</package>
             </friend-packages>
