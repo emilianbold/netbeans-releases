@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
+import org.openide.util.Parameters;
 
 /**
  * Artificial libraries manager.
@@ -546,12 +547,14 @@ public final class LibraryManager {
         private final CharSequence folder;
 
         public LibraryKey(FileSystem fileSystem, CharSequence folder) {
+            Parameters.notNull("fileSystem", fileSystem);
             this.fileSystem = fileSystem;
             this.folder = folder;
         }
 
         private LibraryKey(RepositoryDataInput input) throws IOException {
             this.fileSystem = PersistentUtils.readFileSystem(input);
+            assert fileSystem != null;
             this.folder = input.readFilePathForFileSystem(fileSystem);
         }
 

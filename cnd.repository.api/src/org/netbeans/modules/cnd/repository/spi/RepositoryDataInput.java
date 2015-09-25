@@ -52,6 +52,7 @@ import org.openide.filesystems.FileSystem;
 public interface RepositoryDataInput extends DataInput {
     CharSequence readCharSequenceUTF() throws IOException;
     int readUnitId() throws IOException;
+    /** Never returns null */
     FileSystem readFileSystem() throws IOException;
     CharSequence readFilePath() throws IOException;
     CharSequence readFilePathForFileSystem(FileSystem fs) throws IOException;
