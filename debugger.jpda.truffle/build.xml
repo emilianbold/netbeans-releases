@@ -45,4 +45,32 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="debugger.jpda.truffle">
     <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="build-init" depends="projectized.build-init">
+        <property name="truffle-backend.cp" value="${module.classpath}:${truffle-backend.cp.extra}"/>
+    </target>
+
+    <target name="compile-truffle-backend" depends="init">
+        <mkdir dir="build/truffle-backend-classes"/>
+        <depend srcdir="truffle-backend" destdir="build/truffle-backend-classes" cache="build/depcache-truffle-backend">
+            <classpath>
+                <path path="${truffle-backend.cp}"/>
+            </classpath>
+        </depend>
+        <javac srcdir="truffle-backend" destdir="build/truffle-backend-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.7" target="1.7" includeantruntime="false">
+            <classpath>
+                <path path="${truffle-backend.cp}"/>
+            </classpath>
+            <compilerarg line="${javac.compilerargs}"/>
+        </javac>
+        <copy todir="build/truffle-backend-classes">
+            <fileset dir="truffle-backend" excludes="${jar-excludes}"/>
+        </copy>
+        <mkdir dir="build/classes/org/netbeans/modules/debugger/jpda/truffle/resources"/>
+        <jar jarfile="build/classes/org/netbeans/modules/debugger/jpda/truffle/resources/JPDATruffleBackend.jar" compress="false">
+            <fileset dir="build/truffle-backend-classes"/>
+        </jar>
+    </target>
+
+    <target name="compile" depends="compile-truffle-backend,projectized-common.compile"/>
 </project>
