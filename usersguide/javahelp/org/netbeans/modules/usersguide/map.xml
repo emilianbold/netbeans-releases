@@ -10478,12 +10478,18 @@
   <!-- "Options Window: Java: Nashorn"-->
   <mapID target="f1_html026.htm-sthref593" url="f1_html026.htm#sthref593" />
   <!-- "Options Window: Java: Nashorn"-->
-  <mapID target="f1_html027.htm-sthref595" url="f1_html027.htm#sthref595" />
-  <!-- "Options Window: Java: Nashorn"-->
-  <mapID target="f1_html028.htm-sthref597" url="f1_html028.htm#sthref597" />
+  <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProject" url="f1_html027.htm#org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProject" />
   <!-- "New HTML5/JS Application with Node.js Wizard: Name and Location"-->
-  <mapID target="f1_html029.htm-sthref599" url="f1_html029.htm#sthref599" />
+  <mapID target="f1_html027.htm-sthref595" url="f1_html027.htm#sthref595" />
+  <!-- "New HTML5/JS Application with Node.js Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.javascript.nodejs.ui.wizard.ExpressPanelVisual" url="f1_html028.htm#org.netbeans.modules.javascript.nodejs.ui.wizard.ExpressPanelVisual" />
   <!-- "New HTML5/JS Application with Node.js Wizard: Express"-->
+  <mapID target="f1_html028.htm-sthref597" url="f1_html028.htm#sthref597" />
+  <!-- "New HTML5/JS Application with Node.js Wizard: Express"-->
+  <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.Tools" url="f1_html029.htm#org.netbeans.modules.web.clientproject.ui.wizard.Tools" />
+  <!-- "New HTML5/JS Application with Node.js Wizard: Tools"-->
+  <mapID target="f1_html029.htm-sthref599" url="f1_html029.htm#sthref599" />
+  <!-- "New HTML5/JS Application with Node.js Wizard: Tools"-->
   <mapID target="about_source_editor" url="f1_xml.htm#about_source_editor" />
   <!-- "Using XML "-->
   <mapID target="NBCSH4405" url="f1_xml.htm#NBCSH4405" />
