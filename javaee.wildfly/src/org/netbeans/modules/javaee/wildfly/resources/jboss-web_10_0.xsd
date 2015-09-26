@@ -73,6 +73,7 @@
    </xsd:annotation>
 
    <xsd:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="web-app_3_1.xsd"/>
+   <xsd:include schemaLocation="jboss-common_7_0.xsd"/>
 
    <xsd:element name="jboss-web" type="jboss:jboss-webType">
       <xsd:annotation>
@@ -137,7 +138,7 @@
          <xsd:element name="distinct-name" type="jboss:distinct-nameType" minOccurs="0" maxOccurs="1"/>
          <xsd:element name="symbolic-linking-enabled" type="jboss:symbolic-linked-allowedType" minOccurs="0" maxOccurs="1"/>
           <xsd:element name="proactive-authentication" type="jboss:proactive-authenticationType" minOccurs="0" maxOccurs="1"/>
-          <xsd:group ref="javaee:jndiEnvironmentRefsGroup"/>
+         <xsd:group ref="jboss:jndiEnvironmentRefsGroup"/>
           <xsd:element name="enable-websockets" type="jboss:enable-websocketsType" minOccurs="0" maxOccurs="1"/>
       </xsd:sequence>
       <xsd:attribute name="version" type="jboss:jboss-web-versionType" use="required"/>
