@@ -65,7 +65,6 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import net.java.html.boot.fx.FXBrowsers;
 import org.openide.*;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -207,7 +206,7 @@ public final class HTMLDialogImpl implements Runnable {
             throw new IllegalStateException(ex);
         }
         state = 2;
-        FXBrowsers.load(webView, pageUrl, this, loader, techIds.toArray());
+        NbBrowsers.load(webView, pageUrl, this, loader, techIds.toArray());
     }
 
     private void initPage() {
@@ -234,7 +233,7 @@ public final class HTMLDialogImpl implements Runnable {
         }
         if (type == Node.class) {
             WebView wv = new WebView();
-            FXBrowsers.load(wv, pageUrl, onPageLoad, loader, techIds.toArray());
+            NbBrowsers.load(wv, pageUrl, onPageLoad, loader, techIds.toArray());
             return type.cast(wv);
         } else if (type == JComponent.class) {
             final JFXPanel tmp = new JFXPanel();
@@ -243,7 +242,7 @@ public final class HTMLDialogImpl implements Runnable {
                 @Override
                 public void run() {
                     WebView wv = new WebView();
-                    FXBrowsers.load(wv, pageUrl, onPageLoad, l, techIds.toArray());
+                    NbBrowsers.load(wv, pageUrl, onPageLoad, l, techIds.toArray());
                     Scene s = new Scene(wv);
                     tmp.setScene(s);
                 }
