@@ -247,6 +247,9 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
             }
         });
         String bodyText = res[0];
+        if (bodyText == null) {
+            return null;
+        }
         String appendItemText = createAppendText(item, cls, bodyText, insertScope);
         return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
                     true, trueBodyStratOffset.get(), bodyText.length());
