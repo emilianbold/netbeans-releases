@@ -63,7 +63,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
-import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -103,7 +102,7 @@ public final class HtmlComponent extends TopComponent  {
         if (loader == null) {
             loader = clazz.getClassLoader();
         }
-        FXBrowsers.load(v, pageUrl, new Runnable() {
+        NbBrowsers.load(v, pageUrl, new Runnable() {
             @Override
             public void run() {
                 try {
