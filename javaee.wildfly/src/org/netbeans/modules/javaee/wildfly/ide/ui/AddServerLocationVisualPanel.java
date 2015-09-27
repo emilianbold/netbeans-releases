@@ -325,15 +325,24 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         String newLoc = browseInstallLocation();
         if (newLoc != null && !"".equals(newLoc)) {
             locationTextField.setText(newLoc);
-            if (configurationTextField.getText() == null || configurationTextField.getText().isEmpty()) {
-                configurationTextField.setText(newLoc + File.separatorChar
+            String configurationFilePath = newLoc + File.separatorChar
                         + "standalone" + File.separatorChar + "configuration"
-                        + File.separatorChar + "standalone-full.xml");
+                        + File.separatorChar + "standalone-full.xml";
+            if (configurationTextField.getText() == null || configurationTextField.getText().isEmpty()) {
+                if (new File(configurationFilePath).exists()) {
+                    configurationTextField.setText(configurationFilePath);
+                }
             } else if (!configurationTextField.getText().startsWith(newLoc)) {
-                NotifyDescriptor d = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(AddServerLocationVisualPanel.class, "MSG_WARN_INSTALLATION_DIFFERS_CONFIGURATION"),
-                        NotifyDescriptor.WARNING_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
+                NotifyDescriptor d = new NotifyDescriptor.Confirmation(
+                        NbBundle.getMessage(AddServerLocationVisualPanel.class, "MSG_WARN_INSTALLATION_DIFFERS_CONFIGURATION", configurationFilePath),
+                        NotifyDescriptor.OK_CANCEL_OPTION);
+                Object result = DialogDisplayer.getDefault().notify(d);
+                if (result == NotifyDescriptor.CANCEL_OPTION) {
+                    // keep the old content
+                    return;
+                } else {
+                    configurationTextField.setText(configurationFilePath);
+                }
             }
         }
     }
