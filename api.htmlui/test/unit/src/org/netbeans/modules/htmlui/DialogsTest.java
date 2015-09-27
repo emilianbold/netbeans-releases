@@ -51,7 +51,6 @@ import javafx.scene.web.WebView;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import net.java.html.BrwsrCtx;
-import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
 import org.netbeans.api.htmlui.HTMLDialog;
 import org.testng.annotations.BeforeClass;
@@ -79,7 +78,7 @@ public class DialogsTest {
                 WebView v = new WebView();
                 Scene s = new Scene(v);
                 p.setScene(s);
-                FXBrowsers.load(v, u, new Runnable() {
+                NbBrowsers.load(v, u, new Runnable() {
                     @Override
                     public void run() {
                         ctx = BrwsrCtx.findDefault(DialogsTest.class);
