@@ -89,11 +89,7 @@ public final class Pages {
                 m = (String) map.get("method");
 
                 clazz = HtmlComponent.loadClass(c);
-                URL url = clazz.getResource("/" + u);
-                if (url == null) {
-                    url = new URL(u);
-                }
-                pageUrl = url;
+                pageUrl = new URL("nbresloc:/" + u);
 
                 tc = new HtmlComponent();
                 tc.open();
