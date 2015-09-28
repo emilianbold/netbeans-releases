@@ -161,6 +161,7 @@ import org.openide.util.RequestProcessor;
             case TOUCHED:       return true;
             case COPIED:        return stateInfo.timestamp != file.lastModified();
             case ERROR:         return true;
+            case INEXISTENT:    return false;
             case UNCONTROLLED:  return false;
             default:
                 CndUtils.assertTrue(false, "Unexpected state: " + state); //NOI18N
