@@ -215,7 +215,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
             if (p.y <= (nodeArea.y + FUSSY_POINTING)) {
                 // don't get line above root
-                if (row != 0) {
+                if (row != 0 || !view.isRootVisible()) {
                     // point above node
                     pointAt = DragDropUtilities.NODE_UP;
 
