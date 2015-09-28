@@ -22,102 +22,102 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<xs:schema xmlns="http://www.w3.org/2001/XMLSchema"
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:jboss:messaging-activemq-deployment:1.0"
            targetNamespace="urn:jboss:messaging-activemq-deployment:1.0"
-           xmlns:amq="urn:jboss:messaging-activemq-deployment:1.0"
-           xmlns:xs="http://www.w3.org/2001/XMLSchema"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
 
-    <xs:element name="messaging-deployment">
-        <xs:annotation>
-            <xs:documentation>
+    <xsd:element name="messaging-deployment">
+        <xsd:annotation>
+            <xsd:documentation>
                 <![CDATA[
                 The configuration of a messaging deployment
             ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element maxOccurs="unbounded" minOccurs="0" name="server" type="amq:serverType"/>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" minOccurs="0" name="server" type="serverType"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
 
-    <xs:complexType name="serverType">
-        <xs:annotation>
-            <xs:documentation>
+    <xsd:complexType name="serverType">
+        <xsd:annotation>
+            <xsd:documentation>
                 <![CDATA[
                 The configuration of entries for a ActiveMQ server.
             ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:all>
-            <xs:element maxOccurs="1" minOccurs="0" name="jms-destinations">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="jms-queue" maxOccurs="unbounded" minOccurs="0" type="amq:jmsQueueType"/>
-                        <xs:element name="jms-topic" maxOccurs="unbounded" minOccurs="0" type="amq:jmsTopicType"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-        </xs:all>
-        <xs:attribute name="name" type="xs:string" use="optional" default="default">
-            <xs:annotation>
-                <xs:documentation>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:all>
+            <xsd:element maxOccurs="1" minOccurs="0" name="jms-destinations">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="jms-queue" maxOccurs="unbounded" minOccurs="0" type="jmsQueueType"/>
+                        <xsd:element name="jms-topic" maxOccurs="unbounded" minOccurs="0" type="jmsTopicType"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:all>
+        <xsd:attribute name="name" type="xsd:string" use="optional" default="default">
+            <xsd:annotation>
+                <xsd:documentation>
                     The name to use for this ActiveMQ Server. Must correspond to a ActiveMQ server installed in
                     the main configuration.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
 
-    <xs:complexType name="entryType">
-        <xs:attribute name="name" type="xs:string" use="required"/>
-    </xs:complexType>
-    <xs:complexType name="jmsQueueType">
-        <xs:sequence>
-            <xs:element name="entry" type="amq:entryType" maxOccurs="unbounded" minOccurs="1"/>
-            <xs:element name="selector" maxOccurs="1" minOccurs="0">
-                <xs:complexType>
-                    <xs:attribute name="string" type="xs:string" use="required"/>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="durable" type="xs:boolean" maxOccurs="1" minOccurs="0"/>
-        </xs:sequence>
-        <xs:attribute name="name" type="xs:string" use="required"/>
-    </xs:complexType>
+    <xsd:complexType name="entryType">
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
+    <xsd:complexType name="jmsQueueType">
+        <xsd:sequence>
+            <xsd:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1"/>
+            <xsd:element name="selector" maxOccurs="1" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="string" type="xsd:string" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="durable" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
 
-    <xs:complexType name="jmsTopicType">
-        <xs:sequence>
-            <xs:element name="entry" type="amq:entryType" maxOccurs="unbounded" minOccurs="1"/>
-        </xs:sequence>
-        <xs:attribute name="name" type="xs:string" use="required"/>
-    </xs:complexType>
+    <xsd:complexType name="jmsTopicType">
+        <xsd:sequence>
+            <xsd:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
 
-    <xs:complexType name="transactionType">
-        <xs:attribute name="mode" use="required" type="amq:modeType"/>
-    </xs:complexType>
+    <xsd:complexType name="transactionType">
+        <xsd:attribute name="mode" use="required" type="modeType"/>
+    </xsd:complexType>
 
-    <xs:simpleType name="modeType">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="xa">
-                <xs:annotation>
-                    <xs:documentation></xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="local">
-                <xs:annotation>
-                    <xs:documentation></xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="none">
-                <xs:annotation>
-                    <xs:documentation></xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-        </xs:restriction>
-    </xs:simpleType>
+    <xsd:simpleType name="modeType">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="xa">
+                <xsd:annotation>
+                    <xsd:documentation></xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="local">
+                <xsd:annotation>
+                    <xsd:documentation></xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="none">
+                <xsd:annotation>
+                    <xsd:documentation></xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
 
-</xs:schema>
+</xsd:schema>
