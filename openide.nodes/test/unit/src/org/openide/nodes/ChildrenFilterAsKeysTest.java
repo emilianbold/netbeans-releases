@@ -44,6 +44,8 @@
 
 package org.openide.nodes;
 
+import org.netbeans.junit.RandomlyFails;
+
 public class ChildrenFilterAsKeysTest extends ChildrenKeysTest {
 
     public ChildrenFilterAsKeysTest(java.lang.String testName) {
@@ -55,4 +57,9 @@ public class ChildrenFilterAsKeysTest extends ChildrenKeysTest {
         return new FilterNode (new AbstractNode (ch));
     }
 
+    @RandomlyFails // ergonomics #6013 and #6014
+    @Override
+    public void testDestroyIsCalledWhenEntryIsRefreshed() throws Exception {
+        super.testDestroyIsCalledWhenEntryIsRefreshed();
+    }
 }
