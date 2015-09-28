@@ -72,7 +72,7 @@ import org.netbeans.modules.javaee.wildfly.config.gen.Jboss;
 import org.netbeans.modules.javaee.wildfly.config.gen.MessageDriven;
 import org.netbeans.modules.javaee.wildfly.config.gen.ResourceRef;
 import org.netbeans.modules.javaee.wildfly.config.gen.Session;
-import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
+import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupportImpl;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -1017,7 +1017,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               String jndiName = MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4;
+               String jndiName = MessageDestinationSupportImpl.CONN_FACTORY_JNDI_NAME_JB4;
                JBossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
            }
         });
@@ -1034,7 +1034,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               String jndiName = MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4;
+               String jndiName = MessageDestinationSupportImpl.CONN_FACTORY_JNDI_NAME_JB4;
                JBossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, connectionFactoryName, mdbName, jndiName);
            }
         });

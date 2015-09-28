@@ -49,6 +49,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -58,7 +60,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,7 +67,7 @@ import org.openide.util.NbBundle;
  * @author Libor Kotouc
  */
 public class ResourceConfigurationHelper {
-    
+    private static final Logger LOGGER = Logger.getLogger(ResourceConfigurationHelper.class.getName());
     private ResourceConfigurationHelper() {
     }
     
@@ -125,7 +126,7 @@ public class ResourceConfigurationHelper {
         try {
             graph.write(out);
         } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+            LOGGER.log(Level.WARNING, null, ioe);
         }
         NbDocument.runAtomic(doc, new Runnable() {
             public void run() {
@@ -133,7 +134,7 @@ public class ResourceConfigurationHelper {
                     doc.remove(0, doc.getLength());
                     doc.insertString(0, out.toString(), null);
                 } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
+                    LOGGER.log(Level.WARNING, null, ble);
                 }
             }
         });
