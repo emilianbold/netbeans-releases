@@ -174,7 +174,7 @@ class FormattedPrintFunction {
                     info.setPrecisionWildcardFlag(true);
                 }
             } else if (state != ConversionState.DEFAULT) {
-                if (format.substring(i, i+2).equals("hh")) { // NOI18N
+                if ((i+2) < format.length() && format.substring(i, i+2).equals("hh")) { // NOI18N
                     startOffset++;
                     endOffset++;
                     info.setLengthFlag(LengthFlag.hh);
@@ -187,7 +187,7 @@ class FormattedPrintFunction {
                     info.setLengthFlag(LengthFlag.z);
                 } else if (format.charAt(i) == 't') { // NOI18N
                     info.setLengthFlag(LengthFlag.t);
-                } else if (format.substring(i, i+2).equals("ll")) { // NOI18N
+                } else if ((i+2) < format.length() && format.substring(i, i+2).equals("ll")) { // NOI18N
                     startOffset++;
                     endOffset++;
                     info.setLengthFlag(LengthFlag.ll);
