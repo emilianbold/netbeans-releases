@@ -432,7 +432,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                   if (includedFile.checkIfFileWasIncludedBeforeWithBetterOrEqualContent(ppHandler)) {
                     // i.e. no need to keep tokens, because postInclude would discard included file
                     CndUtils.assertTrueInConsole(!onEnterIntoInterestedFile, "how can we skip interested file?", includedFile);
-                    canSkipFileContent = true;
+                    canSkipFileContent = ALLOW_TO_SKIP_TOKENS_BETWEEN_DIRECTIVES;
                   }                  
                 } else {
                   // it is suspicious to see unresolved include followed by onEnter hook
