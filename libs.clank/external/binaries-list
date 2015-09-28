@@ -1,6 +1,6 @@
-#changeset:   15759:9a07e94f15c6
+#changeset:   15764:7252cd0f186d
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Sep 25 23:13:35 2015 +0300
-#summary:     PERF: decompose OptionalBool and replace Casts call
-C885C2293C09986988BDFF27AE474550D2A8E820 clank_0.3.6.zip
+#date:        Mon Sep 28 02:58:45 2015 +0300
+#summary:     PERF: cache source lines offsets in shared memory buffer
+0F2BB0A9D0C3B271431391AB394E95D25C871A68 clank_0.3.6.zip

@@ -60,7 +60,8 @@ public final class FilePreprocessorConditionState {
     public static final FilePreprocessorConditionState PARSING = new FilePreprocessorConditionState("PARSING", new int[]{0, Integer.MAX_VALUE}); // NOI18N
     public static final int ERROR_DIRECTIVE_MARKER = Integer.MAX_VALUE;
     public static final int PRAGMA_ONCE_DIRECTIVE_MARKER = Integer.MAX_VALUE - 1;
-
+    private static final int[] ALL_INCLUDED = new int[0];
+    
     /** a SORTED array of blocks [start-end] for which conditionals were evaluated to false */
     private final int[] offsets;
 
@@ -69,7 +70,7 @@ public final class FilePreprocessorConditionState {
 
     // for builder only
     private FilePreprocessorConditionState(CharSequence fileName, int[] offsets) {
-        this.offsets = offsets;
+        this.offsets = (offsets != null && offsets.length == 0) ? ALL_INCLUDED : offsets;
         this.fileName = fileName;
     }
     
@@ -81,7 +82,7 @@ public final class FilePreprocessorConditionState {
                 offsets[i] = input.readInt();
             }
         } else {
-            offsets = new int[0];
+            offsets = ALL_INCLUDED;
         }
         fileName = null;
     }
@@ -254,5 +255,9 @@ public final class FilePreprocessorConditionState {
                 }
             }
         }
+    }
+
+    boolean isAllIncluded() {
+        return this.offsets == ALL_INCLUDED;
     }
 }

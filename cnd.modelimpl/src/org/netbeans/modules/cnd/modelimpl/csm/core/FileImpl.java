@@ -536,6 +536,13 @@ public final class FileImpl implements CsmFile,
         return projectImpl.getPreprocHandler(fileBuffer.getAbsolutePath(), statePair);
     }
 
+    public final boolean checkIfFileWasIncludedBeforeWithBetterOrEqualContent(PreprocHandler ppPreIncludeHandler) {
+        final ProjectBase projectImpl = getProjectImpl(true);
+        return projectImpl == null 
+                ? true/*no need to include such file*/ 
+                : projectImpl.checkIfFileWasIncludedBeforeWithBetterOrEqualContent(this, ppPreIncludeHandler);
+    }
+    
     public Collection<PreprocHandler> getPreprocHandlersForParse(Interrupter interrupter) {
         final ProjectBase projectImpl = getProjectImpl(true);
         return projectImpl == null ? Collections.<PreprocHandler>emptyList() : projectImpl.getPreprocHandlersForParse(this, interrupter);
