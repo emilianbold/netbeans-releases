@@ -407,7 +407,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     public void treeStructureChanged(TreeModelEvent e) {
         assert SwingUtilities.isEventDispatchThread();
         
-        getLayout().treeStructureChanged(e);
+        getTreePathSupport().treeStructureChanged(e);
         fireTreeChange (translateEvent(e), STRUCTURE_CHANGED);
 
         if (!getLayout().isExpanded(e.getTreePath())) {
@@ -417,11 +417,6 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
             return ;
         }
         
-        //If it's a structural change, we need to dump all our info about the
-        //existing tree structure - it can be bogus now.  Similar to JTree,
-        //this will have the effect of collapsing all expanded paths.  The
-        //TreePathSupport takes care of dumping the layout cache's copy of
-        //such data
         getTreePathSupport().clear();
         
         //We will just fire a "Something happened. Go figure out what." event.

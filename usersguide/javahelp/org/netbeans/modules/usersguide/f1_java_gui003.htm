@@ -7,7 +7,7 @@
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-25</p>
+<p>Beta Draft: 2015-09-28</p>
 <p><a id="CHDHEDCB" name="CHDHEDCB"></a><a id="gui.binding-customizer.basic" name="gui.binding-customizer.basic"></a></p>
 <div id="NBCSH2255"><!-- infolevel="all" infotype="General" -->
 <h1>Bind Dialog Box: Binding Tab</h1>
@@ -35,66 +35,66 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t3">Element</th>
-<th align="left" valign="bottom" id="r1c2-t3">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t3">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t3">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r2c1-t3" headers="r1c1-t3">
 <p>Name</p>
 </td>
-<td align="left" headers="r2c1-t3 r1c2-t3">Enables you to create a name for the binding, which gives you more flexibility for managing your bindings.
+<td style="text-align:left" headers="r2c1-t3 r1c2-t3">Enables you to create a name for the binding, which gives you more flexibility for managing your bindings.
 <p>The name is added to the constructor of the binding and can be referenced with the binding's <code dir="ltr">getName()</code> method.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r3c1-t3" headers="r1c1-t3">
 <p>Update Mode</p>
 </td>
-<td align="left" headers="r3c1-t3 r1c2-t3">Specifies the way that the properties are kept synchronized.</td>
+<td style="text-align:left" headers="r3c1-t3 r1c2-t3">Specifies the way that the properties are kept synchronized.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r4c1-t3" headers="r1c1-t3">
 <p>Always sync (read/write)</p>
 </td>
-<td align="left" headers="r4c1-t3 r1c2-t3">Whenever a change is made to either the source or the target, the other is updated.</td>
+<td style="text-align:left" headers="r4c1-t3 r1c2-t3">Whenever a change is made to either the source or the target, the other is updated.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r5c1-t3" headers="r1c1-t3">
 <p>Only read from source (read only)</p>
 </td>
-<td align="left" headers="r5c1-t3 r1c2-t3">The target is only updated the first time the source value is set.
+<td style="text-align:left" headers="r5c1-t3 r1c2-t3">The target is only updated the first time the source value is set.
 <p>Changes that are made to the source are updated in the target. Changes made to the target are not updated in the source.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r6c1-t3" headers="r1c1-t3">
 <p>Read from source once (read once)</p>
 </td>
-<td align="left" headers="r6c1-t3 r1c2-t3">The target is only updated when the target and source are initially bound.</td>
+<td style="text-align:left" headers="r6c1-t3 r1c2-t3">The target is only updated when the target and source are initially bound.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r7c1-t3" headers="r1c1-t3">
 <p>Update Source When</p>
 </td>
-<td align="left" headers="r7c1-t3 r1c2-t3">This option is available only to the text property of <code dir="ltr">JTextField</code> and JTextArea components.
+<td style="text-align:left" headers="r7c1-t3 r1c2-t3">This option is available only to the text property of <code dir="ltr">JTextField</code> and JTextArea components.
 <p>Enables you to select the frequency with which the properties are synchronized.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r8c1-t3" headers="r1c1-t3">
 <p>Ignore Adjusting</p>
 </td>
-<td align="left" headers="r8c1-t3 r1c2-t3">This option is available to the value property of JSlider; to the <code dir="ltr">selectedElement</code> property of JTable and JList; and to the <code dir="ltr">selectedElements</code> property of JTable and JList.
+<td style="text-align:left" headers="r8c1-t3 r1c2-t3">This option is available to the value property of JSlider; to the <code dir="ltr">selectedElement</code> property of JTable and JList; and to the <code dir="ltr">selectedElements</code> property of JTable and JList.
 <p>When this checkbox is selected, any changes made to one property are not propagated to the other property until the user is finished making the change. For example, when the application's user drags a slider, the value of the property bound to the slider is updated when the user releases the mouse button.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r9c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r9c1-t3" headers="r1c1-t3">
 <p>Converter</p>
 </td>
-<td align="left" headers="r9c1-t3 r1c2-t3">If your binding involves properties with different data types, you can specify code that converts values between the types. The beans binding library handles many commonly needed conversions, but you might need to provide your own converters for other combinations of property types. Such converters need to extend the <code dir="ltr">org.jdesktop.beansbinding.Converter</code> class.
+<td style="text-align:left" headers="r9c1-t3 r1c2-t3">If your binding involves properties with different data types, you can specify code that converts values between the types. The beans binding library handles many commonly needed conversions, but you might need to provide your own converters for other combinations of property types. Such converters need to extend the <code dir="ltr">org.jdesktop.beansbinding.Converter</code> class.
 <p>The Converter drop-down list is populated with any converters that have been added as beans to your form. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2658">
@@ -107,26 +107,26 @@
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r10c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r10c1-t3" headers="r1c1-t3">
 <p>Validator</p>
 </td>
-<td align="left" headers="r10c1-t3 r1c2-t3">Enables you to specify code to validate a change in the target property value before propagating that change back to the source property. Such a validator needs to extend the <code dir="ltr">org.jdesktop.beansbinding.Validator</code> class.
+<td style="text-align:left" headers="r10c1-t3 r1c2-t3">Enables you to specify code to validate a change in the target property value before propagating that change back to the source property. Such a validator needs to extend the <code dir="ltr">org.jdesktop.beansbinding.Validator</code> class.
 <p>The Validator drop-down list is populated with any validators that have been added as beans to your form. You can also add the validation code directly by clicking the ellipsis (...) button, and selecting Custom Code from the Select Validator Property Using drop-down list.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r11c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r11c1-t3" headers="r1c1-t3">
 <p>Null Source Value</p>
 </td>
-<td align="left" headers="r11c1-t3 r1c2-t3">Enables you to specify a different value to use if the source property has a null value when the binding is attempted.
+<td style="text-align:left" headers="r11c1-t3 r1c2-t3">Enables you to specify a different value to use if the source property has a null value when the binding is attempted.
 <p>This field corresponds with the <code dir="ltr">setSourceNullValue()</code> method of the <code dir="ltr">org.jdesktop.beansbinding.Binding class</code>.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r12c1-t3" headers="r1c1-t3">
+<td style="text-align:left" id="r12c1-t3" headers="r1c1-t3">
 <p>Unreadable Source Value</p>
 </td>
-<td align="left" headers="r12c1-t3 r1c2-t3">Enables you to specify a different value to use if the binding expression can not be resolved when the binding is attempted.
+<td style="text-align:left" headers="r12c1-t3 r1c2-t3">Enables you to specify a different value to use if the binding expression can not be resolved when the binding is attempted.
 <p>This field corresponds with the <code dir="ltr">setSourceUnreadableValue()</code> method of the <code dir="ltr">org.jdesktop.beansbinding.Binding</code> class.</p>
 </td>
 </tr>

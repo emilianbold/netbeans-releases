@@ -7,7 +7,7 @@
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-25</p>
+<p>Beta Draft: 2015-09-28</p>
 <p><a id="text.x-javahints" name="text.x-javahints"></a></p>
 <div id="NBCSH3021"><!-- infolevel="all" infotype="General" --><a id="sthref386" name="sthref386"></a>
 <h1>Syntax Rules for Declarative Hints</h1>
@@ -114,45 +114,45 @@ $file.toURL() :: $file instanceof java.io.File
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t22">Variable Types</th>
-<th align="left" valign="bottom" id="r1c2-t22">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t22">Variable Types</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t22">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t22" headers="r1c1-t22">
+<td style="text-align:left" id="r2c1-t22" headers="r1c1-t22">
 <p><code dir="ltr">$[a-zA-Z0-9_]+</code></p>
 </td>
-<td align="left" headers="r2c1-t22 r1c2-t22">Any expression</td>
+<td style="text-align:left" headers="r2c1-t22 r1c2-t22">Any expression</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t22" headers="r1c1-t22">
+<td style="text-align:left" id="r3c1-t22" headers="r1c1-t22">
 <p><code dir="ltr">$[a-zA-Z0-9_]+;</code></p>
 </td>
-<td align="left" headers="r3c1-t22 r1c2-t22">Any statement</td>
+<td style="text-align:left" headers="r3c1-t22 r1c2-t22">Any statement</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t22" headers="r1c1-t22">
+<td style="text-align:left" id="r4c1-t22" headers="r1c1-t22">
 <p><code dir="ltr">$[a-zA-Z0-9_]+$</code></p>
 </td>
-<td align="left" headers="r4c1-t22 r1c2-t22">Any number of subtrees (except statements)</td>
+<td style="text-align:left" headers="r4c1-t22 r1c2-t22">Any number of subtrees (except statements)</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t22" headers="r1c1-t22">
+<td style="text-align:left" id="r5c1-t22" headers="r1c1-t22">
 <p><code dir="ltr">$[a-zA-Z0-9_]+$;</code></p>
 </td>
-<td align="left" headers="r5c1-t22 r1c2-t22">Any number of statements</td>
+<td style="text-align:left" headers="r5c1-t22 r1c2-t22">Any number of statements</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t22" headers="r1c1-t22">
+<td style="text-align:left" id="r6c1-t22" headers="r1c1-t22">
 <p><code dir="ltr">$_</code></p></td>
-<td align="left" headers="r6c1-t22 r1c2-t22">For patterns undefined and for target patterns and conditions that are automatically bound to the current matched region</td>
+<td style="text-align:left" headers="r6c1-t22 r1c2-t22">For patterns undefined and for target patterns and conditions that are automatically bound to the current matched region</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t22" headers="r1c1-t22">
+<td style="text-align:left" id="r7c1-t22" headers="r1c1-t22">
 <p><code dir="ltr">$$[a-zA-Z0-9_]+</code></p>
 </td>
-<td align="left" headers="r7c1-t22 r1c2-t22">Reserved, do not use</td>
+<td style="text-align:left" headers="r7c1-t22 r1c2-t22">Reserved, do not use</td>
 </tr>
 </tbody>
 </table>
@@ -173,31 +173,31 @@ remove-from-parent
 <col width="47%" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t23">Code</th>
-<th align="left" valign="bottom" id="r1c2-t23">Result</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t23">Code</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t23">Result</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t23" headers="r1c1-t23"><code dir="ltr">int i;</code>
+<td style="text-align:left" id="r2c1-t23" headers="r1c1-t23"><code dir="ltr">int i;</code>
 <p><code dir="ltr">=&gt; /*remove-from-parent*/</code></p>
 <p><code dir="ltr">;;</code></p>
 </td>
-<td align="left" headers="r2c1-t23 r1c2-t23">Removes the int <code dir="ltr">i;</code> variable declaration from the surrounding block</td>
+<td style="text-align:left" headers="r2c1-t23 r1c2-t23">Removes the int <code dir="ltr">i;</code> variable declaration from the surrounding block</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t23" headers="r1c1-t23"><code dir="ltr">float f;</code>
+<td style="text-align:left" id="r3c1-t23" headers="r1c1-t23"><code dir="ltr">float f;</code>
 <p><code dir="ltr">=&gt; &lt;!error="err"&gt;</code></p>
 <p><code dir="ltr">;;</code></p>
 </td>
-<td align="left" headers="r3c1-t23 r1c2-t23">Shows an error to the user when used from the Inspect and Transform dialog box. Does not remove the float <code dir="ltr">f;</code> variable declaration from the surrounding block</td>
+<td style="text-align:left" headers="r3c1-t23 r1c2-t23">Shows an error to the user when used from the Inspect and Transform dialog box. Does not remove the float <code dir="ltr">f;</code> variable declaration from the surrounding block</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t23" headers="r1c1-t23"><code dir="ltr">double d;</code>
+<td style="text-align:left" id="r4c1-t23" headers="r1c1-t23"><code dir="ltr">double d;</code>
 <p><code dir="ltr">=&gt; &lt;!error="err",remove-from-parent=true&gt;</code></p>
 <p><code dir="ltr">;;</code></p>
 </td>
-<td align="left" headers="r4c1-t23 r1c2-t23">Shows an error to the user (in the Inspect and Transform dialog box) and removes the <code dir="ltr">"double d;"</code> variable declaration from the surrounding block</td>
+<td style="text-align:left" headers="r4c1-t23 r1c2-t23">Shows an error to the user (in the Inspect and Transform dialog box) and removes the <code dir="ltr">"double d;"</code> variable declaration from the surrounding block</td>
 </tr>
 </tbody>
 </table>
