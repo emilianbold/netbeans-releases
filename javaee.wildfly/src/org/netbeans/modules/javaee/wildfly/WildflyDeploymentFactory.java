@@ -83,6 +83,7 @@ import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -236,7 +237,7 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
     public static WildFlyClassLoader createWildFlyClassLoader(String serverRoot) {
         try {
             String sep = File.separator;
-            List<URL> urlList = new ArrayList<URL>();
+            List<URL> urlList = new ArrayList<>(20);
             File org = new File(serverRoot, WildflyPluginUtils.getModulesBase(serverRoot) + "org");
             addUrl(urlList, org, "dom4j" + sep + "main", Pattern.compile("dom4j-.*.jar"));
             if (urlList.isEmpty()) {
@@ -248,11 +249,11 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
 
             final File jbossModules = new File(serverRoot, "jboss-modules.jar");
             if(jbossModules.exists()) {
-                urlList.add(jbossModules.toURI().toURL());
+                urlList.add(Utilities.toURI(jbossModules).toURL());
             }
             final File jbossClient = new File(serverRoot, "bin" + sep + "client" + sep + "jboss-client.jar");
             if(jbossClient.exists()) {
-                urlList.add(jbossClient.toURI().toURL());
+                urlList.add(Utilities.toURI(jbossClient).toURL());
             }
             addUrl(urlList, jboss, "dmr" + sep + "main", Pattern.compile("jboss-dmr-.*.jar"));
             addUrl(urlList, jboss, "logging" + sep + "main", Pattern.compile("jboss-logging-.*.jar"));
@@ -269,7 +270,6 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
             addUrl(urlList, as, "controller-client" + sep + "main", Pattern.compile("wildfly-controller-client-.*.jar"));
             addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("wildfly-protocol-.*.jar"));
             addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("jboss-as-protocol-.*.jar"));
-
             //CLI GUI
 //            addUrl(urlList, jboss, "aesh" + sep + "main", Pattern.compile("aesh-.*.jar"));
 //            addUrl(urlList, jboss, "staxmapper" + sep + "main", Pattern.compile("staxmapper-.*.jar"));
@@ -280,6 +280,9 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
 //            addUrl(urlList, as, "cli" + sep + "main", Pattern.compile("wildfly-cli-.*.jar"));
             File serverPath = new File(serverRoot);
             Version version = WildflyPluginUtils.getServerVersion(serverPath);
+            if (WildflyPluginUtils.WILDFLY_10_0_0.compareToIgnoreUpdate(version) >= 0) {
+                addUrl(urlList, wildfly, "common" + sep + "main", Pattern.compile("wildfly-common-.*.jar"));
+            }
             boolean shouldPatchXnio = WildflyPluginUtils.WILDFLY_8_0_0.compareToIgnoreUpdate(version) <= 0 && WildflyPluginUtils.isWildFly(serverPath);
             WildFlyClassLoader loader = new WildFlyClassLoader(urlList.toArray(new URL[] {}),
                     WildflyDeploymentFactory.class.getClassLoader(), shouldPatchXnio);

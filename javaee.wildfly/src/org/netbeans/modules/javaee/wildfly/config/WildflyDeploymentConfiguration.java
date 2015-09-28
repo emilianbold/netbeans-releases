@@ -88,6 +88,7 @@ public abstract class WildflyDeploymentConfiguration
     private MessageDestinationSupport destSupport;
 
     protected boolean isWildFly;
+
     /**
      * Creates a new instance of JBDeploymentConfiguration
      */
@@ -95,7 +96,7 @@ public abstract class WildflyDeploymentConfiguration
         this.j2eeModule = j2eeModule;
         this.version = version;
         this.resourceDir = j2eeModule.getResourceDirectory();
-        this.isWildFly= isWildFly;
+        this.isWildFly = isWildFly;
     }
 
 // -------------------------------------- ModuleConfiguration  -----------------------------------------
@@ -164,7 +165,11 @@ public abstract class WildflyDeploymentConfiguration
             if (this.j2eeModule != null && this.j2eeModule.getArchive() != null) {
                 configFile = this.j2eeModule.getArchive().getName();
             }
-            destSupport = new MessageDestinationSupport(resourceDir, configFile);
+            if (this.version.compareTo(WildflyPluginUtils.WILDFLY_10_0_0) < 0) {
+                destSupport = new org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupportImpl(resourceDir, configFile);
+            } else {
+                destSupport = new org.netbeans.modules.javaee.wildfly.config.mdb.wf10.MessageDestinationSupportImpl(resourceDir, configFile);
+            }
         }
         return destSupport;
     }
