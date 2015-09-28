@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
@@ -236,9 +235,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
         private State alreadySeenInterestedFileEnter = State.INITIAL;
         private boolean insideInterestedFile = false;
+        private boolean skipCurrentFileContentOptimization = false;
         private final Parameters parameters;
 
         private final List<FileImpl> curFiles = new ArrayList<>();
+        private final List<Boolean>  skipCurFileContentOptimizations = new ArrayList<>();
 
         private FileTokenStreamCallback(
                 PreprocHandler ppHandler,
@@ -268,10 +269,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private boolean valueOf(/*YesNoInterested*/int param) {
             switch (param) {
                 case YesNoInterested.ALWAYS:
-                    return true;
+                    return !skipCurrentFileContentOptimization;
                 case YesNoInterested.NEVER:
                     return false;
                 case YesNoInterested.INTERESTED:
+                    assert !(skipCurrentFileContentOptimization && insideInterestedFile) : "can not be true both";
                     return insideInterestedFile;
                 default:
                     throw new AssertionError("unknown" + param);
@@ -324,6 +326,18 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           }
           assert curFile != null;
           return curFile;
+        }
+        
+        private boolean getSkipCurrentFileContentOptimization(boolean pop) {
+          assert skipCurFileContentOptimizations.size() > 0;
+          Boolean curFileSkipOptimization;
+          if (pop) {
+            curFileSkipOptimization = skipCurFileContentOptimizations.remove(skipCurFileContentOptimizations.size() - 1);
+          } else {
+            curFileSkipOptimization = skipCurFileContentOptimizations.get(skipCurFileContentOptimizations.size() - 1);
+          }
+          assert curFileSkipOptimization != null;
+          return curFileSkipOptimization;
         }
 
         private ProjectBase getStartProject() {
@@ -384,9 +398,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             }            
         }
 
+        private static final boolean ALLOW_TO_SKIP_TOKENS_BETWEEN_DIRECTIVES = Boolean.valueOf(System.getProperty("clank.callback.allow.skip.token", "false")); //NativeTrace.DEBUG;
         @Override
         public void onEnter(ClankDriver.ClankFileInfo enteredFrom, ClankDriver.ClankFileInfo enteredTo) {
             assert enteredTo != null;
+            boolean canSkipFileContent = false;
             boolean onEnterIntoInterestedFile = (enteredTo.getFileIndex() == stopAtIndex);
             // when parse TU stopAtIndex is 0, so the branch below is met first and switch mode to SEEN
             if (onEnterIntoInterestedFile) {
@@ -400,6 +416,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 // handle inclusive #includes
                 // remember entered file in stack to be paired in onExit
                 curFiles.add(stopFileImpl);
+                skipCurFileContentOptimizations.add(Boolean.FALSE);
             } else {
               // first must be switched to SEEN state in the branch above;
               // we can skip till interested file, i.e. when restore TS for some file in deep inclusion stack;
@@ -407,22 +424,33 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 // let's keep stack of inner includes prepared in onInclusionDirective
                 // then during onExit post process headers wthich should be parsed
                 FileImpl includedFile = (FileImpl) enteredTo.getInclusionDirective().getAnnotation();
+                FileImpl pushFile;
                 if (includedFile != null) {
-                  // remember entered file in stack to be paired in onExit
-                  curFiles.add(includedFile);
+                  // remember entered file in stack to to have pair in onExit
+                  pushFile = includedFile;
+                  // do the best to reduce work in parsing phase to be done on include of resolved file
+                  if (includedFile.checkIfFileWasIncludedBeforeWithBetterOrEqualContent(ppHandler)) {
+                    // i.e. no need to keep tokens, because postInclude would discard included file
+                    CndUtils.assertTrueInConsole(!onEnterIntoInterestedFile, "how can we skip interested file?", includedFile);
+                    canSkipFileContent = true;
+                  }                  
                 } else {
                   // it is suspicious to see unresolved include followed by onEnter hook
                   // it might be in case of cancelled/interrupted query
                   FileImpl curFile = getCurFile(false);
+                  canSkipFileContent = false;
                   if (CsmModelAccessor.isModelAlive() && curFile.isValid()) {
                     assert false : "something wrong when including " + enteredTo.getFilePath() + " from " + curFile;
                   }
-                  // for error recovery add at least current file to have pair for onExit
-                  curFiles.add(curFile);
+                  // for error recovery add at least current file to have pair in onExit
+                  pushFile = curFile;
                 }
+                curFiles.add(pushFile);
+                skipCurFileContentOptimizations.add(canSkipFileContent ? Boolean.TRUE : Boolean.FALSE);
               }
             }
             insideInterestedFile = onEnterIntoInterestedFile;
+            skipCurrentFileContentOptimization = canSkipFileContent;
         }
 
         @Override
@@ -437,6 +465,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               return true;
             }
             insideInterestedFile = (exitedTo != null) && (exitedTo.getFileIndex() == stopAtIndex);
+            skipCurrentFileContentOptimization = false;
             if (stopAtIndex == exitedFrom.getFileIndex()) {
               CndUtils.assertPathsEqualInConsole(exitedFrom.getFilePath(), stopFileImpl.getAbsolutePath(),
                       "{0} expected {1}", stopFileImpl.getAbsolutePath(), exitedFrom);// NOI18N
@@ -453,28 +482,32 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               return false;
             } else if (parameters.triggerParsingActivity) {
               assert alreadySeenInterestedFileEnter == State.SEEN;
-              try {
-                assert ClankDriver.extractTokenStream(ppHandler).hasTokenStream();
-                PreprocHandler.State inclState = ppHandler.getState();
-                assert !inclState.isCleaned();
-                FileImpl currentInclusion = getCurFile(true);
-                if (currentInclusion != null) {
-                  CharSequence inclPath = currentInclusion.getAbsolutePath();
-                  ProjectBase inclFileOwner = currentInclusion.getProjectImpl(true);
-                  ProjectBase aStartProject = getStartProject();
-                  if (inclFileOwner.isDisposing() || aStartProject.isDisposing()) {
-                    if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
-                      System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project%n", inclPath, inclFileOwner.getName());
+              // check if onEnter we decided to skip this file content
+              FileImpl currentInclusion = getCurFile(true);
+              skipCurrentFileContentOptimization = getSkipCurrentFileContentOptimization(true);
+              if (!skipCurrentFileContentOptimization) {
+                try {
+                  assert ClankDriver.extractTokenStream(ppHandler).hasTokenStream();
+                  PreprocHandler.State inclState = ppHandler.getState();
+                  assert !inclState.isCleaned();
+                  if (currentInclusion != null) {
+                    CharSequence inclPath = currentInclusion.getAbsolutePath();
+                    ProjectBase inclFileOwner = currentInclusion.getProjectImpl(true);
+                    ProjectBase aStartProject = getStartProject();
+                    if (inclFileOwner.isDisposing() || aStartProject.isDisposing()) {
+                      if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                        System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project%n", inclPath, inclFileOwner.getName());
+                      }
+                    } else {
+                      FilePreprocessorConditionState pcState = FilePreprocessorConditionState.build(inclPath, exitedFrom.getSkippedRanges());
+                      PreprocessorStatePair ppStatePair = new PreprocessorStatePair(inclState, pcState);
+                      inclFileOwner.postIncludeFile(aStartProject, currentInclusion, inclPath, ppStatePair, null);
                     }
-                  } else {
-                    FilePreprocessorConditionState pcState = FilePreprocessorConditionState.build(inclPath, exitedFrom.getSkippedRanges());
-                    PreprocessorStatePair ppStatePair = new PreprocessorStatePair(inclState, pcState);
-                    inclFileOwner.postIncludeFile(aStartProject, currentInclusion, inclPath, ppStatePair, null);
                   }
+                } catch (Exception ex) {
+                  APTUtils.LOG.log(Level.SEVERE, "MyClankPreprocessorCallback: error on including {0}:%n{1}", new Object[]{exitedFrom.getFilePath(), ex});
+                  DiagnosticExceptoins.register(ex);
                 }
-              } catch (Exception ex) {
-                APTUtils.LOG.log(Level.SEVERE, "MyClankPreprocessorCallback: error on including {0}:%n{1}", new Object[]{exitedFrom.getFilePath(), ex});
-                DiagnosticExceptoins.register(ex);
               }
             }
             return true;

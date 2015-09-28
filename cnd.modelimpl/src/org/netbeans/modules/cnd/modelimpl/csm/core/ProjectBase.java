@@ -1764,6 +1764,34 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return csmFile;
     }
 
+    public final boolean checkIfFileWasIncludedBeforeWithBetterOrEqualContent(FileImpl preIncludedFile, PreprocHandler ppPreIncludeHandler) {
+        // this method is called after prepareIncludedFile
+        // do the best to reduce work to be done on include of passed file
+
+        // for now we check if there is already fully included pcState
+        // but also controlling macros can be checked if they were collected before
+        
+        CharSequence path = preIncludedFile.getAbsolutePath();
+        FileContainer.FileEntry entry = getFileContainer().getEntry(path);
+        if (entry == null) {
+            // suspicious to have null after previously successful prepareIncludedFile
+            // but might be when cancelling/interrupting
+            entryNotFoundMessage(path);
+            // can skip such file inclusion
+            return true;
+        }
+        synchronized (entry.getLock()) {
+            for (PreprocessorStatePair keptPair : entry.getStatePairs()) {
+                if (keptPair.pcState.isAllIncluded()
+                        && keptPair.state.isCompileContext() && keptPair.state.isCompileContext()) {
+                    // can not contribute any new content, because all was already included before
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     private static final boolean TRACE_FILE = (TraceFlags.TRACE_FILE_NAME != null);
     public void postIncludeFile(ProjectBase startProject, FileImpl csmFile, CharSequence file, PreprocessorStatePair newStatePair, APTFileCacheEntry aptCacheEntry) {
         boolean thisProjectUpdateResult = false;
