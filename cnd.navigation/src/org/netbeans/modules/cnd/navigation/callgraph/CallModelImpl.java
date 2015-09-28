@@ -388,16 +388,20 @@ public class CallModelImpl implements CallModel {
             if (!project.isValid()) {
                 return null;
             }
-            CsmOffsetableDeclaration root = (CsmOffsetableDeclaration) project.findDeclaration(declarationUin);
-            if (root != null) {
-                return root;
+            for(CsmOffsetableDeclaration decl : project.findDeclarations(declarationUin)) {
+                CsmFile containingFile = decl.getContainingFile();
+                if (containingFile != null) {
+                    if (fileUid.equals(UIDs.get(decl.getContainingFile()))) {
+                        return decl;
+                    }
+                }
             }
             CsmFile file = fileUid.getObject();
             if (!file.isValid()) {
                 return null;
             }
             for (CsmDeclaration d : file.getDeclarations()) {
-                root = findDeclaration(d);
+                CsmOffsetableDeclaration root = findDeclaration(d);
                 if (root != null){
                     return root;
                 }
