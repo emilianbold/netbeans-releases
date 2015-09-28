@@ -120,13 +120,16 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public boolean isCancelled() {
-            return cancelledState || outerDelegate.cancelled();
+            return cancelledState/* || outerDelegate.cancelled()*/;
         }
 
         private void cancel() {
             cancelledState = true;
         }
 
+        private void updateStateFromDelegate() {
+            cancelledState |= outerDelegate.cancelled();
+        }
     }
 
     private final ClankDriver.ClankPreprocessorCallback delegate;
@@ -160,6 +163,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             ClankFileInfoWrapper currentFileWrapper = includeStack.get(includeStack.size() - 1);
             this.delegate.onErrorDirective(currentFileWrapper, errorDirectiveWrapper);
         }
+        interrupter.updateStateFromDelegate();
     }
 
     @Override
@@ -190,6 +194,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             }
         }
         this.delegate.onInclusionDirective(currentFileWrapper, inclDirectiveWrapper);
+        interrupter.updateStateFromDelegate();
     }
     
     @Override
@@ -212,6 +217,7 @@ public final class ClankPPCallback extends FileInfoCallback {
                 }
             }
         }
+        interrupter.updateStateFromDelegate();
     }
 
     private ResolvedPath createResolvedPath(Preprocessor PP, InclusionDirectiveInfo directive) {
@@ -335,6 +341,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             assert includeStack.size() == 1 : "there should be only one main file";
             assert includeStack.get(0).current.isMainFile() : "there should be only main file";
         }
+        interrupter.updateStateFromDelegate();
     }
 
     @Override
@@ -389,6 +396,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             assert includeStack.size() == 1 : "there should be only one main file";
             assert includeStack.get(0).current.isMainFile() : "there should be only main file";
         }
+        interrupter.updateStateFromDelegate();
     }
 
     @Override
