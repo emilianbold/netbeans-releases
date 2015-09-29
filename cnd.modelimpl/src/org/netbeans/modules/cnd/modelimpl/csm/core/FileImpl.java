@@ -1445,7 +1445,9 @@ public final class FileImpl implements CsmFile,
     }
 
     private static void assertParamsReadyForCache(TokenStreamProducer.Parameters params) {
-        boolean ready = params.needTokens != YesNoInterested.NEVER && params.needComments && params.needMacroExpansion != YesNoInterested.NEVER;
+        boolean ready = (params.needTokens != YesNoInterested.NEVER) 
+                && (params.needComments != YesNoInterested.NEVER) 
+                && (params.needMacroExpansion != YesNoInterested.NEVER);
         if (!ready) {
             CndUtils.assertTrue(false, "Should be ready for cahcing: " + params);
         }
@@ -1488,12 +1490,12 @@ public final class FileImpl implements CsmFile,
             return null;
         }
 
-        final boolean cacheTokens = ! parseParams.triggerParsingActivity;
+        final boolean cacheTokens = !parseParams.triggerParsingActivity;
         TokenStream filteredTokenStream;
         FilePreprocessorConditionState pcState = null;
         
         if (cacheTokens) {
-            TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsingAndTokenStreamCaching(parseParams.triggerParsingActivity);
+            TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsingAndTokenStreamCaching();
             TokenStream ts = parseParams.tsp.getTokenStream(tsParams, interrupter);
             if (ts == null) { // can happen if the file became invalid
                 return null;
@@ -1505,7 +1507,7 @@ public final class FileImpl implements CsmFile,
             FileTokenStreamCache cache = getTokenStreamCache();            
             filteredTokenStream = cache.cacheTokensAndReturnFiltered(pcState, tokenList, languageFilter);
         } else {
-            TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsing(parseParams.triggerParsingActivity, parseParams.getLanguage());
+            TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsing(parseParams.getLanguage());
             filteredTokenStream = parseParams.tsp.getTokenStream(tsParams, interrupter);
             if (filteredTokenStream == null) { // can happen if the file became invalid
                 return null;

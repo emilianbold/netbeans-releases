@@ -94,13 +94,13 @@ public abstract class TokenStreamProducer {
         public final /*YesNoInterested*/int needPPDirectives;
         public final /*YesNoInterested*/int needSkippedRanges;
         public final /*YesNoInterested*/int needMacroExpansion;
-        public final boolean needComments;
+        public final /*YesNoInterested*/int needComments;
         public final boolean triggerParsingActivity;
         public final boolean applyLanguageFilter;
         
         private Parameters(/*YesNoInterested*/int needTokens, boolean triggerParsingActivity, 
                 /*YesNoInterested*/int needPPDirectives, /*YesNoInterested*/int needMacroExpansion, /*YesNoInterested*/int needSkippedRanges, 
-                boolean needComments, boolean applyLanguageFilter) {
+                /*YesNoInterested*/int needComments, boolean applyLanguageFilter) {
             this.triggerParsingActivity = triggerParsingActivity;
             this.needPPDirectives = needPPDirectives;
             this.needSkippedRanges = needSkippedRanges;
@@ -110,25 +110,25 @@ public abstract class TokenStreamProducer {
             this.applyLanguageFilter = applyLanguageFilter;
         }
 
-        public static Parameters createForParsing(boolean triggerParsingActivity, String language) {
+        public static Parameters createForParsing(String language) {
             return new Parameters(
-                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED, 
-                    triggerParsingActivity, 
+                    YesNoInterested.ALWAYS, 
+                    true, 
                     YesNoInterested.ALWAYS, 
                     APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.NEVER : YesNoInterested.ALWAYS,
                     YesNoInterested.ALWAYS,
-                    APTLanguageSupport.FORTRAN.equals(language), // no comments needed for just parsing except fortran
+                    APTLanguageSupport.FORTRAN.equals(language) ? YesNoInterested.ALWAYS : YesNoInterested.NEVER, // no comments needed for just parsing except fortran
                     true);
         }
 
-        public static Parameters createForParsingAndTokenStreamCaching(boolean triggerParsingActivity) {
+        public static Parameters createForParsingAndTokenStreamCaching() {
             return new Parameters(
-                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
-                    triggerParsingActivity, 
-                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
-                    APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.INTERESTED : YesNoInterested.ALWAYS,
-                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
-                    true, // we need comments for macro views
+                    YesNoInterested.INTERESTED,
+                    false, 
+                    YesNoInterested.INTERESTED,
+                    YesNoInterested.INTERESTED,
+                    YesNoInterested.INTERESTED,
+                    YesNoInterested.INTERESTED, // we need comments for macro views
                     false); //cache only unfiltered
         }
 
@@ -139,7 +139,7 @@ public abstract class TokenStreamProducer {
                     YesNoInterested.NEVER, 
                     YesNoInterested.INTERESTED, // we need start/end expansion toknes
                     YesNoInterested.INTERESTED, 
-                    true, // we need comments for macro views
+                    YesNoInterested.INTERESTED, // we need comments for macro views
                     false); //cache only unfiltered
         }
 
@@ -150,7 +150,7 @@ public abstract class TokenStreamProducer {
                     YesNoInterested.INTERESTED,
                     YesNoInterested.INTERESTED,
                     YesNoInterested.NEVER,
-                    false,
+                    YesNoInterested.NEVER,
                     false
             );
         }
