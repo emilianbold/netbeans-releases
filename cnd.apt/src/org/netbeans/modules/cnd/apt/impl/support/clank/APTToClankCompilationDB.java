@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -199,7 +200,15 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
 
     private static LangStandard.Kind getLangStd(CharSequence langFlavor) throws AssertionError {
         LangStandard.Kind out_lang_std = LangStandard.Kind.lang_unspecified;
-        LanguageFlavor flavor = LanguageFlavor.valueOf(langFlavor.toString());
+        String strFlavor = langFlavor.toString();
+        LanguageFlavor flavor = LanguageFlavor.UNKNOWN;
+        if (strFlavor != null && !strFlavor.isEmpty()) {
+            try {
+                flavor = LanguageFlavor.valueOf(strFlavor);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         switch (flavor) {
             case DEFAULT:
             case UNKNOWN:
@@ -243,7 +252,15 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
 
     private static InputKind getLang(CharSequence langStr, String filePath) throws AssertionError {
         InputKind out = InputKind.IK_None;
-        Language language = Language.valueOf(langStr.toString());
+        Language language = Language.CPP;
+        String strLang = langStr.toString();
+        if (strLang != null && ! strLang.isEmpty()) {
+            try {
+                language = Language.valueOf(strLang);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         switch (language) {
             case C:
                 out = InputKind.IK_C;
