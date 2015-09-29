@@ -114,10 +114,14 @@ public class ClankFileInfoQuerySupport {
         assert APTTraceFlags.USE_CLANK;
         return fileImpl.hasFileGuard();
     }
-        
+
+    /** returns expanded code or NULL on error */
     public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
         assert APTTraceFlags.USE_CLANK;
         TokenStream ts = fileImpl.getTokenStreamForMacroExpansion(offset, offset, code, true);
+        if (ts == null) {
+            return null;
+        }
         ts = new APTCommentsFilter(ts);
 
         StringBuilder sb = new StringBuilder(""); // NOI18N
