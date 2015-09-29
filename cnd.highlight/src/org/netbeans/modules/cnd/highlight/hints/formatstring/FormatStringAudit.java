@@ -146,7 +146,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
                             int paramOffset = -1;
                             int bracketsCounter = 0;
                             int formatStringOffset = -1;
-                            boolean skipMacro = false;
+                            boolean doNotResolveType = false;
                             
                             while (docTokenSequence.moveNext()) {
                                 Token<TokenId> token = docTokenSequence.token();
@@ -154,9 +154,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
                                 if (tokenId.equals(CppTokenId.IDENTIFIER) && state == State.DEFAULT) {
                                     CsmReference reference = rr.findReference(file, doc, docTokenSequence.offset());
                                     CsmObject object = reference.getReferencedObject();
-                                    if (Utilities.isFormattedPrintFunction(object)) {
-                                        state = State.START;
-                                    }
+                                    state = State.START;
                                 } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.START) {
                                     state = State.IN_PARAM;
                                 } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM) {
@@ -189,7 +187,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
                                     }
                                 } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
                                     if (paramBuf.length() > 0) {
-                                        params.add(new Parameter(paramBuf.toString(), paramOffset, !skipMacro));
+                                        params.add(new Parameter(paramBuf.toString(), paramOffset, !doNotResolveType));
                                         paramOffset = -1;
                                     }
                                     result.add(new FormattedPrintFunction(file
@@ -208,10 +206,10 @@ public class FormatStringAudit extends AbstractCodeAudit {
                                     formatFlag = true;
                                 } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
                                     if (paramBuf.length() > 0) {
-                                        params.add(new Parameter(paramBuf.toString(), paramOffset, !skipMacro));
+                                        params.add(new Parameter(paramBuf.toString(), paramOffset, !doNotResolveType));
                                         paramOffset = -1;
                                     }
-                                    skipMacro = false;
+                                    doNotResolveType = false;
                                     paramBuf = new StringBuilder();
                                 } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
                                         && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
@@ -227,9 +225,16 @@ public class FormatStringAudit extends AbstractCodeAudit {
                                     // skip macro parameters
                                     CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
                                     if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
-                                        skipMacro = true;
+                                        doNotResolveType = true;
                                     }
                                     paramBuf.append(token.text());
+                                } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
+                                        && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                                    // skip check in case of string concatenation with macros
+                                    CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
+                                    if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
+                                        break;
+                                    }
                                 }
                             }
                         }
