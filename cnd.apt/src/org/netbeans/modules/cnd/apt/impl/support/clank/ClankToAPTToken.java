@@ -78,7 +78,7 @@ class ClankToAPTToken implements APTToken {
         SmallString spell = new SmallString(1024);
 
         // cache for last function-like macro expansion range
-        long lastExpansionRange = -1L;
+        long/*<SourceLocation, SourceLocation>*/ lastExpansionRange = -1L;
         int lastExpandedStartOffset = 0;
         APTCommentToken lastEndOffsetToken = null;
         ///////
@@ -114,19 +114,19 @@ class ClankToAPTToken implements APTToken {
                 // reuse start/end if was already calculated for this range
                 long/*<SourceLocation, SourceLocation>*/ curExpansionRange = SM.getExpansionRange(rawLocation);
                 if (lastExpansionRange != curExpansionRange) {
-                    long/*<FileID, uint>*/ decomposedRangeStart = SM.getDecomposedLoc($first_int(curExpansionRange));
-                    long/*<FileID, uint>*/ decomposedRangeEnd = SM.getDecomposedLoc($second_int(curExpansionRange));
+                    long/*<FileID, uint>*/ decomposedRangeStart = SM.getDecomposedLoc($first_SourceLocation(curExpansionRange));
+                    long/*<FileID, uint>*/ decomposedRangeEnd = SM.getDecomposedLoc($second_SourceLocation(curExpansionRange));
                     lastExpandedStartOffset = $second_offset(decomposedRangeStart);
                     // end offset is start of the last token in expRange, so add TokSize
-                    int TokSize = Lexer.MeasureTokenLength($second_int(curExpansionRange), SM, PP.getLangOpts());
+                    int TokSize = Lexer.MeasureTokenLength($second_SourceLocation(curExpansionRange), SM, PP.getLangOpts());
                     int expandedEndOffset = $second_offset(decomposedRangeEnd);
                     expandedEndOffset += TokSize;
 
                     int tokenEndLine = FAKE_LINE;
                     int tokenEndColumn = FAKE_COLUMN;
                     if (needLineColumns) {
-                        tokenEndLine = SM.getLineNumber($first_FileID(decomposedRangeEnd), $second_int(decomposedRangeEnd), null);
-                        tokenEndColumn = SM.getColumnNumber($first_FileID(decomposedRangeEnd), $second_int(decomposedRangeEnd), null);
+                        tokenEndLine = SM.getLineNumber($first_FileID(decomposedRangeEnd), $second_offset(decomposedRangeEnd), null);
+                        tokenEndColumn = SM.getColumnNumber($first_FileID(decomposedRangeEnd), $second_offset(decomposedRangeEnd), null);
                     }
                     lastEndOffsetToken = new APTCommentToken();
                     lastEndOffsetToken.setType(APTTokenTypes.COMMENT);
@@ -163,8 +163,8 @@ class ClankToAPTToken implements APTToken {
         if (needLineColumns) {
             SourceManager SM = PP.getSourceManager();
             long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.getRawLocation());
-            tokenLine = SM.getLineNumber($first_FileID(LocInfo), $second_int(LocInfo), null);
-            tokenColumn = SM.getColumnNumber($first_FileID(LocInfo), $second_int(LocInfo), null);
+            tokenLine = SM.getLineNumber($first_FileID(LocInfo), $second_offset(LocInfo), null);
+            tokenColumn = SM.getColumnNumber($first_FileID(LocInfo), $second_offset(LocInfo), null);
         }
         APTCommentToken out = new APTCommentToken();
         out.setType(APTTokenTypes.COMMENT);
@@ -184,8 +184,8 @@ class ClankToAPTToken implements APTToken {
             if (needLineColumns) {
                 SourceManager SM = PP.getSourceManager();
                 long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.getRawLocation());
-                tokenLine = SM.getLineNumber($first_FileID(LocInfo), $second_int(LocInfo), null);
-                tokenColumn = SM.getColumnNumber($first_FileID(LocInfo), $second_int(LocInfo), null);
+                tokenLine = SM.getLineNumber($first_FileID(LocInfo), $second_offset(LocInfo), null);
+                tokenColumn = SM.getColumnNumber($first_FileID(LocInfo), $second_offset(LocInfo), null);
             }
             int aptTokenType = ClankToAPTUtils.convertClankToAPTTokenKind(token.getKind());
             if (APTLiteConstTextToken.isApplicable(aptTokenType, offset, tokenColumn, tokenLine)) {
