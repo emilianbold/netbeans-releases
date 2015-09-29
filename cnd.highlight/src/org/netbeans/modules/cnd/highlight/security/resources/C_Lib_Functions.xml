@@ -240,120 +240,120 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
             <description><![CDATA[Return file descriptors with the FD_CLOEXEC cleared so that they may leak when a program calls exec(). Older code made fcntl() calls shortly after <br>these functions returned to set that flag, but in multi-threaded code (including programs that only run one thread themselves, but may be linked <br>with libraries that run additional threads), that leaves a window open for a race with another thread. The F_DUPFD_CLOEXEC & F_DUP2FD_CLOEXEC calls <br>to fcntl (available in Solaris 11 and later releases) combine the duplication & flag setting into an atomic operation so there is no race.]]></description>
         </category>
         <category name="fopen">
-            <functon name="fopen" header="stdio.h"></functon>
-            <functon name="freopen" header="stdio.h"></functon>
+            <function name="fopen" header="stdio.h"></function>
+            <function name="freopen" header="stdio.h"></function>
             <description><![CDATA[It's not possible to safely create files this way. However, once a pathname is verified to exist, e.g., after mkstemp(), <br>it can be used to open those pathnames. In other cases, a safe invocation of open() followed by fdopen() should be used.]]></description>
         </category>
         <category name="lstat">
-            <functon name="lstat" header="sys/stat.h"></functon>
-            <functon name="stat" header="sys/stat.h"></functon>
-            <functon name="fstatat" header="sys/stat.h"></functon>
+            <function name="lstat" header="sys/stat.h"></function>
+            <function name="stat" header="sys/stat.h"></function>
+            <function name="fstatat" header="sys/stat.h"></function>
             <description><![CDATA[This function not is suitable to check for the existence or absence of a file. Followed by open() it has an inherent race condition that can't be solved.]]></description>
         </category>
         <category name="bcopy">
-            <functon name="bcopy" header="string.h">
+            <function name="bcopy" header="string.h">
                 <alt><![CDATA[strlcpy(dst, src, dstsize)]]></alt>
-            </functon>
-            <functon name="memcpy" header="string.h">
+            </function>
+            <function name="memcpy" header="string.h">
                 <alt><![CDATA[strlcpy(dst, src, dstsize)]]></alt>
-            </functon>
+            </function>
             <description><![CDATA[Should not be used for copying strings, even though the length may be known.]]></description>
         </category>
         <category name="catopen">
-            <functon name="catopen" header="nl_types.h"></functon>
+            <function name="catopen" header="nl_types.h"></function>
             <description><![CDATA[Libraries and programs should not call catopen() on user supplied pathnames. <br>User supplied message catalogues can be leveraged to break privileged code easily.]]></description>
         </category>
         <category name="chdir">
-            <functon name="chdir" header="unistd.h"></functon>
+            <function name="chdir" header="unistd.h"></function>
             <description><![CDATA[This function is open to pathname race conditions. Do not use in multi-threaded programs. <br>To avoid the race condition, use fchdir() after the directory has been open()-ed and the properties have been checked using fstat()).]]></description>
         </category>
         <category name="chroot">
-            <functon name="chroot" header="unistd.h"></functon>
+            <function name="chroot" header="unistd.h"></function>
             <description><![CDATA[chroot'ed environments offer little protection; programs can easily escape. Make sure you run no privileged programs <br>in a chroot()'ed environment and that you chdir() to a point below the new root after the chroot().]]></description>
         </category>
         <category name="copylist">
-            <functon name="copylist" header="libgen.h"></functon>
-            <functon name="dbm_open" header="ndbm.h"></functon>
-            <functon name="dbminit" header="dbm.h"></functon>
+            <function name="copylist" header="libgen.h"></function>
+            <function name="dbm_open" header="ndbm.h"></function>
+            <function name="dbminit" header="dbm.h"></function>
             <description><![CDATA[This function opens files and should only be used to open known-safe pathnames.]]></description>
         </category>
         <category name="dlopen">
-            <functon name="dlopen" header="dlfcn.h"></functon>
+            <function name="dlopen" header="dlfcn.h"></function>
             <description><![CDATA[Parameters passed to dlopen should only be unqualified pathnames which are then found using the runtime linker's path, <br>or full pathnames not in any way derived from user input (including from argv[0] !!!) There is no way to safely open a user-supplied shared object; the object's _init() function is executed before dlopen() returns.]]></description>
         </category>
         <category name="execl">
-            <functon name="execl" header="unistd.h"></functon>
-            <functon name="execv" header="unistd.h"></functon>
-            <functon name="execve" header="unistd.h"></functon>
+            <function name="execl" header="unistd.h"></function>
+            <function name="execv" header="unistd.h"></function>
+            <function name="execve" header="unistd.h"></function>
             <description><![CDATA[Make sure that the environment is sanitized and unneeded file descriptors are closed before executing a new program.]]></description>
         </category>
         <category name="fattach">
-            <functon name="fattach" header="stropts.h"></functon>
+            <function name="fattach" header="stropts.h"></function>
             <description><![CDATA[Check the file descriptor after open (using fstat()), not the pathname before the open.]]></description>
         </category>
         <category name="printf">
-            <functon name="printf" header="stdio.h"></functon>
-            <functon name="vprintf" header="stdio.h"></functon>
-            <functon name="fprintf" header="stdio.h"></functon>
-            <functon name="vfprintf" header="stdio.h"></functon>
-            <functon name="wprintf" header="wchar.h"></functon>
-            <functon name="vwprintf" header="wchar.h"></functon>
-            <functon name="fwprintf" header="wchar.h"></functon>
-            <functon name="vfwprintf" header="wchar.h"></functon>
-            <functon name="asprintf" header="stdio.h"></functon>
+            <function name="printf" header="stdio.h"></function>
+            <function name="vprintf" header="stdio.h"></function>
+            <function name="fprintf" header="stdio.h"></function>
+            <function name="vfprintf" header="stdio.h"></function>
+            <function name="wprintf" header="wchar.h"></function>
+            <function name="vwprintf" header="wchar.h"></function>
+            <function name="fwprintf" header="wchar.h"></function>
+            <function name="vfwprintf" header="wchar.h"></function>
+            <function name="asprintf" header="stdio.h"></function>
             <description><![CDATA[At risk from user-specified format strings. <br>If the format string comes from a message catalog, verify your NLSPATH manipulations and catopen()/catget() uses.]]></description>
         </category>
         <category name="snprintf">
-            <functon name="snprintf" header="stdio.h"></functon>
-            <functon name="vsnprintf" header="stdio.h"></functon>
-            <functon name="asprintf" header="stdio.h"></functon>
+            <function name="snprintf" header="stdio.h"></function>
+            <function name="vsnprintf" header="stdio.h"></function>
+            <function name="asprintf" header="stdio.h"></function>
             <description><![CDATA[At risk from user-specified format strings. If the format string comes from a message catalog, verify your NLSPATH manipulations and catopen()/catget() uses. <br>snprintf() and vsnprintf() return the number of characters that would have been written to the buffer if it were large enough. <br>Note: none of the arguments may point to the output buffer.]]></description>
         </category>
         <category name="swprintf">
-            <functon name="swprintf" header="stdio.h"></functon>
-            <functon name="vswprintf" header="stdio.h"></functon>
+            <function name="swprintf" header="stdio.h"></function>
+            <function name="vswprintf" header="stdio.h"></function>
             <description><![CDATA[At risk from user-specified format strings. If the format string comes from a message catalog, verify your NLSPATH manipulations and catopen()/catget() uses. <br>Note: none of the arguments may point to the output buffer.]]></description>
         </category>
         <category name="syslog">
-            <functon name="syslog" header="syslog.h"></functon>
-            <functon name="vsyslog" header="syslog.h"></functon>
+            <function name="syslog" header="syslog.h"></function>
+            <function name="vsyslog" header="syslog.h"></function>
             <description><![CDATA[At risk from user-specified format strings. <br>If the format string comes from a message catalog, verify your NLSPATH manipulations and catopen()/catget() uses.]]></description>
         </category>
         <category name="scanf">
-            <functon name="scanf" header="stdio.h"></functon>
-            <functon name="vscanf" header="stdio.h"></functon>
-            <functon name="fscanf" header="stdio.h"></functon>
-            <functon name="vfscanf" header="stdio.h"></functon>
-            <functon name="sscanf" header="stdio.h"></functon>
-            <functon name="vsscanf" header="stdio.h"></functon>
+            <function name="scanf" header="stdio.h"></function>
+            <function name="vscanf" header="stdio.h"></function>
+            <function name="fscanf" header="stdio.h"></function>
+            <function name="vfscanf" header="stdio.h"></function>
+            <function name="sscanf" header="stdio.h"></function>
+            <function name="vsscanf" header="stdio.h"></function>
             <description><![CDATA[When scanning strings, make sure the format specified includes maximum buffer lengths. <br>Note that the corresponding buffer must be at least 1 byte larger to allow space for the terminating NUL character.]]></description>
         </category>
         <category name="ftw">
-            <functon name="ftw" header="ftw.h"></functon>
-            <functon name="nftw" header="ftw.h"></functon>
+            <function name="ftw" header="ftw.h"></function>
+            <function name="nftw" header="ftw.h"></function>
             <description><![CDATA[Follows symbolic links and crosses mount points. Use nftw with the appropriate flags set (a combination of FTW_PHYS and FTW_MOUNT).]]></description>
         </category>
         <category name="getenv">
-            <functon name="getenv" header=""></functon>
+            <function name="getenv" header=""></function>
             <description><![CDATA[The environment is completely user-specified. When possible, use of getenv() should be avoided in libraries. Strings returned by getenv() <br>can be up to NCARGS bytes long (that's currently 1MB for 32-bit environments.) Pathnames derived from environment variables should not be trusted. <br>They should not be used as input for any of the *open() functions (including catopen() and dlopen()).]]></description>
         </category>
         <category name="mkdir">
-            <functon name="mkdir" header="sys/stat.h"></functon>
-            <functon name="mkdirat" header="sys/stat.h"></functon>
-            <functon name="mknod" header="sys/stat.h"></functon>
-            <functon name="mknodat" header="sys/stat.h"></functon>
+            <function name="mkdir" header="sys/stat.h"></function>
+            <function name="mkdirat" header="sys/stat.h"></function>
+            <function name="mknod" header="sys/stat.h"></function>
+            <function name="mknodat" header="sys/stat.h"></function>
             <description><![CDATA[Be careful about the path used. This function will not follow symlinks for the last component, so they are relatively safe.]]></description>
         </category>
         <category name="strccpy">
-            <functon name="strccpy" header="libgen.h"></functon>
-            <functon name="strcadd" header="libgen.h"></functon>
-            <functon name="streadd" header="libgen.h"></functon>
-            <functon name="strecpy" header="libgen.h"></functon>
-            <functon name="strtrns" header="libgen.h"></functon>
+            <function name="strccpy" header="libgen.h"></function>
+            <function name="strcadd" header="libgen.h"></function>
+            <function name="streadd" header="libgen.h"></function>
+            <function name="strecpy" header="libgen.h"></function>
+            <function name="strtrns" header="libgen.h"></function>
             <description><![CDATA[It is not possible to limit these functions to a maximum buffer size.<br>The use of these functions will always force reviewers to follow the logic, and prevent automated scanning of source code for vulnerabilities.]]></description>
         </category>
         <category name="umask">
-            <functon name="umask" header="sys/stat.h"></functon>
+            <function name="umask" header="sys/stat.h"></function>
             <description><![CDATA[Shouldn't be used in libraries or applications; the user knows best and his umask should be used. Also not multi-thread safe.]]></description>
         </category>
     </level>
