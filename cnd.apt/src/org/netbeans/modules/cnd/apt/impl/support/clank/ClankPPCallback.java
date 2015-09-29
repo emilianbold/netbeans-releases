@@ -61,13 +61,11 @@ import org.clang.tools.services.support.FileInfo;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
 import org.clank.java.std;
-import static org.clank.java.std.$second_uint;
 import org.clank.java.std.vector;
 import org.clank.support.Casts;
 import static org.clank.support.Casts.toJavaString;
 import org.clank.support.Native;
 import org.clank.support.NativePointer;
-import org.clank.support.Unsigned;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.SmallString;
 import org.llvm.adt.StringRef;
@@ -102,6 +100,7 @@ import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Utilities;
+import static org.clang.basic.ClangGlobals.*;
 
 /**
  *
@@ -506,8 +505,8 @@ public final class ClankPPCallback extends FileInfoCallback {
             long/*<FileID, uint>*/ decomposedLocBegin = SM.getDecomposedLoc(hashLoc);
             final int eodLoc = MD.getEodLoc();
             long/*<FileID, uint>*/ decomposedLocEnd = SM.getDecomposedLoc(eodLoc);
-            long begOffset = $second_uint(decomposedLocBegin);
-            long endOffset = $second_uint(decomposedLocEnd);
+            int begOffset = $second_offset(decomposedLocBegin);
+            int endOffset = $second_offset(decomposedLocEnd);
             List<CharSequence> params = null;
             boolean isVariadic = false;
             if (macroInfo.isFunctionLike()) {
@@ -536,13 +535,13 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
 
         public ClankMacroDirectiveWrapper(CharSequence name,
-                List<CharSequence> params, char$ptr bufferName, long begOffset, long endOffset) {
-            super(Unsigned.long2uint(begOffset), Unsigned.long2uint(endOffset));
+                List<CharSequence> params, char$ptr bufferName, int begOffset, int endOffset) {
+            super(begOffset, endOffset);
             this.params = params;
             this.macroName = name;
             this.isDefined = true;
             this.macroNameTokenSourceLocation = -1;
-            macroNameOffset = Unsigned.long2uint(begOffset);
+            macroNameOffset = begOffset;
             if (std.strcmp(bufferName, "<built-in>") == 0) { // NOI18N
                 // predefined system or user macros
                 this.fileOwnerName = null;
@@ -797,8 +796,8 @@ public final class ClankPPCallback extends FileInfoCallback {
                            continue;
                         }
                     }               
-                    long macroUsageStartOffset = $second_uint(srcMgr.getDecomposedLoc(e.getUsedMacroNameLocation()));
-                    int startOfset = Unsigned.long2uint(macroUsageStartOffset);
+                    int macroUsageStartOffset = $second_offset(srcMgr.getDecomposedLoc(e.getUsedMacroNameLocation()));
+                    int startOfset = macroUsageStartOffset;
                     int endOfset = startOfset + e.getUsedMacroNameLength();
                     MacroUsage macroUsage = new MacroUsage(startOfset, endOfset, referencedMacro);
                     convertedMacroUsages.add(macroUsage);
@@ -813,7 +812,7 @@ public final class ClankPPCallback extends FileInfoCallback {
                 // TODO: use the last for now
                 FileGuardInfo fileGuardInfo = guards.$at(guards.size()-1);
                 SourceManager srcMgr = current.getSourceManager();
-                int start = Unsigned.long2uint($second_uint(srcMgr.getDecomposedLoc(fileGuardInfo.getIfDefMacroLocation())));
+                int start = $second_offset(srcMgr.getDecomposedLoc(fileGuardInfo.getIfDefMacroLocation()));
                 convertedGuard = new FileGuard(start, start+fileGuardInfo.getIfDefMacro().getLength());
             }
         }
@@ -860,8 +859,8 @@ public final class ClankPPCallback extends FileInfoCallback {
                                 params.set(params.size() - 1, APTUtils.VA_ARGS_TOKEN.getTextID());
                             }
                         }
-                        long macroNameStartOffset = $second_uint(SM.getDecomposedLoc(macroDirective.getMacroNameLocation()));
-                        ClankMacroDirectiveWrapper wrapper = new ClankMacroDirectiveWrapper(macroName, params, macroDirective, Unsigned.long2uint(macroNameStartOffset));
+                        int macroNameStartOffset = $second_offset(SM.getDecomposedLoc(macroDirective.getMacroNameLocation()));
+                        ClankMacroDirectiveWrapper wrapper = new ClankMacroDirectiveWrapper(macroName, params, macroDirective, macroNameStartOffset);
                         this.convertedPPDirectives.add(wrapper);
                     }
                 }

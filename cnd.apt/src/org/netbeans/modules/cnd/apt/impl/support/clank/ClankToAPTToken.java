@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
-import static org.clang.basic.ClangGlobals.$first_FileID;
+import static org.clang.basic.ClangGlobals.*;
 import org.clang.basic.SourceLocation;
 import org.clang.basic.SourceManager;
 import org.clang.basic.tok;
@@ -51,7 +51,6 @@ import org.clang.lex.SmallVectorToken;
 import org.clang.lex.Token;
 import org.clang.tools.services.support.FileInfoCallback;
 import static org.clank.java.std.*;
-import org.clank.support.Unsigned;
 import org.llvm.adt.SmallString;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
@@ -117,17 +116,17 @@ class ClankToAPTToken implements APTToken {
                 if (lastExpansionRange != curExpansionRange) {
                     long/*<FileID, uint>*/ decomposedRangeStart = SM.getDecomposedLoc($first_int(curExpansionRange));
                     long/*<FileID, uint>*/ decomposedRangeEnd = SM.getDecomposedLoc($second_int(curExpansionRange));
-                    lastExpandedStartOffset = Unsigned.long2uint($second_uint(decomposedRangeStart));
+                    lastExpandedStartOffset = $second_offset(decomposedRangeStart);
                     // end offset is start of the last token in expRange, so add TokSize
-                    int TokSize = Unsigned.long2uint(Lexer.MeasureTokenLength($second_int(curExpansionRange), SM, PP.getLangOpts()));
-                    int expandedEndOffset = Unsigned.long2uint($second_uint(decomposedRangeEnd));
+                    int TokSize = Lexer.MeasureTokenLength($second_int(curExpansionRange), SM, PP.getLangOpts());
+                    int expandedEndOffset = $second_offset(decomposedRangeEnd);
                     expandedEndOffset += TokSize;
 
                     int tokenEndLine = FAKE_LINE;
                     int tokenEndColumn = FAKE_COLUMN;
                     if (needLineColumns) {
-                        tokenEndLine = Unsigned.long2uint(SM.getLineNumber($first_FileID(decomposedRangeEnd), $second_uint(decomposedRangeEnd), null));
-                        tokenEndColumn = Unsigned.long2uint(SM.getColumnNumber($first_FileID(decomposedRangeEnd), $second_uint(decomposedRangeEnd), null));
+                        tokenEndLine = SM.getLineNumber($first_FileID(decomposedRangeEnd), $second_int(decomposedRangeEnd), null);
+                        tokenEndColumn = SM.getColumnNumber($first_FileID(decomposedRangeEnd), $second_int(decomposedRangeEnd), null);
                     }
                     lastEndOffsetToken = new APTCommentToken();
                     lastEndOffsetToken.setType(APTTokenTypes.COMMENT);
@@ -144,7 +143,7 @@ class ClankToAPTToken implements APTToken {
                 needToWrapAsMacro = true;
             } else {
                 long/*<FileID, uint>*/ decomposedLoc = SM.getDecomposedLoc(rawLocation);
-                offset = Unsigned.long2uint($second_uint(decomposedLoc));
+                offset = $second_offset(decomposedLoc);
                 converted = ClankToAPTToken.convert(PP, token, offset, spell, needLineColumns);
             }
             if (needToWrapAsMacro) {
@@ -164,8 +163,8 @@ class ClankToAPTToken implements APTToken {
         if (needLineColumns) {
             SourceManager SM = PP.getSourceManager();
             long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.getRawLocation());
-            tokenLine = Unsigned.long2uint(SM.getLineNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
-            tokenColumn = Unsigned.long2uint(SM.getColumnNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
+            tokenLine = SM.getLineNumber($first_FileID(LocInfo), $second_int(LocInfo), null);
+            tokenColumn = SM.getColumnNumber($first_FileID(LocInfo), $second_int(LocInfo), null);
         }
         APTCommentToken out = new APTCommentToken();
         out.setType(APTTokenTypes.COMMENT);
@@ -185,8 +184,8 @@ class ClankToAPTToken implements APTToken {
             if (needLineColumns) {
                 SourceManager SM = PP.getSourceManager();
                 long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.getRawLocation());
-                tokenLine = Unsigned.long2uint(SM.getLineNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
-                tokenColumn = Unsigned.long2uint(SM.getColumnNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
+                tokenLine = SM.getLineNumber($first_FileID(LocInfo), $second_int(LocInfo), null);
+                tokenColumn = SM.getColumnNumber($first_FileID(LocInfo), $second_int(LocInfo), null);
             }
             int aptTokenType = ClankToAPTUtils.convertClankToAPTTokenKind(token.getKind());
             if (APTLiteConstTextToken.isApplicable(aptTokenType, offset, tokenColumn, tokenLine)) {
