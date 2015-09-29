@@ -557,9 +557,16 @@ public class HintsInvoker {
 
                     Set<String> suppressedWarnings = new HashSet<String>(Utilities.findSuppressedWarnings(info, candidate));
                     Occurrence verifiedVariables = verified.next();
+                    
+                    boolean guarded = isInGuarded(info, candidate);
 
                     for (HintDescription hd : patternHints.get(d)) {
                         HintMetadata hm = hd.getMetadata();
+                        // skip guarded sections
+                        if (guarded && !hd.getTrigger().hasOption(TriggerOptions.PROCESS_GUARDED)) {
+                            continue;
+                        }
+                        
                         HintContext c = SPIAccessor.getINSTANCE().createHintContext(info, settings, hm, candidate, verifiedVariables.getVariables(), verifiedVariables.getMultiVariables(), verifiedVariables.getVariables2Names(), constraints, problems, bulkMode, cancel, caret);
 
                         if (!Collections.disjoint(suppressedWarnings, hm.suppressWarnings))

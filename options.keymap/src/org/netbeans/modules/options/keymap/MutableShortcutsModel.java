@@ -151,20 +151,28 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         return model.isCustomProfile (profile);
     }
     
-    synchronized boolean deleteOrRestoreProfile (String profile) {
-        if (model.isCustomProfile (profile)) {
-            deletedProfiles.add (profile);
-            modifiedProfiles.remove (profile);
-            clearShortcuts(profile);
-            setDirty();
-            return true;
-        } else {
-            modifiedProfiles.remove(profile);
-            revertedProfiles.add(profile);
-            clearShortcuts(profile);
-            setDirty();
-            return false;
+    boolean deleteOrRestoreProfile (String profile) {
+        boolean ret;
+        
+        synchronized (this) {
+            if (model.isCustomProfile (profile)) {
+                deletedProfiles.add (profile);
+                modifiedProfiles.remove (profile);
+                clearShortcuts(profile);
+                setDirty();
+                ret = true;
+            } else {
+                modifiedProfiles.remove(profile);
+                revertedProfiles.add(profile);
+                clearShortcuts(profile);
+                setDirty();
+                ret = false;
+            }
         }
+        if (!isDirty()) {
+            fireChanged();
+        }
+        return ret;
     }
     
     public void addChangeListener(ChangeListener l) {
