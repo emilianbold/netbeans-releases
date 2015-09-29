@@ -83,7 +83,9 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -100,8 +102,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -116,6 +120,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -181,6 +186,95 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         
     protected abstract boolean process(CompilationInfo info, final Document doc);
     
+    /**
+     * Signatures of Serializable methods.
+     */
+    private static final Set<String> SERIALIZABLE_SIGNATURES = new HashSet<>(Arrays.asList(new String[] {
+        "writeObject(Ljava/io/ObjectInputStream;)",
+        "readObject(Ljava/io/ObjectInputStream;)",
+        "readResolve()Ljava/lang/Object;",
+        "writeReplace()Ljava/lang/Object;",
+        "readObjectNoData()V",
+    }));
+    
+    /**
+     * Also returns true on error / undecidable situation, so the filtering 
+     * will probably accept serial methods and will not mark them as unused, if
+     * the class declaration is errneous.
+     * 
+     * @param info the compilation context
+     * @param e the class member (the enclosing element will be tested)
+     * @return true, if in serializable/externalizable or unknown
+     */
+    private static boolean isInSerializableOrExternalizable(CompilationInfo info, Element e) {
+        Element encl = e.getEnclosingElement();
+        if (encl == null || !encl.getKind().isClass()) {
+            return true;
+        }
+        TypeMirror m = encl.asType();
+        if (m == null || m.getKind() != TypeKind.DECLARED) {
+            return true;
+        }
+        Element serEl = info.getElements().getTypeElement("java.io.Serializable"); // NOI18N
+        Element extEl = info.getElements().getTypeElement("java.io.Externalizable"); // NOI18N
+        if (serEl == null || extEl == null) {
+            return true;
+        }
+        if (info.getTypes().isSubtype(m, serEl.asType())) {
+            return true;
+        }
+        if (info.getTypes().isSubtype(m, extEl.asType())) {
+            return true;
+        }
+        return false;
+    }
+    
+    private static Field signatureAccessField;
+    
+    /**
+     * Hack to get signature out of ElementHandle - there's no API method for that
+     */
+    private static String _getSignatureHack(ElementHandle<ExecutableElement> eh) {
+        try {
+            if (signatureAccessField == null) {
+                try {
+                    Field f = ElementHandle.class.getDeclaredField("signatures"); // NOI18N
+                    f.setAccessible(true);
+                    signatureAccessField = f;
+                } catch (NoSuchFieldException | SecurityException ex) {
+                    // ignore
+                    return ""; // NOI18N
+                }
+            }
+            String[] signs = (String[])signatureAccessField.get(eh);
+            if (signs == null || signs.length != 3) {
+                return ""; // NOI18N
+            } else {
+                return signs[1] + signs[2];
+            }
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            return ""; // NOI18N
+        }
+    }
+
+    /**
+     * Checks if the method is specified by Serialization API and the class
+     * extends Serializable/Externalizable. Unused methods defined in API spec
+     * should not be marked as unused.
+     * 
+     * @param info compilation context
+     * @param method the method
+     * @return true, if the method is from serialization API and should not be reported
+     */
+    private boolean isSerializationMethod(CompilationInfo info, ExecutableElement method) {
+        if (!isInSerializableOrExternalizable(info, method)) {
+            return false;
+        }
+        ElementHandle<ExecutableElement> eh = ElementHandle.create(method);
+        String sign = _getSignatureHack(eh);
+        return SERIALIZABLE_SIGNATURES.contains(sign);
+    }
+    
     protected boolean process(CompilationInfo info, final Document doc, ErrorDescriptionSetter setter) {
         DetectorVisitor v = new DetectorVisitor(info, doc, cancel);
         
@@ -226,14 +320,14 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
                     continue;
                 
                 if (u.type.contains(UseTypes.DECLARATION) && Utilities.isPrivateElement(decl)) {
-                    if ((decl.getKind().isField() && !isSerialVersionUID(info, decl)) || isLocalVariableClosure(decl)) {
+                    if ((decl.getKind().isField() && !isSerialSpecField(info, decl)) || isLocalVariableClosure(decl)) {
                         if (!hasAllTypes(uses, EnumSet.of(UseTypes.READ, UseTypes.WRITE))) {
                             u.spec.add(ColoringAttributes.UNUSED);
                         }
                     }
                     
                     if ((decl.getKind() == ElementKind.CONSTRUCTOR && !decl.getModifiers().contains(Modifier.PRIVATE)) || decl.getKind() == ElementKind.METHOD) {
-                        if (!hasAllTypes(uses, EnumSet.of(UseTypes.EXECUTE))) {
+                        if (!(hasAllTypes(uses, EnumSet.of(UseTypes.EXECUTE)) || isSerializationMethod(info, (ExecutableElement)decl))) {
                             u.spec.add(ColoringAttributes.UNUSED);
                         }
                     }
@@ -304,14 +398,22 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
     /** Detects static final long SerialVersionUID 
      * @return true if element is final static long serialVersionUID
      */
-    private static boolean isSerialVersionUID(CompilationInfo info, Element el) {
-        if (el.getKind().isField() && el.getModifiers().contains(Modifier.FINAL) 
-                && el.getModifiers().contains(Modifier.STATIC)
-                && info.getTypes().getPrimitiveType(TypeKind.LONG).equals(el.asType())
-                && el.getSimpleName().toString().equals("serialVersionUID"))
-            return true;
-        else
-            return false;
+    private static boolean isSerialSpecField(CompilationInfo info, Element el) {
+        if (el.getModifiers().contains(Modifier.FINAL) 
+                && el.getModifiers().contains(Modifier.STATIC)) {
+            
+            if (!isInSerializableOrExternalizable(info, el)) {
+                return false;
+            }
+            if (info.getTypes().getPrimitiveType(TypeKind.LONG).equals(el.asType())
+                && el.getSimpleName().toString().equals("serialVersionUID")) {
+                return true;
+            }
+            if (el.getSimpleName().contentEquals("serialPersistentFields")) {
+                return true;
+            }
+        }
+        return false;
     }
         
     private static class Use {
@@ -1261,7 +1363,12 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         @Override
         public Void visitLambdaExpression(LambdaExpressionTree node, EnumSet<UseTypes> p) {
             scan(node.getParameters(), EnumSet.of(UseTypes.WRITE));
-            scan(node.getBody(), EnumSet.noneOf(UseTypes.class));
+            if (node.getBody() instanceof IdentifierTree) {
+                TreePath tp = new TreePath(getCurrentPath(), node.getBody());
+                handlePossibleIdentifier(tp, EnumSet.of(UseTypes.READ));
+            } else {    
+                scan(node.getBody(), EnumSet.noneOf(UseTypes.class));
+            }
             return null;
         }
 

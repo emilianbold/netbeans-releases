@@ -279,7 +279,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
             getKeymapPanel().getMutableModel().setCurrentProfile(profileToDuplicate);
             getKeymapPanel().getMutableModel().cloneProfile(newName);
             currentModel.setCurrentProfile(currrentProfile);
-            model.addItem(il.getInputText());
+            model.addItem(newName);
             profilesList.setSelectedValue(il.getInputText(), true);
         }
         return newName;
@@ -331,7 +331,13 @@ public class ProfilesPanel extends javax.swing.JPanel {
                 XMLUtil.write(doc, fos, "UTF-8"); //NOI18N
                 fos.close();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                NotifyDescriptor nd = new NotifyDescriptor(
+                        NbBundle.getMessage(ProfilesPanel.class, "Export.io.error", ex.getLocalizedMessage()), 
+                        NbBundle.getMessage(ProfilesPanel.class, "Export.failed.title"), 
+                        NotifyDescriptor.DEFAULT_OPTION, 
+                        NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION);
+                LOG.log(Level.INFO, "Failed to export bindings", ex);
+                DialogDisplayer.getDefault().notify(nd);
             }
         }
 
@@ -374,56 +380,73 @@ public class ProfilesPanel extends javax.swing.JPanel {
     private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
         JFileChooser chooser = getFileChooser();
         int ret = chooser.showOpenDialog(this);
-        final boolean[] notFound  = new boolean[1];
+        boolean notFound = false;
+        Throwable err = null;
         
-        if(ret == JFileChooser.APPROVE_OPTION) {
-            try {
-                InputSource is = new InputSource(new FileInputStream(chooser.getSelectedFile()));
-                MutableShortcutsModel kmodel = getKeymapPanel().getMutableModel();
-                String newProfile = duplicateProfile();
-                if (newProfile == null) return; //invalid (duplicate) profile name
-                kmodel.setCurrentProfile(newProfile);
+        if(ret != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        MutableShortcutsModel kmodel = getKeymapPanel().getMutableModel();
+        String newProfile = null;
+        try {
+            InputSource is = new InputSource(new FileInputStream(chooser.getSelectedFile()));
+            newProfile = duplicateProfile();
+            if (newProfile == null) return; //invalid (duplicate) profile name
+            kmodel.setCurrentProfile(newProfile);
 
-                Document doc = XMLUtil.parse(is, false, true, null, EntityCatalog.getDefault());
-                Node root = doc.getElementsByTagName(ELEM_XML_ROOT).item(0);
-
-                NodeList nl = root.getChildNodes();
-                for (int i = 0; i < nl.getLength(); i++) {//iterate stored actions
-                    Node action = nl.item(i);
-                    final NamedNodeMap attributes = action.getAttributes();
-                    if (attributes == null) continue;
-                    String id = attributes.item(0).getNodeValue();
-                    ShortcutAction sca = kmodel.findActionForId(id);
-                    NodeList childList = action.getChildNodes();
-                    int childCount = childList.getLength();
-                    Set<String> shortcuts = new LinkedHashSet<String>(childCount);
-                    for (int j = 0; j < childCount; j++) {//iterate shortcuts
-                        //iterate shortcuts
-                        NamedNodeMap attrs = childList.item(j).getAttributes();
-                        if (attrs != null) {
-                            String sc = attrs.item(0).getNodeValue();
-                            shortcuts.add(ExportShortcutsAction.portableRepresentationToShortcut(sc));
-                        }
-                    }
-                    if (sca == null) {
-                        notFound[0] = true;
-                        LOG.log(Level.WARNING, "Failed to import binding for: {0}, keys: {1}", new Object[] { id, shortcuts });
-                        continue;
-                    } else {
-                        kmodel.setShortcuts(sca, shortcuts);
+            Document doc = XMLUtil.parse(is, false, true, null, EntityCatalog.getDefault());
+            Node root = doc.getElementsByTagName(ELEM_XML_ROOT).item(0);
+            if (root == null) {
+                throw new IOException(NbBundle.getMessage(ProfilesPanel.class, "Import.invalid.file"));
+            }
+            NodeList nl = root.getChildNodes();
+            for (int i = 0; i < nl.getLength(); i++) {//iterate stored actions
+                Node action = nl.item(i);
+                final NamedNodeMap attributes = action.getAttributes();
+                if (attributes == null) continue;
+                String id = attributes.item(0).getNodeValue();
+                ShortcutAction sca = kmodel.findActionForId(id);
+                NodeList childList = action.getChildNodes();
+                int childCount = childList.getLength();
+                Set<String> shortcuts = new LinkedHashSet<String>(childCount);
+                for (int j = 0; j < childCount; j++) {//iterate shortcuts
+                    //iterate shortcuts
+                    NamedNodeMap attrs = childList.item(j).getAttributes();
+                    if (attrs != null) {
+                        String sc = attrs.item(0).getNodeValue();
+                        shortcuts.add(ExportShortcutsAction.portableRepresentationToShortcut(sc));
                     }
                 }
-
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (SAXException ex) {
-                Exceptions.printStackTrace(ex);
+                if (sca == null) {
+                    notFound = true;
+                    LOG.log(Level.WARNING, "Failed to import binding for: {0}, keys: {1}", new Object[] { id, shortcuts });
+                    continue;
+                } else {
+                    kmodel.setShortcuts(sca, shortcuts);
+                }
             }
+
+        } catch (IOException | SAXException ex) {
+            err = ex;
         }
         
-        if (notFound[0]) {
+        String msg = null;
+        
+        if (err != null) {
+            msg = NbBundle.getMessage(ProfilesPanel.class, "Import.io.error", err.getLocalizedMessage());
+            // attempt to remove the newly created profile:
+            if (newProfile != null) {
+                kmodel.deleteOrRestoreProfile(newProfile);
+                model.removeItem(newProfile);
+                profilesList.clearSelection();
+            }
+        } else if (notFound) {
+            msg = NbBundle.getMessage(ProfilesPanel.class, "Import.failed.unknown.id");
+        }
+        
+        if (msg != null) {
             NotifyDescriptor nd = new NotifyDescriptor(
-                    NbBundle.getMessage(ProfilesPanel.class, "Import.failed.unknown.id"), 
+                    msg, 
                     NbBundle.getMessage(ProfilesPanel.class, "Import.failed.title"), 
                     NotifyDescriptor.DEFAULT_OPTION, 
                     NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION);
@@ -506,6 +529,15 @@ public class ProfilesPanel extends javax.swing.JPanel {
         private void removeItem(int index) {
             delegate.remove(index);
             fireContentsChanged(this, index, index);
+        }
+        
+        private boolean removeItem(String id) {
+            int idx = delegate.indexOf(id);
+            boolean b = delegate.remove(id);
+            if (b) {
+                fireContentsChanged(this, idx, idx);
+            }
+            return b;
         }
     }
 

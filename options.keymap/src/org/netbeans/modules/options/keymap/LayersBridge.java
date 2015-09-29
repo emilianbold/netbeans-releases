@@ -575,7 +575,7 @@ public class LayersBridge extends KeymapManager implements KeymapManager.WithRev
             if (dataObject instanceof DataFolder) continue;
             GlobalAction action = createActionWithLookup (dataObject, null, dataObject.getPrimaryFile().getName(), ignoreUserRemoves);
             if (action == null) continue;
-            String shortcut = dataObject.getPrimaryFile().getName();
+            String shortcut = dataObject.getPrimaryFile().getName().toUpperCase();
             
             LOG.log(Level.FINEST, "Action {0}: {1}, by {2}", new Object[] {
                 action.getId(),
