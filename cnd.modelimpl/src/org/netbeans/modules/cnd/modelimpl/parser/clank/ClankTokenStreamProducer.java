@@ -396,7 +396,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             }            
         }
 
-        private static final boolean ALLOW_TO_SKIP_TOKENS_BETWEEN_DIRECTIVES = Boolean.valueOf(System.getProperty("clank.callback.allow.skip.token", "true")); //NativeTrace.DEBUG;
+        private static final boolean ALLOW_TO_SKIP_TOKENS_BETWEEN_DIRECTIVES = Boolean.valueOf(System.getProperty("clank.callback.allow.skip.token", "false")); //NativeTrace.DEBUG;
         @Override
         public void onEnter(ClankDriver.ClankFileInfo enteredFrom, ClankDriver.ClankFileInfo enteredTo) {
             assert enteredTo != null;
