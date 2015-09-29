@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement.Kind;
@@ -322,6 +323,16 @@ public final class CompletionSupport implements DocumentListener {
                 CsmType retType = ((CsmFunction) lastObj).getReturnType();
                 if (CsmOffsetUtilities.isInObject(retType, pos)) {
                     return ((CsmOffsetable) retType).getStartOffset();
+                }
+            }
+            if (CsmKindUtilities.isVariable(lastObj)) {
+                CsmVariable v = (CsmVariable)lastObj;
+                CsmExpression initialValue = v.getInitialValue();
+                if (CsmOffsetUtilities.isInObject(initialValue, pos)) {
+                    List<CsmStatement> lambdas = initialValue.getLambdas();
+                    if (lambdas == null || lambdas.isEmpty()) {
+                        return -1; // cached last separaror offset must be used
+                    }
                 }
             }
             if (CsmKindUtilities.isOffsetable(lastObj)) {
