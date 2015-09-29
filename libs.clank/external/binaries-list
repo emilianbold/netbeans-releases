@@ -1,6 +1,6 @@
-#changeset:   15764:7252cd0f186d
+#changeset:   15777:6d34c531fb71
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Sep 28 02:58:45 2015 +0300
-#summary:     PERF: cache source lines offsets in shared memory buffer
-0F2BB0A9D0C3B271431391AB394E95D25C871A68 clank_0.3.6.zip
+#date:        Mon Sep 28 23:02:43 2015 +0300
+#summary:     use  and int
+D886BB0FCB7983F8079A37CFEA4869B4F0B1F369 clank_0.3.6.zip
