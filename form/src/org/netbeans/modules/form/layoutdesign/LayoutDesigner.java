@@ -703,15 +703,17 @@ public final class LayoutDesigner implements LayoutConstants {
             LayoutInterval[] targetRoots = resizing && movingComps.length > 0
                     ? movingComps[0].getParentRoots()
                     : getActiveLayoutRoots(container);
-            for (LayoutComponent comp : container.getSubcomponents()) {
-                for (LayoutComponent m : movingComps) {
-                    if (m == comp) {
-                        comp = null;
-                        break;
+            if (targetRoots != null) {
+                for (LayoutComponent comp : container.getSubcomponents()) {
+                    for (LayoutComponent m : movingComps) {
+                        if (m == comp) {
+                            comp = null;
+                            break;
+                        }
                     }
-                }
-                if (comp != null && LayoutInterval.getRoot(comp.getLayoutInterval(HORIZONTAL)) != targetRoots[HORIZONTAL]) {
-                    visualMapper.setComponentVisibility(comp.getId(), !draggingIn);
+                    if (comp != null && LayoutInterval.getRoot(comp.getLayoutInterval(HORIZONTAL)) != targetRoots[HORIZONTAL]) {
+                        visualMapper.setComponentVisibility(comp.getId(), !draggingIn);
+                    }
                 }
             }
         }
