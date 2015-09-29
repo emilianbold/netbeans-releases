@@ -351,14 +351,10 @@ public class CsmOffsetResolver {
     }
 
     public static CsmContext findContext(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
-        CsmContext context = (CsmContext) CsmCacheManager.get(new CsmContextKey(file, offset));
-        if (context == null) {
-            context = new CsmContext(file, offset);
-            findObjectWithContext(file, offset, context, fileReferncesContext);
-            exploreTypeObject(context, context.getLastObject(), offset);
-            CsmCacheManager.put(new CsmContextKey(file, offset), context);
-        }
-        return new CsmContext(context); // return a clone of context
+        CsmContext context = new CsmContext(file, offset);
+        findObjectWithContext(file, offset, context, fileReferncesContext);
+        exploreTypeObject(context, context.getLastObject(), offset);
+        return context;
     }
     
     public static CsmContext findContextFromScope(CsmFile file, int offset, CsmScope contextScope) {
