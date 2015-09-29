@@ -291,6 +291,19 @@ public class Lambda {
         protected String getText() {
             return Bundle.FIX_lambda2Class();
         }
+        
+        private static TypeMirror avoidIntersectionType(CompilationInfo copy, TypeMirror org) {
+            if (org.getKind() == TypeKind.INTERSECTION) {
+                Element objEl = copy.getElements().getTypeElement("java.lang.Object"); // NOI18N
+                if (objEl == null) {
+                    // TODO: report
+                    return org;
+                }
+                return objEl.asType();
+            } else {
+                return org;
+            }
+        }
 
         @Override
         protected void performRewrite(TransformationContext ctx) throws Exception {
@@ -356,10 +369,12 @@ public class Lambda {
                            mt, make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList()));
                 }
 //            }
+    
+            TypeMirror retType = avoidIntersectionType(copy, descriptorType.getReturnType());
             
             MethodTree newMethod = make.Method(mt,
                                                abstractMethod.getSimpleName(),
-                                               make.Type(descriptorType.getReturnType()),
+                                               make.Type(retType),
                                                Collections.<TypeParameterTree>emptyList(), //XXX: type parameters
                                                methodParams,
                                                // TODO: possibly filter out those exceptions, which are handled/never thrown 
@@ -380,7 +395,8 @@ public class Lambda {
             } else {
                 List<Tree> typeArguments = new ArrayList<>();
                 for (TypeMirror ta : ((DeclaredType) samType).getTypeArguments()) {
-                    typeArguments.add(make.Type(SourceUtils.resolveCapturedType(copy, ta)));
+                    typeArguments.add(make.Type(
+                            avoidIntersectionType(copy, SourceUtils.resolveCapturedType(copy, ta))));
                 }
                 targetTypeTree = (ExpressionTree) make.ParameterizedType(make.QualIdent(samTypeElement), typeArguments);
             }

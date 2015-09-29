@@ -63,6 +63,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -266,6 +267,30 @@ public class NavigatorContent extends AbstractXMLNavigatorContent implements Car
             });
         }
     }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        boolean result = super.requestFocusInWindow();
+        if (getComponentCount() > 0) {
+            JComponent p = (JComponent)getComponent(0);
+            if (p instanceof NavigatorContentPanel) {
+                ((NavigatorContentPanel)p).focus(true);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        if (getComponentCount() > 0) {
+            JComponent p = (JComponent)getComponent(0);
+            if (p instanceof NavigatorContentPanel) {
+                ((NavigatorContentPanel)p).focus(false);
+            }
+        }
+    }
+
     
     private volatile boolean loading = false;
 
@@ -677,6 +702,14 @@ public class NavigatorContent extends AbstractXMLNavigatorContent implements Car
                 super.paint(g);
             }
             
+        }
+        
+        public void focus(boolean inWindow) {
+            if (inWindow) {
+                tree.requestFocusInWindow();
+            } else {
+                tree.requestFocus();
+            }
         }
         
         public static final String ATTRIBUTES_FILTER = "attrs";
