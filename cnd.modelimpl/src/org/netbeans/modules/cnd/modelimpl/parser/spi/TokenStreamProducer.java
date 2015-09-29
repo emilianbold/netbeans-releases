@@ -126,7 +126,7 @@ public abstract class TokenStreamProducer {
                     YesNoInterested.INTERESTED,
                     false, 
                     YesNoInterested.INTERESTED,
-                    APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.INTERESTED : YesNoInterested.ALWAYS,
+                    YesNoInterested.INTERESTED,
                     YesNoInterested.INTERESTED,
                     YesNoInterested.INTERESTED, // we need comments for macro views
                     false); //cache only unfiltered

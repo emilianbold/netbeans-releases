@@ -131,12 +131,10 @@ public class ClankDriverImpl {
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
             settings.WorkName = path;
             boolean fortranFlavor = APTToClankCompilationDB.isFortran(ppHandler);
-            settings.KeepCommentsTokens = callback.needComments();
             settings.GenerateDiagnostics = true;
-            PrintWriter printWriter = null;
             if (CndUtils.isUnitTestMode() && !fortranFlavor) {
                 settings.PrettyPrintDiagnostics = true;
-                printWriter = new PrintWriter(System.err);
+                PrintWriter printWriter = new PrintWriter(System.err);
                 settings.PrintDiagnosticsOS = new PrintWriter_ostream(printWriter);
             } else {
                 settings.PrettyPrintDiagnostics = false;
