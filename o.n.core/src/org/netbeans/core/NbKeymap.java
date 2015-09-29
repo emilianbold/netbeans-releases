@@ -220,7 +220,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
                     for (FileObject def : dir.getChildren()) {
                        if (def.isData()) {
                            boolean removed = processingProfile && BINDING_REMOVED.equals(def.getExt());
-                           String fn = def.getName();
+                           String fn = def.getName().toUpperCase();
                            
                            if (removed) {
                                activeShortcuts.remove(fn);

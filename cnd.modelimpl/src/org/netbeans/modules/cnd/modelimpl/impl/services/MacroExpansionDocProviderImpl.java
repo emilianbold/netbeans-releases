@@ -424,6 +424,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return null;
     }
 
+    /** returns expanded code or NULL on error */
     @Override
     public String expand(Document doc, int offset, String code) {
         if (doc == null) {

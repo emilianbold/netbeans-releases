@@ -829,6 +829,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             final String selectedProfile = profilesPanel.getSelectedProfile();
             getMutableModel().setCurrentProfile(selectedProfile);
             refreshProfileCombo();
+            keymapModel.update();
         }
         return;
     }

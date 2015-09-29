@@ -361,11 +361,25 @@ public class XMLLexerFormatter {
         CharSequence tt = token.text();
         settingSpaceValue = tt.length() == XML_SPACE_ATTRIBUTE_LEN &&
                 startsWith0(tt, XML_SPACE_ATTRIBUTE_LEN, XML_SPACE_ATTRIBUTE);
-        // fall through !
+        // fa!ll through !
         if (firstAttributeIndent == -1) {
-            firstAttributeIndent = wasNewline ? 
-                    tagIndent + spacesPerTab : 
-                    Utilities.getVisualColumn(basedoc, tokenSequence.offset());
+            firstAttributeIndent = tagIndent;
+            if (wasNewline) {
+                // indent of a new line
+                firstAttributeIndent += spacesPerTab;
+            } else {
+                // align one space after the tagname:
+                TokenIndent tagIndent = stack.peek();
+                int current = Utilities.getVisualColumn(basedoc, tokenSequence.offset());
+                if (tagIndent == null) {
+                    // fallback
+                    firstAttributeIndent = current;
+                } else {
+                    int proposed = firstAttributeIndent + (tagIndent.tagName.length() + 1 /* space */ + 1 /* < char */);
+                    // preserve extra indent after tag name
+                    firstAttributeIndent = Math.max(current, proposed);
+                }
+            }
         }
         if (wasNewline) {
             int attrIndent;

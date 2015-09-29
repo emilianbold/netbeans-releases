@@ -574,7 +574,8 @@ public final class ComputeImports {
                             while (s != null) {
                                 allowImport &= !info.getElementUtilities().getLocalMembersAndVars(s, new ElementAcceptor() {
                                     @Override public boolean accept(Element e, TypeMirror type) {
-                                        return e.getSimpleName().contentEquals(el.getSimpleName());
+                                        return e.getSimpleName().contentEquals(el.getSimpleName()) &&
+                                                (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR);
                                     }
                                 }).iterator().hasNext();
                                 s = s.getEnclosingScope();
