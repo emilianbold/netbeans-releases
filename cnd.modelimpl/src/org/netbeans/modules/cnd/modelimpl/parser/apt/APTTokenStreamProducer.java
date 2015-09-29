@@ -271,7 +271,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
             APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppState);
             tsOut = walker.getFilteredTokenStream(languageFilter);
         } else {
-            tsOut = walker.getTokenStream(!parameters.needComments);
+            tsOut = walker.getTokenStream(parameters.needComments != YesNoInterested.NEVER);
         }
         if (isAllowedToCacheOnRelease()) {
           cachePair = Pair.of(ppState, aptCacheEntry);
