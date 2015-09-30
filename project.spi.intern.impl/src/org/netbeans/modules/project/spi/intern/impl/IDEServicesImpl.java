@@ -92,17 +92,19 @@ public class IDEServicesImpl implements ProjectIDEServicesImplementation {
     private static class DataObjectSource implements FileBuiltQuerySource {
         private final DataObject data;
         private final PropertyChangeSupport support;
+        private PropertyChangeListener propertyChangeListener;
         public DataObjectSource(DataObject data) {
             this.data = data;
             support = new PropertyChangeSupport(this);
-            data.addPropertyChangeListener(WeakListeners.propertyChange(new PropertyChangeListener() {
+            propertyChangeListener = new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if(DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) {
                         support.firePropertyChange(PROP_MODIFIED, evt.getOldValue(), evt.getNewValue());
                     }
                 }
-            }, this.data));
+            };
+            data.addPropertyChangeListener(WeakListeners.propertyChange(propertyChangeListener, this.data));
         }
         
         @Override
