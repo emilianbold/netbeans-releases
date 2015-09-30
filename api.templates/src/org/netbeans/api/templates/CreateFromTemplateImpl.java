@@ -52,6 +52,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
 import java.text.Format;
 import java.util.Collections;
 import java.util.Date;
@@ -198,7 +199,7 @@ final class CreateFromTemplateImpl {
         }
         Date d = new Date();
         if (!all.containsKey("dateTime")) { // NOI18N
-            all.put("dateTime", d); // NOI18N
+            all.put("dateTime", DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, desc.getLocale()).format(d)); // NOI18N
         }
         String ext = desc.getTemplate().getExt();
         if (!all.containsKey("nameAndExt") && name != null) { // NOI18N
