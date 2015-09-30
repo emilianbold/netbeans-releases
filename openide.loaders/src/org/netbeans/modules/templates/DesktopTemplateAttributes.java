@@ -68,7 +68,7 @@ public class DesktopTemplateAttributes implements CreateFromTemplateAttributes {
             DateFormat.getDateInstance(DateFormat.DEFAULT, desc.getLocale()).format(d)
         );
         vals.put("time",  // NOI18N
-            DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, desc.getLocale()).format(d)
+            DateFormat.getTimeInstance(DateFormat.DEFAULT, desc.getLocale()).format(d)
         );
         
         return vals;
