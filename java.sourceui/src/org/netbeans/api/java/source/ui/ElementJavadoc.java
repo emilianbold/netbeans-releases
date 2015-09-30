@@ -379,7 +379,7 @@ public class ElementJavadoc {
                     localized |= isLocalized(ts.getLocations(), element);
                 }
                 if (!localized) {
-                    assignSource(element, compilationInfo, url, content);
+                    assignSource(element, compilationInfo, url, content, false);
                 }
             }
             this.content = prepareContent(content, doc,localized, pages, cancel, true, context);
@@ -405,7 +405,7 @@ public class ElementJavadoc {
                     List<JavadocHelper.TextStream> docPages = JavadocHelper.getJavadoc(element, JavadocHelper.RemoteJavadocPolicy.USE, cancel);
                     docURL = docPages.isEmpty() ? null : docPages.get(0).getLocation();
                     if (!isLocalized(docURL, element)) {
-                        assignSource(element, c, url, contentFin);
+                        assignSource(element, c, url, contentFin, true);
                     }
                     Pair<Trees,ElementUtilities> context = Pair.of(c.getTrees(), c.getElementUtilities());
                     Doc doc = context.second().javaDocFor(element);
@@ -1967,7 +1967,8 @@ public class ElementJavadoc {
         @NonNull final Element element,
         @NonNull final CompilationInfo compilationInfo,
         @NullAllowed final URL url,
-        @NonNull final StringBuilder content) {
+        @NonNull final StringBuilder content,
+        boolean setBase) {
         final FileObject fo = SourceUtils.getFile(element, compilationInfo.getClasspathInfo());
         if (fo != null) {
             goToSource = new AbstractAction() {
@@ -1975,7 +1976,7 @@ public class ElementJavadoc {
                     ElementOpen.open(fo, handle);
                 }
             };
-            if (docURL == null) {
+            if (setBase && docURL == null) {
                 content.append("<base href=\"").append(fo.toURL()).append("\"></base>"); //NOI18N
             }
         }

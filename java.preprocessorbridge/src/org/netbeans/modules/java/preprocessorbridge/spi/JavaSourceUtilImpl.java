@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -48,17 +48,17 @@ import org.openide.filesystems.FileObject;
 
 /**
  * SPI interface provided by java.source to java.preprocessorbridge, used by JavaSourceUtil
- * @author Tomas Zezula 
+ * @author Tomas Zezula
  * @since 1.5
  */
 public abstract class JavaSourceUtilImpl {
-    
+
     static {
         JavaSourceUtilImplAccessor.setInstance(new MyAccessor());
     }
-    
+
     private static final String EXPECTED_PACKAGE = "org.netbeans.modules.java.source";  //NOI18N
-    
+
     protected JavaSourceUtilImpl () {
         super ();
         final String implPackage = this.getClass().getPackage().getName();
@@ -66,10 +66,10 @@ public abstract class JavaSourceUtilImpl {
             throw new IllegalArgumentException ();
         }
     }
-    
+
     protected abstract long createTaggedCompilationController (FileObject file, long currenTag, Object[] out) throws IOException;
 
-    
+
     private static class MyAccessor extends JavaSourceUtilImplAccessor {
 
         @Override

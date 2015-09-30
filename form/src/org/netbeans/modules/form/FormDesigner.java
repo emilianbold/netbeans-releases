@@ -2589,6 +2589,7 @@ public class FormDesigner {
             ComponentContainer prevContainer = null;
             boolean updateDone = false;
             boolean updateLayoutDesignerSelection = false;
+            boolean structureChanged = false;
 
             for (int i=0; i < events.length; i++) {
                 FormModelEvent ev = events[i];
@@ -2614,6 +2615,7 @@ public class FormDesigner {
                         // switched to free design, update selection in LayoutDesigner
                         updateLayoutDesignerSelection = true;
                     }
+                    structureChanged = true;
                 }
                 else if (type == FormModelEvent.COMPONENT_ADDED) {
                     if ((metacont instanceof RADVisualContainer
@@ -2626,6 +2628,7 @@ public class FormDesigner {
                         // bindings for the the cloned instance (e.g. in remove undo)
                         updateDone = true;
                     }
+                    structureChanged = true;
                 }
                 else if (type == FormModelEvent.COMPONENT_REMOVED) {
                     RADComponent removed = ev.getComponent();
@@ -2645,6 +2648,7 @@ public class FormDesigner {
                         updateDone = true;
                     }
                     // Note: BindingDesignSupport takes care of removing bindings
+                    structureChanged = true;
                 }
                 else if (type == FormModelEvent.COMPONENTS_REORDERED) {
                     if (prevType != FormModelEvent.COMPONENTS_REORDERED
@@ -2698,6 +2702,15 @@ public class FormDesigner {
                 updateComponentLayer(true);
                 if (updateLayoutDesignerSelection) {
                     updateLayoutDesigner();
+                }
+                // If some change happened while adding, moving or resizing, cancel that operation
+                // (e.g. in case of deleting a component when just adding a new component next to it).
+                if (structureChanged) {
+                    if (getDesignerMode() != MODE_SELECT) {
+                        toggleSelectionMode();
+                    } else {
+                        handleLayer.endDragging(null);
+                    }
                 }
             }
         }
