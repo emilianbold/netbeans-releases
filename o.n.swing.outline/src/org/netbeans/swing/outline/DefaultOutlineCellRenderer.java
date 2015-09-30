@@ -103,15 +103,20 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     
     /** Creates a new instance of DefaultOutlineTreeCellRenderer */
     public DefaultOutlineCellRenderer() {
-        theCheckBox = new JCheckBox();
-        theCheckBox.setSize(theCheckBox.getPreferredSize());
-        theCheckBox.setBorderPainted(false);
-        theCheckBox.setOpaque(false);
+        theCheckBox = createCheckBox();
         // In order to paint the check-box correctly, following condition must be true:
         // SwingUtilities.getAncestorOfClass(CellRendererPane.class, theCheckBox) != null
         // (See e.g.: paintSkin() method in com/sun/java/swing/plaf/windows/XPStyle.java)
         fakeCellRendererPane = new CellRendererPane();
         fakeCellRendererPane.add(theCheckBox);
+    }
+    
+    final JCheckBox createCheckBox() {
+        JCheckBox cb = new JCheckBox();
+        cb.setSize(cb.getPreferredSize());
+        cb.setBorderPainted(false);
+        cb.setOpaque(false);
+        return cb;
     }
     
     /** Overridden to combine the expansion border (whose insets determine how
@@ -230,6 +235,18 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private JCheckBox getCheckBox() {
         return checkBox;
     }
+    
+    final JCheckBox setUpCheckBox(CheckRenderDataProvider crendata, Object value, JCheckBox cb) {
+        Boolean chSelected = crendata.isSelected(value);
+        cb.setEnabled(true);
+        cb.setSelected(!Boolean.FALSE.equals(chSelected));
+        // Third state is "selected armed" to be consistent with org.openide.explorer.propertysheet.ButtonModel3Way
+        cb.getModel().setArmed(chSelected == null);
+        cb.getModel().setPressed(chSelected == null);
+        cb.setEnabled(crendata.isCheckEnabled(value));
+        cb.setBackground(getBackground());
+        return cb;
+    }
 
     int getTheCheckBoxWidth() {
         return theCheckBox.getSize().width;
@@ -325,15 +342,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 if (rendata instanceof CheckRenderDataProvider) {
                     CheckRenderDataProvider crendata = (CheckRenderDataProvider) rendata;
                     if (crendata.isCheckable(value)) {
-                        cb = theCheckBox;
-                        Boolean chSelected = crendata.isSelected(value);
-                        cb.setEnabled(true);
-                        cb.setSelected(!Boolean.FALSE.equals(chSelected));
-                        // Third state is "selected armed" to be consistent with org.openide.explorer.propertysheet.ButtonModel3Way
-                        cb.getModel().setArmed(chSelected == null);
-                        cb.getModel().setPressed(chSelected == null);
-                        cb.setEnabled(crendata.isCheckEnabled(value));
-                        cb.setBackground(getBackground());
+                        cb = setUpCheckBox(crendata, value, theCheckBox);
                     }
                 }
                 setCheckBox(cb);
