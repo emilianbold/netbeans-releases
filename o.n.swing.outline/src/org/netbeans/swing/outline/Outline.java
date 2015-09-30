@@ -70,6 +70,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollBar;
@@ -944,6 +945,16 @@ public class Outline extends ETable {
         TreePath path = getLayoutCache().getPathForRow(convertRowIndexToModel(row));
         Object o = getValueAt(row, column);
         RenderDataProvider rdp = getRenderDataProvider();
+        TableCellRenderer tcr = getDefaultRenderer(Object.class);
+        if (rdp instanceof CheckRenderDataProvider && tcr instanceof DefaultOutlineCellRenderer) {
+            CheckRenderDataProvider crender = (CheckRenderDataProvider) rdp;
+            DefaultOutlineCellRenderer ocr = (DefaultOutlineCellRenderer) tcr;
+            Object value = getValueAt(row, column);
+            if (value != null && crender.isCheckable(value) && crender.isCheckEnabled(value)) {
+                b.checkWidth = ocr.getTheCheckBoxWidth();
+                b.checkBox = ocr.setUpCheckBox(crender, value, ocr.createCheckBox());
+            }
+        }
         b.icon = rdp.getIcon(o);
         b.nestingDepth = Math.max( 0, path.getPathCount() - (isRootVisible() ? 1 : 2) );
         b.isLeaf = getOutlineModel().isLeaf(o);
@@ -1143,13 +1154,15 @@ public class Outline extends ETable {
         private Icon icon;
         private int nestingDepth;
         private final int ICON_TEXT_GAP = new JLabel().getIconTextGap();
+        private int checkWidth;
+        private JCheckBox checkBox;
         
         @Override
         public Insets getBorderInsets(Component c) {
             insets.left = (nestingDepth *
                 DefaultOutlineCellRenderer.getNestingWidth())
                 +DefaultOutlineCellRenderer.getExpansionHandleWidth()+1;
-            insets.left += icon != null ? icon.getIconWidth() + ICON_TEXT_GAP : 0;
+            insets.left += checkWidth + ((icon != null) ? icon.getIconWidth() + ICON_TEXT_GAP : 0);
             insets.top = 1;
             insets.right = 1;
             insets.bottom = 1;
@@ -1176,9 +1189,16 @@ public class Outline extends ETable {
                 }
                 expIcon.paintIcon(c, g, iconX, iconY);
             }
+            iconX += DefaultOutlineCellRenderer.getExpansionHandleWidth() + 1;
+            
+            if (null != checkBox) {
+                java.awt.Graphics chbg = g.create(iconX, y, checkWidth, height);
+                checkBox.paint(chbg);
+                chbg.dispose();
+            }
+            iconX += checkWidth;
 
             if( null != icon ) {
-                iconX += DefaultOutlineCellRenderer.getExpansionHandleWidth() + 1;
                 if (icon.getIconHeight() < height) {
                     iconY = (height / 2) - (icon.getIconHeight() / 2);
                 } else {
