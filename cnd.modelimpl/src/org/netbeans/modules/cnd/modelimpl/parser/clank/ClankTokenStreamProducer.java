@@ -269,11 +269,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private boolean valueOf(/*YesNoInterested*/int param) {
             switch (param) {
                 case YesNoInterested.ALWAYS:
-                    return !skipCurrentFileContentOptimization;
+                    return true;
                 case YesNoInterested.NEVER:
                     return false;
                 case YesNoInterested.INTERESTED:
-                    assert !(skipCurrentFileContentOptimization && insideInterestedFile) : "can not be true both";
                     return insideInterestedFile;
                 default:
                     throw new AssertionError("unknown" + param);
@@ -283,12 +282,12 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         
         @Override
         public boolean needPPDirectives() {
-            return valueOf(parameters.needPPDirectives);
+            return !skipCurrentFileContentOptimization && valueOf(parameters.needPPDirectives);
         }
 
         @Override
         public boolean needTokens() {
-            return valueOf(parameters.needTokens);
+            return !skipCurrentFileContentOptimization && valueOf(parameters.needTokens);
         }
 
         @Override
@@ -303,12 +302,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public boolean needComments() {
-            // There was an idea of using
-            // needTokens() && parameters.needComments
-            // for the case we need comments, but need tokens only for the file of interest - 
-            // then it's no use to process comments for other files/
-            // But this does not work since this method is called only once when initializing preprocessor
-            return parameters.needComments;
+            return !skipCurrentFileContentOptimization && valueOf(parameters.needComments);
         }
 
         /**

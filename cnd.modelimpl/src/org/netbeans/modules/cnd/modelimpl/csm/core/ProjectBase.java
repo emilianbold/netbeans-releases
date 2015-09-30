@@ -3336,7 +3336,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    public StartEntryInfo getStartEntryInfo(PreprocHandler preprocHandler, PreprocHandler.State state) {
+    public StartEntryInfo getStartEntryInfo(PreprocHandler fallbackHandler, PreprocHandler.State state) {
+        PreprocHandler preprocHandler = null;
         StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
         ProjectBase startProject = Utils.getStartProject(startEntry);
         FileImpl csmFile = startProject == null ? null : startProject.getFile(startEntry.getStartFile(), false);
@@ -3346,33 +3347,41 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 preprocHandler = startProject.createPreprocHandler(nativeFile);
             }
         }
+        if (preprocHandler == null) {
+            preprocHandler = fallbackHandler;
+        }
         return new StartEntryInfo(preprocHandler, startProject, csmFile);
     }
 
-    private PreprocHandler restorePreprocHandler(CharSequence interestedFile, PreprocHandler preprocHandler, PreprocHandler.State state, Interrupter interrupter) {
+    private PreprocHandler restorePreprocHandler(CharSequence interestedFile, PreprocHandler emptyHandler, PreprocHandler.State state, Interrupter interrupter) {
         assert state != null;
         assert state.isCleaned();
-        if (APTTraceFlags.USE_CLANK) {
-            PreprocHandler ppHandler = getStartEntryInfo(preprocHandler, state).preprocHandler;
-            ppHandler.setState(state);
-            return ppHandler;
+        // walk through include stack to restore preproc information
+        LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
+        assert (reverseInclStack != null);
+        if (reverseInclStack.isEmpty()) {
+            if (TRACE_PP_STATE_OUT) {
+                System.err.println("stack is empty; return default for " + interestedFile);
+            }
+            return getStartEntryInfo(emptyHandler, state).preprocHandler;
         } else {
-          // walk through include stack to restore preproc information
-          LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
-          assert (reverseInclStack != null);
-          if (reverseInclStack.isEmpty()) {
-              if (TRACE_PP_STATE_OUT) {
-                  System.err.println("stack is empty; return default for " + interestedFile);
-              }
-              return getStartEntryInfo(preprocHandler, state).preprocHandler;
-          } else {
-              if (TRACE_PP_STATE_OUT) {
-                  System.err.println("restoring for " + interestedFile);
-              }
-              return APTTokenStreamProducer.restorePreprocHandlerFromIncludeStack(this, reverseInclStack, interestedFile, preprocHandler, state, interrupter);
-          }
+            if (TRACE_PP_STATE_OUT) {
+                System.err.println("restoring for " + interestedFile);
+            }
+            if (APTTraceFlags.USE_CLANK) {
+                PreprocHandler ppHandler = getStartEntryInfo(null, state).preprocHandler;
+                if (ppHandler != null) {
+                    ppHandler.setState(state);
+                    return ppHandler;
+                } else {
+                    return this.createDefaultPreprocHandler(interestedFile);
+                }
+            } else {
+                return APTTokenStreamProducer.restorePreprocHandlerFromIncludeStack(this, reverseInclStack, interestedFile, emptyHandler, state, interrupter);
+            }
         }
     }
+
 
     private NativeProject findNativeProjectHolder(Set<ProjectBase> visited) {
         visited.add(this);

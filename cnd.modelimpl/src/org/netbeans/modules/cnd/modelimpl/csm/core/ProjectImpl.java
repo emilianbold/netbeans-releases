@@ -133,7 +133,7 @@ public final class ProjectImpl extends ProjectBase {
     @Override
     protected Collection<Key> getLibrariesKeys() {
         List<Key> res = new ArrayList<>();
-        assert (getPlatformProject() instanceof NativeProject);
+        assert (getPlatformProject() instanceof NativeProject) : "Expected NativeProject, got " + getPlatformProject();
         for (NativeProject nativeLib : ((NativeProject) getPlatformProject()).getDependences()) {
             final Key key = createProjectKey(nativeLib);
             res.add(key);

@@ -1,6 +1,6 @@
-#changeset:   15777:6d34c531fb71
+#changeset:   15788:d88c86ecc1ed
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Sep 28 23:02:43 2015 +0300
-#summary:     use  and int
-D886BB0FCB7983F8079A37CFEA4869B4F0B1F369 clank_0.3.6.zip
+#date:        Tue Sep 29 23:38:03 2015 +0300
+#summary:     allow to control need of comments in macros
+1D4EAF7EC4687B3AB3C2636B10DF0E8683429286 clank_0.3.6.zip
