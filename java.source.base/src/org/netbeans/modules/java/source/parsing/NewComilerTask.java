@@ -44,19 +44,20 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class NewComilerTask extends ClasspathInfoTask {
+public final class NewComilerTask extends ClasspathInfoTask {
 
     private CompilationController result;
     private long timestamp;
@@ -68,37 +69,39 @@ public class NewComilerTask extends ClasspathInfoTask {
     }
 
     @Override
-    public void run(ResultIterator resultIterator) throws Exception {
+    public void run(@NonNull ResultIterator resultIterator) throws Exception {
         final Snapshot snapshot = resultIterator.getSnapshot();
-        if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
-            resultIterator.getParserResult();
+        if (!JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
+            resultIterator = findEmbeddedJava(resultIterator);
         }
-        else {
-            findEmbeddedJava (resultIterator);
+        if (resultIterator != null) {
+            resultIterator.getParserResult();   //getParserResult calls setCompilationController
         }
     }
 
-    private Parser.Result findEmbeddedJava (final ResultIterator theMess) throws ParseException {
-        final Collection<Embedding> todo = new LinkedList<Embedding>();
+    @CheckForNull
+    private ResultIterator findEmbeddedJava (@NonNull final ResultIterator theMess) throws ParseException {
+        final Collection<Embedding> todo = new LinkedList<>();
         //BFS should perform better than DFS in this dark.
         for (Embedding embedding : theMess.getEmbeddings()) {
             if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {
-                return theMess.getResultIterator(embedding).getParserResult();
-            }
-            else {
+                return theMess.getResultIterator(embedding);
+            } else {
                 todo.add(embedding);
             }
         }
         for (Embedding embedding : todo) {
-            Parser.Result result  = findEmbeddedJava(theMess.getResultIterator(embedding));
-            if (result != null) {
-                return result;
+            final ResultIterator res  = findEmbeddedJava(theMess.getResultIterator(embedding));
+            if (res != null) {
+                return res;
             }
         }
         return null;
     }
 
-    public void setCompilationController (final CompilationController result, final long timestamp) {
+    public void setCompilationController (
+            @NonNull final CompilationController result,
+            final long timestamp) {
         assert result != null;
         this.result = result;
         this.timestamp = timestamp;
@@ -111,5 +114,5 @@ public class NewComilerTask extends ClasspathInfoTask {
     public long getTimeStamp () {
         return this.timestamp;
     }
-    
+
 }

@@ -112,7 +112,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 @Override
                 public JComponent call() throws Exception {
                     FoDLayersProvider.getInstance().refreshForce();
-                    waitForDelegateWizard();
+                    waitForDelegateWizard(true);
                     return new JLabel(" ");
                 }
             }, autoEnable);
@@ -189,10 +189,10 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 fireChange ();
             } else {
                 FoDLayersProvider.getInstance().refreshForce();
-                waitForDelegateWizard ();
+                waitForDelegateWizard (false);
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        waitForDelegateWizard ();
+                        waitForDelegateWizard (true);
                         fireChange ();
                     }
                 });
@@ -222,7 +222,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         }
     }
 
-    private void waitForDelegateWizard () {
+    private void waitForDelegateWizard (final boolean fire) {
         Object o = wd.getProperty (FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE);
         assert o != null && o instanceof FileObject :
             o + " is not null and instanceof FileObject";
@@ -311,9 +311,11 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 }
             }
         }
-        iterator.initialize (wd);
-        wd.putProperty (FeatureOnDemandWizardIterator.DELEGATE_ITERATOR, iterator);
-        fireChange ();
+        if (fire) {
+            iterator.initialize (wd);
+            wd.putProperty (FeatureOnDemandWizardIterator.DELEGATE_ITERATOR, iterator);
+            fireChange ();
+        }
     }
     
     public static WizardDescriptor.InstantiatingIterator<?> readWizard(FileObject fo) {

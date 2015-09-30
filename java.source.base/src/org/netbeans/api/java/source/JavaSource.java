@@ -104,21 +104,21 @@ import org.openide.util.Parameters;
  * @author Petr Hrebejk, Tomas Zezula
  */
 public final class JavaSource {
-    
-    
+
+
     public static enum Phase {
         MODIFIED,
-    
+
         PARSED,
-        
+
         ELEMENTS_RESOLVED,
-    
-        RESOLVED,   
-    
+
+        RESOLVED,
+
         UP_TO_DATE;
-    
+
     };
-    
+
     public static enum Priority {
         MAX,
         HIGH,
@@ -128,41 +128,41 @@ public final class JavaSource {
         LOW,
         MIN
     };
-    
-    
-    
+
+
+
     /**
      * This specialization of {@link IOException} signals that a {@link JavaSource#runUserActionTask}
      * or {@link JavaSource#runModificationTask} failed due to lack of memory. The {@link InsufficientMemoryException#getFile}
      * method returns a file which cannot be processed.
      */
-    public static final class InsufficientMemoryException extends IOException {        
-        
+    public static final class InsufficientMemoryException extends IOException {
+
         private FileObject fo;
-        
+
         private InsufficientMemoryException (final String message, final FileObject fo) {
             super (message);
             this.fo = fo;
         }
-        
+
         private InsufficientMemoryException (FileObject fo) {
             this (NbBundle.getMessage(JavaSource.class, "MSG_UnsufficientMemoryException", FileUtil.getFileDisplayName (fo)),fo);
         }
-        
-        
+
+
         /**
          * Returns file which cannot be processed due to lack of memory.
          * @return {@link FileObject}
          */
         public FileObject getFile () {
             return this.fo;
-        }        
+        }
     }
-    
+
     static {
         JavaSourceAccessor.setINSTANCE (new JavaSourceAccessorImpl ());
     }
-    
+
     //Source files being processed, may be empty
     private final Collection<Source> sources;
     //Files being processed, may be empty
@@ -172,16 +172,16 @@ public final class JavaSource {
     //Cached classpath info
     //@GuardedBy(this)
     private ClasspathInfo cachedCpInfo;
-    
+
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
-                
+
     /**
      * Returns a {@link JavaSource} instance representing given {@link org.openide.filesystems.FileObject}s
      * and classpath represented by given {@link ClasspathInfo}.
      * @param cpInfo the classpaths to be used.
      * @param files for which the {@link JavaSource} should be created
      * @return a new {@link JavaSource}
-     * @throws IllegalArgumentException if fileObject or cpInfo is null        
+     * @throws IllegalArgumentException if fileObject or cpInfo is null
      */
     public static @NullUnknown JavaSource create(final @NonNull ClasspathInfo cpInfo, final @NonNull FileObject... files) throws IllegalArgumentException {
         if (files == null || cpInfo == null) {
@@ -207,21 +207,21 @@ public final class JavaSource {
     private static @NullUnknown JavaSource _create(final ClasspathInfo cpInfo, final @NonNull Collection<? extends FileObject> files) throws IllegalArgumentException {
         if (files == null) {
             throw new IllegalArgumentException ();
-        }    
+        }
         try {
             return new JavaSource(cpInfo, files);
 // TODO: Split
 //        } catch (DataObjectNotFoundException donf) {
 //            Logger.getLogger("global").warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(donf.getFileObject()));     //NOI18N
-        } catch (IOException ex) {            
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        }        
+        }
         return null;
     }
-    
+
     private static Map<FileObject, Reference<JavaSource>> file2JavaSource = new WeakHashMap<FileObject, Reference<JavaSource>>();
     private static final String[] supportedMIMETypes = new String[] {ClassParser.MIME_TYPE, JavacParser.MIME_TYPE};
-    
+
     /**
      * Returns a {@link JavaSource} instance associated to given {@link org.openide.filesystems.FileObject},
      * it returns null if the {@link Document} is not associated with data type providing the {@link JavaSource}.
@@ -251,7 +251,7 @@ public final class JavaSource {
             LOGGER.log(Level.FINE, null, ex);
             return null;
         }
-        
+
         Reference<JavaSource> ref = file2JavaSource.get(fileObject);
         JavaSource js = ref != null ? ref.get() : null;
         if (js == null) {
@@ -293,7 +293,7 @@ public final class JavaSource {
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
-            } 
+            }
             else {
                 if (!"text/x-java".equals(mimeType) && !"java".equals(fileObject.getExt())) {  //NOI18N
                     LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject is not a Java source file (mimetype: {1})", new Object[] {fileObject.toURI().toString(), mimeType});
@@ -305,7 +305,7 @@ public final class JavaSource {
         }
         return js;
     }
-    
+
     /**
      * Returns a {@link JavaSource} instance associated to the given {@link javax.swing.Document},
      * it returns null if the {@link Document} is not
@@ -328,7 +328,7 @@ public final class JavaSource {
         }
         return js;
     }
-    
+
     /**
      * Creates a new instance of JavaSource
      * @param files to create JavaSource for
@@ -343,7 +343,7 @@ public final class JavaSource {
         for (Iterator<? extends FileObject> it = files.iterator(); it.hasNext();) {
             FileObject file = it.next();
             Logger.getLogger("TIMER").log(Level.FINE, "JavaSource",
-                new Object[] {file, this});                
+                new Object[] {file, this});
             if (!file.isValid()) {
 // TODO: Split
 //                if (multipleSources) {
@@ -361,7 +361,7 @@ public final class JavaSource {
         }
         this.files = Collections.unmodifiableList(fl);
         this.sources = Collections.unmodifiableList(sources);
-        this.classpathInfo = cpInfo;        
+        this.classpathInfo = cpInfo;
     }
 
     /**
@@ -383,30 +383,30 @@ public final class JavaSource {
         this.sources = Collections.<Source>singletonList(classSource);
         this.classpathInfo =  info;
     }
-       
+
     /** Runs a task which permits for controlling phases of the parsing process.
      * You probably do not want to call this method unless you are reacting to
-     * some user's GUI input which requires immediate action (e.g. code completion popup). 
+     * some user's GUI input which requires immediate action (e.g. code completion popup).
      * In all other cases use {@link JavaSourceTaskFactory}.<BR>
      * Call to this method will cancel processing of all the phase completion tasks until
      * this task does not finish.<BR>
      * @see org.netbeans.api.java.source.CancellableTask for information about implementation requirements
      * @param task The task which.
      * @param shared if true the java compiler may be reused by other {@link org.netbeans.api.java.source.CancellableTasks},
-     * the value false may have negative impact on the IDE performance.     
+     * the value false may have negative impact on the IDE performance.
      * <div class="nonnormative">
      * <p>
      * It's legal to nest the {@link JavaSource#runUserActionTask} into another {@link JavaSource#runUserActionTask}.
      * It's also legal to nest the {@link JavaSource#runModificationTask} into {@link JavaSource#runUserActionTask},
      * the outer {@link JavaSource#runUserActionTask} does not see changes caused by nested {@link JavaSource#runModificationTask},
-     * but the following nested task see them. 
+     * but the following nested task see them.
      * </p>
      * </div>
      */
     public void runUserActionTask( final @NonNull Task<CompilationController> task, final boolean shared) throws IOException {
         runUserActionTaskImpl(task, shared);
     }
-    
+
     private long runUserActionTaskImpl ( final Task<CompilationController> task, final boolean shared) throws IOException {
         Parameters.notNull("task", task);
         long currentId = -1;
@@ -436,7 +436,7 @@ public final class JavaSource {
                     ParserManager.parse(sources, _task);
                 } catch (final ParseException pe) {
                     final Throwable rootCase = pe.getCause();
-                    if (rootCase instanceof CompletionFailure) {                        
+                    if (rootCase instanceof CompletionFailure) {
                         IOException ioe = new IOException ();
                         ioe.initCause(rootCase);
                         throw ioe;
@@ -448,8 +448,8 @@ public final class JavaSource {
                         IOException ioe = new IOException ();
                         ioe.initCause(rootCase);
                         throw ioe;
-                    }                                        
-                }                
+                    }
+                }
         }
         return currentId;
     }
@@ -541,21 +541,15 @@ public final class JavaSource {
         } catch (final ParseException pe) {
             final Throwable rootCase = pe.getCause();
             if (rootCase instanceof CompletionFailure) {
-                IOException ioe = new IOException ();
-                ioe.initCause(rootCase);
-                throw ioe;
-            }
-            else if (rootCase instanceof RuntimeException) {
+                throw new IOException (rootCase);
+            } else if (rootCase instanceof RuntimeException) {
                 throw (RuntimeException) rootCase;
-            }
-            else {
-                IOException ioe = new IOException ();
-                ioe.initCause(rootCase);
-                throw ioe;
+            } else {
+                throw new IOException (rootCase);
             }
         }
     }
-        
+
     /**
      * Performs the given task when the scan finished. When no background scan is running
      * it performs the given task synchronously. When the background scan is active it queues
@@ -614,17 +608,17 @@ public final class JavaSource {
         }
     }
 
-       
+
     /** Runs a task which permits for modifying the sources.
      * Call to this method will cancel processing of all the phase completion tasks until
      * this task does not finish.<BR>
      * @see Task for information about implementation requirements
      * @param task The task which.
-     */    
+     */
     public @NonNull ModificationResult runModificationTask(final @NonNull Task<WorkingCopy> task) throws IOException {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
-        }        
+        }
         final ModificationResult result = new ModificationResult();
         final ElementOverlay overlay = ElementOverlay.getOrCreateOverlay();
         long start = System.currentTimeMillis();
@@ -649,9 +643,9 @@ public final class JavaSource {
                 }
             }
         };
-        
+
         runUserActionTask(inner, true);
-        
+
         if (sources.size() == 1) {
             Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
                 new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
@@ -680,9 +674,9 @@ public final class JavaSource {
                 this.cachedCpInfo = _tmp;
             }
             return this.cachedCpInfo;
-        }	
+        }
     }
-    
+
     /**
      * Returns unmodifiable {@link Collection} of {@link FileObject}s used by this {@link JavaSource}
      * @return the {@link FileObject}s
@@ -691,7 +685,7 @@ public final class JavaSource {
         return files;
     }
     private static class JavaSourceAccessorImpl extends JavaSourceAccessor {
-                                                
+
         @Override
         public JavacTaskImpl getJavacTask (final CompilationInfo compilationInfo) {
             assert compilationInfo != null;
@@ -710,25 +704,25 @@ public final class JavaSource {
                 return null;
             final UserTask dummy = new UserTask() {
                 @Override
-                public void run(ResultIterator resultIterator) throws Exception {                    
+                public void run(ResultIterator resultIterator) throws Exception {
                 }
             };
-            parser.parse(snapshot,dummy, null);            
+            parser.parse(snapshot,dummy, null);
             return CompilationController.get(parser.getResult(dummy));
         }
-        
+
         public long createTaggedCompilationController (JavaSource js, long currentTag, Object[] out) throws IOException {
             return js.createTaggedController(currentTag, out);
         }
-                
+
         public CompilationInfo createCompilationInfo (final CompilationInfoImpl impl) {
             return new CompilationInfo(impl);
         }
-        
+
         public CompilationController createCompilationController (final CompilationInfoImpl impl) {
             return new CompilationController(impl);
         }
-        
+
         public void invalidate (final CompilationInfo info) {
             assert info != null;
             info.invalidate();
@@ -809,5 +803,5 @@ public final class JavaSource {
         public ClassIndex createClassIndex(ClassPath bootPath, ClassPath classPath, ClassPath sourcePath, boolean supportsChanges) {
             return new ClassIndex(bootPath, classPath, sourcePath, supportsChanges);
         }
-    }                                                
+    }
 }

@@ -376,6 +376,9 @@ public class ElementJavadoc {
                     JavadocHelper.RemoteJavadocPolicy.SPECULATIVE,
                     cancel);
                 for (JavadocHelper.TextStream ts : pages) {
+                    if (docURL == null && !ts.getLocations().isEmpty()) {                        
+                        docURL = ts.getLocations().get(0);
+                    }
                     localized |= isLocalized(ts.getLocations(), element);
                 }
                 if (!localized) {

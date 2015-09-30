@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
  * @since 1.5
  */
 public class JavaSourceUtil {
-   
+
     /**
      * Helper method used by debugger.jpda to create its own private javac compiler.
      * The caller is responsible for freeing handles holding the compiler.
@@ -65,10 +65,10 @@ public class JavaSourceUtil {
      * @since 1.5
      */
     private static final Lookup.Result<JavaSourceUtilImpl> result = Lookup.getDefault().lookupResult(JavaSourceUtilImpl.class);
-    
+
     private JavaSourceUtil () {}
-    
-    
+
+
     public static class Handle {
 
         private final long id;
@@ -101,12 +101,12 @@ public class JavaSourceUtil {
             return new Handle(param[0], newId);
         }
     }
-    
+
     private static JavaSourceUtilImpl getSPI () {
         Collection<? extends JavaSourceUtilImpl> instances = result.allInstances();
         int size = instances.size();
         assert  size < 2;
         return size == 0 ? null : instances.iterator().next();
     }
-    
+
 }
