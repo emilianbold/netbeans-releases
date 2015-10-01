@@ -639,7 +639,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
             ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
-                addMacroUsage(curFile, parsingFileContent, MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset()+cur.getMacroNameLength(), startFile, directive));
+                MacroReference macroRef = MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset()+cur.getMacroNameLength(), startFile, directive);
+                if (macroRef == null) {
+                    if (!curFile.isValid()) {
+                        break;
+                    }
+                } else {
+                    addMacroUsage(curFile, parsingFileContent, macroRef);
+                }
             } else {
                 // TODO: process invalid macro definition
                 assert false : "Not found referenced ClankMacroDirective "+cur;
@@ -648,7 +655,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         for(ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
             ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
-                addMacroUsage(curFile, parsingFileContent, MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), startFile, directive));
+                MacroReference macroRef = MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), startFile, directive);
+                if (macroRef == null) {
+                    if (!curFile.isValid()) {
+                        break;
+                    }
+                } else {
+                    addMacroUsage(curFile, parsingFileContent, macroRef);
+                }
             } else {
                 // TODO: process invalid macro definition
                 assert false : "Not found referenced ClankMacroDirective "+cur;
