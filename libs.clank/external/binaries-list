@@ -1,6 +1,6 @@
-#changeset:   15788:d88c86ecc1ed
+#changeset:   15795:779b6ea5c5d1
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Tue Sep 29 23:38:03 2015 +0300
-#summary:     allow to control need of comments in macros
-1D4EAF7EC4687B3AB3C2636B10DF0E8683429286 clank_0.3.6.zip
+#date:        Thu Oct 01 22:37:38 2015 +0300
+#summary:     fixing #255482: inaccuracy tests: unexpected tokens in Boost
+36E4640519B7F44D81F3DAE57DE7B4407C09A382 clank_0.3.6.zip
