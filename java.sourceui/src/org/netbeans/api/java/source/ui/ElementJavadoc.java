@@ -375,8 +375,9 @@ public class ElementJavadoc {
                     element,
                     JavadocHelper.RemoteJavadocPolicy.SPECULATIVE,
                     cancel);
+                computeDocURL(pages, true, cancel);
                 for (JavadocHelper.TextStream ts : pages) {
-                    if (docURL == null && !ts.getLocations().isEmpty()) {                        
+                    if (docURL == null && !ts.getLocations().isEmpty()) {
                         docURL = ts.getLocations().get(0);
                     }
                     localized |= isLocalized(ts.getLocations(), element);
@@ -734,9 +735,14 @@ public class ElementJavadoc {
                 final Callable<String> call = new Callable<String>() {
                     @Override
                     public String call() throws Exception {
-                        JavadocHelper.TextStream page = pages.isEmpty() ? null : pages.get(0);
-                        docURL = page == null ? null : page.getLocation();
-                        String jdText = page != null ? HTMLJavadocParser.getJavadocText(page, false) : getURL() != null ? HTMLJavadocParser.getJavadocText(getURL(), false) : null;
+                        String jdText = null;
+                        for (JavadocHelper.TextStream page : pages) {
+                            jdText = page != null ? HTMLJavadocParser.getJavadocText(page, false) : getURL() != null ? HTMLJavadocParser.getJavadocText(getURL(), false) : null;
+                            if (jdText != null) {
+                                docURL = page.getLocation();
+                                break;
+                            }
+                        }
                         if (jdText != null) {
                             sb.append(jdText);
                         } else {
