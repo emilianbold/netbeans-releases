@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankMacroDirective;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
@@ -77,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducerParameters.YesNoInterested;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -107,7 +110,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         String contextLanguage = file.getContextLanguage(ppState);
         String contextLanguageFlavor = file.getContextLanguageFlavor(ppState);
         tsp.prepare(handler, contextLanguage, contextLanguageFlavor, false);
-        TokenStreamProducer.Parameters params = TokenStreamProducer.Parameters.createForMacroUsages();
+        ClankTokenStreamProducerParameters params = ClankTokenStreamProducerParameters.createForMacroUsages();
         List<CsmReference> res = tsp.getMacroUsages(params, interrupter);
         tsp.release();
         return res;
@@ -142,7 +145,32 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
 
     @Override
-    public TokenStream getTokenStream(Parameters parameters, Interrupter interrupter) {
+    public TokenStream getTokenStreamForParsingAndCaching(Interrupter interrupter) {
+        final ClankTokenStreamProducerParameters params = ClankTokenStreamProducerParameters.createForParsingAndTokenStreamCaching();
+        assertParamsReadyForCache(params);
+        return getTokenStream(params, interrupter);
+    }
+
+    @Override
+    public TokenStream getTokenStreamForParsing(String language, Interrupter interrupter) {
+        return getTokenStream(ClankTokenStreamProducerParameters.createForParsing(language), interrupter);
+    }
+
+    @Override
+    public TokenStream getTokenStreamForCaching(Interrupter interrupter) {
+        return getTokenStream(ClankTokenStreamProducerParameters.createForTokenStreamCaching(), interrupter);
+    }
+
+    private static void assertParamsReadyForCache(ClankTokenStreamProducerParameters params) {
+        boolean ready = (params.needTokens != YesNoInterested.NEVER)
+                && (params.needComments != YesNoInterested.NEVER)
+                && (params.needMacroExpansion != YesNoInterested.NEVER);
+        if (!ready) {
+            CndUtils.assertTrue(false, "Should be ready for cahcing: " + params);
+        }
+    }
+
+    private TokenStream getTokenStream(ClankTokenStreamProducerParameters parameters, Interrupter interrupter) {
         PreprocHandler ppHandler = getCurrentPreprocHandler();
         ClankDriver.APTTokenStreamCache tokStreamCache = ClankDriver.extractTokenStream(ppHandler);
         assert tokStreamCache != null;
@@ -185,7 +213,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         return tokenStream;
     }
 
-    private List<CsmReference> getMacroUsages(TokenStreamProducer.Parameters parameters, Interrupter interrupter) {
+    private List<CsmReference> getMacroUsages(ClankTokenStreamProducerParameters parameters, Interrupter interrupter) {
         PreprocHandler ppHandler = getCurrentPreprocHandler();
         int fileIndex = ClankDriver.extractTokenStream(ppHandler).getFileIndex();
         FileImpl fileImpl = getMainFile();
@@ -202,7 +230,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
     }
 
-    private void cacheMacroUsagesInFileIfNeed(Parameters parameters, ClankDriver.ClankFileInfo foundFileInfo) {
+    private void cacheMacroUsagesInFileIfNeed(ClankTokenStreamProducerParameters parameters, ClankDriver.ClankFileInfo foundFileInfo) {
         if (foundFileInfo == null) {
             return; // can this happen? should we assert? (softly!)
         }
@@ -236,14 +264,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private State alreadySeenInterestedFileEnter = State.INITIAL;
         private boolean insideInterestedFile = false;
         private boolean skipCurrentFileContentOptimization = false;
-        private final Parameters parameters;
+        private final ClankTokenStreamProducerParameters parameters;
 
         private final List<FileImpl> curFiles = new ArrayList<>();
         private final List<Boolean>  skipCurFileContentOptimizations = new ArrayList<>();
 
         private FileTokenStreamCallback(
                 PreprocHandler ppHandler,
-                Parameters parameters,
+                ClankTokenStreamProducerParameters parameters,
                 FileImpl stopFileImpl, 
                 int stopAtIndex) {
             this.ppHandler = ppHandler;
