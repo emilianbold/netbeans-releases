@@ -199,6 +199,7 @@ final class IOTable extends Hashtable<InputOutput,TaskIO> {
         if (t == null) {
             return; // nothing ??
         } else if (t.foreign) {
+            remove(io);
             return;
         }
         if (t.getName() != TaskIO.VOID) { // Null
