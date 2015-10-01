@@ -152,12 +152,19 @@ public class NodeDeletionTest extends NbTestCase {
         tn.destroy();
         Thread.currentThread().yield();
         Thread.currentThread().sleep(500);
+        final int [] postCountRef = new int[] { count };
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                System.currentTimeMillis();
+                int rc = ps.table.getRowCount();
+                synchronized (postCountRef) {
+                    postCountRef[0] = rc;
+                }
             }
         });
-        int postCount = ps.table.getRowCount();
+        int postCount;
+        synchronized (postCountRef) {
+            postCount = postCountRef[0];
+        }
         assertTrue("Property sheet should synchronously reflect node destruction" +
                 " even if destroyed on a non EQ thread", postCount == 0);
     }
