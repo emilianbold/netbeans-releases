@@ -82,6 +82,10 @@ public class JspTypedTextInterceptorTest extends TestBase2 {
         insertChar("${}^", '}', "${}}^");
     }
 
+    public void test184156() throws Exception {
+        insertChar("<p class=\"item^\"", '\"', "<p class=\"item\"^");
+    }
+
     private void insertChar(String original, char insertText, String expected) throws Exception {
         insertChar(original, insertText, expected, null);
     }
