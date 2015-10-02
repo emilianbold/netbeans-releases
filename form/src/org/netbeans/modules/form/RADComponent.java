@@ -552,6 +552,10 @@ public class RADComponent {
         if (!needsVariableRename(name)) {
             return;
         }
+        CodeGenerator codeGenerator = FormEditor.getCodeGenerator(formModel);
+        if (codeGenerator == null) { // bug 248067 - form might get reloaded on background when the Rename dialog is open
+            return;
+        }
 
         if (!org.openide.util.Utilities.isJavaIdentifier(name)) {
             IllegalArgumentException iae =
@@ -563,7 +567,7 @@ public class RADComponent {
             throw iae;
         }
 
-        FormEditor.getCodeGenerator(formModel).regenerateCode(); // Issue 201053
+        codeGenerator.regenerateCode(); // Issue 201053
         if (formModel.getCodeStructure().isVariableNameReserved(name)) {
             IllegalArgumentException iae =
                 new IllegalArgumentException("Component name already in use: "+name); // NOI18N
