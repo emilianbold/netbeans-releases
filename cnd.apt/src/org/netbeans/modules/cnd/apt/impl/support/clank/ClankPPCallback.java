@@ -281,15 +281,16 @@ public final class ClankPPCallback extends FileInfoCallback {
         APTFileSearch fileSearch = includeHandler.getFileSearch();
         if (fileSearch != null) {
             char$ptr curFilePath = curFile.getName();
-            String headerPath = fileSearch.searchInclude(Native.$toString(FileName.data(), FileName.size()), Native.$toString(curFilePath));
+            String FileNameStr = Native.$toString(FileName.data(), FileName.size());
+            String headerPath = fileSearch.searchInclude(FileNameStr, Native.$toString(curFilePath));
             if (headerPath != null) {
-                headerPath = CndPathUtilities.getDirName(headerPath);
-                if (headerPath == null) {
-                    headerPath = "/"; //NOI18N
+                if (headerPath.endsWith(FileNameStr) && (headerPath.length() > FileNameStr.length())) {
+                    String recoveryDir = headerPath.substring(0, headerPath.length() - FileNameStr.length()-1/*slash*/);
+                    RecoveryPath.$assign(recoveryDir);
+                    return true;
+                } else {
+                    // FIXME: we found file, but can not correctly detect recovery dir
                 }
-                final char$ptr charPtr = NativePointer.create_char$ptr(headerPath);
-                RecoveryPath.assign(charPtr, charPtr.$add(headerPath.length()));
-                return true;
             }
         }
         return super.onNotFoundInclusionDirective(curFile, FileName, RecoveryPath, SearchedDirs, SearchedFromIndex);
