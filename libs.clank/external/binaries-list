@@ -1,6 +1,6 @@
-#changeset:   15795:779b6ea5c5d1
+#changeset:   15806:9c6dd33f0d4f
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Oct 01 22:37:38 2015 +0300
-#summary:     fixing #255482: inaccuracy tests: unexpected tokens in Boost
-36E4640519B7F44D81F3DAE57DE7B4407C09A382 clank_0.3.6.zip
+#date:        Sat Oct 03 01:07:00 2015 +0300
+#summary:     PERF: fixed uint=>int conversion bug
+05DF72202917B78CCD9012D4CA2990DCC5D30A9A clank_0.3.6.zip
