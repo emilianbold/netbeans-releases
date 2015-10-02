@@ -50,12 +50,16 @@ import java.awt.GraphicsEnvironment;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTree;
@@ -69,6 +73,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  * Tests for class BeanTreeViewTest
@@ -316,7 +321,60 @@ public class BeanTreeViewTest extends NbTestCase {
                 });
                 WeakReference<Node> wref = new WeakReference<Node>(operateOn);
                 operateOn = null;
+                RequestProcessor selectionProcessor;
+                int delay;
+                try {
+                    Method getSelectionProcessorMethod = ExplorerManager.class.getDeclaredMethod("getSelectionProcessor");
+                    getSelectionProcessorMethod.setAccessible(true);
+                    selectionProcessor = (RequestProcessor) getSelectionProcessorMethod.invoke(null);
+                    Field delayField = ExplorerManager.class.getDeclaredField("SELECTION_SYNC_DELAY");
+                    delayField.setAccessible(true);
+                    delay = (Integer) delayField.get(null);
+                    
+                    // Wait for the task in selectionProcessor to start up:
+                    Class ticTacClass = Class.forName(RequestProcessor.class.getName()+"$TickTac");
+                    Field tickField = ticTacClass.getDeclaredField("TICK");
+                    tickField.setAccessible(true);
+                    Object tick = tickField.get(null);
+                    if (tick != null) {
+                        // Waiting for the tick queue to become empty (scheduled tasks removed)
+                        Field queueField = ticTacClass.getDeclaredField("queue");
+                        queueField.setAccessible(true);
+                        Queue queue = (Queue) queueField.get(tick);
+                        while (hasOwnersOf(tick, queue, selectionProcessor)) {
+                            //System.err.println("Waiting for queue "+Integer.toHexString(System.identityHashCode(queue))+" to become empty... peek = "+queue.peek()+" is empty = "+queue.isEmpty());
+                            Thread.sleep(2*delay); // Wait for the queue with scheduled tasks to become empty
+                        }
+                    }
+                } catch (IllegalAccessException ex) {
+                    throw new InvocationTargetException(ex);
+                } catch (NoSuchMethodException ex) {
+                    throw new InvocationTargetException(ex);
+                } catch (NoSuchFieldException ex) {
+                    throw new InvocationTargetException(ex);
+                } catch (ClassNotFoundException ex) {
+                    throw new InvocationTargetException(ex);
+                }
+                
+                // Wait for the task, removed from tick queue, to be attached to a processor...
+                Thread.sleep(2*delay);  // No reliable way :-(
+                // Wait for the task in selectionProcessor to finish
+                selectionProcessor.awaitTermination(60, TimeUnit.SECONDS);
                 assertGC("Node should be released.", wref);    
+            }
+            private boolean hasOwnersOf(Object tick, Queue q, RequestProcessor rp) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException {
+                Class itemClass = Class.forName(RequestProcessor.class.getName()+"$Item");
+                Field ownerField = itemClass.getDeclaredField("owner");
+                ownerField.setAccessible(true);
+                synchronized (tick) {
+                    for (Object o : q) {
+                        Object ownerRP = ownerField.get(o);
+                        if (rp.equals(ownerRP)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
         }
         AWTTst awt = new AWTTst();

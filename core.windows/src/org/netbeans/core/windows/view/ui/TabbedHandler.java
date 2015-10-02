@@ -233,6 +233,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             tabbed.setIconAt(index, new ImageIcon(tc.getIcon()));
         } else {
             Logger.getLogger(TabbedHandler.class.getName()).log(Level.INFO, "TopComponent has no icon: " + tc);
+            tabbed.setIconAt(index, null);
         }
     }
     
