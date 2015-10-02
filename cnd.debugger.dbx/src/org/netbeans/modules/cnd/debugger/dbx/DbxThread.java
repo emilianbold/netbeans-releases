@@ -48,6 +48,7 @@ package org.netbeans.modules.cnd.debugger.dbx;
 import org.netbeans.spi.viewmodel.ModelListener;
 
 import com.sun.tools.swdev.glue.dbx.*;
+import java.math.BigInteger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
@@ -204,20 +205,15 @@ public final class DbxThread extends Thread {
 	    return "t@?";      // NOI18N
 	else if (lid == -5)
 	    return "t@idle";   // NOI18N
-	else
-	    return "t@" + Long.toString(lid); // NOI18N
-	    
-	/* switch does not take long
-	switch (lid) {
-	    case -1: return "t@null";	// NOI18N
-	    case -2: return "t@all";	// NOI18N
-	    case -3: return "t@X";	// NOI18N
-	    case -4: return "t@?";	// NOI18N
-	    case -5: return "t@idle";	// NOI18N
-	    default: return "t@" + Long.toString(lid); // NOI18N
-	    //default: return "t@" + Integer.toString(id); // NOI18N
-	}
-	*/
+        else {
+            if (lid < 0) {
+                BigInteger max = BigInteger.ONE.shiftLeft(64);
+                BigInteger bi = BigInteger.valueOf(lid);
+        	return "t@" + bi.add(max).toString(); // NOI18N
+            } else {
+                return "t@" + Long.toString(lid); // NOI18N
+            }
+        }
     }
 
     /**
