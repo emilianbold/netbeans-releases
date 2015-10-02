@@ -4537,7 +4537,7 @@ class LayoutFeeder implements LayoutConstants {
                         if (endIndex == commonGroup.getSubIntervalCount()) {
                             endIndex--;
                         }
-                    } else {
+                    } else if (endIndex > 0) {
                         endGap = commonGroup.getSubInterval(--endIndex).isEmptySpace();
                     }
                 }
