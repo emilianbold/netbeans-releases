@@ -91,6 +91,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     private DefaultTableModel model;
     private TreePathHandle selectedObjects;
     private Collection<TreePathHandle> fields;
+    private int offset;
     private ChangeListener parent;
     private String classname;
     private static final String[] COLUMN_NAMES = {
@@ -109,12 +110,13 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
      *
      * @param selectedObjects  array of selected objects
      */
-    public EncapsulateFieldPanel(TreePathHandle selectedObject, Collection<TreePathHandle> fields, ChangeListener parent) {
+    public EncapsulateFieldPanel(TreePathHandle selectedObject, Collection<TreePathHandle> fields, int offset, ChangeListener parent) {
         String title = getString("LBL_TitleEncapsulateFields");
         
         this.selectedObjects = selectedObject;
         this.parent = parent;
         this.fields = fields;
+        this.offset = offset;
         model = new TabM(COLUMN_NAMES, 0);
         initComponents();
         setName(title);
@@ -626,6 +628,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             }
             ++idx;
         }
+        InsertPoint.DEFAULT.index = offset;
         jComboInsertPoint.addItem(InsertPoint.DEFAULT);
         if (!result.isEmpty()) {
             jComboInsertPoint.addItem(new InsertPoint(result.get(0).index - 1,
@@ -709,8 +712,8 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         throw new IllegalStateException("unknown ModifierName: " + modName); // NOI18N
     }
     
-    public InsertPoint getInsertPoint() {
-        return (InsertPoint) jComboInsertPoint.getSelectedItem();
+    public Integer getInsertPoint() {
+        return ((InsertPoint) jComboInsertPoint.getSelectedItem()).getIndex();
     }
     
     public SortBy getSortBy() {
@@ -933,7 +936,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
     }
     
-    public static final class InsertPoint {
+    private static final class InsertPoint {
         
         public static final InsertPoint DEFAULT = new InsertPoint(Integer.MIN_VALUE,
                 getString("EncapsulateFieldPanel.jComboInsertPoint.default")); // NOI18N
