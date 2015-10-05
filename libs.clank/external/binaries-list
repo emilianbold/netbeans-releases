@@ -1,6 +1,6 @@
-#changeset:   15806:9c6dd33f0d4f
+#changeset:   15814:f877618e441a
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Sat Oct 03 01:07:00 2015 +0300
-#summary:     PERF: fixed uint=>int conversion bug
-05DF72202917B78CCD9012D4CA2990DCC5D30A9A clank_0.3.6.zip
+#date:        Mon Oct 05 01:05:19 2015 +0300
+#summary:     fixing #255678 - Code assistance is broken
+7E50EC4BE276C7CECDA87BD981ECD6E4B351149A clank_0.3.6.zip
