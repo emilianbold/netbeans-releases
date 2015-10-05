@@ -43,12 +43,10 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
-import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 
 import java.beans.PropertyChangeEvent;
@@ -57,7 +55,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,15 +73,12 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CodeStyle;
-import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.Utilities;
 import org.openide.DialogDescriptor;
@@ -193,7 +187,7 @@ public class GeneratorUtils {
             wc.rewrite(clazz, insertClassMembers(wc, clazz, members, offset));
         }
     }
-    
+
     public static ClassTree insertClassMembers(WorkingCopy wc, ClassTree clazz, List<? extends Tree> members, int offset) throws IllegalStateException {
         if (members.isEmpty()) {
             return clazz;
@@ -204,171 +198,11 @@ public class GeneratorUtils {
                 throw new DuplicateMemberException((int) wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), dup));
             }
         }
-        if (offset < 0 || getCodeStyle(wc).getClassMemberInsertionPoint() != CodeStyle.InsertionPoint.CARET_LOCATION) {
-            return GeneratorUtilities.get(wc).insertClassMembers(clazz, members);
-        }
-        int index = 0;
-        SourcePositions sp = wc.getTrees().getSourcePositions();
-        GuardedDocument gdoc = null;
-        try {
-            Document doc = wc.getDocument();
-            if (doc != null && doc instanceof GuardedDocument) {
-                gdoc = (GuardedDocument)doc;
-            }
-        } catch (IOException ioe) {}
-        Tree lastMember = null;
-        Tree nextMember = null;
-        for (Tree tree : clazz.getMembers()) {
-            if (offset <= sp.getStartPosition(wc.getCompilationUnit(), tree)) {
-                if (gdoc == null) {
-                    nextMember = tree;
-                    break;
-                }
-                int pos = (int)(lastMember != null ? sp.getEndPosition(wc.getCompilationUnit(), lastMember) : sp.getStartPosition(wc.getCompilationUnit(), clazz));
-                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                if (pos <= sp.getStartPosition(wc.getCompilationUnit(), tree)) {
-                    nextMember = tree;
-                    break;
-                }
-            }
-            index++;
-            lastMember = tree;
-        }
-        if (lastMember != null) {
-            // do not move the comments tied to last member in guarded block:
-            moveCommentsAfterOffset(wc, lastMember, members.get(0), offset, gdoc);
-        }
-        if (nextMember != null) {
-            moveCommentsBeforeOffset(wc, nextMember, members.get(members.size() - 1), offset, gdoc);
-        }
-        TreeMaker tm = wc.getTreeMaker();
-        for (int i = members.size() - 1; i >= 0; i--) {
-            clazz = tm.insertClassMember(clazz, index, members.get(i));
-        }
-        return clazz;
+        return GeneratorUtilities.get(wc).insertClassMembers(clazz, members, offset);
     }
     
     public static ClassTree insertClassMember(WorkingCopy wc, ClassTree clazz, Tree member, int offset) throws IllegalStateException {
         return insertClassMembers(wc, clazz, Collections.singletonList(member), offset);
-    }
-    
-    /**
-     * Reparents comments that follow `from' tree and would be separated from that tree by insertion to `offset' position.
-     * The comments are removed from the original tree, and attached to the `to' inserted tree.
-     * @param wc the working copy
-     * @param from the current owner of the comments
-     * @param to the generated code
-     * @param offset the offset where the new code will be inserted
-     * @param gdoc guarded document instance or {@code null}
-     * @return 
-     */
-    private static void moveCommentsAfterOffset(WorkingCopy wc, Tree from, Tree to, int offset, GuardedDocument gdoc) {
-        List<Comment> toMove = new LinkedList<>();
-        int idx = 0;
-        int firstToRemove = -1;
-        for (Comment comment : wc.getTreeUtilities().getComments(from, false)) {
-            if (comment.endPos() <= offset) {
-                // not affected by insertion
-                idx++;
-                continue;
-            }
-            if (gdoc != null) {
-                int epAfterBlock = gdoc.getGuardedBlockChain().adjustToBlockEnd(comment.endPos());
-                // comment that ends exactly at the GB boundary cannot be really
-                // reassigned from the previous member.
-                if (epAfterBlock >= comment.endPos()) {
-                    // set new offset, after the guarded block
-                    idx++;
-                    continue;
-                }
-            }
-            toMove.add(comment);
-            if (firstToRemove == -1) {
-                firstToRemove = idx;
-            }
-            idx++;
-        }
-        if (toMove.isEmpty()) {
-            return;
-        }
-        doMoveComments(wc, from, to, offset, toMove, firstToRemove, idx);
-    }
-    
-    private static void doMoveComments(WorkingCopy wc, Tree from,  Tree to, int offset, List<Comment> comments, int fromIdx, int toIdx) {
-        if (comments.isEmpty()) {
-            return;
-        }
-        TreeMaker tm = wc.getTreeMaker();
-        Tree tree = from;
-        switch (from.getKind()) {
-            case METHOD:
-                tree = tm.setLabel(from, ((MethodTree)from).getName());
-                break;
-            case VARIABLE:
-                tree = tm.setLabel(from, ((VariableTree)from).getName());
-                break;
-            case BLOCK:
-                tree = tm.Block(((BlockTree)from).getStatements(), ((BlockTree)from).isStatic());
-                GeneratorUtilities gu = GeneratorUtilities.get(wc);
-                gu.copyComments(from, tree, true);
-                gu.copyComments(from, tree, false);
-                break;
-        }
-        boolean before = (int)wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), from) >= offset;
-        if (fromIdx >=0 && toIdx >= 0 && toIdx - fromIdx > 0) {
-            for (int i = toIdx - 1; i >= fromIdx; i--) {
-                tm.removeComment(tree, i, before);
-            }
-        }
-        wc.rewrite(from, tree);
-        for (Comment comment : comments) {
-            tm.addComment(to, comment, comment.pos() <= offset);
-        }
-    }
-    
-    private static void moveCommentsBeforeOffset(WorkingCopy wc, Tree from, Tree to, int offset, GuardedDocument gdoc) {
-        List<Comment> toMove = new LinkedList<Comment>();
-        int idx = 0;
-        for (Comment comment : wc.getTreeUtilities().getComments(from, true)) {
-            if (comment.pos() >= offset || comment.endPos() > offset)
-                break;
-
-            if (gdoc != null) {
-                int epAfterBlock = gdoc.getGuardedBlockChain().adjustToBlockEnd(comment.pos());
-                // comment that ends exactly at the GB boundary cannot be really
-                // reassigned from the previous member.
-                if (epAfterBlock >= comment.endPos()) {
-                    // set new offset, after the guarded block
-                    break;
-                }
-            }
-            toMove.add(comment);
-            idx++;
-        }
-        if (toMove.size() > 0) {
-            doMoveComments(wc, from, to, offset, toMove, 0, idx);
-        }
-    }
-
-    private static CodeStyle getCodeStyle(CompilationInfo info) {
-        if (info != null) {
-            try {
-                Document doc = info.getDocument();
-                if (doc != null) {
-                    CodeStyle cs = (CodeStyle)doc.getProperty(CodeStyle.class);
-                    return cs != null ? cs : CodeStyle.getDefault(doc);
-                }
-            } catch (IOException ioe) {
-                // ignore
-            }
-            
-            FileObject file = info.getFileObject();
-            if (file != null) {
-                return CodeStyle.getDefault(file);
-            }
-        }
-        
-        return CodeStyle.getDefault((Document)null);
     }
     
     /**
@@ -427,7 +261,7 @@ public class GeneratorUtils {
             }
         }
     }
-
+    
     private static Tree checkDuplicates(WorkingCopy wc, ClassTree clazz, Tree member) {
         List<? extends VariableTree> memberParams = null;
         TreePath tp = null;

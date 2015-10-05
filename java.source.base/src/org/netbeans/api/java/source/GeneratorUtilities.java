@@ -46,7 +46,6 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
@@ -54,7 +53,6 @@ import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -62,9 +60,7 @@ import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
@@ -333,6 +329,182 @@ public final class GeneratorUtilities {
             idx = Math.min(maxIndex, idx);
         }
         return copy.getTreeMaker().insertClassMember(clazz, idx, member);
+    }
+
+    /**
+     * Inserts members to a class. Using the rules specified in the {@link CodeStyle}
+     * it finds the proper place for each of the members and calls {@link TreeMaker.insertClassMember}
+     *
+     * @param clazz the class to insert the members to
+     * @param members the members to insert
+     * @param offset the caret location to use for {@code CodeStyle.InsertionPoint.CARET_LOCATION}
+     * @return the modified class
+     * @since 2.9
+     */    
+    public ClassTree insertClassMembers(ClassTree clazz, List<? extends Tree> members, int offset) {
+        if (members.isEmpty()) {
+            return clazz;
+        }
+        CodeStyle codeStyle = DiffContext.getCodeStyle(copy);
+        if (offset < 0 || codeStyle.getClassMemberInsertionPoint() != CodeStyle.InsertionPoint.CARET_LOCATION) {
+            return GeneratorUtilities.get(copy).insertClassMembers(clazz, members);
+        }
+        int index = 0;
+        SourcePositions sp = copy.getTrees().getSourcePositions();
+        Document doc = null;
+        try {
+            doc = copy.getDocument();
+            if (doc == null) {
+                doc = copy.getSnapshot().getSource().getDocument(true);
+            }
+        } catch (IOException ioe) {}
+        Tree lastMember = null;
+        Tree nextMember = null;
+        for (Tree tree : clazz.getMembers()) {
+            if (offset <= sp.getStartPosition(copy.getCompilationUnit(), tree)) {
+                DocumentGuards guards = LineDocumentUtils.as(doc, DocumentGuards.class);
+                if (doc == null || guards == null) {
+                    nextMember = tree;
+                    break;
+                }
+                int pos = (int)(lastMember != null ? sp.getEndPosition(copy.getCompilationUnit(), lastMember) : sp.getStartPosition(copy.getCompilationUnit(), clazz));
+                pos = guards.adjustPosition(pos, true);
+                if (pos <= sp.getStartPosition(copy.getCompilationUnit(), tree)) {
+                    nextMember = tree;
+                    break;
+                }
+            }
+            index++;
+            lastMember = tree;
+        }
+        if (lastMember != null) {
+            // do not move the comments tied to last member in guarded block:
+            moveCommentsAfterOffset(copy, lastMember, members.get(0), offset, doc);
+        }
+        if (nextMember != null) {
+            moveCommentsBeforeOffset(copy, nextMember, members.get(members.size() - 1), offset, doc);
+        }
+        TreeMaker tm = copy.getTreeMaker();
+        ClassTree newClazz = clazz;
+        for (int i = members.size() - 1; i >= 0; i--) {
+            newClazz = tm.insertClassMember(newClazz, index, members.get(i));
+        }
+        return newClazz;
+    }
+    
+    /**
+     * Inserts a member to a class. Using the rules specified in the {@link CodeStyle}
+     * it finds the proper place for the member and calls {@link TreeMaker.insertClassMember}
+     *
+     * @param clazz the class to insert the member to
+     * @param member the member to add
+     * @param offset the caret location to use for {@code CodeStyle.InsertionPoint.CARET_LOCATION}
+     * @return the modified class
+     * @since 2.9
+     */
+    public ClassTree insertClassMember(ClassTree clazz, Tree member, int offset) {
+        return insertClassMembers(clazz, Collections.singletonList(member), offset);
+    }
+    
+    /**
+     * Reparents comments that follow `from' tree and would be separated from that tree by insertion to `offset' position.
+     * The comments are removed from the original tree, and attached to the `to' inserted tree.
+     * @param wc the working copy
+     * @param from the current owner of the comments
+     * @param to the generated code
+     * @param offset the offset where the new code will be inserted
+     * @param doc document instance or {@code null}
+     * @return 
+     */
+    private void moveCommentsAfterOffset(WorkingCopy wc, Tree from, Tree to, int offset, Document doc) {
+        List<Comment> toMove = new LinkedList<>();
+        int idx = 0;
+        int firstToRemove = -1;
+        for (Comment comment : wc.getTreeUtilities().getComments(from, false)) {
+            if (comment.endPos() <= offset) {
+                // not affected by insertion
+                idx++;
+                continue;
+            }
+            DocumentGuards guards = LineDocumentUtils.as(doc, DocumentGuards.class);
+            if (guards != null) {
+                int epAfterBlock = guards.adjustPosition(comment.endPos(), true);
+                // comment that ends exactly at the GB boundary cannot be really
+                // reassigned from the previous member.
+                if (epAfterBlock >= comment.endPos()) {
+                    // set new offset, after the guarded block
+                    idx++;
+                    continue;
+                }
+            }
+            toMove.add(comment);
+            if (firstToRemove == -1) {
+                firstToRemove = idx;
+            }
+            idx++;
+        }
+        if (toMove.isEmpty()) {
+            return;
+        }
+        doMoveComments(wc, from, to, offset, toMove, firstToRemove, idx);
+    }
+    
+    private static void doMoveComments(WorkingCopy wc, Tree from,  Tree to, int offset, List<Comment> comments, int fromIdx, int toIdx) {
+        if (comments.isEmpty()) {
+            return;
+        }
+        TreeMaker tm = wc.getTreeMaker();
+        Tree tree = from;
+        switch (from.getKind()) {
+            case METHOD:
+                tree = tm.setLabel(from, ((MethodTree)from).getName());
+                break;
+            case VARIABLE:
+                tree = tm.setLabel(from, ((VariableTree)from).getName());
+                break;
+            case BLOCK:
+                tree = tm.Block(((BlockTree)from).getStatements(), ((BlockTree)from).isStatic());
+                GeneratorUtilities gu = GeneratorUtilities.get(wc);
+                gu.copyComments(from, tree, true);
+                gu.copyComments(from, tree, false);
+                break;
+        }
+        boolean before = (int)wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), from) >= offset;
+        if (fromIdx >=0 && toIdx >= 0 && toIdx - fromIdx > 0) {
+            for (int i = toIdx - 1; i >= fromIdx; i--) {
+                tm.removeComment(tree, i, before);
+            }
+        }
+        wc.rewrite(from, tree);
+        for (Comment comment : comments) {
+            tm.addComment(to, comment, comment.pos() <= offset);
+        }
+    }
+    
+    private static void moveCommentsBeforeOffset(WorkingCopy wc, Tree from, Tree to, int offset, Document doc) {
+        List<Comment> toMove = new LinkedList<>();
+        int idx = 0;
+        for (Comment comment : wc.getTreeUtilities().getComments(from, true)) {
+            if (comment.pos() >= offset || comment.endPos() > offset) {
+                break;
+            }
+            
+            DocumentGuards guards = LineDocumentUtils.as(doc, DocumentGuards.class);
+            if (guards != null) {
+                int epAfterBlock = guards.adjustPosition(comment.pos(), true);
+                // comment that ends exactly at the GB boundary cannot be really
+                // reassigned from the previous member.
+                if (epAfterBlock >= comment.endPos()) {
+                    // set new offset, after the guarded block
+                    break;
+                }
+            }
+            toMove.add(comment);
+            idx++;
+        }
+        if (toMove.size() > 0) {
+            doMoveComments(wc, from, to, offset, toMove, 0, idx);
+        }
     }
     
     /**

@@ -82,32 +82,15 @@ import org.openide.util.NbBundle;
  * @author  Pavel Flaska
  * @author  Jan Pokorsky
  */
-public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringUIFactory {
+public final class EncapsulateFieldUI implements RefactoringUI {
 
     private EncapsulateFieldPanel panel;
     private transient EncapsulateFieldsRefactoring refactoring;
+    private int offset;
     
-    private static EncapsulateFieldUI create(CompilationInfo info, TreePathHandle... selectedObject) {
-        if (selectedObject.length == 1) {
-            TreePathHandle sourceType = resolveSourceType(selectedObject[0], info);
-
-            if (sourceType == null) {
-                return null;
-            }
-
-            return new EncapsulateFieldUI(sourceType);
-        } else {
-            return new EncapsulateFieldUI(selectedObject);
-        }
-    }
-
-    private Lookup lookup;
-
-    private EncapsulateFieldUI(Lookup lookup) {
-        this.lookup = lookup;
-    }
-    private EncapsulateFieldUI(TreePathHandle sourceType) {
+    private EncapsulateFieldUI(TreePathHandle sourceType, int offset) {
         refactoring = new EncapsulateFieldsRefactoring(sourceType);
+        this.offset = offset;
     }
     
     private EncapsulateFieldUI(TreePathHandle[] handles) {
@@ -123,7 +106,7 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             Collection selectedObjects = refactoring.getRefactoringSource().lookup(Collection.class);
-            panel = new EncapsulateFieldPanel(refactoring.getSelectedObject(), (Collection<TreePathHandle>) selectedObjects, parent);
+            panel = new EncapsulateFieldPanel(refactoring.getSelectedObject(), (Collection<TreePathHandle>) selectedObjects, offset, parent);
         }
         return panel;
     }
@@ -212,60 +195,83 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
     }
 
     public static JavaRefactoringUIFactory factory(Lookup lookup) {
-        return new EncapsulateFieldUI(lookup);
+        return new EncapsulateFieldUIFactory(lookup);
     }
-    
-    @Override
-    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (ec == null) {
-            return EncapsulateFieldUI.create(info, handles);
-        }
-        JEditorPane textC = NbDocument.findRecentEditorPane(ec);
-        if (textC == null) {
-            return EncapsulateFieldUI.create(info, handles);
-        }
-        int startOffset = textC.getSelectionStart();
-        int endOffset = textC.getSelectionEnd();
 
-        if (startOffset == endOffset) {
-            //cursor position
-            return EncapsulateFieldUI.create(info, handles[0]);
+    private static final class EncapsulateFieldUIFactory implements JavaRefactoringUIFactory {
+
+        private Lookup lookup;
+
+        private EncapsulateFieldUIFactory(Lookup lookup) {
+            this.lookup = lookup;
         }
 
-        //editor selection
-        TreePath path = info.getTreeUtilities().pathFor(startOffset);
-        if(path == null) {
-            return null;
-        }
-        TreePath enclosingClass = JavaRefactoringUtils.findEnclosingClass(info, path, true, true, true, true, true);
-        if(enclosingClass == null) {
-            return null;
-        }
-        Element el = info.getTrees().getElement(enclosingClass);
-        if (el == null) {
-            return null;
-        }
-        if (!(el.getKind().isClass() || el.getKind().isInterface())) {
-            el = info.getElementUtilities().enclosingTypeElement(el);
-        }
-        Collection<TreePathHandle> h = new ArrayList<TreePathHandle>();
-        for (Element e : ElementFilter.fieldsIn(el.getEnclosedElements())) {
-//            SourcePositions sourcePositions = info.getTrees().getSourcePositions();
-            Tree leaf = info.getTrees().getPath(e).getLeaf();
-            int[] namespan = info.getTreeUtilities().findNameSpan((VariableTree) leaf);
-            if(namespan != null) {
-                long start = namespan[0]; //sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
-                long end = namespan[1]; //sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
-                if ((start <= endOffset && start >= startOffset) ||
-                        (end <= endOffset && end >= startOffset)){
-                    h.add(TreePathHandle.create(e, info));
+        private static EncapsulateFieldUI create(CompilationInfo info, int offset, TreePathHandle... selectedObject) {
+            if (selectedObject.length == 1) {
+                TreePathHandle sourceType = resolveSourceType(selectedObject[0], info);
+
+                if (sourceType == null) {
+                    return null;
                 }
+
+                return new EncapsulateFieldUI(sourceType, offset);
+            } else {
+                return new EncapsulateFieldUI(selectedObject);
             }
         }
-        if (h.isEmpty()) {
-            return EncapsulateFieldUI.create(info, handles[0]);
+
+        @Override
+        public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+            EditorCookie ec = lookup.lookup(EditorCookie.class);
+            if (ec == null) {
+                return create(info, -1, handles);
+            }
+            JEditorPane textC = NbDocument.findRecentEditorPane(ec);
+            if (textC == null) {
+                return create(info, -1, handles);
+            }
+            int startOffset = textC.getSelectionStart();
+            int endOffset = textC.getSelectionEnd();
+
+            if (startOffset == endOffset) {
+                //cursor position
+                return create(info, startOffset, handles[0]);
+            }
+
+            //editor selection
+            TreePath path = info.getTreeUtilities().pathFor(startOffset);
+            if (path == null) {
+                return null;
+            }
+            TreePath enclosingClass = JavaRefactoringUtils.findEnclosingClass(info, path, true, true, true, true, true);
+            if (enclosingClass == null) {
+                return null;
+            }
+            Element el = info.getTrees().getElement(enclosingClass);
+            if (el == null) {
+                return null;
+            }
+            if (!(el.getKind().isClass() || el.getKind().isInterface())) {
+                el = info.getElementUtilities().enclosingTypeElement(el);
+            }
+            Collection<TreePathHandle> h = new ArrayList<TreePathHandle>();
+            for (Element e : ElementFilter.fieldsIn(el.getEnclosedElements())) {
+                //            SourcePositions sourcePositions = info.getTrees().getSourcePositions();
+                Tree leaf = info.getTrees().getPath(e).getLeaf();
+                int[] namespan = info.getTreeUtilities().findNameSpan((VariableTree) leaf);
+                if (namespan != null) {
+                    long start = namespan[0]; //sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
+                    long end = namespan[1]; //sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
+                    if ((start <= endOffset && start >= startOffset)
+                            || (end <= endOffset && end >= startOffset)) {
+                        h.add(TreePathHandle.create(e, info));
+                    }
+                }
+            }
+            if (h.isEmpty()) {
+                return create(info, startOffset, handles[0]);
+            }
+            return create(info, -1, h.toArray(new TreePathHandle[h.size()]));
         }
-        return EncapsulateFieldUI.create(info, h.toArray(new TreePathHandle[h.size()]));
     }
 }
