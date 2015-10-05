@@ -173,8 +173,6 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
                 CsmParserProvider.CsmParserResult result = resolveLazyStatement(stream);
                 if (result != null) {
                     result.render(list);
-                } else {
-                    System.err.println("");
                 }
                 return true;
             } finally {
