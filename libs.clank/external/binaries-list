@@ -1,6 +1,5 @@
-#changeset:   15814:f877618e441a
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Oct 05 01:05:19 2015 +0300
-#summary:     fixing #255678 - Code assistance is broken
-7E50EC4BE276C7CECDA87BD981ECD6E4B351149A clank_0.3.6.zip
+#date:        Mon Oct 05 19:50:46 2015 +0300
+#summary:     fixing #255678 - Code assistance is broken on Windows
+6579F6C3D1F5919A96522788A5BB4F0B17027DC7 clank_0.3.6.zip
