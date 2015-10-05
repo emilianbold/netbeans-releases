@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.lexer;
 
@@ -92,7 +92,7 @@ public enum PHPTokenId implements TokenId {
     PHP_WHILE("while", "keyword"), //NOI18N
     PHP_ENDFOREACH(null, "keyword"), //NOI18N
     PHP_EVAL(null, "keyword"), //NOI18N
-    PHP_INSTANCEOF("instanceof", "keyword"), //NOI18N
+    PHP_INSTANCEOF("instanceof", "operator"), //NOI18N
     PHP_INSTEADOF("insteadof", "keyword"), //NOI18N
     PHP_ENDWHILE(null, "keyword"), //NOI18N
     PHP_BREAK("break", "keyword"), //NOI18N

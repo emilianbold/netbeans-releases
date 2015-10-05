@@ -14,7 +14,7 @@ token #12 PHP_PRIVATE private
 token #13 WHITESPACE  
 token #14 PHP_VARIABLE $val
 token #15 WHITESPACE  
-token #16 PHP_TOKEN =
+token #16 PHP_OPERATOR =
 token #17 PHP_NUMBER 0
 token #18 PHP_SEMICOLON ;
 token #19 WHITESPACE \n\n    
@@ -30,7 +30,7 @@ token #28 PHP_VARIABLE $this
 token #29 PHP_OBJECT_OPERATOR ->
 token #30 PHP_STRING val
 token #31 WHITESPACE  
-token #32 PHP_TOKEN =
+token #32 PHP_OPERATOR =
 token #33 WHITESPACE  
 token #34 PHP_NUMBER 121
 token #35 PHP_SEMICOLON ;

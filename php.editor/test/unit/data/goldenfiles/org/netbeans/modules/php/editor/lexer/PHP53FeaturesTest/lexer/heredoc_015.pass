@@ -11,7 +11,7 @@ token #9 PHP_PUBLIC public
 token #10 WHITESPACE  
 token #11 PHP_VARIABLE $e
 token #12 WHITESPACE  
-token #13 PHP_TOKEN =
+token #13 PHP_OPERATOR =
 token #14 WHITESPACE  
 token #15 PHP_HEREDOC_TAG_START <<<THISMUSTNOTERROR\n
 token #16 PHP_CONSTANT_ENCAPSED_STRING If you see this, everything is ok.
@@ -23,7 +23,7 @@ token #21 PHP_SEMICOLON ;
 token #22 WHITESPACE \n
 token #23 PHP_VARIABLE $e
 token #24 WHITESPACE  
-token #25 PHP_TOKEN =
+token #25 PHP_OPERATOR =
 token #26 WHITESPACE  
 token #27 PHP_NEW new
 token #28 WHITESPACE  

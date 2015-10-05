@@ -10,7 +10,7 @@ token #8 PHP_PRIVATE private
 token #9 WHITESPACE  
 token #10 PHP_VARIABLE $arr
 token #11 WHITESPACE  
-token #12 PHP_TOKEN =
+token #12 PHP_OPERATOR =
 token #13 WHITESPACE  
 token #14 PHP_TOKEN [
 token #15 PHP_NUMBER 1
