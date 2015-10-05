@@ -3,7 +3,7 @@ token #1 PHP_OPENTAG <?php
 token #2 WHITESPACE \n
 token #3 PHP_VARIABLE $code
 token #4 WHITESPACE  
-token #5 PHP_TOKEN =
+token #5 PHP_OPERATOR =
 token #6 WHITESPACE  
 token #7 PHP_NOWDOC_TAG_START <<<'EOF'\n
 token #8 PHP_CONSTANT_ENCAPSED_STRING <?php\n  $x = <<<'EOT'\nEOT
