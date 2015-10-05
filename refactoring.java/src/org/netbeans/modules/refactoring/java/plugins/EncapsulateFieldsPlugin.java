@@ -59,7 +59,6 @@ import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.EncapsulateDesc;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.Encapsulator;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
-import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.InsertPoint;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.Javadoc;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.SortBy;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
@@ -207,7 +206,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         }
 
         Encapsulator encapsulator = new Encapsulator(descs, problem,
-                refactoring.getContext().lookup(InsertPoint.class),
+                refactoring.getContext().lookup(Integer.class),
                 refactoring.getContext().lookup(SortBy.class),
                 refactoring.getContext().lookup(Javadoc.class)
                 );
