@@ -1,12 +1,12 @@
 token #0 PHP_OPENTAG <?php
 token #1 WHITESPACE \n
 token #2 PHP_VARIABLE $name
-token #3 PHP_TOKEN =
+token #3 PHP_OPERATOR =
 token #4 PHP_CONSTANT_ENCAPSED_STRING "Petr"
 token #5 PHP_SEMICOLON ;
 token #6 WHITESPACE \n
 token #7 PHP_VARIABLE $age
-token #8 PHP_TOKEN =
+token #8 PHP_OPERATOR =
 token #9 PHP_NUMBER 10
 token #10 PHP_SEMICOLON ;
 token #11 WHITESPACE \n
@@ -23,13 +23,13 @@ token #21 PHP_HEREDOC_TAG_END \nHEREDOC
 token #22 PHP_SEMICOLON ;
 token #23 WHITESPACE \n
 token #24 PHP_VARIABLE $name
-token #25 PHP_TOKEN =
+token #25 PHP_OPERATOR =
 token #26 PHP_CONSTANT_ENCAPSED_STRING "Honza"
 token #27 PHP_SEMICOLON ;
 token #28 WHITESPACE \n\n
 token #29 PHP_VARIABLE $x
 token #30 WHITESPACE  
-token #31 PHP_TOKEN =
+token #31 PHP_OPERATOR =
 token #32 WHITESPACE  
 token #33 PHP_HEREDOC_TAG_START <<<ENDOFHEREDOC\n
 token #34 PHP_CONSTANT_ENCAPSED_STRING This is another heredoc test.
@@ -39,7 +39,7 @@ token #37 PHP_SEMICOLON ;
 token #38 WHITESPACE \n\n\n
 token #39 PHP_VARIABLE $x
 token #40 WHITESPACE  
-token #41 PHP_TOKEN =
+token #41 PHP_OPERATOR =
 token #42 WHITESPACE  
 token #43 PHP_HEREDOC_TAG_START <<<ENDOFHEREDOC\n
 token #44 PHP_CONSTANT_ENCAPSED_STRING This is a heredoc test.

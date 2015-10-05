@@ -18,7 +18,7 @@ token #16 PHP_DECLARE declare
 token #17 WHITESPACE  
 token #18 PHP_TOKEN (
 token #19 PHP_STRING ticks
-token #20 PHP_TOKEN =
+token #20 PHP_OPERATOR =
 token #21 PHP_NUMBER 1
 token #22 PHP_TOKEN )
 token #23 WHITESPACE  
