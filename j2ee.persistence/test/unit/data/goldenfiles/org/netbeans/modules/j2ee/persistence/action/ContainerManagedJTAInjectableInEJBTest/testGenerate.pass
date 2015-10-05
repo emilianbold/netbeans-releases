@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 public class Test {
+
     @PersistenceContext(unitName = "MyPersistenceUnit")
     private EntityManager em;
     @Resource
