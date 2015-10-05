@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.lexer;
 
@@ -184,7 +184,7 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$name");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_TOKEN, "=");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_OPERATOR, "=");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\"ahoj\"");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n");
@@ -202,7 +202,7 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$name");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_TOKEN, "=");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_OPERATOR, "=");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\"ahoj\"");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n");
@@ -220,7 +220,7 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$name");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_TOKEN, "=");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_OPERATOR, "=");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\"ahoj\"");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n ");
@@ -232,7 +232,7 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$age");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_TOKEN, "=");
+        PHPLexerUtils.next(ts, PHPTokenId.PHP_OPERATOR, "=");
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_NUMBER, "10");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");

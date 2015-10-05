@@ -5,44 +5,49 @@
 
     <!-- for generationg lexer and parser, uncomment the tasks and set up the right classpath -->
 
-<!--    <taskdef name="jflex"
+    <!--taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"
-        classpath="/opt/jflex-1.6.0/lib/jflex-1.6.0.jar" />-->
+        classpath="/opt/jflex-1.4/lib/JFlex.jar" /-->
+    <!--taskdef name="jflex"
+        classname="jflex.anttask.JFlexTask"
+        classpath="/opt/jflex-1.5/lib/jflex-1.5.1.jar" /-->
+    <!--taskdef name="jflex"
+        classname="jflex.anttask.JFlexTask"
+        classpath="/opt/jflex-1.6/lib/jflex-1.6.1.jar" /-->
 
-<!--    <target name="gen-lexer" >
+    <!-- for coloring lexer, jflex 1.4 or 1.5 must be used -->
+    <!--target name="gen-lexer" >
         <jflex file="tools/Php5ColoringScanner.flex"
         destdir="src"
         skel="tools/skeleton.netbeans"/>
-    </target>-->
+    </target-->
 
-<!--    <target name="gen-astscanner" >
+    <!--target name="gen-astscanner" >
         <jflex file="tools/ASTPHP5Scanner.flex"
         destdir="src"
         skel="tools/skeletonParser.netbeans"/>
-    </target>-->
+    </target-->
 
-    <!--<target name="gen-docscanner" >
+    <!--target name="gen-docscanner" >
         <jflex file="tools/DocumentorColoringScanner.flex"
         destdir="src"
         skel="tools/skeleton.netbeans"/>
-    </target>-->
+    </target-->
 
 
-    <target name="gen-astparser">
-    <taskdef name="javacup"
-        classname="java_cup.anttask.CUPTask"
-        classpath="${nb_all}/libs.javacup/external/java-cup-11a.jar" />
-        <javacup srcfile="tools/ASTPHP5Parser.cup"
-        destdir="src"
-        parser="ASTPHP5Parser"
-        symbols="ASTPHP5Symbols"
-        interface="on"
-       />
-<!--        <taskdef name="parsercutter"
-classname="cz.brejla.cup.parser.cutter.ParserCutter"
-classpath="/home/ondrej/Dropbox/NetBeans/parser.cutter/dist/parser.cutter.jar" />
-<parsercutter parserpath="src/org/netbeans/modules/php/editor/parser/ASTPHP5Parser.java" />-->
-    </target>
+    <!--target name="gen-astparser">
+        <taskdef name="javacup"
+            classname="java_cup.anttask.CUPTask"
+            classpath="${nb_all}/libs.javacup/external/java-cup-11a.jar" />
+            <javacup srcfile="tools/ASTPHP5Parser.cup"
+            destdir="src"
+            parser="ASTPHP5Parser"
+            symbols="ASTPHP5Symbols"
+            interface="on"/>
+        <taskdef name="parsercutter"
+            classname="org.netbeans.modules.php.editor.cup.parser.cutter.ParserCutter"
+            classpath="/opt/parser.cutter/dist/parser.cutter.jar" />
+            <parsercutter parserpath="src/org/netbeans/modules/php/editor/parser/ASTPHP5Parser.java" />
+    </target-->
 
 </project>
-

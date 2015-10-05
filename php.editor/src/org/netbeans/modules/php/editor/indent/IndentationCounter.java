@@ -222,7 +222,8 @@ public class IndentationCounter {
                         }
                         break;
                     } else {
-                        if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+                        if (ts.token().id() == PHPTokenId.PHP_TOKEN
+                                || (ts.token().id() == PHPTokenId.PHP_OPERATOR && "=".equals(ts.token().text()))) { // NOI18N
                             char ch = ts.token().text().charAt(0);
                             boolean continualIndent = false;
                             boolean indent = false;

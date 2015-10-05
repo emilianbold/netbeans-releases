@@ -8,7 +8,7 @@ token #6 PHP_SEMICOLON ;
 token #7 WHITESPACE \n
 token #8 PHP_VARIABLE $fooledYou
 token #9 WHITESPACE  
-token #10 PHP_TOKEN =
+token #10 PHP_OPERATOR =
 token #11 WHITESPACE  
 token #12 PHP_CONSTANT_ENCAPSED_STRING ''
 token #13 PHP_SEMICOLON ;
@@ -22,7 +22,7 @@ token #20 PHP_SEMICOLON ;
 token #21 WHITESPACE \n\n
 token #22 PHP_VARIABLE $x
 token #23 WHITESPACE  
-token #24 PHP_TOKEN =
+token #24 PHP_OPERATOR =
 token #25 WHITESPACE  
 token #26 PHP_NOWDOC_TAG_START <<<'ENDOFNOWDOC'\n
 token #27 PHP_CONSTANT_ENCAPSED_STRING {$fooledYou}ENDOFNOWDOC{$fooledYou}\nENDOFNOWDOC{$fooledYou}\n{$fooledYou}ENDOFNOWDOC\n\n

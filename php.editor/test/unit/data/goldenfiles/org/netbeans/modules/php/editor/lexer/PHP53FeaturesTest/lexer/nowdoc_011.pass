@@ -16,7 +16,7 @@ token #14 PHP_CONST const
 token #15 WHITESPACE  
 token #16 PHP_STRING E
 token #17 WHITESPACE  
-token #18 PHP_TOKEN =
+token #18 PHP_OPERATOR =
 token #19 WHITESPACE  
 token #20 PHP_NOWDOC_TAG_START <<<'THISMUSTNOTERROR'\n
 token #21 PHP_CONSTANT_ENCAPSED_STRING If you DON'T see this, something's wrong.\n
