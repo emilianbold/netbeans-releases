@@ -22,7 +22,7 @@
         skel="tools/skeleton.netbeans"/>
     </target-->
 
-    <!-- for ast scanner, jflex 1.4 or 1.5 must be used -->
+    <!-- for ast scanner, jflex 1.4 must be used! -->
     <!--target name="gen-astscanner" >
         <jflex file="tools/ASTPHP5Scanner.flex"
         destdir="src"
