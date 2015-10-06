@@ -112,9 +112,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
      * 7  -  boot class path
      * 8  -  endorsed class path
      * 9  -  processor path
-     * 10  -  test processor path
+     * 10  - test processor path
+     * 11  - module boot path
+     * 12  - module compile path
+     * 13  - module class path
      */
-    private final ClassPath[] cache = new ClassPath[11];
+    private final ClassPath[] cache = new ClassPath[13];
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
@@ -743,6 +746,17 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                         evaluator,
                         getEndorsedClasspath(),
                         platform.first()));
+                final ClassPath moduleSytemPath = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                    getModuleBootPath(),
+                    sourceRoots));
+                cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
+                    new ClassPath[] {
+                        cp,
+                        moduleSytemPath
+                    },
+                    new SourceLevelSelector(
+                        evaluator,
+                        javacSource)));
             } else {
                 assert platform.hasSecond();
                 cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
@@ -753,10 +767,24 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                             evaluator,
                             platform.second())));
             }
-            final ClassPath moduleSytemPath = ClassPathFactory.createClassPath(new ModuleClassPathImplementation(
-                    sourceRoots,
-                    evaluator));
-            cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
+            cache[7] = cp;
+        }
+        return cp;
+    }
+
+    private synchronized ClassPath getModuleBootPath() {
+        ClassPath cp = cache[11];
+        if ( cp == null ) {
+            if (platform.hasFirst()) {
+                cp = ClassPathFactory.createClassPath(
+                    ClassPathSupportFactory.createBootClassPathImplementation(
+                        evaluator,
+                        getEndorsedClasspath(),
+                        platform.first()));
+                final ClassPath moduleSytemPath = ClassPathFactory.createClassPath(ModuleClassPaths.createPlatformModulePath(
+                    evaluator,
+                    platform.first()));
+                cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
                     new ClassPath[]{
                         cp,
                         moduleSytemPath
@@ -764,11 +792,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     new SourceLevelSelector(
                         evaluator,
                         javacSource)));
+            } else {
+                cp = ClassPath.EMPTY;
+            }
             cache[7] = cp;
         }
         return cp;
     }
-    
+
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.COMPILE)) {
             return getCompileTimeClasspath(file);
@@ -782,6 +813,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return getBootClassPath();
         } else if (type.equals(ClassPathSupport.ENDORSED)) {
             return getEndorsedClasspath();
+        } else if (type.equals(JavaClassPathConstants.MODULE_BOOT_PATH)) {
+            return getModuleBootPath();
         } else {
             return null;
         }
