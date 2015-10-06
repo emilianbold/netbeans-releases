@@ -150,7 +150,7 @@ public final class ImportantFiles {
 
         @Override
         public synchronized Node node(Object key) {
-            assert key == IMPORTANT_FILES_KEY;
+            assert key == IMPORTANT_FILES_KEY : "Unexpected key " + key;//NOI18N
             if (importantFilesNode == null) {
                 importantFilesNode = new ImportantFilesNode(importantFilesChildren);
             }
