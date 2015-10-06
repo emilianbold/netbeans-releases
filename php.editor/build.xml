@@ -22,6 +22,7 @@
         skel="tools/skeleton.netbeans"/>
     </target-->
 
+    <!-- for ast scanner, jflex 1.4 must be used! -->
     <!--target name="gen-astscanner" >
         <jflex file="tools/ASTPHP5Scanner.flex"
         destdir="src"
@@ -33,7 +34,6 @@
         destdir="src"
         skel="tools/skeleton.netbeans"/>
     </target-->
-
 
     <!--target name="gen-astparser">
         <taskdef name="javacup"
