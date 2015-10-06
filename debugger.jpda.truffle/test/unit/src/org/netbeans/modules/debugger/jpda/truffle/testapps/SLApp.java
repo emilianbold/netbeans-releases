@@ -41,9 +41,37 @@
  */
 package org.netbeans.modules.debugger.jpda.truffle.testapps;
 
+import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.vm.PolyglotEngine;
+import java.io.ByteArrayOutputStream;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 public class SLApp {
     public static void main(String... args) throws Exception {
-        throw new IllegalStateException("Ahoj!"); // LBREAKPOINT
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PolyglotEngine engine = PolyglotEngine.buildNew().
+            setOut(os).
+            build();
 
+        Source src = Source.fromText(
+            "function main() {\n" +
+            "  x = 42;\n" +
+            "  println(x);\n" +
+            "  return x;\n" +
+            "}\n",
+            "Meaning of world.sl"
+        ).withMimeType("application/x-sl");
+        
+        Object result = engine.eval(src).get(); // LBREAKPOINT
+        assertNull("No code executed yet", result);
+
+        PolyglotEngine.Value main = engine.findGlobalSymbol("main");
+        assertNotNull("main method found", main);
+        result = main.invoke(null).get();
+
+        assertEquals("Expected result", 42L, result);
+        assertEquals("Expected output", "42\n", os.toString("UTF-8"));
     }
 }
