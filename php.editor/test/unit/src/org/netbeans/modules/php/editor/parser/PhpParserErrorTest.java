@@ -407,4 +407,13 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testIssue243512() throws Exception {
         checkErrors("testfiles/parser/issue243512.php");
     }
+
+    public void testSpaceship01() throws Exception {
+        checkErrors("testfiles/parser/spaceship_01.php");
+    }
+
+    public void testSpaceship02() throws Exception {
+        checkErrors("testfiles/parser/spaceship_02.php");
+    }
+
 }
