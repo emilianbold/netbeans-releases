@@ -795,7 +795,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             } else {
                 cp = ClassPath.EMPTY;
             }
-            cache[7] = cp;
+            cache[11] = cp;
         }
         return cp;
     }
