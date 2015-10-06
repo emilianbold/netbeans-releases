@@ -82,7 +82,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.js.engine.TruffleJSEngine";
     //private static final String SCRIPT_CREATION_BP_CLASS = "com.oracle.truffle.api.script.TruffleScriptEngineFactory";
     //private static final String SCRIPT_CREATION_BP_METHOD = "engineCreated";
-    private static final String SESSION_CREATION_BP_CLASS = "com.oracle.truffle.api.vm.TruffleVM";
+    private static final String SESSION_CREATION_BP_CLASS = "com.oracle.truffle.api.vm.PolyglotEngine";
     private static final String SESSION_CREATION_BP_METHOD = "dispatchExecutionEvent";
     
     private JPDABreakpoint debugManagerLoadBP;

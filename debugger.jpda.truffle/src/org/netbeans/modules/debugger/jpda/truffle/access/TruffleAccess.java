@@ -108,7 +108,7 @@ public class TruffleAccess implements JPDABreakpointListener {
     private static final Logger LOG = Logger.getLogger(TruffleAccess.class.getName());
     
     public static final String BASIC_CLASS_NAME = "org.netbeans.modules.debugger.jpda.backend.truffle.JPDATruffleAccessor";    // NOI18N
-    private static final String HALTED_CLASS_NAME = "com.oracle.truffle.api.vm.TruffleVM";  // NOI18N
+    private static final String HALTED_CLASS_NAME = "com.oracle.truffle.api.vm.PolyglotEngine";  // NOI18N
     
     private static final String METHOD_EXEC_HALTED = "dispatchSuspendedEvent";  // NOI18N
     private static final String METHOD_EXEC_STEP_INTO = "executionStepInto";    // NOI18N

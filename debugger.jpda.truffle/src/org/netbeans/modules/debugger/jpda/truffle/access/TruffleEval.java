@@ -60,7 +60,7 @@ public class TruffleEval {
     
     private static final String METHOD_EVALUATE = "evaluate";                   // NOI18N
     private static final String METHOD_EVALUATE_SIG = "(Ljava/lang/String;)Ljava/lang/Object;"; // NOI18N
-    private static final String METHOD_EVALUATE_ON_FRAME_SIG = "(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;"; // NOI18N
+    private static final String METHOD_EVALUATE_ON_FRAME_SIG = "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;"; // NOI18N
     
     private TruffleEval() {}
 
@@ -84,7 +84,9 @@ public class TruffleEval {
             } else {
                 valueVar = debugAccessor.invokeMethod(METHOD_EVALUATE,
                                                       METHOD_EVALUATE_ON_FRAME_SIG,
-                                                      new Variable[] { mirrorExpression, stackFrameInstance });
+                                                      new Variable[] { currentPCInfo.getSuspendedInfo(),
+                                                                       stackFrameInstance,
+                                                                       mirrorExpression });
             }
             return valueVar;
         } catch (InvalidObjectException | NoSuchMethodException ex) {
