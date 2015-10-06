@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.debugger.jpda.truffle;
 
+import com.oracle.truffle.api.vm.PolyglotEngine;
+import com.oracle.truffle.sl.SLLanguage;
+import java.io.File;
+import java.net.URISyntaxException;
 import junit.framework.Test;
+import junit.framework.TestCase;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -57,7 +62,18 @@ public class DebugSLTest extends NbTestCase {
         super(name);
     }
 
-    public static Test suite() {
+    public static Test suite() throws URISyntaxException {
+        final File truffleAPI = new File(PolyglotEngine.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        final File sl = new File(SLLanguage.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        final File junit = new File(TestCase.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        assertTrue("truffle-api JAR exists: " + truffleAPI, truffleAPI.exists());
+        assertTrue("sl JAR exists: " + sl, sl.exists());
+        assertTrue("junit JAR exists: " + junit, junit.exists());
+
+        System.setProperty("truffle.jar", truffleAPI.getAbsolutePath());
+        System.setProperty("sl.jar", sl.getAbsolutePath());
+        System.setProperty("junit.jar", junit.getAbsolutePath());
+
         return JPDASupport.createTestSuite(DebugSLTest.class);
     }
 
@@ -69,12 +85,21 @@ public class DebugSLTest extends NbTestCase {
                 + "org/netbeans/modules/debugger/jpda/truffle/testapps/SLApp.java");
             LineBreakpoint lb = bp.getLineBreakpoints().get(0);
             dm.addBreakpoint(lb);
-            support = JPDASupport.attach("org.netbeans.modules.debugger.jpda.truffle.testapps.SLApp");
+            support = JPDASupport.attach("org.netbeans.modules.debugger.jpda.truffle.testapps.SLApp",
+                new String[0],
+                new File[] {
+                    new File(System.getProperty("truffle.jar")),
+                    new File(System.getProperty("sl.jar")),
+                    new File(System.getProperty("junit.jar")),
+                }
+            );
             support.waitState(JPDADebugger.STATE_STOPPED);
             support.doContinue();
             support.waitState(JPDADebugger.STATE_DISCONNECTED);
         } finally {
-            support.doFinish();
+            if (support != null) {
+                support.doFinish();
+            }
         }
     }
 
