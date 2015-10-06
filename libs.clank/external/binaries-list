@@ -1,5 +1,6 @@
+#changeset:   15824:b15ae68a9b0e
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Oct 05 19:50:46 2015 +0300
-#summary:     fixing #255678 - Code assistance is broken on Windows
-6579F6C3D1F5919A96522788A5BB4F0B17027DC7 clank_0.3.6.zip
+#date:        Tue Oct 06 20:30:09 2015 +0300
+#summary:     fixing #255733 - AssertionError: Key already in new map?
+765AEE3D86807079B0FE630F0802E6A7EC86B2DF clank_0.3.6.zip
