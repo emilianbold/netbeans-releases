@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
@@ -70,8 +71,14 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  */
 abstract public class LazyStatementImpl extends StatementBase implements CsmScope {
 
-    private static final List<CsmStatement> EMPTY = Collections.<CsmStatement>emptyList();
-        
+    private static final List<CsmStatement> ANTILOOP_EMPTY_LIST = Collections.<CsmStatement>unmodifiableList(new ArrayList<CsmStatement>(0));
+    // for PERF reason we use field as lock and container of "in-resolve" state
+    private final ThreadLocal<AtomicBoolean> inResolveLazyStatements_AndStatementsRefLoc = new ThreadLocal<AtomicBoolean>() {
+        @Override
+        protected AtomicBoolean initialValue() {
+            return new AtomicBoolean(false);
+        }
+    };
     private volatile SoftReference<List<CsmStatement>> statements = null;
     
     protected LazyStatementImpl(CsmFile file, int start, int end, CsmFunction scope) {
@@ -83,12 +90,17 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
         return CsmStatement.Kind.COMPOUND;
     }
 
-    public List<CsmStatement> getStatements() {
-        if (statements == null) {
+    public final List<CsmStatement> getStatements() {
+        List<CsmStatement> list;
+        // check if someone already renedered statements before
+        final Object statementsLoc = inResolveLazyStatements_AndStatementsRefLoc;
+        synchronized (statementsLoc) {
+            list = statements == null ? null : statements.get();
+        }
+        if (list == null) {
             return createStatements();
         } else {
-            List<CsmStatement> list = statements.get();
-            return (list == null) ? createStatements() : list;
+            return list;
         }
     }
 
@@ -99,29 +111,45 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
      *    otherwise just returns empty list
      */
     private List<CsmStatement> createStatements() {
-        List<CsmStatement> list = statements == null ? null : statements.get();
-        if (list == null) {
-            // code completion tests do work in EDT because otherwise EDT thread is not started by test harness
-            CndUtils.assertTrueInConsole(!SwingUtilities.isEventDispatchThread() || CndUtils.isCodeCompletionUnitTestMode(), "Calling Parser in UI Thread");
-            synchronized (this) {
+        // anti-loop check for recursion from renderer's gatherMaps
+        final AtomicBoolean statementsAntiLoop = inResolveLazyStatements_AndStatementsRefLoc.get();
+        if (statementsAntiLoop.get()) {
+            // return empty list to prevent infinite recusion by calling this method in the same thread
+            // i.e. from Resoler3 which helps to resolve renderer's AST ambiguity
+            return ANTILOOP_EMPTY_LIST;
+        }
+        // code completion tests do work in EDT because otherwise EDT thread is not started by test harness
+        CndUtils.assertTrueInConsole(!SwingUtilities.isEventDispatchThread() || CndUtils.isCodeCompletionUnitTestMode(), "Calling Parser in UI Thread");
+        final Object statementsLoc = inResolveLazyStatements_AndStatementsRefLoc;
+        synchronized (this) {
+            // check if other thread already inited statements
+            synchronized (statementsLoc) {
                 if (statements != null) {
                     List<CsmStatement> refList = statements.get();
                     if (refList != null) {
                         return refList;
                     }
                 }
-                // assign constant to prevent infinite recusion by calling this method in the same thread
-                statements = new SoftReference<>(EMPTY);
-                list = new ArrayList<>();
-                if (renderStatements(list)) {
-                    statements = new SoftReference<>(list);
-                    return list;
+            }
+            boolean prev = inResolveLazyStatements_AndStatementsRefLoc.get().getAndSet(true);
+            assert prev == false : Thread.currentThread().getName() + " can not enter in create Statements twice in the same thread:" + this;
+            try {
+                List<CsmStatement> list = new ArrayList<>();
+                if (!renderStatements(list)) {
+                    // on error assign empty list to prevent re-creation
+                    list = Collections.emptyList();
                 } else {
-                    return Collections.emptyList();
+                    ((ArrayList)list).trimToSize();
                 }
+                synchronized (statementsLoc) {
+                    statements = new SoftReference<>(list);
+                }
+                return list;
+            } finally {
+                prev = inResolveLazyStatements_AndStatementsRefLoc.get().getAndSet(false);
+                assert prev == true : Thread.currentThread().getName() + " can not leave create Statements twice from the same thread:" + this;
             }
         }
-        return list;
     }
 
     private boolean renderStatements(List<CsmStatement> list) {

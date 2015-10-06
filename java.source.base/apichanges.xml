@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="javasource_base">Java Source API</apidef>
 </apidefs>
 <changes>
+    <change id="generator.insert.caretlocation">
+        <api name="javasource_base"/>
+        <summary>Code Generator uses caret location to insert members</summary>
+        <version major="1" minor="2.11"/>
+        <date day="5" month="10" year="2015"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            Added an overloaded method to Code Generator should to include the
+            caret location when inserting members. This will be used when the
+            codestyle is CodeStyle.InsertionPoint.CARET_LOCATION.
+        </description>
+        <class name="CodeStyle" package="org.netbeans.api.java.source"/>
+        <issue number="255214"/>
+    </change>
     <change id="classindex.searchkind.lambda">
         <api name="javasource_base"/>
         <summary>ClassIndex SearchKind extended by FUNCTIONAL_IMPLEMENTORS</summary>
