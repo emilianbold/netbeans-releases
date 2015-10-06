@@ -41,33 +41,40 @@
  */
 package org.netbeans.modules.debugger.jpda.truffle;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.jar.JarInputStream;
-import java.util.zip.ZipEntry;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import org.junit.Test;
+import junit.framework.Test;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDASupport;
+import org.netbeans.junit.NbTestCase;
 
-public class RemoteServicesNGTest {
+public class DebugSLTest extends NbTestCase {
+    private DebuggerManager dm = DebuggerManager.getDebuggerManager();
+    private final String sourceRoot = System.getProperty("test.dir.src");
+    private JPDASupport support;
 
-    public RemoteServicesNGTest() {
+    public DebugSLTest(String name) {
+        super(name);
     }
 
-    @Test
-    public void verifyTruffleBackendResourceExists() throws IOException {
-        final InputStream is = RemoteServices.openRemoteClasses();
-        assertNotNull(is);
-        JarInputStream jar = new JarInputStream(is);
-        for (;;) {
-            ZipEntry entry = jar.getNextEntry();
-            if (entry == null) {
-                fail("org.netbeans.modules.debugger.jpda.backend.truffle.JPDATruffleAccessor not found");
-            }
-            if (entry.getName().equals("org/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleAccessor.class")) {
-                // OK
-                return;
-            }
+    public static Test suite() {
+        return JPDASupport.createTestSuite(DebugSLTest.class);
+    }
+
+    public void testStepOver() throws Exception {
+        try {
+            JPDASupport.removeAllBreakpoints();
+            org.netbeans.api.debugger.jpda.Utils.BreakPositions bp = org.netbeans.api.debugger.jpda.Utils.getBreakPositions(
+                sourceRoot
+                + "org/netbeans/modules/debugger/jpda/truffle/testapps/SLApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
+            dm.addBreakpoint(lb);
+            support = JPDASupport.attach("org.netbeans.modules.debugger.jpda.truffle.testapps.SLApp");
+            support.waitState(JPDADebugger.STATE_STOPPED);
+            support.doContinue();
+            support.waitState(JPDADebugger.STATE_DISCONNECTED);
+        } finally {
+            support.doFinish();
         }
     }
 

@@ -39,36 +39,11 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.truffle;
+package org.netbeans.modules.debugger.jpda.truffle.testapps;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.jar.JarInputStream;
-import java.util.zip.ZipEntry;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import org.junit.Test;
+public class SLApp {
+    public static void main(String... args) throws Exception {
+        throw new IllegalStateException("Ahoj!"); // LBREAKPOINT
 
-public class RemoteServicesNGTest {
-
-    public RemoteServicesNGTest() {
     }
-
-    @Test
-    public void verifyTruffleBackendResourceExists() throws IOException {
-        final InputStream is = RemoteServices.openRemoteClasses();
-        assertNotNull(is);
-        JarInputStream jar = new JarInputStream(is);
-        for (;;) {
-            ZipEntry entry = jar.getNextEntry();
-            if (entry == null) {
-                fail("org.netbeans.modules.debugger.jpda.backend.truffle.JPDATruffleAccessor not found");
-            }
-            if (entry.getName().equals("org/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleAccessor.class")) {
-                // OK
-                return;
-            }
-        }
-    }
-
 }
