@@ -62,6 +62,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -293,6 +294,10 @@ public final class DocumentViewOp
     private LookupListener lookupListener;
 
     private JViewport listeningOnViewport;
+
+    private JScrollPane listeningOnScrollPane;
+    
+    private PropertyChangeListener scrollPaneWeakL;
 
     private Preferences prefs;
 
@@ -744,21 +749,36 @@ public final class DocumentViewOp
         final Rectangle newVisibleRect;
         if (parent instanceof JViewport) {
             JViewport viewport = (JViewport) parent;
-            if (listeningOnViewport != viewport) {
-                uninstallFromViewport();
-                listeningOnViewport = viewport;
-                if (listeningOnViewport != null) {
-                    listeningOnViewport.addChangeListener(this);
-                    // Assume JViewport's parent JScrollPane won't change without viewport change as well
-                    Component scrollPane = listeningOnViewport.getParent();
+            parent = viewport.getParent();
+            if (parent instanceof JScrollPane) {
+                JScrollPane scrollPane = (JScrollPane) parent;
+                if (listeningOnViewport != viewport) {
+                    uninstallFromViewport();
+                    listeningOnViewport = viewport;
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "DocumentViewOp.updateVisibleDimension(): viewport change pane={0}, viewport={1}\n",
+                                new Object[]{obj2String(listeningOnViewport.getView()), obj2String(listeningOnViewport)});
+                    }
+                    if (listeningOnViewport != null) {
+                        listeningOnViewport.addChangeListener(this);
+                    }
+                }
+                if (listeningOnScrollPane != scrollPane) {
+                    uninstallFromScrollPane();
                     MouseWheelListener[] mwls = scrollPane.getListeners(MouseWheelListener.class);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "DocumentViewOp.updateVisibleDimension(): scrollPane change pane={0} scrollPane={1}, MouseWheelListeners:{2}\n",
+                                new Object[]{obj2String(listeningOnViewport.getView()), scrollPane, Arrays.asList(mwls)});
+                    }
                     // Only function in regular setup when there's BasicScrollPaneUI.Handler listening and nothing else
                     if (mwls.length == 1) {
                         origMouseWheelListener = mwls[0]; // Component.addMouseWheelListener() checks listener's non-nullity
+                        // Replace original listener and delegate to origMouseWheelListener when desired (Alt not pressed).
                         scrollPane.removeMouseWheelListener(origMouseWheelListener);
+                        scrollPane.addMouseWheelListener(this);
+                        scrollPane.addPropertyChangeListener(scrollPaneWeakL = WeakListeners.propertyChange(this, scrollPane));
+                        listeningOnScrollPane = scrollPane;
                     }
-                    // Listener in "this" will delegate to origMouseWheelListener when desired (Ctrl not pressed).
-                    listeningOnViewport.getParent().addMouseWheelListener(this);
                 }
             }
             newVisibleRect = viewport.getViewRect(); // acquires AWT treelock
@@ -822,15 +842,34 @@ public final class DocumentViewOp
     private void uninstallFromViewport() {
 //        assert SwingUtilities.isEventDispatchThread() : "Must be called in EDT"; // NOI18N
         if (listeningOnViewport != null) {
-            // Assume JViewport's parent JScrollPane won't change without viewport change as well
-            listeningOnViewport.getParent().removeMouseWheelListener(this);
-            if (origMouseWheelListener != null) {
-                // Do not restore original listener due to problem #213268.
-//                listeningOnViewport.getParent().addMouseWheelListener(origMouseWheelListener);
+            uninstallFromScrollPane();
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "DocumentViewOp.uninstallFromViewport(): pane={0}, viewport={1}\n",
+                        new Object[] {obj2String(listeningOnViewport.getView()), obj2String(listeningOnViewport)});
             }
             listeningOnViewport.removeChangeListener(this);
             listeningOnViewport = null;
         }
+    }
+    
+    private void uninstallFromScrollPane() {
+        if (listeningOnScrollPane != null) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "DocumentViewOp.uninstallFromScrollPane(): pane={0}, scrollPane={1}\n",
+                        new Object[]{obj2String((listeningOnViewport != null) ? listeningOnViewport.getView() : null),
+                            obj2String(listeningOnScrollPane)});
+            }
+            listeningOnScrollPane.removeMouseWheelListener(this);
+            if (origMouseWheelListener != null) {
+                listeningOnScrollPane.addMouseWheelListener(origMouseWheelListener);
+                origMouseWheelListener = null;
+            }
+            listeningOnScrollPane = null;
+        }
+    }
+    
+    private static final String obj2String(Object o) {
+        return (o != null) ? (o.getClass().getSimpleName() + "@" + System.identityHashCode(o)) : "null";
     }
     
     @Override
@@ -1380,8 +1419,9 @@ public final class DocumentViewOp
         }
         boolean releaseChildren = false;
         boolean updateFonts = false;
-        if (evt.getSource() instanceof Document) {
-            String propName = evt.getPropertyName();
+        Object src = evt.getSource();
+        String propName = evt.getPropertyName();
+        if (src instanceof Document) {
             if (propName == null || SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
                 LineWrapType origLineWrapType = lineWrapType;
                 updateLineWrapType(); // can run without mutex
@@ -1403,8 +1443,7 @@ public final class DocumentViewOp
                 updateTextLimitLine(docView.getDocument());
                 releaseChildren = true;
             }
-        } else { // an event from JTextComponent
-            String propName = evt.getPropertyName();
+        } else if (src instanceof JTextComponent) { // an event from JTextComponent
             if ("ancestor".equals(propName)) { // NOI18N
 
             } else if ("document".equals(propName)) { // NOI18N
@@ -1439,6 +1478,14 @@ public final class DocumentViewOp
                 docView.updateBaseY();
                 releaseChildren = true;
             }
+        } else if (src instanceof JScrollPane) {
+            if ("ui".equals(propName)) {
+                if (scrollPaneWeakL != null) {
+                    ((JScrollPane) src).removePropertyChangeListener(scrollPaneWeakL);
+                    scrollPaneWeakL = null;
+                    origMouseWheelListener = null; // No longer restore the original listener
+                }
+            }
         }
         if (releaseChildren) {
             releaseChildren(updateFonts);
@@ -1452,6 +1499,10 @@ public final class DocumentViewOp
     
     @Override
     public void mouseWheelMoved(MouseWheelEvent evt) {
+        if (origMouseWheelListener == null) {
+            return;
+        }
+
         // Since consume() idoes not prevent BasicScrollPaneUI.Handler from operation
         // the code in DocumentView.setParent() removes BasicScrollPaneUI.Handler and stores it
         // in origMouseWheelListener and installs "this" as MouseWheelListener instead.
@@ -1476,12 +1527,14 @@ public final class DocumentViewOp
             modifiers |= InputEvent.META_DOWN_MASK;
         }
        
-        Keymap keymap = docView.getTextComponent().getKeymap();
+        JTextComponent textComponent = docView.getTextComponent();
+        Keymap keymap = textComponent.getKeymap();
         int wheelRotation = evt.getWheelRotation();
         if (wheelRotation < 0) {
             Action action = keymap.getAction(KeyStroke.getKeyStroke(0x290, modifiers)); //WHEEL_UP constant
             if (action != null) {
                 action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
+                textComponent.repaint(); // Consider repaint triggering elsewhere
             } else {
                 origMouseWheelListener.mouseWheelMoved(evt);
             }
@@ -1489,6 +1542,7 @@ public final class DocumentViewOp
             Action action = keymap.getAction(KeyStroke.getKeyStroke(0x291, modifiers)); //WHEEL_DOWN constant
             if (action != null) {
                 action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
+                textComponent.repaint(); // Consider repaint triggering elsewhere
             } else {
                 origMouseWheelListener.mouseWheelMoved(evt);
             }
