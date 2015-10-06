@@ -354,14 +354,14 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         private final CsmInclude include;
         private final FileSystem fs;
         private final CharSequence path;
-        private final int includedDirFileIndex;
+        private final int includedDirectiveIndex;
 
-        IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path, int includedDirFileIndex) {
+        IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path, int includedDirectiveIndex) {
             this.line = include.getStartPosition().getLine();
             this.include = include;
             this.fs = fs;
             this.path = path;
-            this.includedDirFileIndex = includedDirFileIndex;
+            this.includedDirectiveIndex = includedDirectiveIndex;
         }
 
         @Override
@@ -385,7 +385,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         }
 
         @Override
-        public int getIncludedDirIndex() {
+        public int getResolvedDirectoryIndex() {
             return 0;
         }
 
@@ -395,8 +395,8 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         }
 
         @Override
-        public int getIncludedDirFileIndex() {
-            return includedDirFileIndex;
+        public int getIncludeDirectiveIndex() {
+            return includedDirectiveIndex;
         }
         
     }
