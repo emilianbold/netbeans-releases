@@ -50,10 +50,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -475,8 +475,8 @@ public class IntroduceSuggestion extends SuggestionRule {
             EditList edits = new EditList(doc);
             edits.replace(templateOffset, 0, "\n" + item.getCustomInsertTemplate(), true, 0); //NOI18N
             edits.apply();
-            templateOffset = Utilities.getRowEnd(doc, templateOffset + 1);
-            UiUtils.open(type.getFileObject(), Utilities.getRowEnd(doc, templateOffset + 1) - 1);
+            templateOffset = LineDocumentUtils.getLineEnd(doc, templateOffset + 1);
+            UiUtils.open(type.getFileObject(), LineDocumentUtils.getLineEnd(doc, templateOffset + 1) - 1);
         }
 
         @Override
@@ -515,8 +515,8 @@ public class IntroduceSuggestion extends SuggestionRule {
             EditList edits = new EditList(doc);
             edits.replace(templateOffset, 0, "\n" + item.getCustomInsertTemplate(), true, 0); //NOI18N
             edits.apply();
-            templateOffset = Utilities.getRowEnd(doc, templateOffset + 1);
-            UiUtils.open(type.getFileObject(), Utilities.getRowEnd(doc, templateOffset + 1) - 1);
+            templateOffset = LineDocumentUtils.getLineEnd(doc, templateOffset + 1);
+            UiUtils.open(type.getFileObject(), LineDocumentUtils.getLineEnd(doc, templateOffset + 1) - 1);
         }
 
         @Override
@@ -557,7 +557,7 @@ public class IntroduceSuggestion extends SuggestionRule {
             EditList edits = new EditList(doc);
             edits.replace(templateOffset, 0, "\n" + templ, true, 0); //NOI18N
             edits.apply();
-            templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
+            templateOffset = LineDocumentUtils.getLineEnd(doc, templateOffset + 1) - 2;
             UiUtils.open(clz.getFileObject(), templateOffset);
         }
 
@@ -616,7 +616,7 @@ public class IntroduceSuggestion extends SuggestionRule {
             EditList edits = new EditList(doc);
             edits.replace(templateOffset, 0, "\n" + templ, true, 0); //NOI18N
             edits.apply();
-            templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
+            templateOffset = LineDocumentUtils.getLineEnd(doc, templateOffset + 1) - 2;
             UiUtils.open(clz.getFileObject(), templateOffset);
         }
 
@@ -667,7 +667,7 @@ public class IntroduceSuggestion extends SuggestionRule {
             EditList edits = new EditList(doc);
             edits.replace(templateOffset, 0, "\n" + templ, true, 0); //NOI18N
             edits.apply();
-            templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
+            templateOffset = LineDocumentUtils.getLineEnd(doc, templateOffset + 1) - 2;
             UiUtils.open(type.getFileObject(), templateOffset);
         }
 

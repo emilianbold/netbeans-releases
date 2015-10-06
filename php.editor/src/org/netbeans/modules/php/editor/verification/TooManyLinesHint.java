@@ -49,8 +49,8 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -472,17 +472,17 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
 
         private int tryCountLines(Block block) throws BadLocationException {
             int searchOffset = block.getStartOffset() + 1;
-            int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(baseDocument, searchOffset);
-            int startLineOffset = Utilities.getLineOffset(baseDocument, firstNonWhiteFwd == -1 ? searchOffset : firstNonWhiteFwd);
-            int endLineOffset = Utilities.getLineOffset(baseDocument, Utilities.getFirstNonWhiteBwd(baseDocument, block.getEndOffset()));
+            int firstNonWhiteFwd = LineDocumentUtils.getNextNonWhitespace(baseDocument, searchOffset);
+            int startLineOffset = LineDocumentUtils.getLineIndex(baseDocument, firstNonWhiteFwd == -1 ? searchOffset : firstNonWhiteFwd);
+            int endLineOffset = LineDocumentUtils.getLineIndex(baseDocument, LineDocumentUtils.getPreviousNonWhitespace(baseDocument, block.getEndOffset()));
             return countLinesBetweenLineOffsets(startLineOffset, endLineOffset);
         }
 
         private int countLinesBetweenLineOffsets(int startLineOffset, int endLineOffset) throws BadLocationException {
             int result = 0;
             for (int lineOffset = startLineOffset; lineOffset < endLineOffset; lineOffset++) {
-                int rowStartFromLineOffset = Utilities.getRowStartFromLineOffset(baseDocument, lineOffset);
-                if (!Utilities.isRowWhite(baseDocument, rowStartFromLineOffset) && !isJustCommentOnLine(rowStartFromLineOffset)) {
+                int rowStartFromLineOffset = LineDocumentUtils.getLineStartFromIndex(baseDocument, lineOffset);
+                if (!LineDocumentUtils.isLineWhitespace(baseDocument, rowStartFromLineOffset) && !isJustCommentOnLine(rowStartFromLineOffset)) {
                     result++;
                 }
             }
@@ -491,8 +491,8 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
 
         private boolean isJustCommentOnLine(int rowStartOffset) throws BadLocationException {
             boolean result = false;
-            int rowFirstNonWhite = Utilities.getRowFirstNonWhite(baseDocument, rowStartOffset);
-            int rowLastNonWhite = Utilities.getRowLastNonWhite(baseDocument, rowStartOffset);
+            int rowFirstNonWhite = LineDocumentUtils.getLineFirstNonWhitespace(baseDocument, rowStartOffset);
+            int rowLastNonWhite = LineDocumentUtils.getLineLastNonWhitespace(baseDocument, rowStartOffset);
             for (OffsetRange commentRange : commentRanges) {
                 if (commentRange.containsInclusive(rowFirstNonWhite) && commentRange.containsInclusive(rowLastNonWhite)) {
                     result = true;

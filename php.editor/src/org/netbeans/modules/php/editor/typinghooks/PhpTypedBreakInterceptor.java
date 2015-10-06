@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.typinghooks;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
@@ -81,8 +82,8 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
         final BaseDocument doc = (BaseDocument) context.getDocument();
         int offset = context.getCaretOffset();
         boolean insertMatching = TypingHooksUtils.isInsertMatchingEnabled();
-        int lineBegin = Utilities.getRowStart(doc, offset);
-        int lineEnd = Utilities.getRowEnd(doc, offset);
+        int lineBegin = LineDocumentUtils.getLineStart(doc, offset);
+        int lineEnd = LineDocumentUtils.getLineEnd(doc, offset);
         if (lineBegin == offset && lineEnd == offset) {
             // Pressed return on a blank newline - do nothing
             return;
@@ -104,7 +105,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
         boolean insert = completeIn != null && isEndMissing(doc, offset, completeIn);
         if (insert) {
             int indent = IndentUtils.lineIndent(doc, IndentUtils.lineStartOffset(doc, startOfContext[0]));
-            int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
+            int afterLastNonWhite = LineDocumentUtils.getLineLastNonWhitespace(doc, offset);
             // We've either encountered a further indented line, or a line that doesn't
             // look like the end we're after, so insert a matching end.
             StringBuilder sb = new StringBuilder("\n");
@@ -116,7 +117,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
-                String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite) - offset);
+                String restOfLine = doc.getText(offset, LineDocumentUtils.getLineEnd(doc, afterLastNonWhite) - offset);
                 sb.append(restOfLine);
                 sb.append("\n"); //NOI18N
                 sb.append(createIndentString(doc, offset, indent));
@@ -211,13 +212,13 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             // Only do this if the line only contains comments OR if there is content to the right on this line,
             // or if the next line is a comment!
             boolean continueComment = false;
-            int begin = Utilities.getRowFirstNonWhite(doc, offset);
+            int begin = LineDocumentUtils.getLineFirstNonWhitespace(doc, offset);
             // We should only continue comments if the previous line had a comment
             // (and a comment from the beginning, not a trailing comment)
             boolean previousLineWasComment = false;
-            int rowStart = Utilities.getRowStart(doc, offset);
+            int rowStart = LineDocumentUtils.getLineStart(doc, offset);
             if (rowStart > 0) {
-                int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart - 1);
+                int prevBegin = LineDocumentUtils.getLineFirstNonWhitespace(doc, rowStart - 1);
                 if (prevBegin != -1) {
                     Token<? extends PHPTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
                     if (firstToken != null && firstToken.id() == PHPTokenId.PHP_LINE_COMMENT) {
@@ -231,7 +232,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             if (previousLineWasComment || offset > begin) {
                 if (ts.offset() + token.length() > offset + 1) {
                     // See if the remaining text is just whitespace
-                    String trailing = doc.getText(offset, Utilities.getRowEnd(doc, offset) - offset);
+                    String trailing = doc.getText(offset, LineDocumentUtils.getLineEnd(doc, offset) - offset);
                     if (trailing.trim().length() != 0 && !trailing.startsWith("//")) { //NOI18N
                         continueComment = true;
                     }
@@ -246,7 +247,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 if (!continueComment) {
                     // See if the next line is a comment; if so we want to continue
                     // comments editing the middle of the comment
-                    int nextLine = Utilities.getRowEnd(doc, offset) + 1;
+                    int nextLine = LineDocumentUtils.getLineEnd(doc, offset) + 1;
                     if (nextLine < doc.getLength()) {
                         int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
                         if (nextLineFirst != -1) {
@@ -274,7 +275,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 sb.append(commentDelimiter);
                 // Copy existing indentation
                 int afterHash = begin + commentDelimiter.length();
-                String line = doc.getText(afterHash, Utilities.getRowEnd(doc, afterHash) - afterHash);
+                String line = doc.getText(afterHash, LineDocumentUtils.getLineEnd(doc, afterHash) - afterHash);
                 for (int i = 0; i < line.length(); i++) {
                     char c = line.charAt(i);
                     if (c == ' ' || c == '\t') {
@@ -596,7 +597,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 insertOffset = doc.getLength();
             }
             int indent = GsfUtilities.getLineIndent(doc, ts.offset());
-            int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, insertOffset);
+            int afterLastNonWhite = LineDocumentUtils.getLineLastNonWhitespace(doc, insertOffset);
             // find comment end
             boolean addClosingTag = !isClosedComment(DocumentUtilities.getText(doc), insertOffset);
             // We've either encountered a further indented line, or a line that doesn't
@@ -610,7 +611,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
-                String restOfLine = doc.getText(insertOffset, Utilities.getRowEnd(doc, afterLastNonWhite) - insertOffset);
+                String restOfLine = doc.getText(insertOffset, LineDocumentUtils.getLineEnd(doc, afterLastNonWhite) - insertOffset);
                 sb.append(org.netbeans.modules.editor.indent.api.IndentUtils.createIndentString(doc, indent));
                 sb.append(" * "); // NOI18N
                 newCaretOffset = sb.length();
@@ -637,8 +638,8 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             }
             int indent = GsfUtilities.getLineIndent(doc, ts.offset());
             int beforeFirstNonWhite = Utilities.getRowFirstNonWhite(doc, insertOffset);
-            int rowStart = Utilities.getRowStart(doc, insertOffset);
-            StringBuilder sb = new StringBuilder("\n");
+            int rowStart = LineDocumentUtils.getLineStart(doc, insertOffset);
+            StringBuilder sb = new StringBuilder("\n"); // NOI18N
             int newCaretOffset = 1;
             int newCaretOffset2 = insertOffset;
             if (beforeFirstNonWhite >= insertOffset) {
