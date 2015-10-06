@@ -204,6 +204,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         }
         ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
             ClassPathSupport.createClassPath(archiveUrls),
+            ClassPathSupport.createClassPath(archiveUrls),
             ClassPathSupport.createClassPath(new URL[0]),
             ClassPathSupport.createClassPath(new URL[0]),
             null,

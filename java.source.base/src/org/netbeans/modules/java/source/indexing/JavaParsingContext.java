@@ -62,6 +62,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -113,6 +114,10 @@ final class JavaParsingContext {
             if (bootPath == null) {
                 bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
             }
+            ClassPath moduleBootPath = ClassPath.getClassPath(ctx.getRoot(), JavaClassPathConstants.MODULE_BOOT_PATH);
+            if (moduleBootPath == null) {
+                moduleBootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+            }
             ClassPath compilePath = ClassPath.getClassPath(ctx.getRoot(), ClassPath.COMPILE);
             if (compilePath == null) {
                 compilePath = ClassPath.EMPTY;
@@ -123,6 +128,7 @@ final class JavaParsingContext {
             }
             cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
                 bootPath,
+                moduleBootPath,
                 compilePath,
                 srcPath,
                 null,
@@ -135,12 +141,12 @@ final class JavaParsingContext {
         }
     }
 
-    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
+    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath moduleBootPath, final ClassPath compilePath, final ClassPath sourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException {
         ctx = context;
         rootNotNeeded = false;
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
-        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath, sourcePath,
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, moduleBootPath, compilePath, sourcePath,
                 filter, true, context.isSourceForBinaryRootIndexing(),
                 !virtualSources.isEmpty(), context.checkForEditorModifications());
         registerVirtualSources(cpInfo, virtualSources);

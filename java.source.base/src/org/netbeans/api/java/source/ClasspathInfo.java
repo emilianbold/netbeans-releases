@@ -61,6 +61,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.parsing.ProxyFileManager;
@@ -99,6 +100,7 @@ public final class ClasspathInfo {
 
     private final ClassPath srcClassPath;
     private final ClassPath bootClassPath;
+    private final ClassPath moduleBootPath;
     private final ClassPath compileClassPath;
     private final ClassPath cachedAptSrcClassPath;
     private final ClassPath cachedSrcClassPath;
@@ -120,6 +122,7 @@ public final class ClasspathInfo {
 
     /** Creates a new instance of ClasspathInfo (private use the factory methods) */
     private ClasspathInfo(final @NonNull ClassPath bootCp,
+                          final @NonNull ClassPath moduleBootP,
                           final @NonNull ClassPath compileCp,
                           final @NullAllowed ClassPath srcCp,
                           final @NullAllowed JavaFileFilterImplementation filter,
@@ -131,6 +134,7 @@ public final class ClasspathInfo {
         assert compileCp != null;
         this.cpListener = new ClassPathListener ();
         this.bootClassPath = bootCp;
+        this.moduleBootPath = moduleBootP;
         this.compileClassPath = compileCp;
         this.listenerList = new ChangeSupport(this);
         this.cachedBootClassPath = CacheClassPath.forBootPath(this.bootClassPath,backgroundCompilation);
@@ -268,7 +272,7 @@ public final class ClasspathInfo {
             @NullAllowed final ClassPath sourcePath) {
         Parameters.notNull("bootPath", bootPath);       //NOI18N
         Parameters.notNull("classPath", classPath);     //NOI18N
-        return create (bootPath, classPath, sourcePath, null, false, false, false, true);
+        return create (bootPath, ClassPath.EMPTY, classPath, sourcePath, null, false, false, false, true);
     }
 
     @NonNull
@@ -284,17 +288,22 @@ public final class ClasspathInfo {
             //javac requires at least java.lang
             bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
         }
+        ClassPath moduleBootPath = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_BOOT_PATH);
+        if (moduleBootPath == null) {
+            moduleBootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        }
         ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
         if (compilePath == null) {
             compilePath = ClassPath.EMPTY;
         }
         ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        return create (bootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+        return create (bootPath, moduleBootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
 
     @NonNull
     private static ClasspathInfo create(
             @NonNull final ClassPath bootPath,
+            @NonNull final ClassPath moduleBootPath,
             @NonNull final ClassPath classPath,
             @NullAllowed final ClassPath sourcePath,
             @NullAllowed final JavaFileFilterImplementation filter,
@@ -302,7 +311,7 @@ public final class ClasspathInfo {
             final boolean ignoreExcludes,
             final boolean hasMemoryFileManager,
             final boolean useModifiedFiles) {
-        return new ClasspathInfo(bootPath, classPath, sourcePath,
+        return new ClasspathInfo(bootPath, moduleBootPath, classPath, sourcePath,
                 filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
 
@@ -369,7 +378,7 @@ public final class ClasspathInfo {
     private synchronized JavaFileManager createFileManager() {
         final SiblingSource siblings = SiblingSupport.create();
         final ProxyFileManager.Configuration cfg = ProxyFileManager.Configuration.create(
-            bootClassPath,
+            moduleBootPath,
             cachedBootClassPath,
             cachedCompileClassPath,
             cachedSrcClassPath,
@@ -453,6 +462,7 @@ public final class ClasspathInfo {
 
         @Override
         public ClasspathInfo create (final ClassPath bootPath,
+                final ClassPath moduleBootPath,
                 final ClassPath classPath,
                 final ClassPath sourcePath,
                 final JavaFileFilterImplementation filter,
@@ -460,7 +470,7 @@ public final class ClasspathInfo {
                 final boolean ignoreExcludes,
                 final boolean hasMemoryFileManager,
                 final boolean useModifiedFiles) {
-            return ClasspathInfo.create(bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+            return ClasspathInfo.create(bootPath, moduleBootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
         }
 
         @Override

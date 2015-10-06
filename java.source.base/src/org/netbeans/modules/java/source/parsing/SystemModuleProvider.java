@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -62,18 +61,18 @@ final class SystemModuleProvider implements ModuleFileManager.ModuleProvider {
 
     private static final Logger LOG = Logger.getLogger(SystemModuleProvider.class.getName());
 
-    private final ClassPath boot;
+    private final ClassPath moduleBoot;
 
-    SystemModuleProvider(@NonNull final ClassPath boot) {
-        assert boot != null;
-        this.boot = boot;
+    SystemModuleProvider(@NonNull final ClassPath moduleBoot) {
+        assert moduleBoot != null;
+        this.moduleBoot = moduleBoot;
     }
 
     @NonNull
     @Override
     public Map<URL,Set<Location>> getModulePath(@NonNull final Location baseLocation) {
         final Map<URL,Set<Location>> moduleRoots = new HashMap<>();
-        for (ClassPath.Entry e : boot.entries()) {
+        for (ClassPath.Entry e : moduleBoot.entries()) {
             final URL url = e.getURL();
             if ("nbjrt".equals(url.getProtocol())) {    //NOI18N
                 final String surl = url.toString();

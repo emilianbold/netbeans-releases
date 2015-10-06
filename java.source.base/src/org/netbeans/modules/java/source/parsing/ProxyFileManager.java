@@ -595,7 +595,7 @@ public final class ProxyFileManager implements JavaFileManager {
         private static final JavaFileManager[] EMPTY = new JavaFileManager[0];
 
         private final CachingArchiveProvider cap;
-        private final ClassPath boot;
+        private final ClassPath moduleBoot;
         private final ClassPath bootCached;
         private final ClassPath compiledCached;
         private final ClassPath srcCached;
@@ -613,7 +613,7 @@ public final class ProxyFileManager implements JavaFileManager {
         private boolean ignoreExcludes;
 
         private Configuration(
-                @NonNull final ClassPath boot,
+                @NonNull final ClassPath moduleBoot,
                 @NonNull final ClassPath bootCached,
                 @NonNull final ClassPath compiledCached,
                 @NonNull final ClassPath srcCached,
@@ -622,7 +622,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 @NonNull final SiblingSource siblings,
                 @NonNull final FileManagerTransaction fmTx,
                 @NonNull final ProcessorGenerated processorGeneratedFiles) {
-            assert boot != null;
+            assert moduleBoot != null;
             assert bootCached != null;
             assert compiledCached != null;
             assert srcCached != null;
@@ -632,7 +632,7 @@ public final class ProxyFileManager implements JavaFileManager {
             assert fmTx != null;
             assert processorGeneratedFiles != null;
             this.cap = CachingArchiveProvider.getDefault();
-            this.boot = boot;
+            this.moduleBoot = moduleBoot;
             this.bootCached = bootCached;
             this.compiledCached = compiledCached;
             this.srcCached = srcCached;
@@ -849,7 +849,7 @@ public final class ProxyFileManager implements JavaFileManager {
             if (emitted[SYS_MODULES] == null) {
                 emitted[SYS_MODULES] = new ModuleFileManager(
                     cap,
-                    new  SystemModuleProvider(boot),
+                    new  SystemModuleProvider(moduleBoot),
                     true);
             }
             return emitted[SYS_MODULES];
@@ -868,7 +868,7 @@ public final class ProxyFileManager implements JavaFileManager {
 
         @NonNull
         public static Configuration create (
-                @NonNull final ClassPath boot,
+                @NonNull final ClassPath moduleBoot,
                 @NonNull final ClassPath bootCached,
                 @NonNull final ClassPath compiledCached,
                 @NonNull final ClassPath srcCached,
@@ -878,7 +878,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 @NonNull final FileManagerTransaction fmTx,
                 @NonNull final ProcessorGenerated processorGeneratedFiles) {
             return new Configuration(
-                boot,
+                moduleBoot,
                 bootCached,
                 compiledCached,
                 srcCached,
