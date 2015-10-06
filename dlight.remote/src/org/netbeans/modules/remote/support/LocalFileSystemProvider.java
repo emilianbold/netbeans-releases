@@ -62,6 +62,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -515,7 +517,14 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public FileSystemProvider.Stat getStat(FileObject fo) {
-        if (!Utilities.isWindows()) {
+        if (Utilities.isWindows()) {
+            Checksum cs = new Adler32();
+            String path = fo.getPath();
+            for (int i = 0; i < path.length(); i++) {
+                cs.update(path.charAt(i));
+            }
+            return FileSystemProvider.Stat.create(Long.MIN_VALUE, cs.getValue());
+        } else {
             Path path = ROOT_PATH.resolve(fo.getPath());
             if (Files.exists(path)) {
                 try {
