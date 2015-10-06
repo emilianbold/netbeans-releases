@@ -307,14 +307,17 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
             @NonNull final Map<String,URL> modulesByName,
             @NonNull final Collection<? super URL> c) {
         if (module != null) {
-            for (ModuleElement.RequiresDirective req : module.getRequiresDirectives()) {
-                final ModuleElement dependency = req.getDependency();
-                if (transitive) {
-                    collectRequiredModulesImpl(dependency, transitive, modulesByName, c);
-                }
-                final URL dependencyURL = modulesByName.get(dependency.getQualifiedName().toString());
-                if (dependencyURL != null) {
-                    c.add(dependencyURL);
+            for (ModuleElement.Directive directive : module.getDirectives()) {
+                if (directive.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
+                    ModuleElement.RequiresDirective req = (ModuleElement.RequiresDirective) directive;
+                    final ModuleElement dependency = req.getDependency();
+                    if (transitive) {
+                        collectRequiredModulesImpl(dependency, transitive, modulesByName, c);
+                    }
+                    final URL dependencyURL = modulesByName.get(dependency.getQualifiedName().toString());
+                    if (dependencyURL != null) {
+                        c.add(dependencyURL);
+                    }
                 }
             }
         }
