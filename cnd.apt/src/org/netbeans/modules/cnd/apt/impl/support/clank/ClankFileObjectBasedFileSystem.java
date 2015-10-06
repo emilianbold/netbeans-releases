@@ -198,7 +198,7 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         if (stat.isValid()) {
             return new fs.UniqueID(stat.device, stat.inode);
         } else {
-            return new fs.UniqueID(System.identityHashCode(this), System.identityHashCode(fo));
+            return null;
         }
     }
 
@@ -239,6 +239,9 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         } else {
             StringRef name = new StringRef(CndFileSystemProvider.fileObjectToUrl(fo));
             UniqueID uid = getUniqueID(fo);
+            if (uid == null) {
+                return new ErrorOr(std_errors.errc.io_error);
+            }
             long ms = fo.lastModified().getTime();
             TimeValue time = new TimeValue(ms/1000, (int) (ms%1000)*1000000);
             int user = 0; // TODO: provide access to user if needed
