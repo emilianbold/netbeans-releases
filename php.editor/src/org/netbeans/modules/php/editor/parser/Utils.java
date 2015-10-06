@@ -287,6 +287,9 @@ public final class Utils {
             case ASTPHP5Symbols.T_IS_GREATER_OR_EQUAL:
                 name = "T_IS_GREATER_OR_EQUAL"; //NOI18N
                 break;
+            case ASTPHP5Symbols.T_SPACESHIP:
+                name = "SPACESHIP"; //NOI18N
+                break;
             case ASTPHP5Symbols.T_IS_IDENTICAL:
                 name = "T_IS_IDENTICAL"; //NOI18N
                 break;
