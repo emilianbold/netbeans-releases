@@ -109,53 +109,34 @@ public final class CodeUtils {
     }
 
     public static boolean isPhp52(FileObject file) {
-        Parameters.notNull("file", file);
-        boolean result = false;
-        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpVersion.PHP_5) {
-            result = true;
-        }
-        return result;
+        return isPhpVersion(file, PhpVersion.PHP_5);
     }
 
     public static boolean isPhp53(FileObject file) {
-        Parameters.notNull("file", file);
-        boolean result = false;
-        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpVersion.PHP_53) {
-            result = true;
-        }
-        return result;
+        return isPhpVersion(file, PhpVersion.PHP_53);
     }
 
     public static boolean isPhp54(FileObject file) {
-        Parameters.notNull("file", file);
-        boolean result = false;
-        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpVersion.PHP_54) {
-            result = true;
-        }
-        return result;
+        return isPhpVersion(file, PhpVersion.PHP_54);
     }
 
     public static boolean isPhp55(FileObject file) {
-        Parameters.notNull("file", file);
-        boolean result = false;
-        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpVersion.PHP_55) {
-            result = true;
-        }
-        return result;
+        return isPhpVersion(file, PhpVersion.PHP_55);
     }
 
     public static boolean isPhp56(FileObject file) {
-        Parameters.notNull("file", file);
-        boolean result = false;
-        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpVersion.PHP_56) {
-            result = true;
-        }
-        return result;
+        return isPhpVersion(file, PhpVersion.PHP_56);
+    }
+
+    public static boolean isPhp70(FileObject file) {
+        // XXX
+        return isPhpVersion(file, PhpVersion.PHP_56);
+    }
+
+    private static boolean isPhpVersion(FileObject file, PhpVersion version) {
+        assert file != null;
+        assert version != null;
+        return PhpLanguageProperties.forFileObject(file).getPhpVersion() == version;
     }
 
     public static boolean isPhp56OrGreater(FileObject file) {
