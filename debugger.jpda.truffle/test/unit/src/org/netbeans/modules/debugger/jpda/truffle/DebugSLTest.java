@@ -48,6 +48,7 @@ import java.net.URISyntaxException;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDASupport;
@@ -77,7 +78,7 @@ public class DebugSLTest extends NbTestCase {
         return JPDASupport.createTestSuite(DebugSLTest.class);
     }
 
-    public void testStepOver() throws Exception {
+    public void testStepIntoSL() throws Exception {
         try {
             JPDASupport.removeAllBreakpoints();
             org.netbeans.api.debugger.jpda.Utils.BreakPositions bp = org.netbeans.api.debugger.jpda.Utils.getBreakPositions(
@@ -94,6 +95,12 @@ public class DebugSLTest extends NbTestCase {
                 }
             );
             support.waitState(JPDADebugger.STATE_STOPPED);
+            support.stepInto();
+            final JPDADebugger debugger = support.getDebugger();
+            CallStackFrame frame = debugger.getCurrentCallStackFrame();
+            assertNotNull(frame);
+            // XXX fail("Shouldn't stop in CountDownLatch: " + frame.getClassName());
+            
             support.doContinue();
             support.waitState(JPDADebugger.STATE_DISCONNECTED);
         } finally {

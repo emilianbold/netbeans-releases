@@ -64,12 +64,12 @@ public class SLApp {
             "Meaning of world.sl"
         ).withMimeType("application/x-sl");
         
-        Object result = engine.eval(src).get(); // LBREAKPOINT
+        Object result = engine.eval(src).get();
         assertNull("No code executed yet", result);
 
         PolyglotEngine.Value main = engine.findGlobalSymbol("main");
         assertNotNull("main method found", main);
-        result = main.invoke(null).get();
+        result = main.invoke(null).get(); // LBREAKPOINT
 
         assertEquals("Expected result", 42L, result);
         assertEquals("Expected output", "42\n", os.toString("UTF-8"));
