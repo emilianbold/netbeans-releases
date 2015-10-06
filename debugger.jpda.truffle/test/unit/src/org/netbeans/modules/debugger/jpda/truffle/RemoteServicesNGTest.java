@@ -45,8 +45,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
-import static org.testng.Assert.*;
-import org.testng.annotations.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
 public class RemoteServicesNGTest {
 

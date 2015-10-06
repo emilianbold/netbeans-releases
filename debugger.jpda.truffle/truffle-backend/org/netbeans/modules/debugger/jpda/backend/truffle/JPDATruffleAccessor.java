@@ -45,8 +45,6 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.debug.Breakpoint;
-import com.oracle.truffle.api.debug.DebugSupportException;
-import com.oracle.truffle.api.debug.DebugSupportProvider;
 import com.oracle.truffle.api.debug.Debugger;
 import com.oracle.truffle.api.debug.ExecutionEvent;
 import com.oracle.truffle.api.debug.SuspendedEvent;
@@ -199,8 +197,7 @@ public class JPDATruffleAccessor extends Object {
     static /*FrameInfo*/Object getFrameInfo(/*SuspendedEvent*/Object suspendedEvent) {
         SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
         Node node = evt.getNode();
-        DebugSupportProvider debugSupport = getDebugSupport(node);
-        Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
+        Visualizer visualizer = getVisualizer(node);
         return new FrameInfo(evt.getFrame(), visualizer, node, evt.getStack());
     }
     
@@ -250,7 +247,7 @@ public class JPDATruffleAccessor extends Object {
                 return null;
             }
             
-            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguage", Object.class, Class.class);
+            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguageImpl", Object.class, Class.class);
             findLanguageMethod.setAccessible(true);
             Object tl = findLanguageMethod.invoke(spi, debugManager.getPolyglotEngine(), languageClass);
             
@@ -270,18 +267,20 @@ public class JPDATruffleAccessor extends Object {
         }
     }
     
-    private static DebugSupportProvider getDebugSupport(Node node) {
+    private static Visualizer getVisualizer(Node node) {
         TruffleLanguage tl = getLanguage(node);
         if (tl == null) {
             return null;
         }
         try {
-            Method getDebugSupportMethod = TruffleLanguage.class.getDeclaredMethod("getDebugSupport");
-            getDebugSupportMethod.setAccessible(true);
-            return (DebugSupportProvider) getDebugSupportMethod.invoke(tl);
+            Method getVisualizerMethod = TruffleLanguage.class.getDeclaredMethod("getVisualizer");
+            getVisualizerMethod.setAccessible(true);
+            return (Visualizer) getVisualizerMethod.invoke(tl);
+        } catch (InvocationTargetException itex) {
+            itex.getTargetException().printStackTrace();
+            return null;
         } catch (IllegalAccessException | IllegalArgumentException |
-                 InvocationTargetException | NoSuchMethodException |
-                 SecurityException ex) {
+                 NoSuchMethodException | SecurityException ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -359,8 +358,7 @@ public class JPDATruffleAccessor extends Object {
             //Node node = frame.materialize().getFrameDescriptor().
             FrameInstance fi = Truffle.getRuntime().getCurrentFrame();
             Node node = (fi != null) ? fi.getCallNode() : null;   // TODO find frame's node
-            DebugSupportProvider debugSupport = (node != null) ? getDebugSupport(node) : null;
-            Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
+            Visualizer visualizer = getVisualizer(node);
             String name;
             if (visualizer != null) {
                 name = visualizer.displayIdentifier(slot);
@@ -407,8 +405,7 @@ public class JPDATruffleAccessor extends Object {
         Object[] thiss = new Object[n];
         for (int i = 0; i < n; i++) {
             FrameInstance fi = frames[i];
-            DebugSupportProvider debugSupport = getDebugSupport(fi.getCallNode());
-            Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
+            Visualizer visualizer = getVisualizer(fi.getCallNode());
             //TruffleFrame tf = new TruffleFrame();
             if (visualizer != null) {
                 frameInfos.append(visualizer.displayCallTargetName(fi.getCallTarget()));
@@ -573,18 +570,20 @@ public class JPDATruffleAccessor extends Object {
     }
     */
     
-    static Object evaluate(/*SuspendedEvent*/Object suspendedEvent, String expression) {
+    static Object evaluate(/*SuspendedEvent*/Object suspendedEvent, Object frameInstance, String expression) {
         //System.err.println("evaluate("+expression+")");
         SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
+        FrameInstance fi = (FrameInstance) frameInstance;
+        if (fi == null) { // top frame
+            evt.getFrame();
+        }
         Node node = evt.getNode();
-        DebugSupportProvider dsp = getDebugSupport(node);
-        Visualizer visualizer = dsp.getVisualizer();
-        final Source source = Source.fromText(expression, "EVAL");
+        Visualizer visualizer = getVisualizer(node);
         Object value;
         try {
-            value = dsp.evalInContext(source, node, evt.getFrame());
-        } catch (DebugSupportException ex) {
-            return new TruffleObject(visualizer, ex.getLocalizedMessage(), ex);
+            value = evt.eval(expression, fi);
+        } catch (IOException ioex) {
+            return new TruffleObject(visualizer, ioex.getLocalizedMessage(), ioex);
         }
         //System.err.println("  value = "+value);
         if (value == null) {
@@ -595,6 +594,7 @@ public class JPDATruffleAccessor extends Object {
         return to;
     }
     
+    /*
     static Object evaluate(String expression, Object frameInstance) {
         FrameInstance fi = (FrameInstance) frameInstance;
         MaterializedFrame frame = fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true).materialize();
@@ -616,6 +616,7 @@ public class JPDATruffleAccessor extends Object {
         TruffleObject to = new TruffleObject(visualizer, strValue, value);
         return to;
     }
+    */
     
     static Object[] getFrameSlots(FrameInstance frameInstance) {
         FrameInstance fi = (FrameInstance) frameInstance;
@@ -635,8 +636,7 @@ public class JPDATruffleAccessor extends Object {
         FrameSlot[] frameSlots = slotsArr.toArray(new FrameSlot[]{});
         String[] slotNames = new String[slots.length];
         String[] slotTypes = new String[slots.length];
-        DebugSupportProvider debugSupport = getDebugSupport(fi.getCallNode());
-        Visualizer visualizer = (debugSupport != null) ? debugSupport.getVisualizer() : null;
+        Visualizer visualizer = getVisualizer(fi.getCallNode());
         for (int i = 0; i < frameSlots.length; i++) {
             if (visualizer != null) {
                 slotNames[i] = visualizer.displayIdentifier(frameSlots[i]);// slots[i].getIdentifier().toString();
