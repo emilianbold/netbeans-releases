@@ -313,7 +313,7 @@ public final class TableGeneratorPanel extends javax.swing.JPanel {
         final ProgressPanel panel = new ProgressPanel();
         panel.setCancelVisible(false);
         panel.setText(message);
-        ProgressHandle handle = ProgressHandleFactory.createHandle(null);
+        ProgressHandle handle = ProgressHandle.createHandle(null);
         JComponent progress = ProgressHandleFactory.createProgressComponent(handle);
         handle.start();
         final List<T> result = new ArrayList<>(1);

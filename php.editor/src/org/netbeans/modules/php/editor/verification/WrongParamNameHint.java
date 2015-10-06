@@ -48,8 +48,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -165,7 +165,7 @@ public class WrongParamNameHint extends HintRule {
         private int getLineEnd(PHPDocNode paramVariable) {
             int result = paramVariable.getEndOffset();
             try {
-                result = Utilities.getRowEnd(doc, paramVariable.getStartOffset());
+                result = LineDocumentUtils.getLineEnd(doc, paramVariable.getStartOffset());
             } catch (BadLocationException ex) {
                 LOGGER.log(Level.FINE, null, ex);
             }

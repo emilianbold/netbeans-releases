@@ -58,10 +58,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -294,9 +294,9 @@ public class ImportModulePanel extends javax.swing.JPanel {
         if (basePosition != -1) {
             EditList edits = new EditList(document);
             try {
-                int rowEnd = importInPreviousLine ? Utilities.getRowStart(document, position) : Utilities.getRowEnd(document, basePosition);
+                int rowEnd = importInPreviousLine ? LineDocumentUtils.getLineStart(document, position) : LineDocumentUtils.getLineEnd(document, basePosition);
                 if (importInPreviousLine) {
-                    importCode = importCode + "\n"; //NOI18N
+                    importCode += "\n"; //NOI18N
                 } else {
                     importCode = "\n" + importCode; //NOI18N
                 }

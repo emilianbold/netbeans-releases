@@ -49,8 +49,8 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -122,7 +122,7 @@ public class NestedBlocksHint extends HintRule implements CustomisableRule {
         private void createHint(ASTNode block) {
             int lineEnd = block.getEndOffset();
             try {
-                lineEnd = Utilities.getRowEnd(baseDocument, block.getStartOffset());
+                lineEnd = LineDocumentUtils.getLineEnd(baseDocument, block.getStartOffset());
             } catch (BadLocationException ex) {
                 LOGGER.log(Level.FINE, null, ex);
             }

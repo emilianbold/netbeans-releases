@@ -59,12 +59,12 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.api.CodeCompletionHandler2;
@@ -1230,9 +1230,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             if (doc == null) {
                 return null;
             }
-            int lineBegin = Utilities.getRowStart(doc, caretOffset);
+            int lineBegin = LineDocumentUtils.getLineStart(doc, caretOffset);
             if (lineBegin != -1) {
-                int lineEnd = Utilities.getRowEnd(doc, caretOffset);
+                int lineEnd = LineDocumentUtils.getLineEnd(doc, caretOffset);
                 String line = doc.getText(lineBegin, lineEnd - lineBegin);
                 int lineOffset = caretOffset - lineBegin;
                 int start = lineOffset;

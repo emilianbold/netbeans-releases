@@ -51,11 +51,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -264,11 +264,11 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
         }
         if (offset == -1 && classScope.getBlockRange() != null) {
             try {
-                int rowStartOfClassEnd = Utilities.getRowStart(doc, classScope.getBlockRange().getEnd());
+                int rowStartOfClassEnd = LineDocumentUtils.getLineStart(doc, classScope.getBlockRange().getEnd());
                 int rowEndOfPreviousRow = rowStartOfClassEnd - 1;
-                int newMethodPossibleOffset = Utilities.getRowStart(doc, rowEndOfPreviousRow);
-                int newMethodLineOffset = Utilities.getLineOffset(doc, newMethodPossibleOffset);
-                int classDeclarationLineOffset = Utilities.getLineOffset(doc, classDeclarationOffset);
+                int newMethodPossibleOffset = LineDocumentUtils.getLineStart(doc, rowEndOfPreviousRow);
+                int newMethodLineOffset = LineDocumentUtils.getLineIndex(doc, newMethodPossibleOffset);
+                int classDeclarationLineOffset = LineDocumentUtils.getLineIndex(doc, classDeclarationOffset);
                 if (newMethodLineOffset == classDeclarationLineOffset) {
                     offset = rowEndOfPreviousRow;
                 } else {

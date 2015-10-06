@@ -46,9 +46,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.openide.util.Exceptions;
@@ -97,7 +97,7 @@ public abstract class InsertSemicolonAction extends BaseAction {
                     try {
                         Caret caret = target.getCaret();
                         int caretPosition = caret.getDot();
-                        int eolOffset = Utilities.getRowEnd(doc, caretPosition);
+                        int eolOffset = LineDocumentUtils.getLineEnd(doc, caretPosition);
                         doc.insertString(eolOffset, SEMICOLON, null);
                         newLineProcessor.processNewLine(eolOffset, caret, indenter);
                     } catch (BadLocationException ex) {
