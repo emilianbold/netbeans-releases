@@ -121,7 +121,7 @@ public class PageFlowControllerTest extends NbTestCase {
 
     public void testCheckPageFlowControllerMemorySize() {
         System.out.println("Check PageFlowController Memory Size.");
-        assertSize("PageFlowController MemorySize:", 12000000, controller);
+        assertSize("PageFlowController MemorySize:", 13000000, controller);
     }
 
 
