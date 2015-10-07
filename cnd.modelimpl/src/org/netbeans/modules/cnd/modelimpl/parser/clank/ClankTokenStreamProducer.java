@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankMacroDirective;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
@@ -77,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducerParameters.YesNoInterested;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -107,7 +110,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         String contextLanguage = file.getContextLanguage(ppState);
         String contextLanguageFlavor = file.getContextLanguageFlavor(ppState);
         tsp.prepare(handler, contextLanguage, contextLanguageFlavor, false);
-        TokenStreamProducer.Parameters params = TokenStreamProducer.Parameters.createForMacroUsages();
+        ClankTokenStreamProducerParameters params = ClankTokenStreamProducerParameters.createForMacroUsages();
         List<CsmReference> res = tsp.getMacroUsages(params, interrupter);
         tsp.release();
         return res;
@@ -142,7 +145,32 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
 
     @Override
-    public TokenStream getTokenStream(Parameters parameters, Interrupter interrupter) {
+    public TokenStream getTokenStreamForParsingAndCaching(Interrupter interrupter) {
+        final ClankTokenStreamProducerParameters params = ClankTokenStreamProducerParameters.createForParsingAndTokenStreamCaching();
+        assertParamsReadyForCache(params);
+        return getTokenStream(params, interrupter);
+    }
+
+    @Override
+    public TokenStream getTokenStreamForParsing(String language, Interrupter interrupter) {
+        return getTokenStream(ClankTokenStreamProducerParameters.createForParsing(language), interrupter);
+    }
+
+    @Override
+    public TokenStream getTokenStreamForCaching(Interrupter interrupter) {
+        return getTokenStream(ClankTokenStreamProducerParameters.createForTokenStreamCaching(), interrupter);
+    }
+
+    private static void assertParamsReadyForCache(ClankTokenStreamProducerParameters params) {
+        boolean ready = (params.needTokens != YesNoInterested.NEVER)
+                && (params.needComments != YesNoInterested.NEVER)
+                && (params.needMacroExpansion != YesNoInterested.NEVER);
+        if (!ready) {
+            CndUtils.assertTrue(false, "Should be ready for cahcing: " + params);
+        }
+    }
+
+    private TokenStream getTokenStream(ClankTokenStreamProducerParameters parameters, Interrupter interrupter) {
         PreprocHandler ppHandler = getCurrentPreprocHandler();
         ClankDriver.APTTokenStreamCache tokStreamCache = ClankDriver.extractTokenStream(ppHandler);
         assert tokStreamCache != null;
@@ -173,9 +201,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           return null;
         }
         if (super.isFromEnsureParsed()) {
-          addPreprocessorDirectives(fileImpl, getFileContent(), tokStreamCache);
-          addMacroExpansions(fileImpl, getFileContent(), getStartFile(), tokStreamCache);
-          setFileGuard(fileImpl, getFileContent(), tokStreamCache);
+          ClankMacroUsagesSupport.addPreprocessorDirectives(fileImpl, getFileContent(), tokStreamCache);
+          ClankMacroUsagesSupport.addMacroExpansions(fileImpl, getFileContent(), getStartFile(), tokStreamCache);
+          ClankMacroUsagesSupport.setFileGuard(fileImpl, getFileContent(), tokStreamCache);
         }
         skipped = tokStreamCache.getSkippedRanges();
         if (parameters.applyLanguageFilter) {
@@ -185,7 +213,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         return tokenStream;
     }
 
-    private List<CsmReference> getMacroUsages(TokenStreamProducer.Parameters parameters, Interrupter interrupter) {
+    private List<CsmReference> getMacroUsages(ClankTokenStreamProducerParameters parameters, Interrupter interrupter) {
         PreprocHandler ppHandler = getCurrentPreprocHandler();
         int fileIndex = ClankDriver.extractTokenStream(ppHandler).getFileIndex();
         FileImpl fileImpl = getMainFile();
@@ -202,7 +230,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
     }
 
-    private void cacheMacroUsagesInFileIfNeed(Parameters parameters, ClankDriver.ClankFileInfo foundFileInfo) {
+    private void cacheMacroUsagesInFileIfNeed(ClankTokenStreamProducerParameters parameters, ClankDriver.ClankFileInfo foundFileInfo) {
         if (foundFileInfo == null) {
             return; // can this happen? should we assert? (softly!)
         }
@@ -236,14 +264,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private State alreadySeenInterestedFileEnter = State.INITIAL;
         private boolean insideInterestedFile = false;
         private boolean skipCurrentFileContentOptimization = false;
-        private final Parameters parameters;
+        private final ClankTokenStreamProducerParameters parameters;
 
         private final List<FileImpl> curFiles = new ArrayList<>();
         private final List<Boolean>  skipCurFileContentOptimizations = new ArrayList<>();
 
         private FileTokenStreamCallback(
                 PreprocHandler ppHandler,
-                Parameters parameters,
+                ClankTokenStreamProducerParameters parameters,
                 FileImpl stopFileImpl, 
                 int stopAtIndex) {
             this.ppHandler = ppHandler;
@@ -609,158 +637,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
     }
 
-    private static void addPreprocessorDirectives(FileImpl curFile, FileContent parsingFileContent, ClankDriver.APTTokenStreamCache cache) {
-        assert parsingFileContent != null;
-        assert curFile != null;
-        assert cache != null;
-        for (ClankDriver.ClankPreprocessorDirective cur : cache.getPreprocessorDirectives()) {
-            if (cur instanceof ClankDriver.ClankInclusionDirective) {
-                addInclude(curFile, parsingFileContent, (ClankDriver.ClankInclusionDirective)cur);
-            } else if (cur instanceof ClankDriver.ClankErrorDirective) {
-                addError(curFile, parsingFileContent, (ClankDriver.ClankErrorDirective)cur);
-            } else if (cur instanceof ClankMacroDirective) {
-                addMacro(curFile, parsingFileContent, (ClankMacroDirective)cur);
-            } else {
-              CndUtils.assertTrueInConsole(false, "unknown directive " + cur.getClass().getSimpleName() + " " + cur);
-            }
-        }
-    }
-    
-    private static void setFileGuard(FileImpl curFile, FileContent parsingFileContent, ClankDriver.APTTokenStreamCache cache) {
-        ClankDriver.FileGuard fileGuard = cache.getFileGuard();
-        if (fileGuard != null) {
-            curFile.setFileGuard(fileGuard.getStartOfset(), fileGuard.getEndOfset());
-        } else {
-            curFile.setFileGuard(-1, -1);
-        }
-    }
-
-    private static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.APTTokenStreamCache cache) {
-        for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
-            ClankMacroDirective directive = cur.getReferencedMacro();
-            if (directive != null) {
-                MacroReference macroRef = MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset()+cur.getMacroNameLength(), startFile, directive);
-                if (macroRef == null) {
-                    if (!curFile.isValid()) {
-                        break;
-                    }
-                } else {
-                    addMacroUsage(curFile, parsingFileContent, macroRef);
-                }
-            } else {
-                // TODO: process invalid macro definition
-                assert false : "Not found referenced ClankMacroDirective "+cur;
-            }
-        }
-        for(ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
-            ClankMacroDirective directive = cur.getReferencedMacro();
-            if (directive != null) {
-                MacroReference macroRef = MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), startFile, directive);
-                if (macroRef == null) {
-                    if (!curFile.isValid()) {
-                        break;
-                    }
-                } else {
-                    addMacroUsage(curFile, parsingFileContent, macroRef);
-                }
-            } else {
-                // TODO: process invalid macro definition
-                assert false : "Not found referenced ClankMacroDirective "+cur;
-            }
-        }
-    }
-
-    private static void addMacroUsage(FileImpl curFile, FileContent parsingFileContent, MacroReference macroReference) {
-        parsingFileContent.addReference(macroReference, macroReference.getReferencedObject());
-    }
-
-    private static void addMacro(FileImpl curFile, FileContent parsingFileContent, ClankMacroDirective ppDirective) {
-        if (!ppDirective.isDefined()) {
-            // only #define are handled by old model, not #undef
-            return;
-        }
-        CsmMacro.Kind kind = CsmMacro.Kind.DEFINED;
-        List<CharSequence> params = ppDirective.getParameters();
-        CharSequence name = ppDirective.getMacroName();
-        String body = "";
-        int startOffset = ppDirective.getDirectiveStartOffset();
-        int endOffset = ppDirective.getDirectiveEndOffset();
-        int macroNameOffset = ppDirective.getMacroNameOffset();
-        CsmMacro impl = MacroImpl.create(name, params, body/*sb.toString()*/, curFile, startOffset, endOffset, kind);
-        parsingFileContent.addMacro(impl);
-        parsingFileContent.addReference(new MacroDeclarationReference(curFile, impl, macroNameOffset), impl);
-    }
-
-    private static void addError(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankErrorDirective ppDirective) {
-        CharSequence msg = ppDirective.getMessage();
-        PreprocHandler.State state = ppDirective.getStateWhenMetErrorDirective();
-        int start = ppDirective.getDirectiveStartOffset();
-        int end = ppDirective.getDirectiveEndOffset();
-        ErrorDirectiveImpl impl = ErrorDirectiveImpl.create(curFile, msg, new CsmOffsetableImpl(curFile, start, end), state);
-        parsingFileContent.addError(impl);
-    }
-
-    private static void addInclude(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankInclusionDirective ppDirective) {
-        ResolvedPath resolvedPath = ppDirective.getResolvedPath();
-        CharSequence fileName = ppDirective.getSpellingName();
-        boolean system = ppDirective.isAngled();
-        boolean broken = (resolvedPath == null);
-        FileImpl includedFile = (FileImpl) ppDirective.getAnnotation();
-        if ((includedFile == null) != broken) {
-            if (CsmModelAccessor.isModelAlive()) {
-                assert false : "broken " + broken + " vs. " + includedFile;
-            }
-        }
-        int startOffset = ppDirective.getDirectiveStartOffset();
-        int endOffset = ppDirective.getDirectiveEndOffset();
-        //boolean hasRecursiveInclude = curFile.equals(includedFile);
-        IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, ppDirective.isRecursive(), includedFile, curFile, startOffset, endOffset);
-        parsingFileContent.addInclude(incl, broken || ppDirective.isRecursive());
-    }
-
-    private static final class CsmOffsetableImpl implements CsmOffsetable {
-
-        private final CsmFile file;
-        private final int selectionStart;
-        private final int selectionEnd;
-
-        public CsmOffsetableImpl(CsmFile file, int selectionStart, int selectionEnd) {
-            this.file = file;
-            this.selectionStart = selectionStart;
-            this.selectionEnd = selectionEnd;
-        }
-
-        @Override
-        public CsmFile getContainingFile() {
-            return file;
-        }
-
-        @Override
-        public int getStartOffset() {
-            return selectionStart;
-        }
-
-        @Override
-        public int getEndOffset() {
-            return selectionEnd;
-        }
-
-        @Override
-        public Position getStartPosition() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Position getEndPosition() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public CharSequence getText() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
     private static final class PatchedFileBuffer implements FileBuffer {
         private final FileBuffer delegate;
         private final CodePatch codePatch;
@@ -871,5 +747,4 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
     }
-
-            }
+}

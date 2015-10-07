@@ -98,7 +98,7 @@ public interface PPIncludeHandler {
         public CharSequence getIncludedPath();
         public int getIncludeDirectiveLine();
         public int getIncludeDirectiveOffset();
-        public int getIncludedDirIndex();
-        public int getIncludedDirFileIndex();
+        public int getResolvedDirectoryIndex();
+        public int getIncludeDirectiveIndex();
     }     
 }

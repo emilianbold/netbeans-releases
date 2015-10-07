@@ -124,7 +124,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
-import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer.YesNoInterested;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -1201,8 +1200,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguage = this.getContextLanguage(ppState);
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
-        TokenStream tokenStream = tsp.getTokenStream(
-                TokenStreamProducer.Parameters.createForTokenStreamCaching(), interrupter);
+        TokenStream tokenStream = tsp.getTokenStreamForCaching(interrupter);
         if (tokenStream == null) {
             return false;
         }
@@ -1309,8 +1307,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
         tsp.setCodePatch(new TokenStreamProducer.CodePatch(startContextOffset, endContextOffset, context));
-        TokenStream tokenStream = tsp.getTokenStream(
-                TokenStreamProducer.Parameters.createForTokenStreamCaching(), interrupter);
+        TokenStream tokenStream = tsp.getTokenStreamForCaching(interrupter);
         if (tokenStream == null) {
             return null;
         }
@@ -1444,15 +1441,6 @@ public final class FileImpl implements CsmFile,
         return null;
     }
 
-    private static void assertParamsReadyForCache(TokenStreamProducer.Parameters params) {
-        boolean ready = (params.needTokens != YesNoInterested.NEVER) 
-                && (params.needComments != YesNoInterested.NEVER) 
-                && (params.needMacroExpansion != YesNoInterested.NEVER);
-        if (!ready) {
-            CndUtils.assertTrue(false, "Should be ready for cahcing: " + params);
-        }
-    }
-
     private CsmParserResult doParse(ParseDescriptor parseParams) {
 
         if (reportErrors) {
@@ -1495,20 +1483,17 @@ public final class FileImpl implements CsmFile,
         FilePreprocessorConditionState pcState = null;
         
         if (cacheTokens) {
-            TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsingAndTokenStreamCaching();
-            TokenStream ts = parseParams.tsp.getTokenStream(tsParams, interrupter);
+            TokenStream ts = parseParams.tsp.getTokenStreamForParsingAndCaching(interrupter);
             if (ts == null) { // can happen if the file became invalid
                 return null;
             }
             List<APTToken> tokenList = APTUtils.toList(ts);
             pcState = parseParams.tsp.release();
-            assertParamsReadyForCache(tsParams);
             APTLanguageFilter languageFilter = APTLanguageSupport.getInstance().getFilter(parseParams.getLanguage(), parseParams.getLanguageFlavor());
             FileTokenStreamCache cache = getTokenStreamCache();            
             filteredTokenStream = cache.cacheTokensAndReturnFiltered(pcState, tokenList, languageFilter);
         } else {
-            TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsing(parseParams.getLanguage());
-            filteredTokenStream = parseParams.tsp.getTokenStream(tsParams, interrupter);
+            filteredTokenStream = parseParams.tsp.getTokenStreamForParsing(parseParams.getLanguage(), interrupter);
             if (filteredTokenStream == null) { // can happen if the file became invalid
                 return null;
             }
