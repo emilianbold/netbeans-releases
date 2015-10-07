@@ -119,6 +119,7 @@ public class RepositoryFormPanel extends JPanel {
         errorText = new JTextArea();
         errorText.setForeground(ERROR_COLOR);
         errorText.setBackground(errorLabel.getBackground());
+        errorText.setEditable(false);
         
         errorScrollPane = new javax.swing.JScrollPane();
         errorScrollPane.setBorder(null);

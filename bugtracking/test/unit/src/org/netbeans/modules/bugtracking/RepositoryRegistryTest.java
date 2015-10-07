@@ -72,6 +72,7 @@ public class RepositoryRegistryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {    
         MockLookup.setLayersAndInstances();
+        RepositoryRegistry.getInstance().loadRepositories();
     }
 
     @Override
@@ -203,6 +204,7 @@ public class RepositoryRegistryTest extends NbTestCase {
     public void testStoredRepository() {
         RepositoryInfo info = new RepositoryInfo("repoid", ID_CONNECTOR1, "http://url", null, null, null, null, null, null);
         RepositoryRegistry.getInstance().putRepository(getRepository(new MyRepository(info)));
+        RepositoryRegistry.getInstance().loadRepositories();
         
         Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1, true);
         assertEquals(1, repos.size());
