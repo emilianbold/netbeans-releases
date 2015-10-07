@@ -59,12 +59,13 @@ import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.NbBundle;
 
 /**
  * Misc static methods used for processing of macros
  * @author vkvashin
  */
-public class ClankMacroUsagesSupport {
+public final class ClankMacroUsagesSupport {
 
     private ClankMacroUsagesSupport() {
     }
@@ -244,11 +245,16 @@ public class ClankMacroUsagesSupport {
         CharSequence fileName = ppDirective.getSpellingName();
         boolean system = ppDirective.isAngled();
         boolean broken = (resolvedPath == null);
-        FileImpl includedFile = (FileImpl) ppDirective.getAnnotation();
-        if ((includedFile == null) != broken) {
+        Object includeAnnotation = ppDirective.getAnnotation();
+        boolean unresolvedInclude = includeAnnotation == UnresolvedIncludeDirectiveReason.NULL_PATH;
+        FileImpl includedFile = null;
+        if (unresolvedInclude != broken) {
             if (CsmModelAccessor.isModelAlive()) {
-                assert false : "broken " + broken + " vs. " + includedFile;
+                assert false : "broken " + broken + " vs. " + includeAnnotation + " in " + ppDirective;
             }
+        }
+        if (includeAnnotation instanceof FileImpl) {
+            includedFile = (FileImpl)includeAnnotation;
         }
         int startOffset = ppDirective.getDirectiveStartOffset();
         int endOffset = ppDirective.getDirectiveEndOffset();
@@ -300,4 +306,43 @@ public class ClankMacroUsagesSupport {
         }
     }
 
+    /*package*/static enum UnresolvedIncludeDirectiveReason {
+        NULL_PATH,
+        UNRESOLVED_FILE_OWNER,
+        START_PROJECT_CLOSED,
+        INVALID_START_PROJECT,
+        START_PROJECT_CANNOT_CREATE_FILE,
+        NULL_START_PROJECT;
+    }
+
+    /*package*/static final class UnresolvedIncludeDirectiveAnnotation {
+
+        private final UnresolvedIncludeDirectiveReason reason;
+        private final Object[] args;
+        private final Exception stack;
+        /*package*/UnresolvedIncludeDirectiveAnnotation(UnresolvedIncludeDirectiveReason reason, Object ... args) {
+            this.reason = reason;
+            this.args = args;
+            if (CndUtils.isDebugMode()) {
+                stack = new Exception();
+            } else {
+                stack = null;
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            buf.append(NbBundle.getMessage(ClankMacroUsagesSupport.class, reason.name(), args));
+            if (stack != null) {
+                StackTraceElement[] stackTrace = stack.getStackTrace();
+                if (stackTrace != null) {
+                    for(StackTraceElement line : stackTrace) {
+                        buf.append("\n\tat ").append(line.toString()); //NOI18N
+                    }
+                }
+            }
+            return buf.toString();
+        }
+    }
 }
