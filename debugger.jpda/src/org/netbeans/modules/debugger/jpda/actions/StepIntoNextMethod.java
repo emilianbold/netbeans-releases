@@ -603,7 +603,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(
                     StackFrameWrapper.location(f)));
                 for (String pattern : patterns) {
-                    if (className.contentEquals(pattern)) {
+                    if (match(className, pattern)) {
                         smartLogger.log(Level.FINER, " class ''{0}'' on stack.", className);
                         return true;
                     }
@@ -617,6 +617,15 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         } catch (InvalidStackFrameExceptionWrapper ex) {
         }
         return false;
+    }
+
+    private static boolean match(String name, String pattern) {
+        if (pattern.startsWith("*")) {
+            return name.endsWith(pattern.substring(1));
+        } else if (pattern.endsWith("*")) {
+            return name.startsWith(pattern.substring(0, pattern.length() - 1));
+        }
+        return name.contentEquals(pattern);
     }
 
 }
