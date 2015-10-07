@@ -65,7 +65,6 @@ import org.clank.java.std.vector;
 import org.clank.support.Casts;
 import static org.clank.support.Casts.toJavaString;
 import org.clank.support.Native;
-import org.clank.support.NativePointer;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.SmallString;
 import org.llvm.adt.StringRef;
@@ -332,11 +331,14 @@ public final class ClankPPCallback extends FileInfoCallback {
                 includeHandler.cacheTokens(enteredToWrapper);
                 enteredFromWrapper = includeStack.get(includeStack.size() - 1);
             }
-            // keep stack of active files
-            includeStack.add(enteredToWrapper);
-            includeHelperStack.add(0);
-
-            delegate.onEnter(enteredFromWrapper, enteredToWrapper);
+            if (delegate.onEnter(enteredFromWrapper, enteredToWrapper)) {
+                // keep stack of active files
+                includeStack.add(enteredToWrapper);
+                includeHelperStack.add(0);
+            } else {
+                // client doesn't want to enter file or error detected by client, full stop
+                interrupter.cancel();
+            }
         } else {
             assert includeStack.size() == 1 : "there should be only one main file";
             assert includeStack.get(0).current.isMainFile() : "there should be only main file";

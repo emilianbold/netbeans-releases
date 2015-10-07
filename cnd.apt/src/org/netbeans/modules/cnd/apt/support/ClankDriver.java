@@ -236,8 +236,9 @@ public final class ClankDriver {
        * 
        * @param enteredFrom
        * @param enteredTo
+       * @return true to continue, false to cancel
        */
-      void onEnter(ClankFileInfo enteredFrom, ClankFileInfo enteredTo);
+      boolean onEnter(ClankFileInfo enteredFrom, ClankFileInfo enteredTo);
       
       /**
        * return true to continue or false to stop preprocessing and exit

@@ -95,7 +95,7 @@ public final class MacroReference extends OffsetableBase implements CsmReference
             }
             referencedMacro = SystemMacroImpl.create(macroName, body, directive.getParameters(), startFile, findType(startFile, macroName));
         } else {
-            CsmFile targetFile = getTargetFile(curFile, directive.getFile());
+            CsmFile targetFile = getTargetFile(startFile, directive.getFile());
             if (targetFile == null) {
                 if (curFile.isValid() && CsmModelAccessor.isModelAlive()) {
                     CndUtils.assertTrue(false, "Can not resolve file by path in macro directive: ["+directive + //NOI18N
