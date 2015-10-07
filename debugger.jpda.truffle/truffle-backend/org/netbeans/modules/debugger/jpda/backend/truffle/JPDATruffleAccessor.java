@@ -682,6 +682,7 @@ public class JPDATruffleAccessor extends Object {
                         // un-prepare step into, if possible.
                         debugManager.prepareExecContinue();
                         isSteppingInto = false;
+                        stepIntoPrepared = false;
                     }
                     steppingIntoTruffle = 0;
                     continue;
