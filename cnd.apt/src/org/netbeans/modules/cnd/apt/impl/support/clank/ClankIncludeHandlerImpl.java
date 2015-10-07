@@ -126,15 +126,6 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return info.getIncludedPath();
     }
 
-    private int getCurDirIndex() {
-        if (inclStack != null && !inclStack.isEmpty()) {
-            IncludeInfo info = inclStack.getLast();
-            return info.getIncludedDirIndex();
-        } else {
-            return 0;
-        }
-    }
-
     /*package*/
     void resetIncludeStack() {
         this.inclStack = null;
@@ -340,8 +331,8 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
                             inclInfo.getIncludedPath(),
                             inclInfo.getIncludeDirectiveLine(),
                             inclInfo.getIncludeDirectiveOffset(),
-                            inclInfo.getIncludedDirIndex(),
-                            inclInfo.getIncludedDirFileIndex());
+                            inclInfo.getResolvedDirectoryIndex(),
+                            inclInfo.getIncludeDirectiveIndex());
                 }
                 assert inclInfoImpl != null;
                 inclInfoImpl.write(output);
@@ -510,10 +501,10 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         private final CharSequence path;
         private final int directiveLine;
         private final int directiveOffset;
-        private final int resolvedDirIndex;
-        private final int includedDirFileIndex;
+        private final int resolvedDirectoryIndex;
+        private final int includeDirectiveIndex;
 
-        public IncludeInfoImpl(FileSystem fs, CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex, int includedDirFileIndex) {
+        public IncludeInfoImpl(FileSystem fs, CharSequence path, int directiveLine, int directiveOffset, int resolvedDirectoryIndex, int includeDirectiveIndex) {
             assert path != null;
             this.fs = fs;
             this.path = path;
@@ -521,8 +512,8 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             assert directiveLine >= 0 || (directiveLine < 0 && directiveOffset < 0);
             this.directiveLine = directiveLine;
             this.directiveOffset = directiveOffset;
-            this.resolvedDirIndex = resolvedDirIndex;
-            this.includedDirFileIndex = includedDirFileIndex;
+            this.resolvedDirectoryIndex = resolvedDirectoryIndex;
+            this.includeDirectiveIndex = includeDirectiveIndex;
         }
 
         public IncludeInfoImpl(final RepositoryDataInput input) throws IOException {
@@ -531,8 +522,8 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             this.path = input.readFilePathForFileSystem(fs);
             directiveLine = input.readInt();
             directiveOffset = input.readInt();
-            resolvedDirIndex = input.readInt();
-            includedDirFileIndex = input.readInt();
+            resolvedDirectoryIndex = input.readInt();
+            includeDirectiveIndex = input.readInt();
         }
 
         @Override
@@ -560,7 +551,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             String retValue;
 
             retValue = "(" + getIncludeDirectiveLine() + "/" + getIncludeDirectiveOffset() + ": " + // NOI18N
-                    getIncludedPath() + ":" + getIncludedDirIndex() + ")"; // NOI18N
+                    getIncludedPath() + ":" + getResolvedDirectoryIndex() + ")"; // NOI18N
             return retValue;
         }
 
@@ -571,7 +562,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             }
             IncludeInfoImpl other = (IncludeInfoImpl)obj;
             return this.directiveLine == other.directiveLine && this.directiveOffset == other.directiveOffset
-                    && this.path.equals(other.path) && (resolvedDirIndex == other.resolvedDirIndex) && this.includedDirFileIndex == other.includedDirFileIndex;
+                    && this.path.equals(other.path) && (resolvedDirectoryIndex == other.resolvedDirectoryIndex) && this.includeDirectiveIndex == other.includeDirectiveIndex;
         }
 
         @Override
@@ -580,8 +571,8 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             hash = 73 * hash + (this.path != null ? this.path.hashCode() : 0);
             hash = 73 * hash + this.directiveLine;
             hash = 73 * hash + this.directiveOffset;
-            hash = 73 * hash + this.resolvedDirIndex;
-            hash = 73 * hash + this.includedDirFileIndex;
+            hash = 73 * hash + this.resolvedDirectoryIndex;
+            hash = 73 * hash + this.includeDirectiveIndex;
             return hash;
         }
 
@@ -591,18 +582,18 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             output.writeFilePathForFileSystem(fs, path);
             output.writeInt(directiveLine);
             output.writeInt(directiveOffset);
-            output.writeInt(resolvedDirIndex);
-            output.writeInt(includedDirFileIndex);
+            output.writeInt(resolvedDirectoryIndex);
+            output.writeInt(includeDirectiveIndex);
         }
 
         @Override
-        public int getIncludedDirIndex() {
-            return this.resolvedDirIndex;
+        public int getResolvedDirectoryIndex() {
+            return this.resolvedDirectoryIndex;
         }
 
         @Override
-        public int getIncludedDirFileIndex() {
-            return this.includedDirFileIndex;
+        public int getIncludeDirectiveIndex() {
+            return this.includeDirectiveIndex;
         }
         
     }

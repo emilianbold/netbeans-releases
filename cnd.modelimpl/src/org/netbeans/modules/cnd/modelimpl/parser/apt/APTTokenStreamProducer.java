@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
@@ -73,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Pair;
 
@@ -242,7 +244,24 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
     }
 
     @Override
-    public TokenStream getTokenStream(Parameters parameters, Interrupter interrupter) {
+    public TokenStream getTokenStreamForParsingAndCaching(Interrupter interrupter) {
+        //TokenStreamProducer.Parameters.createForParsingAndTokenStreamCaching()
+        return getTokenStream(false, true, false, interrupter);
+    }
+
+    @Override
+    public TokenStream getTokenStreamForParsing(String language, Interrupter interrupter) {
+        //TokenStreamProducer.Parameters.createForParsing(language)
+        return getTokenStream(true, APTLanguageSupport.FORTRAN.equals(language), true, interrupter);
+    }
+
+    @Override
+    public TokenStream getTokenStreamForCaching(Interrupter interrupter) {
+        //TokenStreamProducer.Parameters.createForTokenStreamCaching()
+        return getTokenStream(false, true, false, interrupter);
+    }
+
+    private TokenStream getTokenStream(boolean triggerParsingActivity, boolean needComments, boolean applyLanguageFilter, Interrupter interrupter) {
         FileImpl fileImpl = getMainFile();
         PreprocHandler preprocHandler = getCurrentPreprocHandler();
         // use full APT for generating token stream
@@ -261,17 +280,18 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         pcBuilder = new APTBasedPCStateBuilder(fileImpl.getAbsolutePath());
         // ask for concurrent entry if absent
         APTFileCacheEntry aptCacheEntry = fileImpl.getAPTCacheEntry(ppState, Boolean.FALSE);
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, fullAPT, fileImpl, preprocHandler, parameters.triggerParsingActivity, pcBuilder, aptCacheEntry);
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, fullAPT, fileImpl, preprocHandler, triggerParsingActivity, pcBuilder, aptCacheEntry);
         walker.setFileContent(getFileContent()); // NO
         if (TraceFlags.DEBUG) {
             System.err.println("doParse " + fileImpl.getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
         }
         TokenStream tsOut;
-        if (parameters.applyLanguageFilter) {
+        if (applyLanguageFilter) {
             APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppState);
             tsOut = walker.getFilteredTokenStream(languageFilter);
         } else {
-            tsOut = walker.getTokenStream(parameters.needComments != YesNoInterested.NEVER);
+            boolean filterOutComments = !needComments;
+            tsOut = walker.getTokenStream(filterOutComments);
         }
         if (isAllowedToCacheOnRelease()) {
           cachePair = Pair.of(ppState, aptCacheEntry);
@@ -335,14 +355,14 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         private final CsmInclude include;
         private final FileSystem fs;
         private final CharSequence path;
-        private final int includedDirFileIndex;
+        private final int includedDirectiveIndex;
 
-        IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path, int includedDirFileIndex) {
+        IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path, int includedDirectiveIndex) {
             this.line = include.getStartPosition().getLine();
             this.include = include;
             this.fs = fs;
             this.path = path;
-            this.includedDirFileIndex = includedDirFileIndex;
+            this.includedDirectiveIndex = includedDirectiveIndex;
         }
 
         @Override
@@ -366,7 +386,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         }
 
         @Override
-        public int getIncludedDirIndex() {
+        public int getResolvedDirectoryIndex() {
             return 0;
         }
 
@@ -376,8 +396,8 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         }
 
         @Override
-        public int getIncludedDirFileIndex() {
-            return includedDirFileIndex;
+        public int getIncludeDirectiveIndex() {
+            return includedDirectiveIndex;
         }
         
     }

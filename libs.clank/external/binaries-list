@@ -1,6 +1,6 @@
-#changeset:   15824:b15ae68a9b0e
+#changeset:   15829:15f5a720533f
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Tue Oct 06 20:30:09 2015 +0300
-#summary:     fixing #255733 - AssertionError: Key already in new map?
-765AEE3D86807079B0FE630F0802E6A7EC86B2DF clank_0.3.6.zip
+#date:        Wed Oct 07 22:49:29 2015 +0300
+#summary:     JAVA FIX: use normalized file paths
+87E4C62EAAB4D08E575616B22675980F979C1537 clank_0.3.6.zip

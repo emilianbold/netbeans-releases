@@ -124,7 +124,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
-import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer.YesNoInterested;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -710,13 +709,19 @@ public final class FileImpl implements CsmFile,
                             time = System.currentTimeMillis();
                             try {
                                 long compUnitCRC = 0;
-                                for (PreprocHandler preprocHandler : handlers) {
-                                    compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
-                                    parseParams.prepare(preprocHandler, getContextLanguage(preprocHandler.getState()), getContextLanguageFlavor(preprocHandler.getState()));
-                                    _parse(parseParams);
-                                    if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
-                                        break; // does not make sense parsing old data
+                                try {
+                                    // initialize parsing file content before loop instead of doing it on each iteration
+                                    parsingFileContentRef.get().set(parseParams.getFileContent());
+                                    for (PreprocHandler preprocHandler : handlers) {
+                                        compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
+                                        parseParams.prepare(preprocHandler, getContextLanguage(preprocHandler.getState()), getContextLanguageFlavor(preprocHandler.getState()));
+                                        _parse(parseParams);
+                                        if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
+                                            break; // does not make sense parsing old data
+                                        }
                                     }
+                                } finally {
+                                    parsingFileContentRef.get().set(null);
                                 }
                                 if (parsingState == ParsingState.BEING_PARSED) {
                                     updateModelAfterParsing(parseParams.getFileContent(), compUnitCRC);
@@ -753,18 +758,33 @@ public final class FileImpl implements CsmFile,
                                     }
                                 }
                                 long compUnitCRC = 0;
-                                for (PreprocHandler preprocHandler : handlers) {
-                                    parseParams.prepare(preprocHandler, getContextLanguage(preprocHandler.getState()), getContextLanguageFlavor(preprocHandler.getState()));
-                                    if (first) {
-                                        compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
-                                        _reparse(parseParams);
-                                        first = false;
-                                    } else {
-                                        _parse(parseParams);
+                                try {
+                                    // initialize parsing file content and snapshot before loop;
+                                    parsingFileContentRef.get().set(parseParams.getFileContent());
+                                    synchronized (snapShotLock) {
+                                        // intialize snapshot out of loop
+                                        // instead of doing it on each iteration which can create window for clients
+                                        // for seeing empty snapshot between iterations, i.e.
+                                        // when on the first iteration small part of file is parsed and on the second
+                                        // remaining, but we already disposed content in the first "reparse" phase
+                                        fileSnapshot = new FileSnapshot(this);
                                     }
-                                    if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
-                                        break; // does not make sense parsing old data
+                                    for (PreprocHandler preprocHandler : handlers) {
+                                        parseParams.prepare(preprocHandler, getContextLanguage(preprocHandler.getState()), getContextLanguageFlavor(preprocHandler.getState()));
+                                        if (first) {
+                                            compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
+                                            _reparse(parseParams);
+                                            first = false;
+                                        } else {
+                                            _parse(parseParams);
+                                        }
+                                        if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
+                                            break; // does not make sense parsing old data
+                                        }
                                     }
+                                } finally {
+                                    fileSnapshot = null;
+                                    parsingFileContentRef.get().set(null);
                                 }
                                 if (parsingState == ParsingState.BEING_PARSED) {
                                     updateModelAfterParsing(parseParams.getFileContent(), compUnitCRC);
@@ -959,29 +979,20 @@ public final class FileImpl implements CsmFile,
     }
     
     private void _reparse(ParseDescriptor parseParams) {
-        parsingFileContentRef.get().set(parseParams.getFileContent());
-        try {
-            if (TraceFlags.DEBUG) {
-                Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
+        if (TraceFlags.DEBUG) {
+            Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
+        }
+        if (reportParse || logState || TraceFlags.DEBUG) {
+            logParse("ReParsing", parseParams.getCurrentPreprocHandler()); //NOI18N
+        }
+        disposeAll(false);
+        CsmParserResult parsing = doParse(parseParams);
+        if (parsing != null) {
+            if (isValid()) {
+                parsing.render(parseParams);
             }
-            synchronized(snapShotLock) {
-                fileSnapshot = new FileSnapshot(this);
-            }
-            if (reportParse || logState || TraceFlags.DEBUG) {
-                logParse("ReParsing", parseParams.getCurrentPreprocHandler()); //NOI18N
-            }
-            disposeAll(false);
-            CsmParserResult parsing = doParse(parseParams);
-            if (parsing != null) {
-                if (isValid()) {
-                    parsing.render(parseParams);
-                }
-            } else {
-                //System.err.println("null ast for file " + getAbsolutePath());
-            }
-            fileSnapshot = null;
-        } finally {
-            parsingFileContentRef.get().set(null);
+        } else {
+            //System.err.println("null ast for file " + getAbsolutePath());
         }
     }
 
@@ -1106,17 +1117,21 @@ public final class FileImpl implements CsmFile,
         ParseDescriptor params = new ParseDescriptor(this, tsp, null, false, false);
         params.prepare(handlers.iterator().next(), getFileLanguage(), getFileLanguageFlavor());
         synchronized (stateLock) {
-            CsmParserResult parsing = _parse(params);
-            Object ast = parsing.getAST();
-            if (ast instanceof AST) {
-                return (AST) ast;
+            try {
+                parsingFileContentRef.get().set(params.getFileContent());
+                CsmParserResult parsing = _parse(params);
+                Object ast = parsing.getAST();
+                if (ast instanceof AST) {
+                    return (AST) ast;
+                }
+            } finally {
+                parsingFileContentRef.get().set(null);
             }
         }
         return null;
     }
 
     private CsmParserResult _parse(ParseDescriptor parseParams) {
-        parsingFileContentRef.get().set(parseParams.getFileContent());
         PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Tracer.PARSE_FILE_PERFORMANCE_EVENT, getFileObject());
         try {
             performanceEvent.setTimeOut(FileImpl.PARSE_FILE_TIMEOUT);
@@ -1167,7 +1182,6 @@ public final class FileImpl implements CsmFile,
             } else {
                 performanceEvent.log(lines);
             }
-            parsingFileContentRef.get().set(null);
         }
     }
 
@@ -1201,8 +1215,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguage = this.getContextLanguage(ppState);
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
-        TokenStream tokenStream = tsp.getTokenStream(
-                TokenStreamProducer.Parameters.createForTokenStreamCaching(), interrupter);
+        TokenStream tokenStream = tsp.getTokenStreamForCaching(interrupter);
         if (tokenStream == null) {
             return false;
         }
@@ -1309,8 +1322,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
         tsp.setCodePatch(new TokenStreamProducer.CodePatch(startContextOffset, endContextOffset, context));
-        TokenStream tokenStream = tsp.getTokenStream(
-                TokenStreamProducer.Parameters.createForTokenStreamCaching(), interrupter);
+        TokenStream tokenStream = tsp.getTokenStreamForCaching(interrupter);
         if (tokenStream == null) {
             return null;
         }
@@ -1444,15 +1456,6 @@ public final class FileImpl implements CsmFile,
         return null;
     }
 
-    private static void assertParamsReadyForCache(TokenStreamProducer.Parameters params) {
-        boolean ready = (params.needTokens != YesNoInterested.NEVER) 
-                && (params.needComments != YesNoInterested.NEVER) 
-                && (params.needMacroExpansion != YesNoInterested.NEVER);
-        if (!ready) {
-            CndUtils.assertTrue(false, "Should be ready for cahcing: " + params);
-        }
-    }
-
     private CsmParserResult doParse(ParseDescriptor parseParams) {
 
         if (reportErrors) {
@@ -1495,20 +1498,17 @@ public final class FileImpl implements CsmFile,
         FilePreprocessorConditionState pcState = null;
         
         if (cacheTokens) {
-            TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsingAndTokenStreamCaching();
-            TokenStream ts = parseParams.tsp.getTokenStream(tsParams, interrupter);
+            TokenStream ts = parseParams.tsp.getTokenStreamForParsingAndCaching(interrupter);
             if (ts == null) { // can happen if the file became invalid
                 return null;
             }
             List<APTToken> tokenList = APTUtils.toList(ts);
             pcState = parseParams.tsp.release();
-            assertParamsReadyForCache(tsParams);
             APTLanguageFilter languageFilter = APTLanguageSupport.getInstance().getFilter(parseParams.getLanguage(), parseParams.getLanguageFlavor());
             FileTokenStreamCache cache = getTokenStreamCache();            
             filteredTokenStream = cache.cacheTokensAndReturnFiltered(pcState, tokenList, languageFilter);
         } else {
-            TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsing(parseParams.getLanguage());
-            filteredTokenStream = parseParams.tsp.getTokenStream(tsParams, interrupter);
+            filteredTokenStream = parseParams.tsp.getTokenStreamForParsing(parseParams.getLanguage(), interrupter);
             if (filteredTokenStream == null) { // can happen if the file became invalid
                 return null;
             }
