@@ -453,19 +453,6 @@ public final class ParserQueue {
                 }
                 return false;
             }
-        } else {
-          if (APTTraceFlags.USE_CLANK) {
-            // make sure states are prepared to be used in parser queue
-            Collection<PreprocHandler.State> preparedStates = new ArrayList<>();
-            for (PreprocHandler.State ppState : ppStates) {
-              PreprocHandler.State cacheReady = ppState;
-              if (ppState != FileImpl.DUMMY_STATE && ppState != FileImpl.PARTIAL_REPARSE_STATE) {
-                cacheReady = APTHandlersSupport.preparePreprocStateCachesIfPossible(ppState);
-              }
-              preparedStates.add(cacheReady);
-            }
-            ppStates = preparedStates;
-          }
         }
         assert state != null;
         if (TraceFlags.TRACE_PARSER_QUEUE) {

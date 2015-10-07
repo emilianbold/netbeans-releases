@@ -1805,14 +1805,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 entryNotFoundMessage(file);
                 return;
             }
-            boolean addToQueue = false;
-            List<PreprocHandler.State> statesToParse = new ArrayList<>(4);
-            boolean clearPrevState = false;
             synchronized (entry.getLock()) {
 //                    Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> includedStatesToDebug = startProject.getIncludedPreprocStatePairs(csmFile);
 //                    Collection<PreprocessorStatePair> statePairsToDebug = entry.getStatePairs();
                 // register included file and it's states in start project under current included file lock
                 AtomicBoolean newStateFoundInStartProject = new AtomicBoolean();
+                List<PreprocHandler.State> statesToParse = new ArrayList<>(4);
                 startProjectUpdateResult = startProject.updateFileEntryForIncludedFile(entry, this, file, csmFile, newStatePair, newStateFoundInStartProject);
 
                 // decide if parse is needed
@@ -1843,29 +1841,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                           csmFile.setAPTCacheEntry(newStatePair.state, aptCacheEntry, clean.get());
                         }
                         if (!TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-                            addToQueue = true;
-                            clearPrevState = clean.get();
-                            if (false) {
-                                // PERF: moved out of sync block to prepare caches before adding to Queue
-                                ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean.get(),
-                                        clean.get() ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
-                            }                            
+                            // NOTE: we need to add to Parser Queue from sync block after our calculation has proven
+                            // the need to be put in queue. Otherwise if we leave block and hold, 
+                            // so that another thread after it's calculation decides to add it's the best states and do it before we resume,
+                            // we can put already rejected states
+                            if (APTTraceFlags.USE_CLANK) {
+                                // PERF: prepare caches out of big Parser Queue sync block
+                                for (int i = 0; i < statesToParse.size(); i++) {
+                                    PreprocHandler.State ppState = statesToParse.get(i);
+                                    PreprocHandler.State cacheReady = APTHandlersSupport.preparePreprocStateCachesIfPossible(ppState);
+                                    statesToParse.set(i, cacheReady);
+                                }
+                            }
+                            ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean.get(),
+                                    clean.get() ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
                         }
                     }
                 }
-            }
-            if (addToQueue) {
-                if (APTTraceFlags.USE_CLANK) {
-                    // prepare caches out of Queue sync block
-                    for (int i = 0; i < statesToParse.size(); i++) {
-                        PreprocHandler.State ppState = statesToParse.get(i);
-                        PreprocHandler.State cacheReady = APTHandlersSupport.preparePreprocStateCachesIfPossible(ppState);
-                        statesToParse.set(i, cacheReady);
-                    }
-                }
-                ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clearPrevState,
-                        clearPrevState ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
-                
             }
         } finally {
             if (thisProjectUpdateResult) {
