@@ -104,7 +104,8 @@ public final class BugtrackingSupport<R, Q, I> {
             IssuePriorityProvider<I> issuePriorityProvider,
             IssueFinder issueFinder)
     {
-        Repository repo = getRepository(r);
+        RepositoryRegistry registry = RepositoryRegistry.getInstance();
+        Repository repo = registry.isInitializing() ? null : getRepository(r);
         if(repo != null) {
             return repo;
         }
@@ -118,8 +119,7 @@ public final class BugtrackingSupport<R, Q, I> {
             // currently there are 2 impls taking atvantage of this hack:
             // - hardcoded repository created for the netbeans bugzilla 
             // - hardcoded repository for the inhouse bugdb tracker
-            RepositoryRegistry registry = RepositoryRegistry.getInstance();
-            if(getRepositoryImpl(r, false) == null) {
+            if(!registry.isInitializing() && getRepositoryImpl(r, false) == null) {
                 registry.addRepository(impl);
             }
         }
@@ -236,7 +236,8 @@ public final class BugtrackingSupport<R, Q, I> {
     }
     
     private RepositoryImpl getRepositoryImpl(String connectorId, String repositoryId, boolean allKnown) {
-        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId, allKnown);
+        RepositoryRegistry registry = RepositoryRegistry.getInstance();
+        return !registry.isInitializing() ? registry.getRepository(connectorId, repositoryId, allKnown) : null;
     }    
     
     private Repository getRepository(R r) {
