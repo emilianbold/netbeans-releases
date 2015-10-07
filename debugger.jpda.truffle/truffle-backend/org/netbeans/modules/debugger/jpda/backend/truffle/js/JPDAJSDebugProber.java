@@ -46,11 +46,13 @@ package org.netbeans.modules.debugger.jpda.backend.truffle.js;
 
 import com.oracle.truffle.api.instrument.ASTProber;
 import com.oracle.truffle.api.instrument.InstrumentationNode;
+import com.oracle.truffle.api.instrument.Instrumenter;
 import static com.oracle.truffle.api.instrument.StandardSyntaxTag.CALL;
 import static com.oracle.truffle.api.instrument.StandardSyntaxTag.STATEMENT;
 import static com.oracle.truffle.api.instrument.StandardSyntaxTag.THROW;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeVisitor;
+import com.oracle.truffle.api.nodes.RootNode;
 /*
 import com.oracle.truffle.js.nodes.JavaScriptNode;
 import com.oracle.truffle.js.nodes.control.BlockNode;
@@ -109,7 +111,7 @@ public class JPDAJSDebugProber implements NodeVisitor, ASTProber {
     }
     */
     @Override
-    public void probeAST(Node node) {
+    public void probeAST(Instrumenter instrumenter, RootNode node) {
         node.accept(this);
     }
 

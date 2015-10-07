@@ -112,13 +112,15 @@ public final class ImportantFiles {
 
     }
 
-    private static final class ImportantFilesNodeList implements NodeList<Node>, LookupListener, ChangeListener {
+    private static final class ImportantFilesNodeList implements NodeList<Object>, LookupListener, ChangeListener {
+
+        private static final Object IMPORTANT_FILES_KEY = new Object();
 
         private final Lookup.Result<ImportantFilesImplementation> lookupResult;
         private final ImportantFilesChildren importantFilesChildren;
         final ChangeSupport changeSupport = new ChangeSupport(this);
 
-        // @GuardedBy("thread")
+        // @GuardedBy("this")
         private Node importantFilesNode;
 
 
@@ -129,14 +131,11 @@ public final class ImportantFiles {
         }
 
         @Override
-        public List<Node> keys() {
+        public List<Object> keys() {
             if (!importantFilesChildren.hasImportantFiles()) {
-                return Collections.<Node>emptyList();
+                return Collections.emptyList();
             }
-            if (importantFilesNode == null) {
-                importantFilesNode = new ImportantFilesNode(importantFilesChildren);
-            }
-            return Collections.<Node>singletonList(importantFilesNode);
+            return Collections.singletonList(IMPORTANT_FILES_KEY);
         }
 
         @Override
@@ -150,8 +149,12 @@ public final class ImportantFiles {
         }
 
         @Override
-        public Node node(Node key) {
-            return key;
+        public synchronized Node node(Object key) {
+            assert key == IMPORTANT_FILES_KEY : "Unexpected key " + key;//NOI18N
+            if (importantFilesNode == null) {
+                importantFilesNode = new ImportantFilesNode(importantFilesChildren);
+            }
+            return importantFilesNode;
         }
 
         @Override
