@@ -35,6 +35,7 @@
         skel="tools/skeleton.netbeans"/>
     </target-->
 
+    <!-- do not forget to @SuppressWarnings for FindBugs in the generated ASTPHP5Parser file -->
     <!--target name="gen-astparser">
         <taskdef name="javacup"
             classname="java_cup.anttask.CUPTask"
