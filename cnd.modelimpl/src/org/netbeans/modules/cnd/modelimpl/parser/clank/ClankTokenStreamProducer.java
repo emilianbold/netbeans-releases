@@ -539,6 +539,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                             if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
                                 System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project%n", inclPath, inclFileOwner.getName());
                             }
+                            return false;
                         } else {
                             FilePreprocessorConditionState pcState = FilePreprocessorConditionState.build(inclPath, exitedFrom.getSkippedRanges());
                             PreprocessorStatePair ppStatePair = new PreprocessorStatePair(inclState, pcState);
@@ -547,6 +548,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                     } catch (Exception ex) {
                         APTUtils.LOG.log(Level.SEVERE, "MyClankPreprocessorCallback: error on including {0}:%n{1}", new Object[]{exitedFrom.getFilePath(), ex});
                         DiagnosticExceptoins.register(ex);
+                        return false;
                     }
                 }
             }

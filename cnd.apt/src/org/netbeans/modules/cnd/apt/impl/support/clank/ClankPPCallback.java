@@ -331,11 +331,10 @@ public final class ClankPPCallback extends FileInfoCallback {
                 includeHandler.cacheTokens(enteredToWrapper);
                 enteredFromWrapper = includeStack.get(includeStack.size() - 1);
             }
-            if (delegate.onEnter(enteredFromWrapper, enteredToWrapper)) {
-                // keep stack of active files
-                includeStack.add(enteredToWrapper);
-                includeHelperStack.add(0);
-            } else {
+            // keep stack of active files
+            includeStack.add(enteredToWrapper);
+            includeHelperStack.add(0);
+            if (!delegate.onEnter(enteredFromWrapper, enteredToWrapper)) {
                 // client doesn't want to enter file or error detected by client, full stop
                 interrupter.cancel();
             }
