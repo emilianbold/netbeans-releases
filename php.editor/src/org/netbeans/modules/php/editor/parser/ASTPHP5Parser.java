@@ -9,6 +9,7 @@ package org.netbeans.modules.php.editor.parser;
 import java.util.*;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
+@org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP", "MS_PKGPROTECT"})
 /** CUP v0.11a beta 20060608 generated parser.
   * @version Tue Oct 06 13:09:50 CEST 2015
   */
