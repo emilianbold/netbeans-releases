@@ -78,6 +78,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 
@@ -341,6 +342,8 @@ public abstract class MarkOccurrencesHighlighterBase extends JavaParserResultTas
         }
 
         if (   el != null
+                && el.getKind() != ElementKind.MODULE
+                && el.asType().getKind() != TypeKind.OTHER
                 && (!TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind()) || isIn(caretPosition, Utilities.findIdentifierSpan(info, doc, tp)))
                 && !Utilities.isNonCtorKeyword(tree)
                 && (!(tree.getKind() == Kind.METHOD) || isIn(caretPosition, Utilities.findIdentifierSpan(info, doc, tp)))
@@ -438,8 +441,9 @@ public abstract class MarkOccurrencesHighlighterBase extends JavaParserResultTas
             case PARAMETER:
             case EXCEPTION_PARAMETER:
                 return node.getBoolean(MarkOccurencesSettingsNames.LOCAL_VARIABLES, true);
+            case MODULE:
             case PACKAGE:
-                return false; //never mark occurrence packages
+                return false; //never mark occurrence modules and packages
             default:
                 Logger.getLogger(MarkOccurrencesHighlighterBase.class.getName()).log(Level.INFO, "Unknow element type: {0}.", el.getKind());
                 return true;
