@@ -3219,6 +3219,11 @@ T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:e
         RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.IS_GREATER_OR_EQUAL, expr2);
 :}
 
+| static_scalar_value:expr1 T_SPACESHIP static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.SPACESHIP, expr2);
+:}
+
 | static_scalar_value:cond T_QUESTION_MARK T_NEKUDOTAIM static_scalar_value:ifFalse
 {:
         RESULT = new ConditionalExpression(condleft, ifFalseright, cond , null, ifFalse);
