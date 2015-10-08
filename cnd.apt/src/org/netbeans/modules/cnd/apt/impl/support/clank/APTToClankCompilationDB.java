@@ -60,7 +60,7 @@ import org.openide.util.Exceptions;
  * @author Vladimir Voskresensky
  */
 public final class APTToClankCompilationDB implements ClankCompilationDataBase {
-
+    private static boolean SKIP_COMPILER_SETTINGS = Boolean.valueOf(System.getProperty("cnd.skip.compiler.builtin", "false")); // NOI18N
     private final Collection<ClankCompilationDataBase.Entry> compilations;
     private final String name;
 
@@ -119,18 +119,21 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 }
             }
         }
-        // -isystem
-        for (IncludeDirEntry incDir : includeHandler.getSystemIncludePaths()) {
-            if (incDir.isExistingDirectory()) {
-                FSPath fsPath = new FSPath(incDir.getFileSystem(), incDir.getPath());
-                FileObject fileObject = fsPath.getFileObject();
-                if (fileObject != null && fileObject.isFolder()) {
-                    CharSequence incPathUrl = CndFileSystemProvider.fileObjectToUrl(fileObject);
-                    builder.addPredefinedSystemIncludePath(incPathUrl);
+        
+        if (SKIP_COMPILER_SETTINGS) {
+            // -isystem
+            for (IncludeDirEntry incDir : includeHandler.getSystemIncludePaths()) {
+                if (incDir.isExistingDirectory()) {
+                    FSPath fsPath = new FSPath(incDir.getFileSystem(), incDir.getPath());
+                    FileObject fileObject = fsPath.getFileObject();
+                    if (fileObject != null && fileObject.isFolder()) {
+                        CharSequence incPathUrl = CndFileSystemProvider.fileObjectToUrl(fileObject);
+                        builder.addPredefinedSystemIncludePath(incPathUrl);
+                    }
                 }
             }
         }
-
+        
         // handle -include
         for (IncludeDirEntry incFile : includeHandler.getUserIncludeFilePaths()) {
             // FIXME: relative path can be passed to builder
@@ -139,9 +142,12 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
 
         ClankFileMacroMap macroMap = (ClankFileMacroMap)ppHandler.getMacroMap();
         // -D
-        for (String macro : macroMap.getSystemMacroDefinitions()) {
-            builder.addPredefinedSystemMacroDef(macro);
+        if (SKIP_COMPILER_SETTINGS) {
+            for (String macro : macroMap.getSystemMacroDefinitions()) {
+                builder.addPredefinedSystemMacroDef(macro);
+            }
         }
+        
         for (String macro : macroMap.getUserMacroDefinitions()) {
             builder.addUserMacroDef(macro);
         }
