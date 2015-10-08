@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+`<?xml version="1.0" encoding="UTF-8"?>
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -330,7 +330,7 @@
         <set property="glassfish.ml.appendix" value="-ml"/>
 	
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/4.1/promoted/latest/archive/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/4.1.1/promoted/latest/archive/bundles/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
