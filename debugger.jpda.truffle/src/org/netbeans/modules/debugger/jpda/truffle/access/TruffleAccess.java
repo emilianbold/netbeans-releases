@@ -92,6 +92,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.RemoteServices;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
+import org.netbeans.modules.debugger.jpda.truffle.actions.StepActionProvider;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
@@ -230,12 +231,14 @@ public class TruffleAccess implements JPDABreakpointListener {
         Object bp = event.getSource();
         if (execHaltedBP == bp) {
             LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), exec halted.", event);
+            StepActionProvider.killJavaStep(event.getDebugger());
             CurrentPCInfo cpci = getCurrentPosition(event.getDebugger(), event.getThread());
             synchronized (currentPCInfos) {
                 currentPCInfos.put(event.getDebugger(), cpci);
             }
         } else if (execStepIntoBP == bp) {
             LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), exec step into.", event);
+            StepActionProvider.killJavaStep(event.getDebugger());
             CurrentPCInfo cpci = getCurrentPosition(event.getDebugger(), event.getThread());
             synchronized (currentPCInfos) {
                 currentPCInfos.put(event.getDebugger(), cpci);

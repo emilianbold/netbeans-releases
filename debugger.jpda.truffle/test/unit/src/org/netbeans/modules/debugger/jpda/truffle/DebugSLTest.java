@@ -44,15 +44,21 @@ package org.netbeans.modules.debugger.jpda.truffle;
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.sl.SLLanguage;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDASupport;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
+import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
+import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 
 public class DebugSLTest extends NbTestCase {
     private DebuggerManager dm = DebuggerManager.getDebuggerManager();
@@ -99,7 +105,25 @@ public class DebugSLTest extends NbTestCase {
             final JPDADebugger debugger = support.getDebugger();
             CallStackFrame frame = debugger.getCurrentCallStackFrame();
             assertNotNull(frame);
-            // XXX fail("Shouldn't stop in CountDownLatch: " + frame.getClassName());
+            // Check that frame is in the Truffle access method
+            Field haltedClassField = TruffleAccess.class.getDeclaredField("HALTED_CLASS_NAME");
+            haltedClassField.setAccessible(true);
+            String haltedClass = (String) haltedClassField.get(null);
+            Field haltedMethodField = TruffleAccess.class.getDeclaredField("METHOD_EXEC_HALTED");
+            haltedMethodField.setAccessible(true);
+            String haltedMethod = (String) haltedMethodField.get(null);
+            assertEquals("Stopped in Truffle halted class", haltedClass, frame.getClassName());
+            assertEquals("Stopped in Truffle halted method", haltedMethod, frame.getMethodName());
+            assertEquals("Unexpected stratum", TruffleStrataProvider.TRUFFLE_STRATUM, frame.getDefaultStratum());
+            
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            assertNotNull("Missing CurrentPCInfo", currentPCInfo);
+            TruffleStackFrame topFrame = currentPCInfo.getTopFrame();
+            assertNotNull("No top frame", topFrame);
+            SourcePosition sourcePosition = topFrame.getSourcePosition();
+            assertEquals("Bad source", "Meaning of world.sl", sourcePosition.getSource().getName());
+            assertEquals("Bad line", 1, sourcePosition.getLine());
+            assertEquals("Bad method name", "main", topFrame.getMethodName());
             
             support.doContinue();
             support.waitState(JPDADebugger.STATE_DISCONNECTED);

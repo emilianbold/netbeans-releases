@@ -171,6 +171,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     @Override
     public void breakpointAdded (final Breakpoint breakpoint) {
+        logger.log(Level.FINE, "breakpointAdded({0})", breakpoint);
         if (!acceptBreakpoint(breakpoint)) {
             return ;
         }
@@ -276,6 +277,9 @@ implements PropertyChangeListener, DebuggerManagerListener {
     private void createBreakpointImpls () {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();
         int i, k = bs.length;
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("createBreakpointImpls() bs = "+java.util.Arrays.toString(bs));
+        }
         for (i = 0; i < k; i++) {
             if (acceptBreakpoint(bs[i])) {
                 createBreakpointImpl ((JPDABreakpoint) bs [i]);

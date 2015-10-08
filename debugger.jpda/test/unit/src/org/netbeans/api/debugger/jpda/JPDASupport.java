@@ -306,12 +306,18 @@ public class JPDASupport implements DebuggerManagerListener {
         return jpdaDebugger;
     }
     
+    /**
+     * Remove all non-hidden breakpoints.
+     */
     public static void removeAllBreakpoints () {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
             getBreakpoints ();
         int i, k = bs.length;
-        for (i = 0; i < k; i++)
-            DebuggerManager.getDebuggerManager ().removeBreakpoint (bs [i]);
+        for (i = 0; i < k; i++) {
+            if (!(bs[i] instanceof JPDABreakpoint && ((JPDABreakpoint) bs[i]).isHidden())) {
+                DebuggerManager.getDebuggerManager ().removeBreakpoint (bs [i]);
+            }
+        }
     }
     
     
