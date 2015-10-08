@@ -16,26 +16,26 @@
         classpath="/opt/jflex-1.6/lib/jflex-1.6.1.jar" /-->
 
     <!-- for coloring lexer, jflex 1.4 or 1.5 must be used -->
-    <!--target name="gen-lexer" >
+    <!--target name="gen-lexer">
         <jflex file="tools/Php5ColoringScanner.flex"
         destdir="src"
         skel="tools/skeleton.netbeans"/>
     </target-->
 
     <!-- for ast scanner, jflex 1.4 must be used! -->
-    <!--target name="gen-astscanner" >
+    <!--target name="gen-astscanner">
         <jflex file="tools/ASTPHP5Scanner.flex"
         destdir="src"
         skel="tools/skeletonParser.netbeans"/>
     </target-->
 
-    <!--target name="gen-docscanner" >
+    <!--target name="gen-docscanner">
         <jflex file="tools/DocumentorColoringScanner.flex"
         destdir="src"
         skel="tools/skeleton.netbeans"/>
     </target-->
 
-    <!-- add license and @SuppressWarnings for FindBugs in the generated ASTPHP5Parser file -->
+    <!-- add license and @SuppressWarnings for FindBugs in the generated ASTPHP5Parser & ASTPHP5Symbols files -->
     <!--target name="gen-astparser">
         <taskdef name="javacup"
             classname="java_cup.anttask.CUPTask"
