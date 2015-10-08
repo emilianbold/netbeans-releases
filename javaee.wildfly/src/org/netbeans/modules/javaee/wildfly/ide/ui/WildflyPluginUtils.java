@@ -515,6 +515,7 @@ public class WildflyPluginUtils {
          */
         @Override
         public boolean equals(Object obj) {
+            // XXX thiw want match compareTo contract in case there will be numbers like "1" and "01".
             if (obj == null) {
                 return false;
             }
@@ -578,18 +579,31 @@ public class WildflyPluginUtils {
          * @param o version to compare with
          */
         public int compareToIgnoreUpdate(Version o) {
-            if(o == null) {
+            if (o == null) {
                 return 1;
             }
-            int comparison = majorNumber.compareTo(o.majorNumber);
+            int comparison = compare(majorNumber, o.majorNumber);
             if (comparison != 0) {
                 return comparison;
             }
-            comparison = minorNumber.compareTo(o.minorNumber);
+            comparison = compare(minorNumber, o.minorNumber);
             if (comparison != 0) {
                 return comparison;
             }
-            return microNumber.compareTo(o.microNumber);
+            return compare(microNumber, o.microNumber);
+        }
+
+        private int compare(String number1, String number2) {
+            if (number1.length() != number2.length()) {
+                try {
+                    Integer i1 = Integer.parseInt(number1);
+                    Integer i2 = Integer.parseInt(number2);
+                    return i1.compareTo(i2);
+                } catch (NumberFormatException ex) {
+                    // compare as strings below
+                }
+            }
+            return number1.compareTo(number2);
         }
 
     }
