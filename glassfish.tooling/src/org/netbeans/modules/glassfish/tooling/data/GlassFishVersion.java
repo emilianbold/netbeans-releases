@@ -87,6 +87,8 @@ public enum GlassFishVersion {
     GF_4_0_1    ((short) 4, (short) 0, (short) 1, (short) 0),
     /** GlassFish 4.1. */
     GF_4_1      ((short) 4, (short) 1, (short) 0, (short) 0),
+    /** GlassFish 4.1.1. */
+    GF_4_1_1      ((short) 4, (short) 1, (short) 1, (short) 0),
     /** GlassFish development version.
         Hope user knows what he is doing. */
     GF_DEVEL    ((short) 0, (short) 0, (short) 0, (short) 0);
@@ -179,6 +181,11 @@ public enum GlassFishVersion {
     /** Additional <code>String</code> representations of GF_4_1 value. */
     static final String GF_4_1_STR_NEXT[] = {"4.1.0", "4.1.0.0"};
 
+    /**  A <code>String</code> representation of GF_4_1_1 value. */
+    static final String GF_4_1_1_STR = "4.1.1";
+    /** Additional <code>String</code> representations of GF_4_1 value. */
+    static final String GF_4_1_1_STR_NEXT[] = {"4.1.1.0"};
+
     /**  A <code>String</code> representation of GF_DEVEL value. */
     static final String GF_DEVEL_STR = "DEVELOPMENT";
     /** Additional <code>String</code> representations of GF_DEVEL value. */
@@ -208,6 +215,7 @@ public enum GlassFishVersion {
         initStringValuesMapFromArray(GF_4, GF_4_STR_NEXT);
         initStringValuesMapFromArray(GF_4_0_1, GF_4_0_1_STR_NEXT);
         initStringValuesMapFromArray(GF_4_1, GF_4_1_STR_NEXT);
+        initStringValuesMapFromArray(GF_4_1_1, GF_4_1_1_STR_NEXT);
         initStringValuesMapFromArray(GF_DEVEL, GF_DEVEL_STR_NEXT);
     }
 
@@ -440,6 +448,7 @@ public enum GlassFishVersion {
             case GF_4:       return GF_4_STR;
             case GF_4_0_1:   return GF_4_0_1_STR;
             case GF_4_1:     return GF_4_1_STR;
+            case GF_4_1_1:   return GF_4_1_1_STR;
             case GF_DEVEL:   return GF_DEVEL_STR;
             // This is unrecheable. Being here means this class does not handle
             // all possible values correctly.
