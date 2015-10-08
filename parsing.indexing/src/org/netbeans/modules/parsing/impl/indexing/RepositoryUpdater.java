@@ -4140,7 +4140,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     return true;
                                 }
                             };
-                            return runInContext(rootFo, action);
+                            if (!runInContext(rootFo, action)) {
+                                return false;
+                            }
                         }
                     }
                 } catch (IOException ioe) {
@@ -4342,7 +4344,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     return true;
                                 }
                             };
-                            return runInContext(rootFo, action);
+                            if (!runInContext(rootFo, action)) {
+                                return false;
+                            }
                         }
                     }
                 } catch (IOException ioe) {
