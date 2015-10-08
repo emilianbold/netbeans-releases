@@ -59,11 +59,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.StreamSupport;
 import javax.lang.model.element.ModuleElement;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -78,6 +80,7 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -112,6 +115,14 @@ final class ModuleClassPaths {
             @NonNull final PropertyEvaluator eval,
             @NonNull final String platformType) {
         return new PlatformModulePath(eval, platformType);
+    }
+
+    @NonNull
+    static ClassPathImplementation createPropertyBasedModulePath(
+            @NonNull final File projectDir,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final String... props) {
+        return new PropertyModulePath(projectDir, eval, props);
     }
 
     private static final class PlatformModulePath extends BaseClassPathImplementation implements PropertyChangeListener {
@@ -170,6 +181,66 @@ final class ModuleClassPaths {
                         .forEach((root)->{res.add(org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(root));});
             }
             return res;
+        }
+    }
+
+    private static final class PropertyModulePath extends BaseClassPathImplementation implements PropertyChangeListener {
+        private final File projectDir;
+        private final PropertyEvaluator eval;
+        private final Set<String> props;
+
+        PropertyModulePath(
+            @NonNull final File projectDir,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final String... props) {
+            Parameters.notNull("projectDir", projectDir);   //NOI18N
+            Parameters.notNull("eval", eval);   //NOI18N
+            Parameters.notNull("props", props); //NOI18N
+            this.projectDir = projectDir;
+            this.eval = eval;
+            this.props = new LinkedHashSet<>();
+            Collections.addAll(this.props, props);
+            this.eval.addPropertyChangeListener(null);
+        }
+
+        @Override
+        @NonNull
+        public List<? extends PathResourceImplementation> getResources() {
+            List<PathResourceImplementation> res = getCache();
+            if (res == null) {
+                final List<PathResourceImplementation> collector = res = new ArrayList<>();
+                props.stream()
+                    .map((prop)->eval.getProperty(prop))
+                    .flatMap((path)-> {
+                        return path == null ?
+                            Collections.<String>emptyList().stream() :
+                            Arrays.stream(PropertyUtils.tokenizePath(path));
+                    })
+                    .map((part)->PropertyUtils.resolveFile(projectDir, part))
+                    .flatMap((modulesFolder)->{
+                        File[] modules = modulesFolder.listFiles();
+                        return modules == null ?
+                           Collections.<File>emptyList().stream():
+                           Arrays.stream(modules);
+                    })
+                    .forEach((file)->{
+                        collector.add(org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(file)));
+                    });
+                synchronized (this) {
+                    List<PathResourceImplementation> cv = getCache();
+                    if (cv == null) {
+                        setCache(res);
+                    } else {
+                        res = cv;
+                    }
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public void propertyChange(@NonNull final PropertyChangeEvent evt) {
+            //TODO: Implement me
         }
     }
 
