@@ -10458,19 +10458,19 @@
   <!-- "Options Window: HTML/JS: Node.js"-->
   <mapID target="f1_html021.htm-sthref583" url="f1_html021.htm#sthref583" />
   <!-- "Options Window: HTML/JS: Node.js"-->
-  <mapID target="org.netbeans.modules.javascript.bower.ui.options.BowerOptionsPanel" url="f1_html022.htm#org.netbeans.modules.javascript.bower.ui.options.BowerOptionsPanel" />
+  <mapID target="org.netbeans.modules.javascript.bower.ui.options.BowerOptionsPanelController" url="f1_html022.htm#org.netbeans.modules.javascript.bower.ui.options.BowerOptionsPanelController" />
   <!-- "Options Window: HTML/JS: Bower"-->
   <mapID target="f1_html022.htm-sthref585" url="f1_html022.htm#sthref585" />
   <!-- "Options Window: HTML/JS: Bower"-->
-  <mapID target="org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanel" url="f1_html023.htm#org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanel" />
+  <mapID target="org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController" url="f1_html023.htm#org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController" />
   <!-- "Options Window: HTML/JS: Grunt"-->
   <mapID target="f1_html023.htm-sthref587" url="f1_html023.htm#sthref587" />
   <!-- "Options Window: HTML/JS: Grunt"-->
-  <mapID target="org.netbeans.modules.javascript.gulp.ui.options.GulpOptionsPanel" url="f1_html024.htm#org.netbeans.modules.javascript.gulp.ui.options.GulpOptionsPanel" />
+  <mapID target="org.netbeans.modules.javascript.gulp.ui.options.GulpOptionsPanelController" url="f1_html024.htm#org.netbeans.modules.javascript.gulp.ui.options.GulpOptionsPanelController" />
   <!-- "Options Window: HTML/JS: Gulp"-->
   <mapID target="f1_html024.htm-sthref589" url="f1_html024.htm#sthref589" />
   <!-- "Options Window: HTML/JS: Gulp"-->
-  <mapID target="org.netbeans.modules.javascript.karma.ui.options.KarmaOptionsPanel" url="f1_html025.htm#org.netbeans.modules.javascript.karma.ui.options.KarmaOptionsPanel" />
+  <mapID target="org.netbeans.modules.javascript.karma.ui.options.KarmaOptionsPanelController" url="f1_html025.htm#org.netbeans.modules.javascript.karma.ui.options.KarmaOptionsPanelController" />
   <!-- "Options Window: HTML/JS: Karma"-->
   <mapID target="f1_html025.htm-sthref591" url="f1_html025.htm#sthref591" />
   <!-- "Options Window: HTML/JS: Karma"-->
@@ -10482,11 +10482,11 @@
   <!-- "New HTML5/JS Application with Node.js Wizard: Name and Location"-->
   <mapID target="f1_html027.htm-sthref595" url="f1_html027.htm#sthref595" />
   <!-- "New HTML5/JS Application with Node.js Wizard: Name and Location"-->
-  <mapID target="org.netbeans.modules.javascript.nodejs.ui.wizard.ExpressPanelVisual" url="f1_html028.htm#org.netbeans.modules.javascript.nodejs.ui.wizard.ExpressPanelVisual" />
+  <mapID target="org.netbeans.modules.javascript.nodejs.ui.wizard.ExpressPanel" url="f1_html028.htm#org.netbeans.modules.javascript.nodejs.ui.wizard.ExpressPanel" />
   <!-- "New HTML5/JS Application with Node.js Wizard: Express"-->
   <mapID target="f1_html028.htm-sthref597" url="f1_html028.htm#sthref597" />
   <!-- "New HTML5/JS Application with Node.js Wizard: Express"-->
-  <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.Tools" url="f1_html029.htm#org.netbeans.modules.web.clientproject.ui.wizard.Tools" />
+  <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.ToolsPanel" url="f1_html029.htm#org.netbeans.modules.web.clientproject.ui.wizard.ToolsPanel" />
   <!-- "New HTML5/JS Application with Node.js Wizard: Tools"-->
   <mapID target="f1_html029.htm-sthref599" url="f1_html029.htm#sthref599" />
   <!-- "New HTML5/JS Application with Node.js Wizard: Tools"-->
