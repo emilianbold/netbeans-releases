@@ -67,6 +67,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.Session;
@@ -109,6 +111,8 @@ import org.openide.util.NbBundle;
 */
 public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     
+    private static final Logger LOG = Logger.getLogger(MethodBreakpointImpl.class.getName());
+    
     private final MethodBreakpoint breakpoint;
     
     
@@ -117,6 +121,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                           Session session,
                           SourceRootsCache sourceRootsCache) {
         super (breakpoint, debugger, session, sourceRootsCache);
+        LOG.log(Level.FINE, "new MethodBreakpointImpl for {0}", breakpoint);
         this.breakpoint = breakpoint;
         setSourceRoot(""); // Just to setup source change listener
         set ();
@@ -137,11 +142,20 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         String[] names = classNames.getClassNames();
         String[] disabledRootPtr = new String[] { null };
         names = checkSourcesEnabled(names, disabledRootPtr);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE,
+                    "Breakpoint {0}: setRequests() filters: {1}, exclusion filters: {2} => names: {3}",
+                    new Object[]{ breakpoint,
+                                  breakpoint.getClassFilters(),
+                                  breakpoint.getClassExclusionFilters(),
+                                  java.util.Arrays.toString(names) });
+        }
         if (names.length == 0) {
             setValidity(VALIDITY.INVALID,
                         NbBundle.getMessage(ClassBasedBreakpoint.class,
                                     "MSG_DisabledSourceRoot",
                                     disabledRootPtr[0]));
+            LOG.log(Level.FINE, "Breakpoint {0} set as invalid.", breakpoint);
             return ;
         }
         String[] excludedNames = classNames.getExcludedClassNames();
@@ -321,6 +335,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                 methods = ReferenceTypeWrapper.methods0(referenceType).iterator();
             } catch (ClassNotPreparedExceptionWrapper ex) {
                 // Ignore not prepared classes
+                LOG.log(Level.FINE,
+                        "Breakpoint: {0} got class load: {1}, but class is not prepared!",
+                        new Object[]{ breakpoint, referenceType });
                 continue ;
             }
             MethodEntryRequest entryReq = null;
@@ -356,6 +373,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                 }
             }
             String signature = breakpoint.getMethodSignature();
+            LOG.log(Level.FINE,
+                    "Breakpoint: {0} got class load: {1}, searching for method name '{2}' with signature: {3}",
+                    new Object[]{ breakpoint, referenceType, methodName, signature });
             while (methods.hasNext ()) {
                 Method method = (Method) methods.next ();
                 if (MethodWrapper.isBridge0(method)) {
@@ -368,10 +388,11 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                                                         TypeComponentWrapper.signature(method)))) {
 
                         if (methodEntryType) {
-                            if (MethodWrapper.location(method) != null && !MethodWrapper.isNative(method)) {
-                                Location location = MethodWrapper.location(method);
+                            Location location = MethodWrapper.location(method);
+                            if (location != null && !MethodWrapper.isNative(method)) {
                                 BreakpointRequest br = EventRequestManagerWrapper.
                                     createBreakpointRequest (getEventRequestManager (), location);
+                                LOG.log(Level.FINE, "  creating breakpoint request on location {0}", location);
                                 JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
                                 if (threadFilters != null && threadFilters.length > 0) {
                                     for (JPDAThread t : threadFilters) {
@@ -391,10 +412,12 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                     try {
                                         entryReq = EventRequestManagerWrapper.
                                                 createMethodEntryRequest(getEventRequestManager());
+                                        LOG.log(Level.FINE, " no location or is native, created method entry request: {0}", entryReq);
                                     } catch (UnsupportedOperationException unsupported) {
                                         invalidMessage =
                                                 NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethodEntry");
                                         setValidity(VALIDITY.INVALID, invalidMessage);
+                                        LOG.fine(" method entry requests not supported => breakpoint set as invalid.");
                                         return ;
                                     }
                                     MethodEntryRequestWrapper.addClassFilter(entryReq, referenceType);
@@ -422,10 +445,12 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                 try {
                                     exitReq = EventRequestManagerWrapper.
                                             createMethodExitRequest(getEventRequestManager());
+                                    LOG.log(Level.FINE, " created method exit request: {0}", exitReq);
                                 } catch (UnsupportedOperationException unsupported) {
                                     invalidMessage =
                                             NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethodExit");
                                     setValidity(VALIDITY.INVALID, invalidMessage);
+                                    LOG.fine(" method exit requests not supported => breakpoint set as invalid.");
                                     return ;
                                 }
                                 MethodExitRequestWrapper.addClassFilter(exitReq, referenceType);
