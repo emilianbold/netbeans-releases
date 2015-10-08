@@ -224,7 +224,10 @@ final class ModuleClassPaths {
                            Arrays.stream(modules);
                     })
                     .forEach((file)->{
-                        collector.add(org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(file)));
+                        URL url = FileUtil.urlForArchiveOrDir(file);
+                        if (url != null) {
+                            collector.add(org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url));
+                        }
                     });
                 synchronized (this) {
                     List<PathResourceImplementation> cv = getCache();
