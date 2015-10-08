@@ -338,6 +338,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
                 case ASTPHP5Symbols.T_INTERFACE : text = "interface"; break; //NOI18N
                 case ASTPHP5Symbols.T_SWITCH : text = "switch"; break; //NOI18N
                 case ASTPHP5Symbols.T_IS_GREATER_OR_EQUAL : text = ">="; break; //NOI18N
+                case ASTPHP5Symbols.T_SPACESHIP : text = "<=>"; break; //NOI18N
                 case ASTPHP5Symbols.T_OPEN_RECT : text = "["; break; //NOI18N
                 case ASTPHP5Symbols.T_CURLY_OPEN_WITH_DOLAR : text = "{$"; break; //NOI18N
                 case ASTPHP5Symbols.T_FINAL : text = "final"; break; //NOI18N
