@@ -3009,15 +3009,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         try {
 
             disposeLock.writeLock().lock();
-            if (CndUtils.isDebugMode()) {
-                checkConsistency(false);
+            if (platformProject != null) {
+                if (CndUtils.isDebugMode()) {
+                    checkConsistency(false);
+                }
+                getUnresolved().dispose();
+                RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
+                onDispose();
+                platformProject = null;
+                unresolved = null;
+                uid = null;
             }
-            getUnresolved().dispose();
-            RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
-            onDispose();
-            platformProject = null;
-            unresolved = null;
-            uid = null;
         } finally {
             disposeLock.writeLock().unlock();
         }
