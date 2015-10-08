@@ -290,6 +290,9 @@ public final class Utils {
             case ASTPHP5Symbols.T_SPACESHIP:
                 name = "SPACESHIP"; //NOI18N
                 break;
+            case ASTPHP5Symbols.T_ELVIS:
+                name = "ELVIS"; //NOI18N
+                break;
             case ASTPHP5Symbols.T_IS_IDENTICAL:
                 name = "T_IS_IDENTICAL"; //NOI18N
                 break;

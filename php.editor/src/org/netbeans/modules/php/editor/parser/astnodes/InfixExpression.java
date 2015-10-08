@@ -60,6 +60,7 @@ public class InfixExpression extends Expression {
         LGREATER(">"), //NOI18N
         IS_GREATER_OR_EQUAL(">="), //NOI18N
         SPACESHIP("<=>"), //NOI18N
+        ELVIS("?:"), //NOI18N
         BOOL_OR("||"), //NOI18N
         BOOL_AND("&&"), //NOI18N
         STRING_OR("or"), //NOI18N

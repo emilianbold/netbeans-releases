@@ -1051,12 +1051,21 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(InfixExpression node) {
         scan(node.getLeft());
-        FormatToken.Kind whitespaceBefore = FormatToken.Kind.WHITESPACE_BEFORE_BINARY_OP;
-        FormatToken.Kind whitespaceAfter = FormatToken.Kind.WHITESPACE_AFTER_BINARY_OP;
 
-        if (node.getOperator() == InfixExpression.OperatorType.CONCAT) {
-            whitespaceAfter = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
-            whitespaceBefore = whitespaceAfter;
+        FormatToken.Kind whitespaceBefore;
+        FormatToken.Kind whitespaceAfter;
+        switch (node.getOperator()) {
+            case CONCAT:
+                whitespaceBefore = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
+                whitespaceAfter = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
+                break;
+            case ELVIS:
+                whitespaceBefore = FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP;
+                whitespaceAfter = FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP;
+                break;
+            default:
+                whitespaceBefore = FormatToken.Kind.WHITESPACE_BEFORE_BINARY_OP;
+                whitespaceAfter = FormatToken.Kind.WHITESPACE_AFTER_BINARY_OP;
         }
 
         while (ts.moveNext() && ts.offset() < node.getRight().getStartOffset()
@@ -1687,6 +1696,10 @@ public class FormatVisitor extends DefaultVisitor {
                         }
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                        break;
+                    case "?:": // NOI18N
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
                         break;
                     default:
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
