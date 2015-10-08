@@ -1,6 +1,6 @@
-#changeset:   15829:15f5a720533f
+#changeset:   15833:7a25911f3a83
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Oct 07 22:49:29 2015 +0300
-#summary:     JAVA FIX: use normalized file paths
-87E4C62EAAB4D08E575616B22675980F979C1537 clank_0.3.6.zip
+#date:        Thu Oct 08 21:05:27 2015 +0300
+#summary:     fixing #255804 - AssertionError: already initialized normalized file?
+CE0B5C41FF8F4D91D5E6CDF53B2ABDB87C73080C clank_0.3.6.zip
