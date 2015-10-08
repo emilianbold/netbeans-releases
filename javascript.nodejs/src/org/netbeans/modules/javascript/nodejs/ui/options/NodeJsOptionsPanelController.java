@@ -180,7 +180,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanel"); // NOI18N
     }
 
     @Override
