@@ -36,6 +36,7 @@
     </target-->
 
     <!-- add license and @SuppressWarnings for FindBugs in the generated ASTPHP5Parser & ASTPHP5Symbols files -->
+    <!-- parsercutter can be found in misc repository -->
     <!--target name="gen-astparser">
         <taskdef name="javacup"
             classname="java_cup.anttask.CUPTask"
