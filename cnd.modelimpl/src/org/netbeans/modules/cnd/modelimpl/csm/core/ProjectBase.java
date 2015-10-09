@@ -75,7 +75,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -2646,6 +2645,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private CsmFile findFileByPath(CharSequence absolutePath, boolean createIfPossible) {
+        if (!isValid()) {
+            return null;
+        }
         absolutePath = CndFileUtils.normalizeAbsolutePath(fileSystem, absolutePath.toString());
         PreprocHandler preprocHandler = null;
         if (getFileContainer().getEntry(absolutePath) == null) {
@@ -2681,6 +2683,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private CsmFile findFileByItem(NativeFileItem nativeFile, boolean createIfPossible) {
+        if (!isValid()) {
+            return null;
+        }
         CharSequence file = nativeFile.getAbsolutePath();
         PreprocHandler preprocHandler = null;
         if (getFileContainer().getEntry(file) == null) {
