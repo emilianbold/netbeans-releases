@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.spi.APTBufferProvider;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
@@ -237,7 +238,7 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
             // TODO: should we set errno?
             return new ErrorOr(std_errors.errc.no_such_file_or_directory);
         } else {
-            StringRef name = new StringRef(CndFileSystemProvider.fileObjectToUrl(fo));
+            StringRef name = new StringRef(CndFileSystemProvider.toUrl(FSPath.toFSPath(fo)));
             UniqueID uid = getUniqueID(fo);
             if (uid == null) {
                 return new ErrorOr(std_errors.errc.io_error);
