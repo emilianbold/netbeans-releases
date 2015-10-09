@@ -235,7 +235,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         if (searchPathUrl.startsWith(RFS_PREFIX)) {   
             includeFs = CndFileSystemProvider.urlToFileSystem(searchPathUrl);
             if (includeFs == null) {
-                Exceptions.printStackTrace(new IllegalStateException("cannot resolve FS for " + searchPathUrl + " from " + curFile));
+                Exceptions.printStackTrace(new IllegalStateException("cannot resolve FS for " + searchPathUrl + " from " + curFile)); // NOI18N
                 return null;
             }
             searchedAbsPath = ClankFileSystemProviderImpl.getPathFromUrl(searchPathUrl);
