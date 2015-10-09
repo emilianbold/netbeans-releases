@@ -37,9 +37,9 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author Petr Hejl
  */
-public class JBPluginUtilsTest extends NbTestCase {
+public class WildflyPluginUtilsTest extends NbTestCase {
 
-    public JBPluginUtilsTest(String testName) {
+    public WildflyPluginUtilsTest(String testName) {
         super(testName);
     }
 
@@ -59,5 +59,22 @@ public class JBPluginUtilsTest extends NbTestCase {
         WildflyPluginUtils.Version versionCmp2 = new WildflyPluginUtils.Version("4.1.1"); // NOI18N
         assertTrue(version.compareTo(versionCmp2) > 0);
         assertEquals(0, version.compareToIgnoreUpdate(versionCmp2));
+    }
+
+    public void testComparison() {
+        WildflyPluginUtils.Version version1 = new WildflyPluginUtils.Version("9.0.1"); // NOI18N
+        WildflyPluginUtils.Version version2 = new WildflyPluginUtils.Version("10.0.0"); // NOI18N
+        WildflyPluginUtils.Version version3 = new WildflyPluginUtils.Version("8.1.1"); // NOI18N
+
+        assertTrue(version1.compareTo(version2) < 0);
+        assertTrue(version2.compareTo(version1) > 0);
+        assertTrue(version3.compareTo(version1) < 0);
+        assertTrue(version1.compareTo(version3) > 0);
+        assertTrue(version1.equals(version1));
+        assertTrue(version2.equals(version2));
+        assertEquals(version1.compareTo(version1), 0);
+        assertEquals(version2.compareTo(version2), 0);
+        assertEquals(version3.compareTo(version3), 0);
+        assertEquals(version2.compareTo(new WildflyPluginUtils.Version("10.0.0")), 0); // NOI18N
     }
 }
