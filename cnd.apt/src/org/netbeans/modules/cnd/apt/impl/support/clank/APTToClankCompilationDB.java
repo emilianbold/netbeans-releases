@@ -101,11 +101,11 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
     public static ClankCompilationDataBase.Entry createEntry(PreprocHandler ppHandler) {
         ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl)ppHandler.getIncludeHandler();
         StartEntry startEntry = includeHandler.getStartEntry();
-        FSPath startPath = new FSPath(startEntry.getFileSystem(), startEntry.getStartFile().toString());
-        CharSequence startUrl = CndFileSystemProvider.toUrl(startPath);
+        String startEntryFilePath = startEntry.getStartFile().toString();
+        CharSequence startUrl = CndFileSystemProvider.toUrl(startEntry.getFileSystem(), startEntryFilePath);
         DataBaseEntryBuilder builder = new DataBaseEntryBuilder(startUrl, null);
 
-        builder.setLang(getLang(ppHandler.getLanguage(), startPath.getPath()));
+        builder.setLang(getLang(ppHandler.getLanguage(), startEntryFilePath));
         builder.setLangStd(getLangStd(ppHandler.getLanguageFlavor()));
 
         // -I
@@ -114,7 +114,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 FSPath fsPath = new FSPath(incDir.getFileSystem(), incDir.getPath());
                 FileObject fileObject = fsPath.getFileObject();
                 if (fileObject != null && fileObject.isFolder()) {
-                    CharSequence incPathUrl = CndFileSystemProvider.fileObjectToUrl(fileObject);
+                    CharSequence incPathUrl = fsPath.getURL();
                     builder.addUserIncludePath(incPathUrl);
                 }
             }
@@ -127,7 +127,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                     FSPath fsPath = new FSPath(incDir.getFileSystem(), incDir.getPath());
                     FileObject fileObject = fsPath.getFileObject();
                     if (fileObject != null && fileObject.isFolder()) {
-                        CharSequence incPathUrl = CndFileSystemProvider.fileObjectToUrl(fileObject);
+                        CharSequence incPathUrl = fsPath.getURL();
                         builder.addPredefinedSystemIncludePath(incPathUrl);
                     }
                 }
