@@ -238,6 +238,14 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
         performTest("lexer/heredoc_015");
     }
 
+    public void testElvis01() throws Exception {
+        performTest("lexer/elvis_01");
+    }
+
+    public void testElvis02() throws Exception {
+        performTest("lexer/elvis_02");
+    }
+
     public void testIssue225549() throws Exception {
         performTest("lexer/issue225549");
     }

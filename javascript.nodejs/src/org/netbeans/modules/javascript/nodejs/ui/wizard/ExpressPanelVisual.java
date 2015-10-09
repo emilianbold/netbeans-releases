@@ -62,10 +62,9 @@ import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelContr
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public final class ExpressPanelVisual extends JPanel implements PreferenceChangeListener, HelpCtx.Provider {
+public final class ExpressPanelVisual extends JPanel implements PreferenceChangeListener {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -90,11 +89,6 @@ public final class ExpressPanelVisual extends JPanel implements PreferenceChange
         DefaultItemListener defaultItemListener = new DefaultItemListener();
         enableExpressCheckBox.addItemListener(defaultItemListener);
         lessCheckBox.addItemListener(defaultItemListener);
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.javascript.nodejs.ui.wizard.ExpressPanelVisual"); // NOI18N
     }
 
     boolean isExpressEnabled() {

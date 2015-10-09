@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
@@ -52,10 +52,9 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class NewClientSideProject extends JPanel implements HelpCtx.Provider {
+public class NewClientSideProject extends JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final String projectNameTemplate;
@@ -67,11 +66,6 @@ public class NewClientSideProject extends JPanel implements HelpCtx.Provider {
 
         initComponents();
         initProjectNameAndLocation();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProject"); // NOI18N
     }
 
     private void initProjectNameAndLocation() {

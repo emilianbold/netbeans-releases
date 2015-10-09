@@ -70,11 +70,10 @@ import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords={"#KW.BowerOptionsPanel"}, location="Html5", tabTitle= "Bower")
-public class BowerOptionsPanel extends JPanel implements HelpCtx.Provider {
+public class BowerOptionsPanel extends JPanel {
 
     private static final Logger LOGGER = Logger.getLogger(BowerOptionsPanel.class.getName());
 
@@ -128,11 +127,6 @@ public class BowerOptionsPanel extends JPanel implements HelpCtx.Provider {
 
     void fireChange() {
         changeSupport.fireChange();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.javascript.bower.ui.options.BowerOptionsPanel"); // NOI18N
     }
 
     /**

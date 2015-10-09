@@ -120,7 +120,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             }
         }
         
-        if (SKIP_COMPILER_SETTINGS) {
+        if (!SKIP_COMPILER_SETTINGS) {
             // -isystem
             for (IncludeDirEntry incDir : includeHandler.getSystemIncludePaths()) {
                 if (incDir.isExistingDirectory()) {
@@ -142,7 +142,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
 
         ClankFileMacroMap macroMap = (ClankFileMacroMap)ppHandler.getMacroMap();
         // -D
-        if (SKIP_COMPILER_SETTINGS) {
+        if (!SKIP_COMPILER_SETTINGS) {
             for (String macro : macroMap.getSystemMacroDefinitions()) {
                 builder.addPredefinedSystemMacroDef(macro);
             }
