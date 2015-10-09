@@ -243,7 +243,7 @@ public final class LibraryManager {
                     // if (res != null && res.isArtificial()) { // TODO: update lib source roots here }
                 } else if (!baseProject.isArtificial()) {
                     res = getLibrary((ProjectImpl) baseProject, resolvedPath.getFileSystem(), folder);
-                    if (res == null && CndUtils.isDebugMode()) {
+                    if (res == null && CndUtils.isDebugMode() && baseProject.isValid() ) {
                         CndUtils.assertTrue(false, "Can not create library; folder=" + folder + " curFile=" + //NOI18N
                                 curFile + " path=" + resolvedPath + " baseProject=" + baseProject); //NOI18N
                     }
@@ -251,7 +251,7 @@ public final class LibraryManager {
                         trace("Library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
                     }
                 } else {
-                    if (CndUtils.isDebugMode()) {
+                    if (CndUtils.isDebugMode() && baseProject.isValid()) {
                         CndUtils.assertTrue(false, "Can not get library for artificial project; folder=" + folder + " curFile=" + //NOI18N
                                 curFile + " path=" + resolvedPath + " baseProject=" + baseProject); //NOI18N
                     }
@@ -403,6 +403,9 @@ public final class LibraryManager {
         LibraryKey libraryKey = new LibraryKey(fs, folder);
         LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
+            if (!project.isValid()) {
+                return null;
+            }
             entry = getOrCreateLibrary(libraryKey);
         }
         if (!entry.containsProject(projectUid)) {
