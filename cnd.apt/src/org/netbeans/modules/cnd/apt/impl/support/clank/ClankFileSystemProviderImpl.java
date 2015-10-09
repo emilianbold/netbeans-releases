@@ -95,7 +95,7 @@ public class ClankFileSystemProviderImpl extends ClangFileSystemProvider {
         return false;
     }
 
-    public static CharSequence getPathFromUrl(CharSequence path) {
+    public static String getPathFromUrl(String path) {
         if (CharSequenceUtils.startsWith(path, RFS_PREFIX)) {
             // examples:
             // rfs://user@host:22/usr/include
@@ -108,7 +108,7 @@ public class ClankFileSystemProviderImpl extends ClangFileSystemProvider {
                 while (pos < path.length() && Character.isDigit(path.charAt(pos))) {
                     pos++;
                 }
-                return path.subSequence(pos, path.length());
+                return path.substring(pos, path.length());
             } else {
                 throw new IllegalArgumentException("The path " + path + " starts with " + RFS_PREFIX + //NOI18N
                         " but does not contain a colon after it"); //NOI18N                

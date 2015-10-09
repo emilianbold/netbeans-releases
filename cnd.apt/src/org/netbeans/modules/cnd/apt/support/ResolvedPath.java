@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -67,6 +68,7 @@ public final class ResolvedPath {
     private final int index;
     
     public ResolvedPath(FileSystem fileSystem, CharSequence folder, CharSequence path, boolean isDefaultSearchPath, int index) {
+        assert CharSequences.isCompact(folder) : "forgot to FilePathCache.getManager().getString(folder)? " + folder;
         this.folder = folder;// should be already shared
         this.fileSystem = fileSystem;
         CndPathUtilities.assertNoUrl(path);
