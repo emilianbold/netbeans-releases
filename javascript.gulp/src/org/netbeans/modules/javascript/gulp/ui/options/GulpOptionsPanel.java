@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.gulp.ui.options;
 
@@ -70,11 +70,10 @@ import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords={"#KW.GulpOptionsPanel"}, location="Html5", tabTitle= "Gulp")
-public class GulpOptionsPanel extends JPanel implements HelpCtx.Provider {
+public class GulpOptionsPanel extends JPanel {
 
     private static final Logger LOGGER = Logger.getLogger(GulpOptionsPanel.class.getName());
 
@@ -128,11 +127,6 @@ public class GulpOptionsPanel extends JPanel implements HelpCtx.Provider {
 
     void fireChange() {
         changeSupport.fireChange();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.javascript.gulp.ui.options.GulpOptionsPanel"); // NOI18N
     }
 
     /**
