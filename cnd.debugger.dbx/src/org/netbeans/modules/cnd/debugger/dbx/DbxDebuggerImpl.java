@@ -1129,7 +1129,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         // tell debuggercore that we're going away
         engineProvider.getDestructor().killEngine();
-
+        
 	// It all ends here
     }
 
@@ -2665,10 +2665,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void shutDown() {
-        if (dbx != null && dbx.connected()) {
-            dbx.disconnect();
+        if (!postedKill) {
+            postKill();
         }
-        kill();
     }
 
 
