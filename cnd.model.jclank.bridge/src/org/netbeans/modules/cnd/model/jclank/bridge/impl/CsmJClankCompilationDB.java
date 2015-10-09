@@ -126,21 +126,21 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
     }
 
     public static ClankCompilationDataBase.Entry createEntry(NativeFileItem nfi) {
-        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(CndFileSystemProvider.fileObjectToUrl(nfi.getFileObject()), null);
+        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(CndFileSystemProvider.toUrl(FSPath.toFSPath(nfi.getFileObject())), null);
 
         builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
 
         for (FSPath fSPath : nfi.getUserIncludePaths()) {
             FileObject fileObject = fSPath.getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
-                builder.addUserIncludePath(CndFileSystemProvider.fileObjectToUrl(fileObject));
+                builder.addUserIncludePath(fSPath.getURL());
             }
         }
         // -isystem
         for (FSPath fSPath : nfi.getSystemIncludePaths()) {
             FileObject fileObject = fSPath.getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
-                builder.addPredefinedSystemIncludePath(CndFileSystemProvider.fileObjectToUrl(fileObject));
+                builder.addPredefinedSystemIncludePath(fSPath.getURL());
             }
         }
 
