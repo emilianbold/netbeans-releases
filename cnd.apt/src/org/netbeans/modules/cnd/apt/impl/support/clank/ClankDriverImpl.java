@@ -124,7 +124,7 @@ public class ClankDriverImpl {
             }
         }        
         try {
-            // TODO: prepare buffers mapping
+            // TODO: prepare buffers mapping in url-like style for remote files;
             // note that for local files no "file://" prefix is added
             String path = CndFileSystemProvider.toUrl(buffer.getFileSystem(), buffer.getAbsolutePath()).toString();
             // prepare params to run preprocessor
@@ -303,11 +303,11 @@ public class ClankDriverImpl {
             if (buffers != null && !buffers.isEmpty()) {
                 result = new HashMap<String, MemoryBuffer>();
                 for (APTFileBuffer buf : buffers) {
-                    String path = buf.getAbsolutePath().toString();
+                    String pathAsUrl = CndFileSystemProvider.toUrl(buf.getFileSystem(), buf.getAbsolutePath()).toString();
                     ClankMemoryBufferImpl mb;
                     try {
-                        mb = ClankMemoryBufferImpl.create(buf);
-                        result.put(path, mb);
+                        mb = ClankMemoryBufferImpl.create(pathAsUrl, buf.getCharBuffer());
+                        result.put(pathAsUrl, mb);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex); //TODO: error processing!!!!
                     }
