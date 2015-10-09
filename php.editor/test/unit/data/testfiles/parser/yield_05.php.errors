@@ -1,5 +1,5 @@
 [[21,27]-Syntax error
  unexpected:	variable '$value'
- expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ], ), :] 21-27:Syntax error
+ expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <=>, <, >, ?:, <<, >>, +, -, *, /, %, '.', ], ), :] 21-27:Syntax error
  unexpected:	variable '$value'
- expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ], ), :
+ expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <=>, <, >, ?:, <<, >>, +, -, *, /, %, '.', ], ), :

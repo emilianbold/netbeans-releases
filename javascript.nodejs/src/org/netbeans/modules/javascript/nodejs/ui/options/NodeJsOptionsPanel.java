@@ -81,11 +81,10 @@ import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords = {"#KW.NodeJsOptionsPanel"}, location = "Html5", tabTitle = "Node.js")
-public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, HelpCtx.Provider {
+public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(NodeJsOptionsPanel.class.getName());
 
@@ -203,11 +202,6 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener, 
     @Override
     public void stateChanged(ChangeEvent e) {
         fireChange();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanel"); // NOI18N
     }
 
     /**
