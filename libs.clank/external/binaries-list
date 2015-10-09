@@ -1,6 +1,6 @@
-#changeset:   15833:7a25911f3a83
+#changeset:   292853:94e815a553de
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Oct 08 21:05:27 2015 +0300
-#summary:     fixing #255804 - AssertionError: already initialized normalized file?
-CE0B5C41FF8F4D91D5E6CDF53B2ABDB87C73080C clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Fri Oct 09 23:32:45 2015 +0300
+#summary:     addfix (increment fs_server version) #255826 - Open Remote File/Project Dialog is empty in certain cases (binary update)
+51AC4960C19CF4C2CCA636765BFBC09A5029BFC5 fs_server-1.0.zip
