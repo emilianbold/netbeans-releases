@@ -70,7 +70,6 @@ import org.llvm.adt.SmallString;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVector;
 import org.llvm.support.raw_ostream;
-import org.llvm.support.sys.path;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl.ArrayBasedAPTTokenStream;
@@ -90,16 +89,15 @@ import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Utilities;
 import static org.clang.basic.ClangGlobals.*;
+import static org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileSystemProviderImpl.RFS_PREFIX;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  *
@@ -133,10 +131,10 @@ public final class ClankPPCallback extends FileInfoCallback {
     private final ClankDriver.ClankPreprocessorCallback delegate;
     private final PreprocHandler ppHandler;
     private final ClankIncludeHandlerImpl includeHandler;
+    private final FileSystem startFileSystem;
     private final ArrayList<ClankFileInfoWrapper> includeStack = new ArrayList<ClankFileInfoWrapper>(16);
     private final ArrayList<Integer> includeHelperStack = new ArrayList<Integer>(16);
     private final CancellableInterrupter interrupter;
-    private final SmallString tokenSpellBuffer = new SmallString(1024);
 
     public ClankPPCallback(PreprocHandler ppHandler,
             raw_ostream traceOS,
@@ -145,6 +143,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         super(traceOS);
         this.ppHandler = ppHandler;
         this.includeHandler = (ClankIncludeHandlerImpl)ppHandler.getIncludeHandler();
+        this.startFileSystem = includeHandler.getStartEntry().getFileSystem();
         // reset include stack;
         // will be regenerated from scratch using onEnter/onExit
         this.includeHandler.resetIncludeStack();
@@ -169,7 +168,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         assert includeHelperStack.size() == includeStack.size();
         final int stacksSize = includeStack.size();
         // find ResolvedPath for #include
-        ResolvedPath resolvedPath = createResolvedPath(getPreprocessor(), directive);
+        ResolvedPath resolvedPath = createResolvedPath(curFile, directive);
         StringRef fileNameSpelling = directive.getFileNameSpelling();
         String spelling = Casts.toCharSequence(fileNameSpelling.data(), fileNameSpelling.size()).toString();
         ClankInclusionDirectiveWrapper inclDirectiveWrapper = new ClankInclusionDirectiveWrapper(directive
@@ -218,51 +217,56 @@ public final class ClankPPCallback extends FileInfoCallback {
         interrupter.updateStateFromDelegate();
     }
 
-    private ResolvedPath createResolvedPath(Preprocessor PP, InclusionDirectiveInfo directive) {
+    private ResolvedPath createResolvedPath(FileInfo curFile, InclusionDirectiveInfo directive) {
         FileEntry fileEntry = directive.getFileEntry();
         if (fileEntry == null) {
             // unresolved #include
             return null;
         }
-        FileSystem fs;
-        String searchPath = Casts.toCharSequence(directive.getSearchPath().data(), directive.getSearchPath().size()).toString();
-        if (searchPath.startsWith(ClankFileSystemProviderImpl.RFS_PREFIX)) {            
-            FileObject fo = CndFileSystemProvider.urlToFileObject(searchPath); //TODO: optimize!
-            if (fo == null) {
+        FileSystem includeFs;
+        String includedAbsPath;
+        String searchedAbsPath;
+        // search path might start with rfs for remote
+        String searchPathUrl = Casts.toJavaString(directive.getSearchPath().data(), directive.getSearchPath().size());
+        // file path might start with rfs for remote
+        String fileEntryPathUrl = Casts.toJavaString(fileEntry.getName());
+        assert searchPathUrl.isEmpty() || (fileEntryPathUrl.startsWith(RFS_PREFIX) == searchPathUrl.startsWith(RFS_PREFIX)) :
+                "local file resolved in remote folder " + searchPathUrl + ":\n" + fileEntry; // NOI18N
+        if (searchPathUrl.startsWith(RFS_PREFIX)) {   
+            includeFs = CndFileSystemProvider.urlToFileSystem(searchPathUrl);
+            if (includeFs == null) {
+                Exceptions.printStackTrace(new IllegalStateException("cannot resolve FS for " + searchPathUrl + " from " + curFile));
                 return null;
             }
-            searchPath = fo.getPath();
-            try {
-                fs = fo.getFileSystem();
-            } catch (FileStateInvalidException ex) {
-                fs = CndFileSystemProvider.urlToFileSystem(searchPath);
-                Exceptions.printStackTrace(ex); // should never be the case
+            searchedAbsPath = ClankFileSystemProviderImpl.getPathFromUrl(searchPathUrl);
+            includedAbsPath = ClankFileSystemProviderImpl.getPathFromUrl(fileEntryPathUrl);
+            if (CndUtils.isDebugMode()) { 
+                FileSystem includedFileFS = CndFileSystemProvider.urlToFileSystem(fileEntryPathUrl);
+                assert includeFs == includedFileFS : "search dir fs=" + includeFs + "\n vs. file=" + fileEntryPathUrl + "\nfs=" + includedFileFS;
             }
         } else {
-            fs = includeHandler.getStartEntry().getFileSystem();
+            includeFs = startFileSystem;
+            searchedAbsPath = searchPathUrl;
+            includedAbsPath = fileEntryPathUrl;
         }
-        char$ptr fleEntryName = fileEntry.getName();
-        String strFileEntryPath = Casts.toCharSequence(fleEntryName).toString();
-        strFileEntryPath = CndFileUtils.normalizeAbsolutePath(fs, strFileEntryPath);
-        if (directive.getSearchPath().empty()) {
+        // FIXME: remove normalization after updated binary
+        includedAbsPath = CndFileUtils.normalizeAbsolutePath(includeFs, includedAbsPath);
+        searchedAbsPath = CndFileUtils.normalizeAbsolutePath(includeFs, searchedAbsPath);
+        assert CndPathUtilities.isPathAbsolute(includedAbsPath) : "expected to be abs path [" + includedAbsPath + "]";
+        assert CndPathUtilities.isPathAbsolute(searchedAbsPath) : "expected to be abs path [" + searchedAbsPath + "]";
+        CndUtils.assertNormalized(includeFs, includedAbsPath);
+        CndUtils.assertNormalized(includeFs, searchedAbsPath);
+        if (searchedAbsPath.isEmpty()) {
             // was resolved as absolute path (i.e -include directive)
-            CharSequence parent = CndPathUtilities.getDirName(strFileEntryPath);
-            parent = ClankFileSystemProviderImpl.getPathFromUrl(parent);
-            return new ResolvedPath(fs, FilePathCache.getManager().getString(parent), strFileEntryPath, false, 0);
+            String parent = CndPathUtilities.getDirName(includedAbsPath);
+            return new ResolvedPath(includeFs, FilePathCache.getManager().getString(parent), includedAbsPath, false, 0);
         } else {
-            CharSequence pathCharSeq = ClankFileSystemProviderImpl.getPathFromUrl(strFileEntryPath);
-            pathCharSeq = CharSequences.create(pathCharSeq);
-            assert CndPathUtilities.isPathAbsolute(searchPath) : "expected to be abs path [" + searchPath + "]";
-            CharSequence folder = CndFileUtils.normalizeAbsolutePath(fs, searchPath);
-            folder = ClankFileSystemProviderImpl.getPathFromUrl(folder);
-            folder = FilePathCache.getManager().getString(CharSequences.create(folder));            
-            boolean isDefaultSearchPath = false;
-            if (!includeStack.isEmpty()) {
-                StringRef ownerName = new StringRef(includeStack.get(0).current.getName());
-                StringRef ownerDir = path.parent_path(ownerName);
-                isDefaultSearchPath = directive.getSearchPath().equals(ownerDir);
-            }
-            return new ResolvedPath(fs, folder, pathCharSeq, isDefaultSearchPath, 0);
+            assert curFile != null;
+            // FIXME: now we consider search as default when included file is in the same foldler as includer
+            // but it doesn't handle situaiton like #include "../dir/file.h" 
+            String currentFileFolderUrl = CndPathUtilities.getDirName(Casts.toJavaString(curFile.getName()));
+            boolean isDefaultSearchPath = currentFileFolderUrl.equals(searchPathUrl);
+            return new ResolvedPath(includeFs, FilePathCache.getManager().getString(searchedAbsPath), includedAbsPath, isDefaultSearchPath, 0);
         }
     }
 
@@ -739,7 +743,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             if (current.getInclusionDirective() == null) {
                 assert current.isMainFile() : "forgot to set up include?" + current;
                 this.includeDirective = null;
-                this.filePath = toJavaString(current.getName());
+                this.filePath = ClankFileSystemProviderImpl.getPathFromUrl(toJavaString(current.getName()));
             } else {
                 this.includeDirective = (ClankInclusionDirectiveWrapper)current.getInclusionDirective().getAnnotation();
                 assert this.includeDirective != null : "forgot to set up include?" + current;
@@ -878,7 +882,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public CharSequence getFilePath() {
-            return ClankFileSystemProviderImpl.getPathFromUrl(filePath);
+            return filePath;
         }
 
         @Override
