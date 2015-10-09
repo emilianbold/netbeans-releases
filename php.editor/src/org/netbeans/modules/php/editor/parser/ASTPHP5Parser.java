@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
 /** CUP v0.11a beta 20060608 generated parser.
   * @version Thu Oct 08 11:23:47 CEST 2015
   */
+@org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP", "MS_PKGPROTECT"})
 public class ASTPHP5Parser extends java_cup.runtime.lr_parser {
 
   /** Default constructor. */
