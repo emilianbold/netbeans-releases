@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.bugtracking;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -55,7 +57,10 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.Timer;
 import org.netbeans.api.keyring.Keyring;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
@@ -87,20 +92,36 @@ public class RepositoryRegistry {
     
     private static RepositoryRegistry instance;
     private final Semaphore repositorySemaphore = new Semaphore(1);
-
+    
     //@GuardedBy("repositorySemaphore")
     private RepositoriesMap repositories;
-        
     private RepositoryRegistry() {
         lockRepositories();
         final long t = System.currentTimeMillis();
-        RequestProcessor.getDefault().post(new Runnable() {
+        new RequestProcessor(RepositoryRegistry.class.getName()).post(new Runnable() {
             @Override
             public void run() {
+                final ProgressHandle[] ph = new ProgressHandle[1];
+                final Timer timer[] = new Timer[1];
+                timer[0] = new Timer(800, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if(repositories == null) {
+                            timer[0].stop();
+                            ph[0] = ProgressHandleFactory.createSystemHandle("Initializing Bugtracking repositories");
+                            ph[0].start();
+                        }
+                    }
+                });
+                timer[0].start();
                 try {
                     loadRepositories();
                 } finally {
                     releaseRepositoriesLock();
+                    if(ph[0] != null) {
+                        ph[0].finish();
+                    }
+                    timer[0].stop();
                     BugtrackingManager.LOG.log(Level.INFO, "Loading stored repositories took {0} millis.", (System.currentTimeMillis() - t));
                 }
             }
