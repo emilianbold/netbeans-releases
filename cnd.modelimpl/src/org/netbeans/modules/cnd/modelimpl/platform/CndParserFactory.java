@@ -203,7 +203,9 @@ public final class CndParserFactory extends ParserFactory {
                 }
             }
             if (oldFile != null && file != oldFile) {
-                CsmStandaloneFileProvider.getDefault().notifyClosed(oldFile);
+                if (!CsmStandaloneFileProvider.getDefault().isStandalone(file)) {
+                    CsmStandaloneFileProvider.getDefault().notifyClosed(oldFile);
+                }
             }
         }
 
