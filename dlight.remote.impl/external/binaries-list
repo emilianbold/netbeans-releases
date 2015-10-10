@@ -1,7 +1,6 @@
 #source change:
-#changeset:   292838:eedfdc7b6a83
-#tag:         tip
+#changeset:   292853:94e815a553de
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Fri Oct 09 20:40:08 2015 +0300
-#summary:     fixied #255826 - Open Remote File/Project Dialog is empty in certain cases
-4E7F5A2B212F9261FDF4B5D2B2C54EE2438CC98E fs_server-1.0.zip
+#date:        Fri Oct 09 23:32:45 2015 +0300
+#summary:     addfix (increment fs_server version) #255826 - Open Remote File/Project Dialog is empty in certain cases
+51AC4960C19CF4C2CCA636765BFBC09A5029BFC5 fs_server-1.0.zip
