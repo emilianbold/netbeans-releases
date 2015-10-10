@@ -46,6 +46,7 @@ import com.oracle.truffle.sl.SLLanguage;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
+import java.net.URL;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -59,6 +60,12 @@ import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
 
 public class DebugSLTest extends NbTestCase {
     private DebuggerManager dm = DebuggerManager.getDebuggerManager();
@@ -123,6 +130,54 @@ public class DebugSLTest extends NbTestCase {
             SourcePosition sourcePosition = topFrame.getSourcePosition();
             assertEquals("Bad source", "Meaning of world.sl", sourcePosition.getSource().getName());
             assertEquals("Bad line", 1, sourcePosition.getLine());
+            assertEquals("Bad method name", "main", topFrame.getMethodName());
+            
+            support.doContinue();
+            support.waitState(JPDADebugger.STATE_DISCONNECTED);
+        } finally {
+            if (support != null) {
+                support.doFinish();
+            }
+        }
+    }
+
+    public void testBreakpointsInSL() throws Exception {
+        try {
+            JPDASupport.removeAllBreakpoints();
+            org.netbeans.api.debugger.jpda.Utils.BreakPositions bp = org.netbeans.api.debugger.jpda.Utils.getBreakPositions(
+                sourceRoot
+                + "org/netbeans/modules/debugger/jpda/truffle/testapps/TestApp.sl");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
+            // An ugly way to transform the Java breakpoint into JavaScript breakpoint, used in SL.
+            // TODO: No breakpoints suitable for use in Truffle guest languages exist yet (only JavaScript).
+            FileObject fo = URLMapper.findFileObject(new URL(lb.getURL()));
+            Line line = DataObject.find(fo).getCookie(EditorCookie.class).getLineSet().getCurrent(lb.getLineNumber());
+            dm.addBreakpoint(new JSLineBreakpoint(line));
+            support = JPDASupport.attach("org.netbeans.modules.debugger.jpda.truffle.testapps.SLAppFromFile",
+                new String[] {
+                    sourceRoot + "org/netbeans/modules/debugger/jpda/truffle/testapps/TestApp.sl"
+                },
+                new File[] {
+                    new File(System.getProperty("truffle.jar")),
+                    new File(System.getProperty("sl.jar")),
+                    new File(System.getProperty("junit.jar")),
+                }
+            );
+            support.waitState(JPDADebugger.STATE_STOPPED);
+            
+            final JPDADebugger debugger = support.getDebugger();
+            CallStackFrame frame = debugger.getCurrentCallStackFrame();
+            assertNotNull(frame);
+            // Check that frame is in the Truffle guest language
+            assertEquals("Unexpected stratum", TruffleStrataProvider.TRUFFLE_STRATUM, frame.getDefaultStratum());
+            
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            assertNotNull("Missing CurrentPCInfo", currentPCInfo);
+            TruffleStackFrame topFrame = currentPCInfo.getTopFrame();
+            assertNotNull("No top frame", topFrame);
+            SourcePosition sourcePosition = topFrame.getSourcePosition();
+            assertEquals("Bad source", "TestApp.sl", sourcePosition.getSource().getName());
+            assertEquals("Bad line", lb.getLineNumber() + 1 /*(?)*/, sourcePosition.getLine());
             assertEquals("Bad method name", "main", topFrame.getMethodName());
             
             support.doContinue();
