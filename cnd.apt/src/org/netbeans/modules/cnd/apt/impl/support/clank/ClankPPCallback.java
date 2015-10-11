@@ -226,8 +226,9 @@ public final class ClankPPCallback extends FileInfoCallback {
         FileSystem includeFs;
         String includedAbsPath;
         String searchedAbsPath;
+        int searchPathSize = directive.getSearchPath().size();
         // search path might start with rfs for remote
-        String searchPathUrl = Casts.toJavaString(directive.getSearchPath().data(), directive.getSearchPath().size());
+        String searchPathUrl = Casts.toJavaString(directive.getSearchPath().data(), searchPathSize);
         // file path might start with rfs for remote
         String fileEntryPathUrl = Casts.toJavaString(fileEntry.getName());
         assert searchPathUrl.isEmpty() || (fileEntryPathUrl.startsWith(RFS_PREFIX) == searchPathUrl.startsWith(RFS_PREFIX)) :
@@ -251,12 +252,13 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
         // FIXME: remove normalization after updated binary
         includedAbsPath = CndFileUtils.normalizeAbsolutePath(includeFs, includedAbsPath);
-        searchedAbsPath = CndFileUtils.normalizeAbsolutePath(includeFs, searchedAbsPath);
+        assert (searchPathSize == 0) == (searchedAbsPath.length() == 0) : "unexpected searchedAbsPath " + searchedAbsPath + " from " + directive.getSearchPath();
+        searchedAbsPath = (searchPathSize == 0) ? searchedAbsPath : CndFileUtils.normalizeAbsolutePath(includeFs, searchedAbsPath);
         assert CndPathUtilities.isPathAbsolute(includedAbsPath) : "expected to be abs path [" + includedAbsPath + "]";
         assert CndPathUtilities.isPathAbsolute(searchedAbsPath) : "expected to be abs path [" + searchedAbsPath + "]";
         CndUtils.assertNormalized(includeFs, includedAbsPath);
         CndUtils.assertNormalized(includeFs, searchedAbsPath);
-        if (searchedAbsPath.isEmpty() || (curFile == null || !curFile.isFile())) {
+        if (searchedAbsPath.isEmpty()) {
             // was resolved as absolute path (i.e -include directive)
             String parent = CndPathUtilities.getDirName(includedAbsPath);
             return new ResolvedPath(includeFs, FilePathCache.getManager().getString(parent), includedAbsPath, false, 0);
