@@ -256,7 +256,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         assert CndPathUtilities.isPathAbsolute(searchedAbsPath) : "expected to be abs path [" + searchedAbsPath + "]";
         CndUtils.assertNormalized(includeFs, includedAbsPath);
         CndUtils.assertNormalized(includeFs, searchedAbsPath);
-        if (searchedAbsPath.isEmpty()) {
+        if (searchedAbsPath.isEmpty() || (curFile == null || !curFile.isFile())) {
             // was resolved as absolute path (i.e -include directive)
             String parent = CndPathUtilities.getDirName(includedAbsPath);
             return new ResolvedPath(includeFs, FilePathCache.getManager().getString(parent), includedAbsPath, false, 0);
