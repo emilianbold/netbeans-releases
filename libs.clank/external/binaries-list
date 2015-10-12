@@ -1,6 +1,6 @@
-#changeset:   15795:779b6ea5c5d1
+#changeset:   15843:326e0c65d2a7
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Oct 01 22:37:38 2015 +0300
-#summary:     fixing #255482: inaccuracy tests: unexpected tokens in Boost
-36E4640519B7F44D81F3DAE57DE7B4407C09A382 clank_0.3.6.zip
+#date:        Mon Oct 12 10:42:09 2015 +0300
+#summary:     fixing #255804 - AssertionError: already initialized normalized file?
+2FA6B27DB2ADEB7496346E7FB3328BBEAAB783B5 clank_0.3.6.zip
