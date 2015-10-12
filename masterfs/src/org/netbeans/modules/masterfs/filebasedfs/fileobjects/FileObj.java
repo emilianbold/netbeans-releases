@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
 import java.util.logging.Level;
@@ -493,11 +494,10 @@ public class FileObj extends BaseFileObj {
                 if (file.exists()) {
                     lastMod = 1;
                 }
-            } catch (Throwable t) {
-                // E.g. IOException or InvalidPathException, or anything else
-                // that could be thrown for an invalid file.
-                LOGGER.log(Level.FINE, null, t);
+            } catch (IOException ex) {
                 // lastMod stays 0, the file is invalid.
+            } catch (InvalidPathException ex) {
+                // lastMod stays 0, the path is invalid.
             }
         }
         setLastModified(lastMod, file, readOnly);
