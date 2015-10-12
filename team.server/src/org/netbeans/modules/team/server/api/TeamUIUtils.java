@@ -50,13 +50,14 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
+import javax.swing.ListCellRenderer;
 import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.team.server.LoginTask;
 import org.netbeans.modules.team.server.TeamServerCombo;
 import org.netbeans.modules.team.server.TeamServerTopComponent;
 import org.netbeans.modules.team.server.LoginPanel;
+import org.netbeans.modules.team.server.TeamServerListRenderer;
 import org.netbeans.modules.team.server.TeamView;
-import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.filesystems.FileUtil;
@@ -132,6 +133,10 @@ public final class TeamUIUtils {
     
     public static JComboBox createTeamCombo (TeamServerProvider forProvider, boolean alwaysVisible) {
         return new TeamServerCombo(forProvider, alwaysVisible);
+    }
+    
+    public static ListCellRenderer createTeamServerListRenderer() {
+        return new TeamServerListRenderer();
     }
     
     public static void setSelectedServer (TeamServer teamServer) {

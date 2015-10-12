@@ -479,7 +479,7 @@ public class ChatTopComponent extends TopComponent {
                 chatsMousePressed(evt);
             }
         });
-        chats.addTab(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.contactList.TabConstraints.tabTitle", new Object[] {}), contactList); // NOI18N
+        chats.addTab("+", contactList);
 
         loginScreen.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -565,14 +565,14 @@ public class ChatTopComponent extends TopComponent {
             .addGroup(initPanelLayout.createSequentialGroup()
                 .addGap(5, 5, 5)
                 .addComponent(initLabel)
-                .addContainerGap(263, Short.MAX_VALUE))
+                .addContainerGap(278, Short.MAX_VALUE))
         );
         initPanelLayout.setVerticalGroup(
             initPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(initPanelLayout.createSequentialGroup()
                 .addGap(5, 5, 5)
                 .addComponent(initLabel)
-                .addContainerGap(280, Short.MAX_VALUE))
+                .addContainerGap(279, Short.MAX_VALUE))
         );
 
         add(initPanel, java.awt.BorderLayout.CENTER);
