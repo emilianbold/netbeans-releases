@@ -251,6 +251,11 @@ public class NodeExecutable {
             String detectedVersion = versionOutputProcessorFactory.getVersion();
             if (detectedVersion != null) {
                 Version version = Version.fromDottedNotationWithFallback(detectedVersion);
+                // #255872 - for node.js, use latest 0.12
+                if (!isIojs()
+                        && !Integer.valueOf("0").equals(version.getMajor())) { // NOI18N
+                    version = Version.fromDottedNotationWithFallback("0.12.7"); // NOI18N
+                }
                 VERSIONS.put(nodePath, version);
                 return version;
             }
