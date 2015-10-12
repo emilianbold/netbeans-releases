@@ -485,8 +485,6 @@ public class FileObj extends BaseFileObj {
                 if (lastMod == 0) {
                     lastMod = 1;
                 }
-            } catch (IOException ex) {
-                // lastMod stays 0, the file is invalid.
             } catch (UnsupportedOperationException ex) {
                 if (file.exists()) {
                     lastMod = 1;
@@ -495,6 +493,11 @@ public class FileObj extends BaseFileObj {
                 if (file.exists()) {
                     lastMod = 1;
                 }
+            } catch (Throwable t) {
+                // E.g. IOException or InvalidPathException, or anything else
+                // that could be thrown for an invalid file.
+                LOGGER.log(Level.FINE, null, t);
+                // lastMod stays 0, the file is invalid.
             }
         }
         setLastModified(lastMod, file, readOnly);
