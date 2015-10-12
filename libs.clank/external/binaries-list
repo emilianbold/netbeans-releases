@@ -1,6 +1,6 @@
-#changeset:   15833:7a25911f3a83
+#changeset:   15843:326e0c65d2a7
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Oct 08 21:05:27 2015 +0300
+#date:        Mon Oct 12 10:42:09 2015 +0300
 #summary:     fixing #255804 - AssertionError: already initialized normalized file?
-CE0B5C41FF8F4D91D5E6CDF53B2ABDB87C73080C clank_0.3.6.zip
+2FA6B27DB2ADEB7496346E7FB3328BBEAAB783B5 clank_0.3.6.zip

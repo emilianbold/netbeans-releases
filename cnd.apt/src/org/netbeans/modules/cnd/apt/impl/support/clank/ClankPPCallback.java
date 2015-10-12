@@ -250,12 +250,14 @@ public final class ClankPPCallback extends FileInfoCallback {
             searchedAbsPath = searchPathUrl;
             includedAbsPath = fileEntryPathUrl;
         }
-        // FIXME: remove normalization after updated binary
-        includedAbsPath = CndFileUtils.normalizeAbsolutePath(includeFs, includedAbsPath);
-        assert (searchPathSize == 0) == (searchedAbsPath.length() == 0) : "unexpected searchedAbsPath " + searchedAbsPath + " from " + directive.getSearchPath();
-        searchedAbsPath = (searchPathSize == 0) ? searchedAbsPath : CndFileUtils.normalizeAbsolutePath(includeFs, searchedAbsPath);
         assert CndPathUtilities.isPathAbsolute(includedAbsPath) : "expected to be abs path [" + includedAbsPath + "]";
         assert (searchPathSize == 0) || CndPathUtilities.isPathAbsolute(searchedAbsPath) : "expected to be abs path [" + searchedAbsPath + "]";
+        assert (searchPathSize == 0) == (searchedAbsPath.length() == 0) : "unexpected searchedAbsPath " + searchedAbsPath + " from " + directive.getSearchPath();
+        // in NB VFS mode all paths are already normalized
+        if (!APTTraceFlags.ALWAYS_USE_NB_FS) {
+            includedAbsPath = CndFileUtils.normalizeAbsolutePath(includeFs, includedAbsPath);
+            searchedAbsPath = (searchPathSize == 0) ? searchedAbsPath : CndFileUtils.normalizeAbsolutePath(includeFs, searchedAbsPath);
+        }
         CndUtils.assertNormalized(includeFs, includedAbsPath);
         if (searchedAbsPath.isEmpty()) {
             // was resolved as absolute path (i.e -include directive)
