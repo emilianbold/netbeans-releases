@@ -1,6 +1,6 @@
-#changeset:   15843:326e0c65d2a7
+#changeset:   15844:15715b986e86
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Oct 12 10:42:09 2015 +0300
-#summary:     fixing #255804 - AssertionError: already initialized normalized file?
-2FA6B27DB2ADEB7496346E7FB3328BBEAAB783B5 clank_0.3.6.zip
+#date:        Mon Oct 12 16:17:56 2015 +0300
+#summary:     fixing #253863 - [newcodemodel] broken code model in file if file has been excluded from project
+ED4ABFF708CC4F1A25E135AD206D1BAA4F227E29 clank_0.3.6.zip
