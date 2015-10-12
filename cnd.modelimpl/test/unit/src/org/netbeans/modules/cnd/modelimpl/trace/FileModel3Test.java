@@ -74,19 +74,11 @@ public class FileModel3Test extends TraceModelTestBase {
     }    
 
     public void test_cross_inclusionA() throws Exception {
-        if (APTTraceFlags.USE_CLANK) {
-            performTestWithForcedPathSeparator("cross_inclusionA.h", '/');
-        } else {
-            performTest("cross_inclusionA.h");
-        }
+        performTest("cross_inclusionA.h");
     }    
 
     public void test_cross_inclusionB() throws Exception {
-        if (APTTraceFlags.USE_CLANK) {
-            performTestWithForcedPathSeparator("cross_inclusionB.h", '/');
-        } else {
-            performTest("cross_inclusionB.h");
-        }
+        performTest("cross_inclusionB.h");
     }    
     
     public void test_delay() throws Exception {
