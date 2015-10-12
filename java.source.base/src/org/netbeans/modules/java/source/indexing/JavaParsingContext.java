@@ -122,6 +122,10 @@ final class JavaParsingContext {
             if (compilePath == null) {
                 compilePath = ClassPath.EMPTY;
             }
+            ClassPath moduleCompilePath = ClassPath.getClassPath(ctx.getRoot(), JavaClassPathConstants.MODULE_COMPILE_PATH);
+            if (moduleCompilePath == null) {
+                moduleCompilePath = ClassPath.EMPTY;
+            }
             ClassPath srcPath = ClassPath.getClassPath(ctx.getRoot(), ClassPath.SOURCE);
             if (srcPath == null) {
                 srcPath = ClassPath.EMPTY;
@@ -130,6 +134,7 @@ final class JavaParsingContext {
                 bootPath,
                 moduleBootPath,
                 compilePath,
+                moduleCompilePath,
                 srcPath,
                 null,
                 true,
@@ -141,12 +146,12 @@ final class JavaParsingContext {
         }
     }
 
-    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath moduleBootPath, final ClassPath compilePath, final ClassPath sourcePath,
+    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath moduleBootPath, final ClassPath compilePath, final ClassPath moduleCompilePath, final ClassPath sourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException {
         ctx = context;
         rootNotNeeded = false;
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
-        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, moduleBootPath, compilePath, sourcePath,
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, moduleBootPath, compilePath, moduleCompilePath, sourcePath,
                 filter, true, context.isSourceForBinaryRootIndexing(),
                 !virtualSources.isEmpty(), context.checkForEditorModifications());
         registerVirtualSources(cpInfo, virtualSources);

@@ -160,7 +160,8 @@ public class JavaCustomIndexer extends CustomIndexer {
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
             final ClassPath moduleBootPath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_BOOT_PATH);
             final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);                                    
-            if (sourcePath == null || bootPath == null || moduleBootPath == null || compilePath == null) {
+            final ClassPath moduleCompilePath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_COMPILE_PATH);
+            if (sourcePath == null || bootPath == null || moduleBootPath == null || compilePath == null || moduleCompilePath == null) {
                 txCtx.get(CacheAttributesTransaction.class).setInvalid(true);
                 JavaIndex.LOG.log(Level.WARNING, "Ignoring root with no ClassPath: {0}", FileUtil.getFileDisplayName(root)); // NOI18N
                 return;
@@ -183,6 +184,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             bootPath,
                             moduleBootPath,
                             compilePath,
+                            moduleCompilePath,
                             sourcePath,
                             Collections.<CompileTuple>emptySet());
                     try {
@@ -207,7 +209,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 final JavaParsingContext javaContext;
                 try {
                     //todo: Ugly hack, the ClassIndexManager.createUsagesQuery has to be called before the root is set to dirty mode.
-                    javaContext = new JavaParsingContext(context, bootPath, moduleBootPath, compilePath, sourcePath, virtualSourceTuples);
+                    javaContext = new JavaParsingContext(context, bootPath, moduleBootPath, compilePath, moduleCompilePath, sourcePath, virtualSourceTuples);
                 } finally {
                     JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                 }

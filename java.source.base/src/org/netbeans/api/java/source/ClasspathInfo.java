@@ -102,6 +102,7 @@ public final class ClasspathInfo {
     private final ClassPath bootClassPath;
     private final ClassPath moduleBootPath;
     private final ClassPath compileClassPath;
+    private final ClassPath moduleCompilePath;
     private final ClassPath cachedAptSrcClassPath;
     private final ClassPath cachedSrcClassPath;
     private final ClassPath cachedBootClassPath;
@@ -124,6 +125,7 @@ public final class ClasspathInfo {
     private ClasspathInfo(final @NonNull ClassPath bootCp,
                           final @NonNull ClassPath moduleBootP,
                           final @NonNull ClassPath compileCp,
+                          final @NonNull ClassPath moduleCompileP,
                           final @NullAllowed ClassPath srcCp,
                           final @NullAllowed JavaFileFilterImplementation filter,
                           final boolean backgroundCompilation,
@@ -136,6 +138,7 @@ public final class ClasspathInfo {
         this.bootClassPath = bootCp;
         this.moduleBootPath = moduleBootP;
         this.compileClassPath = compileCp;
+        this.moduleCompilePath = moduleCompileP;
         this.listenerList = new ChangeSupport(this);
         this.cachedBootClassPath = CacheClassPath.forBootPath(this.bootClassPath,backgroundCompilation);
         this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath,backgroundCompilation);
@@ -272,7 +275,7 @@ public final class ClasspathInfo {
             @NullAllowed final ClassPath sourcePath) {
         Parameters.notNull("bootPath", bootPath);       //NOI18N
         Parameters.notNull("classPath", classPath);     //NOI18N
-        return create (bootPath, ClassPath.EMPTY, classPath, sourcePath, null, false, false, false, true);
+        return create (bootPath, ClassPath.EMPTY, classPath, ClassPath.EMPTY, sourcePath, null, false, false, false, true);
     }
 
     @NonNull
@@ -296,8 +299,12 @@ public final class ClasspathInfo {
         if (compilePath == null) {
             compilePath = ClassPath.EMPTY;
         }
+        ClassPath moduleCompilePath = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_COMPILE_PATH);
+        if (moduleCompilePath == null) {
+            moduleCompilePath = ClassPath.EMPTY;
+        }
         ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        return create (bootPath, moduleBootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+        return create (bootPath, moduleBootPath, compilePath, moduleCompilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
 
     @NonNull
@@ -305,13 +312,14 @@ public final class ClasspathInfo {
             @NonNull final ClassPath bootPath,
             @NonNull final ClassPath moduleBootPath,
             @NonNull final ClassPath classPath,
+            @NonNull final ClassPath moduleCompilePath,
             @NullAllowed final ClassPath sourcePath,
             @NullAllowed final JavaFileFilterImplementation filter,
             final boolean backgroundCompilation,
             final boolean ignoreExcludes,
             final boolean hasMemoryFileManager,
             final boolean useModifiedFiles) {
-        return new ClasspathInfo(bootPath, moduleBootPath, classPath, sourcePath,
+        return new ClasspathInfo(bootPath, moduleBootPath, classPath, moduleCompilePath, sourcePath,
                 filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
 
@@ -379,6 +387,7 @@ public final class ClasspathInfo {
         final SiblingSource siblings = SiblingSupport.create();
         final ProxyFileManager.Configuration cfg = ProxyFileManager.Configuration.create(
             moduleBootPath,
+            moduleCompilePath,
             cachedBootClassPath,
             cachedCompileClassPath,
             cachedSrcClassPath,
@@ -464,13 +473,14 @@ public final class ClasspathInfo {
         public ClasspathInfo create (final ClassPath bootPath,
                 final ClassPath moduleBootPath,
                 final ClassPath classPath,
+                final ClassPath moduleClassPath,
                 final ClassPath sourcePath,
                 final JavaFileFilterImplementation filter,
                 final boolean backgroundCompilation,
                 final boolean ignoreExcludes,
                 final boolean hasMemoryFileManager,
                 final boolean useModifiedFiles) {
-            return ClasspathInfo.create(bootPath, moduleBootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+            return ClasspathInfo.create(bootPath, moduleBootPath, classPath, moduleClassPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
         }
 
         @Override

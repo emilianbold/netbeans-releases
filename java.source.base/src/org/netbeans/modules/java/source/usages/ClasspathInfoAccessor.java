@@ -92,6 +92,7 @@ public abstract class ClasspathInfoAccessor {
     public abstract ClasspathInfo create (ClassPath bootPath,
             ClassPath moduleBootPath,
             ClassPath compilePath,
+            ClassPath moduleCompilePath,
             ClassPath sourcePath,
             JavaFileFilterImplementation filter,
             boolean backgroundCompilation,

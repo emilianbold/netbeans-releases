@@ -596,6 +596,7 @@ public final class ProxyFileManager implements JavaFileManager {
 
         private final CachingArchiveProvider cap;
         private final ClassPath moduleBoot;
+        private final ClassPath moduleCompile;
         private final ClassPath bootCached;
         private final ClassPath compiledCached;
         private final ClassPath srcCached;
@@ -614,6 +615,7 @@ public final class ProxyFileManager implements JavaFileManager {
 
         private Configuration(
                 @NonNull final ClassPath moduleBoot,
+                @NonNull final ClassPath moduleCompile,
                 @NonNull final ClassPath bootCached,
                 @NonNull final ClassPath compiledCached,
                 @NonNull final ClassPath srcCached,
@@ -623,6 +625,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 @NonNull final FileManagerTransaction fmTx,
                 @NonNull final ProcessorGenerated processorGeneratedFiles) {
             assert moduleBoot != null;
+            assert moduleCompile != null;
             assert bootCached != null;
             assert compiledCached != null;
             assert srcCached != null;
@@ -633,6 +636,7 @@ public final class ProxyFileManager implements JavaFileManager {
             assert processorGeneratedFiles != null;
             this.cap = CachingArchiveProvider.getDefault();
             this.moduleBoot = moduleBoot;
+            this.moduleCompile = moduleCompile;
             this.bootCached = bootCached;
             this.compiledCached = compiledCached;
             this.srcCached = srcCached;
@@ -860,7 +864,7 @@ public final class ProxyFileManager implements JavaFileManager {
             if (emitted[USER_MODULES] == null) {
                 emitted[USER_MODULES] = new ModuleFileManager(
                     cap,
-                    new UserModuleProvider(compiledCached),
+                    new UserModuleProvider(moduleCompile),
                     true);
             }
             return emitted[USER_MODULES];
@@ -869,6 +873,7 @@ public final class ProxyFileManager implements JavaFileManager {
         @NonNull
         public static Configuration create (
                 @NonNull final ClassPath moduleBoot,
+                @NonNull final ClassPath moduleCompile,
                 @NonNull final ClassPath bootCached,
                 @NonNull final ClassPath compiledCached,
                 @NonNull final ClassPath srcCached,
@@ -879,6 +884,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 @NonNull final ProcessorGenerated processorGeneratedFiles) {
             return new Configuration(
                 moduleBoot,
+                moduleCompile,
                 bootCached,
                 compiledCached,
                 srcCached,

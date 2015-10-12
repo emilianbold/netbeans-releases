@@ -87,7 +87,7 @@ final class UserModuleProvider implements ModuleFileManager.ModuleProvider {
                 })
                 .filter((fo) -> fo != null)
                 .forEach((moduleInfo) -> {
-                    final URL modulePathRoot = moduleInfo.getParent().getParent().toURL();
+                    final URL modulePathRoot = moduleInfo.getParent().toURL();
                     Set<Location> modules = roots.get(modulePathRoot);
                     if (modules == null) {
                         modules = new HashSet<>();
