@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.server.ui.share;
+package org.netbeans.modules.odcs.ui.share;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -55,9 +55,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.queries.VersioningQuery;
+import org.netbeans.modules.odcs.ui.Utilities;
+import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.ide.spi.IDEProject;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
-import org.netbeans.modules.team.server.Utilities;
 import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
@@ -193,7 +194,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
                 if (!anyVersioned) {
                     item.setVisible(true);
                 }
-                Utilities.getRequestProcessor().post(new Runnable() {
+                Utils.getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
                         boolean anyVersioned = false;

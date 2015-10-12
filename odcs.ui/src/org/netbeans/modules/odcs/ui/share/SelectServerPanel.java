@@ -39,10 +39,10 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.server.ui.share;
+package org.netbeans.modules.odcs.ui.share;
 
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.team.server.TeamServerListRenderer;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 
@@ -64,7 +64,7 @@ public class SelectServerPanel extends javax.swing.JPanel {
             }
         }
         serverCombo.setModel(model);
-        serverCombo.setRenderer(new TeamServerListRenderer());
+        serverCombo.setRenderer(TeamUIUtils.createTeamServerListRenderer());
     }
 
     TeamServer getSelectedServer () {
