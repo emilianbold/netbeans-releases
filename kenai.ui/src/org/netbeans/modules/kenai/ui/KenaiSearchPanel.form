@@ -43,7 +43,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
       <SubComponents>
-        <Component class="org.netbeans.modules.form.InvalidComponent" name="searchTextField">
+        <Component class="org.netbeans.modules.kenai.ui.SearchField" name="searchTextField">
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SearchField(kenai);"/>
           </AuxValues>
