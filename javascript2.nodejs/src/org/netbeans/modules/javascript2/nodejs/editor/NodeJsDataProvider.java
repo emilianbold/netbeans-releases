@@ -155,7 +155,7 @@ public class NodeJsDataProvider {
     
     private NodeJsDataProvider(Project project) {
         this.loadingStarted = false;
-        this.isSupportEnabled = false;
+        this.isSupportEnabled = project == null;
         this.docFolder = null;
         if (project != null) {
             NodeJsSupport support = null;
