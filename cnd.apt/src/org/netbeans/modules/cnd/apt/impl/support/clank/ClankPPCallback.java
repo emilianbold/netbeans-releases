@@ -250,19 +250,21 @@ public final class ClankPPCallback extends FileInfoCallback {
             searchedAbsPath = searchPathUrl;
             includedAbsPath = fileEntryPathUrl;
         }
-        // FIXME: remove normalization after updated binary
-        includedAbsPath = CndFileUtils.normalizeAbsolutePath(includeFs, includedAbsPath);
-        assert (searchPathSize == 0) == (searchedAbsPath.length() == 0) : "unexpected searchedAbsPath " + searchedAbsPath + " from " + directive.getSearchPath();
-        searchedAbsPath = (searchPathSize == 0) ? searchedAbsPath : CndFileUtils.normalizeAbsolutePath(includeFs, searchedAbsPath);
         assert CndPathUtilities.isPathAbsolute(includedAbsPath) : "expected to be abs path [" + includedAbsPath + "]";
-        assert CndPathUtilities.isPathAbsolute(searchedAbsPath) : "expected to be abs path [" + searchedAbsPath + "]";
+        assert (searchPathSize == 0) || CndPathUtilities.isPathAbsolute(searchedAbsPath) : "expected to be abs path [" + searchedAbsPath + "]";
+        assert (searchPathSize == 0) == (searchedAbsPath.length() == 0) : "unexpected searchedAbsPath " + searchedAbsPath + " from " + directive.getSearchPath();
+        // in NB VFS mode all paths are already normalized
+        if (!APTTraceFlags.ALWAYS_USE_NB_FS) {
+            includedAbsPath = CndFileUtils.normalizeAbsolutePath(includeFs, includedAbsPath);
+            searchedAbsPath = (searchPathSize == 0) ? searchedAbsPath : CndFileUtils.normalizeAbsolutePath(includeFs, searchedAbsPath);
+        }
         CndUtils.assertNormalized(includeFs, includedAbsPath);
-        CndUtils.assertNormalized(includeFs, searchedAbsPath);
         if (searchedAbsPath.isEmpty()) {
             // was resolved as absolute path (i.e -include directive)
             String parent = CndPathUtilities.getDirName(includedAbsPath);
             return new ResolvedPath(includeFs, FilePathCache.getManager().getString(parent), includedAbsPath, false, 0);
         } else {
+            CndUtils.assertNormalized(includeFs, searchedAbsPath);
             assert curFile != null;
             // FIXME: now we consider search as default when included file is in the same foldler as includer
             // but it doesn't handle situaiton like #include "../dir/file.h" 
