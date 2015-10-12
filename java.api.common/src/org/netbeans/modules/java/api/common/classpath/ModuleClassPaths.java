@@ -48,8 +48,10 @@ import com.sun.source.util.Trees;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayDeque;
@@ -63,18 +65,21 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.StreamSupport;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.ModuleElement;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
@@ -87,6 +92,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -97,6 +103,10 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 final class ModuleClassPaths {
+    private static final String MODULE_INFO = "module-info";   //NOI18N
+    private static final String MODULE_INFO_JAVA = String.format("%s.java", MODULE_INFO);   //NOI18N
+    private static final String MODULE_INFO_CLZ = String.format("%s.class", MODULE_INFO);   //NOI18N
+    private static final Pattern AUTO_NAME_PATTERN = Pattern.compile("-(\\d+(\\.|$))"); //NOI18N
     private static final Logger LOG = Logger.getLogger(ModuleClassPaths.class.getName());
 
     private ModuleClassPaths() {
@@ -106,8 +116,9 @@ final class ModuleClassPaths {
     @NonNull
     static ClassPathImplementation createModuleInfoBasedPath(
             @NonNull final ClassPath base,
-            @NonNull final SourceRoots sourceRoots) {
-        return new ModuleInfoClassPathImplementation(base, sourceRoots);
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final Function<URL,String> moduleNameProvider) {
+        return new ModuleInfoClassPathImplementation(base, sourceRoots, moduleNameProvider);
     }
 
     @NonNull
@@ -123,6 +134,79 @@ final class ModuleClassPaths {
             @NonNull final PropertyEvaluator eval,
             @NonNull final String... props) {
         return new PropertyModulePath(projectDir, eval, props);
+    }
+
+    @NonNull
+    static Function<URL,String> createPlatformNameProvider() {
+        return (moduleURL) -> {
+            final String path = moduleURL.getPath();
+            int endIndex = path.length() - 1;
+            int startIndex = path.lastIndexOf('/', endIndex - 1);   //NOI18N
+            return path.substring(startIndex+1, endIndex);
+        };
+    }
+
+    @NonNull
+    static Function<URL,String> createUserNameProvider() {
+        return (moduleURL) -> {
+            final URL fileUrl = FileUtil.getArchiveFile(moduleURL);
+            if (fileUrl == null) {
+                //Folder
+                final FileObject root = URLMapper.findFileObject(moduleURL);
+                if (root != null && root.getFileObject(MODULE_INFO_CLZ) != null) {
+                    final String moduleName = root.getNameExt();
+                    if (SourceVersion.isName(moduleName)) {
+                        return moduleName;
+                    }
+                }
+                return null;
+            } else {
+                //Jar
+                final FileObject root = URLMapper.findFileObject(moduleURL);
+                if (root != null) {
+                    final FileObject moduleInfo = root.getFileObject(MODULE_INFO_CLZ);
+                    if (moduleInfo != null) {
+                        try {
+                            return readModuleName(moduleInfo);
+                        } catch (IOException ioe) {
+                            //Behave as javac: Pass to automatic module
+                        }
+                    }
+                    //Automatic module
+                    final FileObject file = FileUtil.getArchiveFile(root);
+                    if (file != null) {
+                        return autoName(file.getName());
+                    }
+                }
+                return null;
+            }
+        };
+    }
+
+    @CheckForNull
+    private static String autoName(@NonNull String moduleName) {
+        final Matcher matcher = AUTO_NAME_PATTERN.matcher(moduleName);
+        if (matcher.find()) {
+            int start = matcher.start();
+            moduleName = moduleName.substring(0, start);
+        }
+        moduleName =  moduleName
+            .replaceAll("[^A-Za-z0-9]", ".")  // replace non-alphanumeric
+            .replaceAll("(\\.)(\\1)+", ".")   // collapse repeating dots
+            .replaceAll("^\\.", "")           // drop leading dots
+            .replaceAll("\\.$", "");          // drop trailing dots
+        return moduleName.isEmpty() ?
+            null :
+            moduleName;
+    }
+
+    @NonNull
+    private static String readModuleName(@NonNull FileObject moduleInfo) throws IOException {
+        try (final InputStream in = new BufferedInputStream(moduleInfo.getInputStream())) {
+            final ClassFile clz = new ClassFile(in, false);
+            final String name = clz.getName().getExternalName(true);
+            return name.substring(0, name.length() - (MODULE_INFO.length()+1));
+        }
     }
 
     private static final class PlatformModulePath extends BaseClassPathImplementation implements PropertyChangeListener {
@@ -249,10 +333,9 @@ final class ModuleClassPaths {
 
     private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener {
 
-        private static final String MODULE_INFO = "module-info.java";   //NOI18N
-
         private final ClassPath base;
         private final SourceRoots sources;
+        private final Function<URL,String> moduleNameProvider;
         private final ThreadLocal<Object[]> selfRes;
 
         //@GuardedBy("this")
@@ -260,11 +343,14 @@ final class ModuleClassPaths {
 
         ModuleInfoClassPathImplementation(
                 @NonNull final ClassPath base,
-                @NonNull final SourceRoots sources) {
+                @NonNull final SourceRoots sources,
+                @NonNull final Function<URL,String> moduleNameProvider) {
             Parameters.notNull("base", base);       //NOI18N
             Parameters.notNull("sources", sources); //NOI18N
+            Parameters.notNull("moduleNameProvider", moduleNameProvider);   //NOI18N
             this.base = base;
             this.sources = sources;
+            this.moduleNameProvider = moduleNameProvider;
             this.selfRes = new ThreadLocal<>();
             this.moduleInfos = Collections.emptyList();
             this.base.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
@@ -285,7 +371,7 @@ final class ModuleClassPaths {
             }
             final Collection<File> newModuleInfos = new ArrayDeque<>();
             boolean needToFire;
-            final Map<String,URL> modulesByName = getAllModules(base);
+            final Map<String,URL> modulesByName = getModulesByName(base);
             res = new ArrayList<>(modulesByName.size());
             modulesByName.values().stream().map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url)).forEach(res::add);
             selfRes.set(new Object[]{res, Boolean.FALSE});
@@ -293,7 +379,7 @@ final class ModuleClassPaths {
                 boolean found = false;
                 for (URL root : sources.getRootURLs()) {
                     try {
-                        final File moduleInfo = FileUtil.normalizeFile(new File(BaseUtilities.toFile(root.toURI()),MODULE_INFO));
+                        final File moduleInfo = FileUtil.normalizeFile(new File(BaseUtilities.toFile(root.toURI()),MODULE_INFO_JAVA));
                         newModuleInfos.add(moduleInfo);
                         if (!found) {
                             final FileObject modules = FileUtil.toFileObject(moduleInfo);
@@ -396,25 +482,18 @@ final class ModuleClassPaths {
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
-        private static Map<String,URL> getAllModules(@NonNull final ClassPath cp) {
+        @NonNull
+        private Map<String,URL> getModulesByName(@NonNull final ClassPath cp) {
             final Map<String,URL> res = new HashMap<>();
             cp.entries().stream()
                     .map((entry)->entry.getURL())
-                    .forEach((url)->res.put(getModuleName(url),url));
+                    .forEach((url)-> {
+                        final String moduleName = moduleNameProvider.apply(url);
+                        if (moduleName != null) {
+                            res.put(moduleName, url);
+                        }
+                    });
             return res;
-        }
-
-        /**
-         * Todo: Fixme for jars
-         * @param moduleURL
-         * @return
-         */
-        @NonNull
-        private static String getModuleName(@NonNull final URL moduleURL) {
-            final String path = moduleURL.getPath();
-            int endIndex = path.length() - 1;
-            int startIndex = path.lastIndexOf('/', endIndex - 1);   //NOI18N
-            return path.substring(startIndex+1, endIndex);
         }
 
         @NonNull
