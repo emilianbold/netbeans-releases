@@ -65,7 +65,6 @@ import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.collab.chat.WhoIsOnlineAction;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiAction;
-import org.netbeans.modules.kenai.ui.NewKenaiProjectAction;
 import org.netbeans.modules.kenai.ui.OpenKenaiProjectAction;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardProviderImpl;
@@ -278,10 +277,7 @@ public final class KenaiServer implements TeamServer {
     
     @Override
     public Action getNewProjectAction() {
-        NewKenaiProjectAction newProjectAction = new NewKenaiProjectAction(kenai);
-        newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/new_team_project.png", true));
-        newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
-        return newProjectAction;
+        return null;
     }
     
     @Override
@@ -296,7 +292,6 @@ public final class KenaiServer implements TeamServer {
     @Override
     public Action[] getTeamMenuActions() {
         return new Action[] {
-            new NewKenaiProjectAction(kenai),
             new OpenKenaiProjectAction(kenai),
             new GetSourcesFromKenaiAction(kenai),
             null,
