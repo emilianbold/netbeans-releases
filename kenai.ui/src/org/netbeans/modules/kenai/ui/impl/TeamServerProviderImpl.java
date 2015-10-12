@@ -48,11 +48,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -63,19 +61,11 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.KenaiPopupActionsProvider;
-import org.netbeans.modules.kenai.ui.NewKenaiProjectAction;
-import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator;
-import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
-import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
-import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.team.server.ui.spi.PopupMenuProvider;
-import org.netbeans.modules.team.server.api.TeamUIUtils;
-import org.openide.DialogDisplayer;
-import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -155,13 +145,13 @@ public class TeamServerProviderImpl implements TeamServerProvider {
     @Override
     @Messages("LBL_KenaiProviderName=Kenai")
     public String getDisplayName () {
-        return LBL_KenaiProviderName();
+        return Bundle.LBL_KenaiProviderName();
     }
 
     @Override
     @Messages("LBL_KenaiProviderDescription=Supports team servers built on top of the Kenai infrastructure, such as java.net or netbeans.org")
     public String getDescription () {
-        return LBL_KenaiProviderDescription();
+        return Bundle.LBL_KenaiProviderDescription();
     }
 
     @Override
@@ -226,11 +216,11 @@ public class TeamServerProviderImpl implements TeamServerProvider {
         "ERR_NotHttps=The only supported protocol is https"})
     public String validate (String s) {
         if (!s.startsWith("https://")) { //NOI18N
-            return ERR_NotHttps();
+            return Bundle.ERR_NotHttps();
         }
 
         if (s.equals("https://") || !urlPatten.matcher(s).matches()) { //NOI18N
-            return ERR_UrlNotValid();
+            return Bundle.ERR_UrlNotValid();
         }
         return null;
     }
@@ -247,33 +237,11 @@ public class TeamServerProviderImpl implements TeamServerProvider {
 
     @Override
     public boolean supportNewTeamProjectCreation() {
-        return true;
+        return false;
     }
 
     @Override
     public void createNewTeamProject(File[] projectDirs) {
-        if (Subversion.isClientAvailable(true)) {
-            TeamServer teamServer = TeamUIUtils.getSelectedServer();
-            WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(projectDirs,
-                    teamServer instanceof KenaiServer ? ((KenaiServer) teamServer).getKenai() : Utilities.getPreferredKenai()));
-            // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-            wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
-            wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
-                    "NewKenaiProjectAction.dialogTitle")); // NOI18N
-
-            DialogDisplayer.getDefault().notify(wizardDescriptor);
-
-            boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-            if (!cancelled) {
-                Set<NewKenaiProjectWizardIterator.CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
-                TeamUIUtils.activateTeamDashboard();
-                // createdProjects.isEmpty() - something wen't wrong and would expect the problem was at least logged ...
-                // lets avoid java.util.NoSuchElementException at this place
-                if (!createdProjects.isEmpty()) {
-                    ProjectHandleImpl project = new ProjectHandleImpl(createdProjects.iterator().next().project);
-                    KenaiServer.getDashboard(project).selectAndExpand(project);
-                }
-            }
-        }
+        throw new UnsupportedOperationException();
     }
 }

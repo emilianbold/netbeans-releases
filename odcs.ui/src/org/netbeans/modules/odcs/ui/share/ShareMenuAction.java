@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.server.ui.share;
+package org.netbeans.modules.odcs.ui.share;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
