@@ -74,7 +74,7 @@ final class SystemModuleProvider implements ModuleFileManager.ModuleProvider {
         final Map<URL,Set<Location>> moduleRoots = new HashMap<>();
         for (ClassPath.Entry e : moduleBoot.entries()) {
             final URL url = e.getURL();
-            if ("nbjrt".equals(url.getProtocol())) {    //NOI18N
+            if (FileObjects.PROTO_NBJRT.equals(url.getProtocol())) {    //NOI18N
                 final String surl = url.toString();
                 final int index = surl.lastIndexOf('/', surl.length()-2);   //NOI18N
                 try {

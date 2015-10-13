@@ -85,6 +85,9 @@ import com.sun.tools.javac.comp.Check;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import javax.lang.model.SourceVersion;
 
 import javax.swing.SwingUtilities;
 import javax.tools.JavaFileManager;
@@ -105,6 +108,7 @@ import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
@@ -137,12 +141,15 @@ import org.openide.util.BaseUtilities;
  *
  * @author Dusan Balek
  */
-public class SourceUtils {    
-     
+public class SourceUtils {
+
+    private static final String MODULE_INFO = "module-info";   //NOI18N
+    private static final String MODULE_INFO_CLZ = String.format("%s.class", MODULE_INFO);   //NOI18N
+    private static final java.util.regex.Pattern AUTO_NAME_PATTERN = java.util.regex.Pattern.compile("-(\\d+(\\.|$))"); //NOI18N
     private static final Logger LOG = Logger.getLogger(SourceUtils.class.getName());
 
     private SourceUtils() {}
-    
+
     /**
      * @since 0.21
      */
@@ -1231,6 +1238,55 @@ public class SourceUtils {
         return ret;
     }
 
+    /**
+     * Returns the name of the module.
+     * @param rootUrl the binary root
+     * @return the module name or null when no or invalid module
+     * @since 2.9.0
+     */
+    @CheckForNull
+    public static String getModuleName(@NonNull final URL rootUrl) {
+        if (FileObjects.PROTO_NBJRT.equals(rootUrl.getProtocol())) {
+            //Platform
+            final String path = rootUrl.getPath();
+            int endIndex = path.length() - 1;
+            int startIndex = path.lastIndexOf('/', endIndex - 1);   //NOI18N
+            return path.substring(startIndex+1, endIndex);
+        } else {
+            final URL fileUrl = FileUtil.getArchiveFile(rootUrl);
+            if (fileUrl == null) {
+                //Folder
+                final FileObject root = URLMapper.findFileObject(rootUrl);
+                if (root != null && root.getFileObject(MODULE_INFO_CLZ) != null) {
+                    final String moduleName = root.getNameExt();
+                    if (SourceVersion.isName(moduleName)) {
+                        return moduleName;
+                    }
+                }
+                return null;
+            } else {
+                //Jar
+                final FileObject root = URLMapper.findFileObject(rootUrl);
+                if (root != null) {
+                    final FileObject moduleInfo = root.getFileObject(MODULE_INFO_CLZ);
+                    if (moduleInfo != null) {
+                        try {
+                            return readModuleName(moduleInfo);
+                        } catch (IOException ioe) {
+                            //Behave as javac: Pass to automatic module
+                        }
+                    }
+                    //Automatic module
+                    final FileObject file = FileUtil.getArchiveFile(root);
+                    if (file != null) {
+                        return autoName(file.getName());
+                    }
+                }
+                return null;
+            }
+        }
+    }
+
     // --------------- Helper methods of getFile () -----------------------------
     private static ClassPath createClassPath (ClasspathInfo cpInfo, PathKind kind) throws MalformedURLException {
 	return ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, kind);	
@@ -1463,5 +1519,31 @@ public class SourceUtils {
             res.add(fo.toURL());
         }
         return res;
+    }
+
+    @CheckForNull
+    private static String autoName(@NonNull String moduleName) {
+        final java.util.regex.Matcher matcher = AUTO_NAME_PATTERN.matcher(moduleName);
+        if (matcher.find()) {
+            int start = matcher.start();
+            moduleName = moduleName.substring(0, start);
+        }
+        moduleName =  moduleName
+            .replaceAll("[^A-Za-z0-9]", ".")  // replace non-alphanumeric
+            .replaceAll("(\\.)(\\1)+", ".")   // collapse repeating dots
+            .replaceAll("^\\.", "")           // drop leading dots
+            .replaceAll("\\.$", "");          // drop trailing dots
+        return moduleName.isEmpty() ?
+            null :
+            moduleName;
+    }
+
+    @NonNull
+    private static String readModuleName(@NonNull FileObject moduleInfo) throws IOException {
+        try (final InputStream in = new BufferedInputStream(moduleInfo.getInputStream())) {
+            final ClassFile clz = new ClassFile(in, false);
+            final String name = clz.getName().getExternalName(true);
+            return name.substring(0, name.length() - (MODULE_INFO.length()+1));
+        }
     }
 }
