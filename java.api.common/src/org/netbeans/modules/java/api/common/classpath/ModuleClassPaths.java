@@ -294,7 +294,9 @@ final class ModuleClassPaths {
             final Collection<File> newModuleInfos = new ArrayDeque<>();
             final Map<String,URL> modulesByName = getModulesByName(base);
             res = new ArrayList<>(modulesByName.size());
-            modulesByName.values().stream().map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url)).forEach(res::add);
+            modulesByName.values().stream()
+                    .map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
+                    .forEach(res::add);
             selfRes.set(new Object[]{res, needToFire});
             try {
                 boolean found = false;
