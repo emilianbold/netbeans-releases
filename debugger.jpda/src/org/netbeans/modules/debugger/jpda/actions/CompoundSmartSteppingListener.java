@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -59,7 +58,7 @@ import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
 public final class CompoundSmartSteppingListener extends SmartSteppingCallback {
 
 
-    private List smartSteppings;
+    private List<? extends SmartSteppingCallback> smartSteppings;
     private final ContextProvider lookupProvider;
     
     
@@ -76,17 +75,14 @@ public final class CompoundSmartSteppingListener extends SmartSteppingCallback {
     @Override
     public void initFilter (SmartSteppingFilter filter) {
         // init list of smart stepping listeners
-        smartSteppings = lookupProvider.lookup 
-            (null, SmartSteppingCallback.class);
-        Iterator i = smartSteppings.iterator ();
-        while (i.hasNext ()) {
-            SmartSteppingCallback ss = (SmartSteppingCallback) i.next ();
-            ss.initFilter (filter);
+        smartSteppings = lookupProvider.lookup(null, SmartSteppingCallback.class);
+        for (SmartSteppingCallback ss : smartSteppings) {
+            ss.initFilter(filter);
         }
     }
     
     /**
-     * Asks all SmartSteppingListener listeners if executiong should stop on the 
+     * Asks all SmartSteppingListener listeners if execution should stop on the
      * current place represented by JPDAThread.
      */
     @Override
@@ -102,10 +98,8 @@ public final class CompoundSmartSteppingListener extends SmartSteppingCallback {
                 t.getLineNumber (null)
             );
         
-        Iterator i = smartSteppings.iterator ();
         boolean stop = true;
-        while (i.hasNext ()) {
-            SmartSteppingCallback ss = (SmartSteppingCallback) i.next ();
+        for (SmartSteppingCallback ss : smartSteppings) {
             boolean sh = ss.stopHere (lookupProvider, t, smartSteppingFilter);
             stop = stop && sh;
             if (ssverbose)
