@@ -144,7 +144,6 @@ import org.openide.util.BaseUtilities;
 public class SourceUtils {
 
     private static final String MODULE_INFO = "module-info";   //NOI18N
-    private static final String MODULE_INFO_CLZ = String.format("%s.class", MODULE_INFO);   //NOI18N
     private static final java.util.regex.Pattern AUTO_NAME_PATTERN = java.util.regex.Pattern.compile("-(\\d+(\\.|$))"); //NOI18N
     private static final Logger LOG = Logger.getLogger(SourceUtils.class.getName());
 
@@ -1257,7 +1256,7 @@ public class SourceUtils {
             if (fileUrl == null) {
                 //Folder
                 final FileObject root = URLMapper.findFileObject(rootUrl);
-                if (root != null && root.getFileObject(MODULE_INFO_CLZ) != null) {
+                if (root != null && (root.getFileObject(MODULE_INFO, FileObjects.CLASS) != null || root.getFileObject(MODULE_INFO, FileObjects.SIG) != null))  {
                     final String moduleName = root.getNameExt();
                     if (SourceVersion.isName(moduleName)) {
                         return moduleName;
@@ -1268,7 +1267,7 @@ public class SourceUtils {
                 //Jar
                 final FileObject root = URLMapper.findFileObject(rootUrl);
                 if (root != null) {
-                    final FileObject moduleInfo = root.getFileObject(MODULE_INFO_CLZ);
+                    final FileObject moduleInfo = root.getFileObject(MODULE_INFO, FileObjects.CLASS);
                     if (moduleInfo != null) {
                         try {
                             return readModuleName(moduleInfo);
