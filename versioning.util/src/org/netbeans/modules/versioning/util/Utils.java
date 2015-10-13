@@ -1754,7 +1754,7 @@ public final class Utils {
             }
         }
         
-        return newLineStr.isEmpty() ? null : newLineStr;
+        return newLineStr;
     }
 
 }
