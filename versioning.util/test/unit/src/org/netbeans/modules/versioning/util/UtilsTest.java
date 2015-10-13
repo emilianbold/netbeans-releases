@@ -87,7 +87,7 @@ public class UtilsTest extends NbTestCase {
         try (InputStream is = new ByteArrayInputStream(content.getBytes())) {
             lineEnding = Utils.getLineEnding(is);
         }
-        assertNull(lineEnding);
+        assertTrue(lineEnding.isEmpty());
         
         content = "abcd\n\nefgh\r\nijkl\rmnop";
         lineEnding = null;
