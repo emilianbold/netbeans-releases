@@ -132,8 +132,6 @@ implements Executor {
     private boolean steppingFromCompoundFilteredLocation = false;
     private static final RequestProcessor operationsRP = new RequestProcessor("Debugger Operations Computation", 1);    // NOI18N
     
-    private static final boolean ssverbose = 
-        System.getProperty ("netbeans.debugger.smartstepping") != null;
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
     private static final Logger loggerStep = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
 
@@ -445,10 +443,8 @@ implements Executor {
             } else {
                 fsh = getSmartSteppingFilterImpl ().stopHere (className);
             }
-            if (ssverbose)
-                System.out.println("SS  SmartSteppingFilter.stopHere (" + 
-                    className + ") ? " + fsh
-                );
+            if (loggerStep.isLoggable(Level.FINE))
+                loggerStep.fine("SS  SmartSteppingFilter.stopHere (" + className + ") ? " + fsh);
             if (fsh) {
                 if (steppingFromCompoundFilteredLocation) {
                     // fsh is true
@@ -466,8 +462,7 @@ implements Executor {
             }
 
             // do not stop here -> start smart stepping!
-            if (ssverbose)
-                System.out.println("\nSS:  SMART STEPPING START! ********** ");
+            loggerStep.fine("\nSS:  SMART STEPPING START! ********** ");
             boolean useStepFilters = p.getBoolean("UseStepFilters", true);
             boolean stepThrough = useStepFilters && p.getBoolean("StepThroughFilters", false);
             if (!stepThrough || smartSteppingStepOut) {

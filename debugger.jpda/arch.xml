@@ -568,9 +568,9 @@ Nothing.
         Logging level for informational messages about received JDI events.
         They use Level.FINE level and are printed into the NetBeans message log.
     </api>
-    <api name="netbeans.debugger.smartstepping" group="systemproperty" category="private" type="export">
-        When this system property is set, informational messages about the smart
-        stepping process are printed into standard output (console).
+    <api name="org.netbeans.modules.debugger.jpda.step.level" group="systemproperty" category="private" type="export">
+        Logging level for messages about stepping, including the smart
+        stepping process are printed into the NetBeans message log.
     </api>
     <api name="netbeans.debugger.noInvokeMethods" group="systemproperty" category="private" type="export">
         When this system property is set, methods invocation in debuggee is disabled.

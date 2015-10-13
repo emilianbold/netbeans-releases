@@ -44,6 +44,8 @@
 package org.netbeans.modules.debugger.jpda.actions;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
@@ -57,14 +59,10 @@ import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
  */
 public final class CompoundSmartSteppingListener extends SmartSteppingCallback {
 
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
 
     private List<? extends SmartSteppingCallback> smartSteppings;
     private final ContextProvider lookupProvider;
-    
-    
-    private static final boolean ssverbose = 
-        System.getProperty ("netbeans.debugger.smartstepping") != null;
-
     
     public CompoundSmartSteppingListener (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -91,8 +89,8 @@ public final class CompoundSmartSteppingListener extends SmartSteppingCallback {
         JPDAThread t, 
         SmartSteppingFilter smartSteppingFilter
     ) {
-        if (ssverbose)
-            System.out.println("\nSS  CompoundSmartSteppingListener.stopHere? : " + 
+        if (logger.isLoggable(Level.FINE))
+            logger.fine("\nSS  CompoundSmartSteppingListener.stopHere? : " + 
                 t.getClassName () + '.' +
                 t.getMethodName () + ':' +
                 t.getLineNumber (null)
@@ -102,10 +100,8 @@ public final class CompoundSmartSteppingListener extends SmartSteppingCallback {
         for (SmartSteppingCallback ss : smartSteppings) {
             boolean sh = ss.stopHere (lookupProvider, t, smartSteppingFilter);
             stop = stop && sh;
-            if (ssverbose)
-                System.out.println("SS    " + ss.getClass () + 
-                    " = " + sh
-                );
+            if (logger.isLoggable(Level.FINE))
+                logger.fine("SS    " + ss.getClass () + " = " + sh);
         }
         return stop;
     }
