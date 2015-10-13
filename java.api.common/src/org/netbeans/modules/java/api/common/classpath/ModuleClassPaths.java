@@ -79,6 +79,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -96,6 +97,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.Union2;
 import org.openide.util.WeakListeners;
 
 /**
@@ -284,7 +286,7 @@ final class ModuleClassPaths {
             this.eval = eval;
             this.props = new LinkedHashSet<>();
             Collections.addAll(this.props, props);
-            this.eval.addPropertyChangeListener(null);
+            this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
         }
 
         @Override
@@ -336,6 +338,7 @@ final class ModuleClassPaths {
 
     private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener {
 
+        private static final List<PathResourceImplementation> TOMBSTONE = Collections.unmodifiableList(new ArrayList<>());
         private final ClassPath base;
         private final SourceRoots sources;
         private final Function<URL,String> moduleNameProvider;
@@ -348,6 +351,7 @@ final class ModuleClassPaths {
                 @NonNull final ClassPath base,
                 @NonNull final SourceRoots sources,
                 @NonNull final Function<URL,String> moduleNameProvider) {
+            super(null);
             Parameters.notNull("base", base);       //NOI18N
             Parameters.notNull("sources", sources); //NOI18N
             Parameters.notNull("moduleNameProvider", moduleNameProvider);   //NOI18N
@@ -364,6 +368,11 @@ final class ModuleClassPaths {
         @NonNull
         public List<? extends PathResourceImplementation> getResources() {
             List<PathResourceImplementation> res = getCache();
+            boolean needToFire = false;
+            if (res == TOMBSTONE) {
+                needToFire = true;
+                res = null;
+            }
             if (res != null) {
                 return res;
             }
@@ -373,11 +382,10 @@ final class ModuleClassPaths {
                 return (List<? extends PathResourceImplementation>) bestSoFar[0];
             }
             final Collection<File> newModuleInfos = new ArrayDeque<>();
-            boolean needToFire;
             final Map<String,URL> modulesByName = getModulesByName(base);
             res = new ArrayList<>(modulesByName.size());
             modulesByName.values().stream().map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url)).forEach(res::add);
-            selfRes.set(new Object[]{res, Boolean.FALSE});
+            selfRes.set(new Object[]{res, needToFire});
             try {
                 boolean found = false;
                 for (URL root : sources.getRootURLs()) {
@@ -430,7 +438,8 @@ final class ModuleClassPaths {
             }
             synchronized (this) {
                 assert res != null;
-                if (getCache() == null) {
+                List<PathResourceImplementation> ccv = getCache();
+                if (ccv == null || ccv == TOMBSTONE) {
                     setCache(res);
                     final Collection<File> added = new ArrayList<>(newModuleInfos);
                     added.removeAll(moduleInfos);
@@ -440,7 +449,7 @@ final class ModuleClassPaths {
                     added.stream().forEach((f) -> FileUtil.addFileChangeListener(this, f));
                     moduleInfos = newModuleInfos;
                 } else {
-                    res = getCache();
+                    res = ccv;
                 }
             }
             if (needToFire) {
@@ -453,28 +462,33 @@ final class ModuleClassPaths {
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
             if (propName == null || ClassPath.PROP_ENTRIES.equals(propName) || SourceRoots.PROP_ROOTS.equals(propName)) {
-                resetCache(true);
+                final Runnable action = () -> resetCache(TOMBSTONE, true);
+                if (ProjectManager.mutex().isWriteAccess()) {
+                    ProjectManager.mutex().postReadRequest(action);
+                } else {
+                    action.run();
+                }
             }
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            resetCache(true);
+            resetCache(TOMBSTONE, true);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            resetCache(true);
+            resetCache(TOMBSTONE, true);
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            resetCache(true);
+            resetCache(TOMBSTONE, true);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            resetCache(true);
+            resetCache(TOMBSTONE, true);
         }
 
         @Override
@@ -554,7 +568,14 @@ final class ModuleClassPaths {
         private List<PathResourceImplementation> cache;
 
         BaseClassPathImplementation() {
+            this(null);
+        }
+
+        BaseClassPathImplementation(final List<PathResourceImplementation> initialValue) {
             this.listeners = new PropertyChangeSupport(this);
+            synchronized (this) {
+                this.cache = initialValue;
+            }
         }
 
         @Override
@@ -569,6 +590,7 @@ final class ModuleClassPaths {
             this.listeners.removePropertyChangeListener(listener);
         }
 
+        @NonNull
         final synchronized List<PathResourceImplementation> getCache() {
             return this.cache;
         }
@@ -578,8 +600,14 @@ final class ModuleClassPaths {
         }
 
         final void resetCache(final boolean fire) {
+            resetCache(null, fire);
+        }
+
+        final void resetCache(
+                @NullAllowed final List<PathResourceImplementation> update,
+                final boolean fire) {
             synchronized (this) {
-                this.cache = null;
+                this.cache = update;
             }
             if (fire) {
                 fire();
