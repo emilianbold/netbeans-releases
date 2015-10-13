@@ -327,7 +327,10 @@ final class ModuleClassPaths {
 
         @Override
         public void propertyChange(@NonNull final PropertyChangeEvent evt) {
-            //TODO: Implement me
+            final String propName = evt.getPropertyName();
+            if (propName == null || props.contains(propName)) {
+                resetCache(true);
+            }
         }
     }
 
