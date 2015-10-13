@@ -56,8 +56,8 @@
                 <binary-origin>external/libpam4j-1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/processtreekiller-1.0.5.jar</runtime-relative-path>
-                <binary-origin>external/processtreekiller-1.0.5.jar</binary-origin>
+                <runtime-relative-path>ext/processtreekiller-1.0.4.jar</runtime-relative-path>
+                <binary-origin>external/processtreekiller-1.0.4.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
