@@ -1710,8 +1710,11 @@ public final class Utils {
     }
     
     /**
-     * Guesses 
-     * @param fo
+     * Guesses the line-ending used in the file.
+     * Default OS line-ending is used when file has no newlines.
+     * 
+     * @param fo file to get line-ending for.
+     * @param lock file lock
      * @return 
      */
     public static String getLineEnding (FileObject fo, FileLock lock) {
