@@ -105,17 +105,6 @@ final class ModuleLocation implements Location {
     @NonNull
     static ModuleLocation create(
             @NonNull final Location base,
-            @NonNull final URL moduleRoot) {
-        final String path = moduleRoot.getPath();
-        final int end = path.length()-1;
-        final int start = path.lastIndexOf('/', end - 1);   //NOI18N
-        String moduleName = path.substring(start+1, end);
-        return new ModuleLocation(base, moduleRoot.toString(), moduleName, moduleRoot);
-    }
-
-    @NonNull
-    static ModuleLocation create(
-            @NonNull final Location base,
             @NonNull final URL moduleRoot,
             @NonNull final String moduleName) {
         return new ModuleLocation(base, moduleRoot.toString(), moduleName, moduleRoot);

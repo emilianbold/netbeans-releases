@@ -853,7 +853,7 @@ public final class ProxyFileManager implements JavaFileManager {
             if (emitted[SYS_MODULES] == null) {
                 emitted[SYS_MODULES] = new ModuleFileManager(
                     cap,
-                    new  SystemModuleProvider(moduleBoot),
+                    moduleBoot,
                     true);
             }
             return emitted[SYS_MODULES];
@@ -864,7 +864,7 @@ public final class ProxyFileManager implements JavaFileManager {
             if (emitted[USER_MODULES] == null) {
                 emitted[USER_MODULES] = new ModuleFileManager(
                     cap,
-                    new UserModuleProvider(moduleCompile),
+                    moduleCompile,
                     true);
             }
             return emitted[USER_MODULES];

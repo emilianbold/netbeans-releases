@@ -43,12 +43,9 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +56,8 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.SourceUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -70,25 +69,18 @@ final class ModuleFileManager implements JavaFileManager {
     private static final Logger LOG = Logger.getLogger(ModuleFileManager.class.getName());
 
     private final CachingArchiveProvider cap;
-    private final ModuleProvider mop;
+    private final ClassPath modulePath;
     private final boolean cacheFile;
-
-
-
-    @FunctionalInterface
-    interface ModuleProvider {
-        Map<URL,Set<Location>> getModulePath(Location baseLocation);
-    }
 
 
     public ModuleFileManager(
             @NonNull final CachingArchiveProvider cap,
-            @NonNull final ModuleProvider mop,
+            @NonNull final ClassPath modulePath,
             final boolean cacheFile) {
         assert cap != null;
-        assert mop != null;
+        assert modulePath != null;
         this.cap = cap;
-        this.mop = mop;
+        this.modulePath = modulePath;
         this.cacheFile = cacheFile;
     }
 
@@ -233,7 +225,15 @@ final class ModuleFileManager implements JavaFileManager {
     @Override
     @NonNull
     public Iterable<Set<Location>> listModuleLocations(@NonNull final Location location) throws IOException {
-        return mop.getModulePath(location).values();
+        final Set<Set<Location>> moduleRoots = new HashSet<>();
+        for (ClassPath.Entry e : modulePath.entries()) {
+            final URL root = e.getURL();
+            final String moduleName = SourceUtils.getModuleName(root);
+            if (moduleName != null) {
+                moduleRoots.add(Collections.singleton(ModuleLocation.create(location, root, moduleName)));
+            }
+        }
+        return moduleRoots;
     }
 
     @Override
