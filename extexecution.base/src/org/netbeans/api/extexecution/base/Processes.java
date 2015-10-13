@@ -43,6 +43,9 @@
 package org.netbeans.api.extexecution.base;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.extexecution.base.WrapperProcess;
 import org.netbeans.spi.extexecution.base.ProcessesImplementation;
 import org.openide.util.Lookup;
 
@@ -53,6 +56,8 @@ import org.openide.util.Lookup;
  * @see ProcessesImplementation
  */
 public final class Processes {
+
+    private static final Logger LOGGER = Logger.getLogger(Processes.class.getName());
 
     private Processes() {
         super();
@@ -69,12 +74,21 @@ public final class Processes {
      * @param process process to kill
      * @param environment map containing the variables and their values which the
      *             process must have to be considered being part of
-     *             the tree to kill
+     *             the tree to kill; used as a hint to find subprocesses
      */
     public static void killTree(Process process, Map<String, String> environment) {
-        ProcessesImplementation impl = Lookup.getDefault().lookup(ProcessesImplementation.class);
-        if (impl != null) {
-            impl.killTree(process, environment);
+        if (process instanceof WrapperProcess) {
+            killTree(((WrapperProcess) process).getDelegate(), environment);
+            return;
+        }
+        for (ProcessesImplementation impl : Lookup.getDefault().lookupAll(ProcessesImplementation.class)) {
+            try {
+                impl.killTree(process, environment);
+                LOGGER.log(Level.FINE, "Process tree killed using {0}", impl.getClass().getName()); // NOI18N
+                return;
+            } catch (UnsupportedOperationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
         }
 
         process.destroy();

@@ -92,5 +92,9 @@ public class WrapperProcess extends Process {
     public void destroy() {
         Processes.killTree(del, Collections.singletonMap(KEY_UUID, uuid));
     }
+    
+    public Process getDelegate() {
+        return del;
+    }
 
 }
