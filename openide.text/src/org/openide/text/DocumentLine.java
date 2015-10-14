@@ -53,6 +53,7 @@ import java.util.*;
 
 import javax.swing.event.*;
 import javax.swing.text.*;
+import org.openide.util.Exceptions;
 
 
 /** Implementation of a line in a {@link StyledDocument}.
@@ -245,7 +246,7 @@ public abstract class DocumentLine extends Line {
         return pos.getCloneableEditorSupport().hashCode();
     }
 
-    private static int dlEqualsCounter; // Counter for Line.Set.whm iterations
+    static int dlEqualsCounter; // Counter for Line.Set.whm iterations
 
     @Override
     public boolean equals(Object o) {
@@ -324,9 +325,21 @@ public abstract class DocumentLine extends Line {
     /** Register line.
     */
     Object readResolve() throws ObjectStreamException {
-        //        return Set.registerLine (this);
-        //Set.registerPendingLine(this);
-        return this.pos.getCloneableEditorSupport().getLineSet().registerLine(this);
+        try {
+            //        return Set.registerLine (this);
+            //Set.registerPendingLine(this);
+            return this.pos.getCloneableEditorSupport().getLineSet().findOrCreateLine(pos.getLine(),
+                    new LineVector.LineCreator() {
+                        @Override
+                        public Line createLine(int line) {
+                            return DocumentLine.this;
+                        }
+                    }
+            );
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return this;
+        }
     }
 
     /** Add annotation to this Annotatable class
@@ -987,20 +1000,8 @@ public abstract class DocumentLine extends Line {
         /** Gets the lines with line number whitin the range inclusive.
          * @return <code>List</code> of lines from range inclusive */
         private List<Line> getLinesFromRange(int startLineNumber, int endLineNumber) {
-            List<Line> linesInRange = new ArrayList<Line>(10);
-
-            Map<Line,Reference<Line>> whm = findWeakHashMap();
-            synchronized (whm) {
-                for (Line line : whm.keySet()) {
-                    int lineNumber = line.getLineNumber();
-
-                    if ((startLineNumber <= lineNumber) && (lineNumber <= endLineNumber)) {
-                        linesInRange.add(line);
-                    }
-                }
-            }
-
-            return linesInRange;
+            LineVector lineVector = findLineVector();
+            return lineVector.getLinesInRange(startLineNumber, endLineNumber);
         }
 
         /* Returns an unmodifiable set of Lines sorted by their
@@ -1026,7 +1027,7 @@ public abstract class DocumentLine extends Line {
         */
         public Line getOriginal(int line) throws IndexOutOfBoundsException {
             int newLine = listener.getLine(line);
-            return safelyRegisterLine(createLine(offset(newLine)));
+            return safelyFindOrCreateLine(newLine, new OffsetLineCreator());
         }
 
         @Override
@@ -1070,8 +1071,7 @@ public abstract class DocumentLine extends Line {
         * @exception IndexOutOfBoundsException if <code>line</code> is invalid.
         */
         public Line getCurrent(int line) throws IndexOutOfBoundsException {
-
-            return safelyRegisterLine(createLine(offset(line)));
+            return safelyFindOrCreateLine(line, new OffsetLineCreator());
         }
         
         private int offset(int line) {
@@ -1094,13 +1094,12 @@ public abstract class DocumentLine extends Line {
          * @param line line we want to register
          * @return the line or some line that already was registered
          */
-        private Line safelyRegisterLine(final Line line) {
-            assert line != null;
+        private Line safelyFindOrCreateLine(final int lineIndex, final LineVector.LineCreator lineCreator) {
             class DocumentRenderer implements Runnable {
                 public Line result;
 
                 public void run() {
-                    result = DocumentLine.Set.super.registerLine(line);
+                    result = DocumentLine.Set.super.findOrCreateLine(lineIndex, lineCreator);
                 }
             }
             StyledDocument doc = listener.support.getDocument();
@@ -1113,5 +1112,19 @@ public abstract class DocumentLine extends Line {
 
             return renderer.result;
         }
+
+        private final class OffsetLineCreator implements LineVector.LineCreator {
+            
+            @Override
+            public Line createLine(int lineIndex) {
+                Line line = Set.this.createLine(offset(lineIndex));
+                if (line instanceof DocumentLine) {
+                    ((DocumentLine) line).init();
+                }
+                return line;
+            }
+
+        }
+
     }
 }

@@ -228,10 +228,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     
     private boolean inUserQuestionExceptionHandler;
 
-    /** Reference to WeakHashMap that is used by all Line.Sets created
+    /**
+     * Reference to LineVector that is used by all Line.Sets created
      * for this CloneableEditorSupport.
      */
-    private Map<Line,Reference<Line>> lineSetWHM;
+    private LineVector lineSetLineVector;
+
     private boolean annotationsLoaded;
     
     private DocFilter docFilter;
@@ -968,20 +970,20 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         return updateLineSet(false);
     }
 
-    /** Lazyly creates or finds already created map for internal use.
+    /**
+     * Lazily creates or finds line vector for internal use.
      */
-    final Map<Line,Reference<Line>> findWeakHashMap() {
+    final LineVector findLineVector() {
         // any lock not hold for too much time will do as we do not 
         // call outside in the sync block
         synchronized (LOCK_PRINTING) {
-            if (lineSetWHM != null) {
-                Line.LOG.log(Level.FINE, "CloneableEditorSupport.findWeakHashMap() whm.size()={0}", lineSetWHM.size());
-                return lineSetWHM;
+            if (lineSetLineVector != null) {
+                return lineSetLineVector;
             }
 
-            lineSetWHM = new WeakHashMap<Line,Reference<Line>>();
+            lineSetLineVector = new LineVector();
 
-            return lineSetWHM;
+            return lineSetLineVector;
         }
     }
 
