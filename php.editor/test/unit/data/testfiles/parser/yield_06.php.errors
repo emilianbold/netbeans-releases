@@ -1,8 +1,8 @@
 [[21,25]-Syntax error
  unexpected:	variable '$key'
- expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <=>, <, >, ?:, <<, >>, +, -, *, /, %, '.', ], ), :] 21-25:Syntax error
+ expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <=>, <, >, <<, >>, +, -, *, /, %, '.', ], ), :] 21-25:Syntax error
  unexpected:	variable '$key'
- expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <=>, <, >, ?:, <<, >>, +, -, *, /, %, '.', ], ), :
+ expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <=>, <, >, <<, >>, +, -, *, /, %, '.', ], ), :
 [[26,28]-POSSIBLE Syntax Error (check preceding valid syntax error)
  unexpected:	=>] 26-28:POSSIBLE Syntax Error (check preceding valid syntax error)
  unexpected:	=>

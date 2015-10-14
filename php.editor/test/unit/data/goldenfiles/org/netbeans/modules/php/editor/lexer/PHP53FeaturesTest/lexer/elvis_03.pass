@@ -7,8 +7,9 @@ token #5 WHITESPACE
 token #6 PHP_VARIABLE $bar
 token #7 WHITESPACE  
 token #8 PHP_TOKEN ?
-token #9 PHP_TOKEN :
-token #10 WHITESPACE  
-token #11 PHP_NULL null
-token #12 PHP_SEMICOLON ;
-token #13 WHITESPACE \n
+token #9 WHITESPACE  
+token #10 PHP_TOKEN :
+token #11 WHITESPACE  
+token #12 PHP_NULL null
+token #13 PHP_SEMICOLON ;
+token #14 WHITESPACE \n

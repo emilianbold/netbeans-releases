@@ -45,22 +45,51 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  * Represents conditional expression
  * Holds the condition, if true expression and if false expression
  * each on e can be any expression
- * <pre>e.g.<pre> (bool) $a ? 3 : 4
+ * <pre>e.g.</pre>
+ * (bool) $a ? 3 : 4
  * $a > 0 ? $a : -$a
+ * $a > 0 ?: -$a
  */
 public class ConditionalExpression extends Expression {
 
-    private Expression condition;
-    private Expression ifTrue;
-    private Expression ifFalse;
+    public enum OperatorType {
+        QUESTION_MARK("?", false), // NOI18N
+        ELVIS("?:", true); // NOI18N
 
-    public ConditionalExpression(int start, int end, Expression condition, Expression ifTrue, Expression ifFalse) {
+        private final String operatorSign;
+        private final boolean shortened;
+
+        private OperatorType(String operatorSign, boolean shortened) {
+            this.operatorSign = operatorSign;
+            this.shortened = shortened;
+        }
+
+        public boolean isShortened() {
+            return shortened;
+        }
+
+        @Override
+        public String toString() {
+            return operatorSign;
+        }
+
+    }
+
+
+    private final Expression condition;
+    private final OperatorType operator;
+    private final Expression ifTrue;
+    private final Expression ifFalse;
+
+
+    public ConditionalExpression(int start, int end, Expression condition, OperatorType operator, Expression ifTrue, Expression ifFalse) {
         super(start, end);
 
         if (condition == null || ifFalse == null) {
             throw new IllegalArgumentException();
         }
         this.condition = condition;
+        this.operator = operator;
         this.ifTrue = ifTrue;
         this.ifFalse = ifFalse;
     }
@@ -72,6 +101,15 @@ public class ConditionalExpression extends Expression {
      */
     public Expression getCondition() {
         return this.condition;
+    }
+
+    /**
+     * Returns the operator of this conditional expression.
+     *
+     * @return the conditional operator
+     */
+    public OperatorType getOperator() {
+        return operator;
     }
 
     /**
