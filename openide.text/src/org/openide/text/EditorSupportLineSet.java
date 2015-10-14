@@ -75,8 +75,8 @@ final class EditorSupportLineSet extends DocumentLine.Set {
     /** Shares the whm with other line sets based on the same support.
      */
     @Override
-    Map<Line,Reference<Line>> findWeakHashMap() {
-        return support.findWeakHashMap();
+    LineVector findLineVector() {
+        return support.findLineVector();
     }
 
     /** Creates a Line for given offset.
@@ -185,6 +185,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
     * @author Jaroslav Tulach
     */
     static class Closed extends Line.Set implements ChangeListener {
+        
         /** support we are attached to */
         private CloneableEditorSupport support;
 
@@ -205,8 +206,8 @@ final class EditorSupportLineSet extends DocumentLine.Set {
         /** Shares the whm with other line sets based on the same support.
          */
         @Override
-        Map<Line,Reference<Line>> findWeakHashMap() {
-            return support.findWeakHashMap();
+        LineVector findLineVector() {
+            return support.findLineVector();
         }
 
         /** Returns a set of line objects sorted by their
@@ -247,12 +248,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
         * @exception IndexOutOfBoundsException if <code>line</code> is an invalid index for the original set of lines
         */
         public Line getCurrent(int line) throws IndexOutOfBoundsException {
-            PositionRef ref = new PositionRef(support.getPositionManager(), line, 0, Position.Bias.Forward);
-
-            // obj can be null, sorry...
-            org.openide.util.Lookup obj = support.getLookup();
-
-            return this.registerLine(new SupportLine(obj, ref, support));
+            return findLineVector().findOrCreateLine(line, new SupportLineCreator());
         }
 
         /** Arrives when the document is opened.
@@ -270,6 +266,21 @@ final class EditorSupportLineSet extends DocumentLine.Set {
                 }
             }
         }
+        
+        private final class SupportLineCreator implements LineVector.LineCreator {
+            
+            @Override
+            public Line createLine(int lineIndex) {
+                PositionRef ref = new PositionRef(support.getPositionManager(), lineIndex, 0, Position.Bias.Forward);
+                // obj can be null, sorry...
+                org.openide.util.Lookup obj = support.getLookup();
+                SupportLine line = new SupportLine(obj, ref, support);
+                line.init();
+                return line;
+            }
+
+        }
+
     }
 
 // <editor-fold defaultstate="collapsed" desc="COSHack">
