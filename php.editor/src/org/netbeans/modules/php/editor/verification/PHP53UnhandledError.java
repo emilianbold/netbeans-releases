@@ -51,10 +51,10 @@ import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -180,8 +180,8 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
         }
 
         @Override
-        public void visit(InfixExpression node) {
-            if (InfixExpression.OperatorType.ELVIS.equals(node.getOperator())) {
+        public void visit(ConditionalExpression node) {
+            if (ConditionalExpression.OperatorType.ELVIS.equals(node.getOperator())) {
                 createError(node);
             } else {
                 super.visit(node);

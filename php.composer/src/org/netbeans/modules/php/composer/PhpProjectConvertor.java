@@ -76,7 +76,7 @@ import org.openide.util.Lookup;
 @ProjectConvertor.Registration(requiredPattern = PhpProjectConvertor.COMPOSER_JSON_FILENAME, position = 500)
 public final class PhpProjectConvertor implements ProjectConvertor {
 
-    private static final Logger LOGGER = Logger.getLogger(PhpProjectConvertor.class.getName());
+    static final Logger LOGGER = Logger.getLogger(PhpProjectConvertor.class.getName());
 
     static final String COMPOSER_JSON_FILENAME = "composer.json"; // NOI18N
     @StaticResource
@@ -204,7 +204,7 @@ public final class PhpProjectConvertor implements ProjectConvertor {
 
     }
 
-    private static class ConvertorClassPathProvider implements ClassPathProvider {
+    private static final class ConvertorClassPathProvider implements ClassPathProvider {
 
         @CheckForNull
         @Override
@@ -214,7 +214,12 @@ public final class PhpProjectConvertor implements ProjectConvertor {
                     || PhpSourcePath.SOURCE_CP.equals(type)) {
                 final Project project = ProjectConvertors.getNonConvertorOwner(file);
                 if (project != null) {
-                    return project.getLookup().lookup(ClassPathProvider.class).findClassPath(file, type);
+                    ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
+                    if (classPathProvider == null) { // #255912
+                        LOGGER.log(Level.INFO, "No ClassPathProvider found in lookup of project {0}", project.getClass().getName());
+                        return null;
+                    }
+                    return classPathProvider.findClassPath(file, type);
                 }
             }
             return null;

@@ -255,7 +255,6 @@ terminal T_IS_SMALLER_OR_EQUAL,T_IS_GREATER_OR_EQUAL;
 terminal T_SPACESHIP;
 terminal T_RGREATER;
 terminal T_LGREATER;
-terminal T_ELVIS;
 terminal T_SL,T_SR;
 terminal T_PLUS;
 terminal T_MINUS;
@@ -455,7 +454,7 @@ precedence left T_REFERENCE;
 precedence left T_ELLIPSIS;
 
 precedence nonassoc T_IS_EQUAL,T_IS_NOT_EQUAL,T_IS_IDENTICAL,T_IS_NOT_IDENTICAL;
-precedence nonassoc T_RGREATER,T_IS_SMALLER_OR_EQUAL,T_LGREATER,T_IS_GREATER_OR_EQUAL,T_SPACESHIP,T_ELVIS;
+precedence nonassoc T_RGREATER,T_IS_SMALLER_OR_EQUAL,T_LGREATER,T_IS_GREATER_OR_EQUAL,T_SPACESHIP;
 precedence left T_SL,T_SR;
 precedence left T_PLUS,T_MINUS,T_NEKUDA;
 precedence left T_TIMES,T_DIV,T_PRECENT;
@@ -2567,11 +2566,6 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.SPACESHIP, expr2);
 :}
 
-| expr:expr1 T_ELVIS expr:expr2
-{:
-	RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.ELVIS, expr2);
-:}
-
 | expr:expr T_INSTANCEOF class_name_reference:className
 {:
 	RESULT = new InstanceOfExpression(exprleft, classNameright, expr , className);
@@ -2584,12 +2578,12 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 
 | expr:condition T_QUESTION_MARK expr:ifTrue T_NEKUDOTAIM expr:ifFalse
 {:
-	RESULT = new ConditionalExpression(conditionleft, ifFalseright, condition , ifTrue, ifFalse);
+	RESULT = new ConditionalExpression(conditionleft, ifFalseright, condition, ConditionalExpression.OperatorType.QUESTION_MARK, ifTrue, ifFalse);
 :}
 
 | expr:cond T_QUESTION_MARK T_NEKUDOTAIM expr:ifFalse
 {:
-	RESULT = new ConditionalExpression(condleft, ifFalseright, cond , null, ifFalse);
+	RESULT = new ConditionalExpression(condleft, ifFalseright, cond, ConditionalExpression.OperatorType.ELVIS, null, ifFalse);
 :}
 
 | internal_functions_in_yacc:expr
@@ -3230,19 +3224,14 @@ T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:e
         RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.SPACESHIP, expr2);
 :}
 
-| static_scalar_value:expr1 T_ELVIS static_scalar_value:expr2
-{:
-        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.ELVIS, expr2);
-:}
-
 | static_scalar_value:cond T_QUESTION_MARK T_NEKUDOTAIM static_scalar_value:ifFalse
 {:
-        RESULT = new ConditionalExpression(condleft, ifFalseright, cond , null, ifFalse);
+        RESULT = new ConditionalExpression(condleft, ifFalseright, cond, ConditionalExpression.OperatorType.ELVIS, null, ifFalse);
 :}
 
 | static_scalar_value:condition T_QUESTION_MARK static_scalar_value:ifTrue T_NEKUDOTAIM static_scalar_value:ifFalse
 {:
-        RESULT = new ConditionalExpression(conditionleft, ifFalseright, condition , ifTrue, ifFalse);
+        RESULT = new ConditionalExpression(conditionleft, ifFalseright, condition, ConditionalExpression.OperatorType.QUESTION_MARK, ifTrue, ifFalse);
 :}
 
 | T_PLUS:start static_scalar_value:expr
