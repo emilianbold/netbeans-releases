@@ -42,11 +42,7 @@
 
 package org.netbeans.api.extexecution;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -57,47 +53,6 @@ public class ExternalProcessBuilderTest extends NbTestCase {
 
     public ExternalProcessBuilderTest(String name) {
         super(name);
-    }
-
-    public void testEnvironment() {
-        ExternalProcessBuilder creator = new ExternalProcessBuilder("command");
-        creator = creator.addEnvironmentVariable("test1", "value1");
-        creator = creator.addEnvironmentVariable("test2", "value2");
-
-        Map<String, String> env = new HashMap<String, String>(
-                creator.buildEnvironment(Collections.<String, String>emptyMap()));
-        assertEquals("value1", env.remove("test1"));
-        assertEquals("value2", env.remove("test2"));
-        assertTrue(env.isEmpty());
-    }
-
-    public void testPath() {
-        ExternalProcessBuilder creator = new ExternalProcessBuilder("command");
-        Map<String, String> original = new HashMap<String, String>();
-        original.put("PATH", "original");
-
-        // original path
-        Map<String, String> env = new HashMap<String, String>(
-                creator.buildEnvironment(original));
-        assertEquals("original", env.remove("PATH"));
-        assertTrue(env.isEmpty());
-
-        // some added path
-        File addedPath = new File("addedPath");
-        creator = creator.prependPath(addedPath);
-        env = new HashMap<String, String>(creator.buildEnvironment(original));
-        assertEquals(addedPath.getAbsolutePath().replace(" ", "\\ ") + File.pathSeparator + "original", env.remove("PATH"));
-        assertTrue(env.isEmpty());
-
-        // yet another path
-        File nextPath = new File("nextPath");
-        creator = creator.prependPath(nextPath);
-        env = new HashMap<String, String>(creator.buildEnvironment(original));
-        assertEquals(
-                nextPath.getAbsolutePath().replace(" ", "\\ ") + File.pathSeparator
-                + addedPath.getAbsolutePath().replace(" ", "\\ ") + File.pathSeparator
-                + "original", env.remove("PATH"));
-        assertTrue(env.isEmpty());
     }
 
     public void testImmutability() throws IOException {
