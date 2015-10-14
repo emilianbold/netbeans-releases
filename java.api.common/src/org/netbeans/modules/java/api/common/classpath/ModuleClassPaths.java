@@ -243,9 +243,11 @@ final class ModuleClassPaths {
                         toRemove.removeAll(modulePathRoots);
                         for (File f : toRemove) {
                             FileUtil.removeFileChangeListener(this, f);
+                            listensOn.remove(f);
                         }
                         for (File f : toAdd) {
                             FileUtil.addFileChangeListener(this, f);
+                            listensOn.add(f);
                         }
                         setCache(res);
                     } else {
