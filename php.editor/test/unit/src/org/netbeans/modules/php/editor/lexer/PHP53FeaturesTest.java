@@ -246,6 +246,22 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
         performTest("lexer/elvis_02");
     }
 
+    public void testElvis03() throws Exception {
+        performTest("lexer/elvis_03");
+    }
+
+    public void testElvis04() throws Exception {
+        performTest("lexer/elvis_04");
+    }
+
+    public void testElvis05() throws Exception {
+        performTest("lexer/elvis_05");
+    }
+
+    public void testElvis06() throws Exception {
+        performTest("lexer/elvis_06");
+    }
+
     public void testIssue225549() throws Exception {
         performTest("lexer/issue225549");
     }

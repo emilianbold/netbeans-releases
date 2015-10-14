@@ -665,57 +665,71 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(ConditionalExpression node) {
         scan(node.getCondition());
-        boolean wrap = node.getIfTrue() != null ? true : false;
-        ASTNode astNode = path.get(1);
-        boolean putContinualIndent = !(astNode instanceof Assignment
-                || astNode instanceof ReturnStatement);
-        if (wrap) {
-            while (ts.moveNext()
-                    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString()))
-                    && lastIndex < ts.index()) {
-                addFormatToken(formatTokens);
+        boolean putContinualIndent = true;
+        for (ASTNode astNode : path) {
+            if (astNode instanceof Assignment
+                    || astNode instanceof ReturnStatement) {
+                putContinualIndent = false;
+                break;
             }
-
-            int start = ts.offset();
-            if (putContinualIndent) {
-                formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
-            }
-            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, start));
-            ts.movePrevious();
+        }
+        // "?" part
+        while (ts.moveNext()
+                && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString())) // NOI18N
+                && lastIndex < ts.index()) {
+            addFormatToken(formatTokens);
+        }
+        assert ts.token().id() == PHPTokenId.PHP_TOKEN : ts.token().id();
+        assert "?".equals(ts.token().text().toString()) : ts.token().text().toString();
+        if (putContinualIndent) {
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+        }
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, ts.offset()));
+        formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+        if (!node.getOperator().isShortened()) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
+        }
+        if (node.getIfTrue() != null) {
             addAllUntilOffset(node.getIfTrue().getStartOffset());
             formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-
-        }
-        scan(node.getIfTrue());
-        if (wrap) {
+            scan(node.getIfTrue());
             addEndOfUnbreakableSequence(node.getIfTrue().getEndOffset());
-            if (putContinualIndent) {
-                formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        }
+        if (putContinualIndent) {
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        }
+        // shortened? if yes, remove all next whitespaces
+        if (node.getOperator().isShortened()) {
+            while (ts.moveNext()) {
+                if (ts.token().id() != PHPTokenId.WHITESPACE) {
+                    ts.movePrevious();
+                    break;
+                }
             }
         }
-        wrap = node.getIfFalse() != null ? true : false;
-        if (wrap) {
-            while (ts.moveNext()
-                    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString()))
-                    && lastIndex < ts.index()) {
-                addFormatToken(formatTokens);
-            }
-            int start = ts.offset();
-            if (putContinualIndent) {
-                formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
-            }
-            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, start));
-            ts.movePrevious();
-            addAllUntilOffset(node.getIfFalse().getStartOffset());
-            formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-
+        // ":" part
+        assert node.getIfFalse() != null;
+        while (ts.moveNext()
+                && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())) // NOI18N
+                && lastIndex < ts.index()) {
+            addFormatToken(formatTokens);
         }
+        assert ts.token().id() == PHPTokenId.PHP_TOKEN : ts.token().id();
+        assert ":".equals(ts.token().text().toString()) : ts.token().text().toString();
+        if (putContinualIndent) {
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+        }
+        if (!node.getOperator().isShortened()) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, ts.offset()));
+        }
+        formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
+        addAllUntilOffset(node.getIfFalse().getStartOffset());
+        formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
         scan(node.getIfFalse());
-        if (wrap) {
-            addEndOfUnbreakableSequence(node.getIfFalse().getEndOffset());
-            if (putContinualIndent) {
-                formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
-            }
+        addEndOfUnbreakableSequence(node.getIfFalse().getEndOffset());
+        if (putContinualIndent) {
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
         }
     }
 
@@ -1051,21 +1065,12 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(InfixExpression node) {
         scan(node.getLeft());
+        FormatToken.Kind whitespaceBefore = FormatToken.Kind.WHITESPACE_BEFORE_BINARY_OP;
+        FormatToken.Kind whitespaceAfter = FormatToken.Kind.WHITESPACE_AFTER_BINARY_OP;
 
-        FormatToken.Kind whitespaceBefore;
-        FormatToken.Kind whitespaceAfter;
-        switch (node.getOperator()) {
-            case CONCAT:
-                whitespaceBefore = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
-                whitespaceAfter = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
-                break;
-            case ELVIS:
-                whitespaceBefore = FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP;
-                whitespaceAfter = FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP;
-                break;
-            default:
-                whitespaceBefore = FormatToken.Kind.WHITESPACE_BEFORE_BINARY_OP;
-                whitespaceAfter = FormatToken.Kind.WHITESPACE_AFTER_BINARY_OP;
+        if (node.getOperator() == InfixExpression.OperatorType.CONCAT) {
+            whitespaceAfter = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
+            whitespaceBefore = whitespaceAfter;
         }
 
         while (ts.moveNext() && ts.offset() < node.getRight().getStartOffset()
@@ -1642,10 +1647,6 @@ public class FormatVisitor extends DefaultVisitor {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     }
-                } else if (parent instanceof ConditionalExpression
-                        && ("?".equals(text) || ":".equals(text))) {
-                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
                 } else if (",".equals(text)) {
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_COMMA, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
@@ -1696,10 +1697,6 @@ public class FormatVisitor extends DefaultVisitor {
                         }
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
-                        break;
-                    case "?:": // NOI18N
-                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
                         break;
                     default:
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
