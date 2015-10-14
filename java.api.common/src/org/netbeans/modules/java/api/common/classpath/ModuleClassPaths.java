@@ -184,10 +184,12 @@ final class ModuleClassPaths {
         }
     }
 
-    private static final class PropertyModulePath extends BaseClassPathImplementation implements PropertyChangeListener {
+    private static final class PropertyModulePath extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener {
         private final File projectDir;
         private final PropertyEvaluator eval;
         private final Set<String> props;
+        //@GuardedBy("this")
+        private final Set<File> listensOn;
 
         PropertyModulePath(
             @NonNull final File projectDir,
@@ -199,6 +201,7 @@ final class ModuleClassPaths {
             this.projectDir = projectDir;
             this.eval = eval;
             this.props = new LinkedHashSet<>();
+            this.listensOn = new HashSet<>();
             Collections.addAll(this.props, props);
             this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
         }
@@ -209,6 +212,7 @@ final class ModuleClassPaths {
             List<PathResourceImplementation> res = getCache();
             if (res == null) {
                 final List<PathResourceImplementation> collector = res = new ArrayList<>();
+                final Collection<File> modulePathRoots = new HashSet<>();
                 props.stream()
                     .map((prop)->eval.getProperty(prop))
                     .flatMap((path)-> {
@@ -217,7 +221,8 @@ final class ModuleClassPaths {
                             Arrays.stream(PropertyUtils.tokenizePath(path));
                     })
                     .map((part)->PropertyUtils.resolveFile(projectDir, part))
-                    .flatMap((modulesFolder)->{
+                    .flatMap((modulesFolder)-> {
+                        modulePathRoots.add(modulesFolder);
                         File[] modules = modulesFolder.listFiles();
                         return modules == null ?
                            Collections.<File>emptyList().stream():
@@ -232,6 +237,16 @@ final class ModuleClassPaths {
                 synchronized (this) {
                     List<PathResourceImplementation> cv = getCache();
                     if (cv == null) {
+                        final Set<File> toAdd = new HashSet<>(modulePathRoots);
+                        final Set<File> toRemove = new HashSet<>(listensOn);
+                        toAdd.removeAll(listensOn);
+                        toRemove.removeAll(modulePathRoots);
+                        for (File f : toRemove) {
+                            FileUtil.removeFileChangeListener(this, f);
+                        }
+                        for (File f : toAdd) {
+                            FileUtil.addFileChangeListener(this, f);
+                        }
                         setCache(res);
                     } else {
                         res = cv;
@@ -247,6 +262,34 @@ final class ModuleClassPaths {
             if (propName == null || props.contains(propName)) {
                 resetCache(true);
             }
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            resetCache(true);
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            resetCache(true);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            resetCache(true);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            resetCache(true);
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
         }
     }
 
