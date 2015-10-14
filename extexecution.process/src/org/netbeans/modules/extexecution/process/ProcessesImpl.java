@@ -56,7 +56,11 @@ public class ProcessesImpl implements ProcessesImplementation {
 
     @Override
     public void killTree(Process process, Map<String, String> environment) {
-        ProcessTreeKiller.get().kill(process, environment);
+        try {
+            ProcessTreeKiller.get().kill(process, environment);
+        } catch (LinkageError e) {
+            throw new UnsupportedOperationException(null, e);
+        }
     }
 
 }

@@ -45,6 +45,7 @@ package org.netbeans.modules.extexecution.base;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.api.extexecution.base.Processes;
 
 /**
@@ -89,8 +90,28 @@ public class WrapperProcess extends Process {
     }
 
     @Override
+    public boolean isAlive() {
+        return del.isAlive();
+    }
+
+    @Override
+    public Process destroyForcibly() {
+        del.destroyForcibly();
+        return this;
+    }
+
+    @Override
+    public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
+        return del.waitFor(timeout, unit);
+    }
+
+    @Override
     public void destroy() {
         Processes.killTree(del, Collections.singletonMap(KEY_UUID, uuid));
+    }
+
+    public Process getDelegate() {
+        return del;
     }
 
 }

@@ -45,7 +45,6 @@ package org.netbeans.api.extexecution;
 import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.extexecution.base.Processes;
-import org.netbeans.modules.extexecution.WrapperProcess;
 import org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -81,12 +80,13 @@ public final class ExternalProcessSupport {
         Parameters.notNull("process", process);
         Parameters.notNull("env", env);
 
-        if (process instanceof WrapperProcess) {
-            process.destroy();
-            return;
-        }
         ProcessDestroyPerformer pdp = Lookup.getDefault().lookup(ProcessDestroyPerformer.class);
         if (pdp != null) {
+            // XXX not nice, but there should be no PDPs anyway
+            if ("org.netbeans.modules.extexecution.base.WrapperProcess".equals(process.getClass().getName())) { // NOI18N
+                process.destroy();
+                return;
+            }
             pdp.destroy(process, env);
         } else {
             Processes.killTree(process, env);
