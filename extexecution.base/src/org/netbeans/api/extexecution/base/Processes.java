@@ -73,7 +73,7 @@ public final class Processes {
      *
      * @param process process to kill
      * @param environment map containing the variables and their values which the
-     *             process must have to be considered being part of
+     *             process should have to be considered being part of
      *             the tree to kill; used as a hint to find subprocesses
      */
     public static void killTree(Process process, Map<String, String> environment) {
