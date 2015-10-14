@@ -501,14 +501,16 @@ final class DocumentOpenClose {
         }
     }
     
-    void updateLines(StyledDocument doc, boolean close) {
-        Map<Line, Reference<Line>> lineMap = ces.findWeakHashMap();
-        for (Map.Entry<Line, Reference<Line>> entry : lineMap.entrySet()) {
-            Line line = entry.getKey();
-            if (line instanceof DocumentLine) {
-                ((DocumentLine)line).documentOpenedClosed(doc, close);
+    void updateLines(final StyledDocument doc, final boolean close) {
+        LineVector lineVector = ces.findLineVector();
+        lineVector.updateLines(new LineVector.LineUpdater() {
+            @Override
+            public void updateLine(Line line) {
+                if (line instanceof DocumentLine) {
+                    ((DocumentLine)line).documentOpenedClosed(doc, close);
+                }
             }
-        }
+        });
     }
 
     IllegalStateException invalidStatus() {
