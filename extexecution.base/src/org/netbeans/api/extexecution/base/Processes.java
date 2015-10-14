@@ -85,7 +85,7 @@ public final class Processes {
             try {
                 impl.killTree(process, environment);
                 LOGGER.log(Level.FINE, "Process tree killed using {0}", impl.getClass().getName()); // NOI18N
-                return;
+                break;
             } catch (UnsupportedOperationException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
