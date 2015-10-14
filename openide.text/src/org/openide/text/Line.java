@@ -474,14 +474,10 @@ public abstract class Line extends Annotatable implements Serializable {
         /** date when the object has been created */
         private Date date;
 
-        /** <code>Map</code> which contains all lines as keys and
-         * values weakReferences on itself. There woudl be better use
-         * set but there is missing get method, returning equal object.
-         * belonging to this <code>Line.Set</code>.
-         * @see DocumentLine#hashCode
-         * @see DocumentLine#equals
-         * @see #registerLine */
-        private Map<Line,Reference<Line>> whm;
+        /**
+         * Binary-searchable vector of lines.
+         */
+        private LineVector lineVector;
 
         /** Create a new snapshot. Remembers the date when it was created. */
         public Set() {
@@ -532,18 +528,18 @@ public abstract class Line extends Annotatable implements Serializable {
             return computeOriginal(this, line);
         }
 
-        /** Lazyly creates or finds already created map for internal use.
+        /**
+         * Lazily creates or finds binary-searchable vector of registered lines.
          */
-        Map<Line,Reference<Line>> findWeakHashMap() {
+        LineVector findLineVector() {
             synchronized (date) {
-                if (whm != null) {
-                    LOG.log(Level.FINE, "Line.Set.findWeakHashMap() whm.size()={0}", whm.size());
-                    return whm;
+                if (lineVector != null) {
+                    return lineVector;
                 }
 
-                whm = new WeakHashMap<Line,Reference<Line>>();
+                lineVector = new LineVector();
 
-                return whm;
+                return lineVector;
             }
         }
 
@@ -552,29 +548,14 @@ public abstract class Line extends Annotatable implements Serializable {
          * @return registered <code>Line</code>. <em>Note:</em> the retruned
          * <code>Line</code> could be different (identityHashCode not equal)
          * from the one passed in */
-        final Line registerLine(Line line) {
+        final Line findOrCreateLine(int lineIndex, LineVector.LineCreator lineCreator) {
             // beware of null argument
-            if (line == null) {
+            if (lineCreator == null) {
                 throw new NullPointerException();
             }
 
-            Map<Line,Reference<Line>> lines = findWeakHashMap();
-
-            synchronized (lines) {
-                Reference<Line> r = lines.get(line);
-                Line in = r != null ? r.get() : null;
-
-                if (in == null) {
-                    if (line instanceof DocumentLine) {
-                        ((DocumentLine) line).init();
-                    }
-
-                    lines.put(line, new WeakReference<Line>(line));
-                    in = line;
-                }
-
-                return in;
-            }
+            LineVector lineVector = findLineVector();
+            return lineVector.findOrCreateLine(lineIndex, lineCreator);
         }
 
         /** Finds whether a line equal to provided is already registered.
@@ -582,13 +563,8 @@ public abstract class Line extends Annotatable implements Serializable {
          * @return the registered line equal to line or null
          */
         final Line findLine(Line line) {
-            Map<Line,Reference<Line>> lines = findWeakHashMap();
-            synchronized (lines) {
-                Reference<Line> r = lines.get(line);
-                Line in = r != null ? r.get() : null;
-
-                return in;
-            }
+            LineVector lineVector = findLineVector();
+            return lineVector.findOrCreateLine(line.getLineNumber(), null);
         }
 
         /** A method that for a given Line.Set and a line computes the best

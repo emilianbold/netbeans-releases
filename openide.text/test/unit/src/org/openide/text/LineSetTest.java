@@ -46,6 +46,7 @@ package org.openide.text;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -419,6 +420,36 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
         
         assertNotNull ("Part is returned", part);
         assertEquals ("But it is of course empty", 0, part.getText ().length ());
+    }
+    
+    public void testManyLineInstances() throws Exception {
+        long tm = System.currentTimeMillis();
+        int lineCount = 1000;
+        StringBuilder contentBuilder = new StringBuilder(lineCount * 10);
+        for (int i = 0; i < lineCount; i++) {
+            contentBuilder.append("Line ").append(i).append("\n");
+        }
+        content = contentBuilder.toString();
+        javax.swing.text.Document doc = support.openDocument();
+
+        // Create and hold a line instance on each line
+        List<Line> lines = new ArrayList<Line>();
+        Line.Set lineSet = support.getLineSet();
+        for (int i = 0; i < lineCount; i++) {
+            lines.add(lineSet.getCurrent(i));
+        }
+        
+//        System.err.println("testManyLineInstances lineCount=" + lineCount + ", elapsed time: " + (System.currentTimeMillis() - tm));
+        
+        // Test searching for the line instances in a backward direction
+        for (int i = lineCount - 1; i >= 0; i--) {
+            assertSame("Line instances differ at index=" + i, lines.get(i), lineSet.getCurrent(i));
+        }
+        
+        // Original impl with weak hash map will roughly do N^2 line comparisons :-(
+        //   Each comparison needs a binary search todetermine the line number.
+        assertTrue("Line.equals() count=" + DocumentLine.dlEqualsCounter + " too high",
+                DocumentLine.dlEqualsCounter < 5000);
     }
     
     private void assertNumberOfLines (int cnt, Line.Set set) throws Exception {
