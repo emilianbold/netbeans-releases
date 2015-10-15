@@ -104,25 +104,27 @@ public class CachingPathArchive implements Archive {
             @NonNull String folderName,
             @NullAllowed final ClassPath.Entry entry,
             @NullAllowed Set<JavaFileObject.Kind> kinds,
-            @NullAllowed JavaFileFilterImplementation filter) throws IOException {
+            @NullAllowed JavaFileFilterImplementation filter,
+            final boolean recursive) throws IOException {
         init();
-        final int[] pkgContent = data.get(folderName);
-        if (pkgContent == null || pkgContent == EMPTY_FOLDER) {
-            return Collections.emptyList();
+        if (recursive) {
+            final List<JavaFileObject> collector = new ArrayList<>();
+            data.entrySet().stream()
+                    .filter((e) -> {
+                        final String fld = e.getKey();
+                        return fld.startsWith(folderName) &&
+                            (fld.length() == folderName.length() || fld.charAt(folderName.length()) == FileObjects.NBFS_SEPARATOR_CHAR);
+                    })
+                    .forEach((e) -> {
+                        listFolder(e.getValue(), e.getKey(), kinds, collector);
+                    });
+            return collector;
+        } else {
+            final int[] pkgContent = data.get(folderName);
+            return pkgContent == null || pkgContent == EMPTY_FOLDER ?
+                Collections.emptyList() :
+                listFolder(pkgContent, folderName, kinds, null);
         }
-        final List<JavaFileObject> res = new ArrayList<>(pkgContent.length>>>1);
-        for (int i = 0; i < pkgContent.length; i+=2) {
-            final String name = getName(pkgContent[i], pkgContent[i+1]);
-            if (kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(name)))) {
-                res.add(FileObjects.pathFileObject(
-                        folderName,
-                        name,
-                        root,
-                        rootURI,
-                        null));
-            }
-        }
-        return res;
     }
 
     @Override
@@ -228,6 +230,28 @@ public class CachingPathArchive implements Archive {
             });
             packedNames = Arrays.copyOfRange(packedNames, 0, nameIndex);
         }
+    }
+
+    private List<JavaFileObject> listFolder(
+        @NonNull final int[] pkgContent,
+        @NonNull final String folderName,
+        @NullAllowed final Set<JavaFileObject.Kind> kinds,
+        @NullAllowed List<JavaFileObject> collector) {
+        if (collector == null) {
+            collector = new ArrayList<>(pkgContent.length>>>1);
+        }
+        for (int i = 0; i < pkgContent.length; i+=2) {
+            final String name = getName(pkgContent[i], pkgContent[i+1]);
+            if (kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(name)))) {
+                collector.add(FileObjects.pathFileObject(
+                        folderName,
+                        name,
+                        root,
+                        rootURI,
+                        null));
+            }
+        }
+        return collector;
     }
 
     private static class State {

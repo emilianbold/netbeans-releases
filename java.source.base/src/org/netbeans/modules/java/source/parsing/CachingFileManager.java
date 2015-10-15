@@ -114,20 +114,13 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     
     @Override
     public Iterable<JavaFileObject> list( Location l, String packageName, Set<JavaFileObject.Kind> kinds, boolean recursive ) {
-     
-        if (recursive) {
-            throw new UnsupportedOperationException ("Recursive listing is not supported in archives");
-        }
-        
-        
         String folderName = FileObjects.convertPackage2Folder( packageName );
-                        
         List<Iterable<JavaFileObject>> idxs = new LinkedList<Iterable<JavaFileObject>>();
         for(ClassPath.Entry entry : this.cp.entries()) {
             try {
                 Archive archive = provider.getArchive( entry.getURL(), cacheFile );
                 if (archive != null) {
-                    Iterable<JavaFileObject> entries = archive.getFiles( folderName, ignoreExcludes?null:entry, kinds, filter);
+                    Iterable<JavaFileObject> entries = archive.getFiles( folderName, ignoreExcludes?null:entry, kinds, filter, recursive);
                     idxs.add(entries);
                     if (LOG.isLoggable(Level.FINEST)) {
                         final StringBuilder urls = new StringBuilder ();
@@ -165,7 +158,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
             try {
                 Archive  archive = provider.getArchive (root.getURL(), cacheFile);
                 if (archive != null) {
-                    Iterable<JavaFileObject> files = archive.getFiles(namePair[0], ignoreExcludes?null:root, null, filter);
+                    Iterable<JavaFileObject> files = archive.getFiles(namePair[0], ignoreExcludes?null:root, null, filter, false);
                     for (JavaFileObject e : files) {
                         final String ename = e.getName();
                         if (namePair[1].equals(FileObjects.stripExtension(ename)) &&

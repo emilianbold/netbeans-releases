@@ -56,6 +56,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -130,23 +131,32 @@ public class CachingArchive implements Archive, FileChangeListener {
     /** Gets all files in given folder
      */
     @Override
-    public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter ) throws IOException {
-        Map<String, Folder> folders = doInit();
-        Folder files = folders.get( folderName );
-        if (files == null) {
-            return Collections.<JavaFileObject>emptyList();
-        }
-        else {
-            assert !keepOpened || zipFile != null;
-            List<JavaFileObject> l = new ArrayList<>(files.idx / files.delta);
-            final Predicate<String> predicate = kinds == null ? new Tautology() : new HasKind(kinds);
-            for (int i = 0; i < files.idx; i += files.delta){
-                final JavaFileObject fo = create(folderName, files, i, predicate);
-                if (fo != null) {
-                    l.add(fo);
-                }
-            }
-            return l;
+    @NonNull
+    public Iterable<JavaFileObject> getFiles(
+            @NonNull final String folderName,
+            @NullAllowed final ClassPath.Entry entry,
+            @NullAllowed final Set<JavaFileObject.Kind> kinds,
+            @NullAllowed JavaFileFilterImplementation filter,
+            final boolean recursive) throws IOException {
+        final Map<String, Folder> folders = doInit();
+        assert !keepOpened || zipFile != null;
+        if (recursive) {
+            final List<JavaFileObject> collector = new ArrayList<>();
+            folders.entrySet().stream()
+                    .filter((e) -> {
+                        final String fld = e.getKey();
+                        return fld.startsWith(folderName) &&
+                            (fld.length() == folderName.length() || fld.charAt(folderName.length()) == FileObjects.NBFS_SEPARATOR_CHAR);
+                    })
+                    .forEach((e) -> {
+                        listFolder(e.getValue(), e.getKey(), kinds, collector);
+                    });
+            return collector;
+        } else {
+            final Folder files = folders.get(folderName);
+            return files == null ?
+                Collections.<JavaFileObject>emptyList() :
+                listFolder(files, folderName, kinds, null);
         }
     }
 
@@ -393,7 +403,7 @@ public class CachingArchive implements Archive, FileChangeListener {
             final @NonNull int off,
             final @NonNull Predicate<String> predicate) {
         String baseName = getString(f.indices[off], f.indices[off+1]);
-        if (baseName != null && predicate.apply(baseName)) {
+        if (baseName != null && predicate.test(baseName)) {
             long mtime = join(f.indices[off+3], f.indices[off+2]);
             if (zipFile == null) {
                 if (f.delta == 4) {
@@ -413,6 +423,25 @@ public class CachingArchive implements Archive, FileChangeListener {
             }
         }
         return null;
+    }
+
+    @NonNull
+    private List<JavaFileObject> listFolder(
+        @NonNull final Folder files,
+        @NonNull final String folderName,
+        @NullAllowed final Set<JavaFileObject.Kind> kinds,
+        @NullAllowed List<JavaFileObject> collector) {
+        if (collector == null) {
+            collector = new ArrayList<>(files.idx / files.delta);
+        }
+        final Predicate<String> predicate = kinds == null ? new Tautology() : new HasKind(kinds);
+        for (int i = 0; i < files.idx; i += files.delta){
+            final JavaFileObject fo = create(folderName, files, i, predicate);
+            if (fo != null) {
+                collector.add(fo);
+            }
+        }
+        return collector;
     }
 
     /*test*/ synchronized int putName(byte[] name) {
@@ -507,10 +536,6 @@ public class CachingArchive implements Archive, FileChangeListener {
         }
     }
 
-    private static interface Predicate<T> {
-        boolean apply(@NonNull T value);
-    }
-
     private static class HasKind implements Predicate<String> {
 
         private final Set<JavaFileObject.Kind> kinds;
@@ -521,7 +546,7 @@ public class CachingArchive implements Archive, FileChangeListener {
         }
 
         @Override
-        public boolean apply(final @NonNull String value) {
+        public boolean test(final @NonNull String value) {
             return kinds.contains(FileObjects.getKind(FileObjects.getExtension(value)));
         }
     }
@@ -536,18 +561,16 @@ public class CachingArchive implements Archive, FileChangeListener {
         }
 
         @Override
-        public boolean apply(final @NonNull String value) {
+        public boolean test(final @NonNull String value) {
             return name.equals(value);
         }
     }
 
     private static class Tautology implements Predicate<String> {
         @Override
-        public boolean apply(final @NonNull String value) {
+        public boolean test(final @NonNull String value) {
             return true;
         }
 
     }
-
-
 }

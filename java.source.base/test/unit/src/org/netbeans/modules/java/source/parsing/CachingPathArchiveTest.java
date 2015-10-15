@@ -116,8 +116,8 @@ public final class CachingPathArchiveTest extends NbTestCase {
         final PathArchive pa = new PathArchive(module, rootURI);
         final Set<String> pkgs = getPackages(module).keySet();
         for (String pkg : pkgs) {
-            final Iterable<? extends JavaFileObject> cjfos = cpa.getFiles(pkg, null, null, null);
-            final Iterable<? extends JavaFileObject> jfos = pa.getFiles(pkg, null, null, null);
+            final Iterable<? extends JavaFileObject> cjfos = cpa.getFiles(pkg, null, null, null, false);
+            final Iterable<? extends JavaFileObject> jfos = pa.getFiles(pkg, null, null, null, false);
             assertJFOEquals(jfos, cjfos);
         }
     }
@@ -155,7 +155,7 @@ public final class CachingPathArchiveTest extends NbTestCase {
         final CachingPathArchive cpa = new CachingPathArchive(module, null);
         final Map<String,Set<String>> pkgs = getPackages(module);
         for (Map.Entry<String,Set<String>> pkg : pkgs.entrySet()) {
-            final Iterable<? extends JavaFileObject> res = cpa.getFiles(pkg.getKey(), null, null, null);
+            final Iterable<? extends JavaFileObject> res = cpa.getFiles(pkg.getKey(), null, null, null, false);
             assertPkgEquals(pkg.getKey(), pkg.getValue(), res);
         }
     }

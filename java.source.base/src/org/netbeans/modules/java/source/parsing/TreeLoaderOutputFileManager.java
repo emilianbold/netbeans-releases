@@ -124,7 +124,7 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
             final File root = new File (outputRoot);
             Archive  archive = provider.getArchive (BaseUtilities.toURI(root).toURL(), false);
             if (archive != null) {
-                Iterable<JavaFileObject> files = archive.getFiles(names[0], null, null, null);
+                Iterable<JavaFileObject> files = archive.getFiles(names[0], null, null, null, false);
                 for (JavaFileObject e : files) {
                     if (names[1].equals(e.getName())) {
                         return e;

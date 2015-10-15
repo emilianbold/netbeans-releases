@@ -150,7 +150,7 @@ public class CtSymArchiveTest extends NbTestCase {
             if (folderContent == null) {
                 folderContent = e.getValue();
             }
-            final List<String> archContent = asList(arch.getFiles(folder, null, EnumSet.of(JavaFileObject.Kind.CLASS), null));
+            final List<String> archContent = asList(arch.getFiles(folder, null, EnumSet.of(JavaFileObject.Kind.CLASS), null, false));
             compare(folderContent,archContent);
         }
     }

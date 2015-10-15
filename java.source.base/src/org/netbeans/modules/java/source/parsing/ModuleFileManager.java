@@ -92,15 +92,12 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final String packageName,
             @NonNull final Set<JavaFileObject.Kind> kinds,
             final boolean recursive ) {
-        if (recursive) {
-            throw new UnsupportedOperationException ("Recursive listing is not supported in archives");
-        }
         final ModuleLocation ml = asModuleLocation(l);
         final String folderName = FileObjects.convertPackage2Folder(packageName);
         try {
             final Archive archive = cap.getArchive(ml.getModuleRoot(), cacheFile);
             if (archive != null) {
-                final Iterable<JavaFileObject> entries = archive.getFiles(folderName, null, kinds, null);
+                final Iterable<JavaFileObject> entries = archive.getFiles(folderName, null, kinds, null, recursive);
                 if (LOG.isLoggable(Level.FINEST)) {
                     final StringBuilder urls = new StringBuilder ();
                     for (JavaFileObject jfo : entries) {
@@ -148,7 +145,7 @@ final class ModuleFileManager implements JavaFileManager {
         try {
             final Archive  archive = cap.getArchive (ml.getModuleRoot(), cacheFile);
             if (archive != null) {
-                final Iterable<JavaFileObject> files = archive.getFiles(namePair[0], null, null, null);
+                final Iterable<JavaFileObject> files = archive.getFiles(namePair[0], null, null, null, false);
                 for (JavaFileObject e : files) {
                     final String ename = e.getName();
                     if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
