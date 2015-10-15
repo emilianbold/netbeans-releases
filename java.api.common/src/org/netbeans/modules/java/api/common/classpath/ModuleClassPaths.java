@@ -476,29 +476,37 @@ final class ModuleClassPaths {
                 final boolean transitive,
                 @NonNull final Map<String,URL> modulesByName) {
             final Set<URL> res = new HashSet<>();
-            collectRequiredModulesImpl(module, transitive, modulesByName, res);
+            final Set<ModuleElement> seen = new HashSet<>();
+            collectRequiredModulesImpl(module, transitive, modulesByName, seen, res);
             return res;
         }
 
-        private static void collectRequiredModulesImpl(
+        private static boolean collectRequiredModulesImpl(
                 @NullAllowed final ModuleElement module,
                 final boolean transitive,
                 @NonNull final Map<String,URL> modulesByName,
+                @NonNull final Collection<? super ModuleElement> seen,
                 @NonNull final Collection<? super URL> c) {
-            if (module != null) {
+            if (module != null && !module.isUnnamed() && seen.add(module)) {
                 for (ModuleElement.Directive directive : module.getDirectives()) {
                     if (directive.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         ModuleElement.RequiresDirective req = (ModuleElement.RequiresDirective) directive;
                         final ModuleElement dependency = req.getDependency();
+                        boolean add = true;
                         if (transitive) {
-                            collectRequiredModulesImpl(dependency, transitive, modulesByName, c);
+                            add = collectRequiredModulesImpl(dependency, transitive, modulesByName, seen, c);
                         }
-                        final URL dependencyURL = modulesByName.get(dependency.getQualifiedName().toString());
-                        if (dependencyURL != null) {
-                            c.add(dependencyURL);
+                        if (add) {
+                            final URL dependencyURL = modulesByName.get(dependency.getQualifiedName().toString());
+                            if (dependencyURL != null) {
+                                c.add(dependencyURL);
+                            }
                         }
                     }
                 }
+                return true;
+            } else {
+                return false;
             }
         }
 
