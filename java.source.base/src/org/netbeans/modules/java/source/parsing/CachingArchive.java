@@ -144,6 +144,9 @@ public class CachingArchive implements Archive, FileChangeListener {
             final List<JavaFileObject> collector = new ArrayList<>();
             folders.entrySet().stream()
                     .filter((e) -> {
+                        if (folderName.isEmpty()) {
+                            return true;
+                        }
                         final String fld = e.getKey();
                         return fld.startsWith(folderName) &&
                             (fld.length() == folderName.length() || fld.charAt(folderName.length()) == FileObjects.NBFS_SEPARATOR_CHAR);
