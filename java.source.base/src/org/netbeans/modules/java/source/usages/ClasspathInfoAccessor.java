@@ -93,6 +93,7 @@ public abstract class ClasspathInfoAccessor {
             ClassPath moduleBootPath,
             ClassPath compilePath,
             ClassPath moduleCompilePath,
+            ClassPath moduleClassPath,
             ClassPath sourcePath,
             JavaFileFilterImplementation filter,
             boolean backgroundCompilation,

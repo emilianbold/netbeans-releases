@@ -161,6 +161,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             final ClassPath moduleBootPath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_BOOT_PATH);
             final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);                                    
             final ClassPath moduleCompilePath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_COMPILE_PATH);
+            final ClassPath moduleClassPath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_CLASS_PATH);
             if (sourcePath == null || bootPath == null || compilePath == null) {
                 txCtx.get(CacheAttributesTransaction.class).setInvalid(true);
                 JavaIndex.LOG.log(Level.WARNING, "Ignoring root with no ClassPath: {0}", FileUtil.getFileDisplayName(root)); // NOI18N
@@ -185,6 +186,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             moduleBootPath != null ? moduleBootPath : ClassPath.EMPTY,
                             compilePath,
                             moduleCompilePath != null ? moduleCompilePath : ClassPath.EMPTY,
+                            moduleClassPath != null ? moduleClassPath : ClassPath.EMPTY,
                             sourcePath,
                             Collections.<CompileTuple>emptySet());
                     try {
@@ -209,7 +211,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 final JavaParsingContext javaContext;
                 try {
                     //todo: Ugly hack, the ClassIndexManager.createUsagesQuery has to be called before the root is set to dirty mode.
-                    javaContext = new JavaParsingContext(context, bootPath, moduleBootPath != null ? moduleBootPath : ClassPath.EMPTY, compilePath, moduleCompilePath != null ? moduleCompilePath : ClassPath.EMPTY, sourcePath, virtualSourceTuples);
+                    javaContext = new JavaParsingContext(context, bootPath, moduleBootPath != null ? moduleBootPath : ClassPath.EMPTY, compilePath, moduleCompilePath != null ? moduleCompilePath : ClassPath.EMPTY, moduleClassPath != null ? moduleClassPath : ClassPath.EMPTY, sourcePath, virtualSourceTuples);
                 } finally {
                     JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                 }

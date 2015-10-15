@@ -126,6 +126,10 @@ final class JavaParsingContext {
             if (moduleCompilePath == null) {
                 moduleCompilePath = ClassPath.EMPTY;
             }
+            ClassPath moduleClassPath = ClassPath.getClassPath(ctx.getRoot(), JavaClassPathConstants.MODULE_CLASS_PATH);
+            if (moduleClassPath == null) {
+                moduleClassPath = ClassPath.EMPTY;
+            }
             ClassPath srcPath = ClassPath.getClassPath(ctx.getRoot(), ClassPath.SOURCE);
             if (srcPath == null) {
                 srcPath = ClassPath.EMPTY;
@@ -135,6 +139,7 @@ final class JavaParsingContext {
                 moduleBootPath,
                 compilePath,
                 moduleCompilePath,
+                moduleClassPath,
                 srcPath,
                 null,
                 true,
@@ -146,12 +151,12 @@ final class JavaParsingContext {
         }
     }
 
-    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath moduleBootPath, final ClassPath compilePath, final ClassPath moduleCompilePath, final ClassPath sourcePath,
+    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath moduleBootPath, final ClassPath compilePath, final ClassPath moduleCompilePath, final ClassPath moduleClassPath, final ClassPath sourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException {
         ctx = context;
         rootNotNeeded = false;
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
-        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, moduleBootPath, compilePath, moduleCompilePath, sourcePath,
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, moduleBootPath, compilePath, moduleCompilePath, moduleClassPath, sourcePath,
                 filter, true, context.isSourceForBinaryRootIndexing(),
                 !virtualSources.isEmpty(), context.checkForEditorModifications());
         registerVirtualSources(cpInfo, virtualSources);

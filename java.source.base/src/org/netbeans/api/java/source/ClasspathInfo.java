@@ -103,10 +103,12 @@ public final class ClasspathInfo {
     private final ClassPath moduleBootPath;
     private final ClassPath compileClassPath;
     private final ClassPath moduleCompilePath;
+    private final ClassPath moduleClassPath;
     private final ClassPath cachedAptSrcClassPath;
     private final ClassPath cachedSrcClassPath;
     private final ClassPath cachedBootClassPath;
     private final ClassPath cachedCompileClassPath;
+    private final ClassPath cachedModuleClassPath;
     private final ClassPath outputClassPath;
 
     private final ClassPathListener cpListener;
@@ -126,6 +128,7 @@ public final class ClasspathInfo {
                           final @NonNull ClassPath moduleBootP,
                           final @NonNull ClassPath compileCp,
                           final @NonNull ClassPath moduleCompileP,
+                          final @NonNull ClassPath moduleClassP,
                           final @NullAllowed ClassPath srcCp,
                           final @NullAllowed JavaFileFilterImplementation filter,
                           final boolean backgroundCompilation,
@@ -139,12 +142,15 @@ public final class ClasspathInfo {
         this.moduleBootPath = moduleBootP;
         this.compileClassPath = compileCp;
         this.moduleCompilePath = moduleCompileP;
+        this.moduleClassPath = moduleClassP;
         this.listenerList = new ChangeSupport(this);
         this.cachedBootClassPath = CacheClassPath.forBootPath(this.bootClassPath,backgroundCompilation);
         this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath,backgroundCompilation);
+        this.cachedModuleClassPath = CacheClassPath.forClassPath(this.moduleClassPath,backgroundCompilation);
         if (!backgroundCompilation) {
             this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
             this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
+            this.cachedModuleClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedModuleClassPath));
         }
         if (srcCp == null) {
             this.cachedSrcClassPath = this.srcClassPath = this.outputClassPath = this.cachedAptSrcClassPath = ClassPath.EMPTY;
@@ -186,12 +192,16 @@ public final class ClasspathInfo {
     @Override
     public String toString() {
         return String.format(
-            "ClasspathInfo [boot: %s, compile: %s, src: %s, internal boot: %s, internal compile: %s, internal src: %s, internal out: %s]", //NOI18N
+            "ClasspathInfo [boot: %s, module boot: %s, compile: %s, module compile: %s, module class: %s, src: %s, internal boot: %s, internal compile: %s, internal module class: %s, internal src: %s, internal out: %s]", //NOI18N
                 bootClassPath,
+                moduleBootPath,
                 compileClassPath,
+                moduleCompilePath,
+                moduleClassPath,
                 srcClassPath,
                 cachedBootClassPath,
                 cachedCompileClassPath,
+                cachedModuleClassPath,
                 cachedSrcClassPath,
                 outputClassPath);
     }
@@ -275,7 +285,7 @@ public final class ClasspathInfo {
             @NullAllowed final ClassPath sourcePath) {
         Parameters.notNull("bootPath", bootPath);       //NOI18N
         Parameters.notNull("classPath", classPath);     //NOI18N
-        return create (bootPath, ClassPath.EMPTY, classPath, ClassPath.EMPTY, sourcePath, null, false, false, false, true);
+        return create (bootPath, ClassPath.EMPTY, classPath, ClassPath.EMPTY, ClassPath.EMPTY, sourcePath, null, false, false, false, true);
     }
 
     @NonNull
@@ -303,8 +313,12 @@ public final class ClasspathInfo {
         if (moduleCompilePath == null) {
             moduleCompilePath = ClassPath.EMPTY;
         }
+        ClassPath moduleClassPath = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_CLASS_PATH);
+        if (moduleClassPath == null) {
+            moduleClassPath = ClassPath.EMPTY;
+        }
         ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        return create (bootPath, moduleBootPath, compilePath, moduleCompilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+        return create (bootPath, moduleBootPath, compilePath, moduleCompilePath, moduleClassPath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
 
     @NonNull
@@ -313,13 +327,14 @@ public final class ClasspathInfo {
             @NonNull final ClassPath moduleBootPath,
             @NonNull final ClassPath classPath,
             @NonNull final ClassPath moduleCompilePath,
+            @NonNull final ClassPath moduleClassPath,
             @NullAllowed final ClassPath sourcePath,
             @NullAllowed final JavaFileFilterImplementation filter,
             final boolean backgroundCompilation,
             final boolean ignoreExcludes,
             final boolean hasMemoryFileManager,
             final boolean useModifiedFiles) {
-        return new ClasspathInfo(bootPath, moduleBootPath, classPath, moduleCompilePath, sourcePath,
+        return new ClasspathInfo(bootPath, moduleBootPath, classPath, moduleCompilePath, moduleClassPath, sourcePath,
                 filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
 
@@ -358,7 +373,7 @@ public final class ClasspathInfo {
 	    case BOOT:
 		return this.cachedBootClassPath;
 	    case COMPILE:
-		return this.cachedCompileClassPath;
+		return this.moduleCompilePath.entries().isEmpty() ? this.cachedCompileClassPath : this.cachedModuleClassPath;
 	    case SOURCE:
 		return this.cachedSrcClassPath;
 	    case OUTPUT:
@@ -389,7 +404,7 @@ public final class ClasspathInfo {
             moduleBootPath,
             moduleCompilePath,
             cachedBootClassPath,
-            cachedCompileClassPath,
+            moduleCompilePath.entries().isEmpty() ? cachedCompileClassPath : cachedModuleClassPath,
             cachedSrcClassPath,
             outputClassPath,
             cachedAptSrcClassPath,
@@ -473,6 +488,7 @@ public final class ClasspathInfo {
         public ClasspathInfo create (final ClassPath bootPath,
                 final ClassPath moduleBootPath,
                 final ClassPath classPath,
+                final ClassPath moduleCompilePath,
                 final ClassPath moduleClassPath,
                 final ClassPath sourcePath,
                 final JavaFileFilterImplementation filter,
@@ -480,7 +496,7 @@ public final class ClasspathInfo {
                 final boolean ignoreExcludes,
                 final boolean hasMemoryFileManager,
                 final boolean useModifiedFiles) {
-            return ClasspathInfo.create(bootPath, moduleBootPath, classPath, moduleClassPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+            return ClasspathInfo.create(bootPath, moduleBootPath, classPath, moduleCompilePath, moduleClassPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
         }
 
         @Override

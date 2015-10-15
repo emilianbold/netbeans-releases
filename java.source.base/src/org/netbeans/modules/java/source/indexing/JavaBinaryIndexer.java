@@ -208,6 +208,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             ClassPathSupport.createClassPath(new URL[0]),
             ClassPathSupport.createClassPath(new URL[0]),
             ClassPathSupport.createClassPath(new URL[0]),
+            ClassPathSupport.createClassPath(new URL[0]),
             null,
             true,
             true,
