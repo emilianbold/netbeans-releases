@@ -549,6 +549,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             fmTx.delete(f);
                         }
                     }
+                } else if ("module-info.sig".contentEquals(file.getName())) { //NOI18N
+                    removedFiles.add(file);
+                    fmTx.delete(file);
                 }
             }
         }
