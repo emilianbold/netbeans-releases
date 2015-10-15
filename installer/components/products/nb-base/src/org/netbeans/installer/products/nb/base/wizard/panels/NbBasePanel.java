@@ -182,6 +182,7 @@ public class NbBasePanel extends DestinationPanel {
             
             if (product.getUid().equals("jre-nested")) {                
                 hasNestedJre = true;
+                jdkLocationPanel.getWizard().setProperty(JdkLocationPanel.JRE_NESTED, JdkLocationPanel.JRE_NESTED);
             }
         }
         
