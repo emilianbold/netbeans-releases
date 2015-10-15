@@ -1843,7 +1843,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="init-nested-jres">        
         <set property="nestedjre.cache.dir" value="${nbi.cache.dir}/nestedjre"/>
 	<mkdir dir="${nestedjre.cache.dir}"/>
-        <set property="nestedjre.version" value="1.${jre-nested.version.number}.0.${jre-nested.update.number}.0"/>
+        <set property="nestedjre.version" value="1.${jre-nested.version.number}.0.${jre-nested.update.number}.0-${nb.full.version}"/>
     </target>
 
     <target name="get-nested-jres">

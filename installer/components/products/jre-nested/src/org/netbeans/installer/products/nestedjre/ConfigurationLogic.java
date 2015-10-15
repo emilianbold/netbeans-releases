@@ -45,9 +45,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.NbClusterConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.helper.FilesList;
@@ -71,7 +73,17 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     @Override
     public void install(final Progress progress) throws InstallationException {
         final Product product = getProduct();
-        final File installLocation = product.getInstallationLocation();
+        File installLocation = product.getInstallationLocation();        
+        
+        // #255871 - Wrong path for installing JRE
+        List<Product> products = Registry.getInstance().getProductsToInstall();
+        for(Product p : products) {
+            if(p.getUid().equals(BASE_IDE_UID)) {
+                installLocation = new File(p.getInstallationLocation(), JavaUtils.JRE_NESTED_SUBDIR);
+                product.setInstallationLocation(installLocation);
+            }
+        }
+        
         final File jvmTempLocation = new File(System.getProperty("java.home"));
         final FilesList filesList = product.getInstalledFiles();
 
