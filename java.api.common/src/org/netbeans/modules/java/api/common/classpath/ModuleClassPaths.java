@@ -477,13 +477,14 @@ final class ModuleClassPaths {
                 @NonNull final Map<String,URL> modulesByName) {
             final Set<URL> res = new HashSet<>();
             final Set<ModuleElement> seen = new HashSet<>();
-            collectRequiredModulesImpl(module, transitive, modulesByName, seen, res);
+            collectRequiredModulesImpl(module, transitive, true, modulesByName, seen, res);
             return res;
         }
 
         private static boolean collectRequiredModulesImpl(
                 @NullAllowed final ModuleElement module,
                 final boolean transitive,
+                final boolean topLevel,
                 @NonNull final Map<String,URL> modulesByName,
                 @NonNull final Collection<? super ModuleElement> seen,
                 @NonNull final Collection<? super URL> c) {
@@ -491,15 +492,17 @@ final class ModuleClassPaths {
                 for (ModuleElement.Directive directive : module.getDirectives()) {
                     if (directive.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         ModuleElement.RequiresDirective req = (ModuleElement.RequiresDirective) directive;
-                        final ModuleElement dependency = req.getDependency();
-                        boolean add = true;
-                        if (transitive) {
-                            add = collectRequiredModulesImpl(dependency, transitive, modulesByName, seen, c);
-                        }
-                        if (add) {
-                            final URL dependencyURL = modulesByName.get(dependency.getQualifiedName().toString());
-                            if (dependencyURL != null) {
-                                c.add(dependencyURL);
+                        if (topLevel ||req.isPublic()) {
+                            final ModuleElement dependency = req.getDependency();
+                            boolean add = true;
+                            if (transitive) {
+                                add = collectRequiredModulesImpl(dependency, transitive, false, modulesByName, seen, c);
+                            }
+                            if (add) {
+                                final URL dependencyURL = modulesByName.get(dependency.getQualifiedName().toString());
+                                if (dependencyURL != null) {
+                                    c.add(dependencyURL);
+                                }
                             }
                         }
                     }
