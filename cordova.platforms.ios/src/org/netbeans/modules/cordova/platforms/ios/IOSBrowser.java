@@ -46,12 +46,12 @@ import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
@@ -188,6 +188,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
                 }
             }, kind == Kind.IOS_DEVICE_DEFAULT ? Bundle.LBL_OpeningiOS() : Bundle.LBL_Opening(), new AtomicBoolean(), true);
         } catch (IllegalStateException ise) {
+            LOGGER.log(Level.FINE, "Stopping debugging.", ise);         //NOI18N
             WebKitDebuggingSupport.getDefault().stopDebugging(true);
         }
     }
