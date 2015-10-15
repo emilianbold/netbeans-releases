@@ -624,6 +624,9 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public static final String JDK_LOCATION_PROPERTY =
             "jdk.location"; // NOI18N
     
+    public static final String JRE_NESTED =
+            "jre.nested"; // NOI18N
+    
     public static final String MINIMUM_JDK_VERSION_PROPERTY =
             "minimum.jdk.version"; // NOI18N
     public static final String MAXIMUM_JDK_VERSION_PROPERTY =

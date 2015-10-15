@@ -90,6 +90,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final Product product = getProduct();
         final File installLocation = product.getInstallationLocation();
         final FilesList filesList = product.getInstalledFiles();
+        final boolean hasNestedJre = product.getProperty(JdkLocationPanel.JRE_NESTED) != null;
         
         /////////////////////////////////////////////////////////////////////////////
         final File jdkHome = new File(
@@ -103,7 +104,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             LogManager.log("... vendor  : "  + info.getVendor());
             LogManager.log("... arch    : "  + info.getArch());
             LogManager.log("... final   : "  + (!info.isNonFinal()));
-            NetBeansUtils.setJavaHome(installLocation, jdkHome);
+            if (hasNestedJre) {
+                NetBeansUtils.setJavaHome(installLocation, new File(installLocation, JavaUtils.JRE_NESTED_SUBDIR));
+            } else {
+                NetBeansUtils.setJavaHome(installLocation, jdkHome);
+            }
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.jdk.home"), // NOI18N

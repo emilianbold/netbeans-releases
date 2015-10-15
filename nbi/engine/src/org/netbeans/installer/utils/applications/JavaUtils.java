@@ -502,6 +502,8 @@ public class JavaUtils {
     public static Version criticalLowVersion = Version.getVersion("1.7.0_00");
     public static Version criticalHighVersion = Version.getVersion("1.7.0_09");            
     
+    public static final String JRE_NESTED_SUBDIR = "/bin/jre/"; //NOI18N
+    
     public static final String JDK_KEY =
             "SOFTWARE\\JavaSoft\\Java Development Kit"; // NOI18N
     public static final String JRE_KEY =
