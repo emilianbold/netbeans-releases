@@ -1256,10 +1256,19 @@ public class SourceUtils {
             if (fileUrl == null) {
                 //Folder
                 final FileObject root = URLMapper.findFileObject(rootUrl);
-                if (root != null && (root.getFileObject(MODULE_INFO, FileObjects.CLASS) != null || root.getFileObject(MODULE_INFO, FileObjects.SIG) != null))  {
-                    final String moduleName = root.getNameExt();
-                    if (SourceVersion.isName(moduleName)) {
-                        return moduleName;
+                if (root != null) {
+                    if (root.getFileObject(MODULE_INFO, FileObjects.CLASS) != null) {
+                        final String moduleName = root.getNameExt();
+                        if (SourceVersion.isName(moduleName)) {
+                            return moduleName;
+                        }
+                    } else {
+                        final FileObject moduleInfo = root.getFileObject(MODULE_INFO, FileObjects.SIG);
+                        if (moduleInfo != null) {
+                            try {
+                                return readModuleName(moduleInfo);
+                            } catch (IOException ioe) {}
+                        }
                     }
                 }
                 return null;

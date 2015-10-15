@@ -108,6 +108,7 @@ public final class ClasspathInfo {
     private final ClassPath cachedSrcClassPath;
     private final ClassPath cachedBootClassPath;
     private final ClassPath cachedCompileClassPath;
+    private final ClassPath cachedModuleCompilePath;
     private final ClassPath cachedModuleClassPath;
     private final ClassPath outputClassPath;
 
@@ -146,10 +147,12 @@ public final class ClasspathInfo {
         this.listenerList = new ChangeSupport(this);
         this.cachedBootClassPath = CacheClassPath.forBootPath(this.bootClassPath,backgroundCompilation);
         this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath,backgroundCompilation);
+        this.cachedModuleCompilePath = CacheClassPath.forClassPath(this.moduleCompilePath,backgroundCompilation);
         this.cachedModuleClassPath = CacheClassPath.forClassPath(this.moduleClassPath,backgroundCompilation);
         if (!backgroundCompilation) {
             this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
             this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
+            this.cachedModuleCompilePath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedModuleCompilePath));
             this.cachedModuleClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedModuleClassPath));
         }
         if (srcCp == null) {
@@ -373,7 +376,7 @@ public final class ClasspathInfo {
 	    case BOOT:
 		return this.cachedBootClassPath;
 	    case COMPILE:
-		return this.moduleCompilePath.entries().isEmpty() ? this.cachedCompileClassPath : this.cachedModuleClassPath;
+		return this.cachedCompileClassPath;
 	    case SOURCE:
 		return this.cachedSrcClassPath;
 	    case OUTPUT:
@@ -402,7 +405,7 @@ public final class ClasspathInfo {
         final SiblingSource siblings = SiblingSupport.create();
         final ProxyFileManager.Configuration cfg = ProxyFileManager.Configuration.create(
             moduleBootPath,
-            moduleCompilePath,
+            cachedModuleCompilePath,
             cachedBootClassPath,
             moduleCompilePath.entries().isEmpty() ? cachedCompileClassPath : cachedModuleClassPath,
             cachedSrcClassPath,
