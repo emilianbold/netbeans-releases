@@ -2628,7 +2628,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     public void makeThreadCurrent(Thread thread) {
         // was: Dbx.selectThread
-        dbx.sendCommand(0, 0, "thread t@" + ( (DbxThread)thread).getId()); // NOI18N
+        dbx.sendCommand(0, 0, "thread " + ( (DbxThread)thread).getName()); // NOI18N
     }
 
     public boolean isMultiThreading() {
