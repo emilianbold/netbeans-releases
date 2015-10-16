@@ -60,7 +60,7 @@ public final class ClankDriver {
     private ClankDriver() {
     }
 
-    public interface APTTokenStreamCache {
+    public interface ClankPreprocessorOutput {
 
       int getFileIndex();
 
@@ -83,18 +83,26 @@ public final class ClankDriver {
       return ClankDriverImpl.extractFileIndex(ppHandler);
     }
 
-    public static APTTokenStreamCache extractTokenStream(PreprocHandler ppHandler) {
-      return ClankDriverImpl.extractTokenStream(ppHandler);
+    public static ClankPreprocessorOutput extractPreprocessorOutput(PreprocHandler ppHandler) {
+      return ClankDriverImpl.extractPreprocessorOutputImplementation(ppHandler);
     }
 
-    public static APTTokenStreamCache extractPreparedCachedTokenStream(PreprocHandler ppHandler) {
-      ClankDriverImpl.APTTokenStreamCacheImplementation cache = ClankDriverImpl.extractTokenStream(ppHandler);
+    public static TokenStream extractPreparedTokenStream(ClankDriver.ClankFileInfo file) {
+        ClankDriverImpl.ClankPreprocessorOutputImplementation tsCacheImpl = ClankDriverImpl.extractPreprocessorOutputImplementation(file);
+        if (tsCacheImpl != null) {
+            return tsCacheImpl.prepareCachesIfPossible().getTokenStream();
+        }
+        return null;
+    }
+
+    public static ClankPreprocessorOutput extractPreparedPreprocessorOutput(PreprocHandler ppHandler) {
+      ClankDriverImpl.ClankPreprocessorOutputImplementation cache = ClankDriverImpl.extractPreprocessorOutputImplementation(ppHandler);
       return cache.prepareCachesIfPossible();
     }
 
-    public static void prepareCachesIfPossible(ClankDriver.ClankFileInfo fileInfo) {
-        if (fileInfo instanceof ClankDriverImpl.APTTokenStreamCacheImplementation) {
-            ((ClankDriverImpl.APTTokenStreamCacheImplementation) fileInfo).prepareCachesIfPossible();
+    public static void preparePreprocessorOutputIfPossible(ClankDriver.ClankFileInfo fileInfo) {
+        if (fileInfo instanceof ClankDriverImpl.ClankPreprocessorOutputImplementation) {
+            ((ClankDriverImpl.ClankPreprocessorOutputImplementation) fileInfo).prepareCachesIfPossible();
         }
     }
 
@@ -222,6 +230,7 @@ public final class ClankDriver {
       CharSequence getSpellingName();
       boolean isAngled();
       boolean isRecursive();
+      int getIncludeDirectiveIndex();
     }
 
     public interface ClankPreprocessorCallback {
@@ -253,13 +262,6 @@ public final class ClankDriver {
       boolean needSkippedRanges();
       boolean needMacroExpansion();
       boolean needComments();
-      
-      /**
-       * 
-       * @param directiveOwner
-       * @param directive
-       */
-      void onErrorDirective(ClankFileInfo directiveOwner, ClankErrorDirective directive);
     }
 
     public interface ClankFileInfo {
