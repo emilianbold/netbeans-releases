@@ -66,6 +66,8 @@ public class FileModel2Test extends TraceModelTestBase {
         System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
         System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
+//        System.setProperty("apt.use.clank", "true");
+//        System.setProperty("cnd.modelimpl.parser.threads", "1");
         super.setUp();
     }
 

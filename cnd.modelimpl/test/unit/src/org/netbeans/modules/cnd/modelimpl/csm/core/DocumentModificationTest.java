@@ -56,6 +56,7 @@ public class DocumentModificationTest extends CndBaseTestSuite {
         if (Boolean.getBoolean("cnd.document.modification.test")) { //NOI18N
             this.addTest(ModifyUndo191307TestCase.class);
             this.addTest(ModifyUndoRedo190950TestCase.class);
+            this.addTestSuite(RestoreHandlerTestCase.class);
             this.addTestSuite(InsertDeadBlockTestCase.class);
             this.addTestSuite(RemoveDeadBlockTestCase.class);
             this.addTestSuite(RemoveAndInsertDeadBlockTestCase.class);
