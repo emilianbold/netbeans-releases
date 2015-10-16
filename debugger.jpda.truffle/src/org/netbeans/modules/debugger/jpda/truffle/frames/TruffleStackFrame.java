@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.truffle.frames;
 
 import com.sun.jdi.StringReference;
 import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
@@ -59,6 +60,7 @@ public class TruffleStackFrame {
 
     private final JPDADebugger debugger;
     private final int depth;
+    private final ObjectVariable frameInstance;
     private final ObjectVariable stackTrace;
     private final String callTargetName;
     private final String methodName;
@@ -81,11 +83,19 @@ public class TruffleStackFrame {
     }
     */
 
-    public TruffleStackFrame(JPDADebugger debugger, int depth, ObjectVariable stackTrace,
+    public TruffleStackFrame(JPDADebugger debugger, int depth,
+                             ObjectVariable frameInstance, ObjectVariable stackTrace,
                              String frameDefinition, StringReference codeRef,
                              TruffleSlotVariable[] vars, ObjectVariable thisObject) {
+        /*
+        try {
+            System.err.println("new TruffleStackFrame("+depth+", "+frameInstance.getToStringValue()+" of type "+frameInstance.getClassType().getName());
+        } catch (InvalidExpressionException iex) {
+            iex.printStackTrace();
+        }*/
         this.debugger = debugger;
         this.depth = depth;
+        this.frameInstance = frameInstance;
         this.stackTrace = stackTrace;
         int i1 = 0;
         int i2 = frameDefinition.indexOf('\n');
@@ -146,7 +156,7 @@ public class TruffleStackFrame {
     }
     
     public ObjectVariable getStackFrameInstance() {
-        return (ObjectVariable) stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
+        return frameInstance;// also is: (ObjectVariable) stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
     }
     
     public TruffleSlotVariable[] getVars() {

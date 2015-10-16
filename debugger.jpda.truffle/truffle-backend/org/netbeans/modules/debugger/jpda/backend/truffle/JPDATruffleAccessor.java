@@ -303,7 +303,8 @@ public class JPDATruffleAccessor extends Object {
     }*/
     
     static Object getSlotValue(Object frameObj, Object slotObj) {
-        Frame frame = (Frame) frameObj;
+        FrameInstance frameInstance = (FrameInstance) frameObj;
+        Frame frame = frameInstance.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true);
         FrameSlot slot = (FrameSlot) slotObj;
         /* Does not work in some cases, throws FrameSlotTypeException
         switch(slot.getKind()) {
@@ -355,10 +356,10 @@ public class JPDATruffleAccessor extends Object {
         }
         if (frame.isObject(slot)) {
             Object obj = FrameUtil.getObjectSafe(frame, slot);
+            Node node = frameInstance.getCallNode();
+            //System.err.println("Frame instance "+frameInstance+" node = "+node);
             //Node node = frame.materialize().getFrameDescriptor().
-            FrameInstance fi = Truffle.getRuntime().getCurrentFrame();
-            Node node = (fi != null) ? fi.getCallNode() : null;   // TODO find frame's node
-            Visualizer visualizer = getVisualizer(node);
+            Visualizer visualizer = (node != null) ? getVisualizer(node.getRootNode()) : null;
             String name;
             if (visualizer != null) {
                 name = visualizer.displayIdentifier(slot);
@@ -574,10 +575,11 @@ public class JPDATruffleAccessor extends Object {
         //System.err.println("evaluate("+expression+")");
         SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
         FrameInstance fi = (FrameInstance) frameInstance;
-        if (fi == null) { // top frame
-            evt.getFrame();
+        // fi can be null for top frame
+        Node node = fi.getCallNode();
+        if (node == null) {
+            node = evt.getNode();
         }
-        Node node = evt.getNode();
         Visualizer visualizer = getVisualizer(node);
         Object value;
         try {
@@ -645,7 +647,7 @@ public class JPDATruffleAccessor extends Object {
             }
             slotTypes[i] = frameSlots[i].getKind().toString();
         }
-        slots[0] = frame;
+        slots[0] = fi;
         slots[1] = frameSlots;
         slots[2] = slotNames;
         slots[3] = slotTypes;
