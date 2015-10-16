@@ -139,6 +139,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     private boolean ignoreStepFilters = false;
     private boolean steppingFromFilteredLocation;
     private boolean steppingFromCompoundFilteredLocation;
+    private boolean isInBoxingUnboxingLocation;
+    private boolean wasInBoxingUnboxingLocation;
     private StopHereCheck stopHereCheck;
     private final Properties p;
     
@@ -521,6 +523,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         JPDAThreadImpl tr = (JPDAThreadImpl)debuggerImpl.getCurrentThread();
         tr.accessLock.readLock().lock();
         try {
+            wasInBoxingUnboxingLocation = isInBoxingUnboxingLocation;
+            isInBoxingUnboxingLocation = false;
             VirtualMachine vm = debuggerImpl.getVirtualMachine();
             if (vm == null) {
                 return false; // The session has finished
@@ -596,12 +600,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 tr.addLastOperation(lastOperation);
             }
             logger.fine("Have stepPatternDepth : "+stepPatternDepth);
+            int stepDepthDiff = 0;
             if (stepPatternDepth != null) {
                 StepPatternDepth newStepPatternDepth = null;
                 try {
                     int sd = tr.getStackDepth();
                     logger.fine("Current stack depth = "+sd);
-                    if (sd > (stepPatternDepth.stackDepth + 1)) {
+                    stepDepthDiff = sd - stepPatternDepth.stackDepth;
+                    if (stepDepthDiff > 1) {
                         // There are some (possibly filtered) stack frames in between.
                         // StepThroughFilters is false, therefore we should step out if we can not stop here:
                         boolean haveFilteredClassOnStack = false;
@@ -704,7 +710,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 }
                 logger.fine("stepAdded = "+stepAdded);
                 if (!stepAdded) {
-                    if ((eventRequest instanceof StepRequest) && shouldNotStopHere((StepEvent) event)) {
+                    if ((eventRequest instanceof StepRequest) && shouldNotStopHere((StepEvent) event, stepDepthDiff)) {
                         logger.fine("We should not stop here => resuming");
                         return true; // Resume
                     }
@@ -839,7 +845,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     /**
      * Checks for synthetic methods and smart-stepping...
      */
-    private boolean shouldNotStopHere(StepEvent event) {
+    private boolean shouldNotStopHere(StepEvent event, int stepDepthDiff) {
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
         // 2) init info about current state
         boolean useStepFilters = p.getBoolean("UseStepFilters", true);
@@ -877,6 +883,16 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         doStepDepth = StepRequest.STEP_OUT;
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine("Method"+m+" is a static initializer, or constructor - will step out.");
+                        }
+                    }
+                    if (!doStepAgain) {
+                        if (stepDepthDiff > 1 || wasInBoxingUnboxingLocation) {
+                            // Check if we are in autoboxing or unboxing methods
+                            // called by something that was skipped:
+                            doStepAgain = checkBoxingUnboxingMethods(loc, m);
+                            if (doStepAgain) {
+                                isInBoxingUnboxingLocation = true;
+                            }
                         }
                     }
                     if (useStepFilters && !ignoreStepFilters && !doStepAgain) {
@@ -1133,6 +1149,45 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     
     public void setStopHereCheck(StopHereCheck stopHereCheck) {
         this.stopHereCheck = stopHereCheck;
+    }
+
+    private boolean checkBoxingUnboxingMethods(Location loc, Method m) {
+        try {
+            String typeName = ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc));
+            switch (typeName) {
+                case "java.lang.Boolean":
+                case "java.lang.Byte":
+                case "java.lang.Character":
+                case "java.lang.Short":
+                case "java.lang.Integer":
+                case "java.lang.Long":
+                case "java.lang.Float":
+                case "java.lang.Double":
+                    break;
+                default:
+                    return false;
+            }
+            String methodName = TypeComponentWrapper.name(m);
+            switch(methodName) {
+                case "booleanValue":
+                case "byteValue":
+                case "charValue":
+                case "shortValue":
+                case "intValue":
+                case "longValue":
+                case "floatValue":
+                case "doubleValue":
+                case "valueOf":
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        } catch (InternalExceptionWrapper |
+                 ObjectCollectedExceptionWrapper |
+                 VMDisconnectedExceptionWrapper ex) {
+            return false;
+        }
     }
     
     public static interface StopHereCheck {
