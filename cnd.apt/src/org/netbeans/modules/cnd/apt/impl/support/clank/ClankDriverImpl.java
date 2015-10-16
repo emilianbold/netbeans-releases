@@ -79,9 +79,9 @@ import org.openide.util.Lookup;
  */
 public class ClankDriverImpl {
 
-    public interface APTTokenStreamCacheImplementation extends ClankDriver.APTTokenStreamCache {
+    public interface ClankPreprocessorOutputImplementation extends ClankDriver.ClankPreprocessorOutput {
 
-        APTTokenStreamCacheImplementation prepareCachesIfPossible();
+        ClankPreprocessorOutputImplementation prepareCachesIfPossible();
     }
 
     static final boolean TRACE = false;
@@ -317,9 +317,17 @@ public class ClankDriverImpl {
         return result;
     }
 
-    public static ClankDriverImpl.APTTokenStreamCacheImplementation extractTokenStream(PreprocHandler ppHandler) {
+    public static ClankDriverImpl.ClankPreprocessorOutputImplementation extractPreprocessorOutputImplementation(ClankDriver.ClankFileInfo file) {
+        // it is ClankFileInfoWrapper
+        if (file instanceof ClankDriverImpl.ClankPreprocessorOutputImplementation) {
+            return (ClankPreprocessorOutputImplementation) file;
+        }
+        return null;
+    }    
+    
+    public static ClankDriverImpl.ClankPreprocessorOutputImplementation extractPreprocessorOutputImplementation(PreprocHandler ppHandler) {
         ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl)ppHandler.getIncludeHandler();
-        ClankDriverImpl.APTTokenStreamCacheImplementation cached = includeHandler.getCachedTokens();
+        ClankDriverImpl.ClankPreprocessorOutputImplementation cached = includeHandler.getPreprocessorOutputImplementation();
         return cached;
     }
 
