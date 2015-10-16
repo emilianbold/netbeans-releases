@@ -699,7 +699,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
 
         // like APTIncludeFake
-        private static final String INCLUDE_FILE="-include";
+        private static final String INCLUDE_FILE="-include"; // NOI18N
         private ClankInclusionDirectiveWrapper convertToIncludeFile(int start) {
             return new ClankInclusionDirectiveWrapper(start, start + INCLUDE_FILE.length(), this);
         }
