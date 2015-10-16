@@ -44,24 +44,14 @@
 
 package org.netbeans.modules.diff.options;
 
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.openide.util.NbBundle;
-import org.openide.filesystems.FileUtil;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.diff.DiffModuleConfig;
-import org.netbeans.modules.diff.Utils;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Mutex;
-import org.openide.util.RequestProcessor;
 
 /**
  * Diff Options panel.
@@ -72,36 +62,13 @@ import org.openide.util.RequestProcessor;
 class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
 
     private boolean isChanged;
-    private final RequestProcessor.Task t = Utils.createParallelTask(new CheckCommand(true));
     
     /** Creates new form DiffOptionsPanel */
     public DiffOptionsPanel() {
         initComponents();
-        internalDiff.addActionListener(this);
-        externalDiff.addActionListener(this);
         ignoreWhitespace.addActionListener(this);
         ignoreAllWhitespace.addActionListener(this);
         ignoreCase.addActionListener(this);
-        externalCommand.getDocument().addDocumentListener(this);
-        refreshComponents();
-    }
-
-    void refreshComponents() {
-        ignoreWhitespace.setEnabled(internalDiff.isSelected());
-        ignoreAllWhitespace.setEnabled(internalDiff.isSelected());
-        ignoreCase.setEnabled(internalDiff.isSelected());
-        jLabel1.setEnabled(externalDiff.isSelected());
-        externalCommand.setEnabled(externalDiff.isSelected());
-        browseCommand.setEnabled(externalDiff.isSelected());
-        checkExternalCommand();
-    }
-
-    public JTextField getExternalCommand() {
-        return externalCommand;
-    }
-
-    public JRadioButton getExternalDiff() {
-        return externalDiff;
     }
 
     public JCheckBox getIgnoreWhitespace() {
@@ -116,10 +83,6 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
         return ignoreCase;
     }
 
-    public JRadioButton getInternalDiff() {
-        return internalDiff;
-    }
-
     public void setChanged(boolean changed) {
         isChanged = changed;
     }
@@ -129,15 +92,6 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
     }    
     
     private void fireChanged() {
-        boolean useInteralDiff = DiffModuleConfig.getDefault().isUseInteralDiff();
-        if (internalDiff.isSelected() != useInteralDiff) {
-            isChanged = true;
-            return;
-        }
-        if (externalDiff.isSelected() == useInteralDiff) {
-            isChanged = true;
-            return;
-        }
         if(ignoreWhitespace.isSelected() != DiffModuleConfig.getDefault().getOptions().ignoreLeadingAndtrailingWhitespace) {
             isChanged = true;
             return;
@@ -147,11 +101,6 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
             return;
         }
         if(ignoreCase.isSelected() != DiffModuleConfig.getDefault().getOptions().ignoreCase) {
-            isChanged = true;
-            return;
-        }
-        if(!externalCommand.getText().equals(DiffModuleConfig.getDefault().getPreferences().get(DiffModuleConfig.PREF_EXTERNAL_DIFF_COMMAND, "diff {0} {1}"))) { // NOI18N
-            checkExternalCommand();
             isChanged = true;
             return;
         }
@@ -167,21 +116,11 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        internalDiff = new javax.swing.JRadioButton();
         ignoreWhitespace = new javax.swing.JCheckBox();
         ignoreAllWhitespace = new javax.swing.JCheckBox();
         ignoreCase = new javax.swing.JCheckBox();
-        externalDiff = new javax.swing.JRadioButton();
-        jLabel1 = new javax.swing.JLabel();
-        externalCommand = new javax.swing.JTextField();
-        browseCommand = new javax.swing.JButton();
-        lblWarningCommand = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 0, 0, 5));
-
-        buttonGroup1.add(internalDiff);
-        org.openide.awt.Mnemonics.setLocalizedText(internalDiff, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jRadioButton1.text")); // NOI18N
-        internalDiff.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(ignoreWhitespace, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jCheckBox1.text")); // NOI18N
 
@@ -189,101 +128,38 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
 
         org.openide.awt.Mnemonics.setLocalizedText(ignoreCase, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "DiffOptionsPanel.ignoreCase.text")); // NOI18N
 
-        buttonGroup1.add(externalDiff);
-        org.openide.awt.Mnemonics.setLocalizedText(externalDiff, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jRadioButton2.text")); // NOI18N
-        externalDiff.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jLabel1.setLabelFor(externalCommand);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jLabel1.text")); // NOI18N
-
-        externalCommand.setText(org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jTextField1.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseCommand, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jButton1.text")); // NOI18N
-        browseCommand.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseCommandActionPerformed(evt);
-            }
-        });
-
-        lblWarningCommand.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
-        org.openide.awt.Mnemonics.setLocalizedText(lblWarningCommand, " "); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(internalDiff)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jLabel1)
-                        .addComponent(externalDiff)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ignoreWhitespace)
                     .addComponent(ignoreAllWhitespace)
-                    .addComponent(ignoreCase)
-                    .addComponent(lblWarningCommand)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(externalCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseCommand)))
-                .addContainerGap())
+                    .addComponent(ignoreCase))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(internalDiff)
-                    .addComponent(ignoreWhitespace))
+                .addComponent(ignoreWhitespace)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ignoreAllWhitespace)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ignoreCase)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(externalDiff)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(browseCommand)
-                    .addComponent(externalCommand, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblWarningCommand)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(ignoreCase))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void browseCommandActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseCommandActionPerformed
-        String execPath = externalCommand.getText();
-        File oldFile = FileUtil.normalizeFile(new File(execPath));
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(DiffOptionsPanel.class, "ACSD_BrowseFolder"), oldFile); // NOI18N
-        fileChooser.setDialogTitle(NbBundle.getMessage(DiffOptionsPanel.class, "BrowseFolder_Title")); // NOI18N
-        fileChooser.setMultiSelectionEnabled(false);
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.showDialog(this, NbBundle.getMessage(DiffOptionsPanel.class, "BrowseFolder_OK")); // NOI18N
-        File f = fileChooser.getSelectedFile();
-        if (f != null) {
-            externalCommand.setText(f.getAbsolutePath() + " {0} {1}");
-        }
-    }//GEN-LAST:event_browseCommandActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseCommand;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JTextField externalCommand;
-    private javax.swing.JRadioButton externalDiff;
     private javax.swing.JCheckBox ignoreAllWhitespace;
     private javax.swing.JCheckBox ignoreCase;
     private javax.swing.JCheckBox ignoreWhitespace;
-    private javax.swing.JRadioButton internalDiff;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel lblWarningCommand;
     // End of variables declaration//GEN-END:variables
 
     @Override
     public void actionPerformed (ActionEvent e) {
         fireChanged();
-        refreshComponents();
     }
 
     @Override
@@ -300,76 +176,5 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
     public void changedUpdate(DocumentEvent e) {
         fireChanged();
     }
-
-    void checkExternalCommand () {
-        if (getExternalDiff().isSelected()) {
-            String cmd = getExternalCommand().getText();
-            checkExternalCommand(cmd);
-        } else {
-            Mutex.EVENT.readAccess(new Runnable() {
-
-                @Override
-                public void run () {
-                    lblWarningCommand.setText(" "); //NOI18N
-                }
-                
-            });
-        }
-    }
-
-    private void checkExternalCommand (final String cmd) {
-        this.cmd = cmd;
-        final boolean inAwt = EventQueue.isDispatchThread();
-        if (inAwt) {
-            t.schedule(250);
-        } else {
-            new CheckCommand(false).run();
-        }
-    }
     
-    private String cmd;
-    private final class CheckCommand implements Runnable {
-        private final boolean inPanel;
-        
-        private CheckCommand (boolean notifyInPanel) {
-            this.inPanel = notifyInPanel;
-        }
-        
-        @Override
-        public void run () {
-            String toCheck = cmd;
-            boolean invalid = false;
-            if (toCheck.trim().isEmpty()) {
-                invalid = true;
-            } else {
-                try {
-                    Process p = Runtime.getRuntime().exec(toCheck);
-                    p.destroy();
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run () {
-                            lblWarningCommand.setText(" "); //NOI18N
-                        }
-                    });
-                } catch (IOException e) {
-                    invalid = true;
-                }
-            }
-            if (invalid) {
-                // the command seems invalid
-                if (inPanel) {
-                    EventQueue.invokeLater(new Runnable() {
-
-                        @Override
-                        public void run () {
-                            lblWarningCommand.setText(NbBundle.getMessage(DiffOptionsController.class, "MSG_InvalidDiffCommand")); //NOI18N
-                        }
-                    });
-                } else {
-                    DialogDisplayer.getDefault().notifyLater(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(DiffOptionsController.class, "MSG_InvalidDiffCommand"), NotifyDescriptor.WARNING_MESSAGE));
-                }
-            }
-        }
-    };
 }
