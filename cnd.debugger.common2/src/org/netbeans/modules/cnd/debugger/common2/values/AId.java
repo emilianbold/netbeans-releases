@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2.values;
 
+import java.math.BigInteger;
+
 /**
  * thread and lwps are collectively known as "active entities" 
  * so their Id's are AId's.
@@ -64,6 +66,24 @@ public class AId {
 	// we don't like negative numbers either
 	if (n < 0)
 	    return false;
+
+	return true;
+    }
+
+    private static boolean isLongDecimalNumber(String s) {
+	try {
+            // we don't like negative numbers either
+            if (s.startsWith("-")) {// NOI18N
+                return false;
+            }
+            BigInteger bi = new BigInteger(s);
+            if (bi.bitLength() > 64) {
+                // cannot be represented by java long
+                return false;
+            }
+	} catch(NumberFormatException x) {
+	    return false;
+	}
 
 	return true;
     }
@@ -117,11 +137,19 @@ public class AId {
 		} else {
 		    numberPart = text;
 		}
-		if (!isDecimalNumber(numberPart)) {
+		if (!isLongDecimalNumber(numberPart)) {
 		    errorMessage = Catalog.get("MSG_AId_MalformedThread"); // NOI18N
 		    return;
 		}
-		id = "t@" + Long.parseLong(numberPart); // NOI18N
+                BigInteger big = new BigInteger(numberPart);
+                long lid = big.longValue();
+                if (lid < 0) {
+                    BigInteger max = BigInteger.ONE.shiftLeft(64);
+                    BigInteger bi = BigInteger.valueOf(lid);
+                    id = "t@" + bi.add(max).toString(); // NOI18N
+                } else {
+                    id = "t@" + Long.toString(lid); // NOI18N
+                }
 	    } else {
 		// Java thread names are strings so can by _anything_
 		id = text;
