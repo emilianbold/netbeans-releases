@@ -444,6 +444,18 @@ public class PHPFormatterWrappingTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/wrapping/ternaryOp05.php", options);
     }
 
+    public void testTernaryOp06() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_TERNARY_OPS, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatting/wrapping/ternaryOp06.php", options);
+    }
+
+    public void testTernaryOp07() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_TERNARY_OPS, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/wrapping/ternaryOp07.php", options);
+    }
+
     public void testIssue189722_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.WRAP_FOR, CodeStyle.WrapStyle.WRAP_ALWAYS);

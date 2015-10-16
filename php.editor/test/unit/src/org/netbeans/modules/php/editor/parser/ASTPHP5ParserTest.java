@@ -528,6 +528,14 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/spaceship_02");
     }
 
+    public void testCoalesce01() throws Exception {
+        performTest("parser/coalesce_01");
+    }
+
+    public void testCoalesce02() throws Exception {
+        performTest("parser/coalesce_02");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

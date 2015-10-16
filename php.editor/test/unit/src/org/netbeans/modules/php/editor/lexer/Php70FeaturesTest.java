@@ -55,4 +55,24 @@ public class Php70FeaturesTest extends PHPLexerTestBase {
         performTest("lexer/spaceship_02");
     }
 
+    public void testCoalesce01() throws Exception {
+        performTest("lexer/coalesce_01");
+    }
+
+    public void testCoalesce02() throws Exception {
+        performTest("lexer/coalesce_02");
+    }
+
+    public void testCoalesce03() throws Exception {
+        performTest("lexer/coalesce_03");
+    }
+
+    public void testCoalesce04() throws Exception {
+        performTest("lexer/coalesce_04");
+    }
+
+    public void testCoalesce05() throws Exception {
+        performTest("lexer/coalesce_05");
+    }
+
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.indent;
 
@@ -803,6 +803,30 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.SPACE_AROUND_TERNARY_OPS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp08.php", options);
+    }
+
+    public void testSpacesAroundTernaryOp09() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_TERNARY_OPS, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp09.php", options);
+    }
+
+    public void testSpacesAroundTernaryOp10() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_TERNARY_OPS, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp10.php", options);
+    }
+
+    public void testSpacesAroundTernaryOp11() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_TERNARY_OPS, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp11.php", options);
+    }
+
+    public void testSpacesAroundTernaryOp12() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_TERNARY_OPS, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp12.php", options);
     }
 
     public void testSpacesAroundKeyValue01() throws Exception {
