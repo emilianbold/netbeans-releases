@@ -576,7 +576,10 @@ public class JPDATruffleAccessor extends Object {
         SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
         FrameInstance fi = (FrameInstance) frameInstance;
         // fi can be null for top frame
-        Node node = fi.getCallNode();
+        Node node = null;
+        if (fi != null) {
+            node = fi.getCallNode();
+        }
         if (node == null) {
             node = evt.getNode();
         }
