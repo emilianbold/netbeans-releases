@@ -65,9 +65,9 @@ import org.openide.util.NbBundle;
  * Misc static methods used for processing in Clank mode.
  * @author vkvashin
  */
-/*package*/final class ClankMacroUsagesSupport {
+/*package*/final class ClankToCsmSupport {
 
-    private ClankMacroUsagesSupport() {
+    private ClankToCsmSupport() {
     }
 
     public static void addPreprocessorDirectives(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankPreprocessorOutput cache) {
@@ -76,11 +76,11 @@ import org.openide.util.NbBundle;
         assert cache != null;
         for (ClankDriver.ClankPreprocessorDirective cur : cache.getPreprocessorDirectives()) {
             if (cur instanceof ClankDriver.ClankInclusionDirective) {
-                ClankMacroUsagesSupport.addInclude(curFile, parsingFileContent, (ClankDriver.ClankInclusionDirective)cur);
+                ClankToCsmSupport.addInclude(curFile, parsingFileContent, (ClankDriver.ClankInclusionDirective)cur);
             } else if (cur instanceof ClankDriver.ClankErrorDirective) {
-                ClankMacroUsagesSupport.addError(curFile, parsingFileContent, (ClankDriver.ClankErrorDirective)cur);
+                ClankToCsmSupport.addError(curFile, parsingFileContent, (ClankDriver.ClankErrorDirective)cur);
             } else if (cur instanceof ClankDriver.ClankMacroDirective) {
-                ClankMacroUsagesSupport.addMacro(curFile, parsingFileContent, (ClankDriver.ClankMacroDirective)cur);
+                ClankToCsmSupport.addMacro(curFile, parsingFileContent, (ClankDriver.ClankMacroDirective)cur);
             } else {
               CndUtils.assertTrueInConsole(false, "unknown directive " + cur.getClass().getSimpleName() + " " + cur);
             }
@@ -333,7 +333,7 @@ import org.openide.util.NbBundle;
         @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
-            buf.append(NbBundle.getMessage(ClankMacroUsagesSupport.class, reason.name(), args));
+            buf.append(NbBundle.getMessage(ClankToCsmSupport.class, reason.name(), args));
             if (stack != null) {
                 StackTraceElement[] stackTrace = stack.getStackTrace();
                 if (stackTrace != null) {
