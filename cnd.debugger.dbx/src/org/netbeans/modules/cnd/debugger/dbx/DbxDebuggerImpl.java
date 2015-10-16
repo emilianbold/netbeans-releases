@@ -154,6 +154,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.nodes.Node;
 
@@ -2612,11 +2613,32 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         // A faster way would be to have a 'currentThread' pointer but
         // not sure where is the best place to keep it. LATER.
 
+        boolean found = false;
         for (int tx = 0; tx < threads.length; tx++) {
             if (threads[tx].getId() == tid) {
                 threads[tx].setCurrent(true);
+                found = true;
             } else {
                 threads[tx].setCurrent(false);
+            }
+        }
+        if (!found) {
+            // work around when tid does not have htid
+            // Remove it when glue or/and dbx will be fixed
+            int res = 0;
+            for (int tx = 0; tx < threads.length; tx++) {
+                long ltid = threads[tx].getId() & 0xFFFFFFFFL;
+                if (ltid == tid) {
+                    threads[tx].setCurrent(true);
+                    found = true;
+                    res = tx;
+                    break;
+                }
+            }
+            if (found) {
+                CndUtils.assertTrueInConsole(false, "DBX asks to set current thread for unexisting TID = "+tid+". Thread found by ltid of thread "+threads[res].getName());
+            } else {
+                CndUtils.assertTrueInConsole(false, "DBX asks to set current thread for unexisting TID = "+tid);
             }
         }
 
