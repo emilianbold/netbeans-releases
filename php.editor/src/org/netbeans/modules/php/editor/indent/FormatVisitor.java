@@ -700,11 +700,16 @@ public class FormatVisitor extends DefaultVisitor {
         }
         // shortened? if yes, remove all next whitespaces
         if (node.getOperator().isShortened()) {
+            StringBuilder sb = new StringBuilder();
             while (ts.moveNext()) {
                 if (ts.token().id() != PHPTokenId.WHITESPACE) {
                     ts.movePrevious();
                     break;
                 }
+                sb.append(ts.token().text().toString());
+            }
+            if (sb.length() > 0) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_SHORT_TERNARY_OP, ts.offset(), sb.toString()));
             }
         }
         // ":" part

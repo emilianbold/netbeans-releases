@@ -799,8 +799,7 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp07.php", options);
     }
 
-    // XXX
-    public void xtestSpacesAroundTernaryOp08() throws Exception {
+    public void testSpacesAroundTernaryOp08() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.SPACE_AROUND_TERNARY_OPS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp08.php", options);
