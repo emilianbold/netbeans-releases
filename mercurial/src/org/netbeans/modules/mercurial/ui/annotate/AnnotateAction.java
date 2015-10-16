@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
@@ -243,6 +244,9 @@ public class AnnotateAction extends ContextAction {
                 initialRevision = logs[0];
             }
             logs = HgCommand.getRevisionInfo(repository, revisions, progress.getLogger());
+            if (logs.length != revisions.size()) {
+                Logger.getLogger(AnnotateAction.class.getName()).log(Level.WARNING, "Missing some of the requested revisions: {0}", revisions);
+            }
         }
         if (progress.isCanceled()) {
             return;
