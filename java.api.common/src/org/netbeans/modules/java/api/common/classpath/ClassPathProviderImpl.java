@@ -965,6 +965,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     l[1] = getSourcepath(1);
                     return l;
                 }
+                if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+                    ClassPath[] l = new ClassPath[2];
+                    l[0] = getModuleCompilePath(0);
+                    l[1] = getModuleCompilePath(1);
+                    return l;
+                }
+                //Todo: add others
                 assert false;
                 return null;
             }});
