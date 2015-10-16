@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -78,7 +79,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static final int CURRENT_VERSION_OF_PERSISTENCY = 184;
+    private static final int CURRENT_VERSION_OF_PERSISTENCY = 185;
 
 //    /** temporary flag, to be removed as soon as relocatable repository is achieved */
 //    public static final boolean RELOCATABLE = true;
@@ -88,7 +89,11 @@ public final class RepositoryUtils {
     }
     
     public static int getPersistenceVersion() {
-        return CURRENT_VERSION_OF_PERSISTENCY;
+        if (APTTraceFlags.USE_CLANK) {
+            return CURRENT_VERSION_OF_PERSISTENCY + /*shift for new Clank mode*/10000;
+        } else {
+            return CURRENT_VERSION_OF_PERSISTENCY;
+        }
     }
     ////////////////////////////////////////////////////////////////////////////
     // repository access wrappers
@@ -259,7 +264,7 @@ public final class RepositoryUtils {
     public static void startup() {
         Repository.addRepositoryExceptionListener(getRepositoryListenerProxy());
         Repository.registerRepositoryListener(getRepositoryListenerProxy());        
-        Repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
+        Repository.startup(getPersistenceVersion());
     }
 
     private static RepositoryListenerProxy myRepositoryListenerProxy;
