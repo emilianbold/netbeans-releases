@@ -48,6 +48,7 @@ import org.openide.awt.ListPane;
 import org.openide.nodes.Node;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.EventQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -136,6 +137,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
     public Component getTreeCellRendererComponent(
         JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus
     ) {
+        assert EventQueue.isDispatchThread() || System.getProperty("nbjunit.workdir") != null : "Should be called in EDT only!";
         VisualizerNode vis = findVisualizerNode(value);
 
         if (vis == draggedOver) {
@@ -170,6 +172,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
     public Component getListCellRendererComponent(
         JList list, Object value, int index, boolean sel, boolean cellHasFocus
     ) {
+        assert EventQueue.isDispatchThread() || System.getProperty("nbjunit.workdir") != null : "Should be called in EDT only!";
         VisualizerNode vis = findVisualizerNode(value);
 
         if (vis == draggedOver) {
