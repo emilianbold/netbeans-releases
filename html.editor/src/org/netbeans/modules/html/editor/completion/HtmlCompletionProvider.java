@@ -150,11 +150,12 @@ public class HtmlCompletionProvider implements CompletionProvider {
         @Override
         protected boolean canFilter(JTextComponent component) {
             try {
-                Document doc = component.getDocument();
-                int offset = component.getCaretPosition();
-                if (offset < anchor) {
+                if (component.getCaret() == null || component.getCaretPosition() < anchor) {
                     return false;
                 }
+                
+                Document doc = component.getDocument();
+                int offset = component.getCaretPosition();
 
                 String prefix = doc.getText(anchor, offset - anchor);
 
