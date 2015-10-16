@@ -56,6 +56,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -156,7 +157,10 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                             null,
                             ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE)). // NOI18N
-                            build();
+                    setModulePaths(
+                            project.getClassPathProvider().getProjectClassPaths(JavaClassPathConstants.MODULE_COMPILE_PATH)[0],
+                            project.getClassPathProvider().getProjectClassPaths(ClassPath.COMPILE)[0]).
+                    build();
             } else if (key == TEST_LIBRARIES) {
                 return  
                     new LibrariesNode(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode"),
