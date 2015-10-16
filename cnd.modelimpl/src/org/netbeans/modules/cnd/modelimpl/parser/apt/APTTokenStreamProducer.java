@@ -103,35 +103,31 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
 
     @Override
     public TokenStream getTokenStreamOfIncludedFile(PreprocHandler.State includeOwnerState, CsmInclude include, Interrupter interrupter) {
-        int includeDirFileIndex = findIncludeDirectiveFileIndex(include);
-        FileImpl ownerFile = getMainFile();
         FileImpl includedFile = (FileImpl) include.getIncludeFile();
-        LinkedList<PPIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(includeOwnerState);
-        CharSequence includedAbsPath = includedFile.getAbsolutePath();
-        reverseInclStack.addLast(new IncludeInfoImpl(include, includedFile.getFileSystem(), includedAbsPath, includeDirFileIndex));
+        if (includedFile == null) {
+            // error 
+            return null;
+        }
         ProjectBase projectImpl = includedFile.getProjectImpl(true);
         if (projectImpl == null) {
-            return includedFile.getTokenStream(0, Integer.MAX_VALUE, 0, true);
+            // error 
+            return null;
         }
+        LinkedList<PPIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(includeOwnerState);
+        PPIncludeHandler.IncludeInfo inclInfo = createIncludeInfo(include);
+        if (inclInfo == null) {
+            // error 
+            return null;
+        } else {
+            reverseInclStack.addLast(inclInfo);
+        }
+        FileImpl ownerFile = getMainFile();
         CharSequence ownerAbsPath = ownerFile.getAbsolutePath();
         PreprocHandler preprocHandler = projectImpl.createEmptyPreprocHandler(ownerAbsPath);
         PreprocHandler restorePreprocHandlerFromIncludeStack = restorePreprocHandlerFromIncludeStack(projectImpl, reverseInclStack, ownerAbsPath, preprocHandler, includeOwnerState, Interrupter.DUMMY);
         // using restored preprocessor handler, ask included file for parsing token stream filtered by language
         TokenStream includedFileTS = createParsingTokenStreamForHandler(includedFile, restorePreprocHandlerFromIncludeStack, true);
         return includedFileTS;
-    }
-
-    private int findIncludeDirectiveFileIndex(CsmInclude include) {
-        final CsmFile containingFile = include.getContainingFile();
-        final Collection<CsmInclude> includes = containingFile.getIncludes();
-        int includeDirFileIndex = 0;
-        for (CsmInclude incl : includes) {
-            if (incl == include) {
-                return includeDirFileIndex;
-            }
-            ++includeDirFileIndex;
-        }
-        return -1;
     }
 
     private static final boolean REMEMBER_RESTORED = TraceFlags.CLEAN_MACROS_AFTER_PARSE && 
@@ -347,59 +343,6 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
             }
         }
         return fileAPT;
-    }
-
-    private static class IncludeInfoImpl implements PPIncludeHandler.IncludeInfo {
-
-        private final int line;
-        private final CsmInclude include;
-        private final FileSystem fs;
-        private final CharSequence path;
-        private final int includedDirectiveIndex;
-
-        IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path, int includedDirectiveIndex) {
-            this.line = include.getStartPosition().getLine();
-            this.include = include;
-            this.fs = fs;
-            this.path = path;
-            this.includedDirectiveIndex = includedDirectiveIndex;
-        }
-
-        @Override
-        public CharSequence getIncludedPath() {
-            return path;
-        }
-
-        @Override
-        public FileSystem getFileSystem() {
-            return fs;
-        }
-
-        @Override
-        public int getIncludeDirectiveLine() {
-            return line;
-        }
-
-        @Override
-        public int getIncludeDirectiveOffset() {
-            return include.getStartOffset();
-        }
-
-        @Override
-        public int getResolvedDirectoryIndex() {
-            return 0;
-        }
-
-        @Override
-        public String toString() {
-            return "restore " + include + " from line " + line + " in file " + include.getContainingFile(); // NOI18N
-        }
-
-        @Override
-        public int getIncludeDirectiveIndex() {
-            return includedDirectiveIndex;
-        }
-        
     }
 
 }
