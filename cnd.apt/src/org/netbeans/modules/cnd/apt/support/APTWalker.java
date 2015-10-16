@@ -112,10 +112,12 @@ public abstract class APTWalker {
     // template methods to override by extensions 
 
     protected void onInclude(APT apt) {
+        assert curIncludeDirectiveFileIndex != INVALID_INDEX : "must not be invalid ";
         curIncludeDirectiveFileIndex++;
     }
 
     protected void onIncludeNext(APT apt) {
+        assert curIncludeDirectiveFileIndex != INVALID_INDEX : "must not be invalid ";
         curIncludeDirectiveFileIndex++;
     }
         
@@ -282,11 +284,13 @@ public abstract class APTWalker {
             throw new IllegalStateException("walker could be used only once"); // NOI18N
         }
         walkerUsedForTokenStreamGeneration = Boolean.valueOf(needStream);
+        // init index before preInit call which might cause "-include file" handling
+        assert curIncludeDirectiveFileIndex == INVALID_INDEX : "must be invalid " + curIncludeDirectiveFileIndex;
+        curIncludeDirectiveFileIndex = EMPTY_INDEX;
         preInit();
         curFile = root;
         curAPT = curFile.getFirstChild();
         curWasInChild = false;
-        curIncludeDirectiveFileIndex = 0;
         pushState();
     }    
     
@@ -405,6 +409,7 @@ public abstract class APTWalker {
     }
 
     protected final int getCurIncludeDirectiveFileIndex() {
+        assert curIncludeDirectiveFileIndex != INVALID_INDEX : "must not be invalid ";
         return curIncludeDirectiveFileIndex;
     }
 
@@ -416,7 +421,9 @@ public abstract class APTWalker {
     private APTFile curFile;
     private APT curAPT;
     private boolean curWasInChild;
-    private int curIncludeDirectiveFileIndex;
+    private static final int INVALID_INDEX = -2;
+    private static final int EMPTY_INDEX = -1;
+    private int curIncludeDirectiveFileIndex = INVALID_INDEX;
     private LinkedList<TokenStream> tokens = new LinkedList<TokenStream>();
     private LinkedList<WalkerState> visits = new LinkedList<WalkerState>();
     
