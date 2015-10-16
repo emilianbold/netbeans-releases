@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.utils.cache;
 
 import java.util.Comparator;
+import org.openide.util.CharSequences;
 
 /**
  * Utility methods related to character sequences.
@@ -186,6 +187,10 @@ public class CharSequenceUtils {
 	return -1;
     }
 
+    public static boolean contentEquals(CharSequence str1, CharSequence str2) {
+        return CharSequences.comparator().compare(str1, str2) == 0;
+    }
+    
     /**
      * Implementation of {@link String#startsWith(String)} for character sequences.
      */
