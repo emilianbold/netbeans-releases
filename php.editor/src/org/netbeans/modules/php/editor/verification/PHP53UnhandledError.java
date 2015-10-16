@@ -183,9 +183,8 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
         public void visit(ConditionalExpression node) {
             if (ConditionalExpression.OperatorType.ELVIS.equals(node.getOperator())) {
                 createError(node);
-            } else {
-                super.visit(node);
             }
+            super.visit(node);
         }
 
         private  void createError(int startOffset, int endOffset) {
