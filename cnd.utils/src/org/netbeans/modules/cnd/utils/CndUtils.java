@@ -192,9 +192,13 @@ public class CndUtils {
         }
     }
 
+    private static String addThreadName(String msg) {
+        return msg + "\n@[" + Thread.currentThread().getName() + "]"; // NOI18N
+    }
+    
     public static void assertTrue(boolean value, String prefix, Object message) {
         if (isDebugMode() && !value) {
-            printStackTraceOnce(lastAssertion = new Exception(prefix + message));
+            printStackTraceOnce(lastAssertion = new Exception(addThreadName(prefix + message)));
         }
     }
 
@@ -203,19 +207,19 @@ public class CndUtils {
     }
 
     private static void severe(String message) {
-        LOG.log(Level.SEVERE, message, lastAssertion = new Exception(message));
+        LOG.log(Level.SEVERE, message, lastAssertion = new Exception(addThreadName(message)));
     }
 
     private static void info(String message) {
         if (LOG.isLoggable(Level.INFO)) {
-            LOG.log(Level.INFO, message, lastAssertion = new Exception(message));
+            LOG.log(Level.INFO, message, lastAssertion = new Exception(addThreadName(message)));
         }
     }
     
     private static final ConcurrentHashMap<CharSequence,AtomicInteger> restrictLog = new ConcurrentHashMap<CharSequence,AtomicInteger>();
     public static void assertTrueInConsole(boolean value, String message) {
         if (isDebugMode() && !value && LOG.isLoggable(Level.INFO)) {
-            Exception exception = new Exception(message);
+            Exception exception = new Exception(addThreadName(message));
             Level level = Level.INFO;
             StackTraceElement[] stackTrace = exception.getStackTrace();
             for(StackTraceElement element : stackTrace) {
