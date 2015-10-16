@@ -62,15 +62,15 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.NbBundle;
 
 /**
- * Misc static methods used for processing of macros
+ * Misc static methods used for processing in Clank mode.
  * @author vkvashin
  */
-public final class ClankMacroUsagesSupport {
+/*package*/final class ClankMacroUsagesSupport {
 
     private ClankMacroUsagesSupport() {
     }
 
-    public static void addPreprocessorDirectives(FileImpl curFile, FileContent parsingFileContent, ClankDriver.APTTokenStreamCache cache) {
+    public static void addPreprocessorDirectives(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankPreprocessorOutput cache) {
         assert parsingFileContent != null;
         assert curFile != null;
         assert cache != null;
@@ -87,7 +87,7 @@ public final class ClankMacroUsagesSupport {
         }
     }
 
-    public static void setFileGuard(FileImpl curFile, FileContent parsingFileContent, ClankDriver.APTTokenStreamCache cache) {
+    public static void setFileGuard(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankPreprocessorOutput cache) {
         ClankDriver.FileGuard fileGuard = cache.getFileGuard();
         if (fileGuard != null) {
             curFile.setFileGuard(fileGuard.getStartOfset(), fileGuard.getEndOfset());
@@ -96,7 +96,7 @@ public final class ClankMacroUsagesSupport {
         }
     }
 
-    public static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.APTTokenStreamCache cache) {
+    public static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.ClankPreprocessorOutput cache) {
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
             ClankDriver.ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
@@ -258,8 +258,8 @@ public final class ClankMacroUsagesSupport {
         }
         int startOffset = ppDirective.getDirectiveStartOffset();
         int endOffset = ppDirective.getDirectiveEndOffset();
-        //boolean hasRecursiveInclude = curFile.equals(includedFile);
-        IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, ppDirective.isRecursive(), includedFile, curFile, startOffset, endOffset);
+        int includeDirectiveIndex = ppDirective.getIncludeDirectiveIndex();
+        IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, ppDirective.isRecursive(), includedFile, curFile, startOffset, endOffset, includeDirectiveIndex);
         parsingFileContent.addInclude(incl, broken || ppDirective.isRecursive());
     }
 

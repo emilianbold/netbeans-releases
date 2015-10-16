@@ -51,8 +51,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
@@ -60,6 +58,7 @@ import org.netbeans.modules.cnd.apt.support.api.PreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
+import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -75,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.Pair;
 
@@ -273,6 +273,13 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             return ((CndParserResult) parseResult).getCsmFile();
         }
         return null;
+    }
+
+    public static int getIncludeDirectiveIndex(CsmInclude inc) {
+        if (inc instanceof IncludeImpl) {
+            return ((IncludeImpl) inc).getIncludeDirectiveIndex();
+        }
+        return -1;
     }
 
     private static final class NamedLock {
@@ -570,39 +577,47 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             return Collections.<CsmInclude>emptyList();
         }
         CndUtils.assertNotNull(state, "state must not be null in non empty collection");// NOI18N
-        List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
+        List<APTIncludeHandler.IncludeInfo> includeChain = APTHandlersSupport.extractIncludeStack(state);
         StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
         ProjectBase startProject = Utils.getStartProject(startEntry);
         if (startProject != null) {
-            CsmFile startFile = startProject.getFile(startEntry.getStartFile(), false);
-            if (startFile != null) {
+            CsmFile includeOwner = startProject.getFile(startEntry.getStartFile(), false);
+            if (includeOwner != null) {
                 List<CsmInclude> res = new ArrayList<>();
-                Iterator<APTIncludeHandler.IncludeInfo> it = reverseInclStack.iterator();
+                Iterator<APTIncludeHandler.IncludeInfo> it = includeChain.iterator();
                 while(it.hasNext()){
                     APTIncludeHandler.IncludeInfo info = it.next();
-                    int offset = info.getIncludeDirectiveOffset();
-                    int includeNdx = info.getIncludeDirectiveIndex();
-                    CsmInclude find = null;
-                    int currentIncludeIndex = 1;
-                    for(CsmInclude inc : startFile.getIncludes()){
-                        if (offset == inc.getStartOffset()){
-                            find = inc;
-                            break;
+                    int includeDirectiveIndex = info.getIncludeDirectiveIndex();
+                    CharSequence includedPath = info.getIncludedPath();
+                    CsmInclude foundDirective = null;
+                    CsmFile    foundIncludedFile = null;
+                    for(CsmInclude inc : includeOwner.getIncludes()) {
+                        int currentIncludeIndex = getIncludeDirectiveIndex(inc);
+                        // fast check by index
+                        if (includeDirectiveIndex == currentIncludeIndex) {
+                            // but several CsmInclude directives
+                            // in one header can have same index in different include states
+                            CsmFile includedFile = inc.getIncludeFile();
+                            // so check by expected name
+                            if (includedFile != null && CharSequenceUtils.contentEquals(includedPath, includedFile.getAbsolutePath())) {
+                                foundDirective = inc;
+                                foundIncludedFile = includedFile;
+                                if (inc.getStartOffset() == info.getIncludeDirectiveOffset()) {
+                                    // full match
+                                    break;
+                                } else {
+                                    // keep it as the best candidate
+                                }
+                            }
                         }
-                        if (includeNdx == currentIncludeIndex) {
-                            find = inc;
-                            break;
-                        }
-                        currentIncludeIndex++;
                     }
-                    if (find != null) {
-                        res.add(find);
-                        startFile = find.getIncludeFile();
-                        if (startFile == null) {
-                            break;
-                        }
+                    if (foundDirective == null) {
+                        // break broken include chain
+                        return Collections.<CsmInclude>emptyList();
                     } else {
-                        break;
+                        assert foundIncludedFile != null : "must be initialized with " + foundDirective;
+                        includeOwner = foundIncludedFile;
+                        res.add(foundDirective);
                     }
                 }
                 return res;

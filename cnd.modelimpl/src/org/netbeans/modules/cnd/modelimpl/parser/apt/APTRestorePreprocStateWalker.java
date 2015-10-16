@@ -88,7 +88,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
         boolean foundDirective = false;
         if (searchInterestedFile) {
             // check if stop directive is met
-            if (apt.getToken().getLine() == stopDirective.getIncludeDirectiveLine()) {
+            if (super.getCurIncludeDirectiveFileIndex() == stopDirective.getIncludeDirectiveIndex()) {
                 if (inclPath.equals(stopDirective.getIncludedPath())) {
                     foundDirective = true;
                 } else {
