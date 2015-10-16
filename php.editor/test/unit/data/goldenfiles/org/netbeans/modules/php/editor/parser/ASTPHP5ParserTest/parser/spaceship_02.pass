@@ -30,7 +30,7 @@
         <token id='T_VARIABLE' start='47' end='49'>
             <text>$a</text>
         </token>
-        <token id='SPACESHIP' start='50' end='53'>
+        <token id='T_SPACESHIP' start='50' end='53'>
             <text>&lt;=&gt;</text>
         </token>
         <token id='T_VARIABLE' start='54' end='56'>

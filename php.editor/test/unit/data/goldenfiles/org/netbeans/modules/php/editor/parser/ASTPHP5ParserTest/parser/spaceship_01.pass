@@ -6,7 +6,7 @@
         <token id='T_LNUMBER' start='11' end='12'>
             <text>1</text>
         </token>
-        <token id='SPACESHIP' start='13' end='16'>
+        <token id='T_SPACESHIP' start='13' end='16'>
             <text>&lt;=&gt;</text>
         </token>
         <token id='T_LNUMBER' start='17' end='18'>
