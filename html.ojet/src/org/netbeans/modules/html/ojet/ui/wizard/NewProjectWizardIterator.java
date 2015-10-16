@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.ojet.ui.wizard;
 
@@ -113,7 +113,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         return new NewProjectWizardIterator(
                 Bundle.NewProjectWizardIterator_newProject_displayName(),
                 "OracleJETApplication", // NOI18N
-                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/components/public_html/public_samples/OracleJET_QuickStartBasic.zip", // NOI18N
+                "http://www.oracle.com/webfolder/technetwork/jet/public_samples/OracleJET_QuickStartBasic.zip", // NOI18N
                 new File(System.getProperty("java.io.tmpdir"), "OracleJET_QuickStartBasic.zip") // NOI18N
         );
     }
@@ -129,7 +129,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         return new NewProjectWizardIterator(
                 Bundle.NewProjectWizardIterator_newComponentInteractionSample_displayName(),
                 "OracleJETComponentInteraction", // NOI18N
-                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/components/public_html/public_samples/JET-ComponentInteraction.zip", // NOI18N
+                "http://www.oracle.com/webfolder/technetwork/jet/public_samples/JET-ComponentInteraction.zip", // NOI18N
                 new File(System.getProperty("java.io.tmpdir"), "JET-ComponentInteraction.zip") // NOI18N
         );
     }
