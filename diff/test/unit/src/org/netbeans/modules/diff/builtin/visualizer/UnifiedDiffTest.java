@@ -49,6 +49,7 @@ import java.io.*;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 
 /**
@@ -90,6 +91,8 @@ public class UnifiedDiffTest extends NbTestCase {
         return new File [] { testFiles[idx0], testFiles[idx1] };
     }
     
+    // TODO stabilize sometimes.
+    @RandomlyFails
     public void testUnifiedDiff() throws Exception {
         for (;;) {
             File [] toDiff = getNextPermutation();
