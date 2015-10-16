@@ -367,8 +367,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                                     sourcesInitialized = true;
                                     if (viewAdded) {
                                         addListeners();
-                                        refreshDiff(100);
                                     }
+                                    refreshDiff(100);
                                 }
                                 
                             });

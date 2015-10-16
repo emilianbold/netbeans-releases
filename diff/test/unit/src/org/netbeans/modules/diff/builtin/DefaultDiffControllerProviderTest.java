@@ -44,6 +44,7 @@ package org.netbeans.modules.diff.builtin;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -114,14 +115,15 @@ public class DefaultDiffControllerProviderTest extends NbTestCase {
         JComponent c = simple.getJComponent();
         assertFalse(c == null);
         // component should be an old-style jsplitpane
-        assertTrue(c instanceof JSplitPane);
+        assertTrue(findSplitPane(c) instanceof JSplitPane);
 
         c = enhanced.getJComponent();
         assertFalse(c == null);
+        c = findTabbedPane(c);
         // component should be new jtabbedpane
         assertTrue(c instanceof JTabbedPane);
         // and it should contain two tabs - a graphical and a textual view
-        assertEquals(2, ((JTabbedPane) c).getComponentCount());
+        assertEquals(2, c.getComponentCount());
     }
 
     public void testDifferenceCount () throws Exception {
@@ -131,7 +133,7 @@ public class DefaultDiffControllerProviderTest extends NbTestCase {
         // as default, the graphical view is displayed and the diff count is the same as in the old-style diff view
         dc = enhanced.getDifferenceCount();
         assertEquals(3, dc);
-        JTabbedPane c = (JTabbedPane) enhanced.getJComponent();
+        JTabbedPane c = findTabbedPane(enhanced.getJComponent());
 
         // switching to the textual view
         final boolean[] finished = new boolean[1];
@@ -158,13 +160,28 @@ public class DefaultDiffControllerProviderTest extends NbTestCase {
     public void testTextualDiffContent () throws Exception {
         File diffFile = new File(getDataDir(), "enhancedview/diff");
         String goldenText = getFileContents(diffFile);
-        goldenText = MessageFormat.format(goldenText, new Object[] {diffFile.getParentFile().getAbsolutePath() + "/", diffFile.getParentFile().getAbsolutePath() + "/"});
+        goldenText = MessageFormat.format(goldenText, new Object[] {"a/", "b/"});
 
-        JPanel p = (JPanel) ((JTabbedPane) enhanced.getJComponent()).getComponentAt(1);
+        final JTabbedPane tabbedPane = findTabbedPane(enhanced.getJComponent());
+        JPanel p = (JPanel) tabbedPane.getComponentAt(1);
+        tabbedPane.setSelectedIndex(1);
         JEditorPane pane = findEditorPane(p);
         assertFalse(pane == null);
         String text = pane.getText();
+        for (int i = 0; i < 100; ++i) {
+            if (!text.isEmpty()) {
+                break;
+            }
+            Thread.sleep(100);
+            text = pane.getText();
+        }
         assertEquals(goldenText, text);
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run () {
+                tabbedPane.setSelectedIndex(0);
+            }
+        });
     }
 
     private String getFileContents (File file) throws IOException {
@@ -194,6 +211,40 @@ public class DefaultDiffControllerProviderTest extends NbTestCase {
                 pane = findEditorPane((Container) comp);
                 if (pane != null) {
                     break;
+                }
+            }
+        }
+        return pane;
+    }
+
+    private static JTabbedPane findTabbedPane (JComponent component) {
+        JTabbedPane pane = null;
+        if (component instanceof JTabbedPane) {
+            pane = (JTabbedPane) component;
+        } else {
+            for (Component c : component.getComponents()) {
+                if (c instanceof JComponent) {
+                    pane = findTabbedPane((JComponent) c);
+                    if (pane != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return pane;
+    }
+
+    private static JSplitPane findSplitPane (JComponent component) {
+        JSplitPane pane = null;
+        if (component instanceof JSplitPane) {
+            pane = (JSplitPane) component;
+        } else {
+            for (Component c : component.getComponents()) {
+                if (c instanceof JComponent) {
+                    pane = findSplitPane((JComponent) c);
+                    if (pane != null) {
+                        break;
+                    }
                 }
             }
         }

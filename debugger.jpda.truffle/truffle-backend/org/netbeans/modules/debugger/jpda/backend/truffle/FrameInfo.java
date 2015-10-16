@@ -6,6 +6,7 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
+import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 final class FrameInfo {
-    final MaterializedFrame frame;
+    final FrameInstance frame;  // the top frame instance
     final FrameSlot[] slots;
     final String[] slotNames;
     final String[] slotTypes;
@@ -29,7 +30,7 @@ final class FrameInfo {
 
     public FrameInfo(MaterializedFrame frame, Visualizer visualizer, Node astNode,
                      List<FrameInstance> stack) {
-        this.frame = frame;
+        //System.err.println("new FrameInfo("+frame+" ("+frame.getFrameDescriptor().toString()+"), "+stack+")");
         Object[] arguments = frame.getArguments();
         FrameDescriptor frameDescriptor = frame.getFrameDescriptor();
         Set<Object> identifiers = frameDescriptor.getIdentifiers();
@@ -87,8 +88,17 @@ final class FrameInfo {
          */
         List<FrameInstance> frames = null;
         int n = stack.size();
+        if (n > 0) {
+            this.frame = stack.get(0);
+        } else {
+            this.frame = null;
+        }
         for (int i = 0; i < n; i++) {
             FrameInstance fi = stack.get(i);
+            /*
+            Frame iFrame = fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true);
+            System.err.println("stack("+i+"): fi = "+fi+", frame = "+iFrame+" ("+frame.getFrameDescriptor().toString()+"), call node = "+fi.getCallNode());
+            */
             // Filter frames with null call node. How should we display them?
             Node node = fi.getCallNode();
             SourceSection ss;
@@ -117,7 +127,7 @@ final class FrameInfo {
         //stackNames[i] = stackTrace[i].getCallNode().getDescription();
         stackNames[i] = visualizer.displaySourceLocation(stackTrace[i].getCallNode());
         }*/
-        //System.err.println("  stack trace = "+Arrays.toString(stackTrace));
+        //System.err.println("  stack trace = "+java.util.Arrays.toString(stackTrace));
         //System.err.println("  stack names = "+Arrays.toString(stackNames));
         if (visualizer != null) {
             topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget()) + "\n" + visualizer.displayMethodName(astNode) + "\n" + visualizer.displaySourceLocation(astNode) + "\n" + position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;

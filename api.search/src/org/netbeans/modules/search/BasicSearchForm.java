@@ -1096,7 +1096,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         public void replace(FilterBypass fb, int offset, int length,
                 String text, AttributeSet attrs) throws BadLocationException {
             int currentLength = fb.getDocument().getLength();
-            int newLength = currentLength + text.length() - length;
+            int newTextLength = text == null ? 0 : text.length();
+            int newLength = currentLength + newTextLength - length;
             if (newLength <= LIMIT) {
                 super.replace(fb, offset, length, text, attrs);
             } else {

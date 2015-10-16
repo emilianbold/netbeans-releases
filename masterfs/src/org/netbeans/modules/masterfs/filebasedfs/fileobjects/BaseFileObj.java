@@ -59,7 +59,10 @@ import org.openide.util.Mutex;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.AccessController;
@@ -813,7 +816,7 @@ public abstract class BaseFileObj extends FileObject {
                 FSException.io("EXC_InvalidLock", lock, getPath()); // NOI18N                
             }
 
-            boolean deleteStatus = (deleteHandler != null) ? deleteHandler.delete(f) : f.delete();
+            boolean deleteStatus = (deleteHandler != null) ? deleteHandler.delete(f) : deleteFile(f);
             if (!deleteStatus) {
                 FileObject parent = getExistingParent();
                 String parentPath = (parent != null) ? parent.getPath() : f.getParentFile().getAbsolutePath();
@@ -836,6 +839,36 @@ public abstract class BaseFileObj extends FileObject {
         setValid(false);
         fireFileDeletedEvent(false);
 
+    }
+
+    /**
+     * Delete a file. Mimic API of {@link java.io.File} (return false on
+     * failure), but log the exception if the operation was not successful.
+     *
+     * @param f The file to delete.
+     *
+     * @return True if the file was deleted, false otherwise.
+     */
+    private static boolean deleteFile(File f) {
+        try {
+            Path p = f.toPath();
+            try {
+                Files.delete(p);
+                return true;
+            } catch (NoSuchFileException ex) {
+                LOG.log(Level.INFO, "File not found: " + p, ex);        //NOI18N
+                return false;
+            } catch (DirectoryNotEmptyException ex) {
+                LOG.log(Level.INFO, "Non-empty directory: " + p, ex);   //NOI18N
+                return false;
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Cannot delete file: " + p, ex);    //NOI18N
+                return false;
+            }
+        } catch (InvalidPathException e) { // invalid Path, but valid File?
+            LOG.log(Level.FINE, null, e);
+            return f.delete();
+        }
     }
     
     abstract boolean checkLock(FileLock lock) throws IOException;
@@ -1024,24 +1057,40 @@ public abstract class BaseFileObj extends FileObject {
 
         public final void delete(final String name) throws IOException {
             final File file = new File(name);
-            final boolean isDeleted = (file.isFile()) ? file.delete() : deleteFolder(file);
+            final boolean isDeleted = (file.isFile()) ? deleteFile(file) : deleteFolder(file);
             if (isDeleted) {
                 FSException.io("EXC_CannotDelete", file.getName(), ""); // NOI18N                                
             }
         }
 
         private boolean deleteFolder(final File file) throws IOException {
-            final boolean ret = file.delete();
 
-            if (ret) {
-                return true;
+            boolean directory = false; // true if we are sure the file is folder
+            try {
+                Path p = file.toPath();
+                try {
+                    Files.delete(p);
+                    return true;
+                } catch (DirectoryNotEmptyException ex) {
+                    // do not return, recurse the directory
+                    directory = true;
+                } catch (NoSuchFileException ex) {
+                    LOG.log(Level.INFO, "File not found: " + p, ex);    //NOI18N
+                    return false;
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, "Cannot delete: " + p, ex);     //NOI18N
+                    return false;
+                }
+            } catch (InvalidPathException ex) { // invalid Path, valid File?
+                LOG.log(Level.FINE, null, ex);
+                if (file.delete()) {
+                    return true;
+                } else if (!FileChangedManager.getInstance().exists(file)) {
+                    return false;
+                }
             }
 
-            if (!FileChangedManager.getInstance().exists(file)) {
-                return false;
-            }
-
-            if (file.isDirectory()) {
+            if (directory || file.isDirectory()) {
                 // first of all delete whole content
                 final File[] arr = file.listFiles();
                 if (arr != null) {  // check for null in case of I/O errors
@@ -1054,7 +1103,7 @@ public abstract class BaseFileObj extends FileObject {
                 }
             }
 
-            return file.delete();
+            return deleteFile(file);
         }
 
     }

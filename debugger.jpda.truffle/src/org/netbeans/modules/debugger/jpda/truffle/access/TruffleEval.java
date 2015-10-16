@@ -59,7 +59,6 @@ import org.openide.util.Exceptions;
 public class TruffleEval {
     
     private static final String METHOD_EVALUATE = "evaluate";                   // NOI18N
-    private static final String METHOD_EVALUATE_SIG = "(Ljava/lang/String;)Ljava/lang/Object;"; // NOI18N
     private static final String METHOD_EVALUATE_ON_FRAME_SIG = "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;"; // NOI18N
     
     private TruffleEval() {}
@@ -76,18 +75,12 @@ public class TruffleEval {
         JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
         try {
             Variable mirrorExpression = debugger.createMirrorVar(expression);
-            Variable valueVar;
-            if (stackFrameInstance == null) {
-                valueVar = debugAccessor.invokeMethod(METHOD_EVALUATE,
-                                                      METHOD_EVALUATE_SIG,
-                                                      new Variable[] { mirrorExpression });
-            } else {
-                valueVar = debugAccessor.invokeMethod(METHOD_EVALUATE,
-                                                      METHOD_EVALUATE_ON_FRAME_SIG,
-                                                      new Variable[] { currentPCInfo.getSuspendedInfo(),
-                                                                       stackFrameInstance,
-                                                                       mirrorExpression });
-            }
+            Variable valueVar = debugAccessor.invokeMethod(
+                    METHOD_EVALUATE,
+                    METHOD_EVALUATE_ON_FRAME_SIG,
+                    new Variable[] { currentPCInfo.getSuspendedInfo(),
+                                     stackFrameInstance,
+                                     mirrorExpression });
             return valueVar;
         } catch (InvalidObjectException | NoSuchMethodException ex) {
             try {
