@@ -493,9 +493,9 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         @Override
         public String toString() {
             String retValue;
-            
+
             retValue = "(" + getIncludeDirectiveLine() + "/" + getIncludeDirectiveOffset() + ": " + // NOI18N
-                    getIncludedPath() + ":" + getResolvedDirectoryIndex() + ")"; // NOI18N
+                    getIncludedPath() + ":" + getResolvedDirectoryIndex() + ";#" + getIncludeDirectiveIndex() + ")"; // NOI18N
             return retValue;
         }
 
@@ -505,16 +505,14 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                 return false;
             }
             IncludeInfoImpl other = (IncludeInfoImpl)obj;
-            return this.directiveLine == other.directiveLine && this.directiveOffset == other.directiveOffset &&
-                    this.path.equals(other.path) && (resolvedDirectoryIndex == other.resolvedDirectoryIndex) && (this.includeDirectiveIndex == other.includeDirectiveIndex);
+            return (resolvedDirectoryIndex == other.resolvedDirectoryIndex) && (this.includeDirectiveIndex == other.includeDirectiveIndex) &&
+                    this.path.equals(other.path);
         }
 
         @Override
         public int hashCode() {
             int hash = 3;
             hash = 73 * hash + (this.path != null ? this.path.hashCode() : 0);
-            hash = 73 * hash + this.directiveLine;
-            hash = 73 * hash + this.directiveOffset;
             hash = 73 * hash + this.resolvedDirectoryIndex;
             hash = 73 * hash + this.includeDirectiveIndex;
             return hash;

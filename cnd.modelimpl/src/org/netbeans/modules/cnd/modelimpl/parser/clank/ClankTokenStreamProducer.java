@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.parser.clank;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.event.ChangeListener;
@@ -51,10 +52,13 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -68,12 +72,13 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankMacroUsagesSupport.UnresolvedIncludeDirectiveAnnotation;
-import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankMacroUsagesSupport.UnresolvedIncludeDirectiveReason;
+import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankToCsmSupport.UnresolvedIncludeDirectiveAnnotation;
+import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankToCsmSupport.UnresolvedIncludeDirectiveReason;
 import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducerParameters.YesNoInterested;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
@@ -109,29 +114,57 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
     @Override
     public TokenStream getTokenStreamOfIncludedFile(PreprocHandler.State includeOwnerState, CsmInclude include, Interrupter interrupter) {
-        FileImpl fileImpl = getMainFile();
-        ProjectBase projectImpl = fileImpl.getProjectImpl(true);
-        if (projectImpl == null) {
-          return null;
-        }
-        PreprocHandler ppHandler = projectImpl.createPreprocHandlerFromState(fileImpl.getAbsolutePath(), includeOwnerState);
-        int fileOwnerIndex = ClankDriver.extractTokenStream(ppHandler).getFileIndex();
-        // do preprocessing
-        IncludeDirectiveTokensStreamCallback callback =
-                new IncludeDirectiveTokensStreamCallback(ppHandler, fileOwnerIndex, include.getStartOffset());
-        boolean tsFromClank = ClankDriver.preprocess(fileImpl.getBuffer(), ppHandler, callback, interrupter);
-        if (!tsFromClank) {
+        FileImpl includeDirecitveFileOwner = getMainFile();
+        FileImpl includedFile = (FileImpl) include.getIncludeFile();
+        if (includedFile == null) {
+            // error recovery
             return null;
         }
-        ClankDriver.APTTokenStreamCache tokStreamCache = callback.getPPOut();
-        if (tokStreamCache == null) {
-          return null;
+        ProjectBase projectImpl = includedFile.getProjectImpl(true);
+        if (projectImpl == null) {
+            // error recovery
+            return null;
         }
-        skipped = new int[0];
-        TokenStream tokenStream = tokStreamCache.getTokenStream();
+        PPIncludeHandler.IncludeInfo inclInfo = createIncludeInfo(include);
+        if (inclInfo == null) {
+            // error recovery
+            return null;
+        }
+        
+        // prepare handler (which can be reset to default if smth goes wrong)
+        PreprocHandler ppHandler = projectImpl.createPreprocHandlerFromState(includeDirecitveFileOwner.getAbsolutePath(), includeOwnerState);
+        // retake state in case smth goes wrong above
+        includeOwnerState = ppHandler.getState();
+        LinkedList<PPIncludeHandler.IncludeInfo> includeChain = APTHandlersSupport.extractIncludeStack(includeOwnerState);
+        if (CndUtils.isDebugMode()) {
+            StartEntry startEntry = APTHandlersSupport.extractStartEntry(includeOwnerState);
+            if (includeChain.isEmpty()) {
+                assert startEntry.getFileSystem() == includeDirecitveFileOwner.getFileSystem();
+                CndUtils.assertPathsEqualInConsole(startEntry.getStartFile(), includeDirecitveFileOwner.getAbsolutePath(), "different paths {0} vs. {1}", startEntry, includeDirecitveFileOwner);
+            } else {
+                PPIncludeHandler.IncludeInfo includer = includeChain.getLast();
+                CndUtils.assertPathsEqualInConsole(includer.getIncludedPath(), includeDirecitveFileOwner.getAbsolutePath(), "different paths {0} vs. {1}", includer, includeDirecitveFileOwner);
+                assert includer.getFileSystem() == includeDirecitveFileOwner.getFileSystem();
+            }
+        }
+        // we've got include chain up to directive owner
+        // add our include directive as the last entry point
+        includeChain.addLast(inclInfo);
+        
+        // do preprocessing of include chain
+        IncludeDirectiveTokensStreamCallback callback = new IncludeDirectiveTokensStreamCallback(includeChain);
+        boolean success = ClankDriver.preprocess(includeDirecitveFileOwner.getBuffer(), ppHandler, callback, interrupter);
+        if (!success) {
+            // error recovery
+            return null;
+        }
+        TokenStream tokenStream = callback.getTokenStream();
         if (tokenStream == null) {
-          return null;
+            // error recovery
+            return null;
         }
+        // unused, but init to prevent NPE
+        skipped = new int[0];
         return tokenStream;
     }
 
@@ -163,7 +196,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
     private TokenStream getTokenStream(ClankTokenStreamProducerParameters parameters, Interrupter interrupter) {
         PreprocHandler ppHandler = getCurrentPreprocHandler();
-        ClankDriver.APTTokenStreamCache tokStreamCache = ClankDriver.extractTokenStream(ppHandler);
+        ClankDriver.ClankPreprocessorOutput tokStreamCache = ClankDriver.extractPreprocessorOutput(ppHandler);
         assert tokStreamCache != null;
         FileImpl fileImpl = getMainFile();
         if (!tokStreamCache.hasTokenStream()) {
@@ -193,9 +226,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           return null;
         }
         if (super.isFromEnsureParsed()) {
-          ClankMacroUsagesSupport.addPreprocessorDirectives(fileImpl, getFileContent(), tokStreamCache);
-          ClankMacroUsagesSupport.addMacroExpansions(fileImpl, getFileContent(), getStartFile(), tokStreamCache);
-          ClankMacroUsagesSupport.setFileGuard(fileImpl, getFileContent(), tokStreamCache);
+          ClankToCsmSupport.addPreprocessorDirectives(fileImpl, getFileContent(), tokStreamCache);
+          ClankToCsmSupport.addMacroExpansions(fileImpl, getFileContent(), getStartFile(), tokStreamCache);
+          ClankToCsmSupport.setFileGuard(fileImpl, getFileContent(), tokStreamCache);
         }
         skipped = tokStreamCache.getSkippedRanges();
         if (parameters.applyLanguageFilter) {
@@ -207,7 +240,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
     private List<CsmReference> getMacroUsages(ClankTokenStreamProducerParameters parameters, Interrupter interrupter) {
         PreprocHandler ppHandler = getCurrentPreprocHandler();
-        int fileIndex = ClankDriver.extractTokenStream(ppHandler).getFileIndex();
+        int fileIndex = ClankDriver.extractPreprocessorOutput(ppHandler).getFileIndex();
         FileImpl fileImpl = getMainFile();
         FileTokenStreamCallback callback = new FileTokenStreamCallback(
                 ppHandler,
@@ -217,7 +250,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 fileIndex);
         if (ClankDriver.preprocess(fileImpl.getBuffer(), ppHandler, callback, interrupter)) {
             ClankDriver.ClankFileInfo foundFileInfo = callback.getFoundFileInfo();
-            return ClankMacroUsagesSupport.getMacroUsages(fileImpl, getStartFile(), foundFileInfo);
+            return ClankToCsmSupport.getMacroUsages(fileImpl, getStartFile(), foundFileInfo);
         } else {
             return Collections.emptyList();
         }
@@ -230,7 +263,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         // TODO: shouldn't we introduce a special flag for this?
         if (parameters.needMacroExpansion == YesNoInterested.INTERESTED && parameters.needPPDirectives == YesNoInterested.INTERESTED) {
             FileImpl fileImpl = getMainFile();
-            List<CsmReference> macroUsages = ClankMacroUsagesSupport.getMacroUsages(fileImpl, getStartFile(), foundFileInfo);
+            List<CsmReference> macroUsages = ClankToCsmSupport.getMacroUsages(fileImpl, getStartFile(), foundFileInfo);
             fileImpl.setLastMacroUsages(macroUsages);
         }
     }
@@ -245,7 +278,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private final PreprocHandler ppHandler;
 
         private final int stopAtIndex;
-        private ClankDriver.APTTokenStreamCache foundTokens;
+        private ClankDriver.ClankPreprocessorOutput foundTokens;
         private ClankDriver.ClankFileInfo foundFileInfo;
         private final FileImpl startFile;
         private final FileImpl stopFileImpl;
@@ -283,11 +316,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           }
           return false;
         }
-
-        @Override
-        public void onErrorDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankErrorDirective directive) {
-        }
-
         
         private boolean valueOf(/*YesNoInterested*/int param) {
             switch (param) {
@@ -513,12 +541,12 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 // on exit must always be correct, otherwise on enter hasn't tracked correctly erroneous enter
                 CndUtils.assertPathsEqualInConsole(exitedFrom.getFilePath(), stopFileImpl.getAbsolutePath(),
                         "{0} expected {1}", stopFileImpl.getAbsolutePath(), exitedFrom);// NOI18N
-                foundTokens = ClankDriver.extractPreparedCachedTokenStream(ppHandler);
+                foundTokens = ClankDriver.extractPreparedPreprocessorOutput(ppHandler);
                 foundFileInfo = exitedFrom;
                 if (foundFileInfo != null && parameters.needTokens == YesNoInterested.NEVER) {
                     // most probably someone was interested in macro expansion, not tokens
                     // prepare caches while PP is in valid state
-                    ClankDriver.prepareCachesIfPossible(foundFileInfo);
+                    ClankDriver.preparePreprocessorOutputIfPossible(foundFileInfo);
                 }
                 assert parameters.needTokens == YesNoInterested.NEVER || foundTokens.hasTokenStream();
                 // stop all activity
@@ -529,7 +557,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 // check if onEnter we decided to skip this file content
                 if (!skipCurrentFileContentOptimization) {
                     try {
-                        assert ClankDriver.extractTokenStream(ppHandler).hasTokenStream();
+                        assert ClankDriver.extractPreprocessorOutput(ppHandler).hasTokenStream();
                         PreprocHandler.State inclState = ppHandler.getState();
                         assert !inclState.isCleaned();
                         CharSequence inclPath = curFile.getAbsolutePath();
@@ -559,31 +587,36 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             return foundFileInfo;
         }
 
-        private ClankDriver.APTTokenStreamCache getPPOut() {
+        private ClankDriver.ClankPreprocessorOutput getPPOut() {
             return foundTokens;
         }
     }
     
     private static final class IncludeDirectiveTokensStreamCallback implements ClankPreprocessorCallback {
-        private final PreprocHandler ppHandler;
-
-        private final int includeFileOnwerIndex;
-        private final int interestedClankIncludeDirectiveOffset;
-        private ClankDriver.APTTokenStreamCache foundTokens = null;
+        // include chain we need to go till interested file
+        private final LinkedList<PPIncludeHandler.IncludeInfo> remainingChainToInterestedFile;
+        private PPIncludeHandler.IncludeInfo seekEnterToThisIncludeInfo;
+        
+        private ClankDriver.ClankFileInfo waitExitFromThisFileInfo = null;
+        private ClankDriver.ClankFileInfo seenInterestedFileInfo = null;
+        
+        private TokenStream tokenStream = null;
         private boolean insideInterestedFile = false;
 
-        private ClankDriver.ClankFileInfo includedFileInfo = null;
-
-        private IncludeDirectiveTokensStreamCallback(PreprocHandler ppHandler,
-                int includeFileOnwerIndex, int interestedIncludeDirectiveOffset) {
-            this.ppHandler = ppHandler;
-            this.includeFileOnwerIndex = includeFileOnwerIndex;
-            // adjust to Clank offset
-            this.interestedClankIncludeDirectiveOffset = interestedIncludeDirectiveOffset;
+        private enum State {
+          WAIT_COMPILATION_UNIT_FILE, // before Compilation Unit
+          WAIT_EXIT_FROM_FILE, // uses waitExitFromThisFileInfo
+          SEEK_ENTER_TO_INCLUDED_FILE, // uses seekEnterToThisIncludeInfo
+          INSIDE_INITERESTED_FILE, // seenInterestedFileInfo
+          CORRUPTED_INCLUDE_CHAIN, // smth goes wrong
+          DONE // chain is OK and TokenStream is collected
         }
-
-        @Override
-        public void onErrorDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankErrorDirective directive) {
+        
+        private State state;
+        private IncludeDirectiveTokensStreamCallback(LinkedList<PPIncludeHandler.IncludeInfo> includeChain) {
+            this.remainingChainToInterestedFile = includeChain;
+            assert !this.remainingChainToInterestedFile.isEmpty();
+            this.state = State.WAIT_COMPILATION_UNIT_FILE;
         }
 
         @Override
@@ -617,40 +650,155 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
         @Override
-        public boolean onEnter(ClankDriver.ClankFileInfo enteredFrom, ClankDriver.ClankFileInfo enteredTo) {
+        public boolean onEnter(ClankDriver.ClankFileInfo enteredFrom, ClankDriver.ClankFileInfo enteredTo) {            
             assert enteredTo != null;
             insideInterestedFile = false;
-            // TODO: we can collect all included recursively, but not now
-            if (enteredFrom != null && enteredFrom.getFileIndex() == includeFileOnwerIndex) {
-              // entering from file owner into include directive
-              if (enteredTo.getInclusionDirective().getDirectiveStartOffset() == this.interestedClankIncludeDirectiveOffset) {
-                assert includedFileInfo == null : "seen twice? " + includedFileInfo;
-                includedFileInfo = enteredTo;
-                insideInterestedFile = true;
-              }
+            if (state == State.CORRUPTED_INCLUDE_CHAIN) {
+                // keep state and dont' allow to enter
+                return false;
+            } 
+            if (state == State.DONE) {
+                // all activity was done; keep state and no need to enter
+                return false;
+            } 
+            if (state == State.WAIT_COMPILATION_UNIT_FILE) {
+                // enter compilation unit
+                assert enteredFrom == null : "expected null instead of " + enteredFrom;
+                assert this.waitExitFromThisFileInfo == null : "expected null instead of " + this.waitExitFromThisFileInfo;
+                if (remainingChainToInterestedFile.isEmpty()) {
+                    // main file itself is what we are looking for
+                    state = State.INSIDE_INITERESTED_FILE;
+                    seenInterestedFileInfo = enteredTo;
+                    insideInterestedFile = true;
+                } else {
+                    // inside compilation unit file we are going to seek entrance into the head of include chain
+                    // remove it from chain
+                    seekEnterToThisIncludeInfo = this.remainingChainToInterestedFile.removeFirst();
+                    assert seekEnterToThisIncludeInfo != null;
+                    // need to find entrance into include chain
+                    state = State.SEEK_ENTER_TO_INCLUDED_FILE;
+                }
+                // allow to enter
+                return true;
             }
-            return true;
+            if (state == State.INSIDE_INITERESTED_FILE) {
+                assert this.remainingChainToInterestedFile.isEmpty() : "we are inside interested file only when walked whole chain: " + remainingChainToInterestedFile;
+                // inside interested file we met #include directive
+                // visit full include branch and come back to our file
+                assert this.waitExitFromThisFileInfo == null : "expected null instead of " + this.waitExitFromThisFileInfo;
+                // set up exit-from marker object 
+                this.waitExitFromThisFileInfo = enteredTo;
+                state = State.WAIT_EXIT_FROM_FILE;
+                // enter included file, state will be changed in onExit
+                return true;
+            }
+            if (state == State.WAIT_EXIT_FROM_FILE) {
+                // we are inside #include branch which is before or inside interested #include
+                // this state is changed only in onExit
+                assert this.waitExitFromThisFileInfo != null;
+                assert this.waitExitFromThisFileInfo != enteredTo : "unexpected to enter into file " + enteredTo + " which we wait to exit from";
+                // continue traversing this include path
+                // state will be changed in onExit
+                return true;
+            }
+            if (state == State.SEEK_ENTER_TO_INCLUDED_FILE) {
+                assert this.seekEnterToThisIncludeInfo != null;
+                assert this.waitExitFromThisFileInfo == null : "expected null instead of " + this.waitExitFromThisFileInfo;
+                assert enteredFrom != null;
+                ClankDriver.ClankInclusionDirective inclDirective = enteredTo.getInclusionDirective();
+                assert inclDirective != null : "main file is the only one without include directive, but had to be handled above " + enteredTo;
+                // see if met onEnter into interested #include directive from include chain
+                int includeDirectiveIndex = inclDirective.getIncludeDirectiveIndex();
+                if (includeDirectiveIndex == seekEnterToThisIncludeInfo.getIncludeDirectiveIndex()) {
+                    // consistency check that included file is as expected
+                    if (CharSequenceUtils.contentEquals(seekEnterToThisIncludeInfo.getIncludedPath(), enteredTo.getFilePath())) {
+                        if (this.remainingChainToInterestedFile.isEmpty()) {
+                            assert seenInterestedFileInfo == null : "can not enter twice " + seenInterestedFileInfo;
+                            // update state
+                            state = State.INSIDE_INITERESTED_FILE;
+                            seenInterestedFileInfo = enteredTo;
+                            insideInterestedFile = true;
+                        } else {
+                            // remove new entrance from chain
+                            seekEnterToThisIncludeInfo = this.remainingChainToInterestedFile.removeFirst();
+                            assert seekEnterToThisIncludeInfo != null;
+                            // need to find entrance into next level of include chain
+                            // keep seeking state
+                            state = State.SEEK_ENTER_TO_INCLUDED_FILE;
+                        }
+                    } else {
+                        // this is corrupted include stack, we don't want to go this way anymore
+                        state = State.CORRUPTED_INCLUDE_CHAIN;
+                        assert tokenStream == null;
+                        return false;
+                    }
+                } else {
+                    assert includeDirectiveIndex < seekEnterToThisIncludeInfo.getIncludeDirectiveIndex() : "why hasn't stopped after interested file? " + seekEnterToThisIncludeInfo;
+                    // before interested file we met #include directive
+                    // have to visit full include branch and come back to our file
+                    assert this.waitExitFromThisFileInfo == null : "expected null instead of " + this.waitExitFromThisFileInfo;
+                    // set up exit-from marker object 
+                    waitExitFromThisFileInfo = enteredTo;
+                    state = State.WAIT_EXIT_FROM_FILE;
+                }
+                // let's enter
+                return true;
+            }
+            assert false : "unexpected state = " + state;
+            state = State.CORRUPTED_INCLUDE_CHAIN;
+            return false;
         }
 
         @Override
         public boolean onExit(ClankDriver.ClankFileInfo exitedFrom, ClankDriver.ClankFileInfo exitedTo) {
-            if (foundTokens != null) {
-              return false;
+            insideInterestedFile = false;
+            if (tokenStream != null) {
+                // already gathered token stream
+                assert state == State.DONE;
+                // can stop all
+                return false;
+            }
+            if (state == State.CORRUPTED_INCLUDE_CHAIN) {
+                assert tokenStream == null;
+                // continue exit
+                return false;
             }
             assert exitedFrom != null;
-            if (exitedFrom == includedFileInfo) {
-              // stop all activity on exit from interested include directive
-              foundTokens = ClankDriver.extractPreparedCachedTokenStream(ppHandler);
-              assert foundTokens.hasTokenStream();
-              return false;
+            assert seenInterestedFileInfo != null || waitExitFromThisFileInfo != null : "we exit from enexpected include branch ? " + exitedFrom + "\nback to\n" + exitedTo;            
+            if (exitedFrom == seenInterestedFileInfo) {
+                assert waitExitFromThisFileInfo == null;
+                // stop all activity on exit from interested file
+                tokenStream = ClankDriver.extractPreparedTokenStream(exitedFrom);
+                assert tokenStream != null;
+                state = State.DONE;
+                // stop after exit
+                return false;
             }
-            // gather when come back to interested file
-            insideInterestedFile = (exitedTo == includedFileInfo);
+            if (exitedFrom == waitExitFromThisFileInfo) {
+                assert (state == State.WAIT_EXIT_FROM_FILE);
+                // clear exit-from marker object 
+                waitExitFromThisFileInfo = null;
+                if (seenInterestedFileInfo == null) {
+                    // we met #include before expected include chain entry point
+                    // switch back to seek of entry point
+                    state = State.SEEK_ENTER_TO_INCLUDED_FILE;
+                } else {
+                    assert seenInterestedFileInfo != null;
+                    assert exitedTo == seenInterestedFileInfo : "unexpected to exit back to file " + exitedTo + "\nwhen we wait to exit into " + seenInterestedFileInfo;
+                    assert this.remainingChainToInterestedFile.isEmpty() : "we are inside interested file only when walked whole chain: " + remainingChainToInterestedFile;
+                    state = State.INSIDE_INITERESTED_FILE;
+                    // gather information again when come back to interested file
+                    insideInterestedFile = true;
+                }
+            }
+            // in all other cases exit but continue 
+            // till we meet FileInfoForExitFrom or seenInterestedFile
+            // state can be update in further onEnter hook as well
             return true;
         }
 
-        private ClankDriver.APTTokenStreamCache getPPOut() {
-            return foundTokens;
+        private TokenStream getTokenStream() {
+            return tokenStream;
         }
     }
 

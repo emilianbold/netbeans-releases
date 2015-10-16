@@ -63,27 +63,29 @@ public class APTTraceFlags {
 
     static {
         String propUseClank = System.getProperty("apt.use.clank"); //NOI18N
+        boolean val;
         if (propUseClank != null) {
-            USE_CLANK = Boolean.parseBoolean(propUseClank);
+            val = Boolean.parseBoolean(propUseClank);
         } else {
             final ComponentType product = ComponentType.getComponent();
             switch (product) {
                 case CND:
                 case PROJECT_CREATOR:
-                    USE_CLANK = true;
+                    val = true;
                     break;
                 case OSS_IDE:
                 case DBXTOOL:
                 case DLIGHTTOOL:
                 case CODE_ANALYZER:
-                    USE_CLANK = false;
+                    val = false;
                     break;
                 default:
-                    USE_CLANK = false;
+                    val = false;
                     APTUtils.LOG.severe("Unexpected product type: " + product); //NOI18N
                     break;
             }
         }
+        USE_CLANK = val;
         if (!CndUtils.isUnitTestMode()) {
             // APTUtils.LOG has level SEVERE by default, so we can't use it here
             Logger.getLogger(APTTraceFlags.class.getName()).log(Level.INFO, "C/C++ code model: using {0} preprocessor", (USE_CLANK ? "new" : "old")); //NOI18N

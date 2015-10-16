@@ -1723,7 +1723,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Object stateLock = fileEntry.getLock();
         Collection<ProjectBase> dependentProjects = getDependentProjects();
         synchronized (stateLock) {
-            fileContainer.markAsParsingPreprocStates(absPath);
+            fileEntry.markAsParsingPreprocStates();
             Collection<FileEntry> entries = this.getIncludedFileEntries(stateLock, absPath, dependentProjects);
             for (FileEntry includedFileEntry : entries) {
                 includedFileEntry.markAsParsingPreprocStates();

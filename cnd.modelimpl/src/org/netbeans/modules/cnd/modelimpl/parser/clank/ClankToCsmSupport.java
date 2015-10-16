@@ -62,32 +62,32 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.NbBundle;
 
 /**
- * Misc static methods used for processing of macros
+ * Misc static methods used for processing in Clank mode.
  * @author vkvashin
  */
-public final class ClankMacroUsagesSupport {
+/*package*/final class ClankToCsmSupport {
 
-    private ClankMacroUsagesSupport() {
+    private ClankToCsmSupport() {
     }
 
-    public static void addPreprocessorDirectives(FileImpl curFile, FileContent parsingFileContent, ClankDriver.APTTokenStreamCache cache) {
+    public static void addPreprocessorDirectives(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankPreprocessorOutput cache) {
         assert parsingFileContent != null;
         assert curFile != null;
         assert cache != null;
         for (ClankDriver.ClankPreprocessorDirective cur : cache.getPreprocessorDirectives()) {
             if (cur instanceof ClankDriver.ClankInclusionDirective) {
-                ClankMacroUsagesSupport.addInclude(curFile, parsingFileContent, (ClankDriver.ClankInclusionDirective)cur);
+                ClankToCsmSupport.addInclude(curFile, parsingFileContent, (ClankDriver.ClankInclusionDirective)cur);
             } else if (cur instanceof ClankDriver.ClankErrorDirective) {
-                ClankMacroUsagesSupport.addError(curFile, parsingFileContent, (ClankDriver.ClankErrorDirective)cur);
+                ClankToCsmSupport.addError(curFile, parsingFileContent, (ClankDriver.ClankErrorDirective)cur);
             } else if (cur instanceof ClankDriver.ClankMacroDirective) {
-                ClankMacroUsagesSupport.addMacro(curFile, parsingFileContent, (ClankDriver.ClankMacroDirective)cur);
+                ClankToCsmSupport.addMacro(curFile, parsingFileContent, (ClankDriver.ClankMacroDirective)cur);
             } else {
               CndUtils.assertTrueInConsole(false, "unknown directive " + cur.getClass().getSimpleName() + " " + cur);
             }
         }
     }
 
-    public static void setFileGuard(FileImpl curFile, FileContent parsingFileContent, ClankDriver.APTTokenStreamCache cache) {
+    public static void setFileGuard(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankPreprocessorOutput cache) {
         ClankDriver.FileGuard fileGuard = cache.getFileGuard();
         if (fileGuard != null) {
             curFile.setFileGuard(fileGuard.getStartOfset(), fileGuard.getEndOfset());
@@ -96,7 +96,7 @@ public final class ClankMacroUsagesSupport {
         }
     }
 
-    public static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.APTTokenStreamCache cache) {
+    public static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.ClankPreprocessorOutput cache) {
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
             ClankDriver.ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
@@ -258,8 +258,8 @@ public final class ClankMacroUsagesSupport {
         }
         int startOffset = ppDirective.getDirectiveStartOffset();
         int endOffset = ppDirective.getDirectiveEndOffset();
-        //boolean hasRecursiveInclude = curFile.equals(includedFile);
-        IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, ppDirective.isRecursive(), includedFile, curFile, startOffset, endOffset);
+        int includeDirectiveIndex = ppDirective.getIncludeDirectiveIndex();
+        IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, ppDirective.isRecursive(), includedFile, curFile, startOffset, endOffset, includeDirectiveIndex);
         parsingFileContent.addInclude(incl, broken || ppDirective.isRecursive());
     }
 
@@ -333,7 +333,7 @@ public final class ClankMacroUsagesSupport {
         @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
-            buf.append(NbBundle.getMessage(ClankMacroUsagesSupport.class, reason.name(), args));
+            buf.append(NbBundle.getMessage(ClankToCsmSupport.class, reason.name(), args));
             if (stack != null) {
                 StackTraceElement[] stackTrace = stack.getStackTrace();
                 if (stackTrace != null) {

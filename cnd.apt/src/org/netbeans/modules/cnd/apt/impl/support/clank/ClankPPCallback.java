@@ -133,9 +133,8 @@ public final class ClankPPCallback extends FileInfoCallback {
     private final ClankIncludeHandlerImpl includeHandler;
     private final FileSystem startFileSystem;
     private final ArrayList<ClankFileInfoWrapper> includeStack = new ArrayList<ClankFileInfoWrapper>(16);
-    private final ArrayList<Integer> includeHelperStack = new ArrayList<Integer>(16);
     private final CancellableInterrupter interrupter;
-
+    
     public ClankPPCallback(PreprocHandler ppHandler,
             raw_ostream traceOS,
             ClankDriver.ClankPreprocessorCallback delegate,
@@ -157,27 +156,25 @@ public final class ClankPPCallback extends FileInfoCallback {
             PreprocHandler.State stateWhenMetErrorDirective = APTHandlersSupport.createCleanPreprocState(this.ppHandler.getState());
             ClankErrorDirectiveWrapper errorDirectiveWrapper = new ClankErrorDirectiveWrapper(directive, stateWhenMetErrorDirective);
             directive.setAnnotation(errorDirectiveWrapper);
-            ClankFileInfoWrapper currentFileWrapper = includeStack.get(includeStack.size() - 1);
-            this.delegate.onErrorDirective(currentFileWrapper, errorDirectiveWrapper);
         }
         interrupter.updateStateFromDelegate();
     }
 
     @Override
     protected void onInclusionDirective(FileInfo curFile, InclusionDirectiveInfo directive) {
-        assert includeHelperStack.size() == includeStack.size();
         final int stacksSize = includeStack.size();
         // find ResolvedPath for #include
         ResolvedPath resolvedPath = createResolvedPath(curFile, directive);
         StringRef fileNameSpelling = directive.getFileNameSpelling();
         String spelling = Casts.toCharSequence(fileNameSpelling.data(), fileNameSpelling.size()).toString();
+        ClankFileInfoWrapper currentFileWrapper = includeStack.get(stacksSize - 1);
+        final int includeDirectiveIndex = currentFileWrapper.getNextIncludeDirectiveIndex();
         ClankInclusionDirectiveWrapper inclDirectiveWrapper = new ClankInclusionDirectiveWrapper(directive
+                                                                                                ,includeDirectiveIndex
                                                                                                 ,resolvedPath
                                                                                                 ,spelling);
         // keep it as annotation 
         directive.setAnnotation(inclDirectiveWrapper);
-        ClankFileInfoWrapper currentFileWrapper = includeStack.get(stacksSize - 1);
-        includeHelperStack.set(stacksSize - 1, includeHelperStack.get(stacksSize - 1) + 1);
         assert currentFileWrapper.current == curFile || !curFile.isFile();
         if (resolvedPath == null) {
             if (DebugUtils.STANDALONE) {
@@ -333,15 +330,15 @@ public final class ClankPPCallback extends FileInfoCallback {
                 enteredFromWrapper = null;
             } else {
                 ResolvedPath resolvedPath = enteredToWrapper.getResolvedPath();
+                int includeDirectiveIndex = enteredToWrapper.getInclusionDirective().getIncludeDirectiveIndex();
                 includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(),
                         0/*should not be used by client*/, enteredTo.getIncludeStartOffset(), resolvedPath.getIndex(),
-                        includeHelperStack.get(includeHelperStack.size() - 1));
-                includeHandler.cacheTokens(enteredToWrapper);
+                        includeDirectiveIndex);
+                includeHandler.cachePreprocessorOutputImplementation(enteredToWrapper);
                 enteredFromWrapper = includeStack.get(includeStack.size() - 1);
             }
             // keep stack of active files
             includeStack.add(enteredToWrapper);
-            includeHelperStack.add(0);
             if (!delegate.onEnter(enteredFromWrapper, enteredToWrapper)) {
                 // client doesn't want to enter file or error detected by client, full stop
                 interrupter.cancel();
@@ -349,6 +346,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         } else {
             assert includeStack.size() == 1 : "there should be only one main file";
             assert includeStack.get(0).current.isMainFile() : "there should be only main file";
+            includeStack.get(0).onEnterToBuiltIn(enteredTo);
         }
         interrupter.updateStateFromDelegate();
     }
@@ -381,12 +379,11 @@ public final class ClankPPCallback extends FileInfoCallback {
             assert includeStack.size() > 0 : "empty include stack?";
             ClankDriver.ClankFileInfo exitedToWrapper;
             ClankFileInfoWrapper exitedFromWrapper = includeStack.remove(includeStack.size() - 1);
-            includeHelperStack.remove(includeHelperStack.size() - 1);
             assert exitedFromWrapper.current == exitedFrom;
             // we cache possibly collected tokens in include handler
             // to allow delegate to use them
             exitedFromWrapper.exited();
-            includeHandler.cacheTokens(exitedFromWrapper);
+            includeHandler.cachePreprocessorOutputImplementation(exitedFromWrapper);
             // init where we returned to
             if (includeStack.isEmpty()) {
                 exitedToWrapper = null;
@@ -404,6 +401,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         } else {
             assert includeStack.size() == 1 : "there should be only one main file";
             assert includeStack.get(0).current.isMainFile() : "there should be only main file";
+            includeStack.get(0).onExitFromBuiltIn(exitedFrom);
         }
         interrupter.updateStateFromDelegate();
     }
@@ -678,14 +676,32 @@ public final class ClankPPCallback extends FileInfoCallback {
         private final ResolvedPath resolvedPath;
         private final String spelling;
         private final boolean isAngled;
+        private final int includeDirectiveIndex;
         private boolean recursive;
 
-        public ClankInclusionDirectiveWrapper(InclusionDirectiveInfo clankDelegate, ResolvedPath resolvedPath, String spelling) {
+        public ClankInclusionDirectiveWrapper(InclusionDirectiveInfo clankDelegate, int includeDirectiveIndex, ResolvedPath resolvedPath, String spelling) {
             super(clankDelegate);
             this.isAngled = clankDelegate.isAngled();
+            this.includeDirectiveIndex = includeDirectiveIndex;
             this.resolvedPath = resolvedPath;
             this.spelling = spelling;
             this.recursive = false;
+        }
+
+        private ClankInclusionDirectiveWrapper(int start, int end, ClankInclusionDirectiveWrapper copyFrom) {
+            super(start, end);
+            this.isAngled = copyFrom.isAngled;
+            this.includeDirectiveIndex = copyFrom.includeDirectiveIndex;
+            this.resolvedPath = copyFrom.resolvedPath;
+            this.spelling = copyFrom.spelling;
+            this.recursive = copyFrom.recursive;
+            super.setAnnotation(copyFrom.getAnnotation());
+        }
+
+        // like APTIncludeFake
+        private static final String INCLUDE_FILE="-include"; // NOI18N
+        private ClankInclusionDirectiveWrapper convertToIncludeFile(int start) {
+            return new ClankInclusionDirectiveWrapper(start, start + INCLUDE_FILE.length(), this);
         }
 
         @Override
@@ -707,7 +723,12 @@ public final class ClankPPCallback extends FileInfoCallback {
         public boolean isRecursive() {
             return recursive;
         }
-        
+
+        @Override
+        public int getIncludeDirectiveIndex() {
+            return includeDirectiveIndex;
+        }
+                
         public void setRecursive(boolean recursive) {
             this.recursive = recursive;
         }
@@ -715,6 +736,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         @Override
         public String toString() {
             return "ClankInclusionDirective{\n" + super.toString() + ",\n" // NOI18N
+                    + "#" + includeDirectiveIndex + ";" // NOI18N
                     + "resolvedPath=" + resolvedPath + ",\n" // NOI18N
                     + "spelling=" + spelling + ",\n" // NOI18N
                     + '}'; // NOI18N
@@ -722,7 +744,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
     }
 
-    private static final class ClankFileInfoWrapper implements ClankDriver.ClankFileInfo, ClankDriverImpl.APTTokenStreamCacheImplementation {
+    private static final class ClankFileInfoWrapper implements ClankDriver.ClankFileInfo, ClankDriverImpl.ClankPreprocessorOutputImplementation {
 
         private final boolean needLineColumnsForToken;
         private final FileInfo current;
@@ -737,7 +759,9 @@ public final class ClankPPCallback extends FileInfoCallback {
         private boolean hasTokenStream = false;
         private int[] skippedRanges = null;
         private boolean convertedToAPT = false;
-
+        private int NextIncludeDirectiveIndex = -1;
+        private Collection<FileInfo> visitedBuiltIns;
+        
         public ClankFileInfoWrapper(FileInfo current,
                 PreprocHandler ppHandler) {
             assert current != null;
@@ -834,9 +858,41 @@ public final class ClankPPCallback extends FileInfoCallback {
             int nrDirectives = ppDirectives.size();
             assert this.convertedPPDirectives == null;
             this.convertedPPDirectives = new ArrayList<ClankDriver.ClankPreprocessorDirective>(nrDirectives);
-            SmallString spell = new SmallString(1024);
             Preprocessor PP = current.getPreprocessor();
             SourceManager SM = PP.getSourceManager();
+            if (current.isMainFile()) {
+                // visited built-ins might contain "-include /file/path" directives
+                // attach them to the main file
+                if (this.visitedBuiltIns != null) {
+                    for (FileInfo builtIn : visitedBuiltIns) {
+                        SmallVector<PreprocessorDirectiveInfo> builtInPPDirectives = builtIn.getPreprocessorDirectives();
+                        Object[] builtInPPArray = builtInPPDirectives.$array();
+                        int nrBuiltInPPDirectives = builtInPPDirectives.size();
+                        Collection<ClankInclusionDirectiveWrapper> includeFiles = new ArrayList<ClankInclusionDirectiveWrapper>(1);
+                        for (int i = 0; i < nrBuiltInPPDirectives; i++) {
+                            PreprocessorDirectiveInfo curBuiltInDirective = (PreprocessorDirectiveInfo)builtInPPArray[i];
+                            // filter out only "-include file" directives
+                            if (curBuiltInDirective instanceof InclusionDirectiveInfo) {
+                                ClankInclusionDirectiveWrapper includedFile = (ClankInclusionDirectiveWrapper) curBuiltInDirective.getAnnotation();
+                                assert includedFile != null;
+                                includeFiles.add(includedFile);
+                            }
+                        }
+                        // like in APTAbstractWalker.preInit
+                        for (ClankInclusionDirectiveWrapper directiveWrapper : includeFiles) {
+                            // change offsets to be fake and associated with the main file, not the offset from built-in
+                            // also we ordered them by their include directive indices
+                            int fakeStartOffset = directiveWrapper.getIncludeDirectiveIndex() - includeFiles.size();
+                            ClankInclusionDirectiveWrapper includedFile = directiveWrapper.convertToIncludeFile(fakeStartOffset);
+                            fakeStartOffset++;
+                            this.convertedPPDirectives.add(includedFile);
+                        }
+                    }
+                }
+            } else {
+                assert this.visitedBuiltIns == null : "built-ins can be only in main file " + this.visitedBuiltIns;
+            }
+            
             for (int i = 0; i < nrDirectives; i++) {
                 PreprocessorDirectiveInfo curDirective = (PreprocessorDirectiveInfo)directives[i];
                 if (curDirective instanceof InclusionDirectiveInfo) {
@@ -940,7 +996,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
 
         @Override
-        public synchronized ClankDriverImpl.APTTokenStreamCacheImplementation prepareCachesIfPossible() {
+        public synchronized ClankDriverImpl.ClankPreprocessorOutputImplementation prepareCachesIfPossible() {
             prepareCaches();
             return this;
         }
@@ -970,6 +1026,23 @@ public final class ClankPPCallback extends FileInfoCallback {
         private void exited() {
             hasTokenStream = current.hasTokens();
             skippedRanges = current.getSkippedRanges();
+        }
+
+        private int getNextIncludeDirectiveIndex() {
+            return ++NextIncludeDirectiveIndex;
+        }
+
+        private void onEnterToBuiltIn(FileInfo enteredTo) {
+            assert current.isMainFile() : "current wrapper must be Compilation Unit: " + current;
+        }
+
+        private void onExitFromBuiltIn(FileInfo exitedFrom) {
+            assert current.isMainFile() : "current wrapper must be Compilation Unit: " + current;
+            // keep built-in's PP directives for possible further conversion
+            if (visitedBuiltIns == null) {
+                visitedBuiltIns = new ArrayList<FileInfo>(2);
+            }
+            visitedBuiltIns.add(exitedFrom);
         }
     }
 }

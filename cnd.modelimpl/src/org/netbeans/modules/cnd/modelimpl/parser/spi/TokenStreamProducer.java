@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
@@ -71,7 +72,8 @@ import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.util.Lookup;
 import org.netbeans.modules.cnd.apt.support.spi.CndTextIndexFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -395,4 +397,75 @@ public abstract class TokenStreamProducer {
         }
     }
 
+    public static PPIncludeHandler.IncludeInfo createIncludeInfo(CsmInclude include) {
+        FileImpl includedFile = (FileImpl) include.getIncludeFile();
+        if (includedFile == null) {
+            // error recovery
+            return null;
+        }
+        FileSystem fileSystem = includedFile.getFileSystem();
+        if (fileSystem == null) {
+            // error recovery
+            return null;
+        }
+        CharSequence includedAbsPath = includedFile.getAbsolutePath();
+        int includeDirFileIndex = FileInfoQueryImpl.getIncludeDirectiveIndex(include);
+        if (includeDirFileIndex < 0) {
+            // error recovery
+            return null;
+        }
+        return new IncludeInfoImpl(include, fileSystem, includedAbsPath, includeDirFileIndex);
+    }
+    
+    private static final class IncludeInfoImpl implements PPIncludeHandler.IncludeInfo {
+
+        private final int line;
+        private final CsmInclude include;
+        private final FileSystem fs;
+        private final CharSequence path;
+        private final int includedDirectiveIndex;
+
+        private IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path, int includedDirectiveIndex) {
+            this.line = include.getStartPosition().getLine();
+            this.include = include;
+            this.fs = fs;
+            this.path = path;
+            this.includedDirectiveIndex = includedDirectiveIndex;
+        }
+
+        @Override
+        public CharSequence getIncludedPath() {
+            return path;
+        }
+
+        @Override
+        public FileSystem getFileSystem() {
+            return fs;
+        }
+
+        @Override
+        public int getIncludeDirectiveLine() {
+            return line;
+        }
+
+        @Override
+        public int getIncludeDirectiveOffset() {
+            return include.getStartOffset();
+        }
+
+        @Override
+        public int getResolvedDirectoryIndex() {
+            return 0;
+        }
+
+        @Override
+        public String toString() {
+            return "restore " + include + " #" + includedDirectiveIndex + " from line " + line + " in file " + include.getContainingFile(); // NOI18N
+        }
+
+        @Override
+        public int getIncludeDirectiveIndex() {
+            return includedDirectiveIndex;
+        }
+    }    
 }
