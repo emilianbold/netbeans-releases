@@ -183,6 +183,74 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             }
         }
     }
+
+    protected static interface DocumentModifier {
+        public abstract void modify(BaseDocument doc) throws BadLocationException;
+    }
+
+    protected final void replaceText(final File sourceFile, final String text, boolean save) throws Exception {
+        modifyText(sourceFile, new DocumentModifier() {
+            @Override
+            public void modify(BaseDocument doc) throws BadLocationException {
+                doc.replace(0, doc.getLength(), text, null);
+            }
+        }, save);
+    }
+
+    protected final void modifyText(final File sourceFile, final DocumentModifier docModifier, final boolean save) throws Exception {
+        final AtomicReference<Exception> exRef = new AtomicReference<>();
+        CountDownLatch parse1 = new CountDownLatch(1);
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<>(parse1);
+        Semaphore waitParseSemaphore = new Semaphore(0);
+        final AtomicReference<Semaphore> semRef = new AtomicReference<>(waitParseSemaphore);
+        final CsmProject project = super.getProject();
+        final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
+        assertNotNull(fileImpl);
+        final BaseDocument doc = getBaseDocument(sourceFile);        
+        assertNotNull(doc);
+        project.waitParse();
+        final AtomicInteger parseCounter = new AtomicInteger(0);
+        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, semRef, parseCounter);
+        CsmListeners.getDefault().addProgressListener(listener);
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        docModifier.modify(doc);
+                    } catch (BadLocationException ex) {
+                        exRef.compareAndSet(null, ex);
+                    }
+                }
+            });
+            try {
+                checkModifiedObjects(1);
+                if (!parse1.await(20, TimeUnit.SECONDS)) {
+                    //if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
+                    //    exRef.compareAndSet(null, new TimeoutException("not finished await"));
+                    //}
+                } else {
+                    //checkDeadBlocks(project, fileImpl, "2. text after inserting dead block:", doc, "File must have " + deadBlocksAfterModifications + " dead code block ", deadBlocksAfterModifications);
+                    assertEquals("must be exactly one parse event", 1, parseCounter.get());
+                }
+                if (save) {
+                    saveDocument(sourceFile, doc, project);
+                    parse1.await(20, TimeUnit.SECONDS);
+                }
+            } catch (InterruptedException ex) {
+                exRef.compareAndSet(null, ex);
+            } finally {
+                closeDocument(sourceFile, null, doc, project, listener);
+            }
+        } finally {
+            CsmListeners.getDefault().removeProgressListener(listener);
+            Exception ex = exRef.get();
+            if (ex != null) {
+                throw ex;
+            }
+        }
+    }
     
     protected final void insertDeadBlockText(final File sourceFile, final String ifdefTxt, final int pos,
                                     int deadBlocksBeforeModifcation, int deadBlocksAfterModifications) throws Exception {
@@ -335,7 +403,9 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         if (listener != null) {
             CsmListeners.getDefault().removeProgressListener(listener);
         }
-        urm.undo();
+        if (urm != null) {
+            urm.undo();
+        }
         DataObject testDataObject = DataObject.find(CndFileUtils.toFileObject(sourceFile));
         CloseCookie close = testDataObject.getLookup().lookup(CloseCookie.class);
         if (close != null) {
