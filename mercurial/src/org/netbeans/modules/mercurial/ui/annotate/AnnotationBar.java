@@ -690,7 +690,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         previousAnnotationsMenu.setVisible(false);
         rollbackMenu.setVisible(false);
         separator.setVisible(false);
-        if (revisionPerLine != null) {
+        if (revisionPerLine != null && changesetIdPerLine != null) {
             String key = getPreviousRevisionKey(originalFile.getAbsolutePath(), revisionPerLine);
             HgRevision previousRevision = getPreviousRevisions().get(key); // get from cache
             if (al.canBeRolledBack() && (previousRevision != null || !getPreviousRevisions().containsKey(key))) {

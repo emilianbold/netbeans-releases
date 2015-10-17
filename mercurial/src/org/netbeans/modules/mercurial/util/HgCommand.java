@@ -3898,6 +3898,9 @@ public abstract class HgCommand<T> implements Callable<T> {
                     if (list.isEmpty()) {
                         Mercurial.LOG.log(Level.SEVERE, "command: {0}", command); // NOI18N
                         throw new HgException.HgTooLongArgListException(NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_EXECUTE_COMMAND"));
+                    } else {
+                        Mercurial.LOG.log(Level.FINE, "command: {0}", command); // NOI18N
+                        Mercurial.LOG.log(Level.FINE, "result: {0}", list); //NOI18N
                     }
                 }
             } catch (InterruptedException e) {
