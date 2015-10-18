@@ -450,6 +450,13 @@ public class LineSetTest extends NbTestCase implements CloneableEditorSupport.En
         //   Each comparison needs a binary search todetermine the line number.
         assertTrue("Line.equals() count=" + DocumentLine.dlEqualsCounter + " too high",
                 DocumentLine.dlEqualsCounter < 5000);
+
+        // Release several lines at the end of list to test the binary search skipping the empty slots
+        for (int i = lineCount - 3; i < lineCount; i++) {
+            lines.set(i, null);
+        }
+        System.gc();
+        lineSet.getCurrent(lineCount - 1);
     }
     
     private void assertNumberOfLines (int cnt, Line.Set set) throws Exception {

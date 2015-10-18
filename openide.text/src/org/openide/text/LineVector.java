@@ -123,6 +123,7 @@ final class LineVector {
                             if (line != null) {
                                 break;
                             }
+                            index--;
                         }
                     }
                     int lineIndex = (line != null) ? line.getLineNumber() : -1;
@@ -222,6 +223,7 @@ final class LineVector {
                             if (line != null) {
                                 break;
                             }
+                            index--;
                         }
                     }
                     int lineIndex = (line != null) ? line.getLineNumber() : -1;
