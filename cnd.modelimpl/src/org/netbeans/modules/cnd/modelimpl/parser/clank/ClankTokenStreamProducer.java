@@ -152,13 +152,18 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         includeChain.addLast(inclInfo);
         
         // do preprocessing of include chain
-        IncludeDirectiveTokensStreamCallback callback = new IncludeDirectiveTokensStreamCallback(includeChain);
+        OneFilePreprocessorCallback callback = new OneFilePreprocessorCallback(includeChain);
         boolean success = ClankDriver.preprocess(includeDirecitveFileOwner.getBuffer(), ppHandler, callback, interrupter);
         if (!success) {
             // error recovery
             return null;
         }
-        TokenStream tokenStream = callback.getTokenStream();
+        ClankDriver.ClankPreprocessorOutput ppOutput = callback.getPreparedPreprocessorOutput();
+        if (ppOutput == null) {
+            // error recovery
+            return null;
+        }
+        TokenStream tokenStream = ppOutput.getTokenStream();
         if (tokenStream == null) {
             // error recovery
             return null;
@@ -219,7 +224,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           if (tokStreamCache == null) {
             return null;
           }
-          cacheMacroUsagesInFileIfNeed(parameters, callback.getFoundFileInfo());
+          cacheMacroUsagesInFileIfNeed(parameters, callback.getPPOut());
         }
         TokenStream tokenStream = tokStreamCache.getTokenStream();
         if (tokenStream == null) {
@@ -249,14 +254,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 fileImpl,
                 fileIndex);
         if (ClankDriver.preprocess(fileImpl.getBuffer(), ppHandler, callback, interrupter)) {
-            ClankDriver.ClankFileInfo foundFileInfo = callback.getFoundFileInfo();
+            ClankDriver.ClankPreprocessorOutput foundFileInfo = callback.getPPOut();
             return ClankToCsmSupport.getMacroUsages(fileImpl, getStartFile(), foundFileInfo);
         } else {
             return Collections.emptyList();
         }
     }
 
-    private void cacheMacroUsagesInFileIfNeed(ClankTokenStreamProducerParameters parameters, ClankDriver.ClankFileInfo foundFileInfo) {
+    private void cacheMacroUsagesInFileIfNeed(ClankTokenStreamProducerParameters parameters, ClankDriver.ClankPreprocessorOutput foundFileInfo) {
         if (foundFileInfo == null) {
             return; // can this happen? should we assert? (softly!)
         }
@@ -278,8 +283,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private final PreprocHandler ppHandler;
 
         private final int stopAtIndex;
-        private ClankDriver.ClankPreprocessorOutput foundTokens;
-        private ClankDriver.ClankFileInfo foundFileInfo;
+        private ClankDriver.ClankPreprocessorOutput preparedPreprocessorOutput;
         private final FileImpl startFile;
         private final FileImpl stopFileImpl;
 
@@ -541,14 +545,8 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 // on exit must always be correct, otherwise on enter hasn't tracked correctly erroneous enter
                 CndUtils.assertPathsEqualInConsole(exitedFrom.getFilePath(), stopFileImpl.getAbsolutePath(),
                         "{0} expected {1}", stopFileImpl.getAbsolutePath(), exitedFrom);// NOI18N
-                foundTokens = ClankDriver.extractPreparedPreprocessorOutput(ppHandler);
-                foundFileInfo = exitedFrom;
-                if (foundFileInfo != null && parameters.needTokens == YesNoInterested.NEVER) {
-                    // most probably someone was interested in macro expansion, not tokens
-                    // prepare caches while PP is in valid state
-                    ClankDriver.preparePreprocessorOutputIfPossible(foundFileInfo);
-                }
-                assert parameters.needTokens == YesNoInterested.NEVER || foundTokens.hasTokenStream();
+                preparedPreprocessorOutput = ClankDriver.extractPreparedPreprocessorOutput(exitedFrom);
+                assert parameters.needTokens == YesNoInterested.NEVER || preparedPreprocessorOutput.hasTokenStream();
                 // stop all activity
                 alreadySeenInterestedFileEnter = State.EXITED;
                 return false;
@@ -583,16 +581,12 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             return true;
         }
 
-        private ClankDriver.ClankFileInfo getFoundFileInfo() {
-            return foundFileInfo;
-        }
-
         private ClankDriver.ClankPreprocessorOutput getPPOut() {
-            return foundTokens;
+            return preparedPreprocessorOutput;
         }
     }
     
-    private static final class IncludeDirectiveTokensStreamCallback implements ClankPreprocessorCallback {
+    private static final class OneFilePreprocessorCallback implements ClankPreprocessorCallback {
         // include chain we need to go till interested file
         private final LinkedList<PPIncludeHandler.IncludeInfo> remainingChainToInterestedFile;
         private PPIncludeHandler.IncludeInfo seekEnterToThisIncludeInfo;
@@ -600,7 +594,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private ClankDriver.ClankFileInfo waitExitFromThisFileInfo = null;
         private ClankDriver.ClankFileInfo seenInterestedFileInfo = null;
         
-        private TokenStream tokenStream = null;
+        private ClankDriver.ClankPreprocessorOutput preparedPreprocessorOutput = null;
         private boolean insideInterestedFile = false;
 
         private enum State {
@@ -613,7 +607,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
         
         private State state;
-        private IncludeDirectiveTokensStreamCallback(LinkedList<PPIncludeHandler.IncludeInfo> includeChain) {
+        private OneFilePreprocessorCallback(LinkedList<PPIncludeHandler.IncludeInfo> includeChain) {
             this.remainingChainToInterestedFile = includeChain;
             assert !this.remainingChainToInterestedFile.isEmpty();
             this.state = State.WAIT_COMPILATION_UNIT_FILE;
@@ -729,7 +723,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                     } else {
                         // this is corrupted include stack, we don't want to go this way anymore
                         state = State.CORRUPTED_INCLUDE_CHAIN;
-                        assert tokenStream == null;
+                        assert preparedPreprocessorOutput == null;
                         return false;
                     }
                 } else {
@@ -752,14 +746,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         @Override
         public boolean onExit(ClankDriver.ClankFileInfo exitedFrom, ClankDriver.ClankFileInfo exitedTo) {
             insideInterestedFile = false;
-            if (tokenStream != null) {
+            if (preparedPreprocessorOutput != null) {
                 // already gathered token stream
                 assert state == State.DONE;
                 // can stop all
                 return false;
             }
             if (state == State.CORRUPTED_INCLUDE_CHAIN) {
-                assert tokenStream == null;
+                assert preparedPreprocessorOutput == null;
                 // continue exit
                 return false;
             }
@@ -768,8 +762,8 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             if (exitedFrom == seenInterestedFileInfo) {
                 assert waitExitFromThisFileInfo == null;
                 // stop all activity on exit from interested file
-                tokenStream = ClankDriver.extractPreparedTokenStream(exitedFrom);
-                assert tokenStream != null;
+                preparedPreprocessorOutput = ClankDriver.extractPreparedPreprocessorOutput(exitedFrom);
+                assert preparedPreprocessorOutput != null;
                 state = State.DONE;
                 // stop after exit
                 return false;
@@ -797,8 +791,8 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             return true;
         }
 
-        private TokenStream getTokenStream() {
-            return tokenStream;
+        private ClankDriver.ClankPreprocessorOutput getPreparedPreprocessorOutput() {
+            return preparedPreprocessorOutput;
         }
     }
 

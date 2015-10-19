@@ -88,11 +88,19 @@ public final class ClankDriver {
     }
 
     public static TokenStream extractPreparedTokenStream(ClankDriver.ClankFileInfo file) {
-        ClankDriverImpl.ClankPreprocessorOutputImplementation tsCacheImpl = ClankDriverImpl.extractPreprocessorOutputImplementation(file);
-        if (tsCacheImpl != null) {
-            return tsCacheImpl.prepareCachesIfPossible().getTokenStream();
+        ClankPreprocessorOutput ppOutput = ClankDriver.extractPreparedPreprocessorOutput(file);
+        if (ppOutput != null) {
+            return ppOutput.getTokenStream();
         }
         return null;
+    }
+
+    public static ClankPreprocessorOutput extractPreparedPreprocessorOutput(ClankDriver.ClankFileInfo file) {
+      ClankDriverImpl.ClankPreprocessorOutputImplementation ppOutputImpl = ClankDriverImpl.extractPreprocessorOutputImplementation(file);
+      if (ppOutputImpl != null) {
+          return ppOutputImpl.prepareCachesIfPossible();
+      }
+      return null;
     }
 
     public static ClankPreprocessorOutput extractPreparedPreprocessorOutput(PreprocHandler ppHandler) {
@@ -269,14 +277,6 @@ public final class ClankDriver {
       int getFileIndex();
       ClankInclusionDirective getInclusionDirective();
       int[] getSkippedRanges();
-
-      Collection<ClankPreprocessorDirective> getPreprocessorDirectives();
-
-      Collection<MacroExpansion> getMacroExpansions();
-
-      Collection<MacroUsage> getMacroUsages();
-
-      FileGuard getFileGuard();
     }
 
     ////////////////////////////////////////////////////////////////////////////
