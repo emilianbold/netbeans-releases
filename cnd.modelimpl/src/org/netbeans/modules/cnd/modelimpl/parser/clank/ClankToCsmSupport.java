@@ -152,7 +152,7 @@ import org.openide.util.NbBundle;
         parsingFileContent.addReference(new MacroDeclarationReference(curFile, impl, macroNameOffset), impl);
     }
 
-    public static List<CsmReference> getMacroUsages(FileImpl fileImpl, FileImpl startFile, ClankDriver.ClankFileInfo foundFileInfo) {
+    public static List<CsmReference> getMacroUsages(FileImpl fileImpl, FileImpl startFile, ClankDriver.ClankPreprocessorOutput foundFileInfo) {
         if (foundFileInfo == null) {
             return Collections.emptyList();
         }
@@ -168,7 +168,7 @@ import org.openide.util.NbBundle;
         return res;
     }
 
-    private static void addPreprocessorDirectives(FileImpl curFile, List<CsmReference> res, ClankDriver.ClankFileInfo cache) {
+    private static void addPreprocessorDirectives(FileImpl curFile, List<CsmReference> res, ClankDriver.ClankPreprocessorOutput cache) {
         assert res != null;
         assert curFile != null;
         assert cache != null;
@@ -179,7 +179,7 @@ import org.openide.util.NbBundle;
         }
     }
 
-    private static void addMacroExpansions(FileImpl curFile, List<CsmReference> res, FileImpl startFile, ClankDriver.ClankFileInfo cache) {
+    private static void addMacroExpansions(FileImpl curFile, List<CsmReference> res, FileImpl startFile, ClankDriver.ClankPreprocessorOutput cache) {
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
             ClankDriver.ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
