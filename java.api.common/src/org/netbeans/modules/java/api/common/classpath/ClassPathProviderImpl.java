@@ -953,17 +953,26 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     l[1] = getCompileTimeClasspath(1);
                     return l;
                 }
+                if (ClassPath.SOURCE.equals(type)) {
+                    ClassPath[] l = new ClassPath[2];
+                    l[0] = getSourcepath(0);
+                    l[1] = getSourcepath(1);
+                    return l;
+                }
+                if (ClassPath.EXECUTE.equals(type)) {
+                    ClassPath[] l = new ClassPath[2];
+                    l[0] = getRunTimeClasspath(0);
+                    l[1] = getRunTimeClasspath(1);
+                    return l;
+                }
                 if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
                     ClassPath[] l = new ClassPath[2];
                     l[0] = getProcessorClasspath(0);
                     l[1] = getProcessorClasspath(1);
                     return l;
                 }
-                if (ClassPath.SOURCE.equals(type)) {
-                    ClassPath[] l = new ClassPath[2];
-                    l[0] = getSourcepath(0);
-                    l[1] = getSourcepath(1);
-                    return l;
+                if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
+                    return new ClassPath[] {getModuleBootPath()};
                 }
                 if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
                     ClassPath[] l = new ClassPath[2];
@@ -971,7 +980,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     l[1] = getModuleCompilePath(1);
                     return l;
                 }
-                //Todo: add others
+                if (JavaClassPathConstants.MODULE_CLASS_PATH.equals(type)) {
+                    ClassPath[] l = new ClassPath[2];
+                    l[0] = getModuleLegacyClassPath(0);
+                    l[1] = getModuleLegacyClassPath(1);
+                    return l;
+                }
                 assert false;
                 return null;
             }});
