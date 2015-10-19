@@ -243,14 +243,14 @@ final class ModuleFileManager implements JavaFileManager {
     @Override
     @CheckForNull
     public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
-        //WTF is this?
+        //todo: Only for Source Module Path & Output Path
         return null;
     }
 
     @Override
     @CheckForNull
     public Location getModuleLocation(Location location, String moduleName) throws IOException {
-        //WTF is this?
+        //todo: Only for Source Module Path & Output Path
         return null;
     }
 
