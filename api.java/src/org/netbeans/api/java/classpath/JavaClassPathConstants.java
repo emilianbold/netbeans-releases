@@ -67,7 +67,19 @@ public class JavaClassPathConstants {
      */
     public static final String COMPILE_ONLY = "classpath/compile_only";
 
+    /**
+     * Module path for bootstrap modules.
+     * @since 1.59
+     */
     public static final String MODULE_BOOT_PATH = "modules/boot";
+    /**
+     * Module path for user modules.
+     * @since 1.59
+     */
     public static final String MODULE_COMPILE_PATH = "modules/compile";
+    /**
+     * Additional classpath for modular compilation.
+     * @since 1.59
+     */
     public static final String MODULE_CLASS_PATH = "modules/classpath";
 }
