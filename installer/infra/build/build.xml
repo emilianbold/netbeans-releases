@@ -1377,7 +1377,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-cnd"  version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="${nestedjre.version}"/>
+            <component uid="jre-nested"  version="${nb.full.version}"/>
             <bundleProperty name="${welcome.type}" value="cnd"/>
             <property name="nbi.bundled.jvm.file" value="${nestedjre.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>
@@ -1404,7 +1404,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-extide"  version="${nb.full.version}"/>
             <component uid="nb-webcommon" version="${nb.full.version}"/>
             <component uid="nb-php"       version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="${nestedjre.version}"/>
+            <component uid="jre-nested"  version="${nb.full.version}"/>
             <bundleProperty name="${welcome.type}" value="php"/>
             <property name="nbi.bundled.jvm.file" value="${nestedjre.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>
@@ -1842,8 +1842,7 @@ jarsigner.storepass=${jarsigner.storepass}
     
     <target name="init-nested-jres">        
         <set property="nestedjre.cache.dir" value="${nbi.cache.dir}/nestedjre"/>
-	<mkdir dir="${nestedjre.cache.dir}"/>
-        <set property="nestedjre.version" value="1.${jre-nested.version.number}.0.${jre-nested.update.number}.0-${nb.full.version}"/>
+	    <mkdir dir="${nestedjre.cache.dir}"/>        
     </target>
 
     <target name="get-nested-jres">
