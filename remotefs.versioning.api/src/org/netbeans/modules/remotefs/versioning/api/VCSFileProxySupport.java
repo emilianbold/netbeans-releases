@@ -220,12 +220,12 @@ public final class VCSFileProxySupport {
                 return fo;
             }
             String path = uri.getPath();
-            int i = path.lastIndexOf('/');
+            int i = path.lastIndexOf('/'); //NOI18N
             if (i < 0) {
-                i = path.lastIndexOf('\\');
+                i = path.lastIndexOf('\\'); //NOI18N
             }
             if (i < 0) {
-                throw new MalformedURLException("URI "+first.toString());
+                throw new MalformedURLException("URI "+first.toString()); //NOI18N
             }
             segments.add(path.substring(i+1));
             path = path.substring(0, i);
