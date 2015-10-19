@@ -348,6 +348,13 @@ public final class ElementOpen {
             super.visitVariable(tree, d);
             return null;
         }
+
+        @Override
+        public Void visitModule(ModuleTree node, Void p) {
+            handleDeclaration();
+            super.visitModule(node, p);
+            return null;
+        }
     
         public void handleDeclaration() {
             Element found = info.getTrees().getElement(getCurrentPath());
