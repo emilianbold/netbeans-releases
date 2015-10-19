@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -103,6 +104,14 @@ public class Php70UnhandledError extends UnhandledErrorRule {
             } else {
                 super.visit(node);
             }
+        }
+
+        @Override
+        public void visit(ConditionalExpression node) {
+            if (ConditionalExpression.OperatorType.COALESCE.equals(node.getOperator())) {
+                createError(node);
+            }
+            super.visit(node);
         }
 
         private  void createError(int startOffset, int endOffset) {

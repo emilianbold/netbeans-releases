@@ -7,7 +7,7 @@ class ClassName {
         if ($sPhaseTeam == 'OPT')
             $sPhase = $sPhaseTeam;
         else
-            $sPhase = substr($sPhaseTeam, 1, 1) ? : '';
+            $sPhase = substr($sPhaseTeam, 1, 1) ?: '';
 
         if (stristr($sPhaseTeam, 'BLUE'))
             $sTeam = 'BLUE';
