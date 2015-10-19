@@ -399,7 +399,7 @@ public class ElementNode extends AbstractNode {
         final boolean isTopLevel;
         ClasspathInfo cpInfo;
         
-        Description( ClassMemberPanelUI ui ) {
+        private Description(ClassMemberPanelUI ui) {
             this.ui = ui;
             this.name = null;
             this.elementHandle = null;
@@ -407,8 +407,8 @@ public class ElementNode extends AbstractNode {
             this.isInherited = false;
             this.isTopLevel = false;
         }
-         
-        Description(@NonNull ClassMemberPanelUI ui,
+
+        private Description(@NonNull ClassMemberPanelUI ui,
                     @NonNull String name,
                     @NonNull ElementHandle<? extends Element> elementHandle,
                     @NonNull ElementKind kind,
@@ -424,6 +424,22 @@ public class ElementNode extends AbstractNode {
             this.kind = kind;
             this.isInherited = inherited;
             this.isTopLevel = topLevel;
+        }
+
+        private Description(
+                @NonNull ClassMemberPanelUI ui,
+                @NonNull String name,
+                @NonNull TreePathHandle treePathHandle,
+                @NonNull ElementKind kind) {
+            Parameters.notNull("ui", ui);   //NOI18N
+            Parameters.notNull("name", name);   //NOI18N
+            Parameters.notNull("treePathHandle", treePathHandle); //NOI18N
+            Parameters.notNull("kind", kind);   //NOI18N
+            this.ui = ui;
+            this.name = name;
+            this.elementHandle = null; //Todo: treePathHandle
+            this.kind = kind;
+            this.isInherited = this.isTopLevel = false;
         }
 
         public FileObject getFileObject() {
@@ -460,19 +476,9 @@ public class ElementNode extends AbstractNode {
             if (this.elementHandle != d.elementHandle && (this.elementHandle == null || !this.elementHandle.equals(d.elementHandle))) {
                 return false;
             }
-            
-            /*
-            if ( !modifiers.equals(d.modifiers)) {
-                // E.println("- modifiers");
-                return false;
-            }
-            */
-            
-            // System.out.println("Equals called");            
             return true;
         }
-        
-        
+
         public int hashCode() {
             int hash = 7;
 
@@ -481,7 +487,31 @@ public class ElementNode extends AbstractNode {
             // hash = 29 * hash + (this.modifiers != null ? this.modifiers.hashCode() : 0);
             return hash;
         }
-        
+
+        @NonNull
+        static Description root(ClassMemberPanelUI ui) {
+            return new Description(ui);
+        }
+
+        @NonNull
+        static Description element(
+                @NonNull ClassMemberPanelUI ui,
+                @NonNull String name,
+                @NonNull ElementHandle<? extends Element> elementHandle,
+                @NonNull ElementKind kind,
+                boolean inherited,
+                boolean topLevel) {
+            return new Description(ui, name, elementHandle, kind, inherited, topLevel);
+        }
+
+        @NonNull
+        static Description directive(
+                @NonNull ClassMemberPanelUI ui,
+                @NonNull String name,
+                @NonNull TreePathHandle treePathHandle) {
+            return new Description(ui,name, treePathHandle, ElementKind.OTHER);
+        }
+
         private static class DescriptionComparator implements Comparator<Description> {
             
             boolean alpha;

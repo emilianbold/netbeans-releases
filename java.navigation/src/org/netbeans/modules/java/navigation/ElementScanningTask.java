@@ -45,23 +45,29 @@ package org.netbeans.modules.java.navigation;
 import org.netbeans.modules.java.navigation.base.Utils;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.DirectiveTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -70,12 +76,15 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /** XXX Remove the ElementScanner class from here it should be enough to
@@ -122,33 +131,43 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         
         //System.out.println("The task is running" + info.getFileObject().getNameExt() + "=====================================" ) ;
         
-        Description rootDescription = new Description( ui );
+        Description rootDescription = Description.root(ui);
         rootDescription.fileObject = info.getFileObject();
         rootDescription.subs = new HashSet<Description>();
         
         // Get all outerclasses in the Compilation unit
         CompilationUnitTree cuTree = info.getCompilationUnit();        
-        List<? extends TypeElement> elements = info.getTopLevelElements();
-        
-        final Map<Element,Long> pos = new HashMap<Element,Long>();
+        final Map<Object/*Element | Directive*/,Long> pos = new HashMap<>();
         if (!canceled.get()) {
             Trees trees = info.getTrees();
             PositionVisitor posVis = new PositionVisitor (trees, canceled);
             posVis.scan(cuTree, pos);
         }
         final boolean fqn = ui.getFilters().isFqn();
+        final List<? extends Element> elements;
+        if (isModuleInfo(info.getFileObject())) {
+            final List<? extends Tree> typeDecls = cuTree.getTypeDecls();
+            Element me;
+            elements = (typeDecls.size() == 1)
+                    && ((me = info.getTrees().getElement(TreePath.getPath(cuTree, typeDecls.get(0)))) instanceof ModuleElement) ?
+                Collections.singletonList(me):
+                Collections.<Element>emptyList();
+        } else {
+            elements = info.getTopLevelElements();
+        }
         if ( !canceled.get() && elements != null) {
             for (Element element : elements) {
-                Description topLevel = element2description(element, null, false, info, pos, fqn);
+                final Description topLevel = element2description(element, null, false, info, pos, fqn);
                 if( null != topLevel ) {
                     if (!rootDescription.subs.add( topLevel )) {
                         LOG.log(Level.INFO, "Duplicate top level class: {0}", topLevel.name);   //NOI18N
                     }
-                    addMembers( (TypeElement)element, topLevel, info, pos, fqn);
+                    if (element.getKind().isClass() || element.getKind().isInterface()) {
+                        addMembers((TypeElement)element, topLevel, info, pos, fqn);
+                    }
                 }
             }
         }
-        
         if ( !canceled.get()) {
             ui.refresh(rootDescription, userAction);
         }
@@ -157,7 +176,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 new Object[] {info.getFileObject(), end - start});
     }
 
-    private static class PositionVisitor extends TreePathScanner<Void, Map<Element,Long>> {
+    private static class PositionVisitor extends TreePathScanner<Void, Map<Object,Long>> {
 
         private final Trees trees;
         private final SourcePositions sourcePositions;
@@ -173,13 +192,13 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
 
         @Override
-        public Void visitCompilationUnit(CompilationUnitTree node, Map<Element, Long> p) {
+        public Void visitCompilationUnit(CompilationUnitTree node, Map<Object, Long> p) {
             this.cu = node;
             return super.visitCompilationUnit(node, p);
         }
 
         @Override
-        public Void visitClass(ClassTree node, Map<Element, Long> p) {
+        public Void visitClass(ClassTree node, Map<Object, Long> p) {
             Element e = this.trees.getElement(this.getCurrentPath());
             if (e != null) {
                 long pos = this.sourcePositions.getStartPosition(cu, node);
@@ -189,7 +208,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
 
         @Override
-        public Void visitMethod(MethodTree node, Map<Element, Long> p) {
+        public Void visitMethod(MethodTree node, Map<Object, Long> p) {
             Element e = this.trees.getElement(this.getCurrentPath());
             if (e != null) {
                 long pos = this.sourcePositions.getStartPosition(cu, node);
@@ -199,7 +218,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
 
         @Override
-        public Void visitVariable(VariableTree node, Map<Element, Long> p) {
+        public Void visitVariable(VariableTree node, Map<Object, Long> p) {
             Element e = this.trees.getElement(this.getCurrentPath());
             if (e != null) {
                 long pos = this.sourcePositions.getStartPosition(cu, node);
@@ -209,7 +228,24 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
 
         @Override
-        public Void scan(Tree tree, Map<Element, Long> p) {
+        public Void visitModule(ModuleTree node, Map<Object, Long> p) {
+            final ModuleElement module = (ModuleElement) trees.getElement(getCurrentPath());
+            if (module != null) {
+                p.put(module, this.sourcePositions.getStartPosition(cu, node));
+                final List<? extends ModuleElement.Directive> de = module.getDirectives();
+                final List<? extends DirectiveTree> dt = node.getDirectives();
+                for (int i = 0, j = 0; i < de.size() ; i++) {
+                    if (isImportant(de.get(i))) {
+                        p.put(de.get(i), this.sourcePositions.getStartPosition(cu, dt.get(j)));
+                        j += 1;
+                    }
+                }
+            }
+            return super.visitModule(node, p);
+        }
+
+        @Override
+        public Void scan(Tree tree, Map<Object, Long> p) {
             if (!canceled.get()) {
                 return super.scan(tree, p);
             }
@@ -219,7 +255,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }        
     }
      
-    private void addMembers( final TypeElement e, final Description parentDescription, final CompilationInfo info, final Map<Element,Long> pos, boolean fqn) {
+    private void addMembers( final TypeElement e, final Description parentDescription, final CompilationInfo info, final Map<Object,Long> pos, boolean fqn) {
         List<? extends Element> members = info.getElements().getAllMembers( e );
         for( Element m : members ) {
             if( canceled.get() )
@@ -239,7 +275,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     
     private Description element2description(final Element e, final Element parent,
             final boolean isParentInherited, final CompilationInfo info,
-            final Map<Element,Long> pos, boolean  fqn) {
+            final Map<Object,Long> pos, boolean  fqn) {
         final ElementUtilities eu = info.getElementUtilities();
         if(eu.isSynthetic(e)) {
             return null;
@@ -253,7 +289,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 overridenFrom = (TypeElement) overriden.getEnclosingElement();
             }
         }
-        Description d = new Description(
+        Description d = Description.element(
                 ui,
                 getSimpleName(e),
                 ElementHandle.create(e),
@@ -270,22 +306,48 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             if( !(e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT) )
                 return null;
             d.htmlHeader = createHtmlHeader(info,  (VariableElement)e, info.getElements().isDeprecated(e),d.isInherited, fqn );
+        } else if (e.getKind() == ElementKind.MODULE) {
+            final ModuleElement me = (ModuleElement) e;
+            d.htmlHeader = me.getQualifiedName().toString();
+            addModuleDirectives(me, d, pos, info.getClasspathInfo());
         }
-        
         d.modifiers = e.getModifiers();
-        d.pos = getPosition(e, info, pos);
+        d.pos = getPosition(e, pos);
         d.cpInfo = info.getClasspathInfo();
         
         return d;
     }
+
+    private void addModuleDirectives(
+        @NonNull final ModuleElement module,
+        @NonNull final Description target,
+        @NonNull final Map<Object,Long> pos,
+        @NonNull final ClasspathInfo cpInfo) {
+        target.subs = new HashSet<>();
+        for (ModuleElement.Directive dir : module.getDirectives()) {
+            if (isImportant(dir)) {
+                //Todo: Description.directive
+                final Description dirDesc = Description.element(
+                        ui,
+                        getDirectiveName(dir),
+                        ElementHandle.create(module),
+                        ElementKind.OTHER,
+                        false,
+                        false);
+                dirDesc.htmlHeader = getDirectiveName(dir);
+                target.subs.add(dirDesc);
+                dirDesc.pos = getPosition(dir, pos);
+                dirDesc.cpInfo = cpInfo;
+            }
+        }
+    }
         
     
-    private long getPosition(final Element e, final CompilationInfo info, final Map<Element,Long> pos) {
-         Long res = pos.get(e);
-         if (res == null) {
-            return -1;
-         }
-         return res.longValue();
+    private long getPosition(final Object e, final Map<Object,Long> pos) {
+        final Long res = pos.get(e);
+        return res == null ?
+            -1:
+            res;
     }
 
     private static String getSimpleName(@NonNull final Element e) {
@@ -295,7 +357,53 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             return e.getSimpleName().toString();
         }
     }
-        
+
+    private static boolean isModuleInfo(@NullAllowed final FileObject file) {
+        return file != null && "module-info".equals(file.getName());    //NOI18N
+    }
+
+    /**
+     * Tests if the directive is important (neither synthetic nor mandated).
+     * Hack of missing javac API for testing synthetic directives
+     */
+    private static boolean isImportant(@NonNull final ModuleElement.Directive directive) {
+        if (directive instanceof ModuleElement.RequiresDirective) {
+            try {
+                final Set<?> flags = (Set) directive.getClass().getField("flags").get(directive);   //NOI18N
+                final int expectedSize = ((ModuleElement.RequiresDirective)directive).isPublic() ? 1 : 0;
+                return flags.size() == expectedSize;
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(e);
+            }
+        } else {
+            return true;
+        }
+    }
+
+    @NonNull
+    private static String getDirectiveName(@NonNull final ModuleElement.Directive directive) {
+        final StringBuilder sb = new StringBuilder()
+                .append(directive.getKind().toString().toLowerCase())
+                .append(' ');    //NOI18N
+        switch (directive.getKind()) {
+            case REQUIRES:
+                sb.append(((ModuleElement.RequiresDirective)directive).getDependency().getQualifiedName());
+                break;
+            case EXPORTS:
+                sb.append(((ModuleElement.ExportsDirective)directive).getPackage().getQualifiedName());
+                break;
+            case USES:
+                sb.append(((ModuleElement.UsesDirective)directive).getService().getQualifiedName());
+                break;
+            case PROVIDES:
+                sb.append(((ModuleElement.ProvidesDirective)directive).getImplementation().getQualifiedName());
+                break;
+            default:
+                throw new IllegalArgumentException(directive.toString());
+        }
+        return sb.toString();
+    }
+
    /** Creates HTML display name of the Executable element */
     private String createHtmlHeader(CompilationInfo info, ExecutableElement e, boolean isDeprecated,boolean isInherited, boolean fqn, TypeElement overridenFrom) {
 
