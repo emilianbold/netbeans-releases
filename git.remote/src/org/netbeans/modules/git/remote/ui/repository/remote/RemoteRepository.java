@@ -527,14 +527,16 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         } catch (URISyntaxException ex) {
             //
         }
-        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(file);
-        fileChooser.setDialogTitle(NbBundle.getMessage(RemoteRepositoryPanel.class, "RepositoryPanel.FileChooser.Title")); //NOI18N
-        fileChooser.setMultiSelectionEnabled(false);
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fileChooser.showDialog(panel, null);
-        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
-        if (f != null) {
-            comboEditor.setText(VCSFileProxySupport.toURI(file).toString());
+        if (file != null) {
+            JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(file);
+            fileChooser.setDialogTitle(NbBundle.getMessage(RemoteRepositoryPanel.class, "RepositoryPanel.FileChooser.Title")); //NOI18N
+            fileChooser.setMultiSelectionEnabled(false);
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fileChooser.showDialog(panel, null);
+            VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
+            if (f != null) {
+                comboEditor.setText(VCSFileProxySupport.toURI(file).toString());
+            }
         }
     }    
     

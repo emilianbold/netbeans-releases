@@ -118,9 +118,11 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         public URI findRoot(URI file) {
             // TODO: we should probably return the closest common ancestor
             VCSFileProxy fromURI = VCSFileProxySupport.fromURI(file);
-            VCSFileProxy topmostManagedAncestor = getTopmostManagedAncestor(fromURI);
-            if (topmostManagedAncestor != null) {
-                return VCSFileProxySupport.toURI(topmostManagedAncestor);
+            if (fromURI != null) {
+                VCSFileProxy topmostManagedAncestor = getTopmostManagedAncestor(fromURI);
+                if (topmostManagedAncestor != null) {
+                    return VCSFileProxySupport.toURI(topmostManagedAncestor);
+                }
             }
             return null;
         }

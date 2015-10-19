@@ -223,21 +223,27 @@ public class Context {
         for(int i = 0; i < size; i++) {
             URI uri = (URI)in.readObject();
             VCSFileProxy root = VCSFileProxySupport.fromURI(uri);
-            rootFiles.add(root);
+            if (root != null) {
+                rootFiles.add(root);
+            }
         }
         size = in.readInt();
         filteredFiles = new ArrayList<>(size);
         for(int i = 0; i < size; i++) {
             URI uri = (URI)in.readObject();
             VCSFileProxy root = VCSFileProxySupport.fromURI(uri);
-            filteredFiles.add(root);
+            if (root != null) {
+                filteredFiles.add(root);
+            }
         }
         size = in.readInt();
         exclusions = new ArrayList<>(size);
         for(int i = 0; i < size; i++) {
             URI uri = (URI)in.readObject();
             VCSFileProxy root = VCSFileProxySupport.fromURI(uri);
-            exclusions.add(root);
+            if (root != null) {
+                exclusions.add(root);
+            }
         }
     }
 
