@@ -81,7 +81,7 @@ public class ElementNodeTest extends NbTestCase {
 
         final AtomicInteger counter = new AtomicInteger();
         
-        Description d = new Description(new ClassMemberPanelUI() {
+        Description d = Description.element(new ClassMemberPanelUI() {
             @Override public FileObject getFileObject() {
                 counter.incrementAndGet();
                 return info.getFileObject();
@@ -111,7 +111,7 @@ public class ElementNodeTest extends NbTestCase {
 
         final AtomicInteger counter = new AtomicInteger();
 
-        Description d = new Description(new ClassMemberPanelUI() {
+        Description d = Description.element(new ClassMemberPanelUI() {
             @Override public FileObject getFileObject() {
                 counter.incrementAndGet();
                 return null;
