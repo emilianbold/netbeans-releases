@@ -282,6 +282,7 @@ terminal T_INSTEADOF;
 terminal T_POW;
 terminal T_POW_EQUAL;
 terminal T_ELLIPSIS;
+terminal T_COALESCE;
 
 /* Non terminals */
 
@@ -452,6 +453,7 @@ precedence left T_OR;
 precedence left T_KOVA;
 precedence left T_REFERENCE;
 precedence left T_ELLIPSIS;
+precedence left T_COALESCE;
 
 precedence nonassoc T_IS_EQUAL,T_IS_NOT_EQUAL,T_IS_IDENTICAL,T_IS_NOT_IDENTICAL;
 precedence nonassoc T_RGREATER,T_IS_SMALLER_OR_EQUAL,T_LGREATER,T_IS_GREATER_OR_EQUAL,T_SPACESHIP;
@@ -2586,6 +2588,11 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = new ConditionalExpression(condleft, ifFalseright, cond, ConditionalExpression.OperatorType.ELVIS, null, ifFalse);
 :}
 
+| expr:cond T_COALESCE expr:ifFalse
+{:
+	RESULT = new ConditionalExpression(condleft, ifFalseright, cond, ConditionalExpression.OperatorType.COALESCE, null, ifFalse);
+:}
+
 | internal_functions_in_yacc:expr
 {:
 	RESULT = expr;
@@ -3232,6 +3239,11 @@ T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:e
 | static_scalar_value:condition T_QUESTION_MARK static_scalar_value:ifTrue T_NEKUDOTAIM static_scalar_value:ifFalse
 {:
         RESULT = new ConditionalExpression(conditionleft, ifFalseright, condition, ConditionalExpression.OperatorType.QUESTION_MARK, ifTrue, ifFalse);
+:}
+
+| static_scalar_value:cond T_COALESCE static_scalar_value:ifFalse
+{:
+        RESULT = new ConditionalExpression(condleft, ifFalseright, cond, ConditionalExpression.OperatorType.COALESCE, null, ifFalse);
 :}
 
 | T_PLUS:start static_scalar_value:expr

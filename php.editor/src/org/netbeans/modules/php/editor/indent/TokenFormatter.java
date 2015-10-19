@@ -976,6 +976,9 @@ public class TokenFormatter {
                                     case WHITESPACE_AROUND_TERNARY_OP:
                                         countSpaces = docOptions.spaceAroundTernaryOps ? 1 : 0;
                                         break;
+                                    case WHITESPACE_WITHIN_SHORT_TERNARY_OP:
+                                        countSpaces = 0;
+                                        break;
                                     case WHITESPACE_BEFORE_ASSIGN_OP:
                                         indentRule = true;
                                         countSpaces = 0;
