@@ -45,11 +45,13 @@ package org.netbeans.modules.java.source.indexing;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.comp.Modules;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import org.netbeans.lib.nbjavac.services.CancelAbort;
@@ -288,6 +290,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             }
                         }
                     }
+                    JavaCustomIndexer.setModuleName(context, Modules.instance(jtFin.getContext()).getDefaultModule());
                 }
             });
             for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {

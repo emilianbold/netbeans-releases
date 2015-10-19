@@ -113,6 +113,7 @@ import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -144,6 +145,7 @@ import org.openide.util.BaseUtilities;
 public class SourceUtils {
 
     private static final String MODULE_INFO = "module-info";   //NOI18N
+    private static final String MODULE_NAME = "moduleName";   //NOI18N
     private static final java.util.regex.Pattern AUTO_NAME_PATTERN = java.util.regex.Pattern.compile("-(\\d+(\\.|$))"); //NOI18N
     private static final Logger LOG = Logger.getLogger(SourceUtils.class.getName());
 
@@ -1263,12 +1265,10 @@ public class SourceUtils {
                             return moduleName;
                         }
                     } else {
-                        final FileObject moduleInfo = root.getFileObject(MODULE_INFO, FileObjects.SIG);
-                        if (moduleInfo != null) {
-                            try {
-                                return readModuleName(moduleInfo);
-                            } catch (IOException ioe) {}
-                        }
+                        try {
+                            URL srcRoot = JavaIndex.getSourceRootForClassFolder(rootUrl);
+                            return srcRoot != null ? JavaIndex.getAttribute(srcRoot, MODULE_NAME, null) : null;
+                        } catch (IOException ex) {}
                     }
                 }
                 return null;

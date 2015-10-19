@@ -48,6 +48,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.comp.Modules;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -298,6 +299,7 @@ final class OnePassCompileWorker extends CompileWorker {
                                 }
                             }
                         }
+                        JavaCustomIndexer.setModuleName(context, Modules.instance(jtFin.getContext()).getDefaultModule());
                     }
                 }));
                 Log.instance(jt.getContext()).nerrors = 0;

@@ -75,6 +75,7 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
@@ -91,6 +92,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
 import org.netbeans.modules.java.source.base.Module;
@@ -137,6 +139,7 @@ public class JavaCustomIndexer extends CustomIndexer {
 
             static       boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
+    private static final String MODULE_NAME = "moduleName"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
     private static final int TRESHOLD = 500;
@@ -644,6 +647,19 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
     
+    static void setModuleName(Context context, ModuleElement module) throws IOException {
+        String moduleName = null;
+        if (module == null || module.isUnnamed()) {
+            final Project rootPrj = FileOwnerQuery.getOwner(context.getRoot());
+            if (rootPrj != null) {
+                moduleName = ProjectUtils.getInformation(rootPrj).getName(); //TODO: replace with possible automatic module name
+            }
+        } else {
+            moduleName = module.getQualifiedName().toString();
+        }
+        JavaIndex.setAttribute(context.getRootURI(), MODULE_NAME, moduleName);
+    }
+
     static void brokenPlatform(
             @NonNull final Context ctx,
             @NonNull final Iterable<? extends CompileTuple> files,

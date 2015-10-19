@@ -52,6 +52,7 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.comp.Modules;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -311,6 +312,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                             }
                         }
                     }
+                    JavaCustomIndexer.setModuleName(context, Modules.instance(jt.getContext()).getDefaultModule());
                     Log.instance(jt.getContext()).nerrors = 0;
                     previous.finishedFiles.add(active.indexable);
                     active = null;
