@@ -152,8 +152,6 @@ public final class ClasspathInfo {
         if (!backgroundCompilation) {
             this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
             this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
-            this.cachedModuleCompilePath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedModuleCompilePath));
-            this.cachedModuleClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedModuleClassPath));
         }
         if (srcCp == null) {
             this.cachedSrcClassPath = this.srcClassPath = this.outputClassPath = this.cachedAptSrcClassPath = ClassPath.EMPTY;
