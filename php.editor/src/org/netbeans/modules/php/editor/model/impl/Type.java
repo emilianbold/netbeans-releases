@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
@@ -63,9 +66,15 @@ public final class Type {
     public static final String OBJECT = "object"; //NOI18N
     public static final String NUMBER = "number"; //NOI18N
     public static final String CALLBACK = "callback"; //NOI18N
+    public static final String CALLABLE = "callable"; //NOI18N
     public static final String RESOURCE = "resource"; //NOI18N
     public static final String VOID = "void"; //NOI18N
     public static final String MIXED = "mixed"; //NOI18N
+
+    private static final List<String> TYPES_FOR_HINTS = Arrays.asList(CALLABLE, BOOL, FLOAT, INT, STRING);
+    private static final List<String> TYPES_FOR_PHP_DOC = Arrays.asList(STRING, INTEGER, INT, BOOLEAN, BOOL, FLOAT, DOUBLE, OBJECT, MIXED, ARRAY,
+            RESOURCE, VOID, NULL, CALLBACK, "false", "true", "self"); // NOI18N
+
 
     public static boolean isPrimitive(String typeName) {
         boolean retval = false;
@@ -87,4 +96,13 @@ public final class Type {
         }
         return result;
     }
+
+    public static List<String> getTypesForHints() {
+        return TYPES_FOR_HINTS;
+    }
+
+    public static List<String> getTypesForPhpDoc() {
+        return TYPES_FOR_PHP_DOC;
+    }
+
 }

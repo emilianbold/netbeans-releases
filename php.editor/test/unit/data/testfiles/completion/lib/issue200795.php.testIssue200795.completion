@@ -153,6 +153,7 @@ CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book                            [PUBLIC]   test203332_01.php
 CLASS      BookTable                       [PUBLIC]   Test_03
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
+CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   c
@@ -220,6 +221,7 @@ CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
 CLASS      Fac                             [PUBLIC]   Third
 CLASS      Fac2                            [PUBLIC]   Third
+CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC]   test203294.php
@@ -245,6 +247,7 @@ CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php
 CLASS      InstanceOfFoo                   [PUBLIC]   issue204958.php
+CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
 CLASS      InvisibleClass                  [PUBLIC]   issue194875.php
 CLASS      InvisibleClass                  [PUBLIC]   issue201310.php
 CLASS      InvisibleClassFromNs            [PUBLIC]   Extra
@@ -294,6 +297,7 @@ CLASS      SomeClass                       [PUBLIC]   issue240522.php
 CLASS      SomeClass                       [PUBLIC]   useCase4.php
 CLASS      Space                           [PUBLIC]   Test\Space
 CLASS      SpaceUniverse                   [PUBLIC]   Test\Space
+CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 CLASS      Strings                         [PUBLIC]   Nette\Utils
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
 CLASS      Super                           [PUBLIC]   declarations.php

@@ -6,4 +6,8 @@ CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php
 CLASS      InstanceOfFoo                   [PUBLIC]   issue204958.php
 ------------------------------------
-KEYWORD    callable                                   Language Construct
+KEYWORD    bool                                       null
+KEYWORD    callable                                   null
+KEYWORD    float                                      null
+KEYWORD    int                                        null
+KEYWORD    string                                     null

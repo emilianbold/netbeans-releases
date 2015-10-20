@@ -4,4 +4,8 @@ function paramsfnc($a,|$b,$c,$d) {
 CLASS      clsA                            [PUBLIC]   paramdecltypes.php
 CLASS      ifaceA                          [PUBLIC]   paramdecltypes.php
 ------------------------------------
-KEYWORD    callable                                   Language Construct
+KEYWORD    bool                                       null
+KEYWORD    callable                                   null
+KEYWORD    float                                      null
+KEYWORD    int                                        null
+KEYWORD    string                                     null

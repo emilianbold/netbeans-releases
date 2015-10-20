@@ -79,7 +79,6 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.KeywordCompletionType;
-import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
 import org.netbeans.modules.php.editor.completion.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.completion.PHPCompletionItem.FieldItem;
 import org.netbeans.modules.php.editor.completion.PHPCompletionItem.MethodElementItem;
@@ -130,6 +129,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.openide.filesystems.FileObject;
+
+import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
 
 /**
  *
@@ -199,9 +200,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     };
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_SEMICOLON = {
         "return" // NOI18N
-    };
-    private static final String[] PHP_LANGUAGE_CONSTRUCTS_FOR_TYPE_HINTS = {
-        "callable" //NOI18N
     };
     static final String PHP_CLASS_KEYWORD_THIS = "$this->"; //NOI18N
     static final String[] PHP_CLASS_KEYWORDS = {
@@ -293,6 +291,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         switch (context) {
             case DEFAULT_PARAMETER_VALUE:
                 final CaseInsensitivePrefix nameKindPrefix = NameKind.caseInsensitivePrefix(request.prefix);
+                // XXX array(), []
                 autoCompleteKeywords(completionResult, request, Arrays.asList("array")); //NOI18N
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteTypeNames(completionResult, request, null, true);
@@ -379,6 +378,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             case TYPE_NAME:
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteTypeNames(completionResult, request);
+                autoCompleteKeywords(completionResult, request, Type.getTypesForHints());
                 break;
             case STRING:
                 // LOCAL VARIABLES
@@ -405,6 +405,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 if (PHPDOCCodeCompletion.isTypeCtx(request)) {
                     autoCompleteTypeNames(completionResult, request);
                     autoCompleteNamespaces(completionResult, request);
+                    autoCompleteKeywords(completionResult, request, Type.getTypesForPhpDoc());
                 }
                 break;
             case CLASS_CONTEXT_KEYWORDS:
@@ -740,11 +741,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 } else if (element instanceof InterfaceElement) {
                     completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, kind, endWithDoubleColon));
                 }
-            }
-        }
-        for (String construct : PHP_LANGUAGE_CONSTRUCTS_FOR_TYPE_HINTS) {
-            if (startsWith(construct, request.prefix)) {
-                completionResult.add(new PHPCompletionItem.LanguageConstructForTypeHint(construct, request));
             }
         }
     }

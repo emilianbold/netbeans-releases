@@ -4,4 +4,8 @@ public function foo(|
 CLASS      InterfaceName1                  [PUBLIC]   issue242398_01.php
 ------------------------------------
 CLASS      InterfaceName2                  [PUBLIC]   issue242398_02.php
-KEYWORD    callable                                   Language Construct
+KEYWORD    bool                                       null
+KEYWORD    callable                                   null
+KEYWORD    float                                      null
+KEYWORD    int                                        null
+KEYWORD    string                                     null
