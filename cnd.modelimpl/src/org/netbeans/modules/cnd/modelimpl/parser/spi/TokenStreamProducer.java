@@ -145,7 +145,7 @@ public abstract class TokenStreamProducer {
         return languageFlavor;
     }
 
-    public FileImpl getMainFile() {
+    public FileImpl getInterestedFile() {
         return fileImpl;
     }    
 
