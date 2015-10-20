@@ -70,11 +70,11 @@ import org.openide.util.NbBundle;
     private ClankToCsmSupport() {
     }
 
-    public static void addPreprocessorDirectives(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankPreprocessorOutput cache) {
+    /*package*/static void addPreprocessorDirectives(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankPreprocessorOutput ppOutput) {
         assert parsingFileContent != null;
         assert curFile != null;
-        assert cache != null;
-        for (ClankDriver.ClankPreprocessorDirective cur : cache.getPreprocessorDirectives()) {
+        assert ppOutput != null;
+        for (ClankDriver.ClankPreprocessorDirective cur : ppOutput.getPreprocessorDirectives()) {
             if (cur instanceof ClankDriver.ClankInclusionDirective) {
                 ClankToCsmSupport.addInclude(curFile, parsingFileContent, (ClankDriver.ClankInclusionDirective)cur);
             } else if (cur instanceof ClankDriver.ClankErrorDirective) {
@@ -87,8 +87,9 @@ import org.openide.util.NbBundle;
         }
     }
 
-    public static void setFileGuard(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankPreprocessorOutput cache) {
-        ClankDriver.FileGuard fileGuard = cache.getFileGuard();
+    /*package*/static void setFileGuard(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankPreprocessorOutput ppOutput) {
+        assert ppOutput != null;        
+        ClankDriver.FileGuard fileGuard = ppOutput.getFileGuard();
         if (fileGuard != null) {
             curFile.setFileGuard(fileGuard.getStartOfset(), fileGuard.getEndOfset());
         } else {
@@ -96,8 +97,9 @@ import org.openide.util.NbBundle;
         }
     }
 
-    public static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.ClankPreprocessorOutput cache) {
-        for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
+    /*package*/static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, FileImpl startFile, ClankDriver.ClankPreprocessorOutput ppOutput) {
+        assert ppOutput != null;        
+        for (ClankDriver.MacroExpansion cur : ppOutput.getMacroExpansions()) {
             ClankDriver.ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
                 MacroReference macroRef = MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset() + cur.getMacroNameLength(), startFile, directive);
@@ -113,7 +115,7 @@ import org.openide.util.NbBundle;
                 assert false : "Not found referenced ClankMacroDirective " + cur;
             }
         }
-        for (ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
+        for (ClankDriver.MacroUsage cur : ppOutput.getMacroUsages()) {
             ClankDriver.ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
                 MacroReference macroRef = MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), startFile, directive);
@@ -152,13 +154,14 @@ import org.openide.util.NbBundle;
         parsingFileContent.addReference(new MacroDeclarationReference(curFile, impl, macroNameOffset), impl);
     }
 
-    public static List<CsmReference> getMacroUsages(FileImpl fileImpl, FileImpl startFile, ClankDriver.ClankPreprocessorOutput foundFileInfo) {
-        if (foundFileInfo == null) {
+    /*package*/static List<CsmReference> getMacroUsages(FileImpl fileImpl, FileImpl startFile, ClankDriver.ClankPreprocessorOutput ppOutput) {
+        if (ppOutput == null) {
+            // could be broken restoring from include chain, wait for the next parse
             return Collections.emptyList();
         }
         List<CsmReference> res = new ArrayList<>();        
-        addPreprocessorDirectives(fileImpl, res, foundFileInfo);
-        addMacroExpansions(fileImpl, res, startFile, foundFileInfo);
+        addPreprocessorDirectives(fileImpl, res, ppOutput);
+        addMacroExpansions(fileImpl, res, startFile, ppOutput);
         Collections.sort(res, new Comparator<CsmReference>() {
             @Override
             public int compare(CsmReference o1, CsmReference o2) {
@@ -168,19 +171,19 @@ import org.openide.util.NbBundle;
         return res;
     }
 
-    private static void addPreprocessorDirectives(FileImpl curFile, List<CsmReference> res, ClankDriver.ClankPreprocessorOutput cache) {
+    private static void addPreprocessorDirectives(FileImpl curFile, List<CsmReference> res, ClankDriver.ClankPreprocessorOutput ppOutput) {
         assert res != null;
         assert curFile != null;
-        assert cache != null;
-        for (ClankDriver.ClankPreprocessorDirective cur : cache.getPreprocessorDirectives()) {
+        assert ppOutput != null;
+        for (ClankDriver.ClankPreprocessorDirective cur : ppOutput.getPreprocessorDirectives()) {
             if (cur instanceof ClankDriver.ClankMacroDirective) {
                 addMacro(curFile, res, (ClankDriver.ClankMacroDirective) cur);
             }
         }
     }
 
-    private static void addMacroExpansions(FileImpl curFile, List<CsmReference> res, FileImpl startFile, ClankDriver.ClankPreprocessorOutput cache) {
-        for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
+    private static void addMacroExpansions(FileImpl curFile, List<CsmReference> res, FileImpl startFile, ClankDriver.ClankPreprocessorOutput ppOutput) {
+        for (ClankDriver.MacroExpansion cur : ppOutput.getMacroExpansions()) {
             ClankDriver.ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
                 MacroReference macroRef = MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getStartOfset() + cur.getMacroNameLength(), startFile, directive);
@@ -196,7 +199,7 @@ import org.openide.util.NbBundle;
                 assert false : "Not found referenced ClankMacroDirective " + cur;
             }
         }
-        for (ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
+        for (ClankDriver.MacroUsage cur : ppOutput.getMacroUsages()) {
             ClankDriver.ClankMacroDirective directive = cur.getReferencedMacro();
             if (directive != null) {
                 MacroReference macroRef = MacroReference.createMacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), startFile, directive);
