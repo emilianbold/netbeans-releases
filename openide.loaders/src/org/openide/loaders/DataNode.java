@@ -60,6 +60,7 @@ import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.PasteType;
 
 /** Standard node representing a data object.
 *
@@ -327,6 +328,73 @@ public class DataNode extends AbstractNode {
     @Override
     public boolean canCut () {
         return obj.isMoveAllowed ();
+    }
+
+    @Override
+    protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        super.createPasteTypes(t, s);
+        if (!(this instanceof DataFolder.FolderNode)) {
+            s.addAll(getPasteTypesFromParent(t)); // #250134
+        }
+    }
+
+    /**
+     * Get paste types from parent folder. To be able to achieve this, we need
+     * to know on which node the paste operation was originally invoked (it is
+     * usually some FilterNode, not this DataNode), otherwise information about
+     * parent node is not available. Thus, Transferable passed from
+     * o.n.m.openide.explorer.ExplorerActionsImpl.updatePasteTypes implements
+     * Lookup.Provider, and getLookup(Node.class) invoked on it returns the
+     * original node. See bug 250134.
+     *
+     * @param t The transferable.
+     * @return List of parent node's paste types (can be empty).
+     */
+    private List<PasteType> getPasteTypesFromParent(Transferable t) {
+        if (t instanceof Lookup.Provider) {
+            Lookup l = ((Lookup.Provider) t).getLookup();
+            Node n = l.lookup(Node.class);
+            if (n != null) {
+                Node parentNode = n.getParentNode();
+                if (parentNode != null) {
+                    PasteType[] pts = parentNode.getPasteTypes(t);
+                    PasteType[] updated = updateParentPasteTypes(pts);
+                    return Arrays.asList(updated);
+                }
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    @NbBundle.Messages({
+        "# Text appended to action name so that it is clear that the action",
+        "# will be invoked on parent node. For example:",
+        "# Paste -> Copy (to parent); Paste -> Refactory Copy... (to parent)",
+        "# Please note the leading space.",
+        "LBL_PasteToParent= (to parent)"
+    })
+    private PasteType[] updateParentPasteTypes(PasteType[] parentTypes) {
+        PasteType[] ret = new PasteType[parentTypes.length];
+        for (int i = 0; i < parentTypes.length; i++) {
+            final PasteType parentType = parentTypes[i];
+            ret[i] = new PasteType() {
+                @Override
+                public Transferable paste() throws IOException {
+                    return parentType.paste();
+                }
+
+                @Override
+                public String getName() {
+                    return parentType.getName() + Bundle.LBL_PasteToParent();
+                }
+
+                @Override
+                public HelpCtx getHelpCtx() {
+                    return parentType.getHelpCtx();
+                }
+            };
+        }
+        return ret;
     }
 
     /** This method returns null to signal that actions
