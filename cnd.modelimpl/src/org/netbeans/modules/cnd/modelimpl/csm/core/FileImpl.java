@@ -1099,7 +1099,7 @@ public final class FileImpl implements CsmFile,
 
         @Override
         public CsmFile getMainFile() {
-            return this.tsp.getMainFile();
+            return this.tsp.getInterestedFile();
         }
 
         public void prepare(PreprocHandler preprocHandler, String contextLanguage, String contextLanguageFlavor) {
