@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
  */
 /*package*/ class ClankTokenStreamProducerParameters {
 
-    public static final class YesNoInterested {
+    /*package*/static final class YesNoInterested {
 
         public static final int ALWAYS = 0;
         public static final int NEVER = 1;
@@ -81,49 +81,82 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
     }
 
     public static ClankTokenStreamProducerParameters createForParsing(String language) {
-        return new ClankTokenStreamProducerParameters(
-                YesNoInterested.ALWAYS,
-                true,
-                YesNoInterested.ALWAYS,
-                APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.NEVER : YesNoInterested.ALWAYS,
-                YesNoInterested.ALWAYS,
-                APTLanguageSupport.FORTRAN.equals(language) ? YesNoInterested.ALWAYS : YesNoInterested.NEVER, // no comments needed for just parsing except fortran
-                true);
+        return APTLanguageSupport.FORTRAN.equals(language) ? FORTRAN_PARSING : PARSING ;
     }
+    private static final ClankTokenStreamProducerParameters PARSING = new ClankTokenStreamProducerParameters(
+            YesNoInterested.ALWAYS,
+            true,
+            YesNoInterested.ALWAYS,
+            APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.NEVER : YesNoInterested.ALWAYS,
+            YesNoInterested.ALWAYS,
+            YesNoInterested.NEVER, // no comments needed for just parsing except fortran
+            true);
+    private static final ClankTokenStreamProducerParameters FORTRAN_PARSING = new ClankTokenStreamProducerParameters(
+            YesNoInterested.ALWAYS,
+            true,
+            YesNoInterested.ALWAYS,
+            APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.NEVER : YesNoInterested.ALWAYS,
+            YesNoInterested.ALWAYS,
+            YesNoInterested.ALWAYS, // no comments needed for just parsing except fortran
+            true);
+
+    public static ClankTokenStreamProducerParameters createForIncludedTokenStream(String language) {
+        return APTLanguageSupport.FORTRAN.equals(language) ? 
+                FORTRAN_INCLUDED_TOKEN_STREAM : INCLUDED_TOKEN_STREAM;
+    }
+    private static final ClankTokenStreamProducerParameters INCLUDED_TOKEN_STREAM = new ClankTokenStreamProducerParameters(
+            YesNoInterested.INTERESTED,
+            false,
+            YesNoInterested.NEVER,
+            YesNoInterested.NEVER,
+            YesNoInterested.INTERESTED,
+            YesNoInterested.NEVER, // no comments needed for just parsing except fortran
+            false);
+    private static final ClankTokenStreamProducerParameters FORTRAN_INCLUDED_TOKEN_STREAM = new ClankTokenStreamProducerParameters(
+            YesNoInterested.INTERESTED,
+            false,
+            YesNoInterested.NEVER,
+            YesNoInterested.NEVER,
+            YesNoInterested.INTERESTED,
+            YesNoInterested.ALWAYS, // no comments needed for just parsing except fortran
+            false);
 
     public static ClankTokenStreamProducerParameters createForParsingAndTokenStreamCaching() {
-        return new ClankTokenStreamProducerParameters(
-                YesNoInterested.INTERESTED,
-                false,
-                YesNoInterested.INTERESTED,
-                YesNoInterested.INTERESTED,
-                YesNoInterested.INTERESTED,
-                YesNoInterested.INTERESTED, // we need comments for macro views
-                false); //cache only unfiltered
+        return PARSING_TOKEN_STREAM_AND_CACHING;
     }
+    private static final ClankTokenStreamProducerParameters PARSING_TOKEN_STREAM_AND_CACHING = new ClankTokenStreamProducerParameters(
+            YesNoInterested.INTERESTED,
+            false,
+            YesNoInterested.INTERESTED,
+            YesNoInterested.INTERESTED,
+            YesNoInterested.INTERESTED,
+            YesNoInterested.INTERESTED, // we need comments for macro views
+            false); //cache only unfiltered
 
     public static ClankTokenStreamProducerParameters createForTokenStreamCaching() {
-        return new ClankTokenStreamProducerParameters(
-                YesNoInterested.INTERESTED,
-                false,
-                YesNoInterested.NEVER,
-                YesNoInterested.INTERESTED, // we need start/end expansion toknes
-                YesNoInterested.INTERESTED,
-                YesNoInterested.INTERESTED, // we need comments for macro views
-                false); //cache only unfiltered
+        return TOKEN_STREAM_CACHING;
     }
+    private static final ClankTokenStreamProducerParameters TOKEN_STREAM_CACHING = new ClankTokenStreamProducerParameters(
+            YesNoInterested.INTERESTED,
+            false,
+            YesNoInterested.NEVER,
+            YesNoInterested.INTERESTED, // we need start/end expansion toknes
+            YesNoInterested.INTERESTED,
+            YesNoInterested.INTERESTED, // we need comments for macro views
+            false); //cache only unfiltered
 
     public static ClankTokenStreamProducerParameters createForMacroUsages() {
-        return new ClankTokenStreamProducerParameters(
-                YesNoInterested.NEVER,
-                false,
-                YesNoInterested.INTERESTED,
-                YesNoInterested.INTERESTED,
-                YesNoInterested.NEVER,
-                YesNoInterested.NEVER,
-                false
-        );
+        return MACRO_USAGES;
     }
+    private static final ClankTokenStreamProducerParameters MACRO_USAGES = new ClankTokenStreamProducerParameters(
+            YesNoInterested.NEVER,
+            false,
+            YesNoInterested.INTERESTED,
+            YesNoInterested.INTERESTED,
+            YesNoInterested.NEVER,
+            YesNoInterested.NEVER,
+            false
+    );
 
     @Override
     public String toString() {
