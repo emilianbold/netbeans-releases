@@ -711,15 +711,25 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             FileSystem projectFS = fileSystem;
             List<FSPath> result = new ArrayList<>();            
             for (String p : vec2) {
+                boolean compilerContext = false;
                 if (p.contains("$")) { // NOI18N
                     // macro based path
                     if (macroConverter == null) {
                         macroConverter = new MacroConverter(env);
                     }
                     p = macroConverter.expand(p);
+                    compilerContext = true;
                 }
-                if (CndPathUtilities.isPathAbsolute(fileSystem, p)) {
+                if (p.startsWith("///")) { //NOI18N
+                    // It is absolute path onbuild host
+                    compilerContext = true;
+                }
+                if (compilerContext && CndPathUtilities.isPathAbsolute(compilerFS, p)) {
                     result.add(new FSPath(compilerFS, p));
+                    continue;
+                }
+                if (CndPathUtilities.isPathAbsolute(projectFS, p)) {
+                    result.add(new FSPath(projectFS, p));
                 } else {
                     String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
                     result.add(new FSPath(projectFS, absPath));
