@@ -1917,7 +1917,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="linux"/>
-                <param name="bundle.platform.filename"  value="linux-x86"/>
+                <param name="bundle.platform.filename"  value="linux-i586"/>
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="linux-i586.bin"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
