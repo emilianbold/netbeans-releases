@@ -121,7 +121,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         } else {
             reverseInclStack.addLast(inclInfo);
         }
-        FileImpl ownerFile = getMainFile();
+        FileImpl ownerFile = getInterestedFile();
         CharSequence ownerAbsPath = ownerFile.getAbsolutePath();
         PreprocHandler preprocHandler = projectImpl.createEmptyPreprocHandler(ownerAbsPath);
         PreprocHandler restorePreprocHandlerFromIncludeStack = restorePreprocHandlerFromIncludeStack(projectImpl, reverseInclStack, ownerAbsPath, preprocHandler, includeOwnerState, Interrupter.DUMMY);
@@ -258,7 +258,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
     }
 
     private TokenStream getTokenStream(boolean triggerParsingActivity, boolean needComments, boolean applyLanguageFilter, Interrupter interrupter) {
-        FileImpl fileImpl = getMainFile();
+        FileImpl fileImpl = getInterestedFile();
         PreprocHandler preprocHandler = getCurrentPreprocHandler();
         // use full APT for generating token stream
         if (TraceFlags.TRACE_CACHE) {
@@ -300,7 +300,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         if (isAllowedToCacheOnRelease()) {
           assert cachePair != null;
           // remember walk info
-          FileImpl fileImpl = getMainFile();
+          FileImpl fileImpl = getInterestedFile();
           fileImpl.setAPTCacheEntry(cachePair.first(), cachePair.second(), false);
         }
         return pcBuilder.build();
