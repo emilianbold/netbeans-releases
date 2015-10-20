@@ -3624,7 +3624,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             fqnPrefix = EMPTY;
         }
         srcOnly = false;
-        String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : null;
+        String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : fqnPrefix;
         for (String name : SourceUtils.getModuleNames(env.getController(), srcOnly ? EnumSet.of(ClassIndex.SearchScope.SOURCE) : EnumSet.allOf(ClassIndex.SearchScope.class))) {
             if (startsWith(env, name, prefix)) {
                 results.add(itemFactory.createModuleItem(name, anchorOffset));
