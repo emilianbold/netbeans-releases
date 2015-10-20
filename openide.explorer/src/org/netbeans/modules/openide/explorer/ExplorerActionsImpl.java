@@ -48,6 +48,7 @@ import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.FlavorEvent;
 import java.awt.datatransfer.FlavorListener;
 import java.awt.datatransfer.StringSelection;
@@ -80,6 +81,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.Lookups;
 
 /**
  * This class contains the default implementation of reactions to the standard
@@ -335,13 +337,56 @@ public final class ExplorerActionsImpl {
                 if (actionStateUpdater != null) {
                     Transferable trans = actionStateUpdater.getTransferable();
                     if (trans != null) {
-                        updatePasteTypes(trans, node);
+                        updatePasteTypes(wrapTransferable(trans, node), node);
                     }
                 } else {
                     LOG.fine("#126145: caused by http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6322854");
                 }
             }
         }
+    }
+
+    /**
+     * Wrap transferable to an instance that can hold information about node on
+     * which the operation was invoked. (And thus its parent node and context
+     * are known). See comment at o.o.loaders.DataNode.getPasteTypesFromParent()
+     * and bug 250134.
+     *
+     * @param trans The Transferable object.
+     * @param node The node on which the paste operation would be invoked.
+     */
+    private Transferable wrapTransferable(Transferable trans, Node node) {
+        class ExplorerTransferable implements Transferable, Lookup.Provider {
+            private final Transferable delegate;
+            private final Lookup lookup;
+
+            public ExplorerTransferable(Transferable delegate, Node node) {
+                this.delegate = delegate;
+                this.lookup = Lookups.singleton(node);
+            }
+
+            @Override
+            public DataFlavor[] getTransferDataFlavors() {
+                return delegate.getTransferDataFlavors();
+            }
+
+            @Override
+            public boolean isDataFlavorSupported(DataFlavor flavor) {
+                return delegate.isDataFlavorSupported(flavor);
+            }
+
+            @Override
+            public Object getTransferData(DataFlavor flavor)
+                    throws UnsupportedFlavorException, IOException {
+                return delegate.getTransferData(flavor);
+            }
+
+            @Override
+            public Lookup getLookup() {
+                return lookup;
+            }
+        }
+        return new ExplorerTransferable(trans, node);
     }
 
     /** Actually updates paste types. */
