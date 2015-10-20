@@ -7,4 +7,8 @@ PACKAGE    Trest                           [PUBLIC]   null
 CLASS      Bar                             [PUBLIC]   Froo
 CLASS      TestClass                       [PUBLIC]   Trest
 ------------------------------------
-KEYWORD    callable                                   Language Construct
+KEYWORD    bool                                       null
+KEYWORD    callable                                   null
+KEYWORD    float                                      null
+KEYWORD    int                                        null
+KEYWORD    string                                     null

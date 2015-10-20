@@ -44,12 +44,19 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -85,8 +92,16 @@ public class Php70UnhandledError extends UnhandledErrorRule {
 
     private static final class CheckVisitor extends DefaultVisitor {
 
+        private static final Set<String> TYPES_FOR_HINTS;
+
         private final List<VerificationError> errors = new ArrayList<>();
         private final FileObject fileObject;
+
+
+        static {
+            TYPES_FOR_HINTS = new HashSet<>(Type.getTypesForHints());
+            TYPES_FOR_HINTS.remove(Type.CALLABLE);
+        }
 
 
         public CheckVisitor(FileObject fileObject) {
@@ -101,9 +116,8 @@ public class Php70UnhandledError extends UnhandledErrorRule {
         public void visit(InfixExpression node) {
             if (InfixExpression.OperatorType.SPACESHIP.equals(node.getOperator())) {
                 createError(node);
-            } else {
-                super.visit(node);
             }
+            super.visit(node);
         }
 
         @Override
@@ -114,13 +128,34 @@ public class Php70UnhandledError extends UnhandledErrorRule {
             super.visit(node);
         }
 
-        private  void createError(int startOffset, int endOffset) {
+        @Override
+        public void visit(FunctionDeclaration node) {
+            checkScalarTypes(node);
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(MethodDeclaration node) {
+            checkScalarTypes(node.getFunction());
+            super.visit(node);
+        }
+
+        private void checkScalarTypes(FunctionDeclaration node) {
+            for (FormalParameter formalParameter : node.getFormalParameters()) {
+                String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
+                if (typeName != null
+                        && TYPES_FOR_HINTS.contains(typeName)) {
+                    createError(formalParameter);
+                }
+            }
+        }
+
+        private void createError(int startOffset, int endOffset) {
             errors.add(new Php70VersionError(fileObject, startOffset, endOffset));
         }
 
         private void createError(ASTNode node) {
             createError(node.getStartOffset(), node.getEndOffset());
-            super.visit(node);
         }
 
     }

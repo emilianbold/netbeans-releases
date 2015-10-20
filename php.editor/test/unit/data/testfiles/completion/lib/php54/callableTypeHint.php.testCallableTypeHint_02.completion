@@ -3,4 +3,4 @@ function callableTypeHint(call|able $arg) {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
 ------------------------------------
-KEYWORD    callable                                   Language Construct
+KEYWORD    callable                                   null

@@ -11,4 +11,8 @@ CLASS      BaseClass                       [PUBLIC]   traits.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
 CLASS      TraitedClass                    [PUBLIC]   traits.php
 CLASS      WithMultiUses                   [PUBLIC]   traitsMultiUse.php
-KEYWORD    callable                                   Language Construct
+KEYWORD    bool                                       null
+KEYWORD    callable                                   null
+KEYWORD    float                                      null
+KEYWORD    int                                        null
+KEYWORD    string                                     null
