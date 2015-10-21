@@ -52,6 +52,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
@@ -104,6 +105,30 @@ public final class NodeJsUtils {
 
     public static String getProjectDisplayName(Project project) {
         return ProjectUtils.getInformation(project).getDisplayName();
+    }
+
+    @CheckForNull
+    public static String getNode() {
+        if (GraalVmUtils.isRunningOn()) {
+            return GraalVmUtils.getNode();
+        }
+        List<String> files = FileUtils.findFileOnUsersPath(NodeExecutable.NODE_NAMES);
+        if (!files.isEmpty()) {
+            return files.get(0);
+        }
+        return null;
+    }
+
+    @CheckForNull
+    public static String getNpm() {
+        if (GraalVmUtils.isRunningOn()) {
+            return GraalVmUtils.getNpm();
+        }
+        List<String> files = FileUtils.findFileOnUsersPath(NpmExecutable.NPM_NAME);
+        if (!files.isEmpty()) {
+            return files.get(0);
+        }
+        return null;
     }
 
     public static boolean isJsLibrary(Project project) {
