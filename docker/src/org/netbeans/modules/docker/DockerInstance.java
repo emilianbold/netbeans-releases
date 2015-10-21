@@ -54,6 +54,7 @@ import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.docker.remote.DockerEventBus;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
@@ -83,6 +84,8 @@ public class DockerInstance {
     private final Preferences prefs;
 
     private final ContainerFactory containerFactory = new ContainerFactory(this);
+    
+    private final DockerEventBus bus = new DockerEventBus(this);
 
     private DockerInstance(Preferences prefs) {
         this.prefs = prefs;
@@ -162,6 +165,7 @@ public class DockerInstance {
     }
 
     public void remove() {
+        bus.stop();
         try {
             prefs.removeNode();
         } catch (BackingStoreException ex) {
@@ -178,6 +182,7 @@ public class DockerInstance {
     }
 
     private void init() {
+        bus.start();
         prefs.addPreferenceChangeListener(listener);
     }
 

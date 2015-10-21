@@ -70,8 +70,8 @@ public class AttachContainerAction extends AbstractContainerAction {
             DockerRemote.AttachResult r = facade.attach(container);
             IOProvider provider = IOProvider.get("Terminal"); // NOI18N
             InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
-            io.select();
             IOTerm.connect(io, r.getStdIn(), r.getStdOut(), r.getStdErr());
+            io.select();
         } catch (DockerException ex) {
             Exceptions.printStackTrace(ex);
         }

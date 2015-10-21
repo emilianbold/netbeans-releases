@@ -57,6 +57,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -221,7 +222,7 @@ public class DockerRemote {
         }
     }
 
-    public void events(Long since, DockerEvent.Listener listener) throws DockerException {
+    public void events(Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
         try {
             URL httpUrl = createURL(instance.getUrl(), since != null ? "/events?since=" + since : "/events");
             HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
@@ -233,11 +234,13 @@ public class DockerRemote {
                     throw new DockerException(conn.getResponseMessage());
                 }
 
+                connectionListener.onConnect(conn);
+
                 JSONParser parser = new JSONParser();
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                        (conn.getInputStream())))) {
+                try (InputStreamReader r = new InputStreamReader(
+                        (conn.getInputStream()))) {
                     String line;
-                    while ((line = br.readLine()) != null) {
+                    while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
                         String status = (String) o.get("status");
                         String id = (String) o.get("id");
@@ -248,8 +251,6 @@ public class DockerRemote {
                     }
                 } catch (ParseException ex) {
                     throw new IOException(ex);
-                } finally {
-                    listener.onFinish();
                 }
             } finally {
                 conn.disconnect();
@@ -405,6 +406,31 @@ public class DockerRemote {
         return null;
     }
 
+    private static String readEventObject(Reader is) throws IOException {
+        StringWriter sw = new StringWriter();
+        int b;
+        int balance = -1;
+        while ((b = is.read()) != -1) {
+            if (balance < 0) {
+                if (b == '{') {
+                    balance = 1;
+                    sw.write(b);
+                }
+                continue;
+            }
+            if (b == '{') {
+                balance++;
+            } else if (b == '}') {
+                balance--;
+            }
+            sw.write(b);
+            if (balance == 0) {
+                return sw.toString();
+            }
+        }
+        return null;
+    }
+
     private static void closeSocket(Socket s) {
         if (s != null) {
             try {
@@ -448,6 +474,10 @@ public class DockerRemote {
         public void close() throws IOException {
             s.close();
         }
+    }
 
+    public static interface ConnectionListener {
+
+        void onConnect(HttpURLConnection connection);
     }
 }

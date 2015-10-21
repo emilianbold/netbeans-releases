@@ -41,17 +41,107 @@
  */
 package org.netbeans.modules.docker.remote;
 
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.docker.DockerInstance;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerEventBus {
-   
+public class DockerEventBus implements DockerEvent.Listener, DockerRemote.ConnectionListener {
+
+    private static final Logger LOGGER = Logger.getLogger(DockerEventBus.class.getName());
+
+    private static final long INTERVAL = 5000;
+
+    private final RequestProcessor processor = new RequestProcessor(DockerEventBus.class);
+
     private final DockerInstance instance;
+
+    private HttpURLConnection connection;
+
+    private DockerEvent lastEvent;
+
+    private boolean stop;
+
+    private boolean blocked;
 
     public DockerEventBus(DockerInstance instance) {
         this.instance = instance;
+    }
+
+    public void start() {
+        synchronized (this) {
+            stop = false;
+            blocked = false;
+            lastEvent = null;
+            processor.post(new Runnable() {
+                @Override
+                public void run() {
+                    DockerRemote remote = new DockerRemote(instance);
+                    for (;;) {
+                        try {
+                            synchronized (DockerEventBus.this) {
+                                if (stop) {
+                                    return;
+                                }
+                            }
+                            remote.events(lastEvent != null ? lastEvent.getTime() : null,
+                                    DockerEventBus.this, DockerEventBus.this);
+                            Thread.sleep(INTERVAL);
+                        } catch (DockerException ex) {
+                            synchronized (DockerEventBus.this) {
+                                if (stop) {
+                                    return;
+                                }
+                            }
+                            LOGGER.log(Level.INFO, null, ex);
+                        } catch (InterruptedException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+                        blocked = true;
+                    }
+                }
+            });
+        }
+    }
+
+    public void stop() {
+        HttpURLConnection current;
+        synchronized (this) {
+            stop = true;
+            current = connection;
+            connection = null;
+        }
+        current.disconnect();
+    }
+
+    @Override
+    public void onEvent(DockerEvent event) {
+        synchronized (this) {
+            if (blocked) {
+                if (event.equals(lastEvent)) {
+                    blocked = false;
+                }
+                return;
+            }
+            lastEvent = event;
+        }
+        LOGGER.log(Level.INFO, event.toString());
+    }
+
+    @Override
+    public void onConnect(HttpURLConnection connection) {
+        synchronized (this) {
+            this.connection = connection;
+        }
     }
 }

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.docker.remote;
 
+import java.util.Objects;
+
 /**
  *
  * @author Petr Hejl
@@ -83,10 +85,46 @@ public class DockerEvent {
         return "DockerEvent{" + "status=" + status + ", id=" + id + ", from=" + from + ", time=" + time + '}';
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 73 * hash + Objects.hashCode(this.status);
+        hash = 73 * hash + Objects.hashCode(this.id);
+        hash = 73 * hash + Objects.hashCode(this.from);
+        hash = 73 * hash + (int) (this.time ^ (this.time >>> 32));
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DockerEvent other = (DockerEvent) obj;
+        if (this.time != other.time) {
+            return false;
+        }
+        if (!Objects.equals(this.status, other.status)) {
+            return false;
+        }
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.from, other.from)) {
+            return false;
+        }
+        return true;
+    }
+
     public static interface Listener {
 
         void onEvent(DockerEvent event);
 
-        void onFinish();
     }
 }
