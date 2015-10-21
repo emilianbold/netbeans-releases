@@ -668,6 +668,14 @@ public final class FileImpl implements CsmFile,
             FileContentSignature newSignature = null;
             FileContentSignature oldSignature = null;
             boolean tryPartialReparse = (handlers == PARTIAL_REPARSE_HANDLERS);
+            // when new project is opened it detects that can contribute better model into
+            // library file of already opened Library project (used by others).
+            // Currently for that from finishProjectFilesCreation we calls tryPartialReparseOnChangedFile
+            // and needlessly reparse one project file to let it walk through all
+            // it's included files and contribute extra/best states for shared
+            // library files (or add new library files used only by this project).
+            // That's why now triggerParsingActivity is always true except
+            // editing document case when we don't want to force parsing of includes
             boolean triggerParsingActivity = (handlers != DUMMY_HANDLERS);
             final ProjectBase projectImpl = getProjectImpl(true);
             if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
