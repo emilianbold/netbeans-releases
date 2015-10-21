@@ -33,13 +33,16 @@ package org.netbeans.modules.welcome;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServer;
+import javax.management.ReflectionException;
 import javax.swing.JButton;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,24 +68,24 @@ final class FeedbackSurvey {
         long mem = -1L;
         try {
             OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+            MBeanServer mserver = ManagementFactory.getPlatformMBeanServer();
             // w/o dependency on Sun's JDK
             // long freeMem = ((com.sun.management.OperatingSystemMXBean)osBean).getTotalPhysicalMemorySize();
-            Method m = osBean.getClass().getMethod("getTotalPhysicalMemorySize");
-            m.setAccessible(true);
-            mem = (Long)m.invoke(osBean);
-        }
-        catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
+            mem = (Long)mserver.getAttribute(osBean.getObjectName(), "TotalPhysicalMemorySize");   // NOI18N
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (NoSuchMethodException ex) {
-            // Can be thrown on non-Sun JDKs:
-            Logger.getLogger(FeedbackSurvey.class.getName()).log(Level.INFO, null, ex);
         } catch (SecurityException ex) {
             Exceptions.printStackTrace(ex);
         } catch (NoSuchMethodError ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (MBeanException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (AttributeNotFoundException ex) {
+            // Can be thrown on non-Sun JDKs:
+            Logger.getLogger(FeedbackSurvey.class.getName()).log(Level.INFO, null, ex);
+        } catch (InstanceNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ReflectionException ex) {
             Exceptions.printStackTrace(ex);
         }
         String url = NbBundle.getMessage(FeedbackSurvey.class, "MSG_FeedbackSurvey_URL", id, mem);
