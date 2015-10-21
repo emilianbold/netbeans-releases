@@ -461,7 +461,7 @@ public final class LibraryManager {
     /**
      * Close unused artificial libraries.
      */
-    public void onProjectClose(CsmUID<CsmProject> project) {
+    public void onProjectClose(CsmUID<CsmProject> project, boolean cleanRepository) {
         List<LibraryEntry> toClose = new ArrayList<>();
         for (LibraryEntry entry : librariesEntries.values()) {
             entry.removeProject(project);
@@ -474,7 +474,7 @@ public final class LibraryManager {
                 librariesEntries.remove(entry.getKey());
             }
         }
-        closeLibraries(toClose);
+        closeLibraries(toClose, cleanRepository);
     }
 
     /*package*/
@@ -502,13 +502,13 @@ public final class LibraryManager {
         }
     }
 
-    private void closeLibraries(Collection<LibraryEntry> entries) {
+    private void closeLibraries(Collection<LibraryEntry> entries, boolean cleanRepository) {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         for (LibraryEntry entry : entries) {
             CsmUID<CsmProject> uid = entry.getLibrary();
             ProjectBase lib = (ProjectBase) uid.getObject();
             assert lib != null : "Null project for UID " + uid;
-            model.disposeProject(lib);
+            model.disposeProject(lib, cleanRepository);
         }
     }
 
