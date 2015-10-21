@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.ModuleSymbol;
 import java.awt.EventQueue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -600,6 +601,10 @@ public class JavadocHelper {
             }
             pkgName = FileObjects.convertPackage2Folder(((PackageElement) element).getQualifiedName().toString());
             pageName = PACKAGE_SUMMARY;
+        } else if (element.getKind() == ElementKind.MODULE) {
+            clsSym = ((ModuleSymbol)element).module_info;
+            pkgName = "";   //NOI18N
+            pageName = MODULE_INFO;
         } else {
             Element e = element;
             StringBuilder sb = new StringBuilder();
@@ -678,6 +683,7 @@ public class JavadocHelper {
     }
 
     private static final String PACKAGE_SUMMARY = "package-summary"; // NOI18N
+    private static final String MODULE_INFO = "module-info";    //NOI18N
 
     @NonNull
     private static List<TextStream> findJavadoc(

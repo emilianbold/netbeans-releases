@@ -478,13 +478,13 @@ public class SourceUtils {
         Parameters.notNull("element", element); //NOI18N
         Parameters.notNull("cpInfo", cpInfo);   //NOI18N
         
-        Element prev = element.getKind() == ElementKind.PACKAGE ? element : null;
-        while (element.getKind() != ElementKind.PACKAGE) {
+        Element prev = isPkgOrMdl(element.getKind()) ? element : null;
+        while (!isPkgOrMdl(element.getKind())) {
             prev = element;
             element = element.getEnclosingElement();
         }
         final ElementKind kind = prev.getKind();
-        if (!(kind.isClass() || kind.isInterface() || kind == ElementKind.PACKAGE)) {
+        if (!(kind.isClass() || kind.isInterface() || isPkgOrMdl(kind))) {
             return null;
         }        
         final ElementHandle<? extends Element> handle = ElementHandle.create(prev);
@@ -514,8 +514,10 @@ public class SourceUtils {
            String pkgName, className = null;
             if (pkg) {
                 pkgName = FileObjects.convertPackage2Folder(signature[0]);
-            }
-            else {
+            } else if (handle.getKind() == ElementKind.MODULE) {
+                pkgName = "";   //NOI18N
+                className = MODULE_INFO;
+            } else {
                 int index = signature[0].lastIndexOf('.');                          //NOI18N
                 if (index<0) {
                     pkgName = "";                                             //NOI18N
@@ -1553,5 +1555,9 @@ public class SourceUtils {
             final String name = clz.getName().getExternalName(true);
             return name.substring(0, name.length() - (MODULE_INFO.length()+1));
         }
+    }
+
+    private static boolean isPkgOrMdl(@NonNull final ElementKind kind) {
+        return kind == ElementKind.PACKAGE || kind == ElementKind.MODULE;
     }
 }
