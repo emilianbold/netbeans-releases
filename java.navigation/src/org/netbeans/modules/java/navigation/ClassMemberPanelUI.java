@@ -71,6 +71,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -648,7 +649,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             }
             final ElementNode enode = (ElementNode) node;
             final ElementNode.Description desc = enode.getDescritption();
-            return desc.handle != null && desc.handle.hasFirst() ?
+            //Other and module do not have javadoc
+            return desc.kind != ElementKind.OTHER
+                && desc.kind != ElementKind.MODULE ?
                     node :
                     null;
         }
