@@ -164,7 +164,11 @@ public class DockerRemote {
 
     public void remove(DockerTag tag) {
         try {
-            JSONArray value = (JSONArray) doDeleteRequest(instance.getUrl(), "/images/" + tag.getTag(), true);
+            String id = tag.getTag();
+            if (id.equals("<none>:<none>")) {
+                id = tag.getImage().getId();
+            }
+            JSONArray value = (JSONArray) doDeleteRequest(instance.getUrl(), "/images/" + id, true);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }

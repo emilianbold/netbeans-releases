@@ -84,7 +84,7 @@ public class DockerInstance {
     private final Preferences prefs;
 
     private final ContainerFactory containerFactory = new ContainerFactory(this);
-    
+
     private final DockerEventBus bus = new DockerEventBus(this);
 
     private DockerInstance(Preferences prefs) {
