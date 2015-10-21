@@ -78,6 +78,11 @@ public class DockerEvent {
         return time;
     }
 
+    @Override
+    public String toString() {
+        return "DockerEvent{" + "status=" + status + ", id=" + id + ", from=" + from + ", time=" + time + '}';
+    }
+
     public static interface Listener {
         
         void onEvent(DockerEvent event);
