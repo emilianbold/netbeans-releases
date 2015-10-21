@@ -2275,20 +2275,28 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     
     private final HashSet<DebuggerStateListener> debuggerStateListeners = new HashSet<DebuggerStateListener>();
     
-    public synchronized void addDebuggerStateListener(DebuggerStateListener listener) {
-        if (!debuggerStateListeners.contains(listener)) {
-            debuggerStateListeners.add(listener);
+    public void addDebuggerStateListener(DebuggerStateListener listener) {
+        synchronized (debuggerStateListeners) {
+            if (!debuggerStateListeners.contains(listener)) {
+                debuggerStateListeners.add(listener);
+            }
         }
     }
     
-    public synchronized void removeDebuggerStateListener(DebuggerStateListener listener) {
-        if (debuggerStateListeners.contains(listener)) {
-            debuggerStateListeners.remove(listener);
+    public void removeDebuggerStateListener(DebuggerStateListener listener) {
+        synchronized (debuggerStateListeners) {
+            if (debuggerStateListeners.contains(listener)) {
+                debuggerStateListeners.remove(listener);
+            }
         }
     }
     
-    public synchronized void notifyAttached(NativeDebugger debugger, long pid) {
-        for (DebuggerStateListener stateListener : debuggerStateListeners) {
+    public void notifyAttached(NativeDebugger debugger, long pid) {
+        List<DebuggerStateListener> listenersCopy;
+        synchronized(debuggerStateListeners) {
+            listenersCopy = new ArrayList<DebuggerStateListener>(debuggerStateListeners);
+        }
+        for (DebuggerStateListener stateListener : listenersCopy) {
             stateListener.notifyAttached(debugger, pid);
         }
     }
