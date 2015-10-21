@@ -52,12 +52,15 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServer;
+import javax.management.ReflectionException;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -91,26 +94,27 @@ public final class DiagnosticTask implements Runnable {
     private void logEnv() {
         try {
             OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+            MBeanServer mserver = ManagementFactory.getPlatformMBeanServer();
             // w/o dependency on Sun's JDK
             // long freeMem = ((com.sun.management.OperatingSystemMXBean)osBean).getTotalPhysicalMemorySize();
-            Method m = osBean.getClass().getMethod("getTotalPhysicalMemorySize");
-            m.setAccessible(true);
-            long freeMem = (Long)m.invoke(osBean);
+            long freeMem = (Long)mserver.getAttribute(osBean.getObjectName(), "TotalPhysicalMemorySize");   // NOI18N
             LOG.log(Level.INFO, "Total memory {0}", freeMem);
 
             LogRecord lr = new LogRecord(Level.INFO, "MEMORY");
             lr.setResourceBundle(NbBundle.getBundle(DiagnosticTask.class));
             lr.setParameters(new Object[] {freeMem});
             Logger.getLogger("org.netbeans.ui.performance").log(lr);
-        } catch (NoSuchMethodException ex) {
-            LOG.log(Level.INFO, null, ex);
         } catch (SecurityException ex) {
-            LOG.log(Level.INFO, null, ex);
-        } catch (IllegalAccessException ex) {
             LOG.log(Level.INFO, null, ex);
         } catch (IllegalArgumentException ex) {
             LOG.log(Level.INFO, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (MBeanException ex) {
+            LOG.log(Level.INFO, null, ex);
+        } catch (AttributeNotFoundException ex) {
+            LOG.log(Level.INFO, null, ex);
+        } catch (InstanceNotFoundException ex) {
+            LOG.log(Level.INFO, null, ex);
+        } catch (ReflectionException ex) {
             LOG.log(Level.INFO, null, ex);
         }
     }
