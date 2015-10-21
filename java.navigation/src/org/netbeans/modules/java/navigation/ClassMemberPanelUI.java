@@ -563,9 +563,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if ( root == null ) {
             return null;
         }
-        
-        ElementHandle<? extends Element> eh = node.getDescritption().elementHandle;
-
+        final ElementHandle<? extends Element> eh =
+            node.getDescritption().handle != null && node.getDescritption().handle.hasFirst() ?
+                node.getDescritption().handle.first() :
+                null;
+        if (eh == null) {
+            return null;
+        }
         final JavaSource js = JavaSource.forFileObject( root.getDescritption().fileObject );
         if (js == null) {
             return null;
@@ -578,9 +582,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             return null;
         }
         return calculator.doc;
-        
     }
-    
+
     private static class JavaDocCalculator implements Task<CompilationController> {
 
         private final ElementHandle<? extends Element> handle;

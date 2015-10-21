@@ -55,10 +55,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.swing.Action;
+import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -78,6 +81,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.Union2;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
@@ -101,14 +105,15 @@ public class ElementNode extends AbstractNode {
     public ElementNode( Description description ) {
         super(
             description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()),
-            description.elementHandle == null ? null : prepareLookup(description));
+            description.handle == null ? null : prepareLookup(description));
         this.description = description;
         setDisplayName( description.name ); 
     }
     
     @Override
     public Image getIcon(int type) {
-         return description.kind == null ? super.getIcon(type) : ImageUtilities.icon2Image(ElementIcons.getElementIcon(description.kind, description.modifiers));
+        final Icon icon = description.icon.get();
+        return icon == null ? super.getIcon(type) : ImageUtilities.icon2Image(icon);
     }
 
     @Override
@@ -196,9 +201,9 @@ public class ElementNode extends AbstractNode {
     }
         
     private synchronized Action getOpenAction() {
-        if ( openAction == null && description.elementHandle != null) {
+        if ( openAction == null && description.handle != null) {
             openAction = new OpenAction(
-                description.elementHandle,
+                description.handle,
                 description.getFileObject(),
                 description.name);
         }
@@ -228,8 +233,9 @@ public class ElementNode extends AbstractNode {
     
     public ElementNode getNodeForElement( ElementHandle<Element> eh ) {
         
-        if ( getDescritption().elementHandle != null &&
-             eh.signatureEquals(getDescritption().elementHandle)) {
+        if ( getDescritption().handle != null &&
+             getDescritption().handle.hasFirst() &&
+             eh.signatureEquals(getDescritption().handle.first())) {
             return this;
         }
         
@@ -297,19 +303,21 @@ public class ElementNode extends AbstractNode {
 
     private static Lookup prepareLookup(Description d) {
         InstanceContent ic = new InstanceContent();
-
         ic.add(d, ConvertDescription2TreePathHandle);
         ic.add(d, ConvertDescription2FileObject);
         ic.add(d, ConvertDescription2DataObject);
-
         return new AbstractLookup(ic);
     }
     
     private static final Convertor<Description, TreePathHandle> ConvertDescription2TreePathHandle = new InstanceContent.Convertor<Description, TreePathHandle>() {
         @Override public TreePathHandle convert(Description obj) {
-            return obj.elementHandle == null ?
-                null :
-                TreePathHandle.from(obj.elementHandle, obj.cpInfo);
+            if (obj.handle == null) {
+                return null;
+            } else if (obj.handle.hasFirst()) {
+                return TreePathHandle.from(obj.handle.first(), obj.cpInfo);
+            } else {
+                return obj.handle.second();
+            }
         }
         @Override public Class<? extends TreePathHandle> type(Description obj) {
             return TreePathHandle.class;
@@ -389,8 +397,9 @@ public class ElementNode extends AbstractNode {
         FileObject fileObject; // For the root description
         
         final String name;
-        final ElementHandle<? extends Element> elementHandle;
+        final Union2<ElementHandle<?>,TreePathHandle> handle;
         final ElementKind kind;
+        final Supplier<Icon> icon;
         Set<Modifier> modifiers;        
         Collection<Description> subs; 
         String htmlHeader;
@@ -402,10 +411,11 @@ public class ElementNode extends AbstractNode {
         private Description(ClassMemberPanelUI ui) {
             this.ui = ui;
             this.name = null;
-            this.elementHandle = null;
+            this.handle = null;
             this.kind = null;
             this.isInherited = false;
             this.isTopLevel = false;
+            this.icon = () -> null;
         }
 
         private Description(@NonNull ClassMemberPanelUI ui,
@@ -420,34 +430,41 @@ public class ElementNode extends AbstractNode {
             Parameters.notNull("kind", kind);   //NOI18N
             this.ui = ui;
             this.name = name;
-            this.elementHandle = elementHandle;
+            this.handle = Union2.<ElementHandle<?>,TreePathHandle>createFirst(elementHandle);
             this.kind = kind;
             this.isInherited = inherited;
             this.isTopLevel = topLevel;
+            this.icon = () -> ElementIcons.getElementIcon(this.kind, this.modifiers);
         }
 
         private Description(
-                @NonNull ClassMemberPanelUI ui,
-                @NonNull String name,
-                @NonNull TreePathHandle treePathHandle,
-                @NonNull ElementKind kind) {
+                @NonNull final ClassMemberPanelUI ui,
+                @NonNull final String name,
+                @NonNull final Union2<ElementHandle<?>,TreePathHandle> handle,
+                @NonNull final ElementKind kind,
+                @NonNull Supplier<Icon> icon) {
             Parameters.notNull("ui", ui);   //NOI18N
             Parameters.notNull("name", name);   //NOI18N
-            Parameters.notNull("treePathHandle", treePathHandle); //NOI18N
+            Parameters.notNull("handle", handle); //NOI18N
             Parameters.notNull("kind", kind);   //NOI18N
+            Parameters.notNull("icon", icon);   //NOI18N
             this.ui = ui;
             this.name = name;
-            this.elementHandle = null; //Todo: treePathHandle
+            this.handle = handle;
             this.kind = kind;
+            this.icon = icon;
             this.isInherited = this.isTopLevel = false;
         }
 
         public FileObject getFileObject() {
-            if( !isInherited )
+            if (isInherited) {
+                assert handle.hasFirst() : handle;
+                return SourceUtils.getFile(handle.first(), cpInfo);
+            } else {
                 return ui.getFileObject();
-            return SourceUtils.getFile( elementHandle, cpInfo );
+            }
         }
-        
+
         @Override
         public boolean equals(Object o) {
                         
@@ -473,7 +490,7 @@ public class ElementNode extends AbstractNode {
                 return false;
             }
 
-            if (this.elementHandle != d.elementHandle && (this.elementHandle == null || !this.elementHandle.equals(d.elementHandle))) {
+            if (this.handle != d.handle && (this.handle == null || !this.handle.equals(d.handle))) {
                 return false;
             }
             return true;
@@ -506,10 +523,16 @@ public class ElementNode extends AbstractNode {
 
         @NonNull
         static Description directive(
-                @NonNull ClassMemberPanelUI ui,
-                @NonNull String name,
-                @NonNull TreePathHandle treePathHandle) {
-            return new Description(ui,name, treePathHandle, ElementKind.OTHER);
+                @NonNull final ClassMemberPanelUI ui,
+                @NonNull final String name,
+                @NonNull final TreePathHandle treePathHandle,
+                @NonNull final ModuleElement.DirectiveKind kind) {
+            return new Description(
+                    ui,
+                    name,
+                    Union2.<ElementHandle<?>,TreePathHandle>createSecond(treePathHandle),
+                    ElementKind.OTHER,
+                    ()->ElementIcons.getModuleDirectiveIcon(kind));
         }
 
         private static class DescriptionComparator implements Comparator<Description> {

@@ -33,14 +33,24 @@ package org.netbeans.api.java.source.ui;
 import java.util.Collection;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.source.UiUtils;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author phrebejk
  */
 public class ElementIcons {
+
+    private static final String EXPORTS_ICON = "org/netbeans/modules/java/source/resources/icons/exports.png";
+    private static final String REQUIRES_ICON = "org/netbeans/modules/java/source/resources/icons/requires.png";
+    private static final String USES_ICON = "org/netbeans/modules/java/source/resources/icons/uses.png";
+    private static final String PROVIDES_ICON = "org/netbeans/modules/java/source/resources/icons/provides.png";
 
     private ElementIcons() {}
 
@@ -52,5 +62,26 @@ public class ElementIcons {
     public static Icon getElementIcon( ElementKind elementKind, Collection<Modifier> modifiers ) {
         return UiUtils.getElementIcon(elementKind, modifiers);
     }
-    
+
+    /**
+     * Returns an icon for the given {@link ModuleElement.DirectiveKind}.
+     * @param kind the {@link ModuleElement.DirectiveKind} to return an icon for.
+     * @return the icon
+     * @since 1.43
+     */
+    public static Icon getModuleDirectiveIcon(@NonNull final ModuleElement.DirectiveKind kind) {
+        Parameters.notNull("kind", kind);   //NOI18N
+        switch (kind) {
+            case EXPORTS:
+                return ImageUtilities.loadImageIcon(EXPORTS_ICON, true);
+            case REQUIRES:
+                return ImageUtilities.loadImageIcon(REQUIRES_ICON, true);
+            case USES:
+                return ImageUtilities.loadImageIcon(USES_ICON, true);
+            case PROVIDES:
+                return ImageUtilities.loadImageIcon(PROVIDES_ICON, true);
+            default:
+                throw new IllegalArgumentException(kind.toString());
+        }
+    }
 }
