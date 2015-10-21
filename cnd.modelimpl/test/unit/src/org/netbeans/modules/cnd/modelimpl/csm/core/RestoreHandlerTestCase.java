@@ -55,8 +55,8 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 public class RestoreHandlerTestCase extends ModifyDocumentTestCaseBase {
     private static final boolean TRACE = false;
     static {
-        System.setProperty("apt.use.clank", "true");
-        System.setProperty("cnd.modelimpl.parser.threads", "1");
+//        System.setProperty("apt.use.clank", "true");
+//        System.setProperty("cnd.modelimpl.parser.threads", "1");
         System.setProperty("cnd.modelimpl.timing", "true");
         System.setProperty("cnd.modelimpl.timing.per.file.flat", "true");
 
