@@ -1,6 +1,6 @@
-#changeset:   15845:3774ec55d3ed
+#changeset:   15870:97a43831cfba
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Oct 12 18:25:14 2015 +0300
-#summary:     JAVA FIX: fixed #255875 - AssertionError: local file resolved in remote folder
-83D26AEF1BD40E89B6C61273F28AC4EB6AC11EDD clank_0.3.6.zip
+#user:        Alexander Simon <alexvsimon@netbeans.org>
+#date:        Tue Oct 20 18:15:37 2015 +0300
+#summary:
+2F4C7072A9AAC358270D2682E3DF89473FC4DEDE clank_0.3.6.zip
