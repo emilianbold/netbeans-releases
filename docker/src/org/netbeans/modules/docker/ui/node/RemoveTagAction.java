@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
-import org.netbeans.modules.docker.rest.DockerRemoteFacade;
+import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.DockerTag;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -59,7 +59,7 @@ public class RemoveTagAction extends NodeAction {
         for (Node node : activatedNodes) {
             DockerTag tag = node.getLookup().lookup(DockerTag.class);
             if (tag != null) {
-                DockerRemoteFacade facade = new DockerRemoteFacade(tag.getImage().getInstance());
+                DockerRemote facade = new DockerRemote(tag.getImage().getInstance());
                 facade.remove(tag);
                 Node parent = node.getParentNode();
                 Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);

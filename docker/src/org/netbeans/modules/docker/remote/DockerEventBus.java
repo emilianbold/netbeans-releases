@@ -39,32 +39,28 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.remote;
 
-import org.netbeans.modules.docker.ContainerStatus;
-import org.netbeans.modules.docker.DockerContainer;
-import org.netbeans.modules.docker.remote.DockerRemote;
-import org.openide.util.NbBundle;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.netbeans.modules.docker.DockerInstance;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StopContainerAction extends AbstractContainerAction {
+public class DockerEventBus {
+   
+    private final DockerInstance instance;
 
-    @NbBundle.Messages("LBL_StopContainerAction=Stop")
-    public StopContainerAction() {
-        super(Bundle.LBL_StopContainerAction(), ContainerStatus.STOPPED);
-    }
-
-    @Override
-    protected void performAction(DockerContainer container) {
-        DockerRemote facade = new DockerRemote(container.getInstance());
-        facade.stop(container);
-    }
-
-    @Override
-    protected boolean isEnabled(DockerContainer container) {
-        return container.getStatus() == ContainerStatus.RUNNING;
+    public DockerEventBus(DockerInstance instance) {
+        this.instance = instance;
     }
 }

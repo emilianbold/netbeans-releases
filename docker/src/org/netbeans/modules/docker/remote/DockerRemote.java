@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.rest;
+package org.netbeans.modules.docker.remote;
 
 import java.io.BufferedOutputStream;
 import org.netbeans.modules.docker.DockerImage;
@@ -68,28 +68,26 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.netbeans.api.actions.Closable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerRemoteFacade {
+public class DockerRemote {
 
-    private static final Logger LOGGER = Logger.getLogger(DockerRemoteFacade.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DockerRemote.class.getName());
 
     private static final Pattern HTTP_RESPONSE_PATTERN = Pattern.compile("^HTTP/1\\.1 (\\d\\d\\d) (.*)$");
 
     private final DockerInstance instance;
 
-    public DockerRemoteFacade(DockerInstance instance) {
+    public DockerRemote(DockerInstance instance) {
         this.instance = instance;
     }
 
@@ -223,6 +221,46 @@ public class DockerRemoteFacade {
         }
     }
 
+    public void events(Long since, DockerEvent.Listener listener) throws DockerException {
+        try {
+            URL httpUrl = createURL(instance.getUrl(), since != null ? "/events?since=" + since : "/events");
+            HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
+            try {
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
+
+                if (conn.getResponseCode() != 200) {
+                    throw new DockerException(conn.getResponseMessage());
+                }
+
+                JSONParser parser = new JSONParser();
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                        (conn.getInputStream())))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        JSONObject o = (JSONObject) parser.parse(line);
+                        String status = (String) o.get("status");
+                        String id = (String) o.get("id");
+                        String from = (String) o.get("from");
+                        long time = (Long) o.get("time");
+                        listener.onEvent(new DockerEvent(status, id, from, time));
+                        parser.reset();
+                    }
+                } catch (ParseException ex) {
+                    throw new IOException(ex);
+                } finally {
+                    listener.onFinish();
+                }
+            } finally {
+                conn.disconnect();
+            }
+        } catch (MalformedURLException e) {
+            throw new DockerException(e);
+        } catch (IOException e) {
+            throw new DockerException(e);
+       }
+    }
+
     private static Object doGetRequest(@NonNull String url, @NonNull String action) throws IOException {
         try {
             URL httpUrl = createURL(url, action);
@@ -350,12 +388,8 @@ public class DockerRemoteFacade {
         StringWriter sw = new StringWriter();
         int b;
         while ((b = is.read()) != -1) {
-            System.out.print((char) b);
-            System.out.flush();
             if (b == '\r') {
                 int next = is.read();
-                System.out.print((char) next);
-                System.out.flush();
                 if (next == '\n') {
                     return sw.toString();
                 } else if (next == -1) {

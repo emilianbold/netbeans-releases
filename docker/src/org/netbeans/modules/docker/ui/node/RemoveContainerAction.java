@@ -43,7 +43,7 @@ package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
-import org.netbeans.modules.docker.rest.DockerRemoteFacade;
+import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,7 +59,7 @@ public class RemoveContainerAction extends AbstractContainerAction {
 
     @Override
     protected void performAction(DockerContainer container) {
-        DockerRemoteFacade facade = new DockerRemoteFacade(container.getInstance());
+        DockerRemote facade = new DockerRemote(container.getInstance());
         facade.remove(container);
     }
 

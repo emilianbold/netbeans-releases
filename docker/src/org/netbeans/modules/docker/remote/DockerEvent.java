@@ -39,20 +39,49 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.rest;
+package org.netbeans.modules.docker.remote;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerException extends Exception {
-
-    public DockerException(String message) {
-        super(message);
-    }
+public class DockerEvent {
     
-    public DockerException(Throwable cause) {
-        super(cause);
+    private final String status;
+    
+    private final String id;
+    
+    private final String from;
+    
+    private final long time;
+
+    public DockerEvent(String status, String id, String from, long time) {
+        this.status = status;
+        this.id = id;
+        this.from = from;
+        this.time = time;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public static interface Listener {
+        
+        void onEvent(DockerEvent event);
+        
+        void onFinish();
+    }
 }

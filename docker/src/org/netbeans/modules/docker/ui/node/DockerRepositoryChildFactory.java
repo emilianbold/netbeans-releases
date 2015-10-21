@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.docker.DockerInstance;
-import org.netbeans.modules.docker.rest.DockerRemoteFacade;
+import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.DockerImage;
 import org.netbeans.modules.docker.DockerTag;
 import org.openide.nodes.ChildFactory;
@@ -80,7 +80,7 @@ public class DockerRepositoryChildFactory extends ChildFactory<DockerTag> implem
 
     @Override
     protected boolean createKeys(List<DockerTag> toPopulate) {
-        DockerRemoteFacade facade = new DockerRemoteFacade(instance);
+        DockerRemote facade = new DockerRemote(instance);
         List<DockerTag> tags = new ArrayList<>();
         for (DockerImage image : facade.getImages()) {
             tags.addAll(image.getTags());

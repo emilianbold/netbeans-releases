@@ -39,32 +39,20 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
-
-import org.netbeans.modules.docker.ContainerStatus;
-import org.netbeans.modules.docker.DockerContainer;
-import org.netbeans.modules.docker.remote.DockerRemote;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.docker.remote;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StopContainerAction extends AbstractContainerAction {
+public class DockerException extends Exception {
 
-    @NbBundle.Messages("LBL_StopContainerAction=Stop")
-    public StopContainerAction() {
-        super(Bundle.LBL_StopContainerAction(), ContainerStatus.STOPPED);
+    public DockerException(String message) {
+        super(message);
+    }
+    
+    public DockerException(Throwable cause) {
+        super(cause);
     }
 
-    @Override
-    protected void performAction(DockerContainer container) {
-        DockerRemote facade = new DockerRemote(container.getInstance());
-        facade.stop(container);
-    }
-
-    @Override
-    protected boolean isEnabled(DockerContainer container) {
-        return container.getStatus() == ContainerStatus.RUNNING;
-    }
 }

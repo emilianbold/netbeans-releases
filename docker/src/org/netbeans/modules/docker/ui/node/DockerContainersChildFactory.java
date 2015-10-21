@@ -47,7 +47,7 @@ import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerContainer;
-import org.netbeans.modules.docker.rest.DockerRemoteFacade;
+import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 
@@ -78,7 +78,7 @@ public class DockerContainersChildFactory extends ChildFactory<DockerContainer> 
 
     @Override
     protected boolean createKeys(List<DockerContainer> toPopulate) {
-        DockerRemoteFacade facade = new DockerRemoteFacade(instance);
+        DockerRemote facade = new DockerRemote(instance);
         List<DockerContainer> containers = new ArrayList<>(facade.getContainers());
         Collections.sort(containers, COMPARATOR);
         toPopulate.addAll(containers);
