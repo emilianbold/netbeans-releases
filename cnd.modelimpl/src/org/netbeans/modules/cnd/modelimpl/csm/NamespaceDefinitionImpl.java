@@ -99,15 +99,11 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         this.leftBracketPos = leftBracketPos != -1 ? leftBracketPos : startOffset;
 
         // set parent ns, do it in constructor to have final fields
-        ((ProjectBase) file.getProject()).addNamespaceDefinition(parent, this);
-        assert namespaceUID != null;        
-    }
-    
-    public final void initNamespaceUID(CsmUID<CsmNamespace> namespaceUID) {
-        this.namespaceUID = namespaceUID;
+        namespaceUID = ((ProjectBase) file.getProject()).addNamespaceDefinition(parent, this);
+        assert namespaceUID != null;
     }
 
-    public static NamespaceDefinitionImpl findOrCreateNamespaceDefionition(MutableDeclarationsContainer container, AST ast, NamespaceImpl parentNamespace, FileImpl containerfile) {
+     public static NamespaceDefinitionImpl findOrCreateNamespaceDefionition(MutableDeclarationsContainer container, AST ast, NamespaceImpl parentNamespace, FileImpl containerfile) {
         int start = getStartOffset(ast);
         int end = getEndOffset(ast);
         CharSequence name = NameCache.getManager().getString(AstUtil.getText(ast)); // otherwise equals returns false
