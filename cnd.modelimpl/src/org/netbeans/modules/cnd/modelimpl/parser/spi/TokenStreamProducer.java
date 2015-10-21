@@ -173,6 +173,10 @@ public abstract class TokenStreamProducer {
         return codePatch;
     }
 
+    protected void resetHandler(PreprocHandler ppHandler) {
+        this.curPreprocHandler = ppHandler;
+    }
+
     public void setCodePatch(CodePatch codePatch) {
         this.codePatch = codePatch;
     }
