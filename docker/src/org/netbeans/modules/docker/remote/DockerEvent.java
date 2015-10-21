@@ -46,13 +46,13 @@ package org.netbeans.modules.docker.remote;
  * @author Petr Hejl
  */
 public class DockerEvent {
-    
+
     private final String status;
-    
+
     private final String id;
-    
+
     private final String from;
-    
+
     private final long time;
 
     public DockerEvent(String status, String id, String from, long time) {
@@ -84,9 +84,9 @@ public class DockerEvent {
     }
 
     public static interface Listener {
-        
+
         void onEvent(DockerEvent event);
-        
+
         void onFinish();
     }
 }

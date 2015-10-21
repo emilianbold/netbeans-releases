@@ -54,11 +54,14 @@ import org.openide.util.actions.NodeAction;
 public abstract class AbstractContainerAction extends NodeAction {
 
     private final String name;
+    
+    private final boolean refresh;
 
     private final ContainerStatus result;
 
-    public AbstractContainerAction(String name, ContainerStatus result) {
+    public AbstractContainerAction(String name, boolean refresh, ContainerStatus result) {
         this.name = name;
+        this.refresh = refresh;
         this.result = result;
     }
 
@@ -75,13 +78,15 @@ public abstract class AbstractContainerAction extends NodeAction {
             if (container != null) {
                 performAction(container);
 
-                if (result != null) {
-                    container.setStatus(result);
-                } else {
-                    Node parent = node.getParentNode();
-                    Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
-                    if (refreshable != null) {
-                        refreshable.refresh();
+                if (refresh) {
+                    if (result != null) {
+                        container.setStatus(result);
+                    } else {
+                        Node parent = node.getParentNode();
+                        Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
+                        if (refreshable != null) {
+                            refreshable.refresh();
+                        }
                     }
                 }
             }

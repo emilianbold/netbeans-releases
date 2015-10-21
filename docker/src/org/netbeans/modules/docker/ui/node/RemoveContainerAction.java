@@ -54,7 +54,7 @@ public class RemoveContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_RemoveContainerAction=Remove")
     public RemoveContainerAction() {
-        super(Bundle.LBL_RemoveContainerAction(), null);
+        super(Bundle.LBL_RemoveContainerAction(), true, null);
     }
 
     @Override

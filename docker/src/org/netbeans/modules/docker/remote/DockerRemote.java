@@ -185,7 +185,7 @@ public class DockerRemote {
 
             OutputStream os = s.getOutputStream();
             os.write(("POST /containers/" + container.getId()
-                    + "/attach?logs=1&stream=1&stdout=1&stdin=1&stderr=1 HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
+                    + "/attach?logs=0&stream=1&stdout=1&stdin=1&stderr=1 HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
             os.flush();
 
             Reader reader = new InputStreamReader(s.getInputStream(), "ISO-8859-1");

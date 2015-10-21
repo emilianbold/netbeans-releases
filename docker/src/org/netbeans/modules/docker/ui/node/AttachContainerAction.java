@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.terminal.api.IOTerm;
@@ -59,7 +60,7 @@ public class AttachContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_AttachContainerAction=Attach")
     public AttachContainerAction() {
-        super(Bundle.LBL_AttachContainerAction(), ContainerStatus.RUNNING);
+        super(Bundle.LBL_AttachContainerAction(), false, null);
     }
 
     @Override
@@ -67,8 +68,8 @@ public class AttachContainerAction extends AbstractContainerAction {
         try {
             DockerRemote facade = new DockerRemote(container.getInstance());
             DockerRemote.AttachResult r = facade.attach(container);
-            IOProvider provider = IOProvider.get("Terminal");
-            InputOutput io = provider.getIO("Test", true);
+            IOProvider provider = IOProvider.get("Terminal"); // NOI18N
+            InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
             io.select();
             IOTerm.connect(io, r.getStdIn(), r.getStdOut(), r.getStdErr());
         } catch (DockerException ex) {

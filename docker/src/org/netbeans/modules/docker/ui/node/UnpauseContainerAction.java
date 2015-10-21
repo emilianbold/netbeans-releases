@@ -54,7 +54,7 @@ public class UnpauseContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_UnpauseContainerAction=Unpause")
     public UnpauseContainerAction() {
-        super(Bundle.LBL_UnpauseContainerAction(), ContainerStatus.RUNNING);
+        super(Bundle.LBL_UnpauseContainerAction(), true, ContainerStatus.RUNNING);
     }
 
     @Override
