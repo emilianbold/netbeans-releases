@@ -203,6 +203,10 @@ public class NodeExecutable {
         return new NodeExecutable(node, project);
     }
 
+    public String getExecutable() {
+        return new ExternalExecutable(nodePath).getExecutable();
+    }
+
     String getCommand() {
         return nodePath;
     }

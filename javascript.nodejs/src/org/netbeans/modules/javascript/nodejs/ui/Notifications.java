@@ -46,10 +46,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
+import org.netbeans.modules.javascript.nodejs.util.GraalVmUtils;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -89,6 +91,35 @@ public final class Notifications {
                         } else {
                             preferences.setEnabled(true);
                             text = Bundle.Notifications_detection_done(projectName);
+                        }
+                        StatusDisplayer.getDefault().setStatusText(text);
+                    }
+                },
+                NotificationDisplayer.Priority.LOW);
+    }
+
+    @NbBundle.Messages({
+        "Notifications.graalvm.detection.title=GraalVM detected",
+        "Notifications.graalvm.detection.description=Set proper node and npm paths?",
+        "Notifications.graalvm.detection.done=Proper node and npm paths set.",
+        "Notifications.graalvm.detection.noop=Proper node and npm paths already set.",
+    })
+    public static void notifyGraalVmDetected() {
+        NotificationDisplayer.getDefault().notify(
+                Bundle.Notifications_graalvm_detection_title(),
+                NotificationDisplayer.Priority.LOW.getIcon(),
+                Bundle.Notifications_graalvm_detection_description(),
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        String text;
+                        if (GraalVmUtils.properPathsSet()) {
+                            // already done
+                            text = Bundle.Notifications_graalvm_detection_noop();
+                        } else {
+                            NodeJsOptions.getInstance().setNode(GraalVmUtils.getNode());
+                            NodeJsOptions.getInstance().setNpm(GraalVmUtils.getNpm(true));
+                            text = Bundle.Notifications_graalvm_detection_done();
                         }
                         StatusDisplayer.getDefault().setStatusText(text);
                     }

@@ -130,6 +130,10 @@ public class NpmExecutable {
         return new NpmExecutable(npm, project);
     }
 
+    public String getExecutable() {
+        return new ExternalExecutable(npmPath).getExecutable();
+    }
+
     String getCommand() {
         return npmPath;
     }

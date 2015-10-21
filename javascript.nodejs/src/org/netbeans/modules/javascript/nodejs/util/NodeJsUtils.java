@@ -122,7 +122,7 @@ public final class NodeJsUtils {
     @CheckForNull
     public static String getNpm() {
         if (GraalVmUtils.isRunningOn()) {
-            return GraalVmUtils.getNpm();
+            return GraalVmUtils.getNpm(true);
         }
         List<String> files = FileUtils.findFileOnUsersPath(NpmExecutable.NPM_NAME);
         if (!files.isEmpty()) {
