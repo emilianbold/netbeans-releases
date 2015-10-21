@@ -642,7 +642,15 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             if( null == path ) {
                 return null;
             }
-            return Visualizer.findNode( path.getLastPathComponent());
+            final Node node = Visualizer.findNode( path.getLastPathComponent());
+            if (!(node instanceof ElementNode)) {
+                return null;
+            }
+            final ElementNode enode = (ElementNode) node;
+            final ElementNode.Description desc = enode.getDescritption();
+            return desc.handle != null && desc.handle.hasFirst() ?
+                    node :
+                    null;
         }
 
 
@@ -733,14 +741,17 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 @Override
                 public void run() {
                     if( null != me ) {
-                        final ElementJavadoc doc = getDocumentation(findNode(me.getPoint()));
-                        final ElementNode root = getRootNode();
-                        final FileObject owner = root == null ? null : root.getDescritption().fileObject;
-                        JavadocTopComponent tc = JavadocTopComponent.findInstance();
-                        if( null != tc ) {
-                            tc.open();
-                            tc.setJavadoc(owner,  doc);
-                            tc.requestActive();
+                        final Node node = findNode(me.getPoint());
+                        if (node != null) {
+                            final ElementJavadoc doc = getDocumentation(node);
+                            final ElementNode root = getRootNode();
+                            final FileObject owner = root == null ? null : root.getDescritption().fileObject;
+                            JavadocTopComponent tc = JavadocTopComponent.findInstance();
+                            if( null != tc ) {
+                                tc.open();
+                                tc.setJavadoc(owner,  doc);
+                                tc.requestActive();
+                            }
                         }
                     }
                 }

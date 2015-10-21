@@ -259,7 +259,6 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
 	    tipWindow = popupFactory.getPopup(insideComponent, tip,
 					      location.x,
 					      location.y);
-
 	    tipWindow.show();
 
             Window componentWindow = SwingUtilities.windowForComponent(
@@ -682,15 +681,19 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
             lastTooltipForRect = new Rectangle( tooltipForRect );
         }
         // start full tooltip calculation in request processor
-        TooltipCalculator tc = new TooltipCalculator( tooltipForRect, loc );
-        synchronized (TOOLTIP_DATA_LOCK) {
-            tooltipTask = RP.post(tc);
+        final TooltipCalculator tc = new TooltipCalculator( tooltipForRect, loc );
+        if (tc.isValid()) {
+            synchronized (TOOLTIP_DATA_LOCK) {
+                tooltipTask = RP.post(tc);
+            }
+            return WAITING_TEXT;
+        } else {
+            return null;
         }
-        return WAITING_TEXT;
     }
 
     /** calculates tooltip and invokes tooltip refresh */
-    private class TooltipCalculator implements Runnable {
+    private final class TooltipCalculator implements Runnable {
         
         private Node node;
         private Rectangle tooltipForRect;
@@ -699,7 +702,11 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
             this.tooltipForRect = tooltipForRect;
             this.node = provider.findNode(loc);
         }
-        
+
+        boolean isValid() {
+            return this.node != null;
+        }
+
         /** actually calculates tooltip for given item */
         @Override
         public void run () {
@@ -716,16 +723,13 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
                 lastTooltipText = result;
             }
             // invoke tooltip
-            SwingUtilities.invokeLater(new Runnable () {
-                @Override
-                public void run () {
-                    toolTipText = result;
-                    if( null != tip ) {
-                        tip.setTipText(toolTipText);
-                        tip.invalidate();
-                        tip.revalidate();
-                        tip.repaint();
-                    }
+            SwingUtilities.invokeLater(()-> {
+                toolTipText = result;
+                if( null != tip ) {
+                    tip.setTipText(toolTipText);
+                    tip.invalidate();
+                    tip.revalidate();
+                    tip.repaint();
                 }
             });
         }
