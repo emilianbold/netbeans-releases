@@ -575,17 +575,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    public final CsmUID<CsmNamespace> addNamespaceDefinition(NamespaceImpl parent, NamespaceDefinitionImpl nsDefinition) {
+    public final CsmUID<CsmNamespace> addNamespaceDefinition(NamespaceImpl parent, CsmNamespaceDefinition nsDefinition) {
         synchronized (namespaceLock) {
             CharSequence qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(nsDefinition.getName(), parent, true);
             NamespaceImpl nsp = _getNamespace(qualifiedName);
             if (nsp == null) {
                 nsp = NamespaceImpl.create(this, parent, nsDefinition.getName(), qualifiedName);
             }
-            CsmUID<CsmNamespace> namespaceToUID = UIDCsmConverter.namespaceToUID(nsp);
-            nsDefinition.initNamespaceUID(namespaceToUID);
             nsp.addNamespaceDefinition(nsDefinition);
-            return namespaceToUID;
+            return UIDCsmConverter.namespaceToUID(nsp);
         }
     }
 
