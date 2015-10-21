@@ -236,8 +236,8 @@ public final class LibraryManager {
                                 trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
                             }
                         } else {
-                            res = null;
                             CndUtils.assertTrue(false, "Wrong FS for " + resolvedPath + ": " + res.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
+                            res = null;
                         }
                     }
                     // if (res != null && res.isArtificial()) { // TODO: update lib source roots here }
