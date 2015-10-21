@@ -122,6 +122,7 @@ class NonVirtualMethod extends AbstractCodeAudit {
             if (!overriddenChain.getThisMethod().isVirtual() &&
                 (overriddenChain.getBaseMethods().size() > 0 || overriddenChain.getDerivedMethods().size() > 0)) {
                 String message;
+                boolean canFix;
                 if (overriddenChain.getBaseMethods().size() > 0) {
                     Iterator<CsmVirtualInfoQuery.CsmOverrideInfo> iterator = overriddenChain.getBaseMethods().iterator();
                     if (overriddenChain.getBaseMethods().size() == 1) {
@@ -142,6 +143,7 @@ class NonVirtualMethod extends AbstractCodeAudit {
                         }
                         message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.super.classes", buf.toString()); // NOI18N
                     }
+                    canFix = false;
                 } else {
                     Iterator<CsmVirtualInfoQuery.CsmOverrideInfo> iterator = overriddenChain.getDerivedMethods().iterator();
                     if (overriddenChain.getDerivedMethods().size() == 1) {
@@ -162,13 +164,16 @@ class NonVirtualMethod extends AbstractCodeAudit {
                         }
                         message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.sub.classes", buf.toString()); // NOI18N
                     }
+                    canFix = true;
                 }
                 CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                 if (response instanceof AnalyzerResponse) {
                     ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, method.getContainingFile().getFileObject(),
-                            new NonVritualMethodErrorInfoImpl(request.getDocument(), method, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, method.getStartOffset(), method.getParameterList().getEndOffset())); // NOI18N
+                            new NonVritualMethodErrorInfoImpl(request.getDocument(), method, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, // NOI18N
+                                    method.getStartOffset(), method.getParameterList().getEndOffset(), canFix));
                 } else {
-                    response.addError(new NonVritualMethodErrorInfoImpl(request.getDocument(), method, CsmHintProvider.NAME, getID(), message, severity, method.getStartOffset(), method.getParameterList().getEndOffset()));
+                    response.addError(new NonVritualMethodErrorInfoImpl(request.getDocument(), method, CsmHintProvider.NAME, getID(), message, severity,
+                            method.getStartOffset(), method.getParameterList().getEndOffset(), canFix));
                 }
             }
         }
@@ -189,9 +194,11 @@ class NonVirtualMethod extends AbstractCodeAudit {
     
     private static final class NonVritualMethodErrorInfoImpl extends ErrorInfoImpl {
         private final BaseDocument doc;
-        public NonVritualMethodErrorInfoImpl(Document doc, CsmMethod method, String providerName, String audutName, String message, CsmErrorInfo.Severity severity, int startOffset, int endOffset) {
+        private final boolean canFix;
+        public NonVritualMethodErrorInfoImpl(Document doc, CsmMethod method, String providerName, String audutName, String message, CsmErrorInfo.Severity severity, int startOffset, int endOffset, boolean canFix) {
             super(providerName, audutName, message, severity, startOffset, endOffset);
             this.doc = (BaseDocument) doc;
+            this.canFix = canFix;
         }
     }    
     
@@ -208,7 +215,11 @@ class NonVirtualMethod extends AbstractCodeAudit {
         
         private List<? extends Fix> createFixes(NonVritualMethodErrorInfoImpl info) {
             try {
-                return Collections.singletonList(new AddVirtualKeyvord(info.doc, info.getStartOffset(), info.getEndOffset()));
+                if (info.canFix) {
+                    return Collections.singletonList(new AddVirtualKeyvord(info.doc, info.getStartOffset(), info.getEndOffset()));
+                } else {
+                    return Collections.emptyList();
+                }
             } catch (BadLocationException ex) {
                 return Collections.emptyList();
             }
