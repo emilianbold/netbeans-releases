@@ -121,7 +121,7 @@ public class DockerEventBus implements DockerEvent.Listener, DockerRemote.Connec
             current = connection;
             connection = null;
         }
-        current.disconnect();
+        //current.disconnect();
     }
 
     @Override

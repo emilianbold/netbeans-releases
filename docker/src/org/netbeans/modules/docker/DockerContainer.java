@@ -49,7 +49,7 @@ import org.openide.util.ChangeSupport;
  *
  * @author Petr Hejl
  */
-public class DockerContainer implements IdProvider {
+public class DockerContainer implements Identifiable {
 
     private final DockerInstance instance;
 

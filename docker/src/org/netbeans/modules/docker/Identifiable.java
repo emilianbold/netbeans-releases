@@ -45,7 +45,7 @@ package org.netbeans.modules.docker;
  *
  * @author Petr Hejl
  */
-public interface IdProvider {
+public interface Identifiable {
     
     String getId();
 

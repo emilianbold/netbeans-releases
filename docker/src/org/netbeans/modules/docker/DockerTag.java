@@ -47,7 +47,7 @@ import java.util.Objects;
  *
  * @author Petr Hejl
  */
-public class DockerTag implements IdProvider {
+public class DockerTag implements Identifiable {
 
     private final DockerImage image;
 

@@ -49,7 +49,7 @@ import java.util.Objects;
  *
  * @author Petr Hejl
  */
-public class DockerImage implements IdProvider {
+public class DockerImage implements Identifiable {
 
     private final DockerInstance instance;
 

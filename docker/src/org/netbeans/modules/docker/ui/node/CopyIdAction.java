@@ -51,7 +51,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import org.netbeans.modules.docker.IdProvider;
+import org.netbeans.modules.docker.Identifiable;
 
 /**
  *
@@ -66,7 +66,7 @@ public class CopyIdAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         assert activatedNodes.length == 1;
-        IdProvider idProvider = activatedNodes[0].getLookup().lookup(IdProvider.class);
+        Identifiable idProvider = activatedNodes[0].getLookup().lookup(Identifiable.class);
         if (idProvider != null) {
             Clipboard clipboard = getClipboard();
             if (clipboard != null) {
@@ -83,7 +83,7 @@ public class CopyIdAction extends NodeAction {
     @Override
     protected boolean enable(Node[] activatedNodes) {
         return activatedNodes.length == 1
-                && activatedNodes[0].getLookup().lookup(IdProvider.class) != null;
+                && activatedNodes[0].getLookup().lookup(Identifiable.class) != null;
     }
 
     @NbBundle.Messages("LBL_CopyIdAction=Copy ID")
