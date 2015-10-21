@@ -1,6 +1,6 @@
-#changeset:   15870:97a43831cfba
+#changeset:   15874:2a44dee2cd18
 #tag:         tip
-#user:        Alexander Simon <alexvsimon@netbeans.org>
-#date:        Tue Oct 20 18:15:37 2015 +0300
-#summary:
-2F4C7072A9AAC358270D2682E3DF89473FC4DEDE clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Thu Oct 22 01:39:28 2015 +0300
+#summary:     JAVA: fixing #253863 - [newcodemodel] broken code model in file if file has been excluded from project
+00C9457FC43C572159DD960FAD05898BCB2104B7 clank_0.3.6.zip
