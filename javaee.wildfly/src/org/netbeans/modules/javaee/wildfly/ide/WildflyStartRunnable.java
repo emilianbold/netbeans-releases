@@ -158,6 +158,10 @@ class WildflyStartRunnable implements Runnable {
             if (!logManagerJar.isEmpty()) {
                 javaOptsBuilder.append(" -Xbootclasspath/p:").append(logManagerJar)
                         .append(" -Djava.util.logging.manager=org.jboss.logmanager.LogManager");
+                FileObject loggingProperties = FileUtil.toFileObject(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR) 
+                        + separatorChar + "standalone" + separatorChar + "configuration", "logging.properties")); // NOI18N
+                
+                javaOptsBuilder.append(" -Dlogging.configuration=").append(loggingProperties.toURL());
             }
         }
         if (platform.getSpecification().getVersion().compareTo(JDK_18) < 0) {
@@ -211,7 +215,12 @@ class WildflyStartRunnable implements Runnable {
             javaOptsBuilder.append(String.format(" -agentlib:jdwp=transport=dt_socket,address=%1s,server=y,suspend=n", dm.getDebuggingPort())); // NOI18N
 
         }
-        javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
+        if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
+            javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman,org.jboss.logmanager -Djava.awt.headless=true");
+        } else {
+            javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
+        }
+        
         if (ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null) {
             File configFile = new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
             if (configFile.exists() && configFile.getParentFile().exists() && configFile.getParentFile().getParentFile().exists()) {
@@ -224,7 +233,7 @@ class WildflyStartRunnable implements Runnable {
         if (ip.getProperty(WildflyPluginProperties.PROPERTY_ADMIN_PORT) != null) {
             try {
                 int adminPort = Integer.parseInt(ip.getProperty(WildflyPluginProperties.PROPERTY_ADMIN_PORT));
-                if (WildflyPluginUtils.WILDFLY_10_0_0.compareTo(dm.getServerVersion()) <= 0) {
+                if (WildflyPluginUtils.WILDFLY_9_0_0.compareTo(dm.getServerVersion()) <= 0) {
                     javaOptsBuilder.append(" -Djboss.management.http.port=").append(adminPort);
                 } else {
                     javaOptsBuilder.append(" -Djboss.management.native.port=").append(adminPort);
