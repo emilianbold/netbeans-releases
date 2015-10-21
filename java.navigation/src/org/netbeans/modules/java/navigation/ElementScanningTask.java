@@ -79,10 +79,10 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
@@ -147,12 +147,23 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         final boolean fqn = ui.getFilters().isFqn();
         final List<? extends Element> elements;
         if (isModuleInfo(info.getFileObject())) {
-            final List<? extends Tree> typeDecls = cuTree.getTypeDecls();
-            Element me;
-            elements = (typeDecls.size() == 1)
-                    && ((me = info.getTrees().getElement(TreePath.getPath(cuTree, typeDecls.get(0)))) instanceof ModuleElement) ?
-                Collections.singletonList(me):
-                Collections.<Element>emptyList();
+            if (cuTree != null) {
+                final List<? extends Tree> typeDecls = cuTree.getTypeDecls();
+                Element me;
+                elements = (typeDecls.size() == 1)
+                        && ((me = info.getTrees().getElement(TreePath.getPath(cuTree, typeDecls.get(0)))) instanceof ModuleElement) ?
+                    Collections.singletonList(me):
+                    Collections.<Element>emptyList();
+            } else {
+                //Class file
+                final String moduleName =  SourceUtils.getModuleName(info.getFileObject().getParent().toURL());
+                final ModuleElement module = moduleName == null ?
+                    null :
+                    info.getElements().getModuleElement(moduleName);
+                elements = module != null ?
+                    Collections.singletonList(module):
+                    Collections.<Element>emptyList();
+            }
         } else {
             elements = info.getTopLevelElements();
         }
