@@ -42,18 +42,20 @@
 package org.netbeans.modules.docker.ui.node;
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.docker.DockerContainer;
-import org.netbeans.modules.docker.DockerImage;
 import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.remote.Run;
 import org.netbeans.modules.docker.ui.run.ContainerCommandPanel;
+import org.netbeans.modules.terminal.api.IONotifier;
+import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -139,6 +141,17 @@ public class RunAction extends NodeAction {
                 InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
                 IOTerm.connect(io, r.getStdIn(), r.getStdOut(), r.getStdErr());
                 io.select();
+                if (IOResizable.isSupported(io)) {
+                    IONotifier.addPropertyChangeListener(io, new PropertyChangeListener() {
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if (IOResizable.PROP_SIZE.equals(evt.getPropertyName())) {
+                                IOResizable.Size newVal = (IOResizable.Size) evt.getNewValue();
+                                System.out.println(newVal.cells);
+                            }
+                        }
+                    });
+                }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
