@@ -55,10 +55,12 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
@@ -157,6 +159,27 @@ class NoMatchingConstructor extends AbstractCodeAudit {
                     willProduceError = flag;
                 }
                 break;
+            }
+        }
+        
+        if (willProduceError && CsmFileInfoQuery.getDefault().isCpp11OrLater(request.getFile())) {
+            for (CsmMember member : csmClass.getMembers()) {
+                if (member.getKind().equals(CsmDeclaration.Kind.USING_DECLARATION) && CsmKindUtilities.isUsingDeclaration(member)) {
+                    CsmDeclaration referencedDeclaration = ((CsmUsingDeclaration)member).getReferencedDeclaration();
+                    if (CsmKindUtilities.isConstructor(referencedDeclaration)) {
+                        CsmClass ctorClass = ((CsmConstructor) referencedDeclaration).getContainingClass();
+                        for (CsmInheritance parent : csmClass.getBaseClasses()) {
+                            CsmClass parentClass = CsmInheritanceUtilities.getCsmClass(parent);
+                            if (parentClass != null && parentClass.equals(ctorClass)) {
+                                willProduceError = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!willProduceError) {
+                    break;
+                }
             }
         }
         
