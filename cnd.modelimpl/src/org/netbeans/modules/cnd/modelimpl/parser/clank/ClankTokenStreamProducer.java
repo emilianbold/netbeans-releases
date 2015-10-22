@@ -574,7 +574,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             } else {
                 assert exitedFrom != null;
                 assert seenInterestedFileInfo != null || waitExitFromThisFileInfo != null || (state == State.SEEK_ENTER_TO_INCLUDED_FILE) : 
-                        "in state " + state + " we exit from enexpected include branch ? " + exitedFrom + "\nback to\n" + exitedTo;            
+                        "in state " + state + " we exit from enexpected include branch ? " + exitedFrom + "\nback to\n" + exitedTo; // NOI18N         
                 if (exitedFrom == seenInterestedFileInfo) {
                     assert waitExitFromThisFileInfo == null;
                     // stop all activity on exit from interested file
