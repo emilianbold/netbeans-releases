@@ -185,6 +185,11 @@ public class DockerInstance {
         changeSupport.removeChangeListener(listener);
     }
 
+    @Override
+    public String toString() {
+        return getUrl();
+    }
+    
     private void init() {
         prefs.addPreferenceChangeListener(listener);
     }
