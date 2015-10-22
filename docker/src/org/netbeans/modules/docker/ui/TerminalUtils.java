@@ -39,17 +39,18 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.ui;
 
-import org.netbeans.modules.docker.ui.TerminalUtils;
-import org.netbeans.modules.docker.ContainerStatus;
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
+import org.netbeans.modules.terminal.api.IONotifier;
+import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -57,26 +58,63 @@ import org.openide.windows.InputOutput;
  *
  * @author Petr Hejl
  */
-public class AttachContainerAction extends AbstractContainerAction {
+public final class TerminalUtils {
 
-    @NbBundle.Messages("LBL_AttachContainerAction=Attach")
-    public AttachContainerAction() {
-        super(Bundle.LBL_AttachContainerAction(), false, null);
+    private static final int RESIZE_DELAY = 500;
+
+    private TerminalUtils() {
+        super();
     }
 
-    @Override
-    protected void performAction(DockerContainer container) {
-        try {
-            DockerRemote facade = new DockerRemote(container.getInstance());
-            DockerRemote.AttachResult r = facade.attach(container, false);
-            TerminalUtils.openTerminal(container, r);
-        } catch (DockerException ex) {
-            Exceptions.printStackTrace(ex);
+    public static void openTerminal(final DockerContainer container, DockerRemote.AttachResult result) {
+        IOProvider provider = IOProvider.get("Terminal"); // NOI18N
+        InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
+        IOTerm.connect(io, result.getStdIn(), result.getStdOut(), result.getStdErr());
+        io.select();
+        if (IOResizable.isSupported(io)) {
+            IONotifier.addPropertyChangeListener(io, new ResizeListener(container));
         }
     }
 
-    @Override
-    protected boolean isEnabled(DockerContainer container) {
-        return container.getStatus() == ContainerStatus.RUNNING;
+    private static class ResizeListener implements PropertyChangeListener {
+
+        private final DockerContainer container;
+
+        private final RequestProcessor.Task task;
+
+        // GuardedBy("this")
+        private Dimension value;
+
+        boolean initial = true;
+
+        public ResizeListener(DockerContainer container) {
+            this.container = container;
+            this.task = RequestProcessor.getDefault().create(new Runnable() {
+                @Override
+                public void run() {
+                    Dimension newValue;
+                    synchronized (ResizeListener.this) {
+                        newValue = value;
+                    }
+                    DockerRemote remote = new DockerRemote(ResizeListener.this.container.getInstance());
+                    remote.resizeTerminal(ResizeListener.this.container, newValue.height, newValue.width);
+                }
+            }, true);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (IOResizable.PROP_SIZE.equals(evt.getPropertyName())) {
+                IOResizable.Size newVal = (IOResizable.Size) evt.getNewValue();
+                synchronized (this) {
+                    value = newVal.cells;
+                }
+                if (initial) {
+                    task.schedule(0);
+                } else {
+                    task.schedule(RESIZE_DELAY);
+                }
+            }
+        }
     }
 }

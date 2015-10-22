@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import org.netbeans.modules.docker.ui.TerminalUtils;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -137,22 +138,7 @@ public class RunAction extends NodeAction {
                 final DockerContainer container = run.call();
                 final DockerRemote facade = new DockerRemote(container.getInstance());
                 DockerRemote.AttachResult r = facade.attach(container, true);
-                IOProvider provider = IOProvider.get("Terminal"); // NOI18N
-                InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
-                IOTerm.connect(io, r.getStdIn(), r.getStdOut(), r.getStdErr());
-                io.select();
-                if (IOResizable.isSupported(io)) {
-                    IONotifier.addPropertyChangeListener(io, new PropertyChangeListener() {
-                        @Override
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if (IOResizable.PROP_SIZE.equals(evt.getPropertyName())) {
-                                IOResizable.Size newVal = (IOResizable.Size) evt.getNewValue();
-                                System.out.println(newVal.cells);
-                                facade.resizeTerminal(container, newVal.cells.height, newVal.cells.width);
-                            }
-                        }
-                    });
-                }
+                TerminalUtils.openTerminal(container, r);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
