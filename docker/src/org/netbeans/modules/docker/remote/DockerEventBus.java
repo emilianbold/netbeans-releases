@@ -43,7 +43,10 @@ package org.netbeans.modules.docker.remote;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.DockerInstance;
@@ -59,11 +62,19 @@ public class DockerEventBus implements DockerEvent.Listener, DockerRemote.Connec
 
     private static final long INTERVAL = 5000;
 
+    private static final Set<String> IMAGE_EVENTS = new HashSet<>();
+
+    static {
+        Collections.addAll(IMAGE_EVENTS, "delete", "import", "pull", "push", "tag", "untag");
+    }
+
     private final RequestProcessor processor = new RequestProcessor(DockerEventBus.class);
 
     private final DockerInstance instance;
 
-    private final List<DockerEvent.Listener> listeners = new ArrayList<>();
+    private final List<DockerEvent.Listener> imageListeners = new ArrayList<>();
+
+    private final List<DockerEvent.Listener> containerListeners = new ArrayList<>();
 
     private HttpURLConnection connection;
 
@@ -125,19 +136,37 @@ public class DockerEventBus implements DockerEvent.Listener, DockerRemote.Connec
         //current.disconnect();
     }
 
-    public void addListener(DockerEvent.Listener listener) {
+    public void addImageListener(DockerEvent.Listener listener) {
         synchronized (this) {
-            if (listeners.isEmpty()) {
+            if (imageListeners.isEmpty() && containerListeners.isEmpty()) {
                 start();
             }
-            listeners.add(listener);
+            imageListeners.add(listener);
         }
     }
 
-    public void removeListener(DockerEvent.Listener listener) {
+    public void removeImageListener(DockerEvent.Listener listener) {
         synchronized (this) {
-            listeners.remove(listener);
-            if (listeners.isEmpty()) {
+            imageListeners.remove(listener);
+            if (imageListeners.isEmpty() && containerListeners.isEmpty()) {
+                stop();
+            }
+        }
+    }
+
+    public void addContainerListener(DockerEvent.Listener listener) {
+        synchronized (this) {
+            if (imageListeners.isEmpty() && containerListeners.isEmpty()) {
+                start();
+            }
+            containerListeners.add(listener);
+        }
+    }
+
+    public void removeContainerListener(DockerEvent.Listener listener) {
+        synchronized (this) {
+            containerListeners.remove(listener);
+            if (imageListeners.isEmpty() && containerListeners.isEmpty()) {
                 stop();
             }
         }
@@ -145,6 +174,7 @@ public class DockerEventBus implements DockerEvent.Listener, DockerRemote.Connec
 
     @Override
     public void onEvent(DockerEvent event) {
+        List<DockerEvent.Listener> toFire;
         synchronized (this) {
             if (blocked) {
                 if (event.equals(lastEvent)) {
@@ -153,8 +183,16 @@ public class DockerEventBus implements DockerEvent.Listener, DockerRemote.Connec
                 return;
             }
             lastEvent = event;
+            if (IMAGE_EVENTS.contains(event.getStatus())) {
+                toFire = new ArrayList<>(imageListeners);
+            } else {
+                toFire = new ArrayList<>(containerListeners);
+            }
         }
         LOGGER.log(Level.INFO, event.toString());
+        for (DockerEvent.Listener l : toFire) {
+            l.onEvent(event);
+        }
     }
 
     @Override
