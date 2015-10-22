@@ -57,10 +57,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -86,6 +87,18 @@ public class DockerRemote {
 
     private static final Pattern HTTP_RESPONSE_PATTERN = Pattern.compile("^HTTP/1\\.1 (\\d\\d\\d) (.*)$");
 
+    private static final Set<Integer> START_STOP_CONTAINER_CODES = new HashSet<>();
+
+    private static final Set<Integer> REMOVE_CONTAINER_CODES = new HashSet<>();
+
+    private static final Set<Integer> REMOVE_IMAGE_CODES = new HashSet<>();
+
+    static {
+        Collections.addAll(START_STOP_CONTAINER_CODES, HttpURLConnection.HTTP_NO_CONTENT, HttpURLConnection.HTTP_NOT_MODIFIED);
+        Collections.addAll(REMOVE_CONTAINER_CODES, HttpURLConnection.HTTP_NO_CONTENT, HttpURLConnection.HTTP_NOT_FOUND);
+        Collections.addAll(REMOVE_IMAGE_CODES, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_NOT_FOUND);
+    }
+
     private final DockerInstance instance;
 
     public DockerRemote(DockerInstance instance) {
@@ -94,7 +107,8 @@ public class DockerRemote {
 
     public List<DockerImage> getImages() {
         try {
-            JSONArray value = (JSONArray) doGetRequest(instance.getUrl(), "/images/json");
+            JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
+                    "/images/json", Collections.singleton(HttpURLConnection.HTTP_OK));
             List<DockerImage> ret = new ArrayList<>(value.size());
             for (Object o : value) {
                 JSONObject json  = (JSONObject) o;
@@ -106,7 +120,7 @@ public class DockerRemote {
                 ret.add(new DockerImage(instance, repoTags, id, created, size, virtualSize));
             }
             return ret;
-        } catch (IOException ex) {
+        } catch (DockerException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
         return Collections.emptyList();
@@ -114,7 +128,8 @@ public class DockerRemote {
 
     public List<DockerContainer> getContainers() {
         try {
-            JSONArray value = (JSONArray) doGetRequest(instance.getUrl(), "/containers/json?all=1");
+            JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
+                    "/containers/json?all=1", Collections.singleton(HttpURLConnection.HTTP_OK));
             List<DockerContainer> ret = new ArrayList<>(value.size());
             for (Object o : value) {
                 JSONObject json = (JSONObject) o;
@@ -124,7 +139,7 @@ public class DockerRemote {
                 ret.add(instance.getContainerFactory().create(id, image, status));
             }
             return ret;
-        } catch (IOException ex) {
+        } catch (DockerException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
         return Collections.emptyList();
@@ -132,32 +147,34 @@ public class DockerRemote {
 
     public void start(DockerContainer container) {
         try {
-            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/start", null, false);
-        } catch (IOException ex) {
+            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/start", null, false, START_STOP_CONTAINER_CODES);
+        } catch (DockerException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
     public void stop(DockerContainer container) {
         try {
-            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/stop", null, false);
-        } catch (IOException ex) {
+            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/stop", null, false, START_STOP_CONTAINER_CODES);
+        } catch (DockerException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
     public void pause(DockerContainer container) {
         try {
-            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/pause", null, false);
-        } catch (IOException ex) {
+            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/pause", null, false,
+                    Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
+        } catch (DockerException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
     public void unpause(DockerContainer container) {
         try {
-            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/unpause", null, false);
-        } catch (IOException ex) {
+            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/unpause", null, false,
+                    Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
+        } catch (DockerException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
     }
@@ -168,16 +185,18 @@ public class DockerRemote {
             if (id.equals("<none>:<none>")) {
                 id = tag.getImage().getId();
             }
-            JSONArray value = (JSONArray) doDeleteRequest(instance.getUrl(), "/images/" + id, true);
-        } catch (IOException ex) {
+            JSONArray value = (JSONArray) doDeleteRequest(instance.getUrl(), "/images/" + id, true,
+                    REMOVE_IMAGE_CODES);
+        } catch (DockerException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
     public void remove(DockerContainer container) {
         try {
-            doDeleteRequest(instance.getUrl(), "/containers/" + container.getId(), false);
-        } catch (IOException ex) {
+            doDeleteRequest(instance.getUrl(), "/containers/" + container.getId(), false,
+                    REMOVE_CONTAINER_CODES);
+        } catch (DockerException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
     }
@@ -234,7 +253,7 @@ public class DockerRemote {
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Accept", "application/json");
 
-                if (conn.getResponseCode() != 200) {
+                if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     throw new DockerException(conn.getResponseMessage());
                 }
 
@@ -254,7 +273,7 @@ public class DockerRemote {
                         parser.reset();
                     }
                 } catch (ParseException ex) {
-                    throw new IOException(ex);
+                    throw new DockerException(ex);
                 }
             } finally {
                 conn.disconnect();
@@ -266,7 +285,7 @@ public class DockerRemote {
        }
     }
 
-    private static Object doGetRequest(@NonNull String url, @NonNull String action) throws IOException {
+    private static Object doGetRequest(@NonNull String url, @NonNull String action, Set<Integer> okCodes) throws DockerException {
         try {
             URL httpUrl = createURL(url, action);
             HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
@@ -274,9 +293,8 @@ public class DockerRemote {
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Accept", "application/json");
 
-                if (conn.getResponseCode() < 200 || conn.getResponseCode() >= 300) {
-                    throw new IOException("Failed : HTTP error code : "
-                            + conn.getResponseCode());
+                if (!okCodes.contains(conn.getResponseCode())) {
+                    throw new DockerException(conn.getResponseMessage());
                 }
 
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -284,19 +302,21 @@ public class DockerRemote {
                     JSONParser parser = new JSONParser();
                     return parser.parse(br);
                 } catch (ParseException ex) {
-                    throw new IOException(ex);
+                    throw new DockerException(ex);
                 }
             } finally {
                 conn.disconnect();
             }
 
         } catch (MalformedURLException e) {
-            throw new IOException(e);
+            throw new DockerException(e);
+        } catch (IOException e) {
+            throw new DockerException(e);
         }
     }
 
     private static Object doPostRequest(@NonNull String url, @NonNull String action,
-            @NullAllowed InputStream data, boolean output) throws IOException {
+            @NullAllowed InputStream data, boolean output, Set<Integer> okCodes) throws DockerException {
         try {
             URL httpUrl = createURL(url, action);
             HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
@@ -311,9 +331,8 @@ public class DockerRemote {
                     }
                 }
 
-                if (conn.getResponseCode() < 200 || conn.getResponseCode() >= 300) {
-                    throw new IOException("Failed : HTTP error code : "
-                            + conn.getResponseCode());
+                if (!okCodes.contains(conn.getResponseCode())) {
+                    throw new DockerException(conn.getResponseMessage());
                 }
 
                 if (output) {
@@ -322,7 +341,7 @@ public class DockerRemote {
                         JSONParser parser = new JSONParser();
                         return parser.parse(br);
                     } catch (ParseException ex) {
-                        throw new IOException(ex);
+                        throw new DockerException(ex);
                     }
                 } else {
                     return null;
@@ -332,11 +351,13 @@ public class DockerRemote {
             }
 
         } catch (MalformedURLException e) {
-            throw new IOException(e);
+            throw new DockerException(e);
+        } catch (IOException e) {
+            throw new DockerException(e);
         }
     }
 
-    private static Object doDeleteRequest(@NonNull String url, @NonNull String action, boolean output) throws IOException {
+    private static Object doDeleteRequest(@NonNull String url, @NonNull String action, boolean output, Set<Integer> okCodes) throws DockerException {
         try {
             URL httpUrl = createURL(url, action);
             HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
@@ -347,9 +368,8 @@ public class DockerRemote {
                 conn.setRequestProperty("Content-Type",
                         "application/x-www-form-urlencoded" );
 
-                if (conn.getResponseCode() < 200 || conn.getResponseCode() >= 300) {
-                    throw new IOException("Failed : HTTP error code : "
-                            + conn.getResponseCode());
+                if (!okCodes.contains(conn.getResponseCode())) {
+                    throw new DockerException(conn.getResponseMessage());
                 }
 
                 if (output) {
@@ -358,7 +378,7 @@ public class DockerRemote {
                         JSONParser parser = new JSONParser();
                         return parser.parse(br);
                     } catch (ParseException ex) {
-                        throw new IOException(ex);
+                        throw new DockerException(ex);
                     }
                 } else {
                     return null;
@@ -368,7 +388,9 @@ public class DockerRemote {
             }
 
         } catch (MalformedURLException e) {
-            throw new IOException(e);
+            throw new DockerException(e);
+        } catch (IOException e) {
+            throw new DockerException(e);
         }
     }
 

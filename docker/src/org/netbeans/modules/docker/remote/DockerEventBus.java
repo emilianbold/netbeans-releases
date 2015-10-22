@@ -42,7 +42,6 @@
 package org.netbeans.modules.docker.remote;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,6 +54,8 @@ import org.netbeans.modules.docker.DockerInstance;
 import org.openide.util.RequestProcessor;
 
 /**
+ * All the events need to refresh the UI are provided by the Docker API 1.20
+ * and up so we still need refresh actions.
  *
  * @author Petr Hejl
  */
