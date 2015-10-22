@@ -62,6 +62,7 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -77,7 +78,6 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
@@ -193,13 +193,13 @@ final class OnePassCompileWorker extends CompileWorker {
                 Exceptions.printStackTrace(ioe);
             }
         }
-
+        final String[] moduleName = {javaContext.getModuleName()};
         if (nop) {
-            return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.success(moduleName[0], file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
 
         if (units == null || JavaCustomIndexer.NO_ONE_PASS_COMPILE_WORKER) {
-            return ParsingOutput.failure(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.failure(moduleName[0], file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
 
         CompileTuple active = null;
@@ -220,7 +220,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 if (isLowMemory(flm)) {
                     units = null;
                     freeMemory(false);
-                    return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                    return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 final Iterable<? extends TypeElement> types = jt.enterTrees(Collections.singletonList(unit.first()));
                 if (jfo2units.remove(active.jfo) != null) {
@@ -261,7 +261,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 if (isLowMemory(flm)) {
                     units = null;
                     freeMemory(false);
-                    return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                    return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 jt.analyze(types);
                 if (aptEnabled) {
@@ -270,7 +270,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 if (isLowMemory(flm)) {
                     units = null;
                     freeMemory(false);
-                    return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                    return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 javaContext.getFQNs().set(types, active.indexable.getURL());
                 boolean[] main = new boolean[1];
@@ -299,7 +299,12 @@ final class OnePassCompileWorker extends CompileWorker {
                                 }
                             }
                         }
-                        JavaCustomIndexer.setModuleName(context, Modules.instance(jtFin.getContext()).getDefaultModule());
+                        if (moduleName[0] == null) {
+                            ModuleElement module = Modules.instance(jtFin.getContext()).getDefaultModule();
+                            moduleName[0] = module == null || module.isUnnamed() ?
+                                null :
+                                module.getQualifiedName().toString();
+                        }
                     }
                 }));
                 Log.instance(jt.getContext()).nerrors = 0;
@@ -308,7 +313,7 @@ final class OnePassCompileWorker extends CompileWorker {
             for (Future<Void> barrier : barriers) {
                 barrier.get();
             }
-            return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.success(moduleName[0], file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         } catch (CouplingAbort ca) {
             //Coupling error
             TreeLoader.dumpCouplingAbort(ca, null);
@@ -347,7 +352,7 @@ final class OnePassCompileWorker extends CompileWorker {
             if (isLowMemory(flm)) {
                 units = null;
                 freeMemory(false);
-                return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
             }
@@ -371,6 +376,6 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
             }
         }
-        return ParsingOutput.failure(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+        return ParsingOutput.failure(moduleName[0], file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
     }
 }

@@ -99,6 +99,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -1268,8 +1269,17 @@ public class SourceUtils {
                         }
                     } else {
                         try {
-                            URL srcRoot = JavaIndex.getSourceRootForClassFolder(rootUrl);
-                            return srcRoot != null ? JavaIndex.getAttribute(srcRoot, MODULE_NAME, null) : null;
+                            final URL srcRoot = JavaIndex.getSourceRootForClassFolder(rootUrl);
+                            if (srcRoot != null) {
+                                String moduleName = JavaIndex.getAttribute(srcRoot, MODULE_NAME, null);
+                                if (moduleName == null) {
+                                    for (URL binRoot : BinaryForSourceQuery.findBinaryRoots(srcRoot).getRoots()) {
+                                        if (FileObjects.JAR.equals(binRoot.getProtocol())) {
+                                            return autoName(FileObjects.stripExtension(FileUtil.archiveOrDirForURL(binRoot).getName()));
+                                        }
+                                    }
+                                }
+                            }
                         } catch (IOException ex) {}
                     }
                 }

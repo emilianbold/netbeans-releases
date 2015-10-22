@@ -67,6 +67,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -104,8 +105,8 @@ final class MultiPassCompileWorker extends CompileWorker {
             final Context context,
             final JavaParsingContext javaContext,
             final Collection<? extends CompileTuple> files) {
-        final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
-        final HashMap<JavaFileObject, CompileTuple> jfo2tuples = new HashMap<JavaFileObject, CompileTuple>();
+        final LinkedList<CompileTuple> toProcess = new LinkedList<>();
+        final HashMap<JavaFileObject, CompileTuple> jfo2tuples = new HashMap<>();
         for (CompileTuple i : files) {
             if (!previous.finishedFiles.contains(i.indexable)) {
                 toProcess.add(i);
@@ -114,6 +115,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         }
         if (toProcess.isEmpty()) {
             return ParsingOutput.success(
+                    javaContext.getModuleName(),
                     previous.file2FQNs,
                     previous.addedTypes,
                     previous.createdFiles,
@@ -121,7 +123,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                     previous.modifiedTypes,
                     previous.aptGenerated);
         }
-        
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(previous.file2FQNs);
         final DiagnosticListenerImpl diagnosticListener = new DiagnosticListenerImpl();
         final LinkedList<CompileTuple> bigFiles = new LinkedList<CompileTuple>();
@@ -131,6 +132,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         int state = 0;
         boolean isBigFile = false;
         boolean[] flm = null;
+        String moduleName = null;
         while (!toProcess.isEmpty() || !bigFiles.isEmpty() || active != null) {
             if (context.isCancelled()) {
                 return null;
@@ -312,7 +314,12 @@ final class MultiPassCompileWorker extends CompileWorker {
                             }
                         }
                     }
-                    JavaCustomIndexer.setModuleName(context, Modules.instance(jt.getContext()).getDefaultModule());
+                    if (moduleName == null) {
+                        ModuleElement module = Modules.instance(jt.getContext()).getDefaultModule();
+                        moduleName = module == null || module.isUnnamed() ?
+                                null :
+                                module.getQualifiedName().toString();
+                    }
                     Log.instance(jt.getContext()).nerrors = 0;
                     previous.finishedFiles.add(active.indexable);
                     active = null;
@@ -368,7 +375,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 );
                     JavaIndex.LOG.log(Level.FINEST, message, isp);
                 }
-                return ParsingOutput.failure(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+                return ParsingOutput.failure(moduleName, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
             } catch (MissingPlatformError mpe) {
                 //No platform - log & mark files as errornous
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
@@ -385,7 +392,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     JavaIndex.LOG.log(Level.FINEST, message, mpe);
                 }
                 JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
-                return ParsingOutput.failure(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+                return ParsingOutput.failure(moduleName, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
             } catch (Throwable t) {
                 if (t instanceof ThreadDeath) {
                     throw (ThreadDeath) t;
@@ -421,8 +428,8 @@ final class MultiPassCompileWorker extends CompileWorker {
             }
         }
         return (state & MEMORY_LOW) == 0?
-            ParsingOutput.success(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated):
-            ParsingOutput.lowMemory(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+            ParsingOutput.success(moduleName, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated):
+            ParsingOutput.lowMemory(moduleName, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
     }
 
     private void dumpSymFiles(

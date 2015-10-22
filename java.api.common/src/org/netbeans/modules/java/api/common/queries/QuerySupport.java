@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
@@ -323,16 +324,16 @@ public final class QuerySupport {
      * @param test project test roots
      * @param helper AntProjectHelper
      * @param eval PropertyEvaluator
-     * @param sourceProp name of property pointing to a folder with built classes
-     * @param testProp name of property pointing to a folder with built test classes
+     * @param sourceProps name of properties pointing to binaries
+     * @param testProps name of properties pointing to test binaries
      * @return BinaryForSourceQueryImplementation
-     * @since org.netbeans.modules.java.api.common/1 1.5
+     * @since 1.79
      */
     public static BinaryForSourceQueryImplementation createBinaryForSourceQueryImplementation(
             SourceRoots src, SourceRoots test, AntProjectHelper helper, 
-            PropertyEvaluator eval, String sourceProp, String testProp) {
+            PropertyEvaluator eval, String[] sourceProps, String[] testProps) {
         return new BinaryForSourceQueryImpl(src, test, helper, eval, 
-                new String[]{sourceProp}, new String[]{testProp});
+                sourceProps, testProps);
     }
     
     /**
@@ -352,7 +353,8 @@ public final class QuerySupport {
     public static BinaryForSourceQueryImplementation createBinaryForSourceQueryImplementation(SourceRoots src, SourceRoots test, 
             AntProjectHelper helper, PropertyEvaluator eval) {
         return createBinaryForSourceQueryImplementation(src, test, helper, eval, 
-                "build.classes.dir", "build.test.classes.dir"); // NOI18N
+                new String[] {ProjectProperties.BUILD_CLASSES_DIR, ProjectProperties.DIST_JAR},
+                new String[] {ProjectProperties.BUILD_TEST_CLASSES_DIR});
     }
     
     /**Create a new query to provide annotation processing configuration data.
