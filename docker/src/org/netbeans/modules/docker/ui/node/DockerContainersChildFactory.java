@@ -58,7 +58,7 @@ import org.openide.nodes.Node;
 public class DockerContainersChildFactory extends ChildFactory<DockerContainer> implements Refreshable {
 
     private static final Comparator<DockerContainer> COMPARATOR = new Comparator<DockerContainer>() {
-        
+
         @Override
         public int compare(DockerContainer o1, DockerContainer o2) {
             return o1.getId().compareTo(o2.getId());

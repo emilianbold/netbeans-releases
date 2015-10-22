@@ -85,7 +85,7 @@ public class DockerInstance {
 
     private final ContainerFactory containerFactory = new ContainerFactory(this);
 
-    private final DockerEventBus bus = new DockerEventBus(this);
+    private final DockerEventBus eventBus = new DockerEventBus(this);
 
     private DockerInstance(Preferences prefs) {
         this.prefs = prefs;
@@ -146,6 +146,10 @@ public class DockerInstance {
         return containerFactory;
     }
 
+    public DockerEventBus getEventBus() {
+        return eventBus;
+    }
+
     public String getDisplayName() {
         return prefs.get(DISPLAY_NAME_KEY, null);
     }
@@ -165,7 +169,7 @@ public class DockerInstance {
     }
 
     public void remove() {
-        bus.stop();
+        eventBus.close();
         try {
             prefs.removeNode();
         } catch (BackingStoreException ex) {
@@ -182,7 +186,6 @@ public class DockerInstance {
     }
 
     private void init() {
-        bus.start();
         prefs.addPreferenceChangeListener(listener);
     }
 

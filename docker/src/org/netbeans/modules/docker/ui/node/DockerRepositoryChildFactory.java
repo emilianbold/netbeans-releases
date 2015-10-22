@@ -42,7 +42,6 @@
 package org.netbeans.modules.docker.ui.node;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -50,6 +49,7 @@ import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.DockerImage;
 import org.netbeans.modules.docker.DockerTag;
+import org.netbeans.modules.docker.remote.DockerEvent;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 
@@ -71,6 +71,12 @@ public class DockerRepositoryChildFactory extends ChildFactory<DockerTag> implem
 
     public DockerRepositoryChildFactory(DockerInstance instance) {
         this.instance = instance;
+        instance.getEventBus().addImageListener(new DockerEvent.Listener() {
+            @Override
+            public void onEvent(DockerEvent event) {
+                refresh();
+            }
+        });
     }
 
     @Override
