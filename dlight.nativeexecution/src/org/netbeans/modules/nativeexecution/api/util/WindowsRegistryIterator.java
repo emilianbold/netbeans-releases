@@ -206,7 +206,12 @@ public final class WindowsRegistryIterator implements Iterator<String[]> {
                 suffix.append(" /s "); // NOI18N
             }
             if (valueName != null) {
-                suffix.append(" /v ").append(valueName); // NOI18N
+                suffix.append(" /v "); // NOI18N
+                if (valueName.indexOf(' ')>0) { // NOI18N
+                    suffix.append('"').append(valueName).append('"'); // NOI18N
+                } else {
+                    suffix.append(valueName);
+                }
             }
             if (fullKey.indexOf(' ')>0) {
                 fullKey = "\""+fullKey+"\""; // NOI18N

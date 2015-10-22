@@ -204,6 +204,11 @@ public class FileStatusCache {
         refreshAllRoots(rootFiles, GitUtils.NULL_PROGRESS_MONITOR);
     }
 
+    //is a part of SPI for testing
+    static final String REFRESH_ALL_ROOTS_FINISHED = "refreshAllRoots() roots: finished repositoryRoot: {0}";  //NOI18N
+    static final String REFRESH_ALL_ROOTS_FILE_STATUS = "refreshAllRoots() file status: {0} {1}"; //NOI18N
+    static final String REFRESH_ALL_ROOTS_PROCESSING = "refreshAllRoots() roots: {0}, repositoryRoot: {1} "; //NOI18N
+
     /**
      * Refreshes all files under given roots in the cache.
      * @param rootFiles root files to scan sorted under their repository roots
@@ -222,7 +227,7 @@ public class FileStatusCache {
             // Synchronize on the repository, refresh should not run concurrently
             synchronized (syncRepo) {
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "refreshAllRoots() roots: {0}, repositoryRoot: {1} ", new Object[] {refreshEntry.getValue(), repository.getPath()}); // NOI18N
+                    LOG.log(Level.FINE, REFRESH_ALL_ROOTS_PROCESSING, new Object[] {refreshEntry.getValue(), repository.getPath()});
                 }
                 Map<VCSFileProxy, GitStatus> interestingFiles;
                 GitClient client = null;
@@ -274,13 +279,13 @@ public class FileStatusCache {
                     }
                     refreshStatusesBatch(interestingFiles);
                 } catch (GitException ex) {
-                    LOG.log(Level.INFO, "refreshAllRoots() file: {0} {1} {2} ", new Object[] {repository.getPath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
+                    LOG.log(Level.INFO, "refreshAllRoots() file: {0} {1} {2}", new Object[] {repository.getPath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
                 } finally {
                     if (client != null) {
                         client.release();
                     }
                     if (LOG.isLoggable(Level.FINE)) {
-                        LOG.log(Level.FINE, "refreshAllRoots() roots: finished repositoryRoot: {0} ", new Object[] { repository.getPath() } ); // NOI18N
+                        LOG.log(Level.FINE, REFRESH_ALL_ROOTS_FINISHED, new Object[] { repository.getPath() } );
                     }
                 }
             }
@@ -593,7 +598,7 @@ public class FileStatusCache {
                 VCSFileProxy file = interestingEntry.getKey();
                 FileInformation fi = new FileInformation(interestingEntry.getValue());
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "refreshAllRoots() file status: {0} {1}", new Object[] {file.getPath(), fi}); // NOI18N
+                    LOG.log(Level.FINE, REFRESH_ALL_ROOTS_FILE_STATUS, new Object[] {file.getPath(), fi});
                 }
                 
                 FileInformation current;

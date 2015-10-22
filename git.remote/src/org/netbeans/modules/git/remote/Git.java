@@ -123,6 +123,11 @@ public final class Git {
             instance = null;
         }
     }
+
+    // for testing only
+    static void waitEmptyRefreshQueue() {
+        instance.interceptor.waitEmptyRefreshQueue();
+    }
     
     private void init() {
         fileStatusCache = new FileStatusCache();

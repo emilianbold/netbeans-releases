@@ -1804,11 +1804,35 @@ public final class MakeActionProvider implements ActionProvider {
                         activeShell = WindowsSupport.getInstance().getActiveShell();
                         shellValidationStatus = ShellValidationSupport.getValidationStatus(activeShell);
                         isOK = shellValidationStatus.isValid() && !shellValidationStatus.hasWarnings();
+                        if (isOK) {
+                            try {
+                                HostInfoUtils.updateHostInfo(execEnv);
+                            } catch (IOException ex) {
+                            } catch (InterruptedException ex) {
+                            }
+                        }
                     }
                 }
 
                 if (!isOK) {
                     lastValidation = ShellValidationSupport.confirm(shellValidationStatus);
+                }
+            } else if (cs.getCompilerFlavor().isMinGWCompiler()) {
+                Shell activeShell = WindowsSupport.getInstance().getActiveShell();
+                if (activeShell == null) {
+                    String binDir = cs.getCommandFolder();
+                    // Perhaps one that is provided is better?
+                    WindowsSupport.getInstance().init(binDir);
+                    activeShell = WindowsSupport.getInstance().getActiveShell();
+                    if (activeShell == null) {
+                        lastValidation = ShellValidationSupport.confirm(null);
+                    } else {
+                        try {
+                            HostInfoUtils.updateHostInfo(execEnv);
+                        } catch (IOException ex) {
+                        } catch (InterruptedException ex) {
+                        }
+                    }
                 }
             }
         }

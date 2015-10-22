@@ -99,21 +99,25 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
             target.setHostName("localhost"); // NOI18N
 
             final CountDownLatch latch = new CountDownLatch(1);
-            NativeDebuggerManager.get().addDebuggerStateListener(new NativeDebuggerManager.DebuggerStateListener() {
+            final NativeDebuggerManager.DebuggerStateListener listener = new NativeDebuggerManager.DebuggerStateListener() {
                 @Override
                 public void notifyAttached(NativeDebugger debugger, long pid) {
                     if (pid == longPid) {
+                        // we now remove in finally block - should we still remove it here?
                         NativeDebuggerManager.get().removeDebuggerStateListener(this);
                         debugger.stepTo(funcName);
                         latch.countDown();
                     }
                 }
-            });
+            };
+            NativeDebuggerManager.get().addDebuggerStateListener(listener);
             NativeDebuggerManager.get().attach(target);
             try {
                 latch.await(100, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
+            } finally {                
+                NativeDebuggerManager.get().removeDebuggerStateListener(listener);
             }
             NativeDebugger currentDebugger = NativeDebuggerManager.get().currentDebugger();
             if (currentDebugger != null) {
