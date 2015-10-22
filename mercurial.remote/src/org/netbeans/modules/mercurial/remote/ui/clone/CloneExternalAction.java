@@ -81,12 +81,13 @@ public class CloneExternalAction implements ActionListener, HelpCtx.Provider {
             return;
         }
         //TODO: provide way to select FS
-        VCSFileProxy root = VCSFileProxy.createFileProxy(fileSystems[0].getRoot());
+        final VCSFileProxy root = VCSFileProxy.createFileProxy(fileSystems[0].getRoot());
         HgUtils.runIfHgAvailable(root, new Runnable() {
             @Override
             public void run () {
                 Utils.logVCSActionEvent("HG"); //NOI18N
                 CloneWizardAction wiz = CloneWizardAction.getInstance();
+                wiz.setRoot(root);
                 wiz.performAction();
             }
         });
