@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
@@ -54,8 +55,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.DereferencedArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -90,7 +94,6 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
         return CodeUtils.isPhpVersionLessThan(fileObject, PhpVersion.PHP_54);
     }
 
-    // XXX check callable
     private static class CheckVisitor extends DefaultVisitor {
         private static final String BINARY_PREFIX = "0b"; //NOI18N
         private final List<VerificationError> errors = new ArrayList<>();
@@ -165,6 +168,8 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
         public void visit(LambdaFunctionDeclaration node) {
             if (node.isStatic()) {
                 createError(node);
+            } else {
+                checkCallableType(node.getFormalParameters());
             }
         }
 
@@ -176,6 +181,31 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
             } else {
                 super.visit(node);
             }
+        }
+
+        @Override
+        public void visit(FunctionDeclaration node) {
+            if (!checkCallableType(node.getFormalParameters())) {
+                super.visit(node);
+            }
+        }
+
+        @Override
+        public void visit(MethodDeclaration node) {
+            if (!checkCallableType(node.getFunction().getFormalParameters())) {
+                super.visit(node);
+            }
+        }
+
+        private boolean checkCallableType(List<FormalParameter> formalParameters) {
+            for (FormalParameter formalParameter : formalParameters) {
+                String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
+                if (Type.CALLABLE.equals(typeName)) {
+                    createError(formalParameter);
+                    return true;
+                }
+            }
+            return false;
         }
 
         private  void createError(int startOffset, int endOffset) {
