@@ -154,7 +154,8 @@ public class DockerRemote {
             JSONObject value = (JSONObject) doPostRequest(instance.getUrl(), "/containers/create", new ByteArrayInputStream(configuration.toJSONString().getBytes("UTF-8")),
                     true, Collections.singleton(HttpURLConnection.HTTP_CREATED));
             // FIXME image id
-            return instance.getContainerFactory().create((String) value.get("Id"), "xxxx", ContainerStatus.STOPPED);
+            return instance.getContainerFactory().create((String) value.get("Id"),
+                    (String) configuration.get("Image"), ContainerStatus.STOPPED);
         } catch (DockerRemoteException ex) {
             if (HttpURLConnection.HTTP_NOT_FOUND == ex.getCode()) {
                 // FIXME try pull
