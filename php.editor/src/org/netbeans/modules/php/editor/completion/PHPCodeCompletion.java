@@ -292,7 +292,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         switch (context) {
             case DEFAULT_PARAMETER_VALUE:
                 final CaseInsensitivePrefix nameKindPrefix = NameKind.caseInsensitivePrefix(request.prefix);
-                // XXX array(), []
                 autoCompleteKeywords(completionResult, request, Arrays.asList("array")); //NOI18N
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteTypeNames(completionResult, request, null, true);
