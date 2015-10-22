@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -119,7 +120,8 @@ public class AddUseImportSuggestion extends SuggestionRule {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        if (fileObject == null || CodeUtils.isPhp52(fileObject)) {
+        if (fileObject == null
+                || CodeUtils.isPhpVersionLessThan(fileObject, PhpVersion.PHP_53)) {
             return;
         }
         int caretOffset = getCaretOffset();

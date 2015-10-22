@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
 
@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -85,10 +86,11 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
         }
     }
 
-    public static  boolean appliesTo(FileObject fobj) {
-        return !CodeUtils.isPhp54(fobj) && !CodeUtils.isPhp55(fobj) && !CodeUtils.isPhp56(fobj);
+    public static  boolean appliesTo(FileObject fileObject) {
+        return CodeUtils.isPhpVersionLessThan(fileObject, PhpVersion.PHP_54);
     }
 
+    // XXX check callable
     private static class CheckVisitor extends DefaultVisitor {
         private static final String BINARY_PREFIX = "0b"; //NOI18N
         private final List<VerificationError> errors = new ArrayList<>();

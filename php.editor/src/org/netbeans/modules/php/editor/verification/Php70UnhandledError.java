@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -85,7 +84,7 @@ public class Php70UnhandledError extends UnhandledErrorRule {
     }
 
     private static boolean appliesTo(FileObject fileObject) {
-        return !CodeUtils.isPhp70(fileObject);
+        return CodeUtils.isPhp70OrLess(fileObject);
     }
 
     //~ Inner classes

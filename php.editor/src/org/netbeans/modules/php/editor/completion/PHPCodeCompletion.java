@@ -76,6 +76,7 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.KeywordCompletionType;
@@ -1392,7 +1393,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                     }
                     if (OptionsUtils.autoCompletionNamespaces()) {
                         if (t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
-                            return isPhp53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
+                            return isPhp53OrNewer(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
                         }
                     }
                     if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
@@ -1410,10 +1411,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         return QueryType.NONE;
     }
 
-    public static boolean isPhp53(Document document) {
+    public static boolean isPhp53OrNewer(Document document) {
         final FileObject fileObject = CodeUtils.getFileObject(document);
         assert fileObject != null;
-        return CodeUtils.isPhp53(fileObject);
+        return CodeUtils.isPhpVersionGreaterThan(fileObject, PhpVersion.PHP_5);
     }
 
     @Override
