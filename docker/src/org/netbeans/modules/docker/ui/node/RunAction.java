@@ -76,7 +76,7 @@ public class RunAction extends NodeAction {
         for (Node node : activatedNodes) {
             DockerTag tag = node.getLookup().lookup(DockerTag.class);
             if (tag != null) {
-                perform(tag.getImage());
+                perform(tag);
             }
         }
     }
@@ -107,7 +107,7 @@ public class RunAction extends NodeAction {
         return false;
     }
 
-    private void perform(DockerImage image) {
+    private void perform(DockerTag tag) {
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
         panels.add(new ContainerCommandPanel());
         String[] steps = new String[panels.size()];
@@ -129,7 +129,7 @@ public class RunAction extends NodeAction {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle("Run");
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            Run run = new Run(image.getInstance(), image.getId(), (String) wiz.getProperty("command"));
+            Run run = new Run(tag.getImage().getInstance(), tag.getTag(), (String) wiz.getProperty("command"));
 
             try {
                 DockerContainer container = run.call();

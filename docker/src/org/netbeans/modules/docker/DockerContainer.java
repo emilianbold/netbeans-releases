@@ -151,7 +151,7 @@ public class DockerContainer implements Identifiable {
 
     @Override
     public String toString() {
-        return "DockerContainer{" + "id=" + id + ", image=" + image + '}';
+        return "DockerContainer{" + "instance=" + instance + ", id=" + id + ", image=" + image + '}';
     }
 
 }
