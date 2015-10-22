@@ -108,7 +108,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     public static final class CancellableInterrupter implements Interrupter {
 
         final org.netbeans.modules.cnd.support.Interrupter outerDelegate;
-        private boolean cancelledState = false;
+        private boolean stoppedState = false;
 
         public CancellableInterrupter(org.netbeans.modules.cnd.support.Interrupter outerDelegate) {
             this.outerDelegate = outerDelegate;
@@ -116,15 +116,15 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public boolean isCancelled() {
-            return cancelledState/* || outerDelegate.cancelled()*/;
+            return stoppedState/* || outerDelegate.cancelled()*/;
         }
 
-        private void cancel() {
-            cancelledState = true;
+        private void stop() {
+            stoppedState = true;
         }
 
         private void updateStateFromDelegate() {
-            cancelledState |= outerDelegate.cancelled();
+            stoppedState |= outerDelegate.cancelled();
         }
     }
 
@@ -156,6 +156,8 @@ public final class ClankPPCallback extends FileInfoCallback {
             PreprocHandler.State stateWhenMetErrorDirective = APTHandlersSupport.createCleanPreprocState(this.ppHandler.getState());
             ClankErrorDirectiveWrapper errorDirectiveWrapper = new ClankErrorDirectiveWrapper(directive, stateWhenMetErrorDirective);
             directive.setAnnotation(errorDirectiveWrapper);
+            // APT-style recovery from #error, cut only the current file
+            getPreprocessor().cutOffCurFilePreprocessing();
         }
         interrupter.updateStateFromDelegate();
     }
@@ -341,7 +343,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             includeStack.add(enteredToWrapper);
             if (!delegate.onEnter(enteredFromWrapper, enteredToWrapper)) {
                 // client doesn't want to enter file or error detected by client, full stop
-                interrupter.cancel();
+                interrupter.stop();
             }
         } else {
             assert includeStack.size() == 1 : "there should be only one main file";
@@ -393,7 +395,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
             // ask if delegate wish to continue
             if (!delegate.onExit(exitedFromWrapper, exitedToWrapper)) {
-                interrupter.cancel();
+                interrupter.stop();
             }
             if (exitedToWrapper != null) {
                 includeHandler.popInclude();
@@ -429,6 +431,11 @@ public final class ClankPPCallback extends FileInfoCallback {
     @Override
     protected boolean needComments() {
         return delegate.needComments();
+    }
+
+    @Override
+    protected boolean isStopped() {
+        return interrupter.isCancelled();
     }
     
     private static ClankFileInfoWrapper findRecursiveInclusion(ArrayList<ClankFileInfoWrapper> stack) {
