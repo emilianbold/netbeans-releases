@@ -90,7 +90,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -612,7 +611,6 @@ public final class VCSFileProxySupport {
     }
     
     public static FileSystem getDefaultFileSystem() {
-        // TODO: remove dependencies!
         return RemoteVcsSupport.getDefaultFileSystem();
     }
 
