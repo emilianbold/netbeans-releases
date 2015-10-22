@@ -133,8 +133,12 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
             if (blocked) {
                 if (event.equals(lastEvent)) {
                     blocked = false;
+                    return;
+                } else if (lastEvent == null || lastEvent.getTime() < event.getTime()) {
+                    blocked = false;
+                } else {
+                    return;
                 }
-                return;
             }
             lastEvent = event;
             if (IMAGE_EVENTS.contains(event.getStatus())) {
