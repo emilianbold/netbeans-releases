@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.verification;
@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -85,7 +86,7 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
     }
 
     private static boolean appliesTo(FileObject fileObject) {
-        return !CodeUtils.isPhp56(fileObject);
+        return CodeUtils.isPhpVersionLessThan(fileObject, PhpVersion.PHP_56);
     }
 
     private static class CheckVisitor extends DefaultVisitor {
