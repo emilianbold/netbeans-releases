@@ -154,7 +154,7 @@ public class CodeGenerator {
             ModificationResult r = js.runModificationTask(new Task<WorkingCopy>() {
                 @Override
                 public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(Phase.PARSED);
+                    wc.toPhase(Phase.ELEMENTS_RESOLVED);
 
                     final ClassPath cp = ClassPathSupport.createProxyClassPath(
                             cpInfo.getClassPath(PathKind.BOOT),
