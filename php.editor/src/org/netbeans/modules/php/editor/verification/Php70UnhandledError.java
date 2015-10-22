@@ -98,7 +98,7 @@ public class Php70UnhandledError extends UnhandledErrorRule {
 
 
         static {
-            TYPES_FOR_HINTS = new HashSet<>(Type.getTypesForHints());
+            TYPES_FOR_HINTS = Collections.synchronizedSet(new HashSet<>(Type.getTypesForHints()));
             TYPES_FOR_HINTS.remove(Type.CALLABLE);
         }
 
