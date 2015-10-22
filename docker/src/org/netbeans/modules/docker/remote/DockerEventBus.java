@@ -67,7 +67,7 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
     private static final Set<String> IMAGE_EVENTS = new HashSet<>();
 
     static {
-        Collections.addAll(IMAGE_EVENTS, "delete", "import", "pull", "push", "tag", "untag");
+        Collections.addAll(IMAGE_EVENTS, "delete", "import", "pull", "push", "tag", "untag"); // NOI18N
     }
 
     private final RequestProcessor processor = new RequestProcessor(DockerEventBus.class);

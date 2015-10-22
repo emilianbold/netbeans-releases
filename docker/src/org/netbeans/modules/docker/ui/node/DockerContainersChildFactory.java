@@ -47,6 +47,7 @@ import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
@@ -65,10 +66,24 @@ public class DockerContainersChildFactory extends ChildFactory<DockerContainer> 
         }
     };
 
+    private static final List CHANGE_EVENTS = new ArrayList();
+
+    static {
+        Collections.addAll(CHANGE_EVENTS, "copy", "create", "destroy"); // NOI18N
+    }
+
     private final DockerInstance instance;
 
     public DockerContainersChildFactory(DockerInstance instance) {
         this.instance = instance;
+        instance.getEventBus().addContainerListener(new DockerEvent.Listener() {
+            @Override
+            public void onEvent(DockerEvent event) {
+                if (CHANGE_EVENTS.contains(event.getStatus())) {
+                    refresh();
+                }
+            }
+        });
     }
 
     @Override
