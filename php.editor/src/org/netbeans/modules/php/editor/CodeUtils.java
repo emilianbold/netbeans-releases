@@ -108,46 +108,27 @@ public final class CodeUtils {
         return null;
     }
 
-    public static boolean isPhp52(FileObject file) {
-        return isPhpVersion(file, PhpVersion.PHP_5);
+    // XXX remove!
+    public static boolean isPhp70OrLess(FileObject file) {
+        return CodeUtils.isPhpVersionLessThan(file, PhpVersion.PHP_56);
     }
 
-    public static boolean isPhp53(FileObject file) {
-        return isPhpVersion(file, PhpVersion.PHP_53);
-    }
-
-    public static boolean isPhp54(FileObject file) {
-        return isPhpVersion(file, PhpVersion.PHP_54);
-    }
-
-    public static boolean isPhp55(FileObject file) {
-        return isPhpVersion(file, PhpVersion.PHP_55);
-    }
-
-    public static boolean isPhp56(FileObject file) {
-        return isPhpVersion(file, PhpVersion.PHP_56);
-    }
-
-    public static boolean isPhp70(FileObject file) {
-        // XXX
-        return isPhpVersion(file, PhpVersion.PHP_56);
-    }
-
-    private static boolean isPhpVersion(FileObject file, PhpVersion version) {
+    public static boolean isPhpVersion(FileObject file, PhpVersion version) {
         assert file != null;
         assert version != null;
         return PhpLanguageProperties.forFileObject(file).getPhpVersion() == version;
     }
 
-    public static boolean isPhp56OrGreater(FileObject file) {
-        Parameters.notNull("file", file);
-        boolean result = false;
-        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        PhpVersion phpVersion = forFileObject.getPhpVersion();
-        if (phpVersion != PhpVersion.PHP_5 && phpVersion != PhpVersion.PHP_53 && phpVersion != PhpVersion.PHP_54 && phpVersion != PhpVersion.PHP_55) {
-            result = true;
-        }
-        return result;
+    public static boolean isPhpVersionLessThan(FileObject file, PhpVersion version) {
+        assert file != null;
+        assert version != null;
+        return PhpLanguageProperties.forFileObject(file).getPhpVersion().compareTo(version) < 0;
+    }
+
+    public static boolean isPhpVersionGreaterThan(FileObject file, PhpVersion version) {
+        assert file != null;
+        assert version != null;
+        return PhpLanguageProperties.forFileObject(file).getPhpVersion().compareTo(version) > 0;
     }
 
     @CheckForNull

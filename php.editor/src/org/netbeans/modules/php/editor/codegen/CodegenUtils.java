@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor.codegen;
 
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
@@ -83,7 +84,7 @@ public final class CodegenUtils {
         if (fileScope != null) {
             FileObject fileObject = fileScope.getFileObject();
             if (fileObject != null) {
-                if (CodeUtils.isPhp52(fileObject)) {
+                if (CodeUtils.isPhpVersionLessThan(fileObject, PhpVersion.PHP_53)) {
                     typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
                 } else {
                     NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, originalElement.getOffset());

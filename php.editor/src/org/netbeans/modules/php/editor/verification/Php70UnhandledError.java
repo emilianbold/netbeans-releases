@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -56,6 +55,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -85,7 +85,7 @@ public class Php70UnhandledError extends UnhandledErrorRule {
     }
 
     private static boolean appliesTo(FileObject fileObject) {
-        return !CodeUtils.isPhp70(fileObject);
+        return CodeUtils.isPhp70OrLess(fileObject);
     }
 
     //~ Inner classes
@@ -99,7 +99,7 @@ public class Php70UnhandledError extends UnhandledErrorRule {
 
 
         static {
-            TYPES_FOR_HINTS = new HashSet<>(Type.getTypesForHints());
+            TYPES_FOR_HINTS = Collections.synchronizedSet(new HashSet<>(Type.getTypesForHints()));
             TYPES_FOR_HINTS.remove(Type.CALLABLE);
         }
 
@@ -130,18 +130,23 @@ public class Php70UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(FunctionDeclaration node) {
-            checkScalarTypes(node);
+            checkScalarTypes(node.getFormalParameters());
             super.visit(node);
         }
 
         @Override
         public void visit(MethodDeclaration node) {
-            checkScalarTypes(node.getFunction());
+            checkScalarTypes(node.getFunction().getFormalParameters());
             super.visit(node);
         }
 
-        private void checkScalarTypes(FunctionDeclaration node) {
-            for (FormalParameter formalParameter : node.getFormalParameters()) {
+        @Override
+        public void visit(LambdaFunctionDeclaration node) {
+            checkScalarTypes(node.getFormalParameters());
+        }
+
+        private void checkScalarTypes(List<FormalParameter> formalParameters) {
+            for (FormalParameter formalParameter : formalParameters) {
                 String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
                 if (typeName != null
                         && TYPES_FOR_HINTS.contains(typeName)) {
