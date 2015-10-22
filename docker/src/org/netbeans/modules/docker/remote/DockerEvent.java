@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.docker.remote;
 
+import java.util.EventListener;
+import java.util.EventObject;
 import java.util.Objects;
+import org.netbeans.modules.docker.DockerInstance;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerEvent {
+public class DockerEvent extends EventObject {
+
+    private final DockerInstance instance;
 
     private final String status;
 
@@ -57,7 +62,9 @@ public class DockerEvent {
 
     private final long time;
 
-    public DockerEvent(String status, String id, String from, long time) {
+    public DockerEvent(DockerInstance instance, String status, String id, String from, long time) {
+        super(instance);
+        this.instance = instance;
         this.status = status;
         this.id = id;
         this.from = from;
@@ -78,6 +85,10 @@ public class DockerEvent {
 
     public long getTime() {
         return time;
+    }
+    
+    public DockerInstance getSource() {
+        return instance;
     }
 
     @Override
@@ -122,7 +133,7 @@ public class DockerEvent {
         return true;
     }
 
-    public static interface Listener {
+    public static interface Listener extends EventListener {
 
         void onEvent(DockerEvent event);
 

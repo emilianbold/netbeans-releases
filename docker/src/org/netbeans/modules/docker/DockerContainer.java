@@ -81,7 +81,7 @@ public class DockerContainer implements Identifiable {
         return image;
     }
 
-    public synchronized ContainerStatus getStatus() {
+    public ContainerStatus getStatus() {
         synchronized (this) {
             return status;
         }

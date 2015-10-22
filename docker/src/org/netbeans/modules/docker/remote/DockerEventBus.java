@@ -42,12 +42,11 @@
 package org.netbeans.modules.docker.remote;
 
 import java.net.HttpURLConnection;
-import java.net.URLConnection;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.DockerInstance;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -63,6 +62,8 @@ public class DockerEventBus implements DockerEvent.Listener, DockerRemote.Connec
     private final RequestProcessor processor = new RequestProcessor(DockerEventBus.class);
 
     private final DockerInstance instance;
+
+    private final List<DockerEvent.Listener> listeners = new ArrayList<>();
 
     private HttpURLConnection connection;
 
@@ -122,6 +123,24 @@ public class DockerEventBus implements DockerEvent.Listener, DockerRemote.Connec
             connection = null;
         }
         //current.disconnect();
+    }
+
+    public void addListener(DockerEvent.Listener listener) {
+        synchronized (this) {
+            if (listeners.isEmpty()) {
+                start();
+            }
+            listeners.add(listener);
+        }
+    }
+
+    public void removeListener(DockerEvent.Listener listener) {
+        synchronized (this) {
+            listeners.remove(listener);
+            if (listeners.isEmpty()) {
+                stop();
+            }
+        }
     }
 
     @Override

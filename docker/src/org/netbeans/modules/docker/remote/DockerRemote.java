@@ -250,7 +250,7 @@ public class DockerRemote {
                         String id = (String) o.get("id");
                         String from = (String) o.get("from");
                         long time = (Long) o.get("time");
-                        listener.onEvent(new DockerEvent(status, id, from, time));
+                        listener.onEvent(new DockerEvent(instance, status, id, from, time));
                         parser.reset();
                     }
                 } catch (ParseException ex) {
