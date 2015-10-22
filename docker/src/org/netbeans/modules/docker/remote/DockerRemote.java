@@ -224,6 +224,16 @@ public class DockerRemote {
         }
     }
 
+    public void resizeTerminal(DockerContainer container, int rows, int columns) {
+        // formally there should be restart so changes take place
+        try {
+            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/resize?h=" + rows + "&w=" + columns,
+                    null, false, Collections.singleton(HttpURLConnection.HTTP_OK));
+        } catch (DockerException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+    }
+
     public AttachResult attach(DockerContainer container, boolean logs) throws DockerException {
         Socket s = null;
         try {

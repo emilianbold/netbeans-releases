@@ -134,8 +134,8 @@ public class RunAction extends NodeAction {
             Run run = new Run(tag.getImage().getInstance(), tag.getTag(), (String) wiz.getProperty("command"));
 
             try {
-                DockerContainer container = run.call();
-                DockerRemote facade = new DockerRemote(container.getInstance());
+                final DockerContainer container = run.call();
+                final DockerRemote facade = new DockerRemote(container.getInstance());
                 DockerRemote.AttachResult r = facade.attach(container, true);
                 IOProvider provider = IOProvider.get("Terminal"); // NOI18N
                 InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
@@ -148,6 +148,7 @@ public class RunAction extends NodeAction {
                             if (IOResizable.PROP_SIZE.equals(evt.getPropertyName())) {
                                 IOResizable.Size newVal = (IOResizable.Size) evt.getNewValue();
                                 System.out.println(newVal.cells);
+                                facade.resizeTerminal(container, newVal.cells.height, newVal.cells.width);
                             }
                         }
                     });
