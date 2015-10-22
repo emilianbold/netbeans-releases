@@ -60,6 +60,11 @@ public class SLApp {
             "  x = 42;\n" +
             "  println(x);\n" +
             "  return x;\n" +
+            "}\n"+
+            "function init() {\n"+
+            "  obj = new();\n"+
+            "  obj.fourtyTwo = main;\n"+
+            "  return obj;\n"+
             "}\n",
             "Meaning of world.sl"
         ).withMimeType("application/x-sl");
@@ -69,9 +74,21 @@ public class SLApp {
 
         PolyglotEngine.Value main = engine.findGlobalSymbol("main");
         assertNotNull("main method found", main);
-        result = main.invoke(null).get(); // LBREAKPOINT
+        result = main.invoke(null).get();                               // LBREAKPOINT
 
         assertEquals("Expected result", 42L, result);
         assertEquals("Expected output", "42\n", os.toString("UTF-8"));
+        
+        // dynamic generated interface
+        PolyglotEngine.Value init = engine.findGlobalSymbol("init");
+        assertNotNull("init method found", init);
+        Compute c = init.invoke(null).as(Compute.class);                // LBREAKPOINT
+        result = c.fourtyTwo();                                         // LBREAKPOINT
+        assertEquals("Expected result", 42L, result);
+        assertEquals("Expected output", "42\n42\n", os.toString("UTF-8"));
+    }
+    
+    public static interface Compute {
+        public Number fourtyTwo();
     }
 }
