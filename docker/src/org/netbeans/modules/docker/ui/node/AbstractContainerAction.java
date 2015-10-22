@@ -82,10 +82,13 @@ public abstract class AbstractContainerAction extends NodeAction {
                     if (result != null) {
                         container.setStatus(result);
                     } else {
+                        // XXX should we response to other nodes
                         Node parent = node.getParentNode();
-                        Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
-                        if (refreshable != null) {
-                            refreshable.refresh();
+                        if (parent != null) {
+                            Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
+                            if (refreshable != null) {
+                                refreshable.refresh();
+                            }
                         }
                     }
                 }
