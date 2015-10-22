@@ -64,7 +64,7 @@ import org.openide.util.CharSequences;
 /**
  * @author Vladimir Kvasihn
  */
-public final class LibProjectImpl extends ProjectBase {
+public final class LibProjectImpl extends ProjectBaseWithEditing {
 
     private final CharSequence includePath;
     private final SourceRootContainer projectRoots = new SourceRootContainer(true);
