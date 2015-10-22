@@ -922,6 +922,22 @@ These are mainly class and thread filters and hit counts.
         <class package="org.netbeans.api.debugger.jpda" name="ClassVariable" />
         <issue number="253295"/>
     </change>
+    
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Enhanced smart-stepping.</summary>
+        <version major="3" minor="5"/>
+        <date day="21" month="10" year="2015"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <code>SmartSteppingCallback.stopAt()</code> method added to be able
+            to override the default smart-stepping logic and provide specific
+            steps that should be performed at given locations.
+        </description>
+        <class package="org.netbeans.spi.debugger.jpda" name="SmartSteppingCallback" />
+        <issue number="255918"/>
+    </change>
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

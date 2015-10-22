@@ -282,6 +282,7 @@ public final class IOWindow implements IOContainer.Provider {
                 toolbar.setBackground(UIManager.getColor("NbExplorerView.background"));
                 pane.setBackground(UIManager.getColor("NbExplorerView.background"));
                 pane.setOpaque(true);
+                setMinimumSize(new Dimension()); // #254566
             }
         }
 
@@ -326,14 +327,12 @@ public final class IOWindow implements IOContainer.Provider {
                 // only single tab, remove it from TopComp. and add it to tabbed pane
                 assert pane.getParent() == null;
                 assert pane.getTabCount() == 0;
-                fixMinSize(pane, true);
                 remove(singleTab);
                 pane.add(singleTab);
                 pane.setIconAt(0, (Icon) singleTab.getClientProperty(ICON_PROP));
                 pane.setToolTipTextAt(0, singleTab.getToolTipText());
                 singleTab = null;
                 pane.add(comp);
-                fixMinSize(pane, false);
                 add(pane);
                 updateWindowName(null);
             } else if (pane.getTabCount() > 0) {
@@ -341,7 +340,6 @@ public final class IOWindow implements IOContainer.Provider {
                 assert pane.getParent() != null;
                 assert singleTab == null;
                 pane.add(comp);
-                fixMinSize(pane, false);
             } else {
                 // nothing yet
                 assert pane.getParent() == null;
@@ -353,34 +351,6 @@ public final class IOWindow implements IOContainer.Provider {
                 checkTabSelChange();
             }
             revalidate();
-        }
-
-        /**
-         * Fix minimum height of tabbed pane on Aqua Look&Feel.
-         *
-         * See bug 254566.
-         *
-         * @param pane The tabbed pane whose minimum size should be fixed.
-         * @param computeHeight If true, use minimum height computed by the
-         * component (should be used only when there is no tab in the pane), if
-         * false, use previously set custom height.
-         */
-        private void fixMinSize(JTabbedPane pane, boolean computeHeight) {
-            if (AQUA) {
-                int correctMinHeight;
-                int minWidth;
-                if (computeHeight) {
-                    pane.setMinimumSize(null);
-                    Dimension minSize = pane.getMinimumSize();
-                    correctMinHeight = minSize.height;
-                    minWidth = minSize.width;
-                } else {
-                    correctMinHeight = pane.getMinimumSize().height;
-                    pane.setMinimumSize(null);
-                    minWidth = pane.getMinimumSize().width;
-                }
-                pane.setMinimumSize(new Dimension(minWidth, correctMinHeight));
-            }
         }
 
         public void removeTab(JComponent comp) {
@@ -403,7 +373,6 @@ public final class IOWindow implements IOContainer.Provider {
                     add(singleTab);
                     updateWindowName(singleTab.getName());
                 }
-                fixMinSize(pane, false);
                 revalidate();
             }
             CallBacks cb = tabToCb.remove(comp);
