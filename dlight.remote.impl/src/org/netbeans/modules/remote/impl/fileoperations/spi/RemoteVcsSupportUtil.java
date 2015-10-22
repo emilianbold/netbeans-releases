@@ -47,7 +47,6 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,6 +68,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.RemoteServerListProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -366,6 +366,21 @@ public class RemoteVcsSupportUtil {
         return connected.toArray(new FileSystem[connected.size()]);
     }
     
+    public static FileSystem getDefaultFileSystem() {
+        RemoteServerListProvider provider = Lookup.getDefault().lookup(RemoteServerListProvider.class);
+        if (provider == null) {
+            return null;
+        }
+        ExecutionEnvironment def = provider.getDefailtServer();
+        if (def == null || !ConnectionManager.getInstance().isConnectedTo(def)) {
+            return null;
+        }
+        if (def.isLocal()) {
+            return null;
+        }
+        return FileSystemProvider.getFileSystem(def);
+    }
+
     public static void refreshFor(FileSystem fs, String... paths) throws ConnectException, IOException {
         RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
         for (String p : paths) {
