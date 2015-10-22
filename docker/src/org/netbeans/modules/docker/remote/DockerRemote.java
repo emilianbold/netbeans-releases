@@ -46,13 +46,16 @@ import org.netbeans.modules.docker.DockerImage;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Socket;
@@ -76,6 +79,7 @@ import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -144,6 +148,24 @@ public class DockerRemote {
         }
         return Collections.emptyList();
     }
+    
+    public DockerContainer createContainer(JSONObject configuration) {
+        try {
+            JSONObject value = (JSONObject) doPostRequest(instance.getUrl(), "/containers/create", new ByteArrayInputStream(configuration.toJSONString().getBytes("UTF-8")),
+                    true, Collections.singleton(HttpURLConnection.HTTP_CREATED));
+            // FIXME image id
+            return instance.getContainerFactory().create((String) value.get("Id"), "xxxx", ContainerStatus.STOPPED);
+        } catch (DockerRemoteException ex) {
+            if (HttpURLConnection.HTTP_NOT_FOUND == ex.getCode()) {
+                // FIXME try pull
+            }
+        } catch (DockerException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } catch (UnsupportedEncodingException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        return null;
+    }
 
     public void start(DockerContainer container) {
         try {
@@ -201,7 +223,7 @@ public class DockerRemote {
         }
     }
 
-    public AttachResult attach(DockerContainer container) throws DockerException {
+    public AttachResult attach(DockerContainer container, boolean logs) throws DockerException {
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -209,7 +231,7 @@ public class DockerRemote {
 
             OutputStream os = s.getOutputStream();
             os.write(("POST /containers/" + container.getId()
-                    + "/attach?logs=0&stream=1&stdout=1&stdin=1&stderr=1 HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
+                    + "/attach?logs=" + (logs ? 1 : 0) + "&stream=1&stdout=1&stdin=1&stderr=1 HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
             os.flush();
 
             Reader reader = new InputStreamReader(s.getInputStream(), "ISO-8859-1");
@@ -223,8 +245,8 @@ public class DockerRemote {
             }
 
             int responseCode = Integer.parseInt(m.group(1));
-            if (responseCode != 101 && responseCode != 200) {
-                throw new DockerException(m.group(2));
+            if (responseCode != 101 && responseCode != HttpURLConnection.HTTP_OK) {
+                throw new DockerRemoteException(responseCode, m.group(2));
             }
 
             String line;
@@ -254,7 +276,7 @@ public class DockerRemote {
                 conn.setRequestProperty("Accept", "application/json");
 
                 if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    throw new DockerException(conn.getResponseMessage());
+                    throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
                 }
 
                 connectionListener.onConnect(conn);
@@ -294,7 +316,7 @@ public class DockerRemote {
                 conn.setRequestProperty("Accept", "application/json");
 
                 if (!okCodes.contains(conn.getResponseCode())) {
-                    throw new DockerException(conn.getResponseMessage());
+                    throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
                 }
 
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -332,7 +354,7 @@ public class DockerRemote {
                 }
 
                 if (!okCodes.contains(conn.getResponseCode())) {
-                    throw new DockerException(conn.getResponseMessage());
+                    throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
                 }
 
                 if (output) {
@@ -369,7 +391,7 @@ public class DockerRemote {
                         "application/x-www-form-urlencoded" );
 
                 if (!okCodes.contains(conn.getResponseCode())) {
-                    throw new DockerException(conn.getResponseMessage());
+                    throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
                 }
 
                 if (output) {

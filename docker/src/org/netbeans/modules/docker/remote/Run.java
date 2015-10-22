@@ -39,46 +39,51 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.remote;
 
-import javax.swing.Action;
-import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.DockerTag;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import java.util.concurrent.Callable;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.DockerInstance;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerTagNode extends AbstractNode {
+public class Run implements Callable<DockerContainer> {
 
-    private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_image_small.png"; // NOI18N
+    private final DockerInstance instance;
+    
+    private final String image;
 
-    private final DockerTag tag;
+    private final String command;
 
-    public DockerTagNode(DockerTag tag) {
-        super(Children.LEAF, Lookups.fixed(tag));
-        this.tag = tag;
-        if ("<none>:<none>".equals(tag.getTag())) {
-            setDisplayName(tag.getTag() + " [" + DockerUtils.getShortId(tag.getImage().getId()) + "]");
-        } else {
-            setDisplayName(tag.getTag());
-        }
-        setShortDescription(DockerUtils.getShortId(tag.getImage().getId()));
-        setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
+    public Run(DockerInstance instance, @NonNull String image, @NullAllowed String command) {
+        this.instance = instance;
+        this.image = image;
+        this.command = command;
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(RunAction.class),
-            null,
-            SystemAction.get(CopyIdAction.class),
-            null,
-            SystemAction.get(RemoveTagAction.class)
-        };
+    public DockerContainer call() throws Exception {
+        DockerRemote remote = new DockerRemote(instance);
+        JSONObject config = new JSONObject();
+        config.put("OpenStdin", true);
+        config.put("StdinOnce", true);
+        config.put("Tty", true);
+        config.put("Image", image);
+        config.put("Cmd", command);
+        config.put("AttachStdin", true);
+        config.put("AttachStdout", true);
+        config.put("AttachStderr", true);
+        DockerContainer container = remote.createContainer(config);
+        if (container != null) {
+            remote.start(container);
+        }
+        return container;
     }
+
 }

@@ -39,46 +39,23 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
-
-import javax.swing.Action;
-import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.DockerTag;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+package org.netbeans.modules.docker.remote;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerTagNode extends AbstractNode {
+public class DockerRemoteException extends DockerException {
 
-    private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_image_small.png"; // NOI18N
+    private final int code;
 
-    private final DockerTag tag;
-
-    public DockerTagNode(DockerTag tag) {
-        super(Children.LEAF, Lookups.fixed(tag));
-        this.tag = tag;
-        if ("<none>:<none>".equals(tag.getTag())) {
-            setDisplayName(tag.getTag() + " [" + DockerUtils.getShortId(tag.getImage().getId()) + "]");
-        } else {
-            setDisplayName(tag.getTag());
-        }
-        setShortDescription(DockerUtils.getShortId(tag.getImage().getId()));
-        setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
+    public DockerRemoteException(int code, String message) {
+        super(message);
+        this.code = code;
     }
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(RunAction.class),
-            null,
-            SystemAction.get(CopyIdAction.class),
-            null,
-            SystemAction.get(RemoveTagAction.class)
-        };
+    public int getCode() {
+        return code;
     }
+
 }

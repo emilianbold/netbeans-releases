@@ -39,46 +39,66 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.ui.run;
 
-import javax.swing.Action;
-import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.DockerTag;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
-/**
- *
- * @author Petr Hejl
- */
-public class DockerTagNode extends AbstractNode {
+public class ContainerCommandPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_image_small.png"; // NOI18N
+    /**
+     * The visual component that displays this panel. If you need to access the
+     * component from this class, just use getComponent().
+     */
+    private ContainerCommandVisual component;
 
-    private final DockerTag tag;
-
-    public DockerTagNode(DockerTag tag) {
-        super(Children.LEAF, Lookups.fixed(tag));
-        this.tag = tag;
-        if ("<none>:<none>".equals(tag.getTag())) {
-            setDisplayName(tag.getTag() + " [" + DockerUtils.getShortId(tag.getImage().getId()) + "]");
-        } else {
-            setDisplayName(tag.getTag());
+    // Get the visual component for the panel. In this template, the component
+    // is kept separate. This can be more efficient: if the wizard is created
+    // but never displayed, or not all panels are displayed, it is better to
+    // create only those which really need to be visible.
+    @Override
+    public ContainerCommandVisual getComponent() {
+        if (component == null) {
+            component = new ContainerCommandVisual();
         }
-        setShortDescription(DockerUtils.getShortId(tag.getImage().getId()));
-        setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
+        return component;
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(RunAction.class),
-            null,
-            SystemAction.get(CopyIdAction.class),
-            null,
-            SystemAction.get(RemoveTagAction.class)
-        };
+    public HelpCtx getHelp() {
+        // Show no Help button for this panel:
+        return HelpCtx.DEFAULT_HELP;
+        // If you have context help:
+        // return new HelpCtx("help.key.here");
     }
+
+    @Override
+    public boolean isValid() {
+        // If it is always OK to press Next or Finish, then:
+        return true;
+        // If it depends on some condition (form filled out...) and
+        // this condition changes (last form field filled in...) then
+        // use ChangeSupport to implement add/removeChangeListener below.
+        // WizardDescriptor.ERROR/WARNING/INFORMATION_MESSAGE will also be useful.
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener l) {
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+    }
+
+    @Override
+    public void readSettings(WizardDescriptor wiz) {
+        // use wiz.getProperty to retrieve previous panel state
+    }
+
+    @Override
+    public void storeSettings(WizardDescriptor wiz) {
+        wiz.putProperty("command", component.getCommand());
+    }
+
 }

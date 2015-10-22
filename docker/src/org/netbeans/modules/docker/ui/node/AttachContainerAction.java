@@ -67,7 +67,7 @@ public class AttachContainerAction extends AbstractContainerAction {
     protected void performAction(DockerContainer container) {
         try {
             DockerRemote facade = new DockerRemote(container.getInstance());
-            DockerRemote.AttachResult r = facade.attach(container);
+            DockerRemote.AttachResult r = facade.attach(container, false);
             IOProvider provider = IOProvider.get("Terminal"); // NOI18N
             InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
             IOTerm.connect(io, r.getStdIn(), r.getStdOut(), r.getStdErr());

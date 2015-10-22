@@ -50,7 +50,7 @@ public class DockerException extends Exception {
     public DockerException(String message) {
         super(message);
     }
-    
+
     public DockerException(Throwable cause) {
         super(cause);
     }

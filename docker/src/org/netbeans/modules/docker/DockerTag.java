@@ -99,4 +99,9 @@ public class DockerTag implements Identifiable {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "DockerTag{" + "image=" + image + ", tag=" + tag + '}';
+    }
 }

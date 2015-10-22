@@ -129,4 +129,9 @@ public class DockerImage implements Identifiable {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "DockerImage{" + "instance=" + instance + ", id=" + id + '}';
+    }
+
 }
