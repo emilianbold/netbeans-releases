@@ -80,6 +80,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -139,7 +140,6 @@ public class JavaCustomIndexer extends CustomIndexer {
 
             static       boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
-    private static final String MODULE_NAME = "moduleName"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
     private static final int TRESHOLD = 500;
@@ -244,14 +244,15 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 Exceptions.printStackTrace(ex);
                             }
                         }
-                        clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
+                        clear(context, javaContext, i, removedTypes, removedFiles, fmTx, null);
                     }
                     for (CompileTuple tuple : virtualSourceTuples) {
-                        clear(context, javaContext, tuple.indexable, removedTypes, removedFiles, fmTx);
+                        clear(context, javaContext, tuple.indexable, removedTypes, removedFiles, fmTx, null);
                     }
                     toCompile.addAll(virtualSourceTuples);
                     List<CompileTuple> toCompileRound = toCompile;
                     int round = 0;
+                    String moduleName = null;
                     while (round++ < 2) {
                         CompileWorker[] WORKERS = {
                             toCompileRound.size() < TRESHOLD ? new SuperOnePassCompileWorker() : new OnePassCompileWorker(),
@@ -262,6 +263,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             if (compileResult == null || context.isCancelled()) {
                                 return; // cancelled, IDE is sutting down
                             }
+                            moduleName = moduleName(moduleName, compileResult);
                             if (compileResult.success) {
                                 break;
                             }
@@ -280,6 +282,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                             compileResult.aptGenerated.clear();
                         }
+                    }
+                    if (moduleName != null) {
+                        JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, moduleName);
                     }
                     finished = compileResult.success;
                     
@@ -423,8 +428,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                     return; //No java no need to continue
                 final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                 final Set<File> removedFiles = new HashSet<File> ();
+                final boolean[] isModuleInfo = new boolean[1];
                 for (Indexable i : files) {
-                    clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
+                    clear(context, javaContext, i, removedTypes, removedFiles, fmTx, isModuleInfo);
+                    if (isModuleInfo[0]) {
+                        //TODO: clear cache
+                    }
                     ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
                     javaContext.getCheckSums().remove(i.getURL());
@@ -456,8 +465,18 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    private static void clear(final Context context, final JavaParsingContext javaContext, final Indexable indexable, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles, @NonNull final FileManagerTransaction fmTx) throws IOException {
+    private static void clear(
+            @NonNull final Context context,
+            @NonNull final JavaParsingContext javaContext,
+            @NonNull final Indexable indexable,
+            @NonNull final Set<ElementHandle<TypeElement>> removedTypes,
+            @NonNull final Set<File> removedFiles,
+            @NonNull final FileManagerTransaction fmTx,
+            @NullAllowed final boolean[] isModuleInfo) throws IOException {
         assert fmTx != null;
+        if (isModuleInfo != null) {
+            isModuleInfo[0] = false;
+        }
         final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
         final File classFolder = JavaIndex.getClassFolder(context);
         final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
@@ -553,6 +572,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                         }
                     }
                 } else if ("module-info.sig".contentEquals(file.getName())) { //NOI18N
+                    if (isModuleInfo != null) {
+                        isModuleInfo[0] = true;
+                    }
                     removedFiles.add(file);
                     fmTx.delete(file);
                 }
@@ -645,19 +667,6 @@ public class JavaCustomIndexer extends CustomIndexer {
             Iterable<Diagnostic<? extends JavaFileObject>> filteredErrorsList = Iterators.filter(errors.getDiagnostics(active.jfo), new FilterOutJDK7AndLaterWarnings());
             ErrorsCache.setErrors(context.getRootURI(), active.indexable, filteredErrorsList, active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
         }
-    }
-    
-    static void setModuleName(Context context, ModuleElement module) throws IOException {
-        String moduleName = null;
-        if (module == null || module.isUnnamed()) {
-            final Project rootPrj = FileOwnerQuery.getOwner(context.getRoot());
-            if (rootPrj != null) {
-                moduleName = ProjectUtils.getInformation(rootPrj).getName(); //TODO: replace with possible automatic module name
-            }
-        } else {
-            moduleName = module.getQualifiedName().toString();
-        }
-        JavaIndex.setAttribute(context.getRootURI(), MODULE_NAME, moduleName);
     }
 
     static void brokenPlatform(
@@ -758,6 +767,19 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
         }
         return findDependent(root, deps, inverseDeps, peers, classes, includeFilesInError, true);
+    }
+
+    @CheckForNull
+    private static String moduleName(
+        @NullAllowed final String moduleName,
+        @NonNull final CompileWorker.ParsingOutput res) {
+        if (res.success) {
+            return res.moduleName;
+        } else {
+            return res.moduleName != null ?
+                res.moduleName :
+                moduleName;
+        }
     }
 
 
