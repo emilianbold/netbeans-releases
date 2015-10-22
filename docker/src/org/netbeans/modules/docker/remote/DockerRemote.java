@@ -120,7 +120,7 @@ public class DockerRemote {
                 JSONObject json = (JSONObject) o;
                 String id = (String) json.get("Id");
                 String image = (String) json.get("Image");
-                ContainerStatus status = DockerUtils.getStatus((String) json.get("Status"));
+                ContainerStatus status = DockerUtils.getContainerStatus((String) json.get("Status"));
                 ret.add(instance.getContainerFactory().create(id, image, status));
             }
             return ret;

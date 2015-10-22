@@ -43,6 +43,7 @@ package org.netbeans.modules.docker;
 
 import java.util.Objects;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.remote.DockerEvent;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -66,6 +67,17 @@ public class DockerContainer implements Identifiable {
         this.id = id;
         this.image = image;
         this.status = status;
+        instance.getEventBus().addContainerListener(new DockerEvent.Listener() {
+            @Override
+            public void onEvent(DockerEvent event) {
+                if (event.getId().equals(DockerContainer.this.id)) {
+                    ContainerStatus fresh = DockerUtils.getContainerStatus(event);
+                    if (fresh != null) {
+                        setStatus(fresh);
+                    }
+                }
+            }
+        });
     }
 
     public DockerInstance getInstance() {

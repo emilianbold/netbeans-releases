@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.docker;
 
+import org.netbeans.modules.docker.remote.DockerEvent;
+
 /**
  *
  * @author Petr Hejl
@@ -58,7 +60,7 @@ public final class DockerUtils {
         return id;
     }
 
-    public static ContainerStatus getStatus(String status) {
+    public static ContainerStatus getContainerStatus(String status) {
         if (status == null) {
             return ContainerStatus.STOPPED;
         }
@@ -69,5 +71,20 @@ public final class DockerUtils {
             return ContainerStatus.RUNNING;
         }
         return ContainerStatus.PAUSED;
+    }
+
+    public static ContainerStatus getContainerStatus(DockerEvent event) {
+        String status = event.getStatus();
+        if ("die".equals(status)) {
+            return ContainerStatus.STOPPED;
+        } else if ("start".equals(status)) { // NOI18N
+            return ContainerStatus.RUNNING;
+        } else if ("pause".equals(status)) { // NOI18N
+            return ContainerStatus.PAUSED;
+        } else if ("unpause".equals(status)) { // NOI18N
+            return ContainerStatus.RUNNING;
+        }
+
+        return null;
     }
 }
