@@ -254,14 +254,16 @@ public class RepositoryPanel extends javax.swing.JPanel {
         } catch (URISyntaxException ex) {
             //
         }
-        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(file);
-        fileChooser.setDialogTitle(NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.FileChooser.Title")); //NOI18N
-        fileChooser.setMultiSelectionEnabled(false);
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fileChooser.showDialog(this, null);
-        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
-        if (f != null) {
-            comboEditor.setText(VCSFileProxySupport.toURI(f).toString());
+        if (file != null) {
+            JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(file);
+            fileChooser.setDialogTitle(NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.FileChooser.Title")); //NOI18N
+            fileChooser.setMultiSelectionEnabled(false);
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fileChooser.showDialog(this, null);
+            VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
+            if (f != null) {
+                comboEditor.setText(VCSFileProxySupport.toURI(f).toString());
+            }
         }
     }//GEN-LAST:event_chooseFolderButtonActionPerformed
     

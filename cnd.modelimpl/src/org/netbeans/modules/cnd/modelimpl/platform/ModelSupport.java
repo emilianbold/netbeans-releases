@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -570,18 +571,15 @@ public class ModelSupport implements PropertyChangeListener {
 
     private static final class BufAndProj {
 
-        public BufAndProj(FileBuffer buffer, ProjectBase project, NativeFileItem nativeFile, long lastModified) {
+        public BufAndProj(FileBuffer buffer, ProjectBase project, long lastModified) {
             assert buffer != null : "null buffer";
             this.buffer = buffer;
             assert project != null : "null project";
             this.project = project;
-            assert nativeFile != null : "null nativeFile";
-            this.nativeFile = nativeFile;
             this.lastModified = lastModified;
         }
         public final FileBuffer buffer;
         public final ProjectBase project;
-        public final NativeFileItem nativeFile;
         public final long lastModified;
     }
 
@@ -625,6 +623,18 @@ public class ModelSupport implements PropertyChangeListener {
                         CsmFile csmFile = CsmModelAccessor.getModel().findFile(FSPath.toFSPath(curObj.getPrimaryFile()), false, false);
                         CndUtils.assertTrueInConsole(csmFile == null, "WARNING: can not switch buffer due to empty NativeFileItemSet for being edited ", csmFile);
                     }
+                    EditorCookie editor = curObj.getLookup().lookup(EditorCookie.class);
+                    Document doc = editor != null ? editor.getDocument() : null;
+                    if (doc != null && doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
+                        FileObject primaryFile = curObj.getPrimaryFile();
+                        long lastModified = primaryFile.lastModified().getTime();
+                        final FileBufferDoc buffer = new FileBufferDoc(primaryFile, doc);
+                        ProjectBase csmProject = (ProjectBase) CsmUtilities.getCsmProject(doc);
+                        if (csmProject != null) { // this could be null when code assistance is turned off for project
+                            addBufNP(curObj, new BufAndProj(buffer, csmProject, lastModified));
+                            csmProject.onFileEditStart(buffer, null);
+                        }
+                    }
                 } else {
                     EditorCookie editor = curObj.getLookup().lookup(EditorCookie.class);
                     Document doc = editor != null ? editor.getDocument() : null;
@@ -636,7 +646,7 @@ public class ModelSupport implements PropertyChangeListener {
                         for (NativeFileItem nativeFile : set.getItems()) {
                             ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
                             if (csmProject != null) { // this could be null when code assistance is turned off for project
-                                addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile, lastModified));
+                                addBufNP(curObj, new BufAndProj(buffer, csmProject, lastModified));
                                 csmProject.onFileEditStart(buffer, nativeFile);
                             }
                         }
@@ -696,7 +706,7 @@ public class ModelSupport implements PropertyChangeListener {
                                 final FileBuffer fileBuffer = createFileBuffer(dao);
                                 long lastModified = fileBuffer.lastModified();
                                 // removing old doc buffer and creating new one
-                                bufNP.project.onFileEditEnd(fileBuffer, bufNP.nativeFile, bufNP.lastModified == lastModified);
+                                bufNP.project.onFileEditEnd(fileBuffer, null, bufNP.lastModified == lastModified);
                             } else {
                                 System.err.println("no buffer for " + dao);
                             }

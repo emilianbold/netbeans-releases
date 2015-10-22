@@ -56,8 +56,15 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import static org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit.toSeverity;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
@@ -87,6 +94,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class FormatStringAudit extends AbstractCodeAudit {
     
     private static final boolean CHECKS_ENABLED;
+    private List<FormattedPrintFunction> result;
     
     static {
         String checksEnabled = System.getProperty("printf.check.enable"); //NOI18N
@@ -113,134 +121,15 @@ public class FormatStringAudit extends AbstractCodeAudit {
             if (request.isCancelled()) {
                 return;
             }
-            
             Document doc_ = request.getDocument();
             if (doc_ == null) {
                 CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
                 doc_ = CsmUtilities.openDocument(ces);
             }
             final Document doc = doc_;
-            final List<FormattedPrintFunction> result = new LinkedList<>();
             
-            Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(file);
-            for (CsmReference reference : references) {
-                CsmObject object = reference.getReferencedObject();
-                if (Utilities.isFormattedPrintFunction(object)) {
-                    final int startOffset = reference.getStartOffset();
-                    
-                    doc.render(new Runnable() {
-                        @Override
-                        public void run() {
-                            TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, startOffset, false, true);
-                            if (docTokenSequence == null) {
-                                return;
-                            }
-                            
-                            final CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
-                            StringBuilder paramBuf = new StringBuilder();
-                            ArrayList<Parameter> params = new ArrayList<>();
-                            
-                            State state = State.DEFAULT;
-                            boolean formatFlag = false;  // detect was format string already processed
-                            StringBuilder formatString = null;
-                            int paramOffset = -1;
-                            int bracketsCounter = 0;
-                            int formatStringOffset = -1;
-                            boolean doNotResolveType = false;
-                            
-                            while (docTokenSequence.moveNext()) {
-                                Token<TokenId> token = docTokenSequence.token();
-                                TokenId tokenId = token.id();
-                                if (tokenId.equals(CppTokenId.IDENTIFIER) && state == State.DEFAULT) {
-                                    CsmReference reference = rr.findReference(file, doc, docTokenSequence.offset());
-                                    CsmObject object = reference.getReferencedObject();
-                                    state = State.START;
-                                } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.START) {
-                                    state = State.IN_PARAM;
-                                } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM) {
-                                    state = State.IN_PARAM_BRACKET;
-                                    bracketsCounter++;
-                                    if (formatFlag) {
-                                        paramBuf.append(token.text());
-                                        if (paramOffset == -1) {
-                                            paramOffset = docTokenSequence.offset();
-                                        }
-                                    }
-                                } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM_BRACKET) {
-                                    bracketsCounter++;
-                                    if (formatFlag) {
-                                        paramBuf.append(token.text());
-                                        if (paramOffset == -1) {
-                                            paramOffset = docTokenSequence.offset();
-                                        }
-                                    }
-                                } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM_BRACKET) {
-                                    bracketsCounter--;
-                                    if (bracketsCounter == 0) {
-                                        state = State.IN_PARAM;
-                                    }
-                                    if (formatFlag) {
-                                        paramBuf.append(token.text());
-                                        if (paramOffset == -1) {
-                                            paramOffset = docTokenSequence.offset();
-                                        }
-                                    }
-                                } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
-                                    if (paramBuf.length() > 0) {
-                                        params.add(new Parameter(paramBuf.toString(), paramOffset, !doNotResolveType));
-                                        paramOffset = -1;
-                                    }
-                                    result.add(new FormattedPrintFunction(file
-                                                                         ,formatStringOffset
-                                                                         ,(formatString == null) ? "" : formatString.toString()
-                                                                         ,params));
-                                    return;
-                                } else if (state == State.IN_PARAM && tokenId.equals(CppTokenId.STRING_LITERAL) && !formatFlag) {
-                                    params = new ArrayList<>();
-                                    if (formatString == null) {
-                                        formatString = new StringBuilder();
-                                    }
-                                    formatString.append(token.text().toString());
-                                    formatStringOffset = docTokenSequence.offset();
-                                } else if (state == State.IN_PARAM && !formatFlag && formatString != null && tokenId.equals(CppTokenId.COMMA)) {
-                                    formatFlag = true;
-                                } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
-                                    if (paramBuf.length() > 0) {
-                                        params.add(new Parameter(paramBuf.toString(), paramOffset, !doNotResolveType));
-                                        paramOffset = -1;
-                                    }
-                                    doNotResolveType = false;
-                                    paramBuf = new StringBuilder();
-                                } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
-                                        && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
-                                        && formatFlag) {
-                                    if (paramBuf.length() == 0 && tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)) {
-                                        // skip whitespoaces before the parameter
-                                        continue;
-                                    }
-                                    if (paramOffset == -1) {
-                                        // save start offset of the parameter
-                                        paramOffset = docTokenSequence.offset();
-                                    }
-                                    // skip macro parameters
-                                    CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
-                                    if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
-                                        doNotResolveType = true;
-                                    }
-                                    paramBuf.append(token.text());
-                                } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
-                                        && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
-                                    // skip check in case of string concatenation with macros
-                                    CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
-                                    if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-            }
+            result = new LinkedList<>();
+            visit(file.getDeclarations(), file, doc, request, response);
             
             List<FormatError> errors = new LinkedList<>();
             for (FormattedPrintFunction function : result) {
@@ -267,6 +156,173 @@ public class FormatStringAudit extends AbstractCodeAudit {
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            }
+        }
+    }
+    
+    private void visit(Collection<? extends CsmOffsetableDeclaration> decls, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        for (CsmOffsetableDeclaration decl : decls) {
+            if (CsmKindUtilities.isClass(decl)) {
+                visit(((CsmClass) decl).getMembers(), file, doc, request, response);
+            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                visit(((CsmNamespaceDefinition) decl).getDeclarations(), file, doc, request, response);
+            } else if (CsmKindUtilities.isFunctionDeclaration(decl)) {
+                visit(((CsmFunction) decl).getDefinition(), file, doc, request, response);
+            } else if (CsmKindUtilities.isFunctionDefinition(decl)) {
+                visit((CsmFunctionDefinition) decl, file, doc, request, response);
+            }
+        }
+    }
+    
+    private void visit(CsmFunctionDefinition function, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        if (function == null) {
+            return;
+        }
+        if (!file.equals(function.getContainingFile())) {
+            return;
+        }
+        
+        for (CsmStatement statement : function.getBody().getStatements()) {
+            if (request.isCancelled()) {
+                return;
+            }
+            
+            if (CsmKindUtilities.isCompoundStatement(statement)) {
+                visit((CsmCompoundStatement) statement, file, doc, request, response);
+            } else {
+                visit(statement, file, doc, request, response);
+            }
+        }
+    }
+    
+    private void visit(CsmCompoundStatement compoundStatement, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        for (CsmStatement statement : compoundStatement.getStatements()) {
+            if (request.isCancelled()) {
+                return;
+            }
+            
+            visit(statement, file, doc, request, response);
+        }
+    }
+    
+    private void visit(CsmStatement statement, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        CsmReference reference = CsmReferenceResolver.getDefault().findReference(file, doc, statement.getStartOffset());
+        if (reference != null) {
+            CsmObject object = reference.getReferencedObject();
+            if (Utilities.isFormattedPrintFunction(object)) {
+                final int startOffset = reference.getStartOffset();
+
+                doc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, startOffset, false, true);
+                        if (docTokenSequence == null) {
+                            return;
+                        }
+
+                        final CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
+                        StringBuilder paramBuf = new StringBuilder();
+                        ArrayList<Parameter> params = new ArrayList<>();
+
+                        State state = State.DEFAULT;
+                        boolean formatFlag = false;  // detect was format string already processed
+                        StringBuilder formatString = null;
+                        int paramOffset = -1;
+                        int bracketsCounter = 0;
+                        int formatStringOffset = -1;
+                        boolean doNotResolveType = false;
+
+                        while (docTokenSequence.moveNext()) {
+                            Token<TokenId> token = docTokenSequence.token();
+                            TokenId tokenId = token.id();
+                            if (tokenId.equals(CppTokenId.IDENTIFIER) && state == State.DEFAULT) {
+                                CsmReference reference = rr.findReference(file, doc, docTokenSequence.offset());
+                                CsmObject object = reference.getReferencedObject();
+                                state = State.START;
+                            } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.START) {
+                                state = State.IN_PARAM;
+                            } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM) {
+                                state = State.IN_PARAM_BRACKET;
+                                bracketsCounter++;
+                                if (formatFlag) {
+                                    paramBuf.append(token.text());
+                                    if (paramOffset == -1) {
+                                        paramOffset = docTokenSequence.offset();
+                                    }
+                                }
+                            } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM_BRACKET) {
+                                bracketsCounter++;
+                                if (formatFlag) {
+                                    paramBuf.append(token.text());
+                                    if (paramOffset == -1) {
+                                        paramOffset = docTokenSequence.offset();
+                                    }
+                                }
+                            } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM_BRACKET) {
+                                bracketsCounter--;
+                                if (bracketsCounter == 0) {
+                                    state = State.IN_PARAM;
+                                }
+                                if (formatFlag) {
+                                    paramBuf.append(token.text());
+                                    if (paramOffset == -1) {
+                                        paramOffset = docTokenSequence.offset();
+                                    }
+                                }
+                            } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
+                                if (paramBuf.length() > 0) {
+                                    params.add(new Parameter(paramBuf.toString(), paramOffset, !doNotResolveType));
+                                    paramOffset = -1;
+                                }
+                                result.add(new FormattedPrintFunction(file
+                                                                     ,formatStringOffset
+                                                                     ,(formatString == null) ? "" : formatString.toString()
+                                                                     ,params));
+                                return;
+                            } else if (state == State.IN_PARAM && tokenId.equals(CppTokenId.STRING_LITERAL) && !formatFlag) {
+                                params = new ArrayList<>();
+                                if (formatString == null) {
+                                    formatString = new StringBuilder();
+                                }
+                                formatString.append(token.text().toString());
+                                formatStringOffset = docTokenSequence.offset();
+                            } else if (state == State.IN_PARAM && !formatFlag && formatString != null && tokenId.equals(CppTokenId.COMMA)) {
+                                formatFlag = true;
+                            } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
+                                if (paramBuf.length() > 0) {
+                                    params.add(new Parameter(paramBuf.toString(), paramOffset, !doNotResolveType));
+                                    paramOffset = -1;
+                                }
+                                doNotResolveType = false;
+                                paramBuf = new StringBuilder();
+                            } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
+                                    && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
+                                    && formatFlag) {
+                                if (paramBuf.length() == 0 && tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)) {
+                                    // skip whitespoaces before the parameter
+                                    continue;
+                                }
+                                if (paramOffset == -1) {
+                                    // save start offset of the parameter
+                                    paramOffset = docTokenSequence.offset();
+                                }
+                                // skip macro parameters
+                                CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
+                                if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
+                                    doNotResolveType = true;
+                                }
+                                paramBuf.append(token.text());
+                            } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
+                                    && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                                // skip check in case of string concatenation with macros
+                                CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
+                                if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
             }
         }
     }

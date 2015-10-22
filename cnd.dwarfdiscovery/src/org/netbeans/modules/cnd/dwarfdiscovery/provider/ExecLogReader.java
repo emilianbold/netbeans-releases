@@ -441,6 +441,15 @@ public final class ExecLogReader {
     }
 
     private void addSource(String compiler, ItemProperties.LanguageKind language, Iterator<String> iterator, String compilePath, CompileLineStorage storage, String cu) {
+        if (CndPathUtilities.isPathAbsolute(compilePath) && pathMapper != null) {
+            String mapped = pathMapper.getLocalPath(compilePath);
+            if (mapped != null) {
+                compilePath = mapped;
+                if (Utilities.isWindows()) {
+                    compilePath = compilePath.replace('\\', '/'); // NOI18N
+                }
+            }
+        }
         compilePath = convertCygwinPath(compilePath);
         List<String> args = new ArrayList<String>();
         while (iterator.hasNext()) {
