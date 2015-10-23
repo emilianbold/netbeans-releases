@@ -79,6 +79,9 @@ public class RunTagAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length > 1) {
+            return false;
+        }
         for (Node node : activatedNodes) {
             if (node.getLookup().lookup(DockerTag.class) == null) {
                 return false;
