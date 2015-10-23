@@ -47,6 +47,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.remote.DockerEvent;
@@ -59,6 +61,8 @@ import org.openide.nodes.Node;
  * @author Petr Hejl
  */
 public class DockerContainersChildFactory extends ChildFactory<DockerContainer> implements Refreshable {
+
+    private static final Logger LOGGER = Logger.getLogger(DockerContainersChildFactory.class.getName());
 
     private static final Comparator<DockerContainer> COMPARATOR = new Comparator<DockerContainer>() {
 
@@ -76,13 +80,24 @@ public class DockerContainersChildFactory extends ChildFactory<DockerContainer> 
 
     private final DockerInstance instance;
 
+    private DockerEvent lastEvent;
+
     public DockerContainersChildFactory(DockerInstance instance) {
         this.instance = instance;
         instance.getEventBus().addContainerListener(new DockerEvent.Listener() {
             @Override
             public void onEvent(DockerEvent event) {
                 if (CHANGE_EVENTS.contains(event.getStatus())) {
-                    refresh();
+                    DockerEvent previous;
+                    synchronized (DockerContainersChildFactory.this) {
+                        previous = lastEvent;
+                        lastEvent = event;
+                    }
+                    // FIXME sometimes from is different tag (yet same image)
+                    if (!event.equalsIgnoringTime(previous)) {
+                        LOGGER.log(Level.INFO, "Refreshing containers");
+                        refresh();
+                    }
                 }
             }
         });

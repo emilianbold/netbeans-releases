@@ -42,7 +42,6 @@
 package org.netbeans.modules.docker.ui.node;
 
 import java.util.concurrent.Callable;
-import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.remote.DockerEvent;
@@ -59,13 +58,10 @@ public abstract class AbstractContainerAction extends NodeAction {
 
     private final String name;
 
-    private final boolean refresh;
-
     private final DockerEvent.Status status;
 
-    public AbstractContainerAction(String name, boolean refresh, DockerEvent.Status status) {
+    public AbstractContainerAction(String name, DockerEvent.Status status) {
         this.name = name;
-        this.refresh = refresh;
         this.status = status;
     }
 
@@ -92,19 +88,7 @@ public abstract class AbstractContainerAction extends NodeAction {
                         }
                         return null;
                     }
-                }, refresh && status == null ? new Runnable() {
-                    @Override
-                    public void run() {
-                        // XXX should we response to other nodes
-                        Node parent = node.getParentNode();
-                        if (parent != null) {
-                            Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
-                            if (refreshable != null) {
-                                refreshable.refresh();
-                            }
-                        }
-                    }
-                } : null);
+                }, null);
             }
         }
     }

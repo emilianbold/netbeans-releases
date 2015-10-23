@@ -55,7 +55,7 @@ public class RemoveContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_RemoveContainerAction=Remove")
     public RemoveContainerAction() {
-        super(Bundle.LBL_RemoveContainerAction(), true, DockerEvent.Status.DESTROY);
+        super(Bundle.LBL_RemoveContainerAction(), DockerEvent.Status.DESTROY);
     }
 
     @Override

@@ -55,7 +55,7 @@ public class StartContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_StartContainerAction=Start")
     public StartContainerAction() {
-        super(Bundle.LBL_StartContainerAction(), true, DockerEvent.Status.START);
+        super(Bundle.LBL_StartContainerAction(), DockerEvent.Status.START);
     }
 
     @Override

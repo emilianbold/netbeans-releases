@@ -55,7 +55,7 @@ public class PauseContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_PauseContainerAction=Pause")
     public PauseContainerAction() {
-        super(Bundle.LBL_PauseContainerAction(), true, DockerEvent.Status.PAUSE);
+        super(Bundle.LBL_PauseContainerAction(), DockerEvent.Status.PAUSE);
     }
 
     @Override

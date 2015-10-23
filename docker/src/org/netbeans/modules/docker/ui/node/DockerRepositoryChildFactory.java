@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.DockerImage;
@@ -59,6 +61,8 @@ import org.openide.nodes.Node;
  */
 public class DockerRepositoryChildFactory extends ChildFactory<DockerTag> implements Refreshable {
 
+    private static final Logger LOGGER = Logger.getLogger(DockerRepositoryChildFactory.class.getName());
+
     private static final Comparator<DockerTag> COMPARATOR = new Comparator<DockerTag>() {
 
         @Override
@@ -69,13 +73,23 @@ public class DockerRepositoryChildFactory extends ChildFactory<DockerTag> implem
 
     private final DockerInstance instance;
 
+    private DockerEvent lastEvent;
+
     public DockerRepositoryChildFactory(DockerInstance instance) {
         this.instance = instance;
         instance.getEventBus().addImageListener(new DockerEvent.Listener() {
             @Override
             public void onEvent(DockerEvent event) {
                 if (DockerEvent.Status.PUSH != event.getStatus()) {
-                    refresh();
+                    DockerEvent previous;
+                    synchronized (DockerRepositoryChildFactory.this) {
+                        previous = lastEvent;
+                        lastEvent = event;
+                    }
+                    if (!event.equalsIgnoringTime(previous)) {
+                        LOGGER.log(Level.INFO, "Refreshing repository");
+                        refresh();
+                    }
                 }
             }
         });

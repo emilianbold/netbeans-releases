@@ -44,10 +44,7 @@ package org.netbeans.modules.docker.remote;
 import java.io.Closeable;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.DockerInstance;
@@ -64,12 +61,6 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
     private static final Logger LOGGER = Logger.getLogger(DockerEventBus.class.getName());
 
     private static final long INTERVAL = 5000;
-
-    private static final Set<String> IMAGE_EVENTS = new HashSet<>();
-
-    static {
-        Collections.addAll(IMAGE_EVENTS, "delete", "import", "pull", "push", "tag", "untag"); // NOI18N
-    }
 
     private final RequestProcessor processor = new RequestProcessor(DockerEventBus.class);
 
@@ -130,10 +121,10 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
     public void sendEvent(DockerEvent event) {
         List<DockerEvent.Listener> toFire;
         synchronized (this) {
-            if (IMAGE_EVENTS.contains(event.getStatus())) {
-                toFire = new ArrayList<>(imageListeners);
-            } else {
+            if (event.getStatus().isContainer()) {
                 toFire = new ArrayList<>(containerListeners);
+            } else {
+                toFire = new ArrayList<>(imageListeners);
             }
         }
         LOGGER.log(Level.INFO, event.toString());
@@ -157,10 +148,10 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
                 }
             }
             lastEvent = event;
-            if (IMAGE_EVENTS.contains(event.getStatus())) {
-                toFire = new ArrayList<>(imageListeners);
-            } else {
+            if (event.getStatus().isContainer()) {
                 toFire = new ArrayList<>(containerListeners);
+            } else {
+                toFire = new ArrayList<>(imageListeners);
             }
         }
         LOGGER.log(Level.INFO, event.toString());

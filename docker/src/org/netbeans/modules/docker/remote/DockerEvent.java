@@ -154,6 +154,29 @@ public class DockerEvent extends EventObject {
         return instance;
     }
 
+    public boolean equalsIgnoringTime(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DockerEvent other = (DockerEvent) obj;
+        if (!Objects.equals(this.status, other.status)) {
+            return false;
+        }
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.from, other.from)) {
+            return false;
+        }
+        return true;
+    }
+    
     @Override
     public String toString() {
         return "DockerEvent{" + "status=" + status + ", id=" + id + ", from=" + from + ", time=" + time + '}';

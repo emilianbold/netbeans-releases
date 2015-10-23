@@ -42,8 +42,11 @@
 package org.netbeans.modules.docker.ui.node;
 
 import java.util.concurrent.Callable;
+import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.DockerTag;
+import org.netbeans.modules.docker.DockerUtils;
+import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -56,28 +59,29 @@ import org.openide.util.actions.NodeAction;
  */
 public class RemoveTagAction extends NodeAction {
 
+    @NbBundle.Messages({
+        "# {0} - image id",
+        "MSG_RemovingTag=Removing image {0}"
+    })
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (final Node node : activatedNodes) {
             final DockerTag tag = node.getLookup().lookup(DockerTag.class);
             if (tag != null) {
-                final Node parent = node.getParentNode();
-                UiUtils.performRemoteAction("Test", new Callable<Void>() {
+                UiUtils.performRemoteAction(Bundle.MSG_RemovingTag(DockerUtils.getShortId(tag.getId())), new Callable<Void>() {
                     @Override
                     public Void call() throws Exception {
-                        DockerRemote facade = new DockerRemote(tag.getImage().getInstance());
+                        DockerInstance instance = tag.getImage().getInstance();
+                        DockerRemote facade = new DockerRemote(instance);
                         facade.remove(tag);
+                        // XXX to be precise we should emit DELETE event if we
+                        // delete the last image, but for our purpose this is enough
+                        instance.getEventBus().sendEvent(
+                                new DockerEvent(instance, DockerEvent.Status.UNTAG,
+                                        tag.getId(), null, System.currentTimeMillis() / 1000));
                         return null;
                     }
-                }, new Runnable() {
-                    @Override
-                    public void run() {
-                        Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
-                        if (refreshable != null) {
-                            refreshable.refresh();
-                        }
-                    }
-                });
+                }, null);
             }
         }
     }

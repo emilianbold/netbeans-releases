@@ -55,7 +55,7 @@ public class StopContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_StopContainerAction=Stop")
     public StopContainerAction() {
-        super(Bundle.LBL_StopContainerAction(), true, DockerEvent.Status.DIE);
+        super(Bundle.LBL_StopContainerAction(), DockerEvent.Status.DIE);
     }
 
     @Override
