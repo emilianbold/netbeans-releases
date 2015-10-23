@@ -44,6 +44,8 @@ package org.netbeans.modules.docker.ui.node;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.DockerInstance;
+import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -56,15 +58,15 @@ import org.openide.util.actions.NodeAction;
 public abstract class AbstractContainerAction extends NodeAction {
 
     private final String name;
-    
+
     private final boolean refresh;
 
-    private final ContainerStatus result;
+    private final String status;
 
-    public AbstractContainerAction(String name, boolean refresh, ContainerStatus result) {
+    public AbstractContainerAction(String name, boolean refresh, String status) {
         this.name = name;
         this.refresh = refresh;
-        this.result = result;
+        this.status = status;
     }
 
     protected abstract void performAction(DockerContainer container);
@@ -82,21 +84,23 @@ public abstract class AbstractContainerAction extends NodeAction {
                     @Override
                     public Void call() throws Exception {
                         performAction(container);
+                        if (status != null) {
+                            DockerInstance instance = container.getInstance();
+                            instance.getEventBus().sendEvent(
+                                    new DockerEvent(instance, status, container.getId(),
+                                            container.getImage(), System.currentTimeMillis() / 1000));
+                        }
                         return null;
                     }
-                }, refresh ? new Runnable() {
+                }, refresh && status == null ? new Runnable() {
                     @Override
                     public void run() {
-                        if (result != null) {
-                            container.setStatus(result);
-                        } else {
-                            // XXX should we response to other nodes
-                            Node parent = node.getParentNode();
-                            if (parent != null) {
-                                Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
-                                if (refreshable != null) {
-                                    refreshable.refresh();
-                                }
+                        // XXX should we response to other nodes
+                        Node parent = node.getParentNode();
+                        if (parent != null) {
+                            Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
+                            if (refreshable != null) {
+                                refreshable.refresh();
                             }
                         }
                     }

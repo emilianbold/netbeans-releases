@@ -54,7 +54,7 @@ public class StopContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_StopContainerAction=Stop")
     public StopContainerAction() {
-        super(Bundle.LBL_StopContainerAction(), true, ContainerStatus.STOPPED);
+        super(Bundle.LBL_StopContainerAction(), true, "die");
     }
 
     @Override

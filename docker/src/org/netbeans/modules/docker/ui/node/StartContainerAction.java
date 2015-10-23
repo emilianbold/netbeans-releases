@@ -54,7 +54,7 @@ public class StartContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_StartContainerAction=Start")
     public StartContainerAction() {
-        super(Bundle.LBL_StartContainerAction(), true, ContainerStatus.RUNNING);
+        super(Bundle.LBL_StartContainerAction(), true, "start");
     }
 
     @Override
