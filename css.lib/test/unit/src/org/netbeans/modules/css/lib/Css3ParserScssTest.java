@@ -1873,4 +1873,16 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testMathExpWithUnits() {
         assertParses("$fa-li-width: (30em / 14) !default;");
     }
+    
+    public void testExtendPlaceHolderWithInterpolation() {
+        assertParses("%at-contactformelement-skin-default {\n"
+                + "  margin-top: 6rem;\n"
+                + "}\n"
+                + "\n"
+                + "@mixin contactformelement($selector, $skin: default) {\n"
+                + "  #{$selector} {\n"
+                + "    @extend %at-contactformelement-skin-#{$skin} !optional;\n"
+                + "  }\n"
+                + "}");
+    }
 }
