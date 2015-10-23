@@ -1271,7 +1271,7 @@ sass_extend
 
 sass_extend_only_selector
     :
-    SASS_EXTEND_ONLY_SELECTOR
+    SASS_EXTEND_ONLY_SELECTOR sass_selector_interpolation_exp?
     ;
 
 sass_debug
