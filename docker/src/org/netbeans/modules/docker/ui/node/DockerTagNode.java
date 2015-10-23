@@ -74,7 +74,7 @@ public class DockerTagNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            SystemAction.get(RunAction.class),
+            SystemAction.get(RunTagAction.class),
             null,
             SystemAction.get(CopyIdAction.class),
             null,

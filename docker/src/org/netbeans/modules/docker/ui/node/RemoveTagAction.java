@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import java.util.concurrent.Callable;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.DockerTag;
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -56,16 +58,26 @@ public class RemoveTagAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        for (Node node : activatedNodes) {
-            DockerTag tag = node.getLookup().lookup(DockerTag.class);
+        for (final Node node : activatedNodes) {
+            final DockerTag tag = node.getLookup().lookup(DockerTag.class);
             if (tag != null) {
-                DockerRemote facade = new DockerRemote(tag.getImage().getInstance());
-                facade.remove(tag);
-                Node parent = node.getParentNode();
-                Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
-                if (refreshable != null) {
-                    refreshable.refresh();
-                }
+                final Node parent = node.getParentNode();
+                UiUtils.performRemoteAction("Test", new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        DockerRemote facade = new DockerRemote(tag.getImage().getInstance());
+                        facade.remove(tag);
+                        return null;
+                    }
+                }, new Runnable() {
+                    @Override
+                    public void run() {
+                        Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
+                        if (refreshable != null) {
+                            refreshable.refresh();
+                        }
+                    }
+                });
             }
         }
     }
@@ -90,7 +102,7 @@ public class RemoveTagAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;

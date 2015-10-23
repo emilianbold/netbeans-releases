@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import java.util.concurrent.Callable;
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
@@ -73,25 +75,32 @@ public abstract class AbstractContainerAction extends NodeAction {
 
     @Override
     protected final void performAction(Node[] activatedNodes) {
-        for (Node node : activatedNodes) {
-            DockerContainer container = node.getLookup().lookup(DockerContainer.class);
+        for (final Node node : activatedNodes) {
+            final DockerContainer container = node.getLookup().lookup(DockerContainer.class);
             if (container != null) {
-                performAction(container);
-
-                if (refresh) {
-                    if (result != null) {
-                        container.setStatus(result);
-                    } else {
-                        // XXX should we response to other nodes
-                        Node parent = node.getParentNode();
-                        if (parent != null) {
-                            Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
-                            if (refreshable != null) {
-                                refreshable.refresh();
+                UiUtils.performRemoteAction(name, new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        performAction(container);
+                        return null;
+                    }
+                }, refresh ? new Runnable() {
+                    @Override
+                    public void run() {
+                        if (result != null) {
+                            container.setStatus(result);
+                        } else {
+                            // XXX should we response to other nodes
+                            Node parent = node.getParentNode();
+                            if (parent != null) {
+                                Refreshable refreshable = parent.getLookup().lookup(Refreshable.class);
+                                if (refreshable != null) {
+                                    refreshable.refresh();
+                                }
                             }
                         }
                     }
-                }
+                } : null);
             }
         }
     }

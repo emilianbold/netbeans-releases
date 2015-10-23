@@ -44,6 +44,9 @@ package org.netbeans.modules.docker.ui;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.Callable;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerRemote;
@@ -60,12 +63,45 @@ import org.openide.windows.InputOutput;
  *
  * @author Petr Hejl
  */
-public final class TerminalUtils {
+public final class UiUtils {
+
+    private static final RequestProcessor RP = new RequestProcessor("Docker Remote Action", 5);
 
     private static final int RESIZE_DELAY = 500;
 
-    private TerminalUtils() {
+    private UiUtils() {
         super();
+    }
+
+    public static void performRemoteAction(final String displayName, final Callable<Void> action, final Runnable eventFinish) {
+        final ProgressHandle handle = ProgressHandle.createHandle(displayName);
+        handle.start();
+        Runnable wrapped = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    action.call();
+                } catch (final Exception ex) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            // FIXME dialog ?
+                            StatusDisplayer.getDefault().setStatusText(ex.getMessage());
+                        }
+                    });
+                } finally {
+                    handle.finish();
+                    if (eventFinish != null) {
+                        SwingUtilities.invokeLater(eventFinish);
+                    }
+                }
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            RP.post(wrapped);
+        } else {
+            wrapped.run();
+        }
     }
 
     @NbBundle.Messages("MSG_NoTerminalSupport=No terminal support installed")

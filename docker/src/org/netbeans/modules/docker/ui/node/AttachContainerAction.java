@@ -41,17 +41,13 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
-import org.netbeans.modules.docker.ui.TerminalUtils;
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
-import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 
 /**
  *
@@ -69,7 +65,7 @@ public class AttachContainerAction extends AbstractContainerAction {
         try {
             DockerRemote facade = new DockerRemote(container.getInstance());
             DockerRemote.AttachResult r = facade.attach(container, false);
-            TerminalUtils.openTerminal(container, r);
+            UiUtils.openTerminal(container, r);
         } catch (DockerException ex) {
             Exceptions.printStackTrace(ex);
         }

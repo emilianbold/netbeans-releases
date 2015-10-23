@@ -41,23 +41,17 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
-import org.netbeans.modules.docker.ui.TerminalUtils;
+import org.netbeans.modules.docker.ui.UiUtils;
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
-import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.remote.Run;
 import org.netbeans.modules.docker.ui.run.ContainerCommandPanel;
-import org.netbeans.modules.terminal.api.IONotifier;
-import org.netbeans.modules.terminal.api.IOResizable;
-import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.nodes.Node;
@@ -65,14 +59,12 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Petr Hejl
  */
-public class RunAction extends NodeAction {
+public class RunTagAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
@@ -138,7 +130,7 @@ public class RunAction extends NodeAction {
                 final DockerContainer container = run.call();
                 final DockerRemote facade = new DockerRemote(container.getInstance());
                 DockerRemote.AttachResult r = facade.attach(container, true);
-                TerminalUtils.openTerminal(container, r);
+                UiUtils.openTerminal(container, r);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
