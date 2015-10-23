@@ -44,6 +44,9 @@ package org.netbeans.modules.docker.ui;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -116,9 +119,10 @@ public final class UiUtils {
         IOProvider provider = IOProvider.get("Terminal"); // NOI18N
         InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
         if (IOTerm.isSupported(io)) {
-            IOTerm.connect(io, result.getStdIn(), result.getStdOut(), result.getStdErr());
+            IOTerm.connect(io, result.getStdIn(),
+                    new TerminalInputStream(io, result.getStdOut()), result.getStdErr());
             if (IOResizable.isSupported(io)) {
-                IONotifier.addPropertyChangeListener(io, new ResizeListener(container));
+                IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
             }
             io.select();
             if (IOTerm.isSupported(io)) {
@@ -135,7 +139,7 @@ public final class UiUtils {
         }
     }
 
-    private static class ResizeListener implements PropertyChangeListener {
+    private static class TerminalResizeListener implements PropertyChangeListener {
 
         private final DockerContainer container;
 
@@ -146,18 +150,18 @@ public final class UiUtils {
 
         private boolean initial = true;
 
-        public ResizeListener(DockerContainer container) {
+        public TerminalResizeListener(DockerContainer container) {
             this.container = container;
             this.task = RequestProcessor.getDefault().create(new Runnable() {
                 @Override
                 public void run() {
                     Dimension newValue;
-                    synchronized (ResizeListener.this) {
+                    synchronized (TerminalResizeListener.this) {
                         newValue = value;
                     }
-                    DockerRemote remote = new DockerRemote(ResizeListener.this.container.getInstance());
+                    DockerRemote remote = new DockerRemote(TerminalResizeListener.this.container.getInstance());
                     try {
-                        remote.resizeTerminal(ResizeListener.this.container, newValue.height, newValue.width);
+                        remote.resizeTerminal(TerminalResizeListener.this.container, newValue.height, newValue.width);
                     } catch (DockerException ex) {
                         LOGGER.log(Level.FINE, null, ex);
                     }
@@ -179,6 +183,48 @@ public final class UiUtils {
                     task.schedule(RESIZE_DELAY);
                 }
             }
+        }
+    }
+
+    private static class TerminalInputStream extends FilterInputStream {
+
+        private final InputOutput io;
+
+        public TerminalInputStream(InputOutput io, InputStream in) {
+            super(in);
+            this.io = io;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            try {
+                int i = super.read(b, off, len);
+                if (i < 0) {
+                    closeTerminal();
+                }
+                return i;
+            } catch (IOException ex) {
+                closeTerminal();
+                throw ex;
+            }
+        }
+
+        @Override
+        public int read() throws IOException {
+            try {
+                int i = super.read();
+                if (i < 0) {
+                    closeTerminal();
+                }
+                return i;
+            } catch (IOException ex) {
+                closeTerminal();
+                throw ex;
+            }
+        }
+
+        private void closeTerminal() {
+            IOTerm.disconnect(io, null);
         }
     }
 }
