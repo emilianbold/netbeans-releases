@@ -601,6 +601,13 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                         insideInterestedFile = true;
                     }
                     continuePreprocessing = true;
+                } else if (state == State.SEEK_ENTER_TO_INCLUDED_FILE) {
+                    // we were seeking for onEnter into deeper level, but instead got earlier onExit
+                    // it could be the case when inside included file there is no more #include 
+                    // directives and we exit from just entered file;
+                    // this is corrupted include stack, we don't want to go this way anymore;
+                    state = State.CORRUPTED_INCLUDE_CHAIN;
+                    continuePreprocessing = false;
                 } else {
                     // in all other cases exit but continue 
                     // till we meet FileInfoForExitFrom or seenInterestedFile
