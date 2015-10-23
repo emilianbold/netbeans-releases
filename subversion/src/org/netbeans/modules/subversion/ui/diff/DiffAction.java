@@ -49,7 +49,9 @@ import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
+import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.ui.actions.ActionUtils;
 import org.netbeans.modules.subversion.ui.status.SyncFileNode;
 import org.netbeans.modules.subversion.util.ClientCheckSupport;
@@ -103,7 +105,7 @@ public class DiffAction extends ContextAction {
                 SVNUrl repositoryUrl = null, fileUrl = null;
                 RepositoryFile left = null, right = null;
                 File[] roots = SvnUtils.getActionRoots(ctx, false);
-                if (roots != null) {
+                if (roots != null && roots.length > 0) {
                     try {
                         File interestingFile;
                         if(roots.length == 1) {
@@ -116,6 +118,8 @@ public class DiffAction extends ContextAction {
                     } catch (SVNClientException ex) {
                         Subversion.LOG.log(Level.INFO, null, ex);
                     }
+                } else if (roots != null && roots.length == 0) {
+                    Logger.getLogger(DiffAction.class.getName()).log(Level.WARNING, "No cation roots for context: {0}", Arrays.asList(ctx.getRootFiles()));
                 }
                 if (repositoryUrl != null && fileUrl != null) {
                     if (type == Setup.DIFFTYPE_LOCAL) {
