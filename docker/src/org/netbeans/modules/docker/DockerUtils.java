@@ -54,6 +54,10 @@ public final class DockerUtils {
         super();
     }
 
+    public static String getShortId(Identifiable identifiable) {
+        return getShortId(identifiable.getId());
+    }
+
     public static String getShortId(String id) {
         if (id.length() > 12) {
             return id.substring(0, 12);

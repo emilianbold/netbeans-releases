@@ -66,6 +66,8 @@ public abstract class AbstractContainerAction extends NodeAction {
         this.status = status;
     }
 
+    protected abstract String getProgressMessage(DockerContainer container);
+
     protected abstract void performAction(DockerContainer container) throws DockerException;
 
     protected boolean isEnabled(DockerContainer container) {

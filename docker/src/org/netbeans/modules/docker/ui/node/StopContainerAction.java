@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
@@ -57,6 +58,15 @@ public class StopContainerAction extends AbstractContainerAction {
     @NbBundle.Messages("LBL_StopContainerAction=Stop")
     public StopContainerAction() {
         super(Bundle.LBL_StopContainerAction(), DockerEvent.Status.DIE);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - container id",
+        "MSG_StoppingContainer=Stopping container {0}"
+    })
+    @Override
+    protected String getProgressMessage(DockerContainer container) {
+        return Bundle.MSG_StoppingContainer(DockerUtils.getShortId(container));
     }
 
     @Override
