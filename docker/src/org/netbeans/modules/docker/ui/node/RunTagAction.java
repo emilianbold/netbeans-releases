@@ -58,6 +58,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -102,7 +103,7 @@ public class RunTagAction extends NodeAction {
         return false;
     }
 
-    private void perform(DockerTag tag) {
+    private void perform(final DockerTag tag) {
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
         panels.add(new ContainerCommandPanel());
         String[] steps = new String[panels.size()];
@@ -119,31 +120,37 @@ public class RunTagAction extends NodeAction {
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
             }
         }
-        WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels));
+        final WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle("Run");
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            try {
-                DockerRemote remote = new DockerRemote(tag.getImage().getInstance());
-                JSONObject config = new JSONObject();
-                config.put("OpenStdin", true);
-                config.put("StdinOnce", true);
-                config.put("Tty", true);
-                config.put("Image", tag.getTag());
-                config.put("Cmd", (String) wiz.getProperty("command"));
-                config.put("AttachStdin", true);
-                config.put("AttachStdout", true);
-                config.put("AttachStderr", true);
-                DockerContainer container = remote.createContainer(config);
-                remote.start(container);
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        DockerRemote remote = new DockerRemote(tag.getImage().getInstance());
+                        JSONObject config = new JSONObject();
+                        config.put("OpenStdin", true);
+                        config.put("StdinOnce", true);
+                        config.put("Tty", true);
+                        config.put("Image", tag.getTag());
+                        config.put("Cmd", (String) wiz.getProperty("command"));
+                        config.put("AttachStdin", true);
+                        config.put("AttachStdout", true);
+                        config.put("AttachStderr", true);
+                        DockerContainer container = remote.createContainer(config);
+                        remote.start(container);
 
-                final DockerRemote facade = new DockerRemote(container.getInstance());
-                DockerRemote.AttachResult r = facade.attach(container, true);
-                UiUtils.openTerminal(container, r);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
+                        final DockerRemote facade = new DockerRemote(container.getInstance());
+                        DockerRemote.AttachResult r = facade.attach(container, true);
+                        UiUtils.openTerminal(container, r);
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+
         }
     }
 }
