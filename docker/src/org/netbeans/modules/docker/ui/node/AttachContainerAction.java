@@ -48,7 +48,6 @@ import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
