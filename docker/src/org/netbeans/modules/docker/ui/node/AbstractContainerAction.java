@@ -42,8 +42,10 @@
 package org.netbeans.modules.docker.ui.node;
 
 import java.util.concurrent.Callable;
+import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerInstance;
+import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.ui.UiUtils;
@@ -85,9 +87,14 @@ public abstract class AbstractContainerAction extends NodeAction {
                         performAction(container);
                         if (status != null) {
                             DockerInstance instance = container.getInstance();
-                            instance.getEventBus().sendEvent(
-                                    new DockerEvent(instance, status, container.getId(),
-                                            container.getImage(), System.currentTimeMillis() / 1000));
+                            DockerEvent event = new DockerEvent(instance, status, container.getId(),
+                                    container.getImage(), System.currentTimeMillis() / 1000);
+                            // just to be sure we do not miss the update
+                            ContainerStatus containerStatus = DockerUtils.getContainerStatus(event);
+                            if (containerStatus != null) {
+                                container.setStatus(containerStatus);
+                            }
+                            instance.getEventBus().sendEvent(event);
                         }
                         return null;
                     }

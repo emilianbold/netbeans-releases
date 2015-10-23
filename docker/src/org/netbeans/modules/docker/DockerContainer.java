@@ -78,6 +78,7 @@ public class DockerContainer implements Identifiable {
                 }
             }
         });
+        // FIXME refresh the state once we are listening
     }
 
     public DockerInstance getInstance() {
