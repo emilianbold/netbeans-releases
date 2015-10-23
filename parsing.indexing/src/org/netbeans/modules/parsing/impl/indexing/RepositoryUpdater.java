@@ -301,19 +301,37 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     // returns false when timed out
     public boolean waitUntilFinished(long timeout) throws InterruptedException {
-        long ts1 = System.currentTimeMillis();
-        long ts2 = ts1;
-        //long tout = timeout > 0 ? timeout : 1000;
+        return waitUntilFinished(timeout, false);
+    }
 
-        do {
-            boolean timedOut = !worker.waitUntilFinished(timeout);
-            ts2 = System.currentTimeMillis();
-            if (timedOut) {
-                return false;
-            }
-        } while (!getIndexingState().isEmpty() && (timeout <= 0 || ts2 - ts1 < timeout));
-
-        return timeout <= 0 || ts2 - ts1 < timeout;
+    private boolean waitUntilFinished(
+            final long timeout,
+            final boolean relaxProtectedMode) throws InterruptedException {
+        try {
+            final Callable<Boolean> call = new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    long ts1 = System.currentTimeMillis();
+                    long ts2 = ts1;
+                    //long tout = timeout > 0 ? timeout : 1000;
+                    do {
+                        boolean timedOut = !worker.waitUntilFinished(timeout);
+                        ts2 = System.currentTimeMillis();
+                        if (timedOut) {
+                            return false;
+                        }
+                    } while (!getIndexingState().isEmpty() && (timeout <= 0 || ts2 - ts1 < timeout));
+                    return timeout <= 0 || ts2 - ts1 < timeout;
+                }
+            };
+            return relaxProtectedMode ?
+                worker.runOffProtecedMode(call) :
+                call.call();
+        } catch (InterruptedException | RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -5906,7 +5924,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     followUpWorksSorted = false;
 
-                    if (!scheduled && protectedOwners.isEmpty()) {
+                    if (!scheduled && (protectedOwners.isEmpty() || offProtectedMode == Thread.currentThread())) {
                         scheduled = true;
                         LOGGER.fine("scheduled = true");    //NOI18N
                         WORKER.submit(this);
@@ -6000,30 +6018,24 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                 if (protectedOwners.isEmpty()) {
                     // in normal mode again, restart all delayed jobs
-                    final List<Runnable> tasks = followupTasks;
-
-                    // delaying of these tasks was just copied from the old java.source RepositoryUpdater
-                    RP.create(new Runnable() {
-                        public @Override void run() {
-                            schedule(new Work(false, false, false, true, SuspendSupport.NOP, null) {
-                                protected @Override boolean getDone() {
-                                    if (tasks != null) {
-                                        for(Runnable task : tasks) {
-                                            try {
-                                                task.run();
-                                            } catch (ThreadDeath td) {
-                                                throw td;
-                                            } catch (Throwable t) {
-                                                LOGGER.log(Level.WARNING, null, t);
-                                            }
-                                        }
-                                    }
-                                    return true;
-                                }
-                            }, false);
-                        }
-                    }).schedule(FILE_LOCKS_DELAY);
+                    final List<Runnable> tasks = followupTasks != null ? followupTasks : Collections.<Runnable>emptyList();
+                    followupTasks = null;
+                    scheduleDelayed(tasks, FILE_LOCKS_DELAY);
                     LOGGER.log(Level.FINE, "Protected mode exited, scheduling postprocess tasks: {0}", tasks); //NOI18N
+                }
+            }
+        }
+
+        <T> T runOffProtecedMode(@NonNull final Callable<T> call) throws Exception {
+            synchronized (todo) {
+                offProtectedMode = Thread.currentThread();
+                scheduleDelayed(Collections.<Runnable>emptyList(), 0);
+            }
+            try {
+                return call.call();
+            } finally {
+                synchronized (todo) {
+                    offProtectedMode = null;
                 }
             }
         }
@@ -6081,7 +6093,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             globalLookup);
                         } finally {
                             synchronized (todo) {
-                                if (!protectedOwners.isEmpty() || todo.isEmpty()) {
+                                if ((!protectedOwners.isEmpty() && offProtectedMode == null) || todo.isEmpty()) {
                                     scheduled = false;
                                     LOGGER.fine("scheduled = false");   //NOI18N
                                 } else {
@@ -6112,6 +6124,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private final List<Work> todo = new LinkedList<>();
         private final List<Long> protectedOwners = new LinkedList<>();
         private final Lookup globalLookup;
+        //@GuardedBy("todo")
+        private Thread offProtectedMode;
         private boolean followUpWorksSorted = true;
         private Work workInProgress = null;
         private boolean scheduled = false;
@@ -6189,7 +6203,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private Work getWork () {
             synchronized (todo) {
                 Work w;
-                if (protectedOwners.isEmpty() && todo.size() > 0) {
+                if ((protectedOwners.isEmpty() || offProtectedMode != null) && todo.size() > 0) {
                     w = todo.remove(0);
 
                     if (w instanceof FileListWork && ((FileListWork) w).isFollowUpJob() && !followUpWorksSorted) {
@@ -6241,6 +6255,36 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
+        private void scheduleDelayed(
+                @NonNull final Collection<? extends Runnable> tasks,
+                final int delay) {
+            final Runnable run = new Runnable() {
+                public @Override void run() {
+                    schedule(new Work(false, false, false, true, SuspendSupport.NOP, null) {
+                        protected @Override boolean getDone() {
+                            for(Runnable task : tasks) {
+                                try {
+                                    task.run();
+                                } catch (ThreadDeath td) {
+                                    throw td;
+                                } catch (Throwable t) {
+                                    LOGGER.log(Level.WARNING, null, t);
+                                }
+                            }
+                            return true;
+                        }
+                    }, false);
+                }
+            };
+            if (delay == 0) {
+                //Run now sync
+                run.run();
+            } else {
+                //Delay and run async
+                RP.create(run).schedule(delay);
+            }
+        }
+
         @ServiceProviders ({
             @ServiceProvider(service=IndexingBridge.Ordering.class),
             @ServiceProvider(service = IndexingBridge.class)
@@ -6258,7 +6302,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
             @Override
             protected void await() throws InterruptedException {
-                RepositoryUpdater.getDefault().waitUntilFinished(-1);
+                RepositoryUpdater.getDefault().waitUntilFinished(-1, true);
             }
         }
 
