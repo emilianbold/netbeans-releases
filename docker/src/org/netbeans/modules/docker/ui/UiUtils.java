@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
@@ -123,14 +124,15 @@ public final class UiUtils {
             if (IOResizable.isSupported(io)) {
                 IONotifier.addPropertyChangeListener(io, new ResizeListener(container));
             }
-            if (IOSelect.isSupported(io)) {
-                Set<IOSelect.AdditionalOperation> ops = new HashSet<>();
-                Collections.addAll(ops, IOSelect.AdditionalOperation.OPEN,
-                        IOSelect.AdditionalOperation.REQUEST_VISIBLE,
-                        IOSelect.AdditionalOperation.REQUEST_ACTIVE);
-                IOSelect.select(io, ops);
-            } else {
-                io.select();
+            io.select();
+            if (IOTerm.isSupported(io)) {
+                final Term term = IOTerm.term(io);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        term.requestFocusInWindow();
+                    }
+                });
             }
         } else {
             StatusDisplayer.getDefault().setStatusText(Bundle.MSG_NoTerminalSupport());
