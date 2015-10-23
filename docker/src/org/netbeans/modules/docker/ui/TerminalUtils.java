@@ -50,6 +50,8 @@ import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -66,13 +68,18 @@ public final class TerminalUtils {
         super();
     }
 
+    @NbBundle.Messages("MSG_NoTerminalSupport=No terminal support installed")
     public static void openTerminal(final DockerContainer container, DockerRemote.AttachResult result) {
         IOProvider provider = IOProvider.get("Terminal"); // NOI18N
         InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
-        IOTerm.connect(io, result.getStdIn(), result.getStdOut(), result.getStdErr());
-        io.select();
-        if (IOResizable.isSupported(io)) {
-            IONotifier.addPropertyChangeListener(io, new ResizeListener(container));
+        if (IOTerm.isSupported(io)) {
+            IOTerm.connect(io, result.getStdIn(), result.getStdOut(), result.getStdErr());
+            io.select();
+            if (IOResizable.isSupported(io)) {
+                IONotifier.addPropertyChangeListener(io, new ResizeListener(container));
+            }
+        } else {
+            StatusDisplayer.getDefault().setStatusText(Bundle.MSG_NoTerminalSupport());
         }
     }
 
@@ -85,7 +92,7 @@ public final class TerminalUtils {
         // GuardedBy("this")
         private Dimension value;
 
-        boolean initial = true;
+        private boolean initial = true;
 
         public ResizeListener(DockerContainer container) {
             this.container = container;
@@ -110,6 +117,7 @@ public final class TerminalUtils {
                     value = newVal.cells;
                 }
                 if (initial) {
+                    initial = false;
                     task.schedule(0);
                 } else {
                     task.schedule(RESIZE_DELAY);
