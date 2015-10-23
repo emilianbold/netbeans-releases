@@ -48,6 +48,7 @@ import com.oracle.truffle.api.ExecutionContext;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Property;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,19 @@ public class TruffleObject {
         this.visualizer = visualizer;
         this.name = name;
         this.object = object;
-        this.displayValue = (visualizer != null) ? visualizer.displayValue(object, DISPLAY_TRIM) : Objects.toString(object);
+        String value;
+        if (visualizer != null) {
+            value = visualizer.displayValue(object, DISPLAY_TRIM);
+        } else {
+            value = Objects.toString(object);
+        }
+        if (object instanceof DynamicObject && value.startsWith("DynamicObject<")) {
+            // Ugly:
+            ObjectType objectType = ((DynamicObject) object).getShape().getObjectType();
+            //value = objectType.toString((DynamicObject) object);
+            value = objectType.toString();
+        }
+        this.displayValue = value;
         if (object instanceof String) {
             this.type = String.class.getSimpleName();
         } else if (object instanceof Number) {
@@ -81,6 +94,11 @@ public class TruffleObject {
             this.type = FrameSlotKind.Object.name();
         }
         this.leaf = isLeaf(object);
+        /*
+        System.err.println("new TruffleObject("+name+", "+object+"): type = "+type+", displayValue = "+displayValue+", leaf = "+leaf);
+        if (object != null) {
+            System.err.println("Object's class = "+object.getClass()+", is DynamicObject = "+(object instanceof DynamicObject));
+        }*/
     }
     
     public Object[] getChildren() {
@@ -104,12 +122,14 @@ public class TruffleObject {
     */
     private static boolean isLeafGeneric(Object object) {
         if (object instanceof DynamicObject) {
-            if (((DynamicObject) object).getShape().getPropertyCount() > 0 ) {//||
+            List<Property> props = ((DynamicObject) object).getShape().getPropertyListInternal(true);
+            return props.isEmpty();
+            /*if (((DynamicObject) object).getShape().getPropertyCount() > 0 ) {//||
                 //((DynamicObject) object).getShape().getEnumerablePropertyCount() > 0) {
                 return false;
             } else {
                 return true;
-            }
+            }*/
         } else {
             return true;
         }

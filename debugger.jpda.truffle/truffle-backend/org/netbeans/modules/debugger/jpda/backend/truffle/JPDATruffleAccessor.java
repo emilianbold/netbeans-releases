@@ -532,7 +532,7 @@ public class JPDATruffleAccessor extends Object {
             System.err.println("setLineBreakpoint("+source+", "+line+"): "+dex);
             return null;
         }
-        System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
+        //System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
         if (ignoreCount != 0) {
             lb.setIgnoreCount(ignoreCount);
         }
@@ -668,7 +668,7 @@ public class JPDATruffleAccessor extends Object {
                     Thread.sleep(Long.MAX_VALUE);
                 } catch (InterruptedException iex) {}
                 accessLoopSleeping = false;
-                System.err.println("AccessLoop: steppingIntoTruffle = "+steppingIntoTruffle+", isSteppingInto = "+isSteppingInto+", stepIntoPrepared = "+stepIntoPrepared);
+                //System.err.println("AccessLoop: steppingIntoTruffle = "+steppingIntoTruffle+", isSteppingInto = "+isSteppingInto+", stepIntoPrepared = "+stepIntoPrepared);
                 
                 if (steppingIntoTruffle != 0) {
                     if (steppingIntoTruffle > 0) {
@@ -680,7 +680,7 @@ public class JPDATruffleAccessor extends Object {
                                 isex.printStackTrace();
                             }
                             stepIntoPrepared = true;
-                            System.err.println("Prepared step into and continue.");
+                            //System.err.println("Prepared step into and continue.");
                         }
                         isSteppingInto = true;
                     } else {
@@ -692,7 +692,7 @@ public class JPDATruffleAccessor extends Object {
                     steppingIntoTruffle = 0;
                     continue;
                 }
-                System.err.println("accessLoopRunning = "+accessLoopRunning+", possible debugger access...");
+                //System.err.println("accessLoopRunning = "+accessLoopRunning+", possible debugger access...");
                 if (accessLoopRunning) {
                     debuggerAccess();
                 }

@@ -436,15 +436,15 @@ class JPDATruffleDebugManager {
     */
 
     void prepareExecStepInto() {
-        System.err.println("prepareExecStepInto()...");
+        //System.err.println("prepareExecStepInto()...");
         execEvent.prepareStepInto();
-        System.err.println("prepareExecStepInto() DONE.");
+        //System.err.println("prepareExecStepInto() DONE.");
     }
 
     void prepareExecContinue() {
-        System.err.println("prepareExecContinue()...");
+        //System.err.println("prepareExecContinue()...");
         execEvent.prepareContinue();
-        System.err.println("prepareExecContinue() DONE.");
+        //System.err.println("prepareExecContinue() DONE.");
     }
     
 }
