@@ -147,90 +147,52 @@ public class DockerRemote {
         }
         return Collections.emptyList();
     }
-    
-    public DockerContainer createContainer(JSONObject configuration) {
+
+    public DockerContainer createContainer(JSONObject configuration) throws DockerException {
         try {
             JSONObject value = (JSONObject) doPostRequest(instance.getUrl(), "/containers/create", new ByteArrayInputStream(configuration.toJSONString().getBytes("UTF-8")),
                     true, Collections.singleton(HttpURLConnection.HTTP_CREATED));
             // FIXME image id
             return instance.getContainerFactory().create((String) value.get("Id"),
                     (String) configuration.get("Image"), ContainerStatus.STOPPED);
-        } catch (DockerRemoteException ex) {
-            if (HttpURLConnection.HTTP_NOT_FOUND == ex.getCode()) {
-                // FIXME try pull
-            }
-        } catch (DockerException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
         } catch (UnsupportedEncodingException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
-        return null;
-    }
-
-    public void start(DockerContainer container) {
-        try {
-            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/start", null, false, START_STOP_CONTAINER_CODES);
-        } catch (DockerException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
+            throw new DockerException(ex);
         }
     }
 
-    public void stop(DockerContainer container) {
-        try {
-            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/stop", null, false, START_STOP_CONTAINER_CODES);
-        } catch (DockerException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
+    public void start(DockerContainer container) throws DockerException {
+        doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/start", null, false, START_STOP_CONTAINER_CODES);
     }
 
-    public void pause(DockerContainer container) {
-        try {
-            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/pause", null, false,
-                    Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
-        } catch (DockerException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
+    public void stop(DockerContainer container) throws DockerException {
+        doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/stop", null, false, START_STOP_CONTAINER_CODES);
     }
 
-    public void unpause(DockerContainer container) {
-        try {
-            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/unpause", null, false,
-                    Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
-        } catch (DockerException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
+    public void pause(DockerContainer container) throws DockerException {
+        doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/pause", null, false,
+                Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
     }
 
-    public void remove(DockerTag tag) {
-        try {
-            String id = tag.getTag();
-            if (id.equals("<none>:<none>")) {
-                id = tag.getImage().getId();
-            }
-            JSONArray value = (JSONArray) doDeleteRequest(instance.getUrl(), "/images/" + id, true,
-                    REMOVE_IMAGE_CODES);
-        } catch (DockerException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
+    public void unpause(DockerContainer container) throws DockerException {
+        doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/unpause", null, false,
+                Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
     }
 
-    public void remove(DockerContainer container) {
-        try {
-            doDeleteRequest(instance.getUrl(), "/containers/" + container.getId(), false,
-                    REMOVE_CONTAINER_CODES);
-        } catch (DockerException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
+    public void remove(DockerTag tag) throws DockerException {
+        String id = DockerUtils.getTag(tag);
+        JSONArray value = (JSONArray) doDeleteRequest(instance.getUrl(), "/images/" + id, true,
+                REMOVE_IMAGE_CODES);
     }
 
-    public void resizeTerminal(DockerContainer container, int rows, int columns) {
+    public void remove(DockerContainer container) throws DockerException {
+        doDeleteRequest(instance.getUrl(), "/containers/" + container.getId(), false,
+                REMOVE_CONTAINER_CODES);
+    }
+
+    public void resizeTerminal(DockerContainer container, int rows, int columns) throws DockerException {
         // formally there should be restart so changes take place
-        try {
-            doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/resize?h=" + rows + "&w=" + columns,
-                    null, false, Collections.singleton(HttpURLConnection.HTTP_OK));
-        } catch (DockerException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
+        doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/resize?h=" + rows + "&w=" + columns,
+                null, false, Collections.singleton(HttpURLConnection.HTTP_OK));
     }
 
     public AttachResult attach(DockerContainer container, boolean logs) throws DockerException {
@@ -360,7 +322,7 @@ public class DockerRemote {
     private static Object doPostRequest(@NonNull String url, @NonNull String action,
             @NullAllowed InputStream data, boolean output, Set<Integer> okCodes) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
-        
+
         try {
             URL httpUrl = createURL(url, action);
             HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();

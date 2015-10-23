@@ -45,10 +45,13 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
+import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
@@ -64,6 +67,8 @@ import org.openide.windows.InputOutput;
  * @author Petr Hejl
  */
 public final class UiUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(UiUtils.class.getName());
 
     private static final RequestProcessor RP = new RequestProcessor("Docker Remote Action", 5);
 
@@ -86,6 +91,7 @@ public final class UiUtils {
                         @Override
                         public void run() {
                             // FIXME dialog ?
+                            LOGGER.log(Level.WARNING, null, ex);
                             StatusDisplayer.getDefault().setStatusText(ex.getMessage());
                         }
                     });
@@ -140,7 +146,11 @@ public final class UiUtils {
                         newValue = value;
                     }
                     DockerRemote remote = new DockerRemote(ResizeListener.this.container.getInstance());
-                    remote.resizeTerminal(ResizeListener.this.container, newValue.height, newValue.width);
+                    try {
+                        remote.resizeTerminal(ResizeListener.this.container, newValue.height, newValue.width);
+                    } catch (DockerException ex) {
+                        LOGGER.log(Level.FINE, null, ex);
+                    }
                 }
             }, true);
         }

@@ -45,6 +45,7 @@ import java.util.concurrent.Callable;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.remote.DockerEvent;
+import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -65,7 +66,7 @@ public abstract class AbstractContainerAction extends NodeAction {
         this.status = status;
     }
 
-    protected abstract void performAction(DockerContainer container);
+    protected abstract void performAction(DockerContainer container) throws DockerException;
 
     protected boolean isEnabled(DockerContainer container) {
         return true;

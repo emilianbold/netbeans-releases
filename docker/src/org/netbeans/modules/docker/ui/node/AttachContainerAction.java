@@ -62,14 +62,10 @@ public class AttachContainerAction extends AbstractContainerAction {
     }
 
     @Override
-    protected void performAction(DockerContainer container) {
-        try {
-            DockerRemote facade = new DockerRemote(container.getInstance());
-            DockerRemote.AttachResult r = facade.attach(container, false);
-            UiUtils.openTerminal(container, r);
-        } catch (DockerException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    protected void performAction(DockerContainer container) throws DockerException {
+        DockerRemote facade = new DockerRemote(container.getInstance());
+        DockerRemote.AttachResult r = facade.attach(container, false);
+        UiUtils.openTerminal(container, r);
     }
 
     @Override

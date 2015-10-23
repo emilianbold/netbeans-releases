@@ -61,6 +61,14 @@ public final class DockerUtils {
         return id;
     }
 
+    public static String getTag(DockerTag tag) {
+        String id = tag.getTag();
+        if (id.equals("<none>:<none>")) { // NOI18N
+            id = tag.getImage().getId();
+        }
+        return id;
+    }
+
     public static ContainerStatus getContainerStatus(String status) {
         if (status == null) {
             return ContainerStatus.STOPPED;
