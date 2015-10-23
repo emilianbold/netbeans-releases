@@ -47,10 +47,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
+import org.json.simple.JSONObject;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.remote.Run;
 import org.netbeans.modules.docker.ui.run.ContainerCommandPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -124,10 +124,20 @@ public class RunTagAction extends NodeAction {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle("Run");
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            Run run = new Run(tag.getImage().getInstance(), tag.getTag(), (String) wiz.getProperty("command"));
-
             try {
-                final DockerContainer container = run.call();
+                DockerRemote remote = new DockerRemote(tag.getImage().getInstance());
+                JSONObject config = new JSONObject();
+                config.put("OpenStdin", true);
+                config.put("StdinOnce", true);
+                config.put("Tty", true);
+                config.put("Image", tag.getTag());
+                config.put("Cmd", (String) wiz.getProperty("command"));
+                config.put("AttachStdin", true);
+                config.put("AttachStdout", true);
+                config.put("AttachStderr", true);
+                DockerContainer container = remote.createContainer(config);
+                remote.start(container);
+
                 final DockerRemote facade = new DockerRemote(container.getInstance());
                 DockerRemote.AttachResult r = facade.attach(container, true);
                 UiUtils.openTerminal(container, r);
