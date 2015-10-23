@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.util.NbBundle;
 
@@ -54,7 +55,7 @@ public class PauseContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_PauseContainerAction=Pause")
     public PauseContainerAction() {
-        super(Bundle.LBL_PauseContainerAction(), true, "pause");
+        super(Bundle.LBL_PauseContainerAction(), true, DockerEvent.Status.PAUSE);
     }
 
     @Override

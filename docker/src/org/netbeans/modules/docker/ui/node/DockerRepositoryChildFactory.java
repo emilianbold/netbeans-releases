@@ -74,7 +74,7 @@ public class DockerRepositoryChildFactory extends ChildFactory<DockerTag> implem
         instance.getEventBus().addImageListener(new DockerEvent.Listener() {
             @Override
             public void onEvent(DockerEvent event) {
-                if (!"push".equals(event.getStatus())) { // NOI18N
+                if (DockerEvent.Status.PUSH != event.getStatus()) {
                     refresh();
                 }
             }

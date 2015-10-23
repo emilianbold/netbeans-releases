@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.util.NbBundle;
 
@@ -54,7 +55,7 @@ public class RemoveContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_RemoveContainerAction=Remove")
     public RemoveContainerAction() {
-        super(Bundle.LBL_RemoveContainerAction(), true, "destroy");
+        super(Bundle.LBL_RemoveContainerAction(), true, DockerEvent.Status.DESTROY);
     }
 
     @Override

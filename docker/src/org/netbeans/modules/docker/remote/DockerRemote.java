@@ -53,7 +53,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -80,7 +79,6 @@ import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -303,11 +301,15 @@ public class DockerRemote {
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
-                        String status = (String) o.get("status");
+                        DockerEvent.Status status = DockerEvent.Status.parse((String) o.get("status"));
                         String id = (String) o.get("id");
                         String from = (String) o.get("from");
                         long time = (Long) o.get("time");
-                        listener.onEvent(new DockerEvent(instance, status, id, from, time));
+                        if (status == null) {
+                            LOGGER.log(Level.INFO, "Unknown event {0}", o.get("status"));
+                        } else {
+                            listener.onEvent(new DockerEvent(instance, status, id, from, time));
+                        }
                         parser.reset();
                     }
                 } catch (ParseException ex) {

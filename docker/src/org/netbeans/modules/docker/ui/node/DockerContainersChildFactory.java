@@ -44,7 +44,9 @@ package org.netbeans.modules.docker.ui.node;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.remote.DockerEvent;
@@ -66,10 +68,10 @@ public class DockerContainersChildFactory extends ChildFactory<DockerContainer> 
         }
     };
 
-    private static final List CHANGE_EVENTS = new ArrayList();
+    private static final Set<DockerEvent.Status> CHANGE_EVENTS = new HashSet<>();
 
     static {
-        Collections.addAll(CHANGE_EVENTS, "copy", "create", "destroy"); // NOI18N
+        Collections.addAll(CHANGE_EVENTS, DockerEvent.Status.COPY, DockerEvent.Status.CREATE, DockerEvent.Status.DESTROY);
     }
 
     private final DockerInstance instance;

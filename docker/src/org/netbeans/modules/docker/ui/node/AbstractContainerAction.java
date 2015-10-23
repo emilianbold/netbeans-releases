@@ -61,9 +61,9 @@ public abstract class AbstractContainerAction extends NodeAction {
 
     private final boolean refresh;
 
-    private final String status;
+    private final DockerEvent.Status status;
 
-    public AbstractContainerAction(String name, boolean refresh, String status) {
+    public AbstractContainerAction(String name, boolean refresh, DockerEvent.Status status) {
         this.name = name;
         this.refresh = refresh;
         this.status = status;

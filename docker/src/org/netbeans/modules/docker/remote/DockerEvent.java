@@ -43,6 +43,8 @@ package org.netbeans.modules.docker.remote;
 
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import org.netbeans.modules.docker.DockerInstance;
 
@@ -52,9 +54,70 @@ import org.netbeans.modules.docker.DockerInstance;
  */
 public class DockerEvent extends EventObject {
 
+    public enum Status {
+
+        // container events for API 1.21: attach, commit, copy, create, destroy, die, exec_create, exec_start, export, kill, oom, pause, rename, resize, restart, start, stop, top, unpause
+        ATTACH("attach", true),
+        COMMIT("commit", true),
+        COPY("copy", true),
+        CREATE("create", true),
+        DESTROY("destroy", true),
+        DIE("die", true),
+        EXEC_CREATE("exec_create", true),
+        EXEC_START("exec_start", true),
+        EXPORT("export", true),
+        KILL("kill", true),
+        OOM("oom", true),
+        PAUSE("pause", true),
+        RENAME("rename", true),
+        RESIZE("resize", true),
+        RESTART("restart", true),
+        START("start", true),
+        STOP("stop", true),
+        TOP("top", true),
+        UNPAUSE("unpause", true),
+
+        // image events for API 1.21: delete, import, pull, push, tag, untag
+        DELETE("delete", false),
+        IMPORT("import", false),
+        PULL("pull", false),
+        PUSH("push", false),
+        TAG("tag", false),
+        UNTAG("untag", false);
+
+        private static final Map<String, Status> VALUES = new HashMap<>();
+
+        static {
+            for (Status s : Status.values()) {
+                VALUES.put(s.getText(), s);
+            }
+        }
+
+        private final String text;
+
+        private final boolean container;
+
+        private Status(String text, boolean container) {
+            this.text = text;
+            this.container = container;
+        }
+        
+        public static Status parse(String text) {
+            return VALUES.get(text);
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public boolean isContainer() {
+            return container;
+        }
+    }
+
     private final DockerInstance instance;
 
-    private final String status;
+    private final Status status;
 
     private final String id;
 
@@ -62,7 +125,7 @@ public class DockerEvent extends EventObject {
 
     private final long time;
 
-    public DockerEvent(DockerInstance instance, String status, String id, String from, long time) {
+    public DockerEvent(DockerInstance instance, Status status, String id, String from, long time) {
         super(instance);
         this.instance = instance;
         this.status = status;
@@ -71,7 +134,7 @@ public class DockerEvent extends EventObject {
         this.time = time;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
@@ -86,7 +149,7 @@ public class DockerEvent extends EventObject {
     public long getTime() {
         return time;
     }
-    
+
     public DockerInstance getSource() {
         return instance;
     }

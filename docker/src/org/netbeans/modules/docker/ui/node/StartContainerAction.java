@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.util.NbBundle;
 
@@ -54,7 +55,7 @@ public class StartContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_StartContainerAction=Start")
     public StartContainerAction() {
-        super(Bundle.LBL_StartContainerAction(), true, "start");
+        super(Bundle.LBL_StartContainerAction(), true, DockerEvent.Status.START);
     }
 
     @Override
