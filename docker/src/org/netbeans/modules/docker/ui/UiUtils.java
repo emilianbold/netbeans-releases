@@ -44,6 +44,9 @@ package org.netbeans.modules.docker.ui;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,6 +63,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
+import org.openide.windows.IOSelect;
 import org.openide.windows.InputOutput;
 
 /**
@@ -116,9 +120,17 @@ public final class UiUtils {
         InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
         if (IOTerm.isSupported(io)) {
             IOTerm.connect(io, result.getStdIn(), result.getStdOut(), result.getStdErr());
-            io.select();
             if (IOResizable.isSupported(io)) {
                 IONotifier.addPropertyChangeListener(io, new ResizeListener(container));
+            }
+            if (IOSelect.isSupported(io)) {
+                Set<IOSelect.AdditionalOperation> ops = new HashSet<>();
+                Collections.addAll(ops, IOSelect.AdditionalOperation.OPEN,
+                        IOSelect.AdditionalOperation.REQUEST_VISIBLE,
+                        IOSelect.AdditionalOperation.REQUEST_ACTIVE);
+                IOSelect.select(io, ops);
+            } else {
+                io.select();
             }
         } else {
             StatusDisplayer.getDefault().setStatusText(Bundle.MSG_NoTerminalSupport());
