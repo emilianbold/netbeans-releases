@@ -69,6 +69,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -235,6 +236,8 @@ public class DockerRemote {
     }
 
     public AttachResult attach(DockerContainer container, boolean logs) throws DockerException {
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -279,6 +282,8 @@ public class DockerRemote {
     }
 
     public void events(Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+
         try {
             URL httpUrl = createURL(instance.getUrl(), since != null ? "/events?since=" + since : "/events");
             HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
@@ -319,6 +324,8 @@ public class DockerRemote {
     }
 
     private static Object doGetRequest(@NonNull String url, @NonNull String action, Set<Integer> okCodes) throws DockerException {
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+
         try {
             URL httpUrl = createURL(url, action);
             HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
@@ -350,6 +357,8 @@ public class DockerRemote {
 
     private static Object doPostRequest(@NonNull String url, @NonNull String action,
             @NullAllowed InputStream data, boolean output, Set<Integer> okCodes) throws DockerException {
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+        
         try {
             URL httpUrl = createURL(url, action);
             HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
@@ -391,6 +400,8 @@ public class DockerRemote {
     }
 
     private static Object doDeleteRequest(@NonNull String url, @NonNull String action, boolean output, Set<Integer> okCodes) throws DockerException {
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+
         try {
             URL httpUrl = createURL(url, action);
             HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
