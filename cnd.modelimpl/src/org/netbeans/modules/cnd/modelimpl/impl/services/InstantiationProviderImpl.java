@@ -956,7 +956,8 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         boolean variadic = paramsInfo.isVariadic();
 
         if (!specializations.isEmpty()) {
-            final boolean templateBasedInstantiation = CsmKindUtilities.isInstantiation(cls) && Instantiation.isTemplateBasedInstantiation((CsmInstantiation) cls);
+            final boolean tryFullResolve = !CsmKindUtilities.isInstantiation(cls) 
+                || (!Instantiation.isTemplateBasedInstantiation((CsmInstantiation) cls) && !Instantiation.isRecursiveInstantiation(cls));
             int bestMatch = 0;
             int paramsSize = 0;
             for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : paramsInfo.getExpandedParams()) {
@@ -1011,7 +1012,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                                 type1, param1.getContainingFile(),
                                                 type2, param2.getContainingFile(),
                                                 new CsmUtilities.AlwaysEqualQualsEqualizer(),
-                                                !templateBasedInstantiation
+                                                tryFullResolve
                                             )) 
                                         {
                                             match += 1;
@@ -1033,7 +1034,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                     if (declClsQualifiedName.equals(paramsText.get(i))) {
                                         match += 2;
                                     } else if (declCls.isValid()) {
-                                        final Set<String> nestedQualifiedNames = getNestedTypeNames(instSpecParam, !templateBasedInstantiation);
+                                        final Set<String> nestedQualifiedNames = getNestedTypeNames(instSpecParam, tryFullResolve);
                                         int matchValue = 0;
                                         for (String nestedQualifiedName : nestedQualifiedNames) {
                                             matchValue = getQualifiedNamesMatchValue(nestedQualifiedName, declClsQualifiedName);
@@ -1099,7 +1100,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             public boolean check(CsmType value) {
                 CsmClassifier classifier = value.getClassifier();
                 if (classifier != null) {
-                    nestedQualifiedNames.add(classifier.getQualifiedName().toString());
+                    // It seems that it is a valid situation when qualified names are equal,
+                    // But for now such antiloop is the only way to stop some hard recursions.
+                    if (!nestedQualifiedNames.add(classifier.getQualifiedName().toString())) {
+                        return true;
+                    }
                 }
                 return !resolveTypeChain;
             }
