@@ -469,7 +469,8 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     public void setModel(CallModel model) {
         this.model = model;
-        if (!model.getRoot().kind().equals(Function.Kind.FUNCTION)) {
+        Function function = model.getRoot();
+        if (function != null && !function.kind().equals(Function.Kind.FUNCTION)) {
             isCalls = false;
         }
         updateButtons();
