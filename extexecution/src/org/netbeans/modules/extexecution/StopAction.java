@@ -65,6 +65,7 @@ public final class StopAction extends AbstractAction {
         setEnabled(false); // initially, until ready
         putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/extexecution/resources/stop.png", false)); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(StopAction.class, "Stop"));
+        putValue("OUTPUT_ACTION_TYPE", "stop"); // see bug 250245       //NOI18N
     }
 
     public void setTask(Future<?> task) {
