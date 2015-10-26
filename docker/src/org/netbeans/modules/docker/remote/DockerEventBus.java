@@ -217,6 +217,7 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
     }
 
     private void stop() {
+        // FIXME close the socket to stop waiting for events
         HttpURLConnection current;
         synchronized (this) {
             stop = true;
