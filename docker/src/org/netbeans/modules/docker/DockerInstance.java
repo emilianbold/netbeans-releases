@@ -100,7 +100,7 @@ public class DockerInstance {
             @NullAllowed File certificate, @NullAllowed File key) {
         Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
         // XXX synchronization ?
-        Preferences prefs = global.node(url);
+        Preferences prefs = global.node(escapeUrl(url));
         prefs.put(DISPLAY_NAME_KEY, displayName);
         prefs.put(URL_KEY, url);
         if (certificate != null) {
@@ -129,7 +129,7 @@ public class DockerInstance {
                 String displayName = p.get(DISPLAY_NAME_KEY, null);
                 String url = p.get(URL_KEY, null);
                 if (displayName != null && url != null) {
-                    DockerInstance instance = new DockerInstance(name, p);
+                    DockerInstance instance = new DockerInstance(url, p);
                     instance.init();
                     instances.add(instance);
                 } else {
@@ -217,6 +217,10 @@ public class DockerInstance {
 
     private void init() {
         prefs.addPreferenceChangeListener(listener);
+    }
+
+    private static String escapeUrl(String url) {
+        return url.replaceFirst("://", "_"); // NOI18N
     }
 
     private class InstanceListener implements PreferenceChangeListener {
