@@ -72,11 +72,14 @@ public final class DockerRegistry {
     // GuardedBy("this")
     private final Map<String, DockerInstance> instances = new HashMap<>();
 
+    // GuardedBy("this")
+    private boolean initialized;
+
     private DockerRegistry() {
         super();
     }
 
-    public static synchronized DockerRegistry getInstance() {
+    public static DockerRegistry getInstance() {
         DockerRegistry ret;
         synchronized (DockerRegistry.class) {
             if (registry == null) {
@@ -96,7 +99,11 @@ public final class DockerRegistry {
             }
             ret = registry;
         }
-        ret.refresh();
+        synchronized (ret) {
+            if (!ret.initialized) {
+                ret.refresh();
+            }
+        }
         return ret;
     }
 
@@ -131,9 +138,10 @@ public final class DockerRegistry {
     private void refresh() {
         boolean fire = false;
         synchronized (this) {
+            initialized = true;
             Set<String> toRemove = new HashSet<>(instances.keySet());
             for (DockerInstance i : DockerInstance.findAll()) {
-                if (instances.get(i.getUrl()) != null) {
+                if (instances.get(i.getUrl()) == null) {
                     fire = true;
                     instances.put(i.getUrl(), i);
                 }
