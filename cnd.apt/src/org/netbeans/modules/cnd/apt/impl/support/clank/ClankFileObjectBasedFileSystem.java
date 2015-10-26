@@ -51,6 +51,7 @@ import org.clank.java.std;
 import org.clank.java.std_errors;
 import org.clank.java.std_ptr;
 import static org.clank.support.Casts.$char;
+import org.clank.support.NativeTrace;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.SmallString;
 import org.llvm.adt.StringRef;
@@ -129,6 +130,11 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         long time = TRACE_TIME ? System.currentTimeMillis() : 0;
         FileObject fo = getFileObject(Path);
         ErrorOr<Status> status = getStatus(fo);
+        if (fo != null) {
+            if (NativeTrace.isCheckingFile(fo.getPath())) {
+                CndUtils.assertTrueInConsole(false, fo.getPath() + ":status = " + status + " vs. fo.size=" + fo.getSize());
+            }            
+        }
         if (TRACE_TIME) {
             totalStatTime.addAndGet(System.currentTimeMillis() - time);
             totalStatCount.incrementAndGet();

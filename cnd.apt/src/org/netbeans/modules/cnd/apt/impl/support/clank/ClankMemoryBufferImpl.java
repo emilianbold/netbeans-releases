@@ -8,10 +8,13 @@ package org.netbeans.modules.cnd.apt.impl.support.clank;
 import java.io.IOException;
 import java.io.InputStream;
 import org.clank.support.NativePointer;
+import org.clank.support.NativeTrace;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.support.MemoryBuffer;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -53,7 +56,11 @@ final class ClankMemoryBufferImpl extends MemoryBuffer {
         array[nullTermIndex] = 0;
         char$ptr start = NativePointer.create_char$ptr(array);
         char$ptr end = start.$add(nullTermIndex);
-        return new ClankMemoryBufferImpl(url, start, end, true);
+        ClankMemoryBufferImpl out = new ClankMemoryBufferImpl(url, start, end, true);
+        if (NativeTrace.isCheckingFile(url)) {
+            CndUtils.assertTrueInConsole(false, url + " :text size " + chars.length + " vs. buf len " + out.getBufferSize());
+        }        
+        return out;
     }    
 
     private ClankMemoryBufferImpl(CharSequence url, char$ptr start, char$ptr end, boolean RequiresNullTerminator) {
