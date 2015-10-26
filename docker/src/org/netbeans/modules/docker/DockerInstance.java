@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -81,13 +82,16 @@ public class DockerInstance {
 
     private final InstanceListener listener = new InstanceListener();
 
+    private final String url;
+
     private final Preferences prefs;
 
     private final ContainerFactory containerFactory = new ContainerFactory(this);
 
     private final DockerEventBus eventBus = new DockerEventBus(this);
 
-    private DockerInstance(Preferences prefs) {
+    private DockerInstance(String url, Preferences prefs) {
+        this.url = url;
         this.prefs = prefs;
     }
 
@@ -100,7 +104,7 @@ public class DockerInstance {
         Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
         // XXX better id?
         // XXX synchronization ?
-        Preferences prefs = global.node(displayName);
+        Preferences prefs = global.node(url);
         prefs.put(DISPLAY_NAME_KEY, displayName);
         prefs.put(URL_KEY, url);
         if (certificate != null) {
@@ -115,7 +119,7 @@ public class DockerInstance {
             // XXX better solution?
             throw new IllegalStateException(ex);
         }
-        DockerInstance instance = new DockerInstance(prefs);
+        DockerInstance instance = new DockerInstance(url, prefs);
         instance.init();
         return instance;
     }
@@ -129,7 +133,7 @@ public class DockerInstance {
                 String displayName = p.get(DISPLAY_NAME_KEY, null);
                 String url = p.get(URL_KEY, null);
                 if (displayName != null && url != null) {
-                    DockerInstance instance = new DockerInstance(p);
+                    DockerInstance instance = new DockerInstance(name, p);
                     instance.init();
                     instances.add(instance);
                 } else {
@@ -186,10 +190,35 @@ public class DockerInstance {
     }
 
     @Override
-    public String toString() {
-        return getUrl();
+    public int hashCode() {
+        int hash = 5;
+        hash = 61 * hash + Objects.hashCode(this.url);
+        return hash;
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DockerInstance other = (DockerInstance) obj;
+        if (!Objects.equals(this.url, other.url)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "DockerInstance{" + "url=" + url + '}';
+    }
+
     private void init() {
         prefs.addPreferenceChangeListener(listener);
     }

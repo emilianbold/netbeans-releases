@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.docker;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.NodeChangeEvent;
 import java.util.prefs.NodeChangeListener;
@@ -66,37 +66,39 @@ public final class DockerRegistry {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     // GuardedBy("this")
-    private Collection<? extends DockerInstance> instances;
+    private final Set<DockerInstance> instances = new HashSet<>();
 
     private DockerRegistry() {
         super();
     }
 
     public static synchronized DockerRegistry getInstance() {
-        if (registry == null) {
-            registry = new DockerRegistry();
-            Preferences p = NbPreferences.forModule(DockerInstance.class).node(DockerInstance.INSTANCES_KEY);
-            p.addNodeChangeListener(new NodeChangeListener() {
-                @Override
-                public void childAdded(NodeChangeEvent evt) {
-                    registry.refresh();
-                }
+        DockerRegistry ret;
+        synchronized (DockerRegistry.class) {
+            if (registry == null) {
+                registry = new DockerRegistry();
+                Preferences p = NbPreferences.forModule(DockerInstance.class).node(DockerInstance.INSTANCES_KEY);
+                p.addNodeChangeListener(new NodeChangeListener() {
+                    @Override
+                    public void childAdded(NodeChangeEvent evt) {
+                        registry.refresh();
+                    }
 
-                @Override
-                public void childRemoved(NodeChangeEvent evt) {
-                    registry.refresh();
-                }
-            });
+                    @Override
+                    public void childRemoved(NodeChangeEvent evt) {
+                        registry.refresh();
+                    }
+                });
+            }
+            ret = registry;
         }
-        return registry;
+        ret.refresh();
+        return ret;
     }
 
     public Collection<? extends DockerInstance> getInstances() {
         synchronized (this) {
-            if (instances == null) {
-                instances = new ArrayList<>(DockerInstance.findAll());
-            }
-            return Collections.unmodifiableCollection(instances);
+            return new HashSet<>(instances);
         }
     }
 
@@ -109,9 +111,22 @@ public final class DockerRegistry {
     }
 
     private void refresh() {
+        boolean fire = false;
         synchronized (this) {
-            instances = null;
+            Set<DockerInstance> toRemove = new HashSet<>(instances);
+            for (DockerInstance i : DockerInstance.findAll()) {
+                if (!instances.contains(i)) {
+                    fire = true;
+                    instances.add(i);
+                }
+                toRemove.remove(i);
+            }
+            if (instances.removeAll(toRemove)) {
+                fire = true;
+            }
         }
-        changeSupport.fireChange();
+        if (fire) {
+            changeSupport.fireChange();
+        }
     }
 }
