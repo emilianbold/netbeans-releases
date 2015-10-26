@@ -44,6 +44,7 @@ package org.netbeans.modules.docker.ui;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Closeable;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,6 +62,7 @@ import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -120,7 +122,7 @@ public final class UiUtils {
         InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
         if (IOTerm.isSupported(io)) {
             IOTerm.connect(io, result.getStdIn(),
-                    new TerminalInputStream(io, result.getStdOut()), result.getStdErr());
+                    new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr());
             if (IOResizable.isSupported(io)) {
                 IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
             }
@@ -190,9 +192,12 @@ public final class UiUtils {
 
         private final InputOutput io;
 
-        public TerminalInputStream(InputOutput io, InputStream in) {
+        private final Closeable close;
+
+        public TerminalInputStream(InputOutput io, InputStream in, Closeable close) {
             super(in);
             this.io = io;
+            this.close = close;
         }
 
         @Override
@@ -225,6 +230,11 @@ public final class UiUtils {
 
         private void closeTerminal() {
             IOTerm.disconnect(io, null);
+            try {
+                close.close();
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            }
         }
     }
 }
