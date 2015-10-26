@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,18 +140,30 @@ public class ElementNode extends AbstractNode {
     
     @Override
     public Action[] getActions( boolean context ) {
-        
         if ( context || description.name == null ) {
             return description.ui.getActions();
         } else {
             final Action panelActions[] = description.ui.getActions();
-            final List<? extends Action> additionalActions = Utilities.actionsForPath(ACTION_FOLDER);
+            final List<? extends Action> standardActions;
+            final List<? extends Action> additionalActions;
+            if (description.kind == ElementKind.OTHER) {
+                standardActions = Collections.singletonList(getOpenAction());
+                additionalActions = Collections.<Action>emptyList();
+            } else {
+                standardActions = Arrays.asList(new Action[] {
+                    getOpenAction(),
+                    RefactoringActionsFactory.whereUsedAction(),
+                    RefactoringActionsFactory.popupSubmenuAction()
+                });
+                additionalActions = Utilities.actionsForPath(ACTION_FOLDER);
+            }
+            final int standardActionsSize = standardActions.isEmpty() ? 0 : standardActions.size() + 1;
             final int additionalActionSize = additionalActions.isEmpty() ? 0 : additionalActions.size() + 1;
-            final List<Action> actions = new ArrayList<Action>(4 + panelActions.length + additionalActionSize);
-            actions.add(getOpenAction());
-            actions.add(RefactoringActionsFactory.whereUsedAction());
-            actions.add(RefactoringActionsFactory.popupSubmenuAction());
-            actions.add(null);
+            final List<Action> actions = new ArrayList<>(standardActionsSize + additionalActionSize + panelActions.length);
+            if (standardActionsSize > 0) {
+                actions.addAll(standardActions);
+                actions.add(null);
+            }
             if (additionalActionSize > 0) {
                 actions.addAll(additionalActions);
                 actions.add(null);
@@ -158,7 +171,7 @@ public class ElementNode extends AbstractNode {
             actions.addAll(Arrays.asList(panelActions));
             return actions.toArray(new Action[actions.size()]);
         }
-    }        
+    }
     
     @Override
     public Action getPreferredAction() {
