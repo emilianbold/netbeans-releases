@@ -96,13 +96,9 @@ public class DockerInstance {
     }
 
     @NonNull
-    public static DockerInstance create(@NonNull String displayName, @NonNull String url,
+    static DockerInstance create(@NonNull String displayName, @NonNull String url,
             @NullAllowed File certificate, @NullAllowed File key) {
-        Parameters.notNull("displayName", displayName);
-        Parameters.notNull("url", url);
-
         Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
-        // XXX better id?
         // XXX synchronization ?
         Preferences prefs = global.node(url);
         prefs.put(DISPLAY_NAME_KEY, displayName);
@@ -124,7 +120,7 @@ public class DockerInstance {
         return instance;
     }
 
-    public static Collection<? extends DockerInstance> findAll() {
+    static Collection<? extends DockerInstance> findAll() {
         Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
         List<DockerInstance> instances = new ArrayList<>();
         try {

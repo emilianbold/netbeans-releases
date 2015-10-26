@@ -43,15 +43,19 @@
 package org.netbeans.modules.docker;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.NodeChangeEvent;
 import java.util.prefs.NodeChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -66,7 +70,7 @@ public final class DockerRegistry {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     // GuardedBy("this")
-    private final Set<DockerInstance> instances = new HashSet<>();
+    private final Map<String, DockerInstance> instances = new HashMap<>();
 
     private DockerRegistry() {
         super();
@@ -96,9 +100,23 @@ public final class DockerRegistry {
         return ret;
     }
 
+    public DockerInstance createInstance(@NonNull String displayName, @NonNull String url) {
+        Parameters.notNull("displayName", displayName);
+        Parameters.notNull("url", url);
+
+        synchronized (this) {
+            if (instances.containsKey(url)) {
+                throw new IllegalStateException("Docker instance already exist: " + url);
+            }
+            DockerInstance instance = DockerInstance.create(displayName, url, null, null);
+            instances.put(url, instance);
+            return instance;
+        }
+    }
+
     public Collection<? extends DockerInstance> getInstances() {
         synchronized (this) {
-            return new HashSet<>(instances);
+            return new HashSet<>(instances.values());
         }
     }
 
@@ -113,15 +131,15 @@ public final class DockerRegistry {
     private void refresh() {
         boolean fire = false;
         synchronized (this) {
-            Set<DockerInstance> toRemove = new HashSet<>(instances);
+            Set<String> toRemove = new HashSet<>(instances.keySet());
             for (DockerInstance i : DockerInstance.findAll()) {
-                if (!instances.contains(i)) {
+                if (instances.get(i.getUrl()) != null) {
                     fire = true;
-                    instances.add(i);
+                    instances.put(i.getUrl(), i);
                 }
-                toRemove.remove(i);
+                toRemove.remove(i.getUrl());
             }
-            if (instances.removeAll(toRemove)) {
+            if (instances.keySet().removeAll(toRemove)) {
                 fire = true;
             }
         }

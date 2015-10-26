@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.docker.DockerInstance;
+import org.netbeans.modules.docker.DockerRegistry;
 import org.netbeans.modules.docker.ui.wizard.DockerPropertiesPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -91,8 +92,8 @@ public class AddDockerInstanceAction implements ActionListener {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle("Add Docker Instance");
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            DockerInstance.create((String) wiz.getProperty("displayName"),
-                    (String) wiz.getProperty("url"), null, null);
+            DockerRegistry.getInstance().createInstance((String) wiz.getProperty("displayName"),
+                    (String) wiz.getProperty("url"));
         }
     }
 }
