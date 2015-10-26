@@ -423,8 +423,118 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-            
-            <target name="-init-macrodef-javac-with-processors" depends="-init-ap-cmdline-properties" if="ap.supported.internal">
+
+            <target name="-init-macrodef-javac-with-modules" depends="-init-ap-cmdline-properties" if="modules.supported.internal">
+                <macrodef>
+                    <xsl:attribute name="name">javac</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">srcdir</xsl:attribute>
+                        <xsl:attribute name="default">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">modulepath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.modulepath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">processorpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">apgeneratedsrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.generated.sources.dir}/ap-source-output</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">debug</xsl:attribute>
+                        <xsl:attribute name="default">${javac.debug}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">sourcepath</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">gensrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
+                        <mkdir dir="${{empty.dir}}"/>
+                        <mkdir dir="@{{apgeneratedsrcdir}}"/>
+                        <javac>
+                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <xsl:attribute name="sourcepath">@{sourcepath}</xsl:attribute>
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
+                            <xsl:attribute name="debug">@{debug}</xsl:attribute>
+                            <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
+                            <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
+                            <xsl:if test ="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform/@explicit-source-supported ='false')">
+                                <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                                <xsl:attribute name="target">${javac.target}</xsl:attribute>
+                            </xsl:if>
+                            <xsl:attribute name="includes">@{includes}</xsl:attribute>
+                            <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
+                            <xsl:choose>
+                                <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                                    <xsl:attribute name="fork">yes</xsl:attribute>
+                                    <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
+                                    <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="fork">${javac.fork}</xsl:attribute>
+                                    <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            <xsl:attribute name="includeantruntime">false</xsl:attribute>
+                            <src>
+                                <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
+                                    <include name="*"/>
+                                </dirset>
+                            </src>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <compilerarg value="-modulepath"/>
+                            <compilerarg line="@{{modulepath}}"/>
+                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
+                            <compilerarg line="${{javac.compilerargs}}"/>
+                            <compilerarg value="-processorpath" />
+                            <compilerarg path="@{{processorpath}}:${{empty.dir}}" />
+                            <compilerarg line="${{ap.processors.internal}}" />
+                            <compilerarg line="${{annotation.processing.processor.options}}" />
+                            <compilerarg value="-s" />
+                            <compilerarg path="@{{apgeneratedsrcdir}}" />
+                            <compilerarg line="${{ap.proc.none.internal}}" />
+                            <customize/>
+                        </javac>
+                    </sequential>
+                </macrodef>
+            </target>
+            <target name="-init-macrodef-javac-with-processors" depends="-init-ap-cmdline-properties" if="ap.supported.internal" unless="modules.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -624,7 +734,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-            <target name="-init-macrodef-javac" depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors">
+            <target name="-init-macrodef-javac" depends="-init-macrodef-javac-with-modules,-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors">
                 <macrodef> <!-- #36033, #85707 -->
                     <xsl:attribute name="name">depend</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1621,7 +1731,19 @@ is divided into following sections:
                 </presetdef>
             </target>
 
-            <target name="-init-ap-cmdline-properties">
+            <target name="-init-modules-cmdline-properties">
+                <condition property="modules.supported.internal" value="true">
+                    <and>
+                        <not>
+                            <matches string="${{javac.source}}" pattern="1\.[0-8](\..*)?"/>
+                        </not>
+                        <isset property="javac.modulepath"/>
+                        <length string="${{javac.modulepath}}" when="greater" length="0"/>
+                    </and>
+                </condition>
+            </target>
+
+            <target name="-init-ap-cmdline-properties" depends="-init-modules-cmdline-properties">
                 <property name="annotation.processing.enabled" value="true" />
                 <property name="annotation.processing.processors.list" value="" />
                 <property name="annotation.processing.processor.options" value="" />
