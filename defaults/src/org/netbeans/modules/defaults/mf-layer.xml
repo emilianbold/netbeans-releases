@@ -1511,6 +1511,7 @@ made subject to such option by the copyright holder.
                 <attr name="ext.0" stringvalue="wav"/>
                 <attr name="ext.1" stringvalue="WAV"/>
                 <attr name="displayName" stringvalue="audio/wav"/>
+                <attr name="position" intvalue="2147483000"/>
             </file>
         </folder>
     </folder>
