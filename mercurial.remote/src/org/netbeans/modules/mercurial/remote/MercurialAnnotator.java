@@ -359,16 +359,19 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             // XXX use Actions.forID
             Action a;
             if (noneVersioned) {
-                a = Utils.getAcceleratedAction("Actions/MercurialRemote/org-netbeans-modules-mercurial-remote-ui-create-CreateAction.instance"); //NOI18N
-                if(a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
-                }
-                if(a != null) {
-                    actions.add(a);
-                }
-                a = (Action) Utils.getAcceleratedAction("Actions/MercurialRemote/org-netbeans-modules-mercurial-remote-ui-clone-CloneExternalAction.instance"); //NOI18N
-                if(a != null) {
-                    actions.add(a);
+                FileSystem defaultFileSystem = VCSFileProxySupport.getDefaultFileSystem();
+                if (defaultFileSystem != null) {
+                    a = Utils.getAcceleratedAction("Actions/MercurialRemote/org-netbeans-modules-mercurial-remote-ui-create-CreateAction.instance"); //NOI18N
+                    if(a instanceof ContextAwareAction) {
+                        a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
+                    }
+                    if(a != null) {
+                        actions.add(a);
+                    }
+                    a = (Action) Utils.getAcceleratedAction("Actions/MercurialRemote/org-netbeans-modules-mercurial-remote-ui-clone-CloneExternalAction.instance"); //NOI18N
+                    if(a != null) {
+                        actions.add(a);
+                    }
                 }
             } else {
                 actions.add(SystemAction.get(StatusAction.class));
@@ -395,12 +398,14 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                Action a = Actions.forID("MercurialRemote", "org.netbeans.modules.mercurial.remote.ui.create.CreateAction"); //NOI18N
-                if(a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
-                }            
-                if(a != null) {
-                    actions.add(a);
+                if (files.size() > 0 && files.iterator().next().toFile() == null) {
+                    Action a = Actions.forID("MercurialRemote", "org.netbeans.modules.mercurial.remote.ui.create.CreateAction"); //NOI18N
+                    if(a instanceof ContextAwareAction) {
+                        a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
+                    }
+                    if(a != null) {
+                        actions.add(a);
+                    }
                 }
             } else {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context)); //NOI18N
