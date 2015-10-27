@@ -47,9 +47,8 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.javascript.nodejs.exec.ExpressExecutable;
-import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
-import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.openide.util.NbPreferences;
 
 public final class NodeJsOptions {
@@ -91,11 +90,11 @@ public final class NodeJsOptions {
     @CheckForNull
     public String getNode() {
         String path = preferences.get(NODE_PATH, null);
-        if (path == null && !nodeSearched) {
+        if (path == null
+                && !nodeSearched) {
             nodeSearched = true;
-            List<String> files = FileUtils.findFileOnUsersPath(NodeExecutable.NODE_NAMES);
-            if (!files.isEmpty()) {
-                path = files.get(0);
+            path = NodeJsUtils.getNode();
+            if (path != null) {
                 setNode(path);
             }
         }
@@ -125,9 +124,8 @@ public final class NodeJsOptions {
         if (path == null
                 && !npmSearched) {
             npmSearched = true;
-            List<String> files = FileUtils.findFileOnUsersPath(NpmExecutable.NPM_NAME);
-            if (!files.isEmpty()) {
-                path = files.get(0);
+            path = NodeJsUtils.getNpm();
+            if (path != null) {
                 setNpm(path);
             }
         }

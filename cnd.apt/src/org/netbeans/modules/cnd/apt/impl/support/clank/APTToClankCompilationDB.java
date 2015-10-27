@@ -53,13 +53,14 @@ import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public final class APTToClankCompilationDB implements ClankCompilationDataBase {
-
+    private static boolean SKIP_COMPILER_SETTINGS = Boolean.valueOf(System.getProperty("cnd.skip.compiler.builtin", "false")); // NOI18N
     private final Collection<ClankCompilationDataBase.Entry> compilations;
     private final String name;
 
@@ -100,11 +101,11 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
     public static ClankCompilationDataBase.Entry createEntry(PreprocHandler ppHandler) {
         ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl)ppHandler.getIncludeHandler();
         StartEntry startEntry = includeHandler.getStartEntry();
-        FSPath startPath = new FSPath(startEntry.getFileSystem(), startEntry.getStartFile().toString());
-        CharSequence startUrl = CndFileSystemProvider.toUrl(startPath);
+        String startEntryFilePath = startEntry.getStartFile().toString();
+        CharSequence startUrl = CndFileSystemProvider.toUrl(startEntry.getFileSystem(), startEntryFilePath);
         DataBaseEntryBuilder builder = new DataBaseEntryBuilder(startUrl, null);
 
-        builder.setLang(getLang(ppHandler.getLanguage(), startPath.getPath()));
+        builder.setLang(getLang(ppHandler.getLanguage(), startEntryFilePath));
         builder.setLangStd(getLangStd(ppHandler.getLanguageFlavor()));
 
         // -I
@@ -113,23 +114,26 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 FSPath fsPath = new FSPath(incDir.getFileSystem(), incDir.getPath());
                 FileObject fileObject = fsPath.getFileObject();
                 if (fileObject != null && fileObject.isFolder()) {
-                    CharSequence incPathUrl = CndFileSystemProvider.fileObjectToUrl(fileObject);
+                    CharSequence incPathUrl = fsPath.getURL();
                     builder.addUserIncludePath(incPathUrl);
                 }
             }
         }
-        // -isystem
-        for (IncludeDirEntry incDir : includeHandler.getSystemIncludePaths()) {
-            if (incDir.isExistingDirectory()) {
-                FSPath fsPath = new FSPath(incDir.getFileSystem(), incDir.getPath());
-                FileObject fileObject = fsPath.getFileObject();
-                if (fileObject != null && fileObject.isFolder()) {
-                    CharSequence incPathUrl = CndFileSystemProvider.fileObjectToUrl(fileObject);
-                    builder.addPredefinedSystemIncludePath(incPathUrl);
+        
+        if (!SKIP_COMPILER_SETTINGS) {
+            // -isystem
+            for (IncludeDirEntry incDir : includeHandler.getSystemIncludePaths()) {
+                if (incDir.isExistingDirectory()) {
+                    FSPath fsPath = new FSPath(incDir.getFileSystem(), incDir.getPath());
+                    FileObject fileObject = fsPath.getFileObject();
+                    if (fileObject != null && fileObject.isFolder()) {
+                        CharSequence incPathUrl = fsPath.getURL();
+                        builder.addPredefinedSystemIncludePath(incPathUrl);
+                    }
                 }
             }
         }
-
+        
         // handle -include
         for (IncludeDirEntry incFile : includeHandler.getUserIncludeFilePaths()) {
             // FIXME: relative path can be passed to builder
@@ -138,9 +142,12 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
 
         ClankFileMacroMap macroMap = (ClankFileMacroMap)ppHandler.getMacroMap();
         // -D
-        for (String macro : macroMap.getSystemMacroDefinitions()) {
-            builder.addPredefinedSystemMacroDef(macro);
+        if (!SKIP_COMPILER_SETTINGS) {
+            for (String macro : macroMap.getSystemMacroDefinitions()) {
+                builder.addPredefinedSystemMacroDef(macro);
+            }
         }
+        
         for (String macro : macroMap.getUserMacroDefinitions()) {
             builder.addUserMacroDef(macro);
         }
@@ -199,7 +206,15 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
 
     private static LangStandard.Kind getLangStd(CharSequence langFlavor) throws AssertionError {
         LangStandard.Kind out_lang_std = LangStandard.Kind.lang_unspecified;
-        LanguageFlavor flavor = LanguageFlavor.valueOf(langFlavor.toString());
+        String strFlavor = langFlavor.toString();
+        LanguageFlavor flavor = LanguageFlavor.UNKNOWN;
+        if (strFlavor != null && !strFlavor.isEmpty()) {
+            try {
+                flavor = LanguageFlavor.valueOf(strFlavor);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         switch (flavor) {
             case DEFAULT:
             case UNKNOWN:
@@ -243,7 +258,15 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
 
     private static InputKind getLang(CharSequence langStr, String filePath) throws AssertionError {
         InputKind out = InputKind.IK_None;
-        Language language = Language.valueOf(langStr.toString());
+        Language language = Language.CPP;
+        String strLang = langStr.toString();
+        if (strLang != null && ! strLang.isEmpty()) {
+            try {
+                language = Language.valueOf(strLang);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         switch (language) {
             case C:
                 out = InputKind.IK_C;

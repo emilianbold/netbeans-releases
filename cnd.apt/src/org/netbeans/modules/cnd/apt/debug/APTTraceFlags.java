@@ -63,27 +63,29 @@ public class APTTraceFlags {
 
     static {
         String propUseClank = System.getProperty("apt.use.clank"); //NOI18N
+        boolean val;
         if (propUseClank != null) {
-            USE_CLANK = Boolean.parseBoolean(propUseClank);
+            val = Boolean.parseBoolean(propUseClank);
         } else {
             final ComponentType product = ComponentType.getComponent();
             switch (product) {
                 case CND:
                 case PROJECT_CREATOR:
-                    USE_CLANK = true;
+                    val = true;
                     break;
                 case OSS_IDE:
                 case DBXTOOL:
                 case DLIGHTTOOL:
                 case CODE_ANALYZER:
-                    USE_CLANK = false;
+                    val = false;
                     break;
                 default:
-                    USE_CLANK = false;
+                    val = false;
                     APTUtils.LOG.severe("Unexpected product type: " + product); //NOI18N
                     break;
             }
         }
+        USE_CLANK = val;
         if (!CndUtils.isUnitTestMode()) {
             // APTUtils.LOG has level SEVERE by default, so we can't use it here
             Logger.getLogger(APTTraceFlags.class.getName()).log(Level.INFO, "C/C++ code model: using {0} preprocessor", (USE_CLANK ? "new" : "old")); //NOI18N
@@ -92,8 +94,10 @@ public class APTTraceFlags {
     
     public static final boolean DEFERRED_MACRO_USAGES = DebugUtils.getBoolean("apt.deferred.macro.usages", true); // NOI18N
 
-    public static final boolean ALWAYS_USE_NB_FS = DebugUtils.getBoolean("apt.always.use.filesystem", false); // NOI18N
-    
+    public static final boolean FIX_NOT_FOUND_INCLUDES = DebugUtils.getBoolean("apt.fix.includes", true); // NOI18N
+    public static final boolean ALWAYS_USE_NB_FS = DebugUtils.getBoolean("apt.always.use.filesystem", true); // NOI18N
+    public static final boolean ALWAYS_USE_BUFFER_BASED_FILES = DebugUtils.getBoolean("apt.use.buffer.fs", true); // NOI18N
+
     public static final boolean INCLUDE_TOKENS_IN_TOKEN_STREAM = DebugUtils.getBoolean("apt.include.tokens", false); // NOI18N
     public static final boolean APT_SHARE_MACROS = DebugUtils.getBoolean("apt.share.macros", true); // NOI18N
 

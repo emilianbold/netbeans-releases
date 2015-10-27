@@ -601,13 +601,36 @@ class NbIO implements InputOutput, Lookup.Provider {
 
         @Override
         protected FoldHandleDefinition startFold(boolean expanded) {
-            synchronized (outOrException()) {
+            final OutWriter outWriter = out();
+            if (outWriter == null) {
+                return new DummyFoldHandleDefinition();
+            }
+            synchronized (outWriter) {
                 if (currentFold != null) {
                     throw new IllegalStateException(
                             "The last fold hasn't been finished yet");  //NOI18N
                 }
                 return new NbIoFoldHandleDefinition(null,
                         getLastLineNumber(), expanded);
+            }
+        }
+
+        /**
+         * FoldHandleDefinition used when the output is already closed.
+         */
+        class DummyFoldHandleDefinition extends IOFolding.FoldHandleDefinition {
+
+            @Override
+            public void finish() {
+            }
+
+            @Override
+            public FoldHandleDefinition startFold(boolean expanded) {
+                return new DummyFoldHandleDefinition();
+            }
+
+            @Override
+            public void setExpanded(boolean expanded) {
             }
         }
 

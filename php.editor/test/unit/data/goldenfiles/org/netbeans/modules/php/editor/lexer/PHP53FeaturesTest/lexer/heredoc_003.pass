@@ -18,7 +18,7 @@ token #16 PHP_SEMICOLON ;
 token #17 WHITESPACE \n\n
 token #18 PHP_VARIABLE $x
 token #19 WHITESPACE  
-token #20 PHP_TOKEN =
+token #20 PHP_OPERATOR =
 token #21 WHITESPACE  
 token #22 PHP_HEREDOC_TAG_START <<<ENDOFHEREDOC\n
 token #23 PHP_ENCAPSED_AND_WHITESPACE This is heredoc test #

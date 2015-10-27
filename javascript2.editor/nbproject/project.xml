@@ -475,6 +475,7 @@
                 <friend>org.netbeans.modules.html.angular</friend>
                 <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.ojet</friend>
+                <friend>org.netbeans.modules.javascript2.gj.bootstrap</friend>
                 <friend>org.netbeans.modules.javascript2.extjs</friend>
                 <friend>org.netbeans.modules.javascript2.jade</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
@@ -482,7 +483,9 @@
                 <friend>org.netbeans.modules.javascript2.knockout</friend>
                 <friend>org.netbeans.modules.javascript2.nodejs</friend>
                 <friend>org.netbeans.modules.javascript2.prototypejs</friend>
+                <friend>org.netbeans.modules.javascript2.gj.react</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
+                <friend>org.netbeans.modules.javascript2.gj.typescript</friend>
                 <friend>org.netbeans.modules.nodejscodecompletion</friend>
                 <package>org.netbeans.modules.javascript2.editor.api</package>
                 <package>org.netbeans.modules.javascript2.editor.api.lexer</package>

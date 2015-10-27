@@ -54,10 +54,6 @@
                     <type>0</type>
                 </confElem>
                 <confElem>
-                    <name>Tmp</name>
-                    <type>0</type>
-                </confElem>
-                <confElem>
                     <name>Armv6</name>
                     <type>0</type>
                 </confElem>

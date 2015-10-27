@@ -7,9 +7,8 @@
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-14</p>
 <p><a id="AS_Wiz_DataSource_general" name="AS_Wiz_DataSource_general"></a></p>
-<div id="NBCSH4829"><!-- infolevel="all" infotype="General" --><a id="sthref688" name="sthref688"></a>
+<div id="NBCSH4829"><!-- infolevel="all" infotype="General" --><a id="sthref678" name="sthref678"></a>
 <h1>New JDBC Resource: General Attributes</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>You see this page of the New File wizard when you are defining a JDBC resource. On this page you choose a connection pool and specify the JNDI name of the resource.</p>
@@ -22,64 +21,64 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t72">Element</th>
-<th align="left" valign="bottom" id="r1c2-t72">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t72">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t72">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t72" headers="r1c1-t72">
+<td style="text-align:left" id="r2c1-t72" headers="r1c1-t72">
 <p>Use Existing JDBC Connection Pool</p>
 </td>
-<td align="left" headers="r2c1-t72 r1c2-t72">If selected, select from the drop-down list one of the connection pools already registered with the default server instance. If the connection pool you want does not appear in the list, ensure that it is registered with the default server instance. If no connection pools are listed and you see &lt;No JDBC Connection Pool&gt; in the drop-down list, ensure that the server instance is running.</td>
+<td style="text-align:left" headers="r2c1-t72 r1c2-t72">If selected, select from the drop-down list one of the connection pools already registered with the default server instance. If the connection pool you want does not appear in the list, ensure that it is registered with the default server instance. If no connection pools are listed and you see &lt;No JDBC Connection Pool&gt; in the drop-down list, ensure that the server instance is running.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t72" headers="r1c1-t72">
+<td style="text-align:left" id="r3c1-t72" headers="r1c1-t72">
 <p>Create New JDBC Connection Pool</p>
 </td>
-<td align="left" headers="r3c1-t72 r1c2-t72">Select this option to create a new connection pool in the wizard.
+<td style="text-align:left" headers="r3c1-t72 r1c2-t72">Select this option to create a new connection pool in the wizard.
 <p><b>Note</b>: Alternatively, you can create a JDBC Connection Pool in the New File wizard. Click Back to return to the first screen of the New File wizard and select JDBC Connection Pool in the File Types pane.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t72" headers="r1c1-t72">
+<td style="text-align:left" id="r4c1-t72" headers="r1c1-t72">
 <p>JNDI name</p>
 </td>
-<td align="left" headers="r4c1-t72 r1c2-t72">The JNDI name for the resource is required and must be unique to this JDBC resource. The JNDI name of a JDBC resource is expected in the <code dir="ltr">java:comp/env/jdbc</code> subcontext. For example, the JNDI name for the resource of a payroll database could be j<code dir="ltr">ava:comp/env/jdbc/payrolldb</code>. Because all resource JNDI names are in the j<code dir="ltr">ava:comp/env subcontext</code>, when you specify the JNDI name of a JDBC resource enter only <code dir="ltr">jdbc/name</code>. For example, for a payroll database, specify jdbc/payrolldb. When looking up a resource, relative lookups are attempted when other lookup attempts fail. For example, a client can use context.lookup("<code dir="ltr">jdbc/payrolldb</code>") in the place of context.lookup("j<code dir="ltr">ava:comp/env/jdbc/payrolldb</code>") to look up the resource.</td>
+<td style="text-align:left" headers="r4c1-t72 r1c2-t72">The JNDI name for the resource is required and must be unique to this JDBC resource. The JNDI name of a JDBC resource is expected in the <code dir="ltr">java:comp/env/jdbc</code> subcontext. For example, the JNDI name for the resource of a payroll database could be j<code dir="ltr">ava:comp/env/jdbc/payrolldb</code>. Because all resource JNDI names are in the j<code dir="ltr">ava:comp/env subcontext</code>, when you specify the JNDI name of a JDBC resource enter only <code dir="ltr">jdbc/name</code>. For example, for a payroll database, specify jdbc/payrolldb. When looking up a resource, relative lookups are attempted when other lookup attempts fail. For example, a client can use context.lookup("<code dir="ltr">jdbc/payrolldb</code>") in the place of context.lookup("j<code dir="ltr">ava:comp/env/jdbc/payrolldb</code>") to look up the resource.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t72" headers="r1c1-t72">
+<td style="text-align:left" id="r5c1-t72" headers="r1c1-t72">
 <p>Object-types</p>
 </td>
-<td align="left" headers="r5c1-t72 r1c2-t72">The type of the object. You can choose from the following values.</td>
+<td style="text-align:left" headers="r5c1-t72 r1c2-t72">The type of the object. You can choose from the following values.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t72" headers="r1c1-t72">&nbsp;&nbsp;&nbsp;&nbsp;system-all</td>
-<td align="left" headers="r6c1-t72 r1c2-t72">A system resource for all server instances and the domain application server.</td>
+<td style="text-align:left" id="r6c1-t72" headers="r1c1-t72">&nbsp;&nbsp;&nbsp;&nbsp;system-all</td>
+<td style="text-align:left" headers="r6c1-t72 r1c2-t72">A system resource for all server instances and the domain application server.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t72" headers="r1c1-t72">&nbsp;&nbsp;&nbsp;&nbsp;system-admin</td>
-<td align="left" headers="r7c1-t72 r1c2-t72">A system resource only for the domain application server.</td>
+<td style="text-align:left" id="r7c1-t72" headers="r1c1-t72">&nbsp;&nbsp;&nbsp;&nbsp;system-admin</td>
+<td style="text-align:left" headers="r7c1-t72 r1c2-t72">A system resource only for the domain application server.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t72" headers="r1c1-t72">&nbsp;&nbsp;&nbsp;&nbsp;system-instance</td>
-<td align="left" headers="r8c1-t72 r1c2-t72">A system resource for all server instances only.</td>
+<td style="text-align:left" id="r8c1-t72" headers="r1c1-t72">&nbsp;&nbsp;&nbsp;&nbsp;system-instance</td>
+<td style="text-align:left" headers="r8c1-t72 r1c2-t72">A system resource for all server instances only.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r9c1-t72" headers="r1c1-t72">&nbsp;&nbsp;&nbsp;&nbsp;user</td>
-<td align="left" headers="r9c1-t72 r1c2-t72">A user resource.</td>
+<td style="text-align:left" id="r9c1-t72" headers="r1c1-t72">&nbsp;&nbsp;&nbsp;&nbsp;user</td>
+<td style="text-align:left" headers="r9c1-t72 r1c2-t72">A user resource.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r10c1-t72" headers="r1c1-t72">
+<td style="text-align:left" id="r10c1-t72" headers="r1c1-t72">
 <p>Enabled</p>
 </td>
-<td align="left" headers="r10c1-t72 r1c2-t72">Set to true to enable the resource, or false to disable the resource.</td>
+<td style="text-align:left" headers="r10c1-t72 r1c2-t72">Set to true to enable the resource, or false to disable the resource.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r11c1-t72" headers="r1c1-t72">
+<td style="text-align:left" id="r11c1-t72" headers="r1c1-t72">
 <p>Description</p>
 </td>
-<td align="left" headers="r11c1-t72 r1c2-t72">Description of the resource (optional).</td>
+<td style="text-align:left" headers="r11c1-t72 r1c2-t72">Description of the resource (optional).</td>
 </tr>
 </tbody>
 </table>

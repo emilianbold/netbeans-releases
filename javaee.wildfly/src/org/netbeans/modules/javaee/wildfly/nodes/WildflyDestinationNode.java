@@ -43,7 +43,6 @@ package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
 import javax.swing.Action;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;

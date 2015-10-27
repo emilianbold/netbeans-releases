@@ -69,20 +69,27 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
     private final CharSequence name;
     private final boolean system;
     private final boolean recursive;
+    private final short includeDirectiveIndex;
     
     private CsmUID<CsmFile> includeFileUID;
     
-    private IncludeImpl(String name, boolean system, boolean recursive, CsmFile includeFile, CsmFile containingFile, int startOffset, int endOffset) {
+    private IncludeImpl(String name, boolean system, boolean recursive, 
+            CsmFile includeFile, CsmFile containingFile, 
+            int startOffset, int endOffset, short includeDirectiveIndex) {
         super(containingFile, startOffset, endOffset);
         this.name = FileNameCache.getManager().getString(name);
         this.system = system;
         this.recursive = recursive;
+        this.includeDirectiveIndex = includeDirectiveIndex;
         this.includeFileUID = UIDCsmConverter.fileToUID(includeFile);
         assert (includeFileUID != null || includeFile == null) : "got " + includeFileUID + " for " + includeFile;
     }
 
-    public static IncludeImpl create(String name, boolean system, boolean recursive, CsmFile includeFile, CsmFile containingFile, int startOffset, int endOffset) {
-        return new IncludeImpl(name, system, recursive, includeFile, containingFile, startOffset, endOffset);
+    public static IncludeImpl create(String name, boolean system, boolean recursive, 
+            CsmFile includeFile, CsmFile containingFile, 
+            int startOffset, int endOffset, int includeDirectiveIndex) {
+        assert includeDirectiveIndex <= Short.MAX_VALUE;
+        return new IncludeImpl(name, system, recursive, includeFile, containingFile, startOffset, endOffset, (short)includeDirectiveIndex);
     }
     
     @Override
@@ -200,6 +207,7 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
         PersistentUtils.writeUTF(name, output);
         output.writeBoolean(this.system);
         output.writeBoolean(this.recursive);
+        output.writeShort(includeDirectiveIndex);
         UIDObjectFactory.getDefaultFactory().writeUID(this.includeFileUID, output);
     }
 
@@ -209,6 +217,11 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
         assert this.name != null;
         this.system = input.readBoolean();
         this.recursive = input.readBoolean();
+        this.includeDirectiveIndex = input.readShort();
         this.includeFileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+    }
+
+    public int getIncludeDirectiveIndex() {
+        return this.includeDirectiveIndex;
     }
 }

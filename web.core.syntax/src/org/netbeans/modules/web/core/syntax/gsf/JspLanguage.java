@@ -45,7 +45,6 @@ package org.netbeans.modules.web.core.syntax.gsf;
 
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -107,11 +106,6 @@ public class JspLanguage extends DefaultLanguageConfig {
     @Override
     public StructureScanner getStructureScanner() {
         return new JspStructureScanner();
-    }
-
-    @Override
-    public KeystrokeHandler getKeystrokeHandler() {
-        return new JspKeystrokeHandler();
     }
 
     @Override

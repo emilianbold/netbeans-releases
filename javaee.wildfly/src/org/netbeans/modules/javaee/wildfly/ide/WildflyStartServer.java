@@ -69,6 +69,7 @@ import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -236,7 +237,9 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
             @Override
             public void run() {
                 try {
-                    result = dm.getClient().isServerRunning();
+                    result = dm.getClient().isServerRunning(
+                            ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR),
+                            ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
                 } catch(Throwable t) {
                     LOGGER.log(Level.INFO, null, t);
                 }

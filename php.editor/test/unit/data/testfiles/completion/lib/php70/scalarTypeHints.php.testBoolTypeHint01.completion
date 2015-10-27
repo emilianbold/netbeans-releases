@@ -1,0 +1,13 @@
+Code completion result for source line:
+function boolTypeHint(|bool $arg) {
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
+CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
+CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
+CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
+------------------------------------
+KEYWORD    bool                                       null
+KEYWORD    callable                                   null
+KEYWORD    float                                      null
+KEYWORD    int                                        null
+KEYWORD    string                                     null

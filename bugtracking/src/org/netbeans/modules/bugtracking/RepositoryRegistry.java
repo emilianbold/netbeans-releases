@@ -41,21 +41,26 @@
  */
 package org.netbeans.modules.bugtracking;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.Timer;
 import org.netbeans.api.keyring.Keyring;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
@@ -64,7 +69,9 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -83,13 +90,47 @@ public class RepositoryRegistry {
     private static final String BUGTRACKING_REPO  = "bugracking.repository_";   // NOI18N
     private static final String DELIMITER         = "<=>";                      // NOI18N    
     
-    private static final Object REPOSITORIES_LOCK = new Object();
-    
     private static RepositoryRegistry instance;
-
+    private final Semaphore repositorySemaphore = new Semaphore(1);
+    
+    //@GuardedBy("repositorySemaphore")
     private RepositoriesMap repositories;
-        
-    private RepositoryRegistry() {}
+    private RepositoryRegistry() {
+        lockRepositories();
+        final long t = System.currentTimeMillis();
+        new RequestProcessor(RepositoryRegistry.class.getName()).post(new Runnable() {
+            @Override
+            public void run() {
+                final ProgressHandle[] ph = new ProgressHandle[1];
+                final Timer timer[] = new Timer[1];
+                timer[0] = new Timer(800, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if(repositories == null) {
+                            timer[0].stop();
+                            ph[0] = ProgressHandleFactory.createSystemHandle("Initializing Bugtracking repositories");
+                            ph[0].start();
+                        }
+                    }
+                });
+                timer[0].start();
+                try {
+                    loadRepositories();
+                } finally {
+                    releaseRepositoriesLock();
+                    if(ph[0] != null) {
+                        ph[0].finish();
+                    }
+                    timer[0].stop();
+                    BugtrackingManager.LOG.log(Level.INFO, "Loading stored repositories took {0} millis.", (System.currentTimeMillis() - t));
+                }
+            }
+        });
+    }
+    
+    public boolean isInitializing() {
+        return repositories == null;
+    }
     
     /**
      * Returns the singleton RepositoryRegistry instance
@@ -109,9 +150,12 @@ public class RepositoryRegistry {
      * @return 
      */
     public Collection<RepositoryImpl> getRepositories() {
-        synchronized(REPOSITORIES_LOCK) {
-            List<RepositoryImpl> l = getStoredRepositories().getRepositories();
+        lockRepositories();
+        try {
+            List<RepositoryImpl> l = repositories.getRepositories();
             return new LinkedList<RepositoryImpl>(l);
+        } finally {
+            releaseRepositoriesLock();
         }
     }
     
@@ -159,11 +203,14 @@ public class RepositoryRegistry {
      */
     public Collection<RepositoryImpl> getRepositories(String connectorID, boolean allKnown) {
         LinkedList<RepositoryImpl> ret = new LinkedList<RepositoryImpl>();
-        synchronized(REPOSITORIES_LOCK) {
-            final Map<String, RepositoryImpl> m = getStoredRepositories().get(connectorID);
+        lockRepositories();
+        try {
+            final Map<String, RepositoryImpl> m = repositories.get(connectorID);
             if(m != null) {
                 ret.addAll(m.values());
             } 
+        } finally {
+            releaseRepositoriesLock();
         }
         if(allKnown) {
             // team repos (not registered by user)
@@ -199,10 +246,12 @@ public class RepositoryRegistry {
             // we don't store team repositories - XXX  shouldn't be even called
             return;        
         }
-        synchronized(REPOSITORIES_LOCK) {
-            getStoredRepositories().put(repository); // cache
+        lockRepositories();
+        try {
+            repositories.put(repository); // cache
             putRepository(repository); // persist
-
+        } finally {
+            releaseRepositoriesLock();
         }
         fireRepositoriesChanged(null, Arrays.asList(repository));
     }    
@@ -213,13 +262,16 @@ public class RepositoryRegistry {
      * @param repository 
      */
     public void removeRepository(RepositoryImpl repository) {
-        synchronized(REPOSITORIES_LOCK) {
+        lockRepositories();
+        try {
             RepositoryInfo info = repository.getInfo();
             String connectorID = info.getConnectorId();  
             // persist remove
             getPreferences().remove(getRepositoryKey(info)); 
             // remove from cache
-            getStoredRepositories().remove(connectorID, repository);
+            repositories.remove(connectorID, repository);
+        } finally {
+            releaseRepositoriesLock();
         }
         fireRepositoriesChanged(Arrays.asList(repository), null);
     }
@@ -257,42 +309,40 @@ public class RepositoryRegistry {
         return BUGTRACKING_REPO + info.getConnectorId() + DELIMITER + info.getID();
     }
     
-    private RepositoriesMap getStoredRepositories() {
-        if (repositories == null) {
-            repositories = new RepositoriesMap();
+    void loadRepositories() {
+        RepositoriesMap map = new RepositoriesMap();            
             
-            migrateBugzilla();
-            migrateJira();
-            
-            String[] ids = getRepositoryIds();
-            DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-            if (ids != null) {
-                for (String id : ids) {
-                    String[] idArray = id.split(DELIMITER);
-                    String connectorId = idArray[0].substring(BUGTRACKING_REPO.length());
-                    for (DelegatingConnector c : connectors) {
-                        if(c.getID().equals(connectorId)) {
-                            RepositoryInfo info = SPIAccessor.IMPL.read(getPreferences(), id);
-                            if(info != null) {
-                                Repository repo = c.createRepository(info);
-                                if (repo != null) {
-                                    repositories.put(APIAccessor.IMPL.getImpl(repo));
-                                }
+        migrateBugzilla();
+        migrateJira();
+
+        String[] ids = getRepositoryIds();
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        if (ids != null) {
+            for (String id : ids) {
+                String[] idArray = id.split(DELIMITER);
+                String connectorId = idArray[0].substring(BUGTRACKING_REPO.length());
+                for (DelegatingConnector c : connectors) {
+                    if(c.getID().equals(connectorId)) {
+                        RepositoryInfo info = SPIAccessor.IMPL.read(getPreferences(), id);
+                        if(info != null) {
+                            Repository repo = c.createRepository(info);
+                            if (repo != null) {
+                                map.put(APIAccessor.IMPL.getImpl(repo));
                             }
                         }
                     }
                 }
             }
-            for (DelegatingConnector c : connectors) {
-                if (BugtrackingManager.isLocalConnectorID(c.getID())) {
-                    Repository repo = c.createRepository();
-                    if (repo != null) {
-                        repositories.put(APIAccessor.IMPL.getImpl(repo));
-                    }
+        }
+        for (DelegatingConnector c : connectors) {
+            if (BugtrackingManager.isLocalConnectorID(c.getID())) {
+                Repository repo = c.createRepository();
+                if (repo != null) {
+                map.put(APIAccessor.IMPL.getImpl(repo));
                 }
             }
         }
-        return repositories;
+        repositories = map;
     }
   
     private String[] getRepositoryIds() {
@@ -520,4 +570,16 @@ public class RepositoryRegistry {
         }
     }
 
+    private void lockRepositories() {
+        try {
+            repositorySemaphore.acquire();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private void releaseRepositoriesLock() {
+        repositorySemaphore.release();
+    }
+    
 }

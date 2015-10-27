@@ -43,17 +43,21 @@ package org.netbeans.modules.javaee.wildfly.ide.commands;
 
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.ADD;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.ADDRESS;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.ATTRIBUTES_ONLY;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.BYTES;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CHILD_TYPE;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.COMPOSITE;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CONTENT;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CONTROLLER_PROCESS_STATE_STARTING;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CONTROLLER_PROCESS_STATE_STOPPING;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CORE_SERVICE;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT_REDEPLOY_OPERATION;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT_UNDEPLOY_OPERATION;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.EXPRESSION;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.INCLUDE_DEFAULTS;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.INCLUDE_RUNTIME;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.JAXRS_SUBSYSTEM;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.OP;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.OP_ADDR;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.RESULT;
@@ -70,6 +74,7 @@ import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.RELATIV
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.RESOLVE_EXPRESSION;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.RESOLVE_PATH;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.RUNTIME_NAME;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.SHOW_RESOURCES;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.STEPS;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.SUBSYSTEM;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.SUCCESS;
@@ -136,7 +141,10 @@ import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagement
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildBytes;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildEmptyList;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildString;
+import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.WILDFLY_10_0_0;
 
+import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.javaee.wildfly.config.WildflyJaxrsResource;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyDatasourceNode;
@@ -144,8 +152,12 @@ import org.netbeans.modules.javaee.wildfly.nodes.WildflyDestinationNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyEarApplicationNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbComponentNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbModuleNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyJaxrsResourceNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyWebModuleNode;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /**
  *
@@ -156,15 +168,19 @@ public class WildflyClient {
     private static final Logger LOGGER = Logger.getLogger(WildflyClient.class.getName());
 
     private static final String SERVER_STATE = "server-state"; // NOI18N
+    private static final String SERVER_ENVIRONMENT = "server-environment";// NOI18N
     private static final String WEB_SUBSYSTEM = "undertow"; // NOI18N
     private static final String EJB3_SUBSYSTEM = "ejb3"; // NOI18N
     private static final String DATASOURCES_SUBSYSTEM = "datasources"; // NOI18N
     private static final String MAIL_SUBSYSTEM = "mail"; // NOI18N
     private static final String MESSAGING_SUBSYSTEM = "messaging"; // NOI18N
+    private static final String MESSAGING_ACTIVEMQ_SUBSYSTEM = "messaging-activemq"; // NOI18N
     private static final String RESOURCE_ADAPTER_SUBSYSTEM = "resource-adapters"; // NOI18N
+
 
     private static final String DATASOURCE_TYPE = "data-source"; // NOI18N
     private static final String HORNETQ_SERVER_TYPE = "hornetq-server"; // NOI18N
+    private static final String MESSAGING_ACTIVEMQ_SERVER_TYPE = "server"; // NOI18N
     private static final String MAIL_SESSION_TYPE = "mail-session"; // NOI18N
     private static final String JMSQUEUE_TYPE = "jms-queue"; // NOI18N
     private static final String JMSTOPIC_TYPE = "jms-topic"; // NOI18N
@@ -194,7 +210,7 @@ public class WildflyClient {
      */
     public String getServerLog() throws IOException {
         WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-        LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+        LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
         values.put(SUBSYSTEM, "logging");
         values.put("periodic-rotating-file-handler", "FILE");
         return resolvePath(cl, values);
@@ -276,20 +292,12 @@ public class WildflyClient {
             setModelNodeChildString(cl, getModelNodeChild(cl, shutdownOperation, OP), SHUTDOWN);
             executeAsync(cl, shutdownOperation, null);
             close();
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
 
-    public synchronized boolean isServerRunning() {
+    public synchronized boolean isServerRunning(String homeDir, String configFile) {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             // ModelNode
@@ -299,14 +307,24 @@ public class WildflyClient {
             setModelNodeChildString(cl, getModelNodeChild(cl, statusOperation, NAME), SERVER_STATE);
             // ModelNode
             Object response = executeAsync(cl, statusOperation, null).get();
-            return SUCCESS.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, OUTCOME)))
+            if (SUCCESS.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, OUTCOME)))
                     && !CONTROLLER_PROCESS_STATE_STARTING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)))
-                    && !CONTROLLER_PROCESS_STATE_STOPPING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)));
+                    && !CONTROLLER_PROCESS_STATE_STOPPING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)))) {
+                Pair<String, String> paths = getServerPaths(cl);
+                if (paths != null) {
+                    String homeDirNorm = homeDir == null ? null : FileUtil.normalizePath(homeDir);
+                    String configFileNorm = configFile == null ? null : FileUtil.normalizePath(configFile);
+                    return paths.first().equals(homeDirNorm) && paths.second().equals(configFileNorm);
+                }
+                return true;
+            } else {
+                return false;
+            }
         } catch (InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex.getTargetException());
             close();
             return false;
-        } catch (Exception ex) {
+        } catch (IllegalAccessException | ClassNotFoundException | InstantiationException | NoSuchMethodException | IOException | InterruptedException | ExecutionException ex) {
             LOGGER.log(Level.FINE, null, ex);
             close();
             return false;
@@ -352,7 +370,7 @@ public class WildflyClient {
     public Collection<WildflyModule> listAvailableModules() throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyModule> modules = new ArrayList<WildflyModule>();
+            List<WildflyModule> modules = new ArrayList<>();
             // ModelNode
             Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
             // ModelNode
@@ -378,13 +396,7 @@ public class WildflyClient {
                 }
             }
             return modules;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
     }
@@ -392,7 +404,7 @@ public class WildflyClient {
     public Collection<WildflyWebModuleNode> listWebModules(Lookup lookup) throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyWebModuleNode> modules = new ArrayList<WildflyWebModuleNode>();
+            List<WildflyWebModuleNode> modules = new ArrayList<>();
             // ModelNode
             Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
             // ModelNode
@@ -420,13 +432,7 @@ public class WildflyClient {
                 }
             }
             return modules;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
     }
@@ -434,7 +440,6 @@ public class WildflyClient {
     public String getWebModuleURL(String webModuleName) throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyWebModuleNode> modules = new ArrayList<WildflyWebModuleNode>();
             // ModelNode
             Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, webModuleName);
             // ModelNode
@@ -470,13 +475,7 @@ public class WildflyClient {
                 }
             }
             return "";
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
     }
@@ -484,7 +483,7 @@ public class WildflyClient {
     public Collection<WildflyEjbModuleNode> listEJBModules(Lookup lookup) throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyEjbModuleNode> modules = new ArrayList<WildflyEjbModuleNode>();
+            List<WildflyEjbModuleNode> modules = new ArrayList<>();
             // ModelNode
             Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
             // ModelNode
@@ -500,7 +499,7 @@ public class WildflyClient {
                     // ModelNode
                     Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, readResult(cl, ejb), SUBSYSTEM), EJB3_SUBSYSTEM);
                     if (modelNodeIsDefined(cl, deployment)) {
-                        List<WildflyEjbComponentNode> ejbInstances = new ArrayList<WildflyEjbComponentNode>();
+                        List<WildflyEjbComponentNode> ejbInstances = new ArrayList<>();
                         ejbInstances.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.ENTITY));
                         ejbInstances.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.MDB));
                         ejbInstances.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.SINGLETON));
@@ -511,13 +510,7 @@ public class WildflyClient {
                 }
             }
             return modules;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
     }
@@ -535,13 +528,7 @@ public class WildflyClient {
                 return true;
             }
             return false;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
     }
@@ -555,13 +542,7 @@ public class WildflyClient {
             Object enableDeployment = createOperation(cl, DEPLOYMENT_REDEPLOY_OPERATION, deploymentAddressModelNode);
             Object result = executeOnModelNode(cl, enableDeployment);
             return isSuccessfulOutcome(cl, result);
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
     }
@@ -574,13 +555,7 @@ public class WildflyClient {
             // ModelNode
             Object enableDeployment = createOperation(cl, DEPLOYMENT_UNDEPLOY_OPERATION, deploymentAddressModelNode);
             return isSuccessfulOutcome(cl, executeOnModelNode(cl, enableDeployment));
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
     }
@@ -600,15 +575,7 @@ public class WildflyClient {
             addModelNodeChild(cl, steps, createOperation(cl, DEPLOYMENT_UNDEPLOY_OPERATION, deploymentAddressModelNode));
             addModelNodeChild(cl, steps, createRemoveOperation(cl, deploymentAddressModelNode));
             return isSuccessfulOutcome(cl, executeOnModelNode(cl, undeploy));
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
@@ -642,37 +609,29 @@ public class WildflyClient {
             // ModelNode
             Object result = executeOnModelNode(cl, deploy);
             return isSuccessfulOutcome(cl, result);
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
 
     public Collection<WildflyDatasourceNode> listDatasources(Lookup lookup) throws IOException {
         Set<Datasource> datasources = listDatasources();
-        List<WildflyDatasourceNode> modules = new ArrayList<WildflyDatasourceNode>(datasources.size());
+        List<WildflyDatasourceNode> modules = new ArrayList<>(datasources.size());
         for (Datasource ds : datasources) {
             modules.add(new WildflyDatasourceNode(((WildflyDatasource) ds).getName(), ds, lookup));
         }
         return modules;
     }
 
-    public Set<Datasource> listDatasources() throws IOException {
+    private Set<Datasource> listDatasources() throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            Set<Datasource> listedDatasources = new HashSet<Datasource>();
+            Set<Datasource> listedDatasources = new HashSet<>();
             // ModelNode
             final Object readDatasources = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, readDatasources, OP), READ_CHILDREN_NAMES_OPERATION);
 
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(SUBSYSTEM, DATASOURCES_SUBSYSTEM);
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
@@ -690,15 +649,7 @@ public class WildflyClient {
                 }
             }
             return listedDatasources;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
@@ -708,7 +659,7 @@ public class WildflyClient {
             // ModelNode
             final Object readDatasource = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, readDatasource, OP), READ_RESOURCE_OPERATION);
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(SUBSYSTEM, DATASOURCES_SUBSYSTEM);
             values.put(DATASOURCE_TYPE, name);
             // ModelNode
@@ -727,22 +678,45 @@ public class WildflyClient {
                         modelNodeAsString(cl, getModelNodeChild(cl, datasource, "driver-class")));
             }
             return null;
-        } catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
-            throw new IOException(ex);
+        }
+    }
+
+    private Pair<String, String> getServerPaths(WildflyDeploymentFactory.WildFlyClassLoader cl) {
+        try {
+            // ModelNode
+            final Object readEnvironment = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readEnvironment, OP), READ_RESOURCE_OPERATION);
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
+            values.put(CORE_SERVICE, SERVER_ENVIRONMENT);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readEnvironment, ADDRESS), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readEnvironment, INCLUDE_RUNTIME), true);
+            setModelNodeChild(cl, getModelNodeChild(cl, readEnvironment, INCLUDE_DEFAULTS), true);
+            setModelNodeChild(cl, getModelNodeChild(cl, readEnvironment, ATTRIBUTES_ONLY), true);
+            // ModelNode
+            Object response = executeOnModelNode(cl, readEnvironment);
+            if (isSuccessfulOutcome(cl, response)) {
+                // ModelNode
+                Object environment = readResult(cl, response);
+                String homeDir = modelNodeAsString(cl, getModelNodeChild(cl, environment, "home-dir"));
+                String configDir = modelNodeAsString(cl, getModelNodeChild(cl, environment, "config-file"));
+
+                if (homeDir != null && configDir != null) {
+                    return Pair.of(FileUtil.normalizePath(homeDir), FileUtil.normalizePath(configDir));
+                }
+            }
+            return null;
+        } catch (IOException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
+            return null;
         }
     }
 
     public Collection<WildflyDestinationNode> listDestinations(Lookup lookup) throws IOException {
         List<MessageDestination> destinations = listDestinations();
-        List<WildflyDestinationNode> modules = new ArrayList<WildflyDestinationNode>(destinations.size());
+        List<WildflyDestinationNode> modules = new ArrayList<>(destinations.size());
         for (MessageDestination destination : destinations) {
             modules.add(new WildflyDestinationNode(destination.getName(), destination, lookup));
         }
@@ -751,7 +725,7 @@ public class WildflyClient {
 
     public List<WildflyDestinationNode> listDestinationForDeployment(Lookup lookup, String jeeDeploymentName) throws IOException {
         List<MessageDestination> destinations = listDestinationForDeployment(jeeDeploymentName);
-        List<WildflyDestinationNode> modules = new ArrayList<WildflyDestinationNode>(destinations.size());
+        List<WildflyDestinationNode> modules = new ArrayList<>(destinations.size());
         for (MessageDestination destination : destinations) {
             modules.add(new WildflyDestinationNode(destination.getName(), destination, lookup));
         }
@@ -761,19 +735,19 @@ public class WildflyClient {
     public List<MessageDestination> listDestinationForDeployment(String deployment) throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<MessageDestination> destinations = new ArrayList<MessageDestination>();
+            List<MessageDestination> destinations = new ArrayList<>();
             // ModelNode
             final Object readHornetQServers = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, OP), READ_CHILDREN_NAMES_OPERATION);
 
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(DEPLOYMENT, deployment);
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
+            values.put(SUBSYSTEM, getMessagingSubsystem());
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, ADDRESS), path);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, RECURSIVE_DEPTH), 0);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), HORNETQ_SERVER_TYPE);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), getMessagingServerType());
 
             // ModelNode
             Object response = executeOnModelNode(cl, readHornetQServers);
@@ -787,15 +761,7 @@ public class WildflyClient {
                 }
             }
             return destinations;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
@@ -809,12 +775,12 @@ public class WildflyClient {
             setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, OP), READ_CHILDREN_NAMES_OPERATION);
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
+            values.put(SUBSYSTEM, getMessagingSubsystem());
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, ADDRESS), path);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, RECURSIVE_DEPTH), 0);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), HORNETQ_SERVER_TYPE);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), getMessagingServerType());
 
             // ModelNode
             Object response = executeOnModelNode(cl, readHornetQServers);
@@ -828,15 +794,7 @@ public class WildflyClient {
                 }
             }
             return destinations;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
@@ -844,16 +802,15 @@ public class WildflyClient {
     private List<WildflyMessageDestination> getJMSDestinationForServerDeployment(String deployment, String serverName, Type messageType) throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyMessageDestination> listedDestinations = new ArrayList<WildflyMessageDestination>();
+            List<WildflyMessageDestination> listedDestinations = new ArrayList<>();
             // ModelNode
             final Object readQueues = createModelNode(cl);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, OP),
-                    READ_CHILDREN_RESOURCES_OPERATION);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, OP), READ_CHILDREN_RESOURCES_OPERATION);
 
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(DEPLOYMENT, deployment);
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
-            values.put(HORNETQ_SERVER_TYPE, serverName);
+            values.put(SUBSYSTEM, getMessagingSubsystem());
+            values.put(getMessagingServerType(), serverName);
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readQueues, ADDRESS), path);
@@ -883,15 +840,7 @@ public class WildflyClient {
                 }
             }
             return listedDestinations;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
@@ -899,14 +848,14 @@ public class WildflyClient {
     private List<WildflyMessageDestination> getJMSDestinationForServer(String serverName, Type messageType) throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyMessageDestination> listedDestinations = new ArrayList<WildflyMessageDestination>();
+            List<WildflyMessageDestination> listedDestinations = new ArrayList<>();
             // ModelNode
             final Object readQueues = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, OP), READ_CHILDREN_RESOURCES_OPERATION);
 
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
-            values.put(HORNETQ_SERVER_TYPE, serverName);
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
+            values.put(SUBSYSTEM, getMessagingSubsystem());
+            values.put(getMessagingServerType(), serverName);
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readQueues, ADDRESS), path);
@@ -935,21 +884,14 @@ public class WildflyClient {
                 }
             }
             return listedDestinations;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
 
-    public boolean addMessageDestinations(final Collection<WildflyMessageDestination> destinations) throws IOException {
-        boolean result = isServerRunning();
+    public boolean addMessageDestinations(final Collection<WildflyMessageDestination> destinations, InstanceProperties ip) throws IOException {
+        boolean result = isServerRunning(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR),
+                ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
         if (result) {
             for (WildflyMessageDestination destination : destinations) {
                 result = result && addMessageDestination(destination);
@@ -961,8 +903,8 @@ public class WildflyClient {
     public boolean addMessageDestination(WildflyMessageDestination destination) throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
+            values.put(SUBSYSTEM, getMessagingSubsystem());
             values.put("hornetq-server", "default");
             if (destination.getType() == Type.QUEUE) {
                 values.put("jms-queue", destination.getName());
@@ -973,24 +915,61 @@ public class WildflyClient {
             Object operation = setModelNodeChild(cl, getModelNodeChild(cl, createAddOperation(cl, address), "entries"), destination.getJndiNames());
             Object response = executeOnOperation(cl, operation);
             return (isSuccessfulOutcome(cl, response));
-        } catch (ClassNotFoundException ex) {
-            return false;
-        } catch (IllegalAccessException ex) {
-            return false;
-        } catch (NoSuchMethodException ex) {
-            return false;
-        } catch (InvocationTargetException ex) {
-            return false;
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException ex) {
             return false;
         }
     }
+    
+    public Collection<WildflyJaxrsResourceNode> listJaxrsResources(Lookup lookup, String deployment) throws IOException {
+        Collection<WildflyJaxrsResource> jaxrsResources = listJaxrsResources(deployment);
+        List<WildflyJaxrsResourceNode> modules = new ArrayList<>(jaxrsResources.size());
+        for (WildflyJaxrsResource jaxrsResource : jaxrsResources) {
+            modules.add(new WildflyJaxrsResourceNode(jaxrsResource, lookup));
+        }
+        return modules;
+    }
 
+    private Collection<WildflyJaxrsResource> listJaxrsResources(String deployment) throws IOException {
+        try {
+            WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            Map<String, WildflyJaxrsResource> jaxrsResources = new HashMap<>();
+            // ModelNode
+            final Object readJaxrsResources = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readJaxrsResources, OP), SHOW_RESOURCES);
+            LinkedHashMap<Object, Object> address = new LinkedHashMap<>();
+            address.put(DEPLOYMENT, deployment);
+            address.put(SUBSYSTEM, JAXRS_SUBSYSTEM);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, address);
+            setModelNodeChild(cl, getModelNodeChild(cl, readJaxrsResources, ADDRESS), path);
+            // ModelNode
+            Object response = executeOnModelNode(cl, readJaxrsResources);
+            if (isSuccessfulOutcome(cl, response)) {
+                String serverUrl = "http://" + serverAddress + ':' + ip.getProperty(WildflyPluginProperties.PROPERTY_PORT);
+                // List<ModelNode>
+                List names = modelNodeAsList(cl, readResult(cl, response));
+                for (Object jaxrsResource : names) {
+                    String resourceClass = modelNodeAsString(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_CLASSNAME));
+                    String resourcePath = modelNodeAsString(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_PATH));
+                    List methods = modelNodeAsList(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_METHODS));
+                    String key = resourceClass + "___" + resourcePath;
+                    if(jaxrsResources.containsKey(key)) {
+                        jaxrsResources.get(key).addMethods(methods);
+                    } else {
+                        jaxrsResources.put(key, new WildflyJaxrsResource(resourceClass, resourcePath, serverUrl, methods));
+                    }
+                }
+            }
+            return jaxrsResources.values();
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
+            throw new IOException(ex);
+        }
+    }
     public Collection<WildflyMailSessionResource> listMailSessions() throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyMailSessionResource> modules = new ArrayList<WildflyMailSessionResource>();
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            List<WildflyMailSessionResource> modules = new ArrayList<>();
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(SUBSYSTEM, MAIL_SUBSYSTEM);
             Object address = createPathAddressAsModelNode(cl, values);
             final Object readMailSessions = createModelNode(cl);
@@ -1011,15 +990,7 @@ public class WildflyClient {
                 }
             }
             return modules;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
@@ -1027,7 +998,7 @@ public class WildflyClient {
     public Collection listEarApplications(Lookup lookup) throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyEarApplicationNode> modules = new ArrayList<WildflyEarApplicationNode>();
+            List<WildflyEarApplicationNode> modules = new ArrayList<>();
             Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
             Object readDeployments = createReadResourceOperation(cl, deploymentAddressModelNode, true);
             Object response = executeOnModelNode(cl, readDeployments);
@@ -1042,13 +1013,7 @@ public class WildflyClient {
                 }
             }
             return modules;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
     }
@@ -1079,7 +1044,7 @@ public class WildflyClient {
                         // ModelNode
                         Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, modelNodeAsPropertyForValue(cl, subDeployment), SUBSYSTEM), EJB3_SUBSYSTEM);
                         if (modelNodeIsDefined(cl, deployment)) {
-                            List<WildflyEjbComponentNode> ejbs = new ArrayList<WildflyEjbComponentNode>();
+                            List<WildflyEjbComponentNode> ejbs = new ArrayList<>();
                             ejbs.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.ENTITY));
                             ejbs.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.MDB));
                             ejbs.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.SINGLETON));
@@ -1091,13 +1056,7 @@ public class WildflyClient {
                 }
             }
             return modules;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             throw new IOException(ex);
         }
     }
@@ -1105,7 +1064,7 @@ public class WildflyClient {
     private List<WildflyEjbComponentNode> listEJBs(WildflyDeploymentFactory.WildFlyClassLoader cl,
             Object deployment, WildflyEjbComponentNode.Type type) throws IllegalAccessException, NoSuchMethodException,
             InvocationTargetException {
-        List<WildflyEjbComponentNode> modules = new ArrayList<WildflyEjbComponentNode>();
+        List<WildflyEjbComponentNode> modules = new ArrayList<>();
         if (modelNodeHasDefinedChild(cl, deployment, type.getPropertyName())) {
             List ejbs = modelNodeAsList(cl, getModelNodeChild(cl, deployment, type.getPropertyName()));
             for (Object ejb : ejbs) {
@@ -1120,7 +1079,7 @@ public class WildflyClient {
             InvocationTargetException, IllegalAccessException, InstantiationException, IOException {
         WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
         WildflySocket socket = new WildflySocket();
-        LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+        LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
         values.put("socket-binding-group", "standard-sockets");
         if (outBound) {
             values.put("remote-destination-outbound-socket-binding", name);
@@ -1153,18 +1112,18 @@ public class WildflyClient {
     public Collection<WildflyConnectionFactory> listConnectionFactories() throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyConnectionFactory> connectionFactories = new ArrayList<WildflyConnectionFactory>();
+            List<WildflyConnectionFactory> connectionFactories = new ArrayList<>();
             // ModelNode
             final Object readHornetQServers = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, OP), READ_CHILDREN_NAMES_OPERATION);
 
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
+            values.put(SUBSYSTEM, getMessagingSubsystem());
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, ADDRESS), path);
             setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, RECURSIVE_DEPTH), 0);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), HORNETQ_SERVER_TYPE);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, CHILD_TYPE), getMessagingServerType());
 
             // ModelNode
             Object response = executeOnModelNode(cl, readHornetQServers);
@@ -1177,15 +1136,7 @@ public class WildflyClient {
                 }
             }
             return connectionFactories;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
@@ -1193,15 +1144,15 @@ public class WildflyClient {
     private Collection<? extends WildflyConnectionFactory> getConnectionFactoriesForServer(String hornetqServerName) throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyConnectionFactory> listedConnectionFactories = new ArrayList<WildflyConnectionFactory>();
+            List<WildflyConnectionFactory> listedConnectionFactories = new ArrayList<>();
             // ModelNode
             final Object readConnectionFactories = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, readConnectionFactories, OP),
                     READ_CHILDREN_RESOURCES_OPERATION);
 
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
-            values.put(SUBSYSTEM, MESSAGING_SUBSYSTEM);
-            values.put(HORNETQ_SERVER_TYPE, hornetqServerName);
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
+            values.put(SUBSYSTEM, getMessagingSubsystem());
+            values.put(getMessagingServerType(), hornetqServerName);
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readConnectionFactories, ADDRESS), path);
@@ -1222,15 +1173,7 @@ public class WildflyClient {
                 }
             }
             return listedConnectionFactories;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
@@ -1240,7 +1183,7 @@ public class WildflyClient {
             InvocationTargetException, IllegalAccessException, InstantiationException, IOException {
         WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
         List properties = modelNodeAsPropertyList(cl, configuration);
-        Map<String, String> attributes = new HashMap<String, String>(properties.size());
+        Map<String, String> attributes = new HashMap<>(properties.size());
         for (Object property : properties) {
             String propertyName = getPropertyName(cl, property);
             Object propertyValue = getPropertyValue(cl, property);
@@ -1258,7 +1201,7 @@ public class WildflyClient {
 
         Object configuration = modelNodeAsPropertyForValue(cl, mailSession);
         List properties = modelNodeAsPropertyList(cl, configuration);
-        Map<String, String> attributes = new HashMap<String, String>(properties.size());
+        Map<String, String> attributes = new HashMap<>(properties.size());
         for (Object property : properties) {
             String propertyName = getPropertyName(cl, property);
             Object propertyValue = getPropertyValue(cl, property);
@@ -1287,7 +1230,7 @@ public class WildflyClient {
 
     public String getDeploymentDirectory() throws IOException {
         WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-        LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+        LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
         values.put(SUBSYSTEM, "deployment-scanner");
         values.put("scanner", "default");
         return resolvePath(cl, values);
@@ -1321,7 +1264,7 @@ public class WildflyClient {
     private void enableExplodedDeployment(String scannerName) throws ClassNotFoundException, IllegalAccessException,
             InstantiationException, NoSuchMethodException, InvocationTargetException, IOException {
         WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-        LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+        LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
         values.put(SUBSYSTEM, "deployment-scanner");
         values.put("scanner", scannerName);
 
@@ -1339,13 +1282,13 @@ public class WildflyClient {
     public Collection<WildflyResourceAdapter> listResourceAdapters() throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<WildflyResourceAdapter> resourceAdapters = new ArrayList<WildflyResourceAdapter>();
+            List<WildflyResourceAdapter> resourceAdapters = new ArrayList<>();
             // ModelNode
             final Object readResourceAdapters = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, readResourceAdapters,
                     OP), READ_CHILDREN_RESOURCES_OPERATION);
 
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(SUBSYSTEM, RESOURCE_ADAPTER_SUBSYSTEM);
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
@@ -1362,7 +1305,7 @@ public class WildflyClient {
                 for (Object resource : ressources) {
                     Object configuration = modelNodeAsPropertyForValue(cl, resource);
                     List properties = modelNodeAsPropertyList(cl, configuration);
-                    Map<String, String> attributes = new HashMap<String, String>(properties.size());
+                    Map<String, String> attributes = new HashMap<>(properties.size());
                     for (Object property : properties) {
                         String propertyName = getPropertyName(cl, property);
                         Object propertyValue = getPropertyValue(cl, property);
@@ -1375,16 +1318,22 @@ public class WildflyClient {
                 }
             }
             return resourceAdapters;
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
         }
+    }
+    
+    private String getMessagingSubsystem() {
+        if(version.compareTo(WILDFLY_10_0_0) >= 0) {
+            return MESSAGING_ACTIVEMQ_SUBSYSTEM;
+        }
+        return MESSAGING_SUBSYSTEM;
+    }
+
+    private String getMessagingServerType() {
+        if(version.compareTo(WILDFLY_10_0_0) >= 0) {
+            return MESSAGING_ACTIVEMQ_SERVER_TYPE;
+        }
+        return HORNETQ_SERVER_TYPE;
     }
 }

@@ -67,6 +67,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.SimpleTypeVisitor6;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -82,6 +83,7 @@ import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
+import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
@@ -104,6 +106,7 @@ public class JavaSymbolProvider implements SymbolProvider {
 
     private volatile boolean canceled;
 
+    @Override
     public String name() {
         return "java symbols";  //NOI18N
     }
@@ -118,6 +121,24 @@ public class JavaSymbolProvider implements SymbolProvider {
         try {
             final SearchType st = context.getSearchType();
             String textToSearch = context.getText();
+            final boolean scanInProgress = SourceUtils.isScanInProgress();
+            if (scanInProgress) {
+                // ui message
+                final String warningKind = NbBundle.getMessage(JavaSymbolProvider.class, "LBL_SymbolKind");
+                final String message = NbBundle.getMessage(JavaSymbolProvider.class, "LBL_ScanInProgress_warning", warningKind);
+                result.setMessage(message);
+                result.pendingResult();
+                final Cache cache = Cache.get(textToSearch, st);
+                if (cache != null) {
+                    cache.populateResult(result);
+                    return;
+                }
+            } else {
+                Cache.clear();
+            }
+            final Cache cache = scanInProgress ?
+                Cache.create(textToSearch, st) :
+                null;
             String prefix = null;
             final int dotIndex = textToSearch.lastIndexOf('.'); //NOI18N
             if (dotIndex > 0 && dotIndex != textToSearch.length()-1) {
@@ -188,7 +209,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                         Collections.<String>emptySet(),
                         Collections.<String>emptySet());
 
-                final Set<URL> rootUrls = new HashSet<URL>();
+                final Set<URL> rootUrls = new HashSet<>();
                 for(FileObject root : roots) {
                     if (canceled) {
                         return;
@@ -226,18 +247,21 @@ public class JavaSymbolProvider implements SymbolProvider {
                                         final ElementHandle<TypeElement> owner = p.getKey();
                                         for (String symbol : p.getValue()) {
                                             if (matchesRestrictions(owner.getQualifiedName(), symbol, restriction, caseSensitive)) {
-                                                result.addResult(new AsyncJavaSymbolDescriptor(
+                                                final AsyncJavaSymbolDescriptor d = new AsyncJavaSymbolDescriptor(
                                                         project,
                                                         root,
                                                         impl,
                                                         owner,
                                                         symbol,
-                                                        caseSensitive));
+                                                        caseSensitive);
+                                                result.addResult(d);
+                                                if (cache != null) {
+                                                    cache.offer(d);
+                                                }
                                             }
                                         }
                                     }
                                 }
-
                             }
                         }
                         return null;
@@ -250,7 +274,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                 return;
             }
         } finally {
-            cleanup();
+            clearCancel();
         }
     }
 
@@ -343,8 +367,9 @@ public class JavaSymbolProvider implements SymbolProvider {
     }
 
     private static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
-	if (type == null)
+	if (type == null) {
             return ""; //NOI18N
+        }
         return new TypeNameVisitor(varArg).visit(type, fqn);
     }
 
@@ -374,8 +399,9 @@ public class JavaSymbolProvider implements SymbolProvider {
                     DEFAULT_VALUE.append("<"); //NOI18N
                     while(it.hasNext()) {
                         visit(it.next(), p);
-                        if (it.hasNext())
+                        if (it.hasNext()) {
                             DEFAULT_VALUE.append(", "); //NOI18N
+                        }
                     }
                     DEFAULT_VALUE.append(">"); //NOI18N
                 }
@@ -398,8 +424,9 @@ public class JavaSymbolProvider implements SymbolProvider {
             Element e = t.asElement();
             if (e != null) {
                 String name = e.getSimpleName().toString();
-                if (!CAPTURED_WILDCARD.equals(name))
+                if (!CAPTURED_WILDCARD.equals(name)) {
                     return DEFAULT_VALUE.append(name);
+                }
             }
             DEFAULT_VALUE.append("?"); //NOI18N
             if (!insideCapturedWildcard) {
@@ -412,8 +439,9 @@ public class JavaSymbolProvider implements SymbolProvider {
                     bound = t.getUpperBound();
                     if (bound != null && bound.getKind() != TypeKind.NULL) {
                         DEFAULT_VALUE.append(" extends "); //NOI18N
-                        if (bound.getKind() == TypeKind.TYPEVAR)
+                        if (bound.getKind() == TypeKind.TYPEVAR) {
                             bound = ((TypeVariable)bound).getLowerBound();
+                        }
                         visit(bound, p);
                     }
                 }
@@ -431,8 +459,9 @@ public class JavaSymbolProvider implements SymbolProvider {
                 bound = t.getExtendsBound();
                 if (bound != null) {
                     DEFAULT_VALUE.append(" extends "); //NOI18N
-                    if (bound.getKind() == TypeKind.WILDCARD)
+                    if (bound.getKind() == TypeKind.WILDCARD) {
                         bound = ((WildcardType)bound).getSuperBound();
+                    }
                     visit(bound, p);
                 } else if (len == 0) {
                     bound = SourceUtils.getBound(t);
@@ -471,12 +500,69 @@ public class JavaSymbolProvider implements SymbolProvider {
        return sb.toString();
     }
 
+    @Override
     public void cancel() {
         canceled = true;
     }
 
+    @Override
     public void cleanup() {
+        clearCancel();
+        Cache.clear();
+    }
+
+    private void clearCancel() {
         canceled = false;
+    }
+
+    private static final class Cache {
+        private static Cache instance;
+
+        private final String text;
+        private final SearchType type;
+        private final Collection<SymbolDescriptor> descriptors;
+
+        private Cache(
+            @NonNull final String text,
+            @NonNull final SearchType type) {
+            this.text = text;
+            this.type = type;
+            this.descriptors = Collections.synchronizedSet(new HashSet<SymbolDescriptor>());
+        }
+
+        void populateResult(@NonNull final Result result) {
+            synchronized (descriptors) {
+                for (SymbolDescriptor d : descriptors) {
+                    result.addResult(d);
+                }
+            }
+        }
+
+        void offer(@NonNull final AsyncJavaSymbolDescriptor d) {
+            descriptors.add(d);
+        }
+
+        static void clear() {
+            instance = null;
+        }
+
+        @CheckForNull
+        static Cache get(
+            @NonNull final String text,
+            @NonNull final SearchType type) {
+            Cache res = instance;
+            if (res != null && (!res.text.equals(text) || res.type != type)) {
+                res = instance = null;
+            }
+            return res;
+        }
+
+        @NonNull
+        static Cache create(
+            @NonNull final String text,
+            @NonNull final SearchType type) {
+            return instance = new Cache(text, type);
+        }
     }
 
 }

@@ -767,12 +767,19 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             latestAnnotationTask.cancel();
         }
         
-        latestAnnotationTask = getRequestProcessor().post(this);
+        if (isAnnotated()) {
+            latestAnnotationTask = getRequestProcessor().post(this);
+        }
     }
 
     // latestAnnotationTask business logic
     @Override
     public void run() {
+        Caret carett = this.caret;
+        if (carett == null || !isAnnotated()) {
+            // closed in the meantime
+            return;
+        }
         // get resource bundle
         ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         // give status bar "wait" indication
@@ -782,7 +789,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         
         // determine current line
         int line = -1;
-        int offset = caret.getDot();
+        int offset = carett.getDot();
         try {
             line = Utilities.getLineOffset(doc, offset);
         } catch (BadLocationException ex) {

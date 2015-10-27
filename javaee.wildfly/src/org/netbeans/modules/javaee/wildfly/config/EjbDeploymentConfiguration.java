@@ -72,7 +72,7 @@ import org.netbeans.modules.javaee.wildfly.config.gen.Jboss;
 import org.netbeans.modules.javaee.wildfly.config.gen.MessageDriven;
 import org.netbeans.modules.javaee.wildfly.config.gen.ResourceRef;
 import org.netbeans.modules.javaee.wildfly.config.gen.Session;
-import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
+import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupportImpl;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -135,7 +135,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         super(j2eeModule, version, isWildFly);
         this.jbossFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss.xml"); // NOI18N;
         getJboss();
-        if (deploymentDescriptorDO == null) {
+        if (deploymentDescriptorDO == null && jbossFile != null) {
             try {
                 deploymentDescriptorDO = deploymentDescriptorDO.find(FileUtil.toFileObject(jbossFile));
                 deploymentDescriptorDO.addPropertyChangeListener(this);
@@ -161,7 +161,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
      *
      * @return jboss graph or null if the jboss.xml file is not parseable.
      */
-    public synchronized Jboss getJboss() {
+    private final synchronized Jboss getJboss() {
         if (jboss == null) {
             try {
                 if (jbossFile!= null && jbossFile.exists()) {
@@ -1017,7 +1017,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               String jndiName = MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4;
+               String jndiName = MessageDestinationSupportImpl.CONN_FACTORY_JNDI_NAME_JB4;
                JBossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
            }
         });
@@ -1034,7 +1034,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               String jndiName = MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4;
+               String jndiName = MessageDestinationSupportImpl.CONN_FACTORY_JNDI_NAME_JB4;
                JBossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, connectionFactoryName, mdbName, jndiName);
            }
         });

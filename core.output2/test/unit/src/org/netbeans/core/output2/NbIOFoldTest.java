@@ -419,4 +419,18 @@ public class NbIOFoldTest {
         }
         assertTrue(illegalStateExceptionThrown);
     }
+
+    /**
+     * Test for bug 255907 - IllegalStateException: No OutWriter available.
+     */
+    @Test
+    public void testStartFoldOnDisposedIO() {
+        NbIO io = new NbIO("testStartFoldingOnDisposedIO");
+        io.closeInputOutput();
+        FoldHandle fh = IOFolding.startFold(io, true);
+        FoldHandle ch = fh.startFold(true);
+        ch.setExpanded(false);
+        ch.finish();
+        fh.finish();
+    }
 }

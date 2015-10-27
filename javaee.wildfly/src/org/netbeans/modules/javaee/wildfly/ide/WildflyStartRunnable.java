@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide;
 
+import static java.io.File.separatorChar;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -93,13 +95,11 @@ class WildflyStartRunnable implements Runnable {
     private final static String RUN_FILE_NAME = "run.bat";  // NOI18N
 
     private final static String JBOSS_HOME = "JBOSS_HOME";// NOI18N
-    private final static String STANDALONE_SH = File.separator
-            + "bin" + File.separator + "standalone.sh";          // NOI18N
-    private final static String STANDALONE_BAT = File.separator
-            + "bin" + File.separator + "standalone.bat";     // NOI18N
+    private final static String STANDALONE_SH = separatorChar + "bin" + separatorChar + "standalone.sh";// NOI18N
+    private final static String STANDALONE_BAT = separatorChar + "bin" + separatorChar + "standalone.bat";// NOI18N
+    private final static String STANDALONE_PS1 = separatorChar + "bin" + separatorChar + "standalone.ps1";// NOI18N
 
-    private final static String CONF_BAT = File.separator
-            + "bin" + File.separator + CONF_FILE_NAME;    // NOI18N
+    private final static String CONF_BAT = separatorChar + "bin" + separatorChar + CONF_FILE_NAME;// NOI18N
 
     private final static String JAVA_OPTS = "JAVA_OPTS";// NOI18N
 
@@ -158,9 +158,13 @@ class WildflyStartRunnable implements Runnable {
             if (!logManagerJar.isEmpty()) {
                 javaOptsBuilder.append(" -Xbootclasspath/p:").append(logManagerJar)
                         .append(" -Djava.util.logging.manager=org.jboss.logmanager.LogManager");
+                FileObject loggingProperties = FileUtil.toFileObject(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR) 
+                        + separatorChar + "standalone" + separatorChar + "configuration", "logging.properties")); // NOI18N
+                
+                javaOptsBuilder.append(" -Dlogging.configuration=").append(loggingProperties.toURL());
             }
         }
-        if(platform.getSpecification().getVersion().compareTo(JDK_18) < 0) {
+        if (platform.getSpecification().getVersion().compareTo(JDK_18) < 0) {
             javaOptsBuilder.append(" -XX:MaxPermSize=256m");
         }
         if ("64".equals(platform.getSystemProperties().get("sun.arch.data.model"))) {
@@ -211,14 +215,37 @@ class WildflyStartRunnable implements Runnable {
             javaOptsBuilder.append(String.format(" -agentlib:jdwp=transport=dt_socket,address=%1s,server=y,suspend=n", dm.getDebuggingPort())); // NOI18N
 
         }
-        javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
-        if(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null ) {
+        if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
+            javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman,org.jboss.logmanager -Djava.awt.headless=true");
+        } else {
+            javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
+        }
+        
+        if (ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null) {
             File configFile = new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
-            if(configFile.exists() && configFile.getParentFile().exists() && configFile.getParentFile().getParentFile().exists()) {
+            if (configFile.exists() && configFile.getParentFile().exists() && configFile.getParentFile().getParentFile().exists()) {
                 String baseDir = configFile.getParentFile().getParentFile().getAbsolutePath();
-                if(!baseDir.equals(ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR))) {
+                if (!baseDir.equals(ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR))) {
                     javaOptsBuilder.append(" -Djboss.server.base.dir=").append(baseDir);
                 }
+            }
+        }
+        if (ip.getProperty(WildflyPluginProperties.PROPERTY_ADMIN_PORT) != null) {
+            try {
+                int adminPort = Integer.parseInt(ip.getProperty(WildflyPluginProperties.PROPERTY_ADMIN_PORT));
+                if (WildflyPluginUtils.WILDFLY_9_0_0.compareTo(dm.getServerVersion()) <= 0) {
+                    javaOptsBuilder.append(" -Djboss.management.http.port=").append(adminPort);
+                } else {
+                    javaOptsBuilder.append(" -Djboss.management.native.port=").append(adminPort);
+                }
+            } catch (NumberFormatException ex) {
+            }
+        }
+        if (ip.getProperty(WildflyPluginProperties.PROPERTY_PORT) != null) {
+            try {
+                int httpConnectorPort = Integer.parseInt(ip.getProperty(WildflyPluginProperties.PROPERTY_PORT));
+                javaOptsBuilder.append(" -Djboss.http.port=").append(httpConnectorPort);
+            } catch (NumberFormatException ex) {
             }
         }
         for (StartupExtender args : StartupExtender.getExtenders(
@@ -230,7 +257,7 @@ class WildflyStartRunnable implements Runnable {
 
         // create new environment for server
         javaOpts = javaOptsBuilder.toString();
-        Logger.getLogger("global").log(Level.INFO,  JAVA_OPTS + "={0}", javaOpts);
+        Logger.getLogger("global").log(Level.INFO, JAVA_OPTS + "={0}", javaOpts);
         String javaHome = getJavaHome(platform);
 
         String envp[] = new String[]{
@@ -305,6 +332,17 @@ class WildflyStartRunnable implements Runnable {
         return NbBundle.getMessage(WildflyStartRunnable.class, resName, instanceName, param);
     }
 
+    private String getServerRunFileName(final String serverLocation) {
+        if(Utilities.isWindows()) {
+            File runtimeFile = new File(serverLocation + STANDALONE_PS1);
+            if(runtimeFile.exists()) {
+                return serverLocation + STANDALONE_PS1;
+            }
+            return serverLocation + STANDALONE_BAT;
+        }
+        return serverLocation + STANDALONE_SH;
+    }
+
     private Process createProcess(InstanceProperties ip) {
         String envp[] = createEnvironment(ip);
 
@@ -326,7 +364,7 @@ class WildflyStartRunnable implements Runnable {
         } catch (java.io.IOException ioe) {
             Logger.getLogger("global").log(Level.WARNING, null, ioe);
             final String serverLocation = ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR);
-            final String serverRunFileName = serverLocation + (Utilities.isWindows() ? STANDALONE_BAT : STANDALONE_SH);
+            final String serverRunFileName = getServerRunFileName(serverLocation);
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_PD", serverRunFileName));
 
             return null;
@@ -384,8 +422,8 @@ class WildflyStartRunnable implements Runnable {
         logManagerPath.append(File.separatorChar).append("org").append(File.separatorChar).append("jboss");
         logManagerPath.append(File.separatorChar).append("logmanager").append(File.separatorChar).append("main");
         FileObject logManagerDir = FileUtil.toFileObject(new File(logManagerPath.toString()));
-        for(FileObject child : logManagerDir.getChildren()) {
-            if(child.isData() && "jar".equalsIgnoreCase(child.getExt())) {
+        for (FileObject child : logManagerDir.getChildren()) {
+            if (child.isData() && "jar".equalsIgnoreCase(child.getExt())) {
                 return child.getPath();
             }
         }
@@ -403,8 +441,7 @@ class WildflyStartRunnable implements Runnable {
         String getRunFileName() {
             String serverLocation = getProperties().getProperty(
                     WildflyPluginProperties.PROPERTY_ROOT_DIR);
-            String serverRunFileName = serverLocation
-                    + (Utilities.isWindows() ? STANDALONE_BAT : STANDALONE_SH);
+            String serverRunFileName = getServerRunFileName(serverLocation);
             if (needChange) {
                 String contentRun = readFile(serverRunFileName);
                 String contentConf = readFile(serverLocation + CONF_BAT);

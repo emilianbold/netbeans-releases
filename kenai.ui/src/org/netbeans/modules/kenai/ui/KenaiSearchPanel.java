@@ -148,10 +148,6 @@ public class KenaiSearchPanel extends JPanel {
         searchResultsPanel.remove(scrollPane);
         searchResultsPanel.add(noSearchLabelPanel, BorderLayout.CENTER);
         
-        if (panelType == PanelType.BROWSE) {
-            remove(createButtonPanel);
-        }
-
         final ListSelectionModel selModel = kenaiProjectsList.getSelectionModel();
         selModel.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -404,8 +400,6 @@ public class KenaiSearchPanel extends JPanel {
         searchButton = new JButton();
         searchInfoLabel = new JLabel();
         projectsLabel = new JLabel();
-        createButtonPanel = new JPanel();
-        createNewProjectButton = new JButton();
         kenaiProjectsTabPane = new JTabbedPane();
         featuredProjectPanel = new JPanel();
         scrollPaneFeatured = new JScrollPane();
@@ -428,14 +422,15 @@ public class KenaiSearchPanel extends JPanel {
         searchButtonPanel.add(searchTextField, gridBagConstraints);
 
         searchLabel.setLabelFor(searchTextField);
-        Mnemonics.setLocalizedText(searchLabel, NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchLabel.text"));
+        Mnemonics.setLocalizedText(searchLabel, NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         searchButtonPanel.add(searchLabel, gridBagConstraints);
         searchLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchButton.text"));
+
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchButton.text")); // NOI18N
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
@@ -470,22 +465,6 @@ public class KenaiSearchPanel extends JPanel {
         projectsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.projectsLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         add(searchButtonPanel, BorderLayout.NORTH);
-
-        createButtonPanel.setLayout(new GridBagLayout());
-        Mnemonics.setLocalizedText(createNewProjectButton, NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.createNewProjectButton.text"));
-        createNewProjectButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                createNewProjectButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(4, 0, 0, 0);
-        createButtonPanel.add(createNewProjectButton, gridBagConstraints);
-        createNewProjectButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.createNewProjectButton.AccessibleContext.accessibleDescription")); // NOI18N
-
-        add(createButtonPanel, BorderLayout.SOUTH);
 
         featuredProjectPanel.setLayout(new BorderLayout());
         featuredProjectPanel.add(scrollPaneFeatured, BorderLayout.CENTER);
@@ -523,10 +502,6 @@ public class KenaiSearchPanel extends JPanel {
     private void searchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         invokeSearch();
     }//GEN-LAST:event_searchButtonActionPerformed
-
-    private void createNewProjectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_createNewProjectButtonActionPerformed
-        NewKenaiProjectAction.createNewProject(kenai);
-    }//GEN-LAST:event_createNewProjectButtonActionPerformed
 
     private void presentSpecialProjects(final JPanel wherePanel, final JScrollPane whereScrollPane, final JList whereList, final String type, final ProgressHandle ph) {
         if (kenai==null) {
@@ -842,8 +817,6 @@ public class KenaiSearchPanel extends JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JPanel createButtonPanel;
-    private JButton createNewProjectButton;
     private JPanel featuredProjectPanel;
     private JList kenaiProjectsList;
     private JTabbedPane kenaiProjectsTabPane;

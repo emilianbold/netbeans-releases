@@ -627,12 +627,17 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
         if (value.length() > 0) {
             String mavenPath = brc.getProperties().get(CosChecker.MAVENEXTCLASSPATH);
+            String delimiter = Utilities.isWindows() ? ";" : ":";
             if (mavenPath == null) {
                 mavenPath = "";
             } else {
-                mavenPath = mavenPath + (Utilities.isWindows() ? ";" : ":");
+                if(mavenPath.contains(jar + delimiter)) {
+                    // invoked by output view > rerun? see also issue #249971
+                    return;
+                }
+                mavenPath += delimiter;
             }
-            mavenPath = mavenPath + jar.getAbsolutePath();
+            mavenPath += jar.getAbsolutePath();
             brc.setProperty(MAVENEXTCLASSPATH, mavenPath);
         }
         brc.setProperty(ENV_NETBEANS_PROJECT_MAPPINGS, value.toString()); //always put ti recognize later and print warnings

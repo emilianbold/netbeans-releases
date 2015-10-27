@@ -2,65 +2,29 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>CPU Snapshot Comparison</title>
+<title>Thread Dump Window</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-14</p>
-<p><a id="CpuDiff.HelpCtx" name="CpuDiff.HelpCtx"></a></p>
-<div id="NBCSH3370"><!-- infolevel="all" infotype="General" --><a id="sthref436" name="sthref436"></a>
-<h1>CPU Snapshot Comparison</h1>
+<p><a id="ThreadDumpWindow.HelpCtx" name="ThreadDumpWindow.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref447" name="sthref447"></a>
+<h1>Thread Dump Window</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to view a comparison of two CPU snapshots. 
+<p>This window provides a textual dump of all active threads and monitors of the profiled application. It shows what methods have been executed at the point of capturing the dump, thread by thread. This information is useful to identify what the application is currently doing. The thread dump also contains information about locks, threads holding the locks, and threads waiting to acquire a lock. This data is essential when debugging deadlocks. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG784">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
+<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-
-<table summary="Descriptions of CPU Snapshot Comparison window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t42">Element</th>
-<th align="left" valign="bottom" id="r1c2-t42">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t42" headers="r1c1-t42">
-<p>Call Tree</p>
-</td>
-<td align="left" headers="r2c1-t42 r1c2-t42">Displays a call tree showing the method call chain and the time/number of invocations for executing threads and methods in each context.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t42" headers="r1c1-t42">
-<p>Hot Spots</p>
-</td>
-<td align="left" headers="r3c1-t42 r1c2-t42">Displays the total execution time and number of invocations for each method, irrespective of the context.</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<a id="NBCSH3373" name="NBCSH3373"></a>
+<a id="sthref448" name="sthref448"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
-<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
-<param name="text" value="<html><u>&quot;Anlayzing CPU Performance&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG659">
+<param name="text" value="<html><u>&quot;Testing and Profiling Java Application Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

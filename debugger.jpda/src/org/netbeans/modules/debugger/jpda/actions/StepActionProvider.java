@@ -43,9 +43,10 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
+import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
@@ -65,28 +66,28 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAStep;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ExpressionPool;
-import org.netbeans.modules.debugger.jpda.JPDAStepImpl.MethodExitBreakpointListener;
-//import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
-import org.netbeans.modules.debugger.jpda.SourcePath;
-import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
+import org.netbeans.modules.debugger.jpda.JPDAStepImpl.MethodExitBreakpointListener;
+import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
@@ -101,7 +102,10 @@ import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
+import org.netbeans.spi.debugger.jpda.SmartSteppingCallback.StopOrStep;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -132,8 +136,6 @@ implements Executor {
     private boolean steppingFromCompoundFilteredLocation = false;
     private static final RequestProcessor operationsRP = new RequestProcessor("Debugger Operations Computation", 1);    // NOI18N
     
-    private static final boolean ssverbose = 
-        System.getProperty ("netbeans.debugger.smartstepping") != null;
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
     private static final Logger loggerStep = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
 
@@ -193,10 +195,10 @@ implements Executor {
     }
     
     public void runAction(final Object action) {
-        runAction(action, true, null);
+        runAction(getJDIAction(action), StepRequest.STEP_LINE, true, null);
     }
 
-    private void runAction(final Object action, boolean doResume, Lock lock) {
+    private void runAction(final int stepDepth, final int stepSize, boolean doResume, Lock lock) {
         //S ystem.out.println("\nStepAction.doAction");
         int suspendPolicy = getDebuggerImpl().getSuspend();
         JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
@@ -240,8 +242,8 @@ implements Executor {
             stepRequest = EventRequestManagerWrapper.createStepRequest (
                     VirtualMachineWrapper.eventRequestManager (vm),
                     tr,
-                    StepRequest.STEP_LINE,
-                    getJDIAction (action)
+                    stepSize,
+                    stepDepth
                 );
             EventRequestWrapper.addCountFilter (stepRequest, 1);
             getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
@@ -274,13 +276,19 @@ implements Executor {
             className = resumeThread.getClassName ();
             methodName = resumeThread.getMethodName ();
             depth = resumeThread.getStackDepth();
+            CallStackFrame topFrame = getTopFrame(resumeThread);
             steppingFromFilteredLocation = !getSmartSteppingFilterImpl ().stopHere(className);
-            steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopHere 
-                     (lookupProvider, resumeThread, getSmartSteppingFilterImpl());
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("JDI Request (action "+action+"): " + stepRequest);
+            if (topFrame != null) {
+                steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopAt
+                         (lookupProvider, topFrame, getSmartSteppingFilterImpl()).isStop();
+            } else {
+                steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopHere
+                         (lookupProvider, resumeThread, getSmartSteppingFilterImpl());
             }
-            if (action == ActionsManager.ACTION_STEP_OUT) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("JDI Request (step "+stepDepth+"): " + stepRequest);
+            }
+            if (stepDepth == JPDAStep.STEP_OUT) {
                 addMethodExitBP(tr, resumeThread);
             }
             resumeThread.disableMethodInvokeUntilResumed();
@@ -309,6 +317,17 @@ implements Executor {
             }
         }
         //S ystem.out.println("/nStepAction.doAction end");
+    }
+    
+    static CallStackFrame getTopFrame(JPDAThread thread) {
+        CallStackFrame topFrame = null;
+        try {
+            CallStackFrame[] topFrameArr = thread.getCallStack(0, 1);
+            if (topFrameArr.length > 0) {
+                topFrame = topFrameArr[0];
+            }
+        } catch (AbsentInformationException aiex) {}
+        return topFrame;
     }
     
     private void addMethodExitBP(ThreadReference tr, JPDAThread jtr) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper, InvalidStackFrameExceptionWrapper, ObjectCollectedExceptionWrapper {
@@ -439,25 +458,29 @@ implements Executor {
             }
             
             // Stop execution here?
-            boolean fsh;
+            StopOrStep fsh;
             if (steppingFromFilteredLocation) {
-                fsh = true;
+                fsh = StopOrStep.stop();
             } else {
-                fsh = getSmartSteppingFilterImpl ().stopHere (className);
+                fsh = getSmartSteppingFilterImpl().stopHere(className) ? StopOrStep.stop() : StopOrStep.skip();
             }
-            if (ssverbose)
-                System.out.println("SS  SmartSteppingFilter.stopHere (" + 
-                    className + ") ? " + fsh
-                );
-            if (fsh) {
+            if (loggerStep.isLoggable(Level.FINE))
+                loggerStep.fine("SS  SmartSteppingFilter.stopHere (" + className + ") ? " + fsh);
+            if (fsh.isStop()) {
                 if (steppingFromCompoundFilteredLocation) {
                     // fsh is true
                 } else {
                     JPDAThread t = getDebuggerImpl ().getThread (tr);
-                    fsh = getCompoundSmartSteppingListener ().stopHere 
-                         (lookupProvider, t, getSmartSteppingFilterImpl ());
+                    CallStackFrame topFrame = getTopFrame(t);
+                    if (topFrame != null) {
+                        fsh = getCompoundSmartSteppingListener ().stopAt
+                             (lookupProvider, topFrame, getSmartSteppingFilterImpl());
+                    } else {
+                        fsh = getCompoundSmartSteppingListener ().stopHere
+                             (lookupProvider, t, getSmartSteppingFilterImpl()) ? StopOrStep.stop() : StopOrStep.skip();
+                    }
                 }
-                if (fsh) {
+                if (fsh.isStop()) {
                     // YES!
                     //S ystem.out.println("/nStepAction.exec end - do not resume");
                     loggerStep.fine("Can stop here.");
@@ -466,10 +489,39 @@ implements Executor {
             }
 
             // do not stop here -> start smart stepping!
-            if (ssverbose)
-                System.out.println("\nSS:  SMART STEPPING START! ********** ");
-            boolean useStepFilters = p.getBoolean("UseStepFilters", true);
-            boolean stepThrough = useStepFilters && p.getBoolean("StepThroughFilters", false);
+            loggerStep.fine("\nSS:  SMART STEPPING START! ********** ");
+            int stepDepth = fsh.getStepDepth();
+            int stepSize = fsh.getStepSize();
+            if (stepSize == 0) {
+                stepSize = StepRequestWrapper.size(sr);
+            }
+            if (stepDepth == 0) {
+                boolean useStepFilters = p.getBoolean("UseStepFilters", true);
+                boolean stepThrough = useStepFilters && p.getBoolean("StepThroughFilters", false);
+                if (!stepThrough || smartSteppingStepOut) {
+                    stepDepth = JPDAStep.STEP_OUT;
+                } else {
+                    stepDepth = StepRequestWrapper.depth(sr);
+                }
+            }
+            boolean actionRun = false;
+            if (stepSize == JPDAStep.STEP_LINE) {
+                if (stepDepth == JPDAStep.STEP_INTO) {
+                    getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false, lock,
+                                                           steppingFromFilteredLocation,
+                                                           steppingFromCompoundFilteredLocation);
+                    actionRun = true;
+                } else if (stepDepth == JPDAStep.STEP_OUT && stepDepth != StepRequestWrapper.depth(sr)) {
+                    getStepIntoActionProvider ().runAction(ActionsManager.ACTION_STEP_OUT, false, lock,
+                                                           steppingFromFilteredLocation,
+                                                           steppingFromCompoundFilteredLocation);
+                    actionRun = true;
+                }
+            }
+            if (!actionRun) {
+                runAction(stepDepth, stepSize, false, lock);
+            }
+            /*
             if (!stepThrough || smartSteppingStepOut) {
                 loggerStep.fine("Issuing step out, due to smart-stepping.");
                 // Assure that the action does not resume anything. Resume is done by Operator.
@@ -491,6 +543,7 @@ implements Executor {
                                                            steppingFromCompoundFilteredLocation);
                 }
             }
+            */
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume
         } finally {

@@ -760,7 +760,7 @@ final class CompletionContextFinder {
     }
 
     private static boolean isEqualSign(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "=".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_OPERATOR) && "=".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isParamSeparator(Token<PHPTokenId> token) {

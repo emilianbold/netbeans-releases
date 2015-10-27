@@ -728,22 +728,38 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
     }
 
+    private static class InstancePropertiesCredentials implements WebLogicConfiguration.Credentials {
+
+        private final WeakReference<InstanceProperties> ip;
+
+        public InstancePropertiesCredentials(InstanceProperties ip) {
+            this.ip = new WeakReference<InstanceProperties>(ip);
+        }
+
+        @Override
+        public String getUsername() {
+            InstanceProperties real = ip.get();
+            if (real == null) {
+                throw new IllegalStateException("Already removed InstanceProperties");
+            }
+            return real.getProperty(InstanceProperties.USERNAME_ATTR);
+        }
+
+        @Override
+        public String getPassword() {
+            InstanceProperties real = ip.get();
+            if (real == null) {
+                throw new IllegalStateException("Already removed InstanceProperties");
+            }
+            return real.getProperty(InstanceProperties.PASSWORD_ATTR);
+        }
+
+    }
+
     @NonNull
     private WebLogicConfiguration createConfiguration() {
-        final InstanceProperties ip = getInstanceProperties();
-
-        WebLogicConfiguration.Credentials credentials = new WebLogicConfiguration.Credentials() {
-
-            @Override
-            public String getUsername() {
-                return ip.getProperty(InstanceProperties.USERNAME_ATTR);
-            }
-
-            @Override
-            public String getPassword() {
-                return ip.getProperty(InstanceProperties.PASSWORD_ATTR);
-            }
-        };
+        InstanceProperties ip = getInstanceProperties();
+        WebLogicConfiguration.Credentials credentials = new InstancePropertiesCredentials(ip);
 
         String serverHome = ip.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         String domainHome = ip.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);

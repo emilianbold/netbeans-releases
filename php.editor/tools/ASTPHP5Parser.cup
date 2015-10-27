@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser;
 
@@ -252,6 +252,7 @@ terminal T_KOVA;
 terminal T_REFERENCE;
 terminal T_IS_EQUAL,T_IS_NOT_EQUAL,T_IS_IDENTICAL,T_IS_NOT_IDENTICAL;
 terminal T_IS_SMALLER_OR_EQUAL,T_IS_GREATER_OR_EQUAL;
+terminal T_SPACESHIP;
 terminal T_RGREATER;
 terminal T_LGREATER;
 terminal T_SL,T_SR;
@@ -281,6 +282,7 @@ terminal T_INSTEADOF;
 terminal T_POW;
 terminal T_POW_EQUAL;
 terminal T_ELLIPSIS;
+terminal T_COALESCE;
 
 /* Non terminals */
 
@@ -451,9 +453,10 @@ precedence left T_OR;
 precedence left T_KOVA;
 precedence left T_REFERENCE;
 precedence left T_ELLIPSIS;
+precedence left T_COALESCE;
 
 precedence nonassoc T_IS_EQUAL,T_IS_NOT_EQUAL,T_IS_IDENTICAL,T_IS_NOT_IDENTICAL;
-precedence nonassoc T_RGREATER,T_IS_SMALLER_OR_EQUAL,T_LGREATER,T_IS_GREATER_OR_EQUAL;
+precedence nonassoc T_RGREATER,T_IS_SMALLER_OR_EQUAL,T_LGREATER,T_IS_GREATER_OR_EQUAL,T_SPACESHIP;
 precedence left T_SL,T_SR;
 precedence left T_PLUS,T_MINUS,T_NEKUDA;
 precedence left T_TIMES,T_DIV,T_PRECENT;
@@ -2560,6 +2563,11 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.IS_GREATER_OR_EQUAL, expr2);
 :}
 
+| expr:expr1 T_SPACESHIP expr:expr2
+{:
+	RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.SPACESHIP, expr2);
+:}
+
 | expr:expr T_INSTANCEOF class_name_reference:className
 {:
 	RESULT = new InstanceOfExpression(exprleft, classNameright, expr , className);
@@ -2572,12 +2580,17 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 
 | expr:condition T_QUESTION_MARK expr:ifTrue T_NEKUDOTAIM expr:ifFalse
 {:
-	RESULT = new ConditionalExpression(conditionleft, ifFalseright, condition , ifTrue, ifFalse);
+	RESULT = new ConditionalExpression(conditionleft, ifFalseright, condition, ConditionalExpression.OperatorType.QUESTION_MARK, ifTrue, ifFalse);
 :}
 
 | expr:cond T_QUESTION_MARK T_NEKUDOTAIM expr:ifFalse
 {:
-	RESULT = new ConditionalExpression(condleft, ifFalseright, cond , null, ifFalse);
+	RESULT = new ConditionalExpression(condleft, ifFalseright, cond, ConditionalExpression.OperatorType.ELVIS, null, ifFalse);
+:}
+
+| expr:cond T_COALESCE expr:ifFalse
+{:
+	RESULT = new ConditionalExpression(condleft, ifFalseright, cond, ConditionalExpression.OperatorType.COALESCE, null, ifFalse);
 :}
 
 | internal_functions_in_yacc:expr
@@ -3213,14 +3226,24 @@ T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:e
         RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.IS_GREATER_OR_EQUAL, expr2);
 :}
 
+| static_scalar_value:expr1 T_SPACESHIP static_scalar_value:expr2
+{:
+        RESULT = new InfixExpression(expr1left, expr2right, expr1 , InfixExpression.OperatorType.SPACESHIP, expr2);
+:}
+
 | static_scalar_value:cond T_QUESTION_MARK T_NEKUDOTAIM static_scalar_value:ifFalse
 {:
-        RESULT = new ConditionalExpression(condleft, ifFalseright, cond , null, ifFalse);
+        RESULT = new ConditionalExpression(condleft, ifFalseright, cond, ConditionalExpression.OperatorType.ELVIS, null, ifFalse);
 :}
 
 | static_scalar_value:condition T_QUESTION_MARK static_scalar_value:ifTrue T_NEKUDOTAIM static_scalar_value:ifFalse
 {:
-        RESULT = new ConditionalExpression(conditionleft, ifFalseright, condition , ifTrue, ifFalse);
+        RESULT = new ConditionalExpression(conditionleft, ifFalseright, condition, ConditionalExpression.OperatorType.QUESTION_MARK, ifTrue, ifFalse);
+:}
+
+| static_scalar_value:cond T_COALESCE static_scalar_value:ifFalse
+{:
+        RESULT = new ConditionalExpression(condleft, ifFalseright, cond, ConditionalExpression.OperatorType.COALESCE, null, ifFalse);
 :}
 
 | T_PLUS:start static_scalar_value:expr

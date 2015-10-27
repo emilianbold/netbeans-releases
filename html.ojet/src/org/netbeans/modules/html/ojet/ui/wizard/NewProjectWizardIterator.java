@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.ojet.ui.wizard;
 
@@ -70,6 +70,7 @@ import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectUtil
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -113,7 +114,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         return new NewProjectWizardIterator(
                 Bundle.NewProjectWizardIterator_newProject_displayName(),
                 "OracleJETApplication", // NOI18N
-                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/components/public_html/public_samples/OracleJET_QuickStartBasic.zip", // NOI18N
+                "http://www.oracle.com/webfolder/technetwork/jet/public_samples/OracleJET_QuickStartBasic.zip", // NOI18N
                 new File(System.getProperty("java.io.tmpdir"), "OracleJET_QuickStartBasic.zip") // NOI18N
         );
     }
@@ -129,7 +130,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         return new NewProjectWizardIterator(
                 Bundle.NewProjectWizardIterator_newComponentInteractionSample_displayName(),
                 "OracleJETComponentInteraction", // NOI18N
-                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/components/public_html/public_samples/JET-ComponentInteraction.zip", // NOI18N
+                "http://www.oracle.com/webfolder/technetwork/jet/public_samples/JET-ComponentInteraction.zip", // NOI18N
                 new File(System.getProperty("java.io.tmpdir"), "JET-ComponentInteraction.zip") // NOI18N
         );
     }
@@ -157,6 +158,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
         setupProject(handle, files, projectDirectory);
 
+        hackIgnoreCSSErrorsInUrlFile(projectDirectory);
         handle.finish();
         return files;
     }
@@ -339,6 +341,20 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         }
         try (InputStream inputStream = zipFile.getInputStream(zipEntry); FileOutputStream outputStream = new FileOutputStream(destinationFile)) {
             FileUtil.copy(inputStream, outputStream);
+        }
+    }
+
+    private void hackIgnoreCSSErrorsInUrlFile(FileObject projectDirectory) {
+        Enumeration<? extends FileObject> children = projectDirectory.getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject file = children.nextElement();
+            if ("_oj.utilities.urls".equals(file.getName())) {
+                try {
+                    file.setAttribute("disable_error_checking_CSS", Boolean.TRUE.toString());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
     }
 

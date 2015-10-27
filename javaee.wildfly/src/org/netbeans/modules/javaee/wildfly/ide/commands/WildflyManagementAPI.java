@@ -245,6 +245,13 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
+    static Object setModelNodeChild(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, boolean value) throws IllegalAccessException,
+            ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        Method method = modelNode.getClass().getMethod("set", boolean.class);
+        return method.invoke(modelNode, value);
+    }
+
+    // ModelNode
     static Object setModelNodeChildEmptyList(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 

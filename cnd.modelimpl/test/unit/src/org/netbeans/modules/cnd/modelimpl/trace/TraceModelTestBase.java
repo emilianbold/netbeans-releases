@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -52,6 +53,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -72,6 +74,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 public class TraceModelTestBase extends ModelImplBaseTestCase {
 
     private TestModelHelper helper;
+    private char forcedPathSeparator = '\0';
     protected boolean cleanCache = true;
 
     public TraceModelTestBase(String testName) {
@@ -89,6 +92,16 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
 
     protected TestModelHelper getTestModelHelper(){
         return helper;
+    }
+
+    protected void parsingTime(TraceModel.TestResult time) {
+    }
+    
+    protected void performTestWithForcedPathSeparator(String source, char separator) throws Exception {
+        char oldValue = this.forcedPathSeparator;
+        this.forcedPathSeparator = separator;
+        performTest(source);
+        this.forcedPathSeparator = oldValue;
     }
 
     protected void performTest(String source) throws Exception {
@@ -175,6 +188,12 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         super.setUp();
         super.clearWorkDir();
         helper = new TestModelHelper(cleanCache, getProjectFileFilter());
+        helper.addParsingTimeResultListener(new TraceModel.ParsingTimeResultListener() {
+            @Override
+            public void notifyParsingTime(TraceModel.TestResult parsingTime) {
+                parsingTime(parsingTime);
+            }
+        });
         assertNotNull("Model must be valid", getTraceModel().getModel()); // NOI18N
         postSetUp();
     }
@@ -219,6 +238,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     protected static class FilteredPrintStream extends PrintStream {
         public FilteredPrintStream(File file) throws FileNotFoundException {
             super(file);
+        }
+
+        public FilteredPrintStream(OutputStream stream) {
+            super(stream);
         }
 
         @Override
@@ -286,7 +309,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         File workDir = getWorkDir();
 
         File output = new File(workDir, goldenDataFileName);
-        PrintStream streamOut = new PrintStream(output) {
+        PrintStream streamOut = new PrintStream(new BufferedOutputStream(new FileOutputStream(output))) {
 
             @Override
             public void print(String s) {
@@ -300,7 +323,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             }
         };
         File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
-        PrintStream streamErr = goldenErrFileName == null ? System.err : new FilteredPrintStream(error) {
+        PrintStream streamErr = goldenErrFileName == null ? System.err : new FilteredPrintStream(new BufferedOutputStream(new FileOutputStream(error))) {
 
             @Override
             public void print(String s) {
@@ -393,6 +416,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             return goldenErrFile;
         }
         char separator = origin.charAt(i-1);
+        if (forcedPathSeparator != '\0' && separator != forcedPathSeparator) {
+            origin = origin.replace(separator, forcedPathSeparator);
+            separator = forcedPathSeparator;
+        }
         origin = origin.substring(0,i-1)+origin.substring(i+golden.length());
         i = origin.lastIndexOf(separator);
         origin = origin.substring(0, i);
@@ -406,20 +433,8 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
                 // fixing tests on Windows
                 char currentSeparator = line.charAt(i+macro.length());
                 if (separator != currentSeparator) {
-                    //line = line.replace(currentSeparator, separator);
-                    if (APTTraceFlags.USE_CLANK) {
-                         // do not change separator in clank mode
-                        String separatorString;
-                        if ('\\' == separator) {
-                            separatorString = "\\\\";
-                        } else {
-                            separatorString = String.valueOf(separator);
-                        }
-                        String clankOrigin = origin.replaceAll(separatorString, String.valueOf(currentSeparator));
-                        line = line.replace(macro + currentSeparator, clankOrigin + currentSeparator);
-                     } else {
-                        line = line.replace(macro + currentSeparator, origin + separator);
-                     }
+                     //line = line.replace(currentSeparator, separator);
+                     line = line.replace(macro + currentSeparator, origin + separator);
                 }
                 line = line.replace(macro, origin);
             }

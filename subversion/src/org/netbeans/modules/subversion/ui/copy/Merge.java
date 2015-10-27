@@ -186,8 +186,8 @@ public class Merge extends CopyDialog implements ItemListener {
         type.setPreviewLabels();
         panel.repaint();
         
-        setupUrlComboBox(repositoryFile, type.getStartUrlComboBox());
-        setupUrlComboBox(repositoryFile, type.getEndUrlComboBox());
+        setupUrlComboBox(repositoryFile, type.getStartUrlComboBox(), false);
+        setupUrlComboBox(repositoryFile, type.getEndUrlComboBox(), false);
     }    
 
     private abstract class MergeType implements DocumentListener, PropertyChangeListener {

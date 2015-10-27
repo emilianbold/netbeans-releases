@@ -2,63 +2,136 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>CPU Snapshot: Find in Results Dialog Box</title>
+<title>Profiling Threads Window</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-14</p>
-<p><a id="ProfilerUiFindDialog.HelpCtx" name="ProfilerUiFindDialog.HelpCtx"></a></p>
-<div id="NBCSH3253"><!-- infolevel="all" infotype="General" --><a id="sthref423" name="sthref423"></a>
-<h1>CPU Snapshot: Find in Results Dialog Box</h1>
+<p><a id="ThreadsWindow.HelpCtx" name="ThreadsWindow.HelpCtx"></a></p>
+<div id="NBCSH3416"><!-- infolevel="all" infotype="General" --><a id="sthref423" name="sthref423"></a>
+<h1>Profiling Threads Window</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to quickly search the results in the CPU snapshot window for a method or class. A <i>CPU snapshot</i> captures data on method call chains, times and invocations. You can take a CPU snapshot when you are analyzing application performance. The snapshot is displayed in the main editor window. 
+<p>Use to view detailed information about application thread activity during a profiling session. The Threads window is typically located in the main editor window of the IDE. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG780">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG773">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
+<p>The Profiling Threads window contains the following toolbar commands:</p>
 
-<table summary="Description of element in Find in Results dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="32%" />
+<table summary="Descriptions of Profiling Threads window toolbar commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t29">Element</th>
-<th align="left" valign="bottom" id="r1c2-t29">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t30">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t30">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t29" headers="r1c1-t29">
-<p>Find What</p>
+<td style="text-align:left" id="r2c1-t30" headers="r1c1-t30">
+<p>Save Current View</p>
+<p><img width="16" height="16" src="img/saveview.png" alt="Save Current View icon." title="Save Current View icon." /></p>
 </td>
-<td align="left" headers="r2c1-t29 r1c2-t29">Specifies the text that you want to locate in the results in the window</td>
+<td style="text-align:left" headers="r2c1-t30 r1c2-t30">Saves the results as a <code dir="ltr">.png</code> image file.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r3c1-t30" headers="r1c1-t30">
+<p>Zoom In</p>
+<p><img width="16" height="16" src="img/zoomin.png" alt="Zoom In icon." title="Zoom In icon." /></p>
+</td>
+<td style="text-align:left" headers="r3c1-t30 r1c2-t30">Increases the detail of the graph.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r4c1-t30" headers="r1c1-t30">
+<p>Zoom Out</p>
+<p><img width="16" height="16" src="img/zoomout.png" alt="Zoom Out icon." title="Zoom Out icon." /></p>
+</td>
+<td style="text-align:left" headers="r4c1-t30 r1c2-t30">Decreases the detail of the graph.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r5c1-t30" headers="r1c1-t30">
+<p>Scale To Fit</p>
+<p><img width="16" height="16" src="img/scaletofit.png" alt="Scale to Fit icon." title="Scale to Fit icon." /></p>
+</td>
+<td style="text-align:left" headers="r5c1-t30 r1c2-t30">Toggles between a scalable view and a fixed-scale view.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3255" name="NBCSH3255"></a>
+<p>The table in the Threads window contains columns that provide details about thread states and statistics about each thread. You can click the triangle in the far right column to invoke a menu to hide or display table columns. The following columns are available in the menu:</p>
+
+<table summary="Descriptions of Profiling Threads window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th style="text-align:left" valign="bottom" id="r1c1-t31">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t31">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r2c1-t31" headers="r1c1-t31">
+<p>Name</p>
+</td>
+<td style="text-align:left" headers="r2c1-t31 r1c2-t31">Name of thread.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r3c1-t31" headers="r1c1-t31">
+<p>Thread States Timeline</p>
+</td>
+<td style="text-align:left" headers="r3c1-t31 r1c2-t31">Displays thread states over time.
+<p>States can be displayed for all threads, all live threads, or all finished threads according to the option that is selected in the View drop-down list in the toolbar.</p>
+<p>The status of each thread is represented by a color. The legend for the colors is located at the bottom of the Threads window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r4c1-t31" headers="r1c1-t31">
+<p>Running</p>
+</td>
+<td style="text-align:left" headers="r4c1-t31 r1c2-t31">Time spent in running state. The data is presented as total time and as a percentage of the total time.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r5c1-t31" headers="r1c1-t31">
+<p>Sleeping</p>
+</td>
+<td style="text-align:left" headers="r5c1-t31 r1c2-t31">Time spent in sleeping state. The data is presented as total time and as a percentage of the total time.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r6c1-t31" headers="r1c1-t31">
+<p>Wait</p>
+</td>
+<td style="text-align:left" headers="r6c1-t31 r1c2-t31">Time spent in waiting state. The data is presented as total time and as a percentage of the total time.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r7c1-t31" headers="r1c1-t31">
+<p>Park</p>
+</td>
+<td style="text-align:left" headers="r7c1-t31 r1c2-t31">Time spent in parked state. The data is presented as total time and as a percentage of the total time.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r8c1-t31" headers="r1c1-t31">
+<p>Monitor</p>
+</td>
+<td style="text-align:left" headers="r8c1-t31 r1c2-t31">Time spent in monitor state. The data is presented as total time and as a percentage of the total time.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r9c1-t31" headers="r1c1-t31">
+<p>Total</p>
+</td>
+<td style="text-align:left" headers="r9c1-t31 r1c2-t31">Total of time spent in all states.</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="NBCSH3433" name="NBCSH3433"></a>
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
-<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
-<param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">

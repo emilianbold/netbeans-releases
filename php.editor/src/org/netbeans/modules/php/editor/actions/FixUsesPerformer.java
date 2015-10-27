@@ -50,9 +50,9 @@ import java.util.List;
 import java.util.Objects;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
@@ -328,7 +328,7 @@ public class FixUsesPerformer {
 
     private static int getOffset(BaseDocument baseDocument, NamespaceScope namespaceScope) {
         try {
-            return Utilities.getRowEnd(baseDocument, getReferenceElement(namespaceScope).getOffset());
+            return LineDocumentUtils.getLineEnd(baseDocument, getReferenceElement(namespaceScope).getOffset());
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }

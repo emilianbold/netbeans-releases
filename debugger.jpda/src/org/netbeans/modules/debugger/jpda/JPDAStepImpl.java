@@ -45,13 +45,8 @@
 package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.event.Event;
-import com.sun.jdi.request.BreakpointRequest;
-import com.sun.jdi.request.StepRequest;
-import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.ClassType;
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.Locatable;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
@@ -59,8 +54,12 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
-
+import com.sun.jdi.event.Event;
 import com.sun.jdi.event.StepEvent;
+import com.sun.jdi.request.BreakpointRequest;
+import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.StepRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -77,9 +76,9 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -87,11 +86,8 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.actions.CompoundSmartSteppingListener;
 import org.netbeans.modules.debugger.jpda.actions.SmartSteppingFilterImpl;
-
-import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.actions.StepIntoActionProvider;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -101,6 +97,7 @@ import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
@@ -115,7 +112,9 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
+import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.netbeans.spi.debugger.jpda.SmartSteppingCallback.StopOrStep;
 import org.openide.util.Exceptions;
 
 
@@ -139,6 +138,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     private boolean ignoreStepFilters = false;
     private boolean steppingFromFilteredLocation;
     private boolean steppingFromCompoundFilteredLocation;
+    private boolean isInBoxingUnboxingLocation;
+    private boolean wasInBoxingUnboxingLocation;
     private StopHereCheck stopHereCheck;
     private final Properties p;
     
@@ -187,9 +188,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 //SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
                 debuggerImpl.getOperator().unregister(stepRequest);
             }
-            steppingFromFilteredLocation = !getSmartSteppingFilterImpl ().stopHere(tr.getClassName());
-            steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopHere
-                               (session, tr, getSmartSteppingFilterImpl ());
+            steppingFromFilteredLocation = !((SmartSteppingFilterImpl) debuggerImpl.getSmartSteppingFilter()).stopHere(tr.getClassName());
+            steppingFromCompoundFilteredLocation = !debuggerImpl.stopHere(tr).isStop();
             int size = getSize();
             boolean stepAdded = false;
             if (logger.isLoggable(Level.FINE)) {
@@ -521,6 +521,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         JPDAThreadImpl tr = (JPDAThreadImpl)debuggerImpl.getCurrentThread();
         tr.accessLock.readLock().lock();
         try {
+            wasInBoxingUnboxingLocation = isInBoxingUnboxingLocation;
+            isInBoxingUnboxingLocation = false;
             VirtualMachine vm = debuggerImpl.getVirtualMachine();
             if (vm == null) {
                 return false; // The session has finished
@@ -596,12 +598,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 tr.addLastOperation(lastOperation);
             }
             logger.fine("Have stepPatternDepth : "+stepPatternDepth);
+            int stepDepthDiff = 0;
             if (stepPatternDepth != null) {
                 StepPatternDepth newStepPatternDepth = null;
                 try {
                     int sd = tr.getStackDepth();
                     logger.fine("Current stack depth = "+sd);
-                    if (sd > (stepPatternDepth.stackDepth + 1)) {
+                    stepDepthDiff = sd - stepPatternDepth.stackDepth;
+                    if (stepDepthDiff > 1) {
                         // There are some (possibly filtered) stack frames in between.
                         // StepThroughFilters is false, therefore we should step out if we can not stop here:
                         boolean haveFilteredClassOnStack = false;
@@ -704,7 +708,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 }
                 logger.fine("stepAdded = "+stepAdded);
                 if (!stepAdded) {
-                    if ((eventRequest instanceof StepRequest) && shouldNotStopHere((StepEvent) event)) {
+                    if ((eventRequest instanceof StepRequest) && shouldNotStopHere((StepEvent) event, stepDepthDiff)) {
                         logger.fine("We should not stop here => resuming");
                         return true; // Resume
                     }
@@ -839,7 +843,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     /**
      * Checks for synthetic methods and smart-stepping...
      */
-    private boolean shouldNotStopHere(StepEvent event) {
+    private boolean shouldNotStopHere(StepEvent event, int stepDepthDiff) {
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
         // 2) init info about current state
         boolean useStepFilters = p.getBoolean("UseStepFilters", true);
@@ -849,6 +853,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             JPDAThreadImpl t = debuggerImpl.getThread (tr);
             t.accessLock.readLock().lock();
             try {
+                int doStepSize = (getSize() == JPDAStep.STEP_MIN) ? JPDAStep.STEP_MIN : JPDAStep.STEP_LINE;
                 try {
                     if (!ThreadReferenceWrapper.isSuspended(tr)) {
                         return false;   // Already running.
@@ -879,29 +884,47 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                             logger.fine("Method"+m+" is a static initializer, or constructor - will step out.");
                         }
                     }
-                    if (useStepFilters && !ignoreStepFilters && !doStepAgain) {
-                        boolean stop;
-                        if (steppingFromCompoundFilteredLocation) {
-                            stop = true;
-                        } else {
-                            stop = getCompoundSmartSteppingListener ().stopHere
-                                   (session, t, debuggerImpl.getSmartSteppingFilter());
+                    if (!doStepAgain) {
+                        if (stepDepthDiff > 1 || wasInBoxingUnboxingLocation) {
+                            // Check if we are in autoboxing or unboxing methods
+                            // called by something that was skipped:
+                            doStepAgain = checkBoxingUnboxingMethods(loc, m);
+                            if (doStepAgain) {
+                                isInBoxingUnboxingLocation = true;
+                            }
                         }
-                        if (stop && !steppingFromFilteredLocation) {
+                    }
+                    if (useStepFilters && !ignoreStepFilters && !doStepAgain) {
+                        StopOrStep stop;
+                        if (steppingFromCompoundFilteredLocation) {
+                            stop = StopOrStep.stop();
+                        } else {
+                            stop = debuggerImpl.stopHere(t);
+                        }
+                        if (stop.isStop() && !steppingFromFilteredLocation) {
                             String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
                             String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc));
                             for (String pattern : exclusionPatterns) {
                                 if (match(className, pattern)) {
-                                    stop = false;
+                                    stop = StopOrStep.skip();
                                     break;
                                 }
                             }
                         }
-                        if (!stop) {
+                        if (!stop.isStop()) {
                             doStepAgain = true;
-                            EventRequest request = EventWrapper.request(event);
-                            if (request instanceof StepRequest) {
-                                doStepDepth = ((StepRequest) request).depth();
+                            int sd = stop.getStepDepth();
+                            if (sd != 0) {
+                                doStepDepth = sd;
+                            } else {
+                                EventRequest request = EventWrapper.request(event);
+                                if (request instanceof StepRequest) {
+                                    doStepDepth = ((StepRequest) request).depth();
+                                }
+                            }
+                            int ss = stop.getStepSize();
+                            if (ss != 0) {
+                                doStepSize = ss;
                             }
                         }
                     }
@@ -920,7 +943,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
                             VirtualMachineWrapper.eventRequestManager(vm),
                             tr,
-                            StepRequest.STEP_LINE,
+                            doStepSize,
                             doStepDepth
                         );
                         //EventRequestWrapper.addCountFilter(stepRequest, 1);
@@ -965,7 +988,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 }
 
                 // Not synthetic
-                if (debuggerImpl.stopHere(t)) {
+                StopOrStep stop = debuggerImpl.stopHere(t);
+                if (stop.isStop()) {
                     //S ystem.out.println("/nStepAction.exec end - do not resume");
                     return false; // do not resume
                 }
@@ -975,18 +999,24 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 if (vm == null) {
                     return false; // The session has finished
                 }
-                int depth;
-                Map properties = session.lookupFirst(null, Map.class);
-                boolean smartSteppingStepOut = properties != null && properties.containsKey (StepIntoActionProvider.SS_STEP_OUT);
-                if (!stepThrough || smartSteppingStepOut) {
-                    depth = StepRequest.STEP_OUT;
-                } else {
-                    depth = ((StepRequest) event.request()).depth(); // Use the original depth instead of StepRequest.STEP_INTO, which we do not want when stepping over or out.
+                int depth = stop.getStepDepth();
+                if (depth == 0) {
+                    Map properties = session.lookupFirst(null, Map.class);
+                    boolean smartSteppingStepOut = properties != null && properties.containsKey (StepIntoActionProvider.SS_STEP_OUT);
+                    if (!stepThrough || smartSteppingStepOut) {
+                        depth = StepRequest.STEP_OUT;
+                    } else {
+                        depth = ((StepRequest) event.request()).depth(); // Use the original depth instead of StepRequest.STEP_INTO, which we do not want when stepping over or out.
+                    }
+                }
+                int ss = stop.getStepSize();
+                if (ss != 0) {
+                    doStepSize = ss;
                 }
                 StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
                     VirtualMachineWrapper.eventRequestManager(vm),
                     tr,
-                    StepRequest.STEP_LINE,
+                    doStepSize,
                     depth
                 );
                 if (logger.isLoggable(Level.FINE)) {
@@ -1110,6 +1140,17 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         return TypeComponentWrapper.isSynthetic(m) ? -1 : 0;
     }
     
+    private static CallStackFrame getTopFrame(JPDAThread thread) {
+        CallStackFrame topFrame = null;
+        try {
+            CallStackFrame[] topFrameArr = thread.getCallStack(0, 1);
+            if (topFrameArr.length > 0) {
+                topFrame = topFrameArr[0];
+            }
+        } catch (AbsentInformationException aiex) {}
+        return topFrame;
+    }
+    
     private SmartSteppingFilterImpl smartSteppingFilter;
 
     private SmartSteppingFilterImpl getSmartSteppingFilterImpl () {
@@ -1133,6 +1174,45 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     
     public void setStopHereCheck(StopHereCheck stopHereCheck) {
         this.stopHereCheck = stopHereCheck;
+    }
+    
+    private boolean checkBoxingUnboxingMethods(Location loc, Method m) {
+        try {
+            String typeName = ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc));
+            switch (typeName) {
+                case "java.lang.Boolean":
+                case "java.lang.Byte":
+                case "java.lang.Character":
+                case "java.lang.Short":
+                case "java.lang.Integer":
+                case "java.lang.Long":
+                case "java.lang.Float":
+                case "java.lang.Double":
+                    break;
+                default:
+                    return false;
+            }
+            String methodName = TypeComponentWrapper.name(m);
+            switch(methodName) {
+                case "booleanValue":
+                case "byteValue":
+                case "charValue":
+                case "shortValue":
+                case "intValue":
+                case "longValue":
+                case "floatValue":
+                case "doubleValue":
+                case "valueOf":
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        } catch (InternalExceptionWrapper |
+                 ObjectCollectedExceptionWrapper |
+                 VMDisconnectedExceptionWrapper ex) {
+            return false;
+        }
     }
     
     public static interface StopHereCheck {

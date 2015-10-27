@@ -89,7 +89,7 @@ PropertyChangeListener {
     
     /**
      * This method is called during stepping through debugged application.
-     * The execution is stopped when all registerred SmartSteppingListeners
+     * The execution is stopped when all registered SmartSteppingListeners
      * returns true.
      *
      * @param thread contains all available information about current position

@@ -50,6 +50,9 @@ import org.clang.basic.vfs.directory_iterator;
 import org.clank.java.std;
 import org.clank.java.std_errors;
 import org.clank.java.std_ptr;
+import static org.clank.support.Casts.$char;
+import org.clank.support.aliases.char$ptr;
+import org.llvm.adt.SmallString;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.Twine;
 import org.llvm.support.ErrorOr;
@@ -60,12 +63,17 @@ import org.llvm.support.sys.fs;
 import org.llvm.support.sys.fs.UniqueID;
 import org.llvm.support.sys.fs.file_type;
 import org.llvm.support.sys.fs.perms;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import static org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileSystemProviderImpl.RFS_PREFIX;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.spi.APTBufferProvider;
-import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -82,17 +90,17 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
     private static final AtomicLong totalStatTime  = TRACE_TIME ? new AtomicLong() : null;
     private static final AtomicLong totalStatCount = TRACE_TIME ? new AtomicLong() : null;
 
-    private static final ClankFileObjectBasedFileSystem INSTANCE = new ClankFileObjectBasedFileSystem();
+    private static final FileSystem LOCAL_FS = CndFileUtils.getLocalFileSystem();
 
     public static ClankFileObjectBasedFileSystem getInstance() {
-        return INSTANCE;
+        return new ClankFileObjectBasedFileSystem();
     }
 
     /** if null, then FileObject based file will be used */
     private final APTBufferProvider bufferProvider;
 
     private ClankFileObjectBasedFileSystem() {
-        if (DebugUtils.getBoolean("apt.use.buffer.fs", true)) { // NOI18N
+        if (APTTraceFlags.ALWAYS_USE_BUFFER_BASED_FILES) { // NOI18N
             bufferProvider = Lookup.getDefault().lookup(APTBufferProvider.class);
             if (bufferProvider == null) {
                 Exceptions.printStackTrace(new IllegalStateException("No providers found for " + APTBufferProvider.class.getName())); //NOI18N
@@ -161,10 +169,27 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         throw new UnsupportedOperationException("Not supported yet."); // TODO: implement? // NOI18N
     }
 
-
-    private static String toCharSequence(Twine twine) {
-        std.string str = twine.str();
-        return str.toJavaString();
+    private final SmallString BufString = new SmallString(512);
+    private final StringRef BufRef = new StringRef();
+    private final StringBuilder BufBuilder = new StringBuilder();
+    private CharSequence toCharSequence(Twine twine) {
+        BufString.clear();
+        BufBuilder.setLength(0);
+        StringRef StrRef = twine.toStringRef(BufString, BufRef);        
+        int Len = StrRef.size();
+        if (BufString.size() > 0) {
+            assert Len == BufString.size();
+            byte[] $array = BufString.$array();
+            for (int i = 0; i < Len; i++) {
+                BufBuilder.append($char($array[i]));
+            }
+        } else {
+            char$ptr data = StrRef.data();
+            for (int i = 0; i < Len; i++) {
+                BufBuilder.append($char(data.$at(i)));
+            }
+        }
+        return BufBuilder;
     }
     
 
@@ -173,13 +198,28 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         if (stat.isValid()) {
             return new fs.UniqueID(stat.device, stat.inode);
         } else {
-            return new fs.UniqueID(System.identityHashCode(this), System.identityHashCode(fo));
+            return null;
         }
     }
 
     private FileObject getFileObject(Twine Path) {
-        String strPath = toCharSequence(Path);
-        return CndFileSystemProvider.urlToFileObject(strPath);
+        String url = toCharSequence(Path).toString();
+        String path;
+        FileSystem fs;
+        if (CharSequenceUtils.startsWith(url, RFS_PREFIX)) {
+            path = ClankFileSystemProviderImpl.getPathFromUrl(url);
+            fs = CndFileSystemProvider.urlToFileSystem(url);
+        } else {
+            path = url;
+            fs = LOCAL_FS;
+        }
+        if (fs != null) {
+            path = CndFileUtils.normalizeAbsolutePath(fs, path);
+            if (CndFileUtils.exists(fs, path)) {
+                return CndFileUtils.toFileObject(fs, path);
+            }
+        }
+        return null;
     }
 
     private ErrorOr<Status> getStatus(ClankFileObjectBasedFile file) {
@@ -197,8 +237,11 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
             // TODO: should we set errno?
             return new ErrorOr(std_errors.errc.no_such_file_or_directory);
         } else {
-            StringRef name = new StringRef(CndFileSystemProvider.fileObjectToUrl(fo));
+            StringRef name = new StringRef(CndFileSystemProvider.toUrl(FSPath.toFSPath(fo)));
             UniqueID uid = getUniqueID(fo);
+            if (uid == null) {
+                return new ErrorOr(std_errors.errc.io_error);
+            }
             long ms = fo.lastModified().getTime();
             TimeValue time = new TimeValue(ms/1000, (int) (ms%1000)*1000000);
             int user = 0; // TODO: provide access to user if needed
@@ -222,13 +265,19 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
     private class ClankFileObjectBasedFile extends org.clang.basic.vfs.File {
 
         private final FileObject fo;
+        private final CharSequence foURL;
 
         public ClankFileObjectBasedFile(FileObject fo) {
             this.fo = fo;
+            foURL = CndFileSystemProvider.toUrl(FSPath.toFSPath(fo));
         }
 
         /*package*/ FileObject getFileObject() {
             return fo;
+        }
+
+        /*package*/ CharSequence getURL() {
+            return foURL;
         }
 
         @Override
@@ -237,15 +286,18 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         }
 
         protected ClankMemoryBufferImpl createMemoryBufferImpl() throws IOException {
-            return ClankMemoryBufferImpl.create(fo);
+            return ClankMemoryBufferImpl.create(fo, getURL());
         }
 
         @Override
         public ErrorOr<std_ptr.unique_ptr<MemoryBuffer>> getBuffer(Twine Name) {
             long time = TRACE_TIME ? System.currentTimeMillis() : 0;
             ErrorOr<std_ptr.unique_ptr<MemoryBuffer>> buf;
-            if (CndUtils.isDebugMode() &&  !fo.getPath().contentEquals(ClankFileSystemProviderImpl.getPathFromUrl(Name.str().toJavaString()))) {
-                CndUtils.assertTrueInConsole(false, "Unexpected Name parameter: '" + Name.str() + " expected " + fo.getPath()); //NOI18N
+            if (CndUtils.isDebugMode()) {
+                String pathAsUrl = Name.str().toJavaString();
+                if (!pathAsUrl.contentEquals(foURL)) {
+                    CndUtils.assertTrueInConsole(false, "Unexpected Name parameter: '" + pathAsUrl + " expected own " + pathAsUrl + " for wrapped " + fo);//NOI18N
+                }                
             }
             try {
                 ClankMemoryBufferImpl mb = createMemoryBufferImpl();
@@ -291,7 +343,7 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         }
     }
 
-    private class ClankAPTFileBufferBasedFile extends ClankFileObjectBasedFile {
+    private final class ClankAPTFileBufferBasedFile extends ClankFileObjectBasedFile {
 
         private final APTFileBuffer buffer;
 
@@ -302,7 +354,7 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
 
         @Override
         protected ClankMemoryBufferImpl createMemoryBufferImpl() throws IOException {
-            return ClankMemoryBufferImpl.create(buffer);
+            return ClankMemoryBufferImpl.create(getURL(), buffer.getCharBuffer());
         }
     }
 }

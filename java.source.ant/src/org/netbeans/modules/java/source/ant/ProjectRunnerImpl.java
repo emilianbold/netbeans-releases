@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -108,6 +109,8 @@ import org.openide.loaders.DataObject;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.Union2;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
@@ -121,18 +124,22 @@ import org.openide.util.lookup.InstanceContent;
 public class ProjectRunnerImpl implements JavaRunnerImplementation {
 
     private static final Logger LOG = Logger.getLogger(ProjectRunnerImpl.class.getName());
+    private static final Runnable NOP = new Runnable() {@Override public void run(){}};
     private static final RequestProcessor RP = new RequestProcessor(ProjectRunnerImpl.class);
     
     public boolean isSupported(String command, Map<String, ?> properties) {
         return locateScript(command) != null;
     }
 
+    @Override
     public ExecutorTask execute(final String command, final Map<String, ?> properties) throws IOException {
         if (QUICK_CLEAN.equals(command)) {
             return clean(properties);
         }
-        final ExecutorTask res = new WrapperTask(new Work(command, properties));
-        RP.execute(res);
+        final Work work = new Work(command, properties);
+        final ExecutorTask res = new WrapperTask(work);
+        work.setCallback(res);
+        RP.execute(work);
         return res;
     }
 
@@ -809,6 +816,7 @@ out:                for (FileObject root : exec.getRoots()) {
     private final class Work implements Runnable {
         private final String command;
         private final Map<String,?> properties;
+        private final AtomicReference<Runnable> callBack;
         //@GuardedBy("this")
         private Union2<ExecutorTask,Throwable> result;
         //@GuardedBy("this")
@@ -819,6 +827,13 @@ out:                for (FileObject root : exec.getRoots()) {
             Map<String,?> properties) {
             this.command = command;
             this.properties = properties;
+            this.callBack = new AtomicReference<>(NOP);
+        }
+
+        void setCallback(final Runnable callBack) {
+            if (!this.callBack.compareAndSet(NOP, callBack)) {
+                throw new IllegalStateException("Already set"); //NOI18N
+            }
         }
 
         @Override
@@ -847,8 +862,18 @@ out:                for (FileObject root : exec.getRoots()) {
 
         private synchronized void setResult(final Union2<ExecutorTask,Throwable> result) {
             this.result = result;
-            if (stopped && result.hasFirst()) {
-                result.first().stop();
+            if (result.hasFirst()) {
+                result.first().addTaskListener(new TaskListener() {
+                    @Override
+                    public void taskFinished(Task task) {
+                        callBack.get().run();
+                    }
+                });
+                if (stopped) {
+                    result.first().stop();
+                }
+            } else {
+                callBack.get().run();
             }
             this.notifyAll();
         }
@@ -877,7 +902,7 @@ out:                for (FileObject root : exec.getRoots()) {
         private final Work work;
 
         WrapperTask(final Work work) {
-            super(work);
+            super(NOP);
             this.work = work;
         }
 

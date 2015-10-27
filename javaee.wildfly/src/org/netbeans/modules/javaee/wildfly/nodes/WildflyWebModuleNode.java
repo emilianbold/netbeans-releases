@@ -69,7 +69,7 @@ public class WildflyWebModuleNode extends AbstractStateNode {
     private final String url;
 
     public WildflyWebModuleNode(String fileName, Lookup lookup, String url) {
-        super(new WildflyDeploymentDestinationsChildren(lookup, fileName));
+        super(new WildflyDeploymentChildren(lookup, fileName));
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
         this.url = url;
         // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action

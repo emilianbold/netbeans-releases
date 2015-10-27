@@ -228,8 +228,8 @@ public class I18nString {
             if (cp == null) {
                 return null; // #148081 properties file not found on classpath, likely invalid
             }
-            map.put("bundleNameSlashes", cp.getResourceName( fo, '/', false ) ); // NOI18N
-            map.put("bundleNameDots", cp.getResourceName( fo, '.', false ) ); // NOI18N
+            map.put("bundleNameSlashes", Util.getResourceName(sourceDataObject.getPrimaryFile(), fo, '/', false)); // NOI18N
+            map.put("bundleNameDots", Util.getResourceName(sourceDataObject.getPrimaryFile(), fo, '.', false)); // NOI18N
         }
 
         map.put("key", getKey()); // NOI18N

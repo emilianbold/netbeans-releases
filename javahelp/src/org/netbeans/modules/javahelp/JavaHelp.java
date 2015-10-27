@@ -936,7 +936,8 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
                         return Boolean.TRUE;
                     }
                 }
-                Installer.log.fine("did not find id " + id);
+                Installer.log.log(force ? Level.INFO : Level.FINE,
+                        "did not find id {0}", id);                     //NOI18N
                 return Boolean.FALSE;
             }
         } else {

@@ -63,30 +63,30 @@
     <property name="nb.display.version.short" value="Dev JDK9 branch"/>
 
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="8.0.26"/>
-    <property name="tomcat.id" value="8.0.26"/>
+    <property name="tomcat.version" value="8.0.27"/>
+    <property name="tomcat.id" value="8.0.27"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
     <!-- GlassFish 4 properties   -->   
     <property name="glassfish.build.type"      value=""/>
-    <property name="glassfish.location.prefix" value="${gf_builds_host}/java/re/glassfish/4.1/promoted"/>
+    <property name="glassfish.location.prefix" value="${gf_builds_host}/java/re/glassfish/4.1.1/promoted"/>
     
     <loadresource property="glassfish.build.number">
           <url url="${glassfish.location.prefix}/latest/archive/bundles"/>
           <filterchain>
             <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)glassfish-4.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
+              <replaceregex pattern="(.*)glassfish-4.1.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
     
-    <property name="glassfish.display.version" value="4.1"/>
+    <property name="glassfish.display.version" value="4.1.1"/>
     <property name="glassfish.version"      value="b${glassfish.build.number}"/>
     <property name="glassfish.id"           value="${glassfish.display.version}"/>
-    <property name="glassfish.install.dir"  value="${install.dir}/glassfish-4.1"/>
-    <property name="glassfish_location"     value="${glassfish.location.prefix}/${glassfish.build.type}/${glassfish.version}/archive/bundles/glassfish-4.1-${glassfish.version}.zip"/>
+    <property name="glassfish.install.dir"  value="${install.dir}/glassfish-4.1.1"/>
+    <property name="glassfish_location"     value="${glassfish.location.prefix}/${glassfish.build.type}/${glassfish.version}/archive/bundles/glassfish-4.1.1-${glassfish.version}.zip"/>
     <property name="glassfish.subdir"       value="glassfish4"/>
     
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         

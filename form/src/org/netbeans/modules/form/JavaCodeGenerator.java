@@ -3970,25 +3970,27 @@ class JavaCodeGenerator extends CodeGenerator {
                     modifying = true;
 
                 if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_ADDED) {
-                    String handlerName = ev.getEventHandler();
-                    String bodyText = ev.getEventHandlerContent();
-                    String annotationText = ev.getEventHandlerAnnotation();
-                    if ((ev.getCreatedDeleted() || bodyText != null) && ev.getComponent().isInModel()) {
-                        if (!ev.getCreatedDeleted()) {
-                            ev.setEventHandlerContent(getEventHandlerText(handlerName));
+                    if (canGenerate) {
+                        String handlerName = ev.getEventHandler();
+                        String bodyText = ev.getEventHandlerContent();
+                        String annotationText = ev.getEventHandlerAnnotation();
+                        if ((ev.getCreatedDeleted() || bodyText != null) && ev.getComponent().isInModel()) {
+                            if (!ev.getCreatedDeleted()) {
+                                ev.setEventHandlerContent(getEventHandlerText(handlerName));
+                            }
+                            refreshFormattingSettings();
+                            generateEventHandler(handlerName,
+                                                (ev.getComponentEvent() == null) ?
+                                                    formModel.getFormEvents().getOriginalListenerMethod(handlerName) :
+                                                    ev.getComponentEvent().getListenerMethod(),
+                                                 bodyText, annotationText);
                         }
-                        refreshFormattingSettings();
-                        generateEventHandler(handlerName,
-                                            (ev.getComponentEvent() == null) ?
-                                                formModel.getFormEvents().getOriginalListenerMethod(handlerName) :
-                                                ev.getComponentEvent().getListenerMethod(),
-                                             bodyText, annotationText);
+                        if (events.length == 1 && bodyText == null)
+                            gotoEventHandler(handlerName);
                     }
-                    if (events.length == 1 && bodyText == null)
-                        gotoEventHandler(handlerName);
                 }
                 else if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_REMOVED) {
-                    if (ev.getCreatedDeleted()) {
+                    if (canGenerate && ev.getCreatedDeleted()) {
                         String handlerName = ev.getEventHandler();
                         ev.setEventHandlerContent(getEventHandlerText(handlerName));
                         int[] span = formEditor.getFormJavaSource().getEventHandlerMethodSpan(

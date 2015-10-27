@@ -53,6 +53,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
@@ -199,8 +200,8 @@ public class VarDocSuggestion extends SuggestionRule {
         }
 
         private int getOffset(BaseDocument doc) throws BadLocationException {
-            final int caretOffset = Utilities.getRowStart(doc, context.caretOffset);
-            return Utilities.getRowEnd(doc, caretOffset - 1);
+            final int caretOffset = LineDocumentUtils.getLineStart(doc, context.caretOffset);
+            return LineDocumentUtils.getLineEnd(doc, caretOffset - 1);
         }
 
         private void scheduleShowingCompletion() {

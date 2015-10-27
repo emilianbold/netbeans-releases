@@ -861,6 +861,7 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
             this.listenerClass = listenerClass;
         }
         
+        @Override
         public ObjectReference getListenerObject() {
             return listener;
         }

@@ -261,8 +261,6 @@ public class JavadocHelper {
         public URL getLocation(@NonNull final RemoteJavadocPolicy rjp) throws RemoteJavadocException {
             if (urls.isEmpty()) {
                 return null;
-            } else if (urls.size() == 1) {
-                return urls.get(0);
             } else {
                 Integer index = jdocRoot == null ? null : jdocCache.get(jdocRoot);
                 if (index == null || index >= urls.size()) {
@@ -285,42 +283,47 @@ public class JavadocHelper {
                             try (Reader reader = charset == null?
                                     new InputStreamReader(this.openStream()) :
                                     new InputStreamReader(this.openStream(), charset)){
-                                final HTMLEditorKit.Parser parser = new ParserDelegator();
-                                final int[] state = {-1};
-                                try {
-                                    parser.parse(
-                                        reader,
-                                        new HTMLEditorKit.ParserCallback() {
-                                            @Override
-                                            public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
-                                                if (state[0] == -1) {
-                                                    if (t == HTML.Tag.A) {
-                                                        final String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
-                                                        if (attrName != null) {
-                                                            if (docLet1.contains(attrName)) {
-                                                                state[0] = 0;
-                                                            } else if (docLet2.contains(attrName)) {
-                                                                state[0] = 1;
+                                if (urls.size() > 1) {
+                                    final HTMLEditorKit.Parser parser = new ParserDelegator();
+                                    final int[] state = {-1};
+                                    try {
+                                        parser.parse(
+                                            reader,
+                                            new HTMLEditorKit.ParserCallback() {
+                                                @Override
+                                                public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
+                                                    if (state[0] == -1) {
+                                                        if (t == HTML.Tag.A) {
+                                                            final String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
+                                                            if (attrName != null) {
+                                                                if (docLet1.contains(attrName)) {
+                                                                    state[0] = 0;
+                                                                } else if (docLet2.contains(attrName)) {
+                                                                    state[0] = 1;
+                                                                }
                                                             }
                                                         }
                                                     }
                                                 }
-                                            }
-                                        },
-                                        charset != null);
-                                    index = state[0] == -1 ? 0 : state[0];
-                                    if (jdocRoot != null) {
-                                        jdocCache.put(jdocRoot,index);
-                                    }
+                                            },
+                                            charset != null);
+                                        index = state[0] == -1 ? 0 : state[0];
+                                        if (jdocRoot != null) {
+                                            jdocCache.put(jdocRoot,index);
+                                        }
+                                        break;
+                                    } catch (ChangedCharSetException e) {
+                                        if (charset == null) {
+                                            charset = JavadocHelper.getCharSet(e);
+                                            //restart with valid charset
+                                        } else {
+                                            throw new IOException(e);
+                                        }
+                                    }                            
+                                } else {
+                                    index = 0;
                                     break;
-                                } catch (ChangedCharSetException e) {
-                                    if (charset == null) {
-                                        charset = JavadocHelper.getCharSet(e);
-                                        //restart with valid charset
-                                    } else {
-                                        throw new IOException(e);
-                                    }
-                                }                            
+                                }
                             }
                         }
                     } catch (IOException e) {

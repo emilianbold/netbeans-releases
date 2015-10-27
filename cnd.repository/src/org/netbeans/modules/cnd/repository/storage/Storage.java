@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStre
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -1064,8 +1065,12 @@ import org.openide.util.lookup.Lookups;
                     clientFileSystemID = entry.getKey();
                 }
             }
-
-            return clientFileSystemID < 0 ? null : clientFileSystemsDictionary.getFileSystem(clientFileSystemID);
+            final FileSystem fs = clientFileSystemID < 0 ? null : clientFileSystemsDictionary.getFileSystem(clientFileSystemID);
+            if (fs == null) {
+                Exceptions.printStackTrace(new AssertionError("Read null FileSystem from code model persistence for fileSystemIndexInLayer == " + fileSystemIndexInLayer)); //NOI18N
+                dumpStorage();
+            }
+            return fs;
         }
 
         /**

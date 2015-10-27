@@ -95,12 +95,12 @@ public class CopyDialogTest extends NbTestCase {
         // combo items should be sorted by name
         
         // no relevant recent URL
-        items = CopyDialog.setupModel(combo, new RepositoryFile(new SVNUrl("file:///home"), "pathToSomeProject", SVNRevision.HEAD), recentUrlsWithBranches);
+        items = CopyDialog.setupModel(combo, new RepositoryFile(new SVNUrl("file:///home"), "pathToSomeProject", SVNRevision.HEAD), recentUrlsWithBranches, false);
         assertEquals(Arrays.asList(new String[] { }), new LinkedList<String>(items.keySet()));
         
         // relevant file, but no branches
         // no highlighting
-        items = CopyDialog.setupModel(combo, new RepositoryFile(new SVNUrl("file:///home"), "pathToSomeFolder/subfolder/folder", SVNRevision.HEAD), recentUrlsWithBranches);
+        items = CopyDialog.setupModel(combo, new RepositoryFile(new SVNUrl("file:///home"), "pathToSomeFolder/subfolder/folder", SVNRevision.HEAD), recentUrlsWithBranches, false);
         assertModel(items, combo, Arrays.asList(new String[] {
             "branches/branch1/Project/src/folder", null,
             "Project/src/folder", null,
@@ -122,7 +122,7 @@ public class CopyDialogTest extends NbTestCase {
         // combo items should be sorted by name
         
         // file on trunk, no branch in history
-        items = CopyDialog.setupModel(combo, new RepositoryFile(new SVNUrl("file:///home"), "trunk/subfolder/folder", SVNRevision.HEAD), recentUrlsWithoutBranches);
+        items = CopyDialog.setupModel(combo, new RepositoryFile(new SVNUrl("file:///home"), "trunk/subfolder/folder", SVNRevision.HEAD), recentUrlsWithoutBranches, false);
         assertModel(items, combo, Arrays.asList(new String[] {
             "trunk/subfolder/folder", null,
             "----------", null,
@@ -145,7 +145,7 @@ public class CopyDialogTest extends NbTestCase {
         // combo items should be sorted by name
         
         // file on branch, no branch in history
-        items = CopyDialog.setupModel(combo, new RepositoryFile(new SVNUrl("file:///home"), "branches/SOMEBRANCH/subfolder/folder", SVNRevision.HEAD), recentUrlsWithoutBranches);
+        items = CopyDialog.setupModel(combo, new RepositoryFile(new SVNUrl("file:///home"), "branches/SOMEBRANCH/subfolder/folder", SVNRevision.HEAD), recentUrlsWithoutBranches, false);
         assertModel(items, combo, Arrays.asList(new String[] {
             "trunk/subfolder/folder", null,
             "----------", null,
@@ -169,7 +169,7 @@ public class CopyDialogTest extends NbTestCase {
         // combo items should be sorted by name
         
         // file on branch, branches and tags in history
-        items = CopyDialog.setupModel(combo, new RepositoryFile(new SVNUrl("file:///home"), "branches/SOMEBRANCH/subfolder/folder", SVNRevision.HEAD), recentUrlsWithBranches);
+        items = CopyDialog.setupModel(combo, new RepositoryFile(new SVNUrl("file:///home"), "branches/SOMEBRANCH/subfolder/folder", SVNRevision.HEAD), recentUrlsWithBranches, false);
         assertModel(items, combo, Arrays.asList(new String[] {
             "trunk/subfolder/folder", null,
             "----------", null,

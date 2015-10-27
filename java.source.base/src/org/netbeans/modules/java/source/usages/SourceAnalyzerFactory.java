@@ -778,6 +778,25 @@ public final class SourceAnalyzerFactory {
         }
 
         @Override
+        public Void visitLambdaExpression(
+                @NonNull final LambdaExpressionTree node,
+                @NonNull final Map<Pair<String, String>, UsagesData<String>> p) {
+            final Type type = ((JCTree.JCLambda)node).type;
+            if (type != null) {
+                final Symbol sym = type.tsym;
+                if (sym != null) {
+                    if (sym != null && sym.getKind().isInterface()) {
+                        addUsage(sym,
+                            activeClass.peek(),
+                            p,
+                            ClassIndexImpl.UsageType.FUNCTIONAL_IMPLEMENTORS);
+                    }
+                }
+            }
+            return super.visitLambdaExpression(node, p);
+        }
+
+        @Override
         @CheckForNull
         public Void visitVariable(@NonNull final VariableTree node, @NonNull final Map<Pair<String, String>, UsagesData<String>> p) {
             Symbol s = ((JCTree.JCVariableDecl)node).sym;

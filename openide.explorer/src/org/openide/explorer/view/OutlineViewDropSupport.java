@@ -177,7 +177,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         Point p = dtde.getLocation();
         int row = view.getOutline().rowAtPoint(p);
         int column = view.getOutline().columnAtPoint(p);
-        log("doDragOver row == " + row + " column == " + column); // NOI18N
+        log("doDragOver: p = "+p+", row == " + row + " column == " + column); // NOI18N
         // 2. find node for drop
         Node dropNode = null;
         
@@ -216,7 +216,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
             if (p.y <= (nodeArea.y + FUSSY_POINTING)) {
                 // don't get line above root
-                if (row != 0) {
+                if (row != 0 || !view.getOutline().isRootVisible()) {
                     // point above node
                     pointAt = DragDropUtilities.NODE_UP;
                     // drop candidate is parent

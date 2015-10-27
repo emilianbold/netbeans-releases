@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.javaee.db;
 
+import java.util.Objects;
 import org.netbeans.modules.glassfish.javaee.ApplicationScopedResourcesUtils.JndiNameResolver;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 
@@ -125,20 +126,19 @@ public class SunDatasource implements Datasource {
             return false;
         }
         final SunDatasource other = (SunDatasource) obj;
-        if (this.jndiName == null || !this.jndiName.equals(other.jndiName)) {
+        if (! Objects.equals(this.jndiName, other.jndiName)) {
             return false;
         }
-        if (this.url == null || !this.url.equals(other.url)) {
+        if (! Objects.equals(this.url, other.url)) {
             return false;
         }
-        if (this.username == null || !this.username.equals(other.username)) {
+        if (! Objects.equals(this.username, other.username)) {
             return false;
         }
-        if (this.password == null || !this.password.equals(other.password)) {
+        if (! Objects.equals(this.password, other.password)) {
             return false;
         }
-        if (this.driverClassName == null
-                || !this.driverClassName.equals(other.driverClassName)) {
+        if (! Objects.equals(this.driverClassName, other.driverClassName)) {
             return false;
         }
         return true;

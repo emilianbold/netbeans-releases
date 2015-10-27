@@ -119,7 +119,7 @@ public abstract class BasePathSupport {
          * @return file object (possibly resolved to the given base folder) or {@code null} if not exists
          */
         public FileObject getFileObject(FileObject baseFolder) {
-            return FileUtil.toFileObject(new File(getAbsoluteFilePath(baseFolder)));
+            return FileUtil.toFileObject(FileUtil.normalizeFile(new File(getAbsoluteFilePath(baseFolder))));
         }
 
         public String getReference() {

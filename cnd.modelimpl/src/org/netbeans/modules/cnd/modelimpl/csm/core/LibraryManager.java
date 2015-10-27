@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
+import org.openide.util.Parameters;
 
 /**
  * Artificial libraries manager.
@@ -229,13 +230,20 @@ public final class LibraryManager {
             if (res == null) {
                 if (resolvedPath.isDefaultSearchPath()) {
                     res = curFile.getProjectImpl(true);
-                    if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                        trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
+                    if (res != null) {
+                        if (resolvedPath.getFileSystem() == res.getFileSystem()) {
+                            if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
+                                trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
+                            }
+                        } else {
+                            CndUtils.assertTrue(false, "Wrong FS for " + resolvedPath + ": " + res.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
+                            res = null;
+                        }
                     }
                     // if (res != null && res.isArtificial()) { // TODO: update lib source roots here }
                 } else if (!baseProject.isArtificial()) {
                     res = getLibrary((ProjectImpl) baseProject, resolvedPath.getFileSystem(), folder);
-                    if (res == null && CndUtils.isDebugMode()) {
+                    if (res == null && CndUtils.isDebugMode() && baseProject.isValid() ) {
                         CndUtils.assertTrue(false, "Can not create library; folder=" + folder + " curFile=" + //NOI18N
                                 curFile + " path=" + resolvedPath + " baseProject=" + baseProject); //NOI18N
                     }
@@ -243,7 +251,7 @@ public final class LibraryManager {
                         trace("Library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
                     }
                 } else {
-                    if (CndUtils.isDebugMode()) {
+                    if (CndUtils.isDebugMode() && baseProject.isValid()) {
                         CndUtils.assertTrue(false, "Can not get library for artificial project; folder=" + folder + " curFile=" + //NOI18N
                                 curFile + " path=" + resolvedPath + " baseProject=" + baseProject); //NOI18N
                     }
@@ -395,6 +403,9 @@ public final class LibraryManager {
         LibraryKey libraryKey = new LibraryKey(fs, folder);
         LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
+            if (!project.isValid()) {
+                return null;
+            }
             entry = getOrCreateLibrary(libraryKey);
         }
         if (!entry.containsProject(projectUid)) {
@@ -539,12 +550,14 @@ public final class LibraryManager {
         private final CharSequence folder;
 
         public LibraryKey(FileSystem fileSystem, CharSequence folder) {
+            Parameters.notNull("fileSystem", fileSystem);
             this.fileSystem = fileSystem;
             this.folder = folder;
         }
 
         private LibraryKey(RepositoryDataInput input) throws IOException {
             this.fileSystem = PersistentUtils.readFileSystem(input);
+            assert fileSystem != null;
             this.folder = input.readFilePathForFileSystem(fileSystem);
         }
 

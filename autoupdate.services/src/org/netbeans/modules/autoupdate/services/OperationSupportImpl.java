@@ -121,9 +121,12 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForEnable extends OperationSupportImpl {
-        @Override
+        @Override 
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
+           
+            boolean needsRestart = false;
+            
             try {
                 if (progress != null) {
                     progress.start();
@@ -146,8 +149,12 @@ public abstract class OperationSupportImpl {
                     if (mm == null) {
                         mm = m.getManager();
                     }
-                }
+                }                
+                
                 assert mm != null;
+                
+                needsRestart = mm.hasToEnableCompatModules(modules);
+                
                 final ModuleManager fmm = mm;
                 try {
                     fmm.mutex ().writeAccess (new ExceptionAction<Boolean> () {
@@ -169,7 +176,7 @@ public abstract class OperationSupportImpl {
                 }
             }
             
-            return false;
+            return needsRestart;
         }
         
         @Override
@@ -192,14 +199,14 @@ public abstract class OperationSupportImpl {
 
         @Override
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
-            throw new UnsupportedOperationException ("Not supported yet.");
+            LifecycleManager.getDefault().markForRestart();
+            LifecycleManager.getDefault().exit();
         }
 
         @Override
         public void doRestartLater (Restarter restarter) {
-            throw new UnsupportedOperationException ("Not supported yet.");
-        }
-        
+            LifecycleManager.getDefault().markForRestart();
+        }        
     }
     
     private static class ForDisable extends OperationSupportImpl {

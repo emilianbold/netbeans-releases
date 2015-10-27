@@ -211,7 +211,7 @@ public final class WildflyPluginProperties {
     }
 
     public void setConfigLocation(String configLocation) {
-         if (configLocation.endsWith(File.separator)) {
+        if (configLocation.endsWith(File.separator)) {
             configLocation = configLocation.substring(0, configLocation.length() - 1);
         }
         this.configLocation = configLocation;

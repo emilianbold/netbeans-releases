@@ -79,9 +79,9 @@ import org.openide.util.Lookup;
  */
 public class ClankDriverImpl {
 
-    public interface APTTokenStreamCacheImplementation extends ClankDriver.APTTokenStreamCache {
+    public interface ClankPreprocessorOutputImplementation extends ClankDriver.ClankPreprocessorOutput {
 
-        APTTokenStreamCacheImplementation prepareCachesIfPossible();
+        ClankPreprocessorOutputImplementation prepareCachesIfPossible();
     }
 
     static final boolean TRACE = false;
@@ -124,19 +124,17 @@ public class ClankDriverImpl {
             }
         }        
         try {
-            // TODO: prepare buffers mapping
+            // TODO: prepare buffers mapping in url-like style for remote files;
             // note that for local files no "file://" prefix is added
-            CharSequence path = CndFileSystemProvider.toUrl(buffer.getFileSystem(), buffer.getAbsolutePath());
+            String path = CndFileSystemProvider.toUrl(buffer.getFileSystem(), buffer.getAbsolutePath()).toString();
             // prepare params to run preprocessor
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
             settings.WorkName = path;
             boolean fortranFlavor = APTToClankCompilationDB.isFortran(ppHandler);
-            settings.KeepCommentsTokens = callback.needComments();
             settings.GenerateDiagnostics = true;
-            PrintWriter printWriter = null;
             if (CndUtils.isUnitTestMode() && !fortranFlavor) {
                 settings.PrettyPrintDiagnostics = true;
-                printWriter = new PrintWriter(System.err);
+                PrintWriter printWriter = new PrintWriter(System.err);
                 settings.PrintDiagnosticsOS = new PrintWriter_ostream(printWriter);
             } else {
                 settings.PrettyPrintDiagnostics = false;
@@ -149,13 +147,14 @@ public class ClankDriverImpl {
             ClankPPCallback fileTokensCallback = new ClankPPCallback(ppHandler, traceOS, callback, canceller);
             settings.IncludeInfoCallbacks = fileTokensCallback;
             ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
-            Map<StringRef, MemoryBuffer> remappedBuffers = getRemappedBuffers();
-            MemoryBuffer fileContent;
-            StringRef file = new StringRef(path);
-            char[] chars = fortranFlavor ? fixFortranTokens(buffer) : buffer.getCharBuffer();
-            fileContent = ClankMemoryBufferImpl.create(path, chars);
-            remappedBuffers = new HashMap<StringRef, MemoryBuffer>(remappedBuffers);
-            remappedBuffers.put(file, fileContent);
+            Map<String, MemoryBuffer> remappedBuffers = getRemappedBuffers();
+            if (!remappedBuffers.containsKey(path)) {
+                MemoryBuffer fileContent;
+                char[] chars = fortranFlavor ? fixFortranTokens(buffer) : buffer.getCharBuffer();
+                fileContent = ClankMemoryBufferImpl.create(path, chars);
+                remappedBuffers = new HashMap<String, MemoryBuffer>(remappedBuffers);
+                remappedBuffers.put(path, fileContent);
+            }
             ClankPreprocessorServices.preprocess(Collections.singleton(db), settings, remappedBuffers);
             return true;
         } catch (IOException ex) {
@@ -296,19 +295,19 @@ public class ClankDriverImpl {
         return chars;
     }
 
-    private static Map<StringRef, MemoryBuffer> getRemappedBuffers() {
-        Map<StringRef, MemoryBuffer> result = Collections.<StringRef, MemoryBuffer>emptyMap();
+    private static Map<String, MemoryBuffer> getRemappedBuffers() {
+        Map<String, MemoryBuffer> result = Collections.<String, MemoryBuffer>emptyMap();
         APTBufferProvider provider = Lookup.getDefault().lookup(APTBufferProvider.class);
         if (provider != null) {
             Collection<APTFileBuffer> buffers = provider.getUnsavedBuffers();
             if (buffers != null && !buffers.isEmpty()) {
-                result = new HashMap<StringRef, MemoryBuffer>();
+                result = new HashMap<String, MemoryBuffer>();
                 for (APTFileBuffer buf : buffers) {
-                    StringRef path = new StringRef(buf.getAbsolutePath());
+                    String pathAsUrl = CndFileSystemProvider.toUrl(buf.getFileSystem(), buf.getAbsolutePath()).toString();
                     ClankMemoryBufferImpl mb;
                     try {
-                        mb = ClankMemoryBufferImpl.create(buf);
-                        result.put(path, mb);
+                        mb = ClankMemoryBufferImpl.create(pathAsUrl, buf.getCharBuffer());
+                        result.put(pathAsUrl, mb);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex); //TODO: error processing!!!!
                     }
@@ -318,9 +317,17 @@ public class ClankDriverImpl {
         return result;
     }
 
-    public static ClankDriverImpl.APTTokenStreamCacheImplementation extractTokenStream(PreprocHandler ppHandler) {
+    public static ClankDriverImpl.ClankPreprocessorOutputImplementation extractPreprocessorOutputImplementation(ClankDriver.ClankFileInfo file) {
+        // it is ClankFileInfoWrapper
+        if (file instanceof ClankDriverImpl.ClankPreprocessorOutputImplementation) {
+            return (ClankPreprocessorOutputImplementation) file;
+        }
+        return null;
+    }    
+    
+    public static ClankDriverImpl.ClankPreprocessorOutputImplementation extractPreprocessorOutputImplementation(PreprocHandler ppHandler) {
         ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl)ppHandler.getIncludeHandler();
-        ClankDriverImpl.APTTokenStreamCacheImplementation cached = includeHandler.getCachedTokens();
+        ClankDriverImpl.ClankPreprocessorOutputImplementation cached = includeHandler.getPreprocessorOutputImplementation();
         return cached;
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.indent;
 
@@ -368,10 +368,10 @@ public class FormatVisitor extends DefaultVisitor {
     public void visit(Assignment node) {
         scan(node.getLeftHandSide());
         while (ts.moveNext() && ((ts.offset() + ts.token().length()) < node.getRightHandSide().getStartOffset())
-                && ts.token().id() != PHPTokenId.PHP_TOKEN) {
+                && ts.token().id() != PHPTokenId.PHP_OPERATOR) {
             addFormatToken(formatTokens);
         }
-        if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+        if (ts.token().id() == PHPTokenId.PHP_OPERATOR) {
             if (path.size() > 1) {
                 ASTNode parent = path.get(1);
                 if (parent instanceof StaticStatement) {
@@ -665,57 +665,146 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(ConditionalExpression node) {
         scan(node.getCondition());
-        boolean wrap = node.getIfTrue() != null ? true : false;
-        ASTNode astNode = path.get(1);
-        boolean putContinualIndent = !(astNode instanceof Assignment
-                || astNode instanceof ReturnStatement);
-        if (wrap) {
-            while (ts.moveNext()
-                    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString()))
-                    && lastIndex < ts.index()) {
-                addFormatToken(formatTokens);
+        boolean putContinualIndent = true;
+        for (ASTNode astNode : path) {
+            if (astNode instanceof Assignment
+                    || astNode instanceof ReturnStatement) {
+                putContinualIndent = false;
+                break;
             }
-
-            int start = ts.offset();
-            if (putContinualIndent) {
-                formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
-            }
-            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, start));
-            ts.movePrevious();
-            addAllUntilOffset(node.getIfTrue().getStartOffset());
-            formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-
         }
+        if (node.getOperator().isShortened()) {
+            visitShortenedConditionalExpression(node, putContinualIndent);
+        } else {
+            visitConditionalExpression(node, putContinualIndent);
+        }
+    }
+
+    private void visitShortenedConditionalExpression(ConditionalExpression node, boolean putContinualIndent) {
+        assert node.getIfTrue() == null : node.getIfTrue().toString();
+        final ConditionalExpression.OperatorType operator = node.getOperator();
+        // XXX unify once one token for elvis exists
+        switch (operator) {
+            case ELVIS:
+                // "?" part
+                while (ts.moveNext()
+                        && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString())) // NOI18N
+                        && lastIndex < ts.index()) {
+                    addFormatToken(formatTokens);
+                }
+                assert ts.token().id() == PHPTokenId.PHP_TOKEN : ts.token().id();
+                assert "?".equals(ts.token().text().toString()) : ts.token().text().toString();
+                if (putContinualIndent) {
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+                }
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, ts.offset()));
+                formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                if (putContinualIndent) {
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+                }
+                // remove all next whitespaces
+                StringBuilder sb = new StringBuilder();
+                while (ts.moveNext()) {
+                    if (ts.token().id() != PHPTokenId.WHITESPACE) {
+                        ts.movePrevious();
+                        break;
+                    }
+                    sb.append(ts.token().text().toString());
+                }
+                if (sb.length() > 0) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_SHORT_TERNARY_OP, ts.offset(), sb.toString()));
+                }
+                // ":" part
+                assert node.getIfFalse() != null;
+                while (ts.moveNext()
+                        && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())) // NOI18N
+                        && lastIndex < ts.index()) {
+                    addFormatToken(formatTokens);
+                }
+                assert ts.token().id() == PHPTokenId.PHP_TOKEN : ts.token().id();
+                assert ":".equals(ts.token().text().toString()) : ts.token().text().toString();
+                if (putContinualIndent) {
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+                }
+                formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
+                addAllUntilOffset(node.getIfFalse().getStartOffset());
+                formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+                scan(node.getIfFalse());
+                addEndOfUnbreakableSequence(node.getIfFalse().getEndOffset());
+                if (putContinualIndent) {
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+                }
+                break;
+            default:
+                // operator part
+                while (ts.moveNext()
+                        && !operator.isOperatorToken(ts.token())
+                        && lastIndex < ts.index()) {
+                    addFormatToken(formatTokens);
+                }
+                assert operator.isOperatorToken(ts.token()) : ts.token().id();
+                if (putContinualIndent) {
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+                }
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, ts.offset()));
+                formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
+                // condition part
+                addAllUntilOffset(node.getIfFalse().getStartOffset());
+                formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+                scan(node.getIfFalse());
+                addEndOfUnbreakableSequence(node.getIfFalse().getEndOffset());
+                if (putContinualIndent) {
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+                }
+        }
+    }
+
+    private void visitConditionalExpression(ConditionalExpression node, boolean putContinualIndent) {
+        assert node.getIfTrue() != null;
+        // "?" part
+        while (ts.moveNext()
+                && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString())) // NOI18N
+                && lastIndex < ts.index()) {
+            addFormatToken(formatTokens);
+        }
+        assert ts.token().id() == PHPTokenId.PHP_TOKEN : ts.token().id();
+        assert "?".equals(ts.token().text().toString()) : ts.token().text().toString();
+        if (putContinualIndent) {
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+        }
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, ts.offset()));
+        formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
+        addAllUntilOffset(node.getIfTrue().getStartOffset());
+        formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
         scan(node.getIfTrue());
-        if (wrap) {
-            addEndOfUnbreakableSequence(node.getIfTrue().getEndOffset());
-            if (putContinualIndent) {
-                formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
-            }
+        addEndOfUnbreakableSequence(node.getIfTrue().getEndOffset());
+        if (putContinualIndent) {
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
         }
-        wrap = node.getIfFalse() != null ? true : false;
-        if (wrap) {
-            while (ts.moveNext()
-                    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString()))
-                    && lastIndex < ts.index()) {
-                addFormatToken(formatTokens);
-            }
-            int start = ts.offset();
-            if (putContinualIndent) {
-                formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
-            }
-            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, start));
-            ts.movePrevious();
-            addAllUntilOffset(node.getIfFalse().getStartOffset());
-            formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-
+        // ":" part
+        assert node.getIfFalse() != null;
+        while (ts.moveNext()
+                && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())) // NOI18N
+                && lastIndex < ts.index()) {
+            addFormatToken(formatTokens);
         }
+        assert ts.token().id() == PHPTokenId.PHP_TOKEN : ts.token().id();
+        assert ":".equals(ts.token().text().toString()) : ts.token().text().toString();
+        if (putContinualIndent) {
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+        }
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, ts.offset()));
+        formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
+        addAllUntilOffset(node.getIfFalse().getStartOffset());
+        formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
         scan(node.getIfFalse());
-        if (wrap) {
-            addEndOfUnbreakableSequence(node.getIfFalse().getEndOffset());
-            if (putContinualIndent) {
-                formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
-            }
+        addEndOfUnbreakableSequence(node.getIfFalse().getEndOffset());
+        if (putContinualIndent) {
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
         }
     }
 
@@ -748,10 +837,12 @@ public class FormatVisitor extends DefaultVisitor {
             formatTokens.add(new FormatToken.IndentToken(node.getStartOffset(), options.continualIndentSize));
             scan(node.getNames());
             if (node.getNames().size() == 1) {
-                while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_TOKEN) {
+                while (ts.moveNext()
+                        && (ts.token().id() != PHPTokenId.PHP_TOKEN && ts.token().id() != PHPTokenId.PHP_OPERATOR)) {
                     addFormatToken(formatTokens);
                 }
-                if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+                if (ts.token().id() == PHPTokenId.PHP_TOKEN
+                        || ts.token().id() == PHPTokenId.PHP_OPERATOR) {
                     handleGroupAlignment(node.getNames().get(0));
                     addFormatToken(formatTokens);
                 } else {
@@ -1255,7 +1346,7 @@ public class FormatVisitor extends DefaultVisitor {
                 ASTNode parent = path.get(1);
                 assert (parent instanceof FieldsDeclaration);
                 FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) path.get(1);
-                if (ts.token().id() == PHPTokenId.PHP_TOKEN && "=".equals(ts.token().text().toString())) { //NOI18N
+                if (ts.token().id() == PHPTokenId.PHP_OPERATOR && "=".equals(ts.token().text().toString())) { //NOI18N
                     int realNodeLength = fieldsDeclaration.getModifierString().length() + " ".length() + name.getEndOffset() - name.getStartOffset(); //NOI18N
                     handleGroupAlignment(realNodeLength);
                     addFormatToken(formatTokens);
@@ -1631,46 +1722,45 @@ public class FormatVisitor extends DefaultVisitor {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     }
-                } else if (parent instanceof ConditionalExpression
-                        && ("?".equals(text) || ":".equals(text))) {
-                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
                 } else if (",".equals(text)) {
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_COMMA, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_COMMA, ts.offset() + ts.token().length()));
-                } else if ("!".equals(text)) {
-                    int origOffset = ts.offset();
-                    if (ts.movePrevious()) {
-                        Token<? extends PHPTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(PHPTokenId.WHITESPACE));
-                        if (previous.id() == PHPTokenId.PHP_RETURN) {
-                            tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_KEYWORD, origOffset));
-                        }
-                        ts.move(origOffset);
-                        ts.moveNext();
-                    }
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
-                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
-                } else if ("=".equals(text)) {
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ASSIGN_OP, ts.offset()));
-                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_ASSIGN_OP, ts.offset() + ts.token().length()));
                 } else {
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 }
                 break;
             case PHP_OPERATOR:
                 text = ts.token().text().toString();
+                // assignment?
+                if (text.endsWith("=")) { // NOI18N
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ASSIGN_OP, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_ASSIGN_OP, ts.offset() + ts.token().length()));
+                    break;
+                }
+                int origOffset = ts.offset();
                 switch (text) {
+                    case "!": // NOI18N
+                        if (ts.movePrevious()) {
+                            Token<? extends PHPTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(PHPTokenId.WHITESPACE));
+                            if (previous.id() == PHPTokenId.PHP_RETURN) {
+                                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_KEYWORD, origOffset));
+                            }
+                            ts.move(origOffset);
+                            ts.moveNext();
+                        }
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                        break;
                     case "=>": //NOI18N
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset()));
-                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset() + ts.token().length()));
                         break;
                     case "++": //NOI18N
                     case "--": //NOI18N
-                        int origOffset = ts.offset();
                         if (ts.movePrevious()) {
                             if (ts.token().id() == PHPTokenId.PHP_VARIABLE || ts.token().id() == PHPTokenId.PHP_STRING) {
                                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));

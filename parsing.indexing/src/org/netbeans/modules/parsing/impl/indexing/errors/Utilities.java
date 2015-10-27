@@ -70,6 +70,8 @@ import org.openide.util.Pair;
  */
 public class Utilities {
 
+    private static final boolean BADGES_ENABLED = !Boolean.getBoolean(String.format("%s.errorBadges.disable",   //NOI18N
+            TaskCache.class.getName()));
     private static volatile Pair<FileObject,Reference<ClassPath>> rootCache;
 
     public static ClassPath getSourceClassPathFor(FileObject file) {
@@ -116,7 +118,7 @@ public class Utilities {
     }
 
     public static boolean isBadgesEnabled() {
-        return true;
+        return BADGES_ENABLED;
     }
 
     static void refreshAnnotations(@NonNull final Set<URL> toRefresh) {

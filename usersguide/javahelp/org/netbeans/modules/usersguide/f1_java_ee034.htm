@@ -7,9 +7,8 @@
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-14</p>
 <p><a id="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerLibraries" name="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerLibraries"></a></p>
-<div id="NBCSH4619"><!-- infolevel="all" infotype="General" --><a id="sthref650" name="sthref650"></a>
+<div id="NBCSH4619"><!-- infolevel="all" infotype="General" --><a id="sthref640" name="sthref640"></a>
 <h1>Standard Enterprise Application Project Properties Dialog Box: Libraries</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>The Libraries page lets you define the JARs, folders, libraries, and projects that are added to the runtime classpath of the enterprise application. The libraries that you add are then available to all the modules in the project.</p>
@@ -20,24 +19,24 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t29">Element</th>
-<th align="left" valign="bottom" id="r1c2-t29">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t29">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t29">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t29" headers="r1c1-t29">
+<td style="text-align:left" id="r2c1-t29" headers="r1c1-t29">
 <p>Libraries Folder</p>
 </td>
-<td align="left" headers="r2c1-t29 r1c2-t29">To make it easier to share libraries among different users and projects, you can set a folder to hold those libraries (or references to those libraries). You can create a new folder or specify an existing folder that already contains copies of the libraries on which your project depends.
+<td style="text-align:left" headers="r2c1-t29 r1c2-t29">To make it easier to share libraries among different users and projects, you can set a folder to hold those libraries (or references to those libraries). You can create a new folder or specify an existing folder that already contains copies of the libraries on which your project depends.
 <p>To specify the folder, click <b>Browse</b>. If there is already a libraries folder, a file chooser opens. If there is not a libraries folder, the New Libraries wizard opens. In the New Libraries wizard, you set a libraries folder and then specify how to reference each library. The simplest case is to have the libraries copied to that folder. You can also refer to the libraries in their existing location (with a relative path or an absolute path). If you have specified an existing folder, you also have the option of using copies of libraries that are already in that folder instead of the copies that are contained in the IDE's Ant Library Manager.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t29" headers="r1c1-t29">
+<td style="text-align:left" id="r3c1-t29" headers="r1c1-t29">
 <p>Embedded Classpath Elements</p>
 </td>
-<td align="left" headers="r3c1-t29 r1c2-t29">You use this page to specify any projects, subprojects or libraries not listed in the Packaging page that you want the IDE to include in the classpath of the enterprise application when you debug the application.
+<td style="text-align:left" headers="r3c1-t29 r1c2-t29">You use this page to specify any projects, subprojects or libraries not listed in the Packaging page that you want the IDE to include in the classpath of the enterprise application when you debug the application.
 <p>You use the Packaging page to specify the libraries that are packaged in the EAR archive when you build your enterprise application. However, your enterprise application may require elements such as special libraries (such as JDBC drivers or additional libraries), JARs or other projects that are not listed in the Packaging page. If you want to step through these elements when debugging the application, you need to explicitly specify the elements in the Libraries page.</p>
 <p>For example, the Packaging page may specify that your WAR archive will be bundled in the EAR archive. However, the web application may require a subproject that is not packaged in the WAR archive but which will be copied to the EAR archive when you build the enterprise application. If you want to be able to step through the subproject when debugging the enterprise application, you need to explicitly specify the subproject in the Libraries page.</p>
 <p>Use the buttons to add JAR files, projects or libraries to the classpath.</p>

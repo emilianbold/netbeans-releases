@@ -858,29 +858,14 @@ abstract public class CsmCompletionQuery {
     }
 
     // ================= help methods to generate CsmCompletionResult ==========
-    private String formatName(String name, boolean appendStar) {
-        return (name != null) ? (appendStar ? (name + '*') : name)
-                : (appendStar ? "*" : ""); // NOI18N
-    }
-
-    private String formatType(CsmType type, boolean useFullName, boolean appendColon) {
-        StringBuilder sb = new StringBuilder();
-        if (type != null) {
-//                sb.append(type.format(useFullName));
-            sb.append(type.getText());
-        }
-        if (appendColon) {
-            sb.append(CsmCompletion.SCOPE);
-        }
-        return sb.toString();
-    }
-
     private static String formatType(CsmType type, boolean useFullName,
             boolean appendDblComma, boolean appendStar) {
         StringBuilder sb = new StringBuilder();
-        if (type != null && type.getClassifier() != null) {
-//                sb.append(type.format(useFullName));
-            sb.append(useFullName ? type.getClassifier().getQualifiedName() : type.getClassifier().getName());
+        if (type != null) {
+            CsmClassifier classifier = type.getClassifier();
+            if (classifier != null) {
+                sb.append(useFullName ? classifier.getQualifiedName() : classifier.getName());
+            }
         }
         if (appendDblComma) {
             sb.append(CsmCompletion.SCOPE);
@@ -2417,10 +2402,10 @@ abstract public class CsmCompletionQuery {
                                         case 2:
                                             CsmType typ1 = resolveType(item.getParameter(0));
                                             if (typ1 != null && typ1.getArrayDepth() == 0) {
-                                                if (CsmCompletion.isPrimitiveClass(typ1.getClassifier())) {
+                                                if (CsmCompletion.safeIsPrimitiveClass(typ1, typ1.getClassifier())) {
                                                     CsmType typ2 = resolveType(item.getParameter(1));
                                                     if (typ2 != null && typ2.getArrayDepth() == 0) {
-                                                        if (CsmCompletion.isPrimitiveClass(typ2.getClassifier())) {
+                                                        if (CsmCompletion.safeIsPrimitiveClass(typ2, typ2.getClassifier())) {
                                                             lastType = sup.getCommonType(typ1, typ2);
                                                         }
                                                     }
@@ -2441,7 +2426,7 @@ abstract public class CsmCompletionQuery {
                                             break;
                                         case 1: // get the only one parameter
                                             CsmType typ = resolveType(item.getParameter(0));
-                                            if (typ != null && CsmCompletion.isPrimitiveClass(typ.getClassifier())) {
+                                            if (typ != null && CsmCompletion.safeIsPrimitiveClass(typ, typ.getClassifier())) {
                                                 lastType = typ;
                                             }
                                             break;
@@ -2532,7 +2517,14 @@ abstract public class CsmCompletionQuery {
                                     ptrDepth++;
                                 }
 
-                                lastType = CsmCompletion.createType(getClassifier(lastNestedType, contextFile, endOffset), ptrDepth, getReferenceValue(lastNestedType), lastNestedType.getArrayDepth(), lastNestedType.isConst());
+                                lastType = CsmCompletion.createType(
+                                    getClassifier(lastNestedType, contextFile, endOffset), 
+                                    ptrDepth, 
+                                    getReferenceValue(lastNestedType), 
+                                    lastNestedType.getArrayDepth(), 
+                                    lastNestedType.isConst(), 
+                                    lastNestedType.isTemplateBased()
+                                );
                             }
                         }
                     // TODO: need to convert lastType into reference based on item token '&' or '*'
@@ -3088,13 +3080,15 @@ abstract public class CsmCompletionQuery {
             // Handle decltypes
             if (lastType != null && instantiations != null && lastType.isTemplateBased()) {
                 assert !instantiations.isEmpty() : "Instantiations must not be empty"; //NOI18N
+                // FIXME: what about nested classifiers based on template type? Like "_Tp::something".
+                // For now getClassifier() returns UnresolvedClass for such types.
                 CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);
                 if (CsmKindUtilities.isTemplateParameter(cls)) {
                     CsmType resolvedType = resolveTemplateParameter((CsmTemplateParameter) cls, instantiations);
                     if (resolvedType != null) {
                         lastType = resolvedType;
                     }
-                }
+                }   
             }
 
             if (!findType) {

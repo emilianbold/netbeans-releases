@@ -11,6 +11,7 @@ import javax.persistence.PersistenceContext;
 
 @PersistenceContext(name = "persistence/LogicalName", unitName = "MyPersistenceUnit")
 public class Test {
+
     @Resource
     private javax.transaction.UserTransaction utx;
 

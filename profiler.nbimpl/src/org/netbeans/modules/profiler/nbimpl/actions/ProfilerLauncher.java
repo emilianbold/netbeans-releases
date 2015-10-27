@@ -474,7 +474,7 @@ public class ProfilerLauncher {
         }
         if (project == null) return; // sanity check; we need project here
         
-        if (ProfilingSupport.getDefault().checkProfilingInProgress()) {
+        if (ProfilingSupport.checkProfilingInProgress()) {
             return;
         }
         

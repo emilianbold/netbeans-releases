@@ -106,7 +106,7 @@ public class DiffToAction extends ContextAction {
                 SVNUrl repositoryUrl = null, fileUrl = null;
                 File[] roots = SvnUtils.getActionRoots(ctx, false);
                 File interestingFile = null;
-                if (roots != null) {
+                if (roots != null && roots.length > 0) {
                     try {
                         if(roots.length == 1) {
                             interestingFile = roots[0];
@@ -118,6 +118,8 @@ public class DiffToAction extends ContextAction {
                     } catch (SVNClientException ex) {
                         Logger.getLogger(DiffToAction.class.getName()).log(Level.INFO, null, ex);
                     }
+                } else if (roots != null && roots.length == 0) {
+                    Logger.getLogger(DiffToAction.class.getName()).log(Level.WARNING, "No cation roots for context: {0}", Arrays.asList(ctx.getRootFiles()));
                 }
                 if (repositoryUrl == null || fileUrl == null) {
                     Logger.getLogger(DiffToAction.class.getName()).log(Level.FINE,

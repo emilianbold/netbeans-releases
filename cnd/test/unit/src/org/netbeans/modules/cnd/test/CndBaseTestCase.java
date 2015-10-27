@@ -48,6 +48,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -72,6 +73,8 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -170,6 +173,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
         List<Class<?>> list = new ArrayList<Class<?>>();
         list.add(MockMimeLookup.class);
+        list.add(FileEncodingQueryImplementationImpl.class);
         for(Class<?> cls : getServices()){
             list.add(cls);
         }
@@ -361,5 +365,13 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     @Override
     public void compareReferenceFiles() {
         compareReferenceFiles(this.getName()+".ref",this.getName()+".ref"); // NOI18N
+    }
+
+    public static final class FileEncodingQueryImplementationImpl extends FileEncodingQueryImplementation {
+
+        @Override
+        public Charset getEncoding(FileObject file) {
+            return Charset.forName("UTF-8");
+        }
     }
 }

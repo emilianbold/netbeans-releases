@@ -124,7 +124,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
-import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer.YesNoInterested;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -328,6 +327,15 @@ public final class FileImpl implements CsmFile,
     private int guardEnd = -1;
 
     private volatile boolean disposed = false; // convert to flag field as soon as new flags appear
+    
+    /** 
+     * Contains reference to the project's  disposing flag.
+     * Introduced for optimization purposes - for FileImpl to be able to make a fast check
+     * without getting the project itself (nor hard-referencing of the project itself either).
+     * This strongly relates on the fact that the project stays in memory
+     * (we call RepositoryUtils.hang() but never RepositoryUtils.put() for the project)
+     */
+    private final AtomicBoolean projectDisposed;
 
     private final Interrupter interrupter = new Interrupter() {
         @Override
@@ -341,7 +349,7 @@ public final class FileImpl implements CsmFile,
     private long lastParsedCompilationUnitCRC;
 
     /** Cache the hash code */
-    private int hash = 0; // Default to 0
+    private final int hash;
     private Reference<List<CsmReference>> lastMacroUsages = null;
 
     /** For test purposes only */
@@ -354,6 +362,9 @@ public final class FileImpl implements CsmFile,
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert (projectUID instanceof KeyBasedUID); // this fact is used in write() and getInitId()
         this.fileBuffer = fileBuffer;
+        this.hash = calculateHashCode(project, fileBuffer.getAbsolutePath());
+        // NB: the below strongly relates on the fact that the project stays in memory
+        this.projectDisposed = project.getDisposingFlag();
 
         hasBrokenIncludes = new AtomicBoolean(false);
         this.currentFileContent = FileContent.createFileContent(FileImpl.this, FileImpl.this);
@@ -380,7 +391,7 @@ public final class FileImpl implements CsmFile,
         return getProjectImpl(true).getNativeFileItem(getUID());
     }
 
-    private ProjectBase _getProject(boolean assertNotNull) {
+     private ProjectBase _getProject(boolean assertNotNull) {
         Object o = projectRef;
         if (o instanceof ProjectBase) {
             return (ProjectBase) o;
@@ -524,6 +535,13 @@ public final class FileImpl implements CsmFile,
         return projectImpl.getPreprocHandler(fileBuffer.getAbsolutePath(), statePair);
     }
 
+    public final boolean checkIfFileWasIncludedBeforeWithBetterOrEqualContent(PreprocHandler ppPreIncludeHandler) {
+        final ProjectBase projectImpl = getProjectImpl(true);
+        return projectImpl == null 
+                ? true/*no need to include such file*/ 
+                : projectImpl.checkIfFileWasIncludedBeforeWithBetterOrEqualContent(this, ppPreIncludeHandler);
+    }
+    
     public Collection<PreprocHandler> getPreprocHandlersForParse(Interrupter interrupter) {
         final ProjectBase projectImpl = getProjectImpl(true);
         return projectImpl == null ? Collections.<PreprocHandler>emptyList() : projectImpl.getPreprocHandlersForParse(this, interrupter);
@@ -650,7 +668,16 @@ public final class FileImpl implements CsmFile,
             FileContentSignature newSignature = null;
             FileContentSignature oldSignature = null;
             boolean tryPartialReparse = (handlers == PARTIAL_REPARSE_HANDLERS);
+            // when new project is opened it detects that can contribute better model into
+            // library file of already opened Library project (used by others).
+            // Currently for that from finishProjectFilesCreation we calls tryPartialReparseOnChangedFile
+            // and needlessly reparse one project file to let it walk through all
+            // it's included files and contribute extra/best states for shared
+            // library files (or add new library files used only by this project).
+            // That's why now triggerParsingActivity is always true except
+            // editing document case when we don't want to force parsing of includes
             boolean triggerParsingActivity = (handlers != DUMMY_HANDLERS);
+            final ProjectBase projectImpl = getProjectImpl(true);
             if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
                 handlers = getPreprocHandlersForParse(Interrupter.DUMMY);
             }
@@ -690,13 +717,19 @@ public final class FileImpl implements CsmFile,
                             time = System.currentTimeMillis();
                             try {
                                 long compUnitCRC = 0;
-                                for (PreprocHandler preprocHandler : handlers) {
-                                    compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
-                                    parseParams.prepare(preprocHandler, getContextLanguage(preprocHandler.getState()), getContextLanguageFlavor(preprocHandler.getState()));
-                                    _parse(parseParams);
-                                    if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
-                                        break; // does not make sense parsing old data
+                                try {
+                                    // initialize parsing file content before loop instead of doing it on each iteration
+                                    parsingFileContentRef.get().set(parseParams.getFileContent());
+                                    for (PreprocHandler preprocHandler : handlers) {
+                                        compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
+                                        parseParams.prepare(preprocHandler, getContextLanguage(preprocHandler.getState()), getContextLanguageFlavor(preprocHandler.getState()));
+                                        _parse(parseParams);
+                                        if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
+                                            break; // does not make sense parsing old data
+                                        }
                                     }
+                                } finally {
+                                    parsingFileContentRef.get().set(null);
                                 }
                                 if (parsingState == ParsingState.BEING_PARSED) {
                                     updateModelAfterParsing(parseParams.getFileContent(), compUnitCRC);
@@ -733,18 +766,33 @@ public final class FileImpl implements CsmFile,
                                     }
                                 }
                                 long compUnitCRC = 0;
-                                for (PreprocHandler preprocHandler : handlers) {
-                                    parseParams.prepare(preprocHandler, getContextLanguage(preprocHandler.getState()), getContextLanguageFlavor(preprocHandler.getState()));
-                                    if (first) {
-                                        compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
-                                        _reparse(parseParams);
-                                        first = false;
-                                    } else {
-                                        _parse(parseParams);
+                                try {
+                                    // initialize parsing file content and snapshot before loop;
+                                    parsingFileContentRef.get().set(parseParams.getFileContent());
+                                    synchronized (snapShotLock) {
+                                        // intialize snapshot out of loop
+                                        // instead of doing it on each iteration which can create window for clients
+                                        // for seeing empty snapshot between iterations, i.e.
+                                        // when on the first iteration small part of file is parsed and on the second
+                                        // remaining, but we already disposed content in the first "reparse" phase
+                                        fileSnapshot = new FileSnapshot(this);
                                     }
-                                    if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
-                                        break; // does not make sense parsing old data
+                                    for (PreprocHandler preprocHandler : handlers) {
+                                        parseParams.prepare(preprocHandler, getContextLanguage(preprocHandler.getState()), getContextLanguageFlavor(preprocHandler.getState()));
+                                        if (first) {
+                                            compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
+                                            _reparse(parseParams);
+                                            first = false;
+                                        } else {
+                                            _parse(parseParams);
+                                        }
+                                        if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
+                                            break; // does not make sense parsing old data
+                                        }
                                     }
+                                } finally {
+                                    fileSnapshot = null;
+                                    parsingFileContentRef.get().set(null);
                                 }
                                 if (parsingState == ParsingState.BEING_PARSED) {
                                     updateModelAfterParsing(parseParams.getFileContent(), compUnitCRC);
@@ -800,6 +848,8 @@ public final class FileImpl implements CsmFile,
                 if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
                     System.err.printf("after ensureParsed: %s file is interrupted on closing model%n", this.getAbsolutePath());
                 }
+                disposeAll(true);
+                projectImpl.invalidatePreprocState(this.getAbsolutePath());
                 synchronized (changeStateLock) {
                     state = State.INITIAL;
                     addRemoveModifiedFile(false);
@@ -937,29 +987,20 @@ public final class FileImpl implements CsmFile,
     }
     
     private void _reparse(ParseDescriptor parseParams) {
-        parsingFileContentRef.get().set(parseParams.getFileContent());
-        try {
-            if (TraceFlags.DEBUG) {
-                Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
+        if (TraceFlags.DEBUG) {
+            Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
+        }
+        if (reportParse || logState || TraceFlags.DEBUG) {
+            logParse("ReParsing", parseParams.getCurrentPreprocHandler()); //NOI18N
+        }
+        disposeAll(false);
+        CsmParserResult parsing = doParse(parseParams);
+        if (parsing != null) {
+            if (isValid()) {
+                parsing.render(parseParams);
             }
-            synchronized(snapShotLock) {
-                fileSnapshot = new FileSnapshot(this);
-            }
-            if (reportParse || logState || TraceFlags.DEBUG) {
-                logParse("ReParsing", parseParams.getCurrentPreprocHandler()); //NOI18N
-            }
-            disposeAll(false);
-            CsmParserResult parsing = doParse(parseParams);
-            if (parsing != null) {
-                if (isValid()) {
-                    parsing.render(parseParams);
-                }
-            } else {
-                //System.err.println("null ast for file " + getAbsolutePath());
-            }
-            fileSnapshot = null;
-        } finally {
-            parsingFileContentRef.get().set(null);
+        } else {
+            //System.err.println("null ast for file " + getAbsolutePath());
         }
     }
 
@@ -1066,7 +1107,7 @@ public final class FileImpl implements CsmFile,
 
         @Override
         public CsmFile getMainFile() {
-            return this.tsp.getMainFile();
+            return this.tsp.getInterestedFile();
         }
 
         public void prepare(PreprocHandler preprocHandler, String contextLanguage, String contextLanguageFlavor) {
@@ -1084,17 +1125,21 @@ public final class FileImpl implements CsmFile,
         ParseDescriptor params = new ParseDescriptor(this, tsp, null, false, false);
         params.prepare(handlers.iterator().next(), getFileLanguage(), getFileLanguageFlavor());
         synchronized (stateLock) {
-            CsmParserResult parsing = _parse(params);
-            Object ast = parsing.getAST();
-            if (ast instanceof AST) {
-                return (AST) ast;
+            try {
+                parsingFileContentRef.get().set(params.getFileContent());
+                CsmParserResult parsing = _parse(params);
+                Object ast = parsing.getAST();
+                if (ast instanceof AST) {
+                    return (AST) ast;
+                }
+            } finally {
+                parsingFileContentRef.get().set(null);
             }
         }
         return null;
     }
 
     private CsmParserResult _parse(ParseDescriptor parseParams) {
-        parsingFileContentRef.get().set(parseParams.getFileContent());
         PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Tracer.PARSE_FILE_PERFORMANCE_EVENT, getFileObject());
         try {
             performanceEvent.setTimeOut(FileImpl.PARSE_FILE_TIMEOUT);
@@ -1145,7 +1190,6 @@ public final class FileImpl implements CsmFile,
             } else {
                 performanceEvent.log(lines);
             }
-            parsingFileContentRef.get().set(null);
         }
     }
 
@@ -1179,8 +1223,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguage = this.getContextLanguage(ppState);
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
-        TokenStream tokenStream = tsp.getTokenStream(
-                TokenStreamProducer.Parameters.createForTokenStreamCaching(), interrupter);
+        TokenStream tokenStream = tsp.getTokenStreamForCaching(interrupter);
         if (tokenStream == null) {
             return false;
         }
@@ -1287,8 +1330,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
         tsp.setCodePatch(new TokenStreamProducer.CodePatch(startContextOffset, endContextOffset, context));
-        TokenStream tokenStream = tsp.getTokenStream(
-                TokenStreamProducer.Parameters.createForTokenStreamCaching(), interrupter);
+        TokenStream tokenStream = tsp.getTokenStreamForCaching(interrupter);
         if (tokenStream == null) {
             return null;
         }
@@ -1422,13 +1464,6 @@ public final class FileImpl implements CsmFile,
         return null;
     }
 
-    private static void assertParamsReadyForCache(TokenStreamProducer.Parameters params) {
-        boolean ready = params.needTokens != YesNoInterested.NEVER && params.needComments && params.needMacroExpansion != YesNoInterested.NEVER;
-        if (!ready) {
-            CndUtils.assertTrue(false, "Should be ready for cahcing: " + params);
-        }
-    }
-
     private CsmParserResult doParse(ParseDescriptor parseParams) {
 
         if (reportErrors) {
@@ -1466,22 +1501,25 @@ public final class FileImpl implements CsmFile,
             return null;
         }
 
-        final boolean cacheTokens = ! parseParams.triggerParsingActivity;
+        final boolean cacheTokens = !parseParams.triggerParsingActivity;
         TokenStream filteredTokenStream;
         FilePreprocessorConditionState pcState = null;
         
         if (cacheTokens) {
-            TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsingAndTokenStreamCaching(parseParams.triggerParsingActivity);
-            TokenStream ts = parseParams.tsp.getTokenStream(tsParams, interrupter);
+            TokenStream ts = parseParams.tsp.getTokenStreamForParsingAndCaching(interrupter);
+            if (ts == null) { // can happen if the file became invalid
+                return null;
+            }
             List<APTToken> tokenList = APTUtils.toList(ts);
             pcState = parseParams.tsp.release();
-            assertParamsReadyForCache(tsParams);
             APTLanguageFilter languageFilter = APTLanguageSupport.getInstance().getFilter(parseParams.getLanguage(), parseParams.getLanguageFlavor());
             FileTokenStreamCache cache = getTokenStreamCache();            
             filteredTokenStream = cache.cacheTokensAndReturnFiltered(pcState, tokenList, languageFilter);
         } else {
-            TokenStreamProducer.Parameters tsParams = TokenStreamProducer.Parameters.createForParsing(parseParams.triggerParsingActivity, parseParams.getLanguage());
-            filteredTokenStream = parseParams.tsp.getTokenStream(tsParams, interrupter);
+            filteredTokenStream = parseParams.tsp.getTokenStreamForParsing(parseParams.getLanguage(), interrupter);
+            if (filteredTokenStream == null) { // can happen if the file became invalid
+                return null;
+            }
         }
 
         if (filteredTokenStream == null) {
@@ -1828,8 +1866,8 @@ public final class FileImpl implements CsmFile,
         if (disposed) {
             return false;
         }
-        ProjectBase project = _getProject(false);
-        return project != null && project.isValid();
+        // NB: the below strongly relates on the fact that the project stays in memory
+        return !projectDisposed.get();
     }
 
     @Override
@@ -2133,16 +2171,22 @@ public final class FileImpl implements CsmFile,
         parsingState = ParsingState.NOT_BEING_PARSED;
         guardStart = input.readInt();
         guardEnd = input.readInt();
+        ProjectBase project = _getProject(false);
+        this.hash = calculateHashCode(project, fileBuffer.getAbsolutePath());
+        // NB: the below strongly relates on the fact that the project stays in memory
+        this.projectDisposed = (project == null) ? new AtomicBoolean(false) : project.getDisposingFlag();
     }
 
     public
     @Override
     int hashCode() {
-        if (hash == 0) {   // we don't need sync here - at worst, we'll calculate the same value twice
-            String identityHashPath = getProjectImpl(true).getUniqueName() + "*" + getAbsolutePath(); // NOI18N
-            hash = identityHashPath.hashCode();
-        }
         return hash;
+    }
+
+    private static int calculateHashCode(ProjectBase p, CharSequence absPath) {
+        CharSequence projectId = (p == null) ? "" : p.getUniqueName(); // NOI18N
+        String identityHashPath = projectId + "*" + absPath; // NOI18N
+        return identityHashPath.hashCode();
     }
 
     public

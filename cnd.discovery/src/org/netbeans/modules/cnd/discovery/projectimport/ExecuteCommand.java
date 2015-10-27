@@ -85,6 +85,7 @@ public class ExecuteCommand {
 
     private final String runDir;
     private String command;
+    private String cmdLine;
     private final Project project;
     private final ExecutionEnvironment execEnv;
     private String name;
@@ -93,6 +94,7 @@ public class ExecuteCommand {
     public ExecuteCommand(Project project, String runDir, String command) {
         this.runDir = runDir;
         this.command = command;
+        this.cmdLine = command;
         this.project = project;
         this.execEnv = getExecutionEnvironment();
 
@@ -206,8 +208,11 @@ public class ExecuteCommand {
                 outConvertorFactory(processChangeListener);
 
         descr.noReset(true);
-        inputOutput.getOut().println("cd '"+buildDir+"'"); //NOI18N
-        inputOutput.getOut().println(command);
+
+        String cdLine = "cd '" + buildDir + "'"; //NOI18N
+
+        inputOutput.getOut().println(cdLine);
+        inputOutput.getOut().println(cmdLine);
 
         return NativeExecutionService.newService(npb, descr, name);
     }
@@ -220,6 +225,7 @@ public class ExecuteCommand {
                 Tool findTool = compilerSet.findTool(tool);
                 if (findTool != null && findTool.getPath() != null && findTool.getPath().length() > 0) {
                     path = findTool.getPath();
+                    cmdLine = cmdLine.replace(macro, path);
                     if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
                         String aPath = WindowsSupport.getInstance().convertToShellPath(path);
                         if (aPath != null && aPath.length() > 0) {

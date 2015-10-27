@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
@@ -55,8 +55,6 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 public class NewClientSideProject extends JPanel {
-
-    private static final long serialVersionUID = 6783546871135477L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final String projectNameTemplate;

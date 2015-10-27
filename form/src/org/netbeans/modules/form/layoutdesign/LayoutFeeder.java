@@ -433,19 +433,17 @@ class LayoutFeeder implements LayoutConstants {
                     inclusion2 = inclusions.get(0);
                     inclusions.clear();
 
-                    if (!dragger.isResizing() && newPos != null) {
-                        if (inclusion1.parent.getParent() == null && inclusion1.parent.getSubIntervalCount() == 0) {
-                            // the first inclusion parent optimized out during the second
-                            // mergeParallelInclusions [probably need a better fix]
-                            inclusion1.parent = inclusion2.parent;
-                            inclusion1.newSubGroup = inclusion2.newSubGroup;
-                            inclusion1.neighbor = inclusion2.neighbor;
-                            inclusion1.index = inclusion2.index;
-                            inclusion2 = null;
-                        } else if (!inclusion1.parent.isParentOf(inclusion2.parent)) {
-                            // secondary inclusion for the other than snapped edge not relevant
-                            inclusion2 = null;
-                        }
+                    if (LayoutInterval.getRoot(inclusion1.parent) != root) {
+                        // the first inclusion parent optimized out during the second mergeParallelInclusions
+                        inclusion1.parent = inclusion2.parent;
+                        inclusion1.newSubGroup = inclusion2.newSubGroup;
+                        inclusion1.neighbor = inclusion2.neighbor;
+                        inclusion1.index = inclusion2.index;
+                        inclusion2 = null;
+                    } else if (!dragger.isResizing() && newPos != null
+                               && !inclusion1.parent.isParentOf(inclusion2.parent)) {
+                        // secondary inclusion for the other than snapped edge not relevant
+                        inclusion2 = null;
                     }
                 }
             }
@@ -1796,7 +1794,9 @@ class LayoutFeeder implements LayoutConstants {
         if (interval != null) {
             LayoutInterval root = LayoutInterval.getRoot(interval);
             if (root != expectedRoot) {
+                LOGGER.log(Level.WARNING, "Found interval misplaced from its expected root");
                 LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, interval, dim, 2));
+                LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, root, dim, 2));
                 LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, expectedRoot, dim, 2));
                 if (originalParent != null) {
                     LOGGER.log(Level.WARNING, LayoutPersistenceManager.dumpInterval(null, originalParent, dim, 2));
@@ -3716,9 +3716,9 @@ class LayoutFeeder implements LayoutConstants {
                             LayoutInterval last = layoutModel.removeInterval(group, 0);
                             int index = layoutModel.removeInterval(group);
                             operations.addContent(last, parent, index, dimension);
-                            updateInclusionsForEliminatedGroup(inclusions, group, parent, index);
+                            updateInclusionsForEliminatedGroup(inclusions, group, parent, last, index);
                             if (last.getParent() == null) { // dissolved into parent
-                                updateInclusionsForEliminatedGroup(inclusions, last, parent, index);
+                                updateInclusionsForEliminatedGroup(inclusions, last, parent, null, index);
                                 if (commonGroup == last) {
                                     commonGroup = parent; // parent is parallel in this case
                                 }
@@ -3947,6 +3947,7 @@ class LayoutFeeder implements LayoutConstants {
             // the common group got empty - eliminate it to avoid unncessary nesting
             LayoutInterval parent = commonGroup.getParent();
             index = layoutModel.removeInterval(commonGroup);
+            updateInclusionsForEliminatedGroup_ParallelSnap(inclusions, commonGroup, parent, null);
             if (parent.isSequential()) {
                 commonSeq = parent;
                 commonGroup = parent.getParent();
@@ -4126,22 +4127,23 @@ class LayoutFeeder implements LayoutConstants {
     }
 
     private void updateInclusionsForEliminatedGroup(List<IncludeDesc> inclusions,
-            LayoutInterval replacedGroup, LayoutInterval newGroup, int index) {
+            LayoutInterval replacedGroup, LayoutInterval newGroup, LayoutInterval groupContent, int index) {
         for (IncludeDesc iDesc : inclusions) {
-            updateReplacedGroup(iDesc, replacedGroup, newGroup, index);
+            updateReplacedGroup(iDesc, replacedGroup, newGroup, groupContent, index);
         }
         if (originalPosition != null) {
             if (originalInclusion1 != null) {
-                updateReplacedGroup(originalInclusion1, replacedGroup, newGroup, index);
+                updateReplacedGroup(originalInclusion1, replacedGroup, newGroup, groupContent, index);
             }
             if (originalInclusion2 != null) {
-                updateReplacedGroup(originalInclusion2, replacedGroup, newGroup, index);
+                updateReplacedGroup(originalInclusion2, replacedGroup, newGroup, groupContent, index);
             }
         }
+        updateInclusionsForEliminatedGroup_ParallelSnap(inclusions, replacedGroup, newGroup, groupContent);
     }
 
     private static void updateReplacedGroup(IncludeDesc iDesc,
-            LayoutInterval replacedGroup, LayoutInterval newGroup, int index) {
+            LayoutInterval replacedGroup, LayoutInterval newGroup, LayoutInterval groupContent, int index) {
         if (iDesc.parent == replacedGroup) {
             if (newGroup.isSequential()) {
                 if (replacedGroup.isParallel()) {
@@ -4151,6 +4153,31 @@ class LayoutFeeder implements LayoutConstants {
                 }
             }
             iDesc.parent = newGroup;
+        }
+    }
+
+    private void updateInclusionsForEliminatedGroup_ParallelSnap(List<IncludeDesc> inclusions,
+            LayoutInterval replacedGroup, LayoutInterval newGroup, LayoutInterval groupContent) {
+        for (IncludeDesc iDesc : inclusions) {
+            updateReplacedGroup_ParallelSnap(iDesc, replacedGroup, newGroup, groupContent);
+        }
+        if (originalPosition != null) {
+            if (originalInclusion1 != null) {
+                updateReplacedGroup_ParallelSnap(originalInclusion1, replacedGroup, newGroup, groupContent);
+            }
+            if (originalInclusion2 != null) {
+                updateReplacedGroup_ParallelSnap(originalInclusion2, replacedGroup, newGroup, groupContent);
+            }
+        }
+    }
+    private void updateReplacedGroup_ParallelSnap(IncludeDesc iDesc,
+            LayoutInterval replacedGroup, LayoutInterval newGroup, LayoutInterval groupContent) {
+        if (iDesc.snappedParallel == replacedGroup) {
+            if (groupContent != null && (groupContent.isComponent() || groupContent.isParallel())) {
+                iDesc.snappedParallel = groupContent;
+            } else {
+                iDesc.snappedParallel = newGroup != null && newGroup.isParallel() ? newGroup : null;
+            }
         }
     }
 
@@ -4510,7 +4537,7 @@ class LayoutFeeder implements LayoutConstants {
                         if (endIndex == commonGroup.getSubIntervalCount()) {
                             endIndex--;
                         }
-                    } else {
+                    } else if (endIndex > 0) {
                         endGap = commonGroup.getSubInterval(--endIndex).isEmptySpace();
                     }
                 }

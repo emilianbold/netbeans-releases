@@ -155,6 +155,7 @@ CLASS      Book                            [PUBLIC]   test203332_01.php
 CLASS      BookTable                       [PUBLIC]   Test_03
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
 CLASS      Book_Abstract                   [PUBLIC,   test203332_01.php
+CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   c
@@ -226,6 +227,7 @@ CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
 CLASS      Fac                             [PUBLIC]   Third
 CLASS      Fac2                            [PUBLIC]   Third
+CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC,   issue233756.php
@@ -255,6 +257,7 @@ CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php
 CLASS      InstanceOfFoo                   [PUBLIC]   issue204958.php
+CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
 CLASS      Inter                           [PUBLIC]   issue208193.php
 CLASS      Interf                          [PUBLIC]   issue208193.php
 CLASS      Interface1                      [PUBLIC]   test204104.php
@@ -319,6 +322,7 @@ CLASS      SomeClass                       [PUBLIC]   issue240522.php
 CLASS      SomeClass                       [PUBLIC]   useCase4.php
 CLASS      Space                           [PUBLIC]   Test\Space
 CLASS      SpaceUniverse                   [PUBLIC]   Test\Space
+CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 CLASS      Strings                         [PUBLIC]   Nette\Utils
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
 CLASS      Super                           [PUBLIC]   declarations.php
@@ -456,12 +460,14 @@ METHOD     bar($x = -5, $y = 3)            [PUBLIC]   issue200178.php
 METHOD     bar()                           [PUBLIC]   issue141999.php
 METHOD     bar()                           [PUBLIC]   issue200178.php
 METHOD     bar(Test &$t)                   [PUBLIC]   issue142024.php
+METHOD     boolTypeHint(bool $arg)         [PUBLIC]   scalarTypeHints.php
 METHOD     callableTypeHint(callable $arg  [PUBLIC]   callableTypeHint.php
 METHOD     cfnc2()                         [PUBLIC]   Second
 METHOD     f1(&$request1)                  [PUBLIC]   issue136092.php
 METHOD     f2(&$request2)                  [PUBLIC]   issue136092.php
 METHOD     fc142091(cls142091 $p)          [PUBLIC]   issue142091.php
 METHOD     fi142091(iface142091 $p)        [PUBLIC]   issue142091.php
+METHOD     floatTypeHint(float $arg)       [PUBLIC]   scalarTypeHints.php
 METHOD     fn1(clsAVarAssignment $aParam)  [PUBLIC]   varAssignment.php
 METHOD     fn2(clsAVarAssignment $cParam)  [PUBLIC]   varAssignment.php
 METHOD     fn3(clsAVarAssignment &$aParam  [PUBLIC]   varAssignment.php
@@ -491,12 +497,14 @@ METHOD     getBook()                       [PUBLIC]   mixedtypes.php
 METHOD     getBook()                       [PUBLIC]   mixedtypes_1.php
 METHOD     getBookMagazine()               [PUBLIC]   mixedtypes.php
 METHOD     getBookMagazine()               [PUBLIC]   mixedtypes_1.php
+METHOD     intTypeHint(int $arg)           [PUBLIC]   scalarTypeHints.php
 METHOD     issue157534(&$var)              [PUBLIC]   issue157534.php
 METHOD     mytest()                        [PUBLIC]   varAssignment.php
 METHOD     paramsfnc($a, $b, $c, $d)       [PUBLIC]   paramdecltypes.php
 METHOD     parseArticles_01($articles)     [PUBLIC]   issue225687.php
 METHOD     parseArticles_02(Article $arti  [PUBLIC]   issue225687.php
 METHOD     printMyName()                   [PUBLIC]   varTypeComment.php
+METHOD     stringTypeHint(string $arg)     [PUBLIC]   scalarTypeHints.php
 METHOD     test()                          [PUBLIC]   issue195232.php
 METHOD     test()                          [PUBLIC]   typeInPHPDoc01.php
 METHOD     test142919(FooType1 $param1, $  [PUBLIC]   issue142919.php

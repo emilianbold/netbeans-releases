@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
@@ -71,95 +72,14 @@ import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.util.Lookup;
 import org.netbeans.modules.cnd.apt.support.spi.CndTextIndexFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public abstract class TokenStreamProducer {
-    
-    public static enum YesNoInterested {
-        ALWAYS,
-        NEVER,
-        INTERESTED
-    }
-    
-    // in fact used only in clank mode
-    public static class Parameters {
-
-        public final YesNoInterested needTokens;
-        public final YesNoInterested needPPDirectives;
-        public final YesNoInterested needSkippedRanges;
-        public final YesNoInterested needMacroExpansion;
-        public final boolean needComments;
-        public final boolean triggerParsingActivity;
-        public final boolean applyLanguageFilter;
-        
-        private Parameters(YesNoInterested needTokens, boolean triggerParsingActivity, 
-                YesNoInterested needPPDirectives, YesNoInterested needMacroExpansion, YesNoInterested needSkippedRanges, 
-                boolean needComments, boolean applyLanguageFilter) {
-            this.triggerParsingActivity = triggerParsingActivity;
-            this.needPPDirectives = needPPDirectives;
-            this.needSkippedRanges = needSkippedRanges;
-            this.needTokens = needTokens;
-            this.needMacroExpansion = needMacroExpansion;
-            this.needComments = needComments;
-            this.applyLanguageFilter = applyLanguageFilter;
-        }
-
-        public static Parameters createForParsing(boolean triggerParsingActivity, String language) {
-            return new Parameters(
-                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED, 
-                    triggerParsingActivity, 
-                    YesNoInterested.ALWAYS, 
-                    APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.NEVER : YesNoInterested.ALWAYS,
-                    YesNoInterested.ALWAYS,
-                    APTLanguageSupport.FORTRAN.equals(language), // no comments needed for just parsing except fortran
-                    true);
-        }
-
-        public static Parameters createForParsingAndTokenStreamCaching(boolean triggerParsingActivity) {
-            return new Parameters(
-                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
-                    triggerParsingActivity, 
-                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
-                    APTTraceFlags.DEFERRED_MACRO_USAGES ? YesNoInterested.INTERESTED : YesNoInterested.ALWAYS,
-                    triggerParsingActivity ? YesNoInterested.ALWAYS : YesNoInterested.INTERESTED,
-                    true, // we need comments for macro views
-                    false); //cache only unfiltered
-        }
-
-        public static Parameters createForTokenStreamCaching() {
-            return new Parameters(
-                    YesNoInterested.INTERESTED, 
-                    false, 
-                    YesNoInterested.NEVER, 
-                    YesNoInterested.INTERESTED, // we need start/end expansion toknes
-                    YesNoInterested.INTERESTED, 
-                    true, // we need comments for macro views
-                    false); //cache only unfiltered
-        }
-
-        public static Parameters createForMacroUsages() {
-            return new Parameters(
-                    YesNoInterested.NEVER,
-                    false,
-                    YesNoInterested.INTERESTED,
-                    YesNoInterested.INTERESTED,
-                    YesNoInterested.NEVER,
-                    false,
-                    false
-            );
-        }
-
-        @Override
-        public String toString() {
-            return "needTokens=" + needTokens + ", needPPDirectives=" + needPPDirectives + //NOI18N
-                    ", needSkippedRanges=" + needSkippedRanges + ", needMacroExpansion=" + needMacroExpansion + //NOI18N
-                    ", needComments=" + needComments + ", triggerParsingActivity=" + triggerParsingActivity + //NOI18N
-                    ", applyLanguageFilter=" + applyLanguageFilter; //NOI18N
-        }
-    }
     
     private PreprocHandler curPreprocHandler;
     private FileImpl startFile;
@@ -193,8 +113,12 @@ public abstract class TokenStreamProducer {
 
     public abstract TokenStream getTokenStreamOfIncludedFile(PreprocHandler.State includeOwnerState, CsmInclude include, Interrupter interrupter);
 
-    public abstract TokenStream getTokenStream(Parameters parameters, Interrupter interrupter);
-    
+    public abstract TokenStream getTokenStreamForParsingAndCaching(Interrupter interrupter);
+
+    public abstract TokenStream getTokenStreamForParsing(String language, Interrupter interrupter);
+
+    public abstract TokenStream getTokenStreamForCaching(Interrupter interrupter);
+
     /** must be called when TS was completely consumed */
     public abstract FilePreprocessorConditionState release();
 
@@ -221,7 +145,7 @@ public abstract class TokenStreamProducer {
         return languageFlavor;
     }
 
-    public FileImpl getMainFile() {
+    public FileImpl getInterestedFile() {
         return fileImpl;
     }    
 
@@ -247,6 +171,10 @@ public abstract class TokenStreamProducer {
     
     protected CodePatch getCodePatch() {
         return codePatch;
+    }
+
+    protected void resetHandler(PreprocHandler ppHandler) {
+        this.curPreprocHandler = ppHandler;
     }
 
     public void setCodePatch(CodePatch codePatch) {
@@ -473,4 +401,75 @@ public abstract class TokenStreamProducer {
         }
     }
 
+    public static PPIncludeHandler.IncludeInfo createIncludeInfo(CsmInclude include) {
+        FileImpl includedFile = (FileImpl) include.getIncludeFile();
+        if (includedFile == null) {
+            // error recovery
+            return null;
+        }
+        FileSystem fileSystem = includedFile.getFileSystem();
+        if (fileSystem == null) {
+            // error recovery
+            return null;
+        }
+        CharSequence includedAbsPath = includedFile.getAbsolutePath();
+        int includeDirFileIndex = FileInfoQueryImpl.getIncludeDirectiveIndex(include);
+        if (includeDirFileIndex < 0) {
+            // error recovery
+            return null;
+        }
+        return new IncludeInfoImpl(include, fileSystem, includedAbsPath, includeDirFileIndex);
+    }
+    
+    private static final class IncludeInfoImpl implements PPIncludeHandler.IncludeInfo {
+
+        private final int line;
+        private final CsmInclude include;
+        private final FileSystem fs;
+        private final CharSequence path;
+        private final int includedDirectiveIndex;
+
+        private IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path, int includedDirectiveIndex) {
+            this.line = include.getStartPosition().getLine();
+            this.include = include;
+            this.fs = fs;
+            this.path = path;
+            this.includedDirectiveIndex = includedDirectiveIndex;
+        }
+
+        @Override
+        public CharSequence getIncludedPath() {
+            return path;
+        }
+
+        @Override
+        public FileSystem getFileSystem() {
+            return fs;
+        }
+
+        @Override
+        public int getIncludeDirectiveLine() {
+            return line;
+        }
+
+        @Override
+        public int getIncludeDirectiveOffset() {
+            return include.getStartOffset();
+        }
+
+        @Override
+        public int getResolvedDirectoryIndex() {
+            return 0;
+        }
+
+        @Override
+        public String toString() {
+            return "restore " + include + " #" + includedDirectiveIndex + " from line " + line + " in file " + include.getContainingFile(); // NOI18N
+        }
+
+        @Override
+        public int getIncludeDirectiveIndex() {
+            return includedDirectiveIndex;
+        }
+    }    
 }

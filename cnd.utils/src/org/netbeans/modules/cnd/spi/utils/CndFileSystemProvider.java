@@ -204,14 +204,27 @@ public abstract class CndFileSystemProvider {
         return getDefault().urlToFileSystemImpl(url);
     }
 
+    /**
+     * This method is different from fileObjectToUrl.
+     * On Windows for local file object returns true Windows path.
+     * C:\path\to\file
+     * @param fileObject
+     * @return 
+     */
     public static CharSequence toUrl(FSPath fsPath) {
         return getDefault().toUrlImpl(fsPath);
     }
-    
     public static CharSequence toUrl(FileSystem fileSystem, CharSequence absPath) {
         return getDefault().toUrlImpl(fileSystem, absPath);
     }
 
+    /**
+     * This method is different from toUrl.
+     * On Windows for local file object returns Unix-like path, but with drive letter,
+     * C:/path/to/file
+     * @param fileObject
+     * @return 
+     */
     public static CharSequence fileObjectToUrl(FileObject fileObject) {
         CharSequence result = getDefault().fileObjectToUrlImpl(fileObject);
         CndUtils.assertNotNull(result, "Null URL for file object ", fileObject); //NOI18N

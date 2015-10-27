@@ -129,6 +129,7 @@ final class RunTCK extends AbstractWizard {
     
     public final class TCK {
         final RequestProcessor rp = new RequestProcessor("Validating");
+        private volatile RequestProcessor.Task lastTask;
         
         TCK() {
         }
@@ -152,9 +153,12 @@ final class RunTCK extends AbstractWizard {
                             RunTCK.this.nextPanel();
                         } catch (WizardValidationException ex) {
                             Exceptions.printStackTrace(ex);
+                        } finally {
+                            lastTask = null;
                         }
                     }
                 });
+                lastTask = task;
             } else {
                 if (RunTCK.this.isValid()) {
                     RunTCK.this.nextPanel();
@@ -177,6 +181,11 @@ final class RunTCK extends AbstractWizard {
         
         public void invokeNow() {
             RunTCK.this.invokeFn(later.toArray());
+            RequestProcessor.Task taskToWaitFor;
+            taskToWaitFor = lastTask;
+            if (taskToWaitFor != null) {
+                taskToWaitFor.waitFinished();
+            }
         }
     }
 }

@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -65,7 +66,6 @@ import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
-import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -137,20 +137,14 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     
     private void process() throws Exception {
         NSObject object = readData();
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "\nReceived: {0}",                 //NOI18N
+                    nsObjectToString(object));
+        }
         if (object == null) {
             return;
         }
 
-        if ((object instanceof NSDictionary)) {
-            NSString selector = (NSString) ((NSDictionary) object).objectForKey("__selector"); // NOI18N
-            if (selector!=null && selector.toString().equals("_rpc_applicationConnected:")) { // NOI18N
-                synchronized(init) {
-                    init.notify();
-                }
-            }
-            
-        }
-        //System.out.println("receiving " + object.toXMLPropertyList());
         JSONObject jmessage = extractResponse(object);
         if (jmessage != null) {
             if (callBack == null) {
@@ -164,7 +158,71 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             }
         }
     }
-    
+
+    /**
+     * Fix application identifier key when it is available. Before knowing the
+     * application listing, incorrect identifier key is used (set in
+     * WebKitDebuggingSupport#startDebugging(...). When the listing for our
+     * application (or web browser with our page) is received, we should fix it
+     * and use WIRApplicationIdentifierKey in form PID:XXXX.
+     *
+     * See bug #247400.
+     *
+     * @param object
+     */
+    private void fixApplicationIdentifierKey(NSObject object) {
+        String appId = stringInNSObject(object,
+                "__argument", "WIRApplicationIdentifierKey");           //NOI18N
+        setBundleIdentifier(appId);
+    }
+
+    /**
+     * Convert complex (nested dictionaries) NS object to string. Used mainly
+     * for debugging.
+     *
+     * @param o
+     * @return
+     */
+    String nsObjectToString(NSObject o) {
+        return nsObjectToString(o, 0);
+    }
+
+    private String nsObjectToString(NSObject o, int lvl) {
+        String basicIndent = "    ";                                    //NOI18N
+        String levelIndent = "";                                        //NOI18N
+        for (int i = 0; i < lvl; i++) {
+            levelIndent += basicIndent;
+        }
+        if (o instanceof NSDictionary) {
+            String[] allKeys = ((NSDictionary) o).allKeys();
+            StringBuilder sb = new StringBuilder(lvl == 0 ? "\n" : ""); //NOI18N
+            sb.append("{\n");                                           //NOI18N
+            for (String key: allKeys) {
+                NSObject objectForKey = ((NSDictionary) o).objectForKey(key);
+                sb.append(levelIndent);
+                sb.append(basicIndent);
+                sb.append("\"");                                        //NOI18N
+                sb.append(key);
+                sb.append("\": ");                                      //NOI18N
+                sb.append(nsObjectToString(objectForKey, lvl + 1));
+                sb.append("\n");                                        //NOI18N
+            }
+            sb.append(levelIndent);
+            sb.append("}\n");                                           //NOI18N
+            return sb.toString();
+        } else if (o instanceof NSString) {
+            return "\"" + ((NSString) o).toString() + "\"";             //NOI18N
+        } else if (o instanceof NSData) {
+            NSData data = (NSData) o;
+            String asStr = new String(data.bytes(), Charset.forName("UTF-8"));
+            return "Data: " + asStr;
+        } else if (o != null) {
+            return o.toString();
+        } else {
+            return "null";                                              //NOI18N
+        }
+    }
+
     protected abstract NSObject readData() throws Exception;
     
     private String getCommand(String name, boolean replace) {
@@ -198,39 +256,33 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     }
     
     private void checkClose(NSObject r) throws Exception {
-        if (r == null) {
-            return;
-        }
         if (!(r instanceof NSDictionary)) {
             return;
         }
-        NSDictionary root = (NSDictionary) r;
-        NSString selector = (NSString) root.objectForKey("__selector"); // NOI18N
-        if (selector != null) {
-            if ("_rpc_reportConnectedApplicationList:".equals(selector.toString())) { // NOI18N
-                NSDictionary argument = (NSDictionary) root.objectForKey("__argument"); // NOI18N
-                if (argument == null) {
-                    return;
-                }
-                NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationDictionaryKey"); // NOI18N
-                if (applications.count() == 0) {
+        String selector = stringInNSObject(r, "__selector");            //NOI18N
+        if (selector == null) {
+            return;
+        }
+        switch (selector) {
+            case "_rpc_reportConnectedApplicationList:":                //NOI18N
+                NSDictionary applications = dictInNSObject(r,
+                        "__argument", //NOI18N
+                        "WIRApplicationDictionaryKey");                 //NOI18N
+                if (applications != null && applications.count() == 0) {
                     WebKitDebuggingSupport.getDefault().stopDebugging(false);
                 }
-
-            } else if ("rpc_applicationDisconnected:".equals(selector.toString())) { // NOI18N
-                NSDictionary argument = (NSDictionary) root.objectForKey("__argument"); // NOI18N
-                if (argument == null) {
-                    return;
-                }
-                NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationIdentifierKey"); // NOI18N
-                if (applications.objectForKey("WIRApplicationIdentifierKey").toString().equals("com.apple.mobilesafari")) { // NOI18N
+                break;
+            case "_rpc_applicationDisconnected:":                       //NOI18N
+                String appId = stringInNSObject(r,
+                        "__argument", //NOI18N
+                        "WIRApplicationIdentifierKey");                 //NOI18N
+                if (appId != null
+                        && appId.equals(getBundleIdentifier())) {
                     WebKitDebuggingSupport.getDefault().stopDebugging(false);
                 }
-            }
+                break;
         }
     }
-    
-    
 
     private JSONObject extractResponse(NSObject r) throws Exception {
         if (r == null) {
@@ -284,6 +336,24 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     public final void sendCommandImpl(Command command) {
         try {
             sendCommand(command.getCommand());
+            JSONObject o = command.getCommand();
+            if (o != null) {
+                Object methodO = o.get("method");                       //NOI18N
+                if (methodO instanceof String) {
+                    String method = (String) methodO;
+                    // iOS sends no reposonse for some of the methods. Calling
+                    // callbacks directly here as workaround.
+                    if (callBack != null && (method.endsWith(".enable") //NOI18N
+                            || method.endsWith(".disable")              //NOI18N
+                            || method.endsWith(".navigate"))) {         //NOI18N
+                        JSONObject resp = new JSONObject();
+                        JSONObject empty = new JSONObject();
+                        resp.put("id", command.getID());
+                        resp.put("result", empty);                      //NOI18N
+                        callBack.handleResponse(new Response(resp));
+                    }
+                }
+            }
         } catch (Exception ex) {
             boolean s = keepGoing;
             stop();
@@ -295,11 +365,8 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
 
     protected void sendInitCommands() throws Exception {
         sendCommand(getCommand("setConnectionKey", false)); // NOI18N
-        if (getConnectionURL() == null && "iOS Simulator".equals(getConnectionName())) { // NOI18N
-            //phonegap
-            synchronized (init) {
-                init.wait();
-            }
+        synchronized (init) {
+            init.wait();
         }
         sendCommand(getCommand("connectToApp", false)); // NOI18N
         sendCommand(getCommand("setSenderKey", true)); // NOI18N
@@ -317,43 +384,55 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         private boolean inited = false;
 
         public boolean update(NSObject r) throws Exception {
-            if (r ==  null) {
-                return false;
-            }
             if (!(r instanceof NSDictionary)) {
                 return false;
             }
-            NSDictionary root = (NSDictionary) r;
-            NSDictionary argument = (NSDictionary) root.objectForKey("__argument"); // NOI18N
-            if (argument == null) {
-                return false;
-            }
-            NSDictionary listing = (NSDictionary) argument.objectForKey("WIRListingKey"); // NOI18N
+            NSDictionary listing = dictInNSObject(r,
+                    "__argument", "WIRListingKey");                     //NOI18N
             if (listing == null) {
                 return false;
             }
-            map.clear();
+            boolean wasEmpty = map.isEmpty();
+            boolean connectionUrlFound = false;
+            HashMap<String, TabDescriptor> currentMap = new HashMap();
             for (String s : listing.allKeys()) {
                 NSDictionary o = (NSDictionary) listing.objectForKey(s);
                 NSObject identifier = o.objectForKey("WIRPageIdentifierKey"); // NOI18N
                 NSObject url = o.objectForKey("WIRURLKey"); // NOI18N
+                if (url == null) {
+                    continue;
+                }
                 NSObject title = o.objectForKey("WIRTitleKey"); // NOI18N
                 if (getConnectionURL()==null) {
                     //auto setup for phonegap. There is always on tab
                     setBaseUrl(url.toString());
                 }
-                map.put(s, new TabDescriptor(url.toString(), title.toString(), identifier.toString()));
+                currentMap.put(s, new TabDescriptor(url.toString(), title.toString(), identifier.toString()));
+                if (checkUrlMatchesConnectionUrl(url.toString())) {
+                    connectionUrlFound = true;
+                    fixApplicationIdentifierKey(r);
+                }
             }
-            synchronized (monitor) {
-                inited = true;
-                monitor.notifyAll();
+            if (!connectionUrlFound) {
+                return false;
             }
-            
-            if (getTabForUrl() == null) {
-                WebKitDebuggingSupport.getDefault().stopDebugging(false);
+            map.clear();
+            map.putAll(currentMap);
+            if (map.isEmpty()) {
+                return !wasEmpty; // was not empty and now is empty -> updated
+            } else {
+                synchronized (init) {
+                    init.notifyAll();
+                }
+                synchronized (monitor) {
+                    inited = true;
+                    monitor.notifyAll();
+                }
+                if (getTabForUrl() == null) {
+                    WebKitDebuggingSupport.getDefault().stopDebugging(false);
+                }
+                return true;
             }
-                   
-            return true;
         }
 
         public TabDescriptor get(String key) {
@@ -374,7 +453,20 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         }
 
         private String lastTab = null;
-        
+
+        private boolean checkUrlMatchesConnectionUrl(String url) {
+
+            String normUrl = url;
+            int hash = normUrl.indexOf("#"); // NOI18N
+            if (hash != -1) {
+                normUrl = normUrl.substring(0, hash);
+            }
+            if (normUrl.endsWith("/")) { // NOI18N
+                normUrl = normUrl.substring(0, normUrl.length() - 1);
+            }
+            return getConnectionURL().toString().equals(normUrl.replaceAll("file:///", "file:/"));
+        }
+
         private String getTabForUrl() {
             for (Map.Entry<String, TabDescriptor> entry : map.entrySet()) {
                 String urlFromBrowser = entry.getValue().getUrl();
@@ -382,15 +474,8 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                     //phonegap
                     return lastTab="1"; // NOI18N
                 }
-                int hash = urlFromBrowser.indexOf("#"); // NOI18N
-                if (hash != -1) {
-                    urlFromBrowser = urlFromBrowser.substring(0, hash); 
-                }
-                if (urlFromBrowser.endsWith("/")) { // NOI18N
-                    urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length()-1); 
-                }
-                if (getConnectionURL().toString().equals(urlFromBrowser.replaceAll("file:///", "file:/"))) {
-                    return lastTab=entry.getKey();
+                if (checkUrlMatchesConnectionUrl(urlFromBrowser)) {
+                    return lastTab = entry.getKey();
                 }
             }
             for (Map.Entry<String, TabDescriptor> entry : map.entrySet()) {
@@ -431,5 +516,72 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             }
         }
     }
+
+    /**
+     * Helper method for accessing keys deeper in NSObject hierarchy.
+     *
+     * @param obj Root object.
+     * @param path Path to contained object.
+     *
+     * @return Object found under specified key {@code path}, or null some of
+     * its path elements is not available.
+     */
+    static NSObject findInNSObject(NSObject obj, String... path) {
+        return findInNSObject(0, obj, path);
+    }
+
+    private static NSObject findInNSObject(int pos, NSObject obj, String... path) {
+        if (obj == null) {
+            throw new NullPointerException("obj is null");
+        } else if (path == null) {
+            throw new NullPointerException("path is null");
+        } else if (path.length == pos) {
+            return obj;
+        } else if (obj instanceof NSDictionary) {
+            NSDictionary dict = (NSDictionary) obj;
+            NSObject next = dict.objectForKey(path[pos]);
+            if (next == null) {
+                return null;
+            } else {
+                return findInNSObject(pos + 1, next, path);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get string contained in NSObject hierarchy.
+     *
+     * @param obj Root object.
+     * @param path Path to string value.
+     *
+     * @return String value, or null if not fount or if data type is not string.
+     */
+    static String stringInNSObject(NSObject obj, String... path) {
+        NSObject res = findInNSObject(obj, path);
+        if (res instanceof NSString) {
+            return ((NSString) res).toString();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get dictionary contained in NSObject hierarchy.
+     *
+     * @param obj Root object.
+     * @param path Path to the dictionary.
+     *
+     * @return The dictionary, or null if not found or if data type is not
+     * dictionary.
+     */
+    static NSDictionary dictInNSObject(NSObject obj, String... path) {
+        NSObject res = findInNSObject(obj, path);
+        if (res instanceof NSDictionary) {
+            return (NSDictionary) res;
+        } else {
+            return null;
+        }
+    }
 }
-         

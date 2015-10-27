@@ -2674,8 +2674,10 @@ public class Installer extends ModuleInstall implements Runnable {
 
                     @Override
                     public void run() {
-                        d.setModal(false);
-                        d.setVisible(true);
+                        if (d != null) {
+                            d.setModal(false);
+                            d.setVisible(true);
+                        }
                     }
                 });
             } catch (InterruptedException | InvocationTargetException ex) {

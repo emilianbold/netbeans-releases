@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -975,6 +976,9 @@ public class TokenFormatter {
                                     case WHITESPACE_AROUND_TERNARY_OP:
                                         countSpaces = docOptions.spaceAroundTernaryOps ? 1 : 0;
                                         break;
+                                    case WHITESPACE_WITHIN_SHORT_TERNARY_OP:
+                                        countSpaces = 0;
+                                        break;
                                     case WHITESPACE_BEFORE_ASSIGN_OP:
                                         indentRule = true;
                                         countSpaces = 0;
@@ -1354,7 +1358,7 @@ public class TokenFormatter {
                                         if (oldText == null) {
                                             try {
                                                 int phpOpenTagOffset = formatToken.getOffset() + delta;
-                                                int lineNumber = Utilities.getLineOffset(doc, phpOpenTagOffset);
+                                                int lineNumber = LineDocumentUtils.getLineIndex(doc, phpOpenTagOffset);
                                                 Integer suggestedIndent = suggestedLineIndents != null
                                                         ? suggestedLineIndents.get(lineNumber)
                                                         : Integer.valueOf(0);
@@ -1366,8 +1370,8 @@ public class TokenFormatter {
                                                             : Integer.valueOf(0);
                                                 }
 
-                                                int lineOffset = Utilities.getRowStart(doc, phpOpenTagOffset);
-                                                int firstNonWhiteCharacterOffset = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
+                                                int lineOffset = LineDocumentUtils.getLineStart(doc, phpOpenTagOffset);
+                                                int firstNonWhiteCharacterOffset = LineDocumentUtils.getNextNonWhitespace(doc, lineOffset);
                                                 if (firstNonWhiteCharacterOffset == phpOpenTagOffset) {
                                                     indentRule = true;
                                                     changeOffset = lineOffset - delta;
@@ -1431,7 +1435,7 @@ public class TokenFormatter {
                                             if (suggestedLineIndents != null) {
                                                 try {
                                                     int offset = formatToken.getOffset() + delta;
-                                                    int lineNumber = Utilities.getLineOffset(doc, offset) + 1;
+                                                    int lineNumber = LineDocumentUtils.getLineIndex(doc, offset) + 1;
                                                     Integer suggestedIndent = suggestedLineIndents.get(lineNumber);
                                                     if (suggestedIndent != null) {
                                                         htmlIndent = suggestedIndent.intValue();
@@ -1452,7 +1456,7 @@ public class TokenFormatter {
                                                 helpIndex++;
                                             }
                                             if (helpIndex < formatTokens.size() && formatTokens.get(helpIndex).getId() == FormatToken.Kind.INDENT) {
-                                                countSpaces = countSpaces + ((FormatToken.IndentToken) formatTokens.get(helpIndex)).getDelta();
+                                                countSpaces += ((FormatToken.IndentToken) formatTokens.get(helpIndex)).getDelta();
                                             }
                                         } else {
                                             newLines = 0;
@@ -1473,11 +1477,11 @@ public class TokenFormatter {
                                         if (suggestedLineIndents != null) {
                                             try {
                                                 int offset = formatToken.getOffset() + delta;
-                                                int lineNumber = Utilities.getLineOffset(doc, offset);
+                                                int lineNumber = LineDocumentUtils.getLineIndex(doc, offset);
                                                 Integer suggestedIndent = suggestedLineIndents.get(lineNumber);
                                                 if (suggestedIndent != null) {
-                                                    int lineOffset = Utilities.getRowStart(doc, offset);
-                                                    int firstNW = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
+                                                    int lineOffset = LineDocumentUtils.getLineStart(doc, offset);
+                                                    int firstNW = LineDocumentUtils.getNextNonWhitespace(doc, lineOffset);
                                                     if (firstNW == offset) {
                                                         countSpaces = lastPHPIndent == 0 ? htmlIndent : lastPHPIndent + htmlIndent + docOptions.initialIndent;
                                                         newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
@@ -1716,7 +1720,7 @@ public class TokenFormatter {
                                         int lineOffset = formatToken.getOffset() + delta;
                                         try {
                                             // the first line of the html block
-                                            int firstLine = Utilities.getLineOffset(doc, lineOffset);
+                                            int firstLine = LineDocumentUtils.getLineIndex(doc, lineOffset);
 
                                             boolean countInitialIndent = docOptions.initialIndent > 0 && lastPHPIndent > 0;
 
@@ -1724,8 +1728,8 @@ public class TokenFormatter {
                                             for (StringTokenizer st = new StringTokenizer(oldText, "\n", true); st.hasMoreTokens();) { //NOI18N
                                                 String token = st.nextToken();
                                                 int currentOffset = formatToken.getOffset() + delta + indexInST;
-                                                indexInST = indexInST + token.length();
-                                                int currentLine = Utilities.getLineOffset(doc, currentOffset);
+                                                indexInST += token.length();
+                                                int currentLine = LineDocumentUtils.getLineIndex(doc, currentOffset);
                                                 if (firstLine < currentLine && !token.equals("\n")) {  //NOI18N
                                                     int lineIndent = doc.getLength() + 1 >= currentOffset + 1 ? Utilities.getRowIndent(doc, currentOffset + 1) : 0;
                                                     int finalIndent = lastPHPIndent + lineIndent + (countInitialIndent ? docOptions.initialIndent : 0); // - lineHTMLIndent;

@@ -182,7 +182,11 @@ public class JPDASupport implements DebuggerManagerListener {
     
     public static JPDASupport attach (String mainClass, String[] args) throws IOException, 
     DebuggerStartException {
-        Process process = launchVM (mainClass, args, "", true);
+        return attach(mainClass, args, new File[0]);
+    }
+    public static JPDASupport attach (String mainClass, String[] args, File[] classPath) throws IOException,
+    DebuggerStartException {
+        Process process = launchVM (mainClass, args, classPath, "", true);
         String line = readLine (process.getInputStream ());
         int port = Integer.parseInt (line.substring (line.lastIndexOf (':') + 1).trim ());
         ProcessIO pio = new ProcessIO (process);
@@ -302,12 +306,18 @@ public class JPDASupport implements DebuggerManagerListener {
         return jpdaDebugger;
     }
     
+    /**
+     * Remove all non-hidden breakpoints.
+     */
     public static void removeAllBreakpoints () {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
             getBreakpoints ();
         int i, k = bs.length;
-        for (i = 0; i < k; i++)
-            DebuggerManager.getDebuggerManager ().removeBreakpoint (bs [i]);
+        for (i = 0; i < k; i++) {
+            if (!(bs[i] instanceof JPDABreakpoint && ((JPDABreakpoint) bs[i]).isHidden())) {
+                DebuggerManager.getDebuggerManager ().removeBreakpoint (bs [i]);
+            }
+        }
     }
     
     
@@ -350,11 +360,12 @@ public class JPDASupport implements DebuggerManagerListener {
     private static Process launchVM (
         String mainClass,
         String[] args,
+        File[] extraCP,
         String connectorAddress, 
         boolean server
     ) throws IOException {
 
-        String cp = getClassPath();
+        String cp = getClassPath(extraCP);
         //System.err.println("CP = "+cp);
 
         String [] cmdArray = new String [] {
@@ -379,7 +390,7 @@ public class JPDASupport implements DebuggerManagerListener {
         return Runtime.getRuntime ().exec (cmdArray);
     }
     
-    private static String getClassPath() {
+    private static String getClassPath(File[] extraCP) {
         StringBuilder cp = new StringBuilder (200);
         ClassLoader cl = JPDASupport.class.getClassLoader ();
         if (cl instanceof URLClassLoader) {
@@ -409,6 +420,10 @@ public class JPDASupport implements DebuggerManagerListener {
             }
         } else {
             throw new RuntimeException("Unsupported class loader: "+cl);
+        }
+        for (File f : extraCP) {
+            cp.append(f.getPath());
+            cp.append(File.pathSeparatorChar);
         }
         
         return cp.toString();

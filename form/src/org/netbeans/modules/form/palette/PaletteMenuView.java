@@ -115,7 +115,9 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
         }
 
         JPopupMenu popup = super.getPopupMenu();
-        fillSubMenu(popup);
+        if (menuNode != null) { // #248319
+            fillSubMenu(popup);
+        }
         return popup;
     }
 

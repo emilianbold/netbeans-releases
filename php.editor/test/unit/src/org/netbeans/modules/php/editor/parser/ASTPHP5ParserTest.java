@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.parser;
@@ -518,6 +518,22 @@ public class ASTPHP5ParserTest extends ParserTestBase {
 
     public void testUseFuncAndConst_01() throws Exception {
         performTest("parser/useFuncAndConst_01");
+    }
+
+    public void testSpaceship01() throws Exception {
+        performTest("parser/spaceship_01");
+    }
+
+    public void testSpaceship02() throws Exception {
+        performTest("parser/spaceship_02");
+    }
+
+    public void testCoalesce01() throws Exception {
+        performTest("parser/coalesce_01");
+    }
+
+    public void testCoalesce02() throws Exception {
+        performTest("parser/coalesce_02");
     }
 
     @Override

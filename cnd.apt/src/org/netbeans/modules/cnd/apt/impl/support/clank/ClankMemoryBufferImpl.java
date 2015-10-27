@@ -10,37 +10,35 @@ import java.io.InputStream;
 import org.clank.support.NativePointer;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.support.MemoryBuffer;
-import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author vkvashin
  */
-class ClankMemoryBufferImpl extends MemoryBuffer {
-    private final char$ptr fileName;
+final class ClankMemoryBufferImpl extends MemoryBuffer {
+    // for remote paths it is url; for locals it is normalized system absolute path
+    private final char$ptr fileUrl;
 
-    public static ClankMemoryBufferImpl create(FileObject fo) throws IOException {
+    public static ClankMemoryBufferImpl create(FileObject fo, CharSequence foURL) throws IOException {
         InputStream is = null;
         try {
             if (fo.getSize() >= Integer.MAX_VALUE) {
-                throw new IOException("Can't read file: " + fo.getPath() + ". The file is too long: " + fo.getSize()); // NOI18N
+                throw new IOException("Can't read file: " + fo + ". The file is too long: " + fo.getSize()); // NOI18N
             }
             String text = fo.asText();
-            return create(fo.getPath(), text.toCharArray()); // not optimal at all... but will dye quite soon
+            assert foURL.toString().contentEquals(CndFileSystemProvider.toUrl(FSPath.toFSPath(fo))) : foURL + " vs. " + CndFileSystemProvider.toUrl(FSPath.toFSPath(fo));
+            return create(foURL, text.toCharArray()); // not optimal at all... but will dye quite soon
         } finally {
             if (is != null) {
                 is.close();
             }
         }
     }
-
-    public static ClankMemoryBufferImpl create(APTFileBuffer aptBuf) throws IOException {
-        char[] chars = aptBuf.getCharBuffer();
-        return create(aptBuf.getAbsolutePath(), chars);
-    }
     
-    public static ClankMemoryBufferImpl create(CharSequence fileName, char[] chars) throws IOException {
+    public static ClankMemoryBufferImpl create(CharSequence url, char[] chars) throws IOException {
         int nullTermIndex = chars.length;
         byte[] array = new byte[nullTermIndex+1];
         for (int i = 0; i < nullTermIndex; i++) {
@@ -55,18 +53,18 @@ class ClankMemoryBufferImpl extends MemoryBuffer {
         array[nullTermIndex] = 0;
         char$ptr start = NativePointer.create_char$ptr(array);
         char$ptr end = start.$add(nullTermIndex);
-        return new ClankMemoryBufferImpl(fileName, start, end, true);
+        return new ClankMemoryBufferImpl(url, start, end, true);
     }    
 
-    private ClankMemoryBufferImpl(CharSequence fileName, char$ptr start, char$ptr end, boolean RequiresNullTerminator) {
+    private ClankMemoryBufferImpl(CharSequence url, char$ptr start, char$ptr end, boolean RequiresNullTerminator) {
         super();
-        this.fileName = NativePointer.create_char$ptr(fileName);
+        this.fileUrl = NativePointer.create_char$ptr(url);
         init(start, end, RequiresNullTerminator);
     }
 
     @Override
     public char$ptr getBufferIdentifier() {
-        return fileName;
+        return fileUrl;
     }
 
     @Override

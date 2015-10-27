@@ -266,9 +266,9 @@ public final class TapParser {
         assert testCase != null;
         String file = fileLine.first();
         Integer row = fileLine.second();
-        assert file != null : row;
+        assert file != null : fileLine;
+        assert row != null : fileLine;
         testCase.setFile(file);
-        assert row != null : row;
         testCase.setLine(row);
     }
 

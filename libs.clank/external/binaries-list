@@ -1,6 +1,6 @@
-#changeset:   15714:60e175d9bfc7
+#changeset:   15883:d69fda690151
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Sep 17 20:42:20 2015 +0300
-#summary:     trying to localize iz #255337 - [newcodemodel] preprocessor states differ on 1
-91F81ED36683E7DA584C97FACA3DA8E21F6EBAE4 clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Thu Oct 22 16:03:23 2015 +0300
+#summary:     extra fix #253863 - [newcodemodel] broken code model in file if file has been excluded from project
+99529DC0E1426A102A98EF5494B6F6AA6E497F62 clank_0.3.6.zip

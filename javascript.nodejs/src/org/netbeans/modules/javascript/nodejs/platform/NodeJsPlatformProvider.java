@@ -57,6 +57,7 @@ import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.Notifications;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
+import org.netbeans.modules.javascript.nodejs.util.GraalVmUtils;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
@@ -140,6 +141,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         nodeJsSupport.addPropertyChangeListener(this);
         nodeJsSupport.projectOpened();
         detectNodeJs(project);
+        GraalVmUtils.detectOptions();
     }
 
     @Override
@@ -196,7 +198,9 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         }
         Object engines = content.get(PackageJson.FIELD_ENGINES);
         if (engines instanceof Map) {
-            if (((Map<String, Object>) engines).containsKey(PackageJson.FIELD_NODE)) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> engines2 = (Map<String, Object>) engines;
+            if (engines2.containsKey(PackageJson.FIELD_NODE)) {
                 Notifications.notifyNodeJsDetected(project);
             }
         }

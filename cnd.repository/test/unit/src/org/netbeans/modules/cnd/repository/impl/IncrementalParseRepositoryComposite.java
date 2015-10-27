@@ -41,13 +41,16 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 import static junit.framework.TestCase.assertNotNull;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -60,6 +63,7 @@ public class IncrementalParseRepositoryComposite extends RepositoryValidationBas
     private static final RequestProcessor RP = new RequestProcessor("Sleep");
     private volatile boolean isShutdown = false;
     private volatile boolean dumpModel = true;
+    private volatile long trueParsingTime = 0;
 
     public IncrementalParseRepositoryComposite(String testName) {
         super(testName);
@@ -74,18 +78,26 @@ public class IncrementalParseRepositoryComposite extends RepositoryValidationBas
         super.setUp();
     }
 
+    @Override
+    protected void parsingTime(TraceModel.TestResult time) {
+        trueParsingTime =time.getTime();
+    }
+
     public void testRepository() throws Exception {
         File workDir = getWorkDir();
         setGoldenDirectory(workDir.getAbsolutePath());
 
-        PrintStream streamOut = new PrintStream(new File(workDir+"/..", nimi + ".out"));
-        PrintStream streamErr = new FilteredPrintStream(new File(workDir+"/..", nimi + ".err"));
+        PrintStream streamOut = new PrintStream(new BufferedOutputStream(new FileOutputStream(new File(workDir+"/..", nimi + ".out"))));
+        PrintStream streamErr = new FilteredPrintStream(new BufferedOutputStream(new FileOutputStream(new File(workDir+"/..", nimi + ".err"))));
 
         List<String> args = find();
         assert args.size() > 0;
         //args.add("-fq"); //NOI18N
+        long currentTimeMillis = System.currentTimeMillis();
         doTest(args.toArray(new String[]{}), streamOut, streamErr);
         assertNoExceptions();
+        System.err.println("IncrementalParseRepositoryComposite: pure parsing took "+trueParsingTime+ " ms.");
+        System.err.println("IncrementalParseRepositoryComposite: first (golden) pass took "+(System.currentTimeMillis()-currentTimeMillis)+ " ms.");
         getTestModelHelper().shutdown(true);
         //
         setUp2();
@@ -95,8 +107,8 @@ public class IncrementalParseRepositoryComposite extends RepositoryValidationBas
             public void run() {
                 try {
                     if (!isShutdown) {
-                        getTestModelHelper().shutdown(false);
                         isShutdown = true;
+                        getTestModelHelper().shutdown(false);
                     }
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
@@ -104,15 +116,26 @@ public class IncrementalParseRepositoryComposite extends RepositoryValidationBas
             }
         }, 500);
         dumpModel = false;
-        final long currentTimeMillis = System.currentTimeMillis();
+        currentTimeMillis = System.currentTimeMillis();
         performTest2(args.toArray(new String[]{}), nimi + ".out", nimi + ".err");
-        System.err.println("End "+(System.currentTimeMillis()-currentTimeMillis));
         assertNoExceptions();
+        System.err.println("IncrementalParseRepositoryComposite: pure parsing took "+trueParsingTime+ " ms.");
+        System.err.println("IncrementalParseRepositoryComposite: second (interrupted) pass took "+(System.currentTimeMillis()-currentTimeMillis)+ " ms.");
+        if (!isShutdown) {
+            isShutdown = true;
+            getTestModelHelper().shutdown(false);
+        }
         //
         dumpModel = true;
         setUp3();
+        currentTimeMillis = System.currentTimeMillis();
+        try {
         performTest(args.toArray(new String[]{}), nimi + ".out", nimi + ".err");
-        assertNoExceptions();
+            assertNoExceptions();
+        } finally {
+            System.err.println("IncrementalParseRepositoryComposite: pure parsing took "+trueParsingTime+ " ms.");
+            System.err.println("IncrementalParseRepositoryComposite: last (finishing interrupted parse) pass took "+(System.currentTimeMillis()-currentTimeMillis)+ " ms.");
+        }
     }
 
     private void setUp2() throws Exception {
@@ -135,9 +158,9 @@ public class IncrementalParseRepositoryComposite extends RepositoryValidationBas
         File workDir = getWorkDir();
 
         File output = new File(workDir, goldenDataFileName);
-        PrintStream streamOut = new PrintStream(output);
+        PrintStream streamOut = new PrintStream(new BufferedOutputStream(new FileOutputStream(output)));
         File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
-        PrintStream streamErr = goldenErrFileName == null ? null : new FilteredPrintStream(error);
+        PrintStream streamErr = goldenErrFileName == null ? null : new FilteredPrintStream(new BufferedOutputStream(new FileOutputStream(error)));
         try {
             doTest(args, streamOut, streamErr, params);
         } finally {

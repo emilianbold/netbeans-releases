@@ -104,30 +104,17 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         initComponents();
         final Archetype arch = panel.getArchetype();
         isApp = NbmWizardIterator.NB_APP_ARCH.equals(arch);
-        if (isApp) {
-            vg.add(txtAddModule, ValidatorUtils.merge(
-                    MavenValidators.createArtifactIdValidators(),
-                    StringValidators.REQUIRE_VALID_FILENAME
-                    ));
-            SwingValidationGroup.setComponentName(txtAddModule, ADD_Module_Name());
-        } else {
+        if(!isApp) {
             cbAddModule.setVisible(false);
-            txtAddModule.setVisible(false);
-        }
-        vgEnabled.add(versionCombo, new Validator<String>() {
-
+            txtAddModule.setVisible(false);            
+        }        
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
-            public void validate(Problems prblms, String name, String value) {
-                if (SEARCHING.equals(value) || !isLoaded) {
-                    prblms.add("Still searching", Severity.FATAL);
-                }
-            }
-
-            @Override
-            public Class modelType() {
-                return String.class;
+            public void run() {
+                initValidators();
             }
         });
+        
         RP.post(new Runnable() {
             public @Override void run() {
                 EventQueue.invokeLater(new Runnable()  {
@@ -229,6 +216,30 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             }
         });
         
+    }
+
+    private void initValidators() {
+        if (isApp) {
+            vg.add(txtAddModule, ValidatorUtils.merge(
+                MavenValidators.createArtifactIdValidators(),
+                StringValidators.REQUIRE_VALID_FILENAME
+            ));
+            SwingValidationGroup.setComponentName(txtAddModule, ADD_Module_Name());
+        }
+        vgEnabled.add(versionCombo, new Validator<String>() {
+            
+            @Override
+            public void validate(Problems prblms, String name, String value) {
+                if (SEARCHING.equals(value) || !isLoaded) {
+                    prblms.add("Still searching", Severity.FATAL);
+                }
+            }
+            
+            @Override
+            public Class modelType() {
+                return String.class;
+            }
+        });
     }
 
     /** This method is called from within the constructor to

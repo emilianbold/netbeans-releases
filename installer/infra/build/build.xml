@@ -321,7 +321,7 @@
             prefix="sjsas"/>
 	-->
 
-	<set property="tomcat.version"      value="8.0.26"/>
+	<set property="tomcat.version"      value="8.0.27"/>
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
         
         <set property="weblogic.version"      value="12.1.2"/>
@@ -330,7 +330,7 @@
         <set property="glassfish.ml.appendix" value="-ml"/>
 	
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/4.1/promoted/latest/archive/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/4.1.1/promoted/latest/archive/bundles/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
@@ -1377,7 +1377,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-cnd"  version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="${nestedjre.version}"/>
+            <component uid="jre-nested"  version="${nb.full.version}"/>
             <bundleProperty name="${welcome.type}" value="cnd"/>
             <property name="nbi.bundled.jvm.file" value="${nestedjre.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>
@@ -1404,7 +1404,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-extide"  version="${nb.full.version}"/>
             <component uid="nb-webcommon" version="${nb.full.version}"/>
             <component uid="nb-php"       version="${nb.full.version}"/>
-            <component uid="jre-nested"  version="${nestedjre.version}"/>
+            <component uid="jre-nested"  version="${nb.full.version}"/>
             <bundleProperty name="${welcome.type}" value="php"/>
             <property name="nbi.bundled.jvm.file" value="${nestedjre.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
         </create-bundle>
@@ -1842,8 +1842,7 @@ jarsigner.storepass=${jarsigner.storepass}
     
     <target name="init-nested-jres">        
         <set property="nestedjre.cache.dir" value="${nbi.cache.dir}/nestedjre"/>
-	<mkdir dir="${nestedjre.cache.dir}"/>
-        <set property="nestedjre.version" value="1.${jre-nested.version.number}.0.${jre-nested.update.number}.0"/>
+	    <mkdir dir="${nestedjre.cache.dir}"/>        
     </target>
 
     <target name="get-nested-jres">
@@ -1918,7 +1917,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="linux"/>
-                <param name="bundle.platform.filename"  value="linux-x86"/>
+                <param name="bundle.platform.filename"  value="linux-i586"/>
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="linux-i586.bin"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>

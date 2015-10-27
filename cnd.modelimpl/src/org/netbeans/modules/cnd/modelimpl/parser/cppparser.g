@@ -4379,7 +4379,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
 
             |   ts=builtin_type[0] (options {greedy=true;}: balanceSquaresInExpression)* (balanceCurlies)?
 
-            |   lazy_type_decltype[templateLevel] {ts = tsTYPEID;}
+            |   lazy_type_decltype[templateLevel] {ts = tsTYPEID;} (balanceCurlies)?
 
             |   LITERAL_struct
             |   LITERAL_union

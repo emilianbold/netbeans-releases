@@ -282,6 +282,7 @@ public final class IOWindow implements IOContainer.Provider {
                 toolbar.setBackground(UIManager.getColor("NbExplorerView.background"));
                 pane.setBackground(UIManager.getColor("NbExplorerView.background"));
                 pane.setOpaque(true);
+                setMinimumSize(new Dimension()); // #254566
             }
         }
 

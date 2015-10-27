@@ -61,8 +61,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
@@ -115,7 +118,7 @@ class PreferredCCParser {
     }
     
     private CompilationController getPreferredCompilationController(FileObject fo, JavaSource js) throws IOException {
-        CompilationController preferredCI;
+        final CompilationController preferredCI;
         if (fo != null) {
             if (JavaSource.forFileObject(fo) == null) {
                 // No JavaSource, we can not ask for a compilation controller
@@ -136,7 +139,13 @@ class PreferredCCParser {
                 }
             }
             preferredCI = (CompilationController) handle.getCompilationController();
-            toPhaseSync(preferredCI, JavaSource.Phase.PARSED, LOG);
+            runGuarded(preferredCI, new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    toPhase (preferredCI, JavaSource.Phase.PARSED, LOG);
+                    return null;
+                }
+            });
         } else {
             preferredCI = null;
         }
@@ -185,17 +194,20 @@ class PreferredCCParser {
             }
         } else {
             try {
-                CompilationController ci = getPreferredCompilationController(file, js);
-                if (ci == null || !toPhaseSync(ci, JavaSource.Phase.RESOLVED, LOG)) {
-                    return new EditorContext.Operation[] {};
-                }
-                LineMap lineMap = ci.getCompilationUnit().getLineMap();
-                final int offset = findLineOffset(lineMap, ci.getSnapshot().getText(), (int) lineNumber);
-                synchronized (ci) {
-                    result[0] = EditorContextSupport.computeOperations(
-                                    ci, offset, lineNumber, bytecodeProvider,
-                                    opCreationDelegate);
-                }
+                final CompilationController ci = getPreferredCompilationController(file, js);
+                result[0] = runGuarded(ci, new Callable<EditorContext.Operation[]>() {
+                    @Override
+                    public EditorContext.Operation[] call() throws Exception {
+                        if (ci == null || !toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
+                            return new EditorContext.Operation[] {};
+                        }
+                        LineMap lineMap = ci.getCompilationUnit().getLineMap();
+                        final int offset = findLineOffset(lineMap, ci.getSnapshot().getText(), (int) lineNumber);
+                        return EditorContextSupport.computeOperations(
+                                            ci, offset, lineNumber, bytecodeProvider,
+                                            opCreationDelegate);
+                    }
+                });
                 //t4 = System.nanoTime();
                 //System.err.println("PARSE TIMES 2: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
             } catch (IOException ioex) {
@@ -241,13 +253,16 @@ class PreferredCCParser {
             }
         } else {
             try {
-                CompilationController ci = getPreferredCompilationController(file, js);
+                final CompilationController ci = getPreferredCompilationController(file, js);
                 if (ci == null) {
                     return null;
                 }
-                synchronized (ci) {
-                    args[0] = EditorContextSupport.computeMethodArguments(ci, operation, opCreationDelegate);
-                }
+                args[0] = runGuarded(ci, new Callable<EditorContext.MethodArgument[]>() {
+                    @Override
+                    public EditorContext.MethodArgument[] call() throws Exception {
+                        return EditorContextSupport.computeMethodArguments(ci, operation, opCreationDelegate);
+                    }
+                });
             } catch (IOException ioex) {
                 Exceptions.printStackTrace(ioex);
                 return null;
@@ -292,17 +307,20 @@ class PreferredCCParser {
             }
         } else {
             try {
-                CompilationController ci = getPreferredCompilationController(file, js);
-                if (ci == null || !toPhaseSync(ci, JavaSource.Phase.RESOLVED, LOG)) {
-                    return null;
-                }
-                LineMap lineMap = ci.getCompilationUnit().getLineMap();
-                int offset = findLineOffset(lineMap, ci.getSnapshot().getText(), methodLineNumber);
-                synchronized (ci) {
-                    args[0] = EditorContextSupport.computeMethodArguments(
+                final CompilationController ci = getPreferredCompilationController(file, js);
+                args[0] = runGuarded(ci, new Callable<EditorContext.MethodArgument[]>() {
+                    @Override
+                    public EditorContext.MethodArgument[] call() throws Exception {
+                        if (ci == null || !toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
+                            return null;
+                        }
+                        LineMap lineMap = ci.getCompilationUnit().getLineMap();
+                        int offset = findLineOffset(lineMap, ci.getSnapshot().getText(), methodLineNumber);
+                        return EditorContextSupport.computeMethodArguments(
                                 ci, methodLineNumber, offset,
                                 opCreationDelegate);
-                }
+                    }
+                });
             } catch (IOException ioex) {
                 Exceptions.printStackTrace(ioex);
                 return null;
@@ -348,13 +366,17 @@ class PreferredCCParser {
             }
         } else {
             try {
-                CompilationController ci = getPreferredCompilationController(file, js);
+                final CompilationController ci = getPreferredCompilationController(file, js);
                 if (ci == null) {
                     return null;
                 }
-                synchronized (ci) {
-                    computeImports(ci, imports);
-                }
+                runGuarded(ci, new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        computeImports(ci, imports);
+                        return null;
+                    }
+                });
             } catch (IOException ioex) {
                 Exceptions.printStackTrace(ioex);
                 return null;
@@ -419,7 +441,7 @@ class PreferredCCParser {
         //long t1, t2, t3, t4;
         //t1 = System.nanoTime();
         try {
-            CompilationController ci = getPreferredCompilationController(fo, js);
+            final CompilationController ci = getPreferredCompilationController(fo, js);
             //t2 = System.nanoTime();
             final ParseExpressionTask<D> task = new ParseExpressionTask<D>(expression, line, context);
             if (fo != null && SourceUtils.isScanInProgress()) {
@@ -442,9 +464,13 @@ class PreferredCCParser {
                 js.runUserActionTask(task, false);
             } else {
                 try {
-                    synchronized (ci) {
-                        task.run(ci);
-                    }
+                    runGuarded(ci, new Callable<Void>() {
+                        @Override
+                        public Void call() throws Exception {
+                            task.run(ci);
+                            return null;
+                        }
+                    });
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                     return null;
@@ -602,19 +628,12 @@ class PreferredCCParser {
         }
         return offset;
     }
-    
+
     static boolean toPhase(CompilationController ci, JavaSource.Phase phase, Logger log) throws IOException {
         return toPhaseCheck(ci, phase, ci.toPhase(phase).compareTo(phase), log);
     }
-    
-    private static boolean toPhaseSync(CompilationController ci, JavaSource.Phase phase, Logger log) throws IOException {
-        int compareToPhase;
-        synchronized (ci) {
-            compareToPhase = ci.toPhase(phase).compareTo(phase);
-        }
-        return toPhaseCheck(ci, phase, compareToPhase, log);
-    }
-    
+
+
     private static boolean toPhaseCheck(CompilationController ci, JavaSource.Phase phase, int compareToPhase, Logger log) {
         if (compareToPhase < 0) {
             log.log(Level.WARNING,
@@ -648,6 +667,24 @@ class PreferredCCParser {
             }
         }
 
+    }
+
+    private static <T> T runGuarded(
+        @NullAllowed final Object mutex,
+        @NonNull final Callable<T> action) throws IOException {
+        try {
+            if (mutex != null) {
+                synchronized (mutex) {
+                    return action.call();
+                }
+            } else {
+                return action.call();
+            }
+        } catch (IOException | RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
     private static class SessionsListenerRemoval {

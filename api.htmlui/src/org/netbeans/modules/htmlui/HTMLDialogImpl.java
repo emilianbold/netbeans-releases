@@ -62,9 +62,9 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import net.java.html.boot.fx.FXBrowsers;
 import org.openide.*;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -206,7 +206,7 @@ public final class HTMLDialogImpl implements Runnable {
             throw new IllegalStateException(ex);
         }
         state = 2;
-        FXBrowsers.load(webView, pageUrl, this, loader, techIds.toArray());
+        NbBrowsers.load(webView, pageUrl, this, loader, techIds.toArray());
     }
 
     private void initPage() {
@@ -233,7 +233,7 @@ public final class HTMLDialogImpl implements Runnable {
         }
         if (type == Node.class) {
             WebView wv = new WebView();
-            FXBrowsers.load(wv, pageUrl, onPageLoad, loader, techIds.toArray());
+            NbBrowsers.load(wv, pageUrl, onPageLoad, loader, techIds.toArray());
             return type.cast(wv);
         } else if (type == JComponent.class) {
             final JFXPanel tmp = new JFXPanel();
@@ -242,7 +242,7 @@ public final class HTMLDialogImpl implements Runnable {
                 @Override
                 public void run() {
                     WebView wv = new WebView();
-                    FXBrowsers.load(wv, pageUrl, onPageLoad, l, techIds.toArray());
+                    NbBrowsers.load(wv, pageUrl, onPageLoad, l, techIds.toArray());
                     Scene s = new Scene(wv);
                     tmp.setScene(s);
                 }
@@ -261,7 +261,13 @@ public final class HTMLDialogImpl implements Runnable {
         Method n = null;
         Method x = null;
         try {
-            Class<?> tC = Class.forName("com.sun.javafx.tk.Toolkit"); // NOI18N
+            Class<?> tC;
+            final String toolkitCN = "com.sun.javafx.tk.Toolkit"; // NOI18N
+            try {
+                tC = Class.forName(toolkitCN);
+            } catch (ClassNotFoundException ex) {
+                tC = Stage.class.getClassLoader().loadClass(toolkitCN);
+            }
             g = tC.getMethod("getToolkit"); // NOI18N
             n = tC.getMethod("enterNestedEventLoop", Object.class); // NOI18N
             x = tC.getMethod("exitNestedEventLoop", Object.class, Object.class); // NOI18N

@@ -170,4 +170,19 @@ public class Util {
             is.close();
         }
     }
+
+    /**
+     * Check if candiate FileObject is a derby database.
+     * 
+     * @param candidate the value of candidate
+     * @return true if candidate is a derby database
+     */
+    public static boolean isDerbyDatabase(FileObject candidate) {
+        if (candidate.isFolder()) {
+            FileObject sp = candidate.getFileObject("service.properties");
+            return sp != null && FileUtil.toFile(sp) != null;
+        } else {
+            return false;
+        }
+    }
 }

@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -86,6 +88,8 @@ import org.openide.util.Exceptions;
  * @author Petr Hejl
  */
 public class WildflyDeploymentManager implements DeploymentManager2 {
+
+    private static final Logger LOGGER = Logger.getLogger(WildflyDeploymentManager.class.getName());
 
     private static final int DEBUGGING_PORT = 8787;
     private static final int CONTROLLER_PORT = 9990;
@@ -168,7 +172,7 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
                 progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.FAILED, ""));
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.INFO, null, ex);
             progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.FAILED, ex.getMessage()));
         }
         return progress;
@@ -196,7 +200,7 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
                 progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ""));
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.INFO, null, ex);
             progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ex.getMessage()));
         }
         return progress;
@@ -244,7 +248,8 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
                 }
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.INFO, null, ex);
+            return new TargetModuleID[]{};
         }
         return result.toArray(new TargetModuleID[result.size()]);
     }
@@ -284,7 +289,8 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
                 }
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.INFO, null, ex);
+            return new TargetModuleID[]{};
         }
         return result.toArray(new TargetModuleID[result.size()]);
     }
@@ -311,9 +317,9 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
                             ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, null));
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, null, ex);
                 progress.fireProgressEvent(wflyTmid, new WildflyDeploymentStatus(
-                        ActionType.EXECUTE, CommandType.START, StateType.FAILED, null));
+                        ActionType.EXECUTE, CommandType.START, StateType.FAILED, ex.getMessage()));
             }
         }
         return progress;
@@ -339,9 +345,9 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
                         ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.COMPLETED, null));
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.INFO, null, ex);
             progress.fireProgressEvent(null, new WildflyDeploymentStatus(
-                    ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED, null));
+                    ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED, ex.getMessage()));
         }
         return progress;
     }
@@ -489,14 +495,14 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(
                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING, null));
         try {
-            if (client.addMessageDestinations(destinations)) {
+            if (client.addMessageDestinations(destinations, getInstanceProperties())) {
                 progress.fireProgressEvent(null, new WildflyDeploymentStatus(
                         ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.COMPLETED, null));
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.INFO, null, ex);
             progress.fireProgressEvent(null, new WildflyDeploymentStatus(
-                    ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED, null));
+                    ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED, ex.getMessage()));
         }
         return progress;
     }

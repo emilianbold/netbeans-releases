@@ -142,7 +142,8 @@ public class AddOrRemoveFinalModifier implements ErrorRule<Void> {
             }
             TreePath declaration = compilationInfo.getTrees().getPath(el);
             
-            if (declaration != null) {
+            // do not offer any modifications for members in other CUs
+            if (declaration != null && declaration.getCompilationUnit() == compilationInfo.getCompilationUnit()) {
                 return Collections.singletonList((Fix) new FixImpl(compilationInfo.getFileObject(), el.getSimpleName().toString(), TreePathHandle.create(declaration, compilationInfo), fixDescription, type));
             }
         }

@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -58,9 +63,21 @@ public class WLDeploymentFactoryTest extends NbTestCase {
     }
 
     public void testDeploymentManagerCleared() throws Exception {
-        String url = WLDeploymentFactory.URI_PREFIX + "localhost:7001:test";
-        InstanceProperties ip = InstanceProperties.createInstancePropertiesNonPersistent(url, "test", "test", "test",
-                Collections.<String, String>emptyMap());
+        File dir = getWorkDir();
+        FileObject server = FileUtil.createFolder(new File(dir, "server"));
+        FileObject domain = FileUtil.createFolder(new File(dir, "domain"));
+        FileObject config = domain.createFolder("config");
+        config.createData("config", "xml");
+
+        String serverPath = FileUtil.toFile(server).getAbsolutePath();
+        String domainPath = FileUtil.toFile(domain).getAbsolutePath();
+        String url = WLDeploymentFactory.getUrl("localhost", 7001, serverPath, domainPath);
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(WLPluginProperties.SERVER_ROOT_ATTR, serverPath);
+        props.put(WLPluginProperties.DOMAIN_ROOT_ATTR, domainPath);
+
+        InstanceProperties ip = InstanceProperties.createInstancePropertiesNonPersistent(
+                url, "test", "test", "test", props);
         WLDeploymentManager manager = (WLDeploymentManager) WLDeploymentFactory.getInstance().getDisconnectedDeploymentManager(url);
         assertEquals(ip, manager.getInstanceProperties());
 
@@ -75,7 +92,7 @@ public class WLDeploymentFactoryTest extends NbTestCase {
         // lets indirectly touch the cache
         url = url + "_other";
         InstanceProperties.createInstancePropertiesNonPersistent(url, "test", "test", "test",
-                        Collections.<String, String>emptyMap());
+                        props);
         WLDeploymentManager managerOther = (WLDeploymentManager) WLDeploymentFactory.getInstance().getDisconnectedDeploymentManager(url);
 
         assertGC("WLDeploymentManager leaking", ref);

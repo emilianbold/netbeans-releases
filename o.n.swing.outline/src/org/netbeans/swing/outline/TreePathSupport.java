@@ -49,9 +49,11 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 /** Manages expanded/collapsed paths for the Outline.  Provides services similar
@@ -322,5 +324,32 @@ public final class TreePathSupport {
      */
     public synchronized void removeTreeWillExpandListener (TreeWillExpandListener l) {
         weListeners.remove(l);
+    }
+
+    /**
+     * We need to copy the expansion state to the structurally changed tree.
+     * The structural change of the tree will have the effect of collapsing
+     * all expanded paths.
+     * This method takes care of dumping the layout expansion state and
+     * re-expand the originally expanded nodes.
+     * @param e 
+     */
+    void treeStructureChanged(TreeModelEvent event) {
+        TreePath path = event.getTreePath();
+        TreeModel model = layout.getModel();
+        if ((path == null) && (model != null)) {
+            Object root = model.getRoot();
+            if (root != null) {
+                path = new TreePath(root);
+            }
+        }
+
+        TreePath[] expandedDescendants = getExpandedDescendants(path);
+        
+        layout.treeStructureChanged(event);
+        
+        for (TreePath tp : expandedDescendants) {
+            layout.setExpandedState(tp, true);
+        }
     }
 }

@@ -392,6 +392,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // IZ#175231 : Error parser doesn't handle linenumber:column correctly
         performStaticTest("iz175231.cpp");
     }
+    
+    public void testBug248749() throws Exception {
+        // Bug 248749 - Template based identifier is marked as red instead of yellow
+        performStaticTest("bug248749.cpp");
+    }
 
     /////////////////////////////////////////////////////////////////////
     // FAILS

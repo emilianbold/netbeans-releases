@@ -7,9 +7,8 @@
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-14</p>
 <p><a id="dd_multiview_pages_jspPropertyGroupNode" name="dd_multiview_pages_jspPropertyGroupNode"></a></p>
-<div id="NBCSH3824"><!-- infolevel="all" infotype="General" --><a id="sthref522" name="sthref522"></a>
+<div id="NBCSH3824"><!-- infolevel="all" infotype="General" --><a id="sthref506" name="sthref506"></a>
 <h1>web.xml Visual Editor: JSP Property Groups</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use the JSP Property Groups section to add, remove, and view a web application's JSP property groups. A JSP property group is a set of properties defined for a group of JSP files within a web application. 
@@ -35,28 +34,28 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t14">Element</th>
-<th align="left" valign="bottom" id="r1c2-t14">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t14">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t14">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t14" headers="r1c1-t14">
+<td style="text-align:left" id="r2c1-t14" headers="r1c1-t14">
 <p>Display Name</p>
 </td>
-<td align="left" headers="r2c1-t14 r1c2-t14">Specifies the group's display name, such as <code dir="ltr">Bookstore</code></td>
+<td style="text-align:left" headers="r2c1-t14 r1c2-t14">Specifies the group's display name, such as <code dir="ltr">Bookstore</code></td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t14" headers="r1c1-t14">
+<td style="text-align:left" id="r3c1-t14" headers="r1c1-t14">
 <p>Description</p>
 </td>
-<td align="left" headers="r3c1-t14 r1c2-t14">Specifies a description, such as <code dir="ltr">All JSP files in Bookstore component</code></td>
+<td style="text-align:left" headers="r3c1-t14 r1c2-t14">Specifies a description, such as <code dir="ltr">All JSP files in Bookstore component</code></td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t14" headers="r1c1-t14">
+<td style="text-align:left" id="r4c1-t14" headers="r1c1-t14">
 <p>URL Pattern(s)</p>
 </td>
-<td align="left" headers="r4c1-t14 r1c2-t14">Specifies the group of JSP files that will use the properties, such as <code dir="ltr">bookstore/*.jsp</code>. You can specify more than one URL pattern. Note that all the properties in the group apply to the JSP files that match any of the URL patterns. If a JSP file matches URL patterns in more than one group, the pattern that is most specific applies.</td>
+<td style="text-align:left" headers="r4c1-t14 r1c2-t14">Specifies the group of JSP files that will use the properties, such as <code dir="ltr">bookstore/*.jsp</code>. You can specify more than one URL pattern. Note that all the properties in the group apply to the JSP files that match any of the URL patterns. If a JSP file matches URL patterns in more than one group, the pattern that is most specific applies.</td>
 </tr>
 </tbody>
 </table>
@@ -69,58 +68,58 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t15">Element</th>
-<th align="left" valign="bottom" id="r1c2-t15">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t15">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t15">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t15" headers="r1c1-t15">
+<td style="text-align:left" id="r2c1-t15" headers="r1c1-t15">
 <p>Page Encoding</p>
 </td>
-<td align="left" headers="r2c1-t15 r1c2-t15">Specifies the page encoding for all the JSP files in the group. Valid values are the same as those used by the pageEncoding attribute of an individual JSP file's page directive. A translation-time error results if you define the page encoding with one value in the JSP property group and then give it a different value in an individual JSP file's <code dir="ltr">pageEncoding</code> directive.</td>
+<td style="text-align:left" headers="r2c1-t15 r1c2-t15">Specifies the page encoding for all the JSP files in the group. Valid values are the same as those used by the pageEncoding attribute of an individual JSP file's page directive. A translation-time error results if you define the page encoding with one value in the JSP property group and then give it a different value in an individual JSP file's <code dir="ltr">pageEncoding</code> directive.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t15" headers="r1c1-t15">
+<td style="text-align:left" id="r3c1-t15" headers="r1c1-t15">
 <p>Ignore Expression Language</p>
 </td>
-<td align="left" headers="r3c1-t15 r1c2-t15">Overrides the default expression language (EL) evaluation mode for all the JSP files that belong to the group. The default value varies depending on the version of the web.xml file. The default mode for JSP files delivered using a Servlet 2.3 or earlier web.xml file is to ignore EL expressions; this provides backwards compatibility. The default mode for JSP files delivered with a Servlet 2.4 <code dir="ltr">web.xml</code> file is to evaluate EL expressions; this automatically provides the default that most applications want. EL expressions that are not evaluated are treated as regular text.</td>
+<td style="text-align:left" headers="r3c1-t15 r1c2-t15">Overrides the default expression language (EL) evaluation mode for all the JSP files that belong to the group. The default value varies depending on the version of the web.xml file. The default mode for JSP files delivered using a Servlet 2.3 or earlier web.xml file is to ignore EL expressions; this provides backwards compatibility. The default mode for JSP files delivered with a Servlet 2.4 <code dir="ltr">web.xml</code> file is to evaluate EL expressions; this automatically provides the default that most applications want. EL expressions that are not evaluated are treated as regular text.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t15" headers="r1c1-t15">
+<td style="text-align:left" id="r4c1-t15" headers="r1c1-t15">
 <p>Disable Scripting</p>
 </td>
-<td align="left" headers="r4c1-t15 r1c2-t15">Invalidates scripting for all the JSP files that belong to the group. By default, scripting in JSP files is valid. Since scripting can make pages difficult to maintain, you may want to invalidate it. When scripting is invalid, scriptlets, scripting expressions, and declarations will produce a translation error if present in any of the pages in the group.</td>
+<td style="text-align:left" headers="r4c1-t15 r1c2-t15">Invalidates scripting for all the JSP files that belong to the group. By default, scripting in JSP files is valid. Since scripting can make pages difficult to maintain, you may want to invalidate it. When scripting is invalid, scriptlets, scripting expressions, and declarations will produce a translation error if present in any of the pages in the group.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t15" headers="r1c1-t15">
+<td style="text-align:left" id="r5c1-t15" headers="r1c1-t15">
 <p>XML Syntax</p>
 </td>
-<td align="left" headers="r5c1-t15 r1c2-t15">Specifies that all JSP pages in the group are JSP documents, instead of JSP files. This means that they use JSP document syntax, instead of standard JSP syntax.</td>
+<td style="text-align:left" headers="r5c1-t15 r1c2-t15">Specifies that all JSP pages in the group are JSP documents, instead of JSP files. This means that they use JSP document syntax, instead of standard JSP syntax.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t15" headers="r1c1-t15">
+<td style="text-align:left" id="r6c1-t15" headers="r1c1-t15">
 <p>Trim Directive Whitespaces</p>
 </td>
-<td align="left" headers="r6c1-t15 r1c2-t15">Eliminates the extra white space from the page.</td>
+<td style="text-align:left" headers="r6c1-t15 r1c2-t15">Eliminates the extra white space from the page.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t15" headers="r1c1-t15">
+<td style="text-align:left" id="r7c1-t15" headers="r1c1-t15">
 <p>Deferred Syntax Allowed as Literal</p>
 </td>
-<td align="left" headers="r7c1-t15 r1c2-t15">Controls whether the character sequence #{ is allowed when used as a String literal.</td>
+<td style="text-align:left" headers="r7c1-t15 r1c2-t15">Controls whether the character sequence #{ is allowed when used as a String literal.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t15" headers="r1c1-t15">
+<td style="text-align:left" id="r8c1-t15" headers="r1c1-t15">
 <p>Include Preludes (Headers)</p>
 </td>
-<td align="left" headers="r8c1-t15 r1c2-t15">Specifies the headers and footers implicitly included by all the JSP files in the group, such as <code dir="ltr">/template/header.jspf</code> and <code dir="ltr">/template/footer.jspf</code>. The values of headers and footers are context-relative paths that must correspond to elements in the web application. When the elements are present, the given paths are automatically included (as in an include directive) at the beginning and end of each JSP page in the property group respectively. When there is more than one header or footer element that belong to the group, they are included in the order they appear. When more than one JSP property group applies to a JSP page, the corresponding elements will be processed in the same order as they appear in the group.</td>
+<td style="text-align:left" headers="r8c1-t15 r1c2-t15">Specifies the headers and footers implicitly included by all the JSP files in the group, such as <code dir="ltr">/template/header.jspf</code> and <code dir="ltr">/template/footer.jspf</code>. The values of headers and footers are context-relative paths that must correspond to elements in the web application. When the elements are present, the given paths are automatically included (as in an include directive) at the beginning and end of each JSP page in the property group respectively. When there is more than one header or footer element that belong to the group, they are included in the order they appear. When more than one JSP property group applies to a JSP page, the corresponding elements will be processed in the same order as they appear in the group.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r9c1-t15" headers="r1c1-t15">
+<td style="text-align:left" id="r9c1-t15" headers="r1c1-t15">
 <p>Include Codas (Footers)</p>
 </td>
-<td align="left" headers="r9c1-t15 r1c2-t15">Specifies the headers and footers implicitly included by all the JSP files in the group, such as <code dir="ltr">/template/header.jspf</code> and <code dir="ltr">/template/footer.jspf</code>. The values of headers and footers are context-relative paths that must correspond to elements in the web application. When the elements are present, the given paths are automatically included (as in an include directive) at the beginning and end of each JSP page in the property group respectively. When there is more than one header or footer element that belong to the group, they are included in the order they appear. When more than one JSP property group applies to a JSP page, the corresponding elements will be processed in the same order as they appear in the group.</td>
+<td style="text-align:left" headers="r9c1-t15 r1c2-t15">Specifies the headers and footers implicitly included by all the JSP files in the group, such as <code dir="ltr">/template/header.jspf</code> and <code dir="ltr">/template/footer.jspf</code>. The values of headers and footers are context-relative paths that must correspond to elements in the web application. When the elements are present, the given paths are automatically included (as in an include directive) at the beginning and end of each JSP page in the property group respectively. When there is more than one header or footer element that belong to the group, they are included in the order they appear. When more than one JSP property group applies to a JSP page, the corresponding elements will be processed in the same order as they appear in the group.</td>
 </tr>
 </tbody>
 </table>

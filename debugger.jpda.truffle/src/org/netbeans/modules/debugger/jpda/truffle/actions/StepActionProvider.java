@@ -159,6 +159,14 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
         }
     }
     
+    /**
+     * Kill any pending Java step.
+     * @param debugger 
+     */
+    public static void killJavaStep(JPDADebugger debugger) {
+        killJavaStep((JPDADebuggerImpl) debugger);
+    }
+    
     // Kill any pending Java step...
     private static void killJavaStep(JPDADebuggerImpl debugger) {
         VirtualMachine vm = debugger.getVirtualMachine();

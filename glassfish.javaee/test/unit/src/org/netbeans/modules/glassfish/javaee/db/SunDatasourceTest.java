@@ -80,7 +80,6 @@ public class SunDatasourceTest {
      */
     @Test
     public void testEquals() {
-        System.out.println("equals");
         Object obj = null;
         String a="A";
         String b="B";
@@ -111,4 +110,39 @@ public class SunDatasourceTest {
         assertEquals(expResult, result);
     }
 
+    /**
+     * Test of equals method, of class SunDatasource, when at least one field
+     * is set to null (resulting from a missing property for example).
+     */
+    @Test
+    public void testEqualsNull() {
+        Object obj = null;
+        String a="A";
+        String b="B";
+        String c="C";
+        String d="D";
+        String e=null;
+        SunDatasource instance = new SunDatasource(a,b,c,d,e);
+        boolean expResult = false;
+        boolean result = instance.equals(obj);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        //fail("The test case is a prototype.");
+        obj = "String";
+        expResult = false;
+        result = instance.equals(obj);
+        assertEquals(expResult, result);
+        obj = new SunDatasource("a","b","c","d","e");
+        expResult = false;
+        result = instance.equals(obj);
+        assertEquals(expResult, result);
+        obj = new SunDatasource("A","B","C","D",null);
+        expResult = true;
+        result = instance.equals(obj);
+        assertEquals(expResult, result);
+        obj = new SunDatasource(a,b,c,d,e);
+        expResult = true;
+        result = instance.equals(obj);
+        assertEquals(expResult, result);
+    }
 }

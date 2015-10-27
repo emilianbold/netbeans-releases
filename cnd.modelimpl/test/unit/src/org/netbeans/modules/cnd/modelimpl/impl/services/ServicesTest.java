@@ -68,6 +68,7 @@ public class ServicesTest extends CndBaseTestSuite {
         addTestSuite(MacroExpansionSpanTestCase.class);
         addTestSuite(MacroExpansionTablesTestCase.class);
         addTestSuite(MacroExpansionUsagesTestCase.class);
+        addTestSuite(MacroUsagesTestCase.class);
         addTestSuite(CsmSymbolResolverTestCase.class);
     }
 

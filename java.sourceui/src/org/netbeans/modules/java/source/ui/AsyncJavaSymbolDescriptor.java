@@ -152,6 +152,29 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
         }
     }
 
+    @Override
+    public int hashCode() {
+        int hashCode = 17;
+        hashCode = hashCode * 31 + ident.hashCode();
+        hashCode = hashCode * 31 + getRoot().hashCode();
+        return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof AsyncJavaSymbolDescriptor)) {
+            return false;
+        }
+        final AsyncJavaSymbolDescriptor other = (AsyncJavaSymbolDescriptor) obj;
+        return caseSensitive == other.caseSensitive &&
+               ident.equals(other.ident) &&
+               getOwner().equals(other.getOwner()) &&
+               getRoot().equals(other.getRoot());
+    }
+
     private void initialize() {
         if (initialized.compareAndSet(false, true)) {
             final Runnable action = new Runnable() {

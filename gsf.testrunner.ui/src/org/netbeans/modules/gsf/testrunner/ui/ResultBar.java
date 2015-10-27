@@ -267,7 +267,7 @@ public final class ResultBar extends JComponent implements ActionListener{
                 // contains aborted tests -> abort color
                 light = abortedTestsLight;
                 dark = abortedTestsDark;
-            } else if(100.0f - passedPercentage - abortedPercentage - skippedPercentage > 0.0) {
+            } else if(100.0f - passedPercentage - abortedPercentage - skippedPercentage > 0.0001) {
                 // contains failed tests -> red
                 light = notCoveredLight;
                 dark = notCoveredDark;
@@ -304,6 +304,11 @@ public final class ResultBar extends JComponent implements ActionListener{
         }
         size.width += border.left + border.right;
         size.height += border.top + border.bottom;
+        
+        // The component was replaced with a new one or the JSplitPane's divider was used to adjust the size. 
+        // This is needed so that text is painted using the correct buffered image size, see paintDropShadowText().
+        textImage = null;
+        
         return size;
     }
 

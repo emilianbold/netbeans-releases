@@ -49,11 +49,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -150,7 +151,7 @@ public class FileObj extends BaseFileObj {
                         if (lastModif != null) {
                             f.setLastModified(lastModif);
                         }
-                        setLastModified(f.lastModified(), f, false);
+                        setLastModified(f, false);
                         closable.close();
                         fireFileChangedEvent(false);
                     }
@@ -353,7 +354,7 @@ public class FileObj extends BaseFileObj {
         final boolean isReadOnly = thinksReadOnly();
         boolean isReal = realLastModifiedCached;
         final File file = getFileName().getFile();
-        setLastModified(file.lastModified(), file, !file.canWrite());
+        setLastModified(file, !file.canWrite());
         boolean isModified = (isReal) ? (oldLastModified != getLastModified()) : (oldLastModified < getLastModified());
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.log(
@@ -447,7 +448,7 @@ public class FileObj extends BaseFileObj {
     public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {
         super.rename(lock, name, ext, handler);
         final File rename = getFileName().getFile();
-        setLastModified(rename.lastModified(), rename, !rename.canWrite());
+        setLastModified(rename, !rename.canWrite());
     }
 
     private long getLastModified() {
@@ -465,7 +466,43 @@ public class FileObj extends BaseFileObj {
         }
         this.lastModified = readOnly ? -lastModified : lastModified;
     }
-    
+
+    /**
+     * Set last-modification to value retrieved from {@link File} instance, and
+     * handle zero value correctly.
+     *
+     * See bug 254567.
+     *
+     * @param file The file to read last-modification-date from.
+     * @param readOnly Read-only flag.
+     */
+    private void setLastModified(File file, boolean readOnly) {
+        long lastMod = file.lastModified();
+        if (lastMod == 0) { // see bug 254567
+            try {
+                BasicFileAttributes attrs = Files.readAttributes(
+                        file.toPath(), BasicFileAttributes.class);
+                lastMod = attrs.lastModifiedTime().toMillis();
+                if (lastMod == 0) {
+                    lastMod = 1;
+                }
+            } catch (UnsupportedOperationException ex) {
+                if (file.exists()) {
+                    lastMod = 1;
+                }
+            } catch (SecurityException ex) {
+                if (file.exists()) {
+                    lastMod = 1;
+                }
+            } catch (IOException ex) {
+                // lastMod stays 0, the file is invalid.
+            } catch (InvalidPathException ex) {
+                // lastMod stays 0, the path is invalid.
+            }
+        }
+        setLastModified(lastMod, file, readOnly);
+    }
+
     private boolean thinksReadOnly() {
         return lastModified < -10;
     }

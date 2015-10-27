@@ -2,76 +2,81 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Profiling Points Window</title>
+<title>Profile Window with Threads</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-14</p>
-<p><a id="ProfilingPointsWindow.HelpCtx" name="ProfilingPointsWindow.HelpCtx"></a></p>
-<div id="NBCSH3346"><!-- infolevel="all" infotype="General" --><a id="sthref434" name="sthref434"></a>
-<h1>Profiling Points Window</h1>
+<p><a id="ProfileThreads.HelpCtx" name="ProfileThreads.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref443" name="sthref443"></a>
+<h1>Profile Window with Threads</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to manage the profiling points in your projects. The Profiling Points Window is typically located below the editing area and sharing the space with the Output window. 
+<p>Use to customize and capture data during a threads session. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG745">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
+<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>Right-click a profiling point and select the following commands:</p>
+<p>The following table shows the available actions.</p>
 
-<table summary="Descriptions of elements of Profiling Points window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="34%" />
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t41">Element</th>
-<th align="left" valign="bottom" id="r1c2-t41">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t40">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t40">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t41" headers="r1c1-t41">
-<p>Show in Source</p>
+<td style="text-align:left" id="r2c1-t40" headers="r1c1-t40">
+<p>All Threads drop-down menu.</p>
 </td>
-<td align="left" headers="r2c1-t41 r1c2-t41">Open the source file in the editor at the location of the profiling point</td>
+<td style="text-align:left" headers="r2c1-t40 r1c2-t40">Choose the threads you want to view. The options are: <b>All Threads</b> (default), <b>Live Threads</b>, <b>Finished Threads</b>, and <b>Selected Threads.</b></td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t41" headers="r1c1-t41">
-<p>Show Report</p>
-</td>
-<td align="left" headers="r3c1-t41 r1c2-t41">Open the Profiling Points Report window that contains additional details about the selected profiling point</td>
+<td style="text-align:left" id="r3c1-t40" headers="r1c1-t40"><img width="16" height="16" src="img/zoomin.png" alt="Zoom in icon" title="Zoom in icon" />Zoom In</td>
+<td style="text-align:left" headers="r3c1-t40 r1c2-t40">Toggle this icon to zoom in the threads timeline.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t41" headers="r1c1-t41">
-<p>Edit</p>
-</td>
-<td align="left" headers="r4c1-t41 r1c2-t41">Modifies the profiling point.</td>
+<td style="text-align:left" id="r4c1-t40" headers="r1c1-t40"><img width="16" height="16" src="img/zoomout.png" alt="Zoom out icon" title="Zoom out icon" />Zoom Out</td>
+<td style="text-align:left" headers="r4c1-t40 r1c2-t40">Toggle this icon to zoom out the threads timeline.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t41" headers="r1c1-t41">
-<p>Enable/Disable</p>
-</td>
-<td align="left" headers="r5c1-t41 r1c2-t41">Enables the profiling point (toggles to Disable)</td>
+<td style="text-align:left" id="r5c1-t40" headers="r1c1-t40"><img width="16" height="16" src="img/scaletofit.png" alt="Scale to fit icon" title="Scale to fit icon" />Select to Fit</td>
+<td style="text-align:left" headers="r5c1-t40 r1c2-t40">Toggle this icon to fit the threads timeline into the screen.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t41" headers="r1c1-t41">
-<p>Delete</p>
+<td style="text-align:left" id="r6c1-t40" headers="r1c1-t40">
+<p><img width="18" height="18" src="img/take_thread_dump.png" alt="Thread dump icon" title="Thread dump icon" />Thread Dump</p>
 </td>
-<td align="left" headers="r6c1-t41 r1c2-t41">Deletes the profiling point (toggles to Enable).</td>
+<td style="text-align:left" headers="r6c1-t40 r1c2-t40">Creates a textual dump of all active threads and monitors of the profiled application.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r7c1-t40" headers="r1c1-t40">
+<p><img width="17" height="17" src="img/take_heap_dump.png" alt="Heap dump icon" title="Heap dump icon" />Heap Dump</p>
+</td>
+<td style="text-align:left" headers="r7c1-t40 r1c2-t40">Saves an image of the current heap content of the profiled process in .hprof format.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r8c1-t40" headers="r1c1-t40">
+<p><img width="18" height="20" src="img/gc.png" alt="Garbage collection icon" title="Garbage collection icon" />GC</p>
+</td>
+<td style="text-align:left" headers="r8c1-t40 r1c2-t40">Requests the JVM of the profiled process to invoke garbage collection.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3352" name="NBCSH3352"></a>
+<a id="sthref444" name="sthref444"></a>
 <hr><p><b>Related Topics</b></p>
-<p>Developing Applications with NetBeans IDE, 
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
-<param name="text" value="<html><u>&quot;Setting a Profiling Point&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG659">
+<param name="text" value="<html><u>&quot;Testing and Profiling Java Application Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -80,7 +80,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
         SwitchToPanel panel = getSwitchToPanel();
         panel.warningLabel.setVisible(localChanges);
 
-        setupUrlComboBox(repositoryFile, panel.urlComboBox);
+        setupUrlComboBox(repositoryFile, panel.urlComboBox, false);
         
         repositoryPaths = 
             new RepositoryPaths(

@@ -50,7 +50,9 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.WizardDescriptor;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -59,6 +61,8 @@ import org.openide.util.NbBundle;
  * @author Ivan Sidorkin
  */
 public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
+
+    private static final String J2SE_PLATFORM_VERSION_17 = "1.7"; // NOI18N
 
     private final WildflyInstantiatingIterator instantiatingIterator;
 
@@ -108,9 +112,16 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
             return false;
         }
 
-        if (!WildflyPluginUtils.isGoodJBServerLocation(new File(locationStr))) {
+        File path = new File(locationStr);
+        if (!WildflyPluginUtils.isGoodJBServerLocation(path)) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(AddServerLocationPanel.class, "MSG_InvalidServerLocation")); // NOI18N
+            return false;
+        }
+
+        // test if IDE is run on correct JDK version
+        if (!runningOnCorrectJdk(path)) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(AddServerLocationPanel.class, "MSG_InvalidJDK"));
             return false;
         }
 
@@ -167,5 +178,16 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     @Override
     public boolean isFinishPanel() {
         return true;
+    }
+
+    private boolean runningOnCorrectJdk(File path) {
+        SpecificationVersion defPlatVersion = JavaPlatformManager.getDefault()
+                .getDefaultPlatform().getSpecification().getVersion();
+        // WF10 requires JDK8+
+        if (!J2SE_PLATFORM_VERSION_17.equals(defPlatVersion.toString())) {
+            return true;
+        }
+        WildflyPluginUtils.Version version = WildflyPluginUtils.getServerVersion(path);
+        return version != null && version.compareToIgnoreUpdate(WildflyPluginUtils.WILDFLY_10_0_0) < 0;
     }
 }

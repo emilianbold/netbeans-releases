@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:jboss:messaging-activemq-deployment:1.0"
+           targetNamespace="urn:jboss:messaging-activemq-deployment:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+
+    <xsd:element name="messaging-deployment">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[
+                The configuration of a messaging deployment
+            ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" minOccurs="0" name="server" type="serverType"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="serverType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[
+                The configuration of entries for a ActiveMQ server.
+            ]]>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:all>
+            <xsd:element maxOccurs="1" minOccurs="0" name="jms-destinations">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="jms-queue" maxOccurs="unbounded" minOccurs="0" type="jmsQueueType"/>
+                        <xsd:element name="jms-topic" maxOccurs="unbounded" minOccurs="0" type="jmsTopicType"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:all>
+        <xsd:attribute name="name" type="xsd:string" use="optional" default="default">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The name to use for this ActiveMQ Server. Must correspond to a ActiveMQ server installed in
+                    the main configuration.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="entryType">
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
+    <xsd:complexType name="jmsQueueType">
+        <xsd:sequence>
+            <xsd:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1"/>
+            <xsd:element name="selector" maxOccurs="1" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="string" type="xsd:string" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="durable" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="jmsTopicType">
+        <xsd:sequence>
+            <xsd:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="transactionType">
+        <xsd:attribute name="mode" use="required" type="modeType"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="modeType">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="xa">
+                <xsd:annotation>
+                    <xsd:documentation></xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="local">
+                <xsd:annotation>
+                    <xsd:documentation></xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="none">
+                <xsd:annotation>
+                    <xsd:documentation></xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>

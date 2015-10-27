@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
 
@@ -51,11 +51,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -66,6 +66,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -159,7 +160,8 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
                         if (fileScope != null) {
                             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
                             List typeNameResolvers = new ArrayList<>();
-                            if (fileObject != null && CodeUtils.isPhp52(fileObject)) {
+                            if (fileObject != null
+                                    && CodeUtils.isPhpVersion(fileObject, PhpVersion.PHP_5)) {
                                 typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
                             } else {
                                 typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
@@ -264,11 +266,11 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
         }
         if (offset == -1 && classScope.getBlockRange() != null) {
             try {
-                int rowStartOfClassEnd = Utilities.getRowStart(doc, classScope.getBlockRange().getEnd());
+                int rowStartOfClassEnd = LineDocumentUtils.getLineStart(doc, classScope.getBlockRange().getEnd());
                 int rowEndOfPreviousRow = rowStartOfClassEnd - 1;
-                int newMethodPossibleOffset = Utilities.getRowStart(doc, rowEndOfPreviousRow);
-                int newMethodLineOffset = Utilities.getLineOffset(doc, newMethodPossibleOffset);
-                int classDeclarationLineOffset = Utilities.getLineOffset(doc, classDeclarationOffset);
+                int newMethodPossibleOffset = LineDocumentUtils.getLineStart(doc, rowEndOfPreviousRow);
+                int newMethodLineOffset = LineDocumentUtils.getLineIndex(doc, newMethodPossibleOffset);
+                int classDeclarationLineOffset = LineDocumentUtils.getLineIndex(doc, classDeclarationOffset);
                 if (newMethodLineOffset == classDeclarationLineOffset) {
                     offset = rowEndOfPreviousRow;
                 } else {

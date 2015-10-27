@@ -59,7 +59,7 @@ public class TruffleStrataProvider implements StrataProvider {
     
     public static final String TRUFFLE_STRATUM = "TruffleScript";
     
-    private static final String TRUFFLE_ACCESS_CLASS = "com.oracle.truffle.api.vm.TruffleVM";   // TruffleAccess.BASIC_CLASS_NAME
+    private static final String TRUFFLE_ACCESS_CLASS = "com.oracle.truffle.api.vm.PolyglotEngine";   // TruffleAccess.BASIC_CLASS_NAME
     private static final Pattern TRUFFLE_ACCESS_METHOD_REGEX = Pattern.compile("dispatch.*Event");
     
     private static final String VAR_LINE = "line";

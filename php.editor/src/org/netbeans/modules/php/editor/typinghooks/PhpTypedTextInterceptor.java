@@ -48,6 +48,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
@@ -372,7 +373,7 @@ public class PhpTypedTextInterceptor implements TypedTextInterceptor {
         } else {
             boolean insert = onlyWhitespaceFollows;
             if (!insert) {
-                int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(doc, dotPos, sectionEnd);
+                int firstNonWhiteFwd = LineDocumentUtils.getNextNonWhitespace(doc, dotPos, sectionEnd);
                 if (firstNonWhiteFwd != -1) {
                     char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
                     insert = (chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N

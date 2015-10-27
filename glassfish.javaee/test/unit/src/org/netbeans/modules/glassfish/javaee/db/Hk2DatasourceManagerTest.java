@@ -105,7 +105,6 @@ public class Hk2DatasourceManagerTest extends NbTestCase {
      */
     @Test
     public void testGetDatasources_File() {
-        System.out.println("getDatasources");
         // expected data in source
         URL codebase = getClass().getProtectionDomain().getCodeSource().getLocation();
         if (!codebase.getProtocol().equals("file")) {  // NOI18N

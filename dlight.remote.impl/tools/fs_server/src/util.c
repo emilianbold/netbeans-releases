@@ -642,9 +642,9 @@ static bool can(const struct stat *stat, short all_mask, short grp_mask, short u
                 group_found = true;
                 break;  
             }
-            if (group_found) {
-                return (access & grp_mask) > 0;
-            }
+        }
+        if (group_found) {
+            return (access & grp_mask) > 0;
         }
     }
     return (access & all_mask) > 0;

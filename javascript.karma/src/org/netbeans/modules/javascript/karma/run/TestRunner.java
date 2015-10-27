@@ -106,6 +106,7 @@ public final class TestRunner {
     private TestSuite testSuite;
     private long testSuiteRuntime = 0;
     private boolean hasTests = false;
+    private final ArrayList<String> logMessages = new ArrayList<>();
 
 
     public TestRunner(KarmaRunInfo karmaRunInfo) {
@@ -135,6 +136,22 @@ public final class TestRunner {
             LOGGER.log(Level.FINE, "Unexpected line: {0}", line);
             assert false : line;
         }
+    }
+    
+    public void logMessageToTestResultsWindowOutputView(String line) {
+        if(testSession == null) {
+            // cache log message
+            logMessages.add(line);
+            return;
+        }
+        if(!logMessages.isEmpty()) {
+            // flush all previously cached log messages
+            for (String log : logMessages) {
+                getManager().displayOutput(testSession, log, false);
+            }
+            logMessages.clear();
+        }
+        getManager().displayOutput(testSession, line, false);
     }
 
     private Manager getManager() {

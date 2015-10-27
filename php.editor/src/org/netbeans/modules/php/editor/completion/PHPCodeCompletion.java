@@ -59,12 +59,12 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.api.CodeCompletionHandler2;
@@ -76,10 +76,10 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.KeywordCompletionType;
-import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
 import org.netbeans.modules.php.editor.completion.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.completion.PHPCompletionItem.FieldItem;
 import org.netbeans.modules.php.editor.completion.PHPCompletionItem.MethodElementItem;
@@ -130,6 +130,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.openide.filesystems.FileObject;
+
+import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
 
 /**
  *
@@ -199,9 +201,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     };
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_SEMICOLON = {
         "return" // NOI18N
-    };
-    private static final String[] PHP_LANGUAGE_CONSTRUCTS_FOR_TYPE_HINTS = {
-        "callable" //NOI18N
     };
     static final String PHP_CLASS_KEYWORD_THIS = "$this->"; //NOI18N
     static final String[] PHP_CLASS_KEYWORDS = {
@@ -379,6 +378,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             case TYPE_NAME:
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteTypeNames(completionResult, request);
+                autoCompleteKeywords(completionResult, request, Type.getTypesForHints());
                 break;
             case STRING:
                 // LOCAL VARIABLES
@@ -405,6 +405,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 if (PHPDOCCodeCompletion.isTypeCtx(request)) {
                     autoCompleteTypeNames(completionResult, request);
                     autoCompleteNamespaces(completionResult, request);
+                    autoCompleteKeywords(completionResult, request, Type.getTypesForPhpDoc());
                 }
                 break;
             case CLASS_CONTEXT_KEYWORDS:
@@ -740,11 +741,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 } else if (element instanceof InterfaceElement) {
                     completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, kind, endWithDoubleColon));
                 }
-            }
-        }
-        for (String construct : PHP_LANGUAGE_CONSTRUCTS_FOR_TYPE_HINTS) {
-            if (startsWith(construct, request.prefix)) {
-                completionResult.add(new PHPCompletionItem.LanguageConstructForTypeHint(construct, request));
             }
         }
     }
@@ -1230,9 +1226,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             if (doc == null) {
                 return null;
             }
-            int lineBegin = Utilities.getRowStart(doc, caretOffset);
+            int lineBegin = LineDocumentUtils.getLineStart(doc, caretOffset);
             if (lineBegin != -1) {
-                int lineEnd = Utilities.getRowEnd(doc, caretOffset);
+                int lineEnd = LineDocumentUtils.getLineEnd(doc, caretOffset);
                 String line = doc.getText(lineBegin, lineEnd - lineBegin);
                 int lineOffset = caretOffset - lineBegin;
                 int start = lineOffset;
@@ -1396,7 +1392,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                     }
                     if (OptionsUtils.autoCompletionNamespaces()) {
                         if (t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
-                            return isPhp53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
+                            return isPhp53OrNewer(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
                         }
                     }
                     if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
@@ -1414,10 +1410,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         return QueryType.NONE;
     }
 
-    public static boolean isPhp53(Document document) {
+    public static boolean isPhp53OrNewer(Document document) {
         final FileObject fileObject = CodeUtils.getFileObject(document);
         assert fileObject != null;
-        return CodeUtils.isPhp53(fileObject);
+        return CodeUtils.isPhpVersionGreaterThan(fileObject, PhpVersion.PHP_5);
     }
 
     @Override

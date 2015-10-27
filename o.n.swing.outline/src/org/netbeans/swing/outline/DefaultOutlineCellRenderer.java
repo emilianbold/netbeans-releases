@@ -46,7 +46,9 @@ package org.netbeans.swing.outline;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -101,15 +103,20 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     
     /** Creates a new instance of DefaultOutlineTreeCellRenderer */
     public DefaultOutlineCellRenderer() {
-        theCheckBox = new JCheckBox();
-        theCheckBox.setSize(theCheckBox.getPreferredSize());
-        theCheckBox.setBorderPainted(false);
-        theCheckBox.setOpaque(false);
+        theCheckBox = createCheckBox();
         // In order to paint the check-box correctly, following condition must be true:
         // SwingUtilities.getAncestorOfClass(CellRendererPane.class, theCheckBox) != null
         // (See e.g.: paintSkin() method in com/sun/java/swing/plaf/windows/XPStyle.java)
         fakeCellRendererPane = new CellRendererPane();
         fakeCellRendererPane.add(theCheckBox);
+    }
+    
+    final JCheckBox createCheckBox() {
+        JCheckBox cb = new JCheckBox();
+        cb.setSize(cb.getPreferredSize());
+        cb.setBorderPainted(false);
+        cb.setOpaque(false);
+        return cb;
     }
     
     /** Overridden to combine the expansion border (whose insets determine how
@@ -120,6 +127,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
      */
     @Override
     public final void setBorder (Border b) {
+        b = new RestrictedInsetsBorder(b);
         if (!swingRendering) {
             super.setBorder(b);
             return ;
@@ -227,6 +235,18 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private JCheckBox getCheckBox() {
         return checkBox;
     }
+    
+    final JCheckBox setUpCheckBox(CheckRenderDataProvider crendata, Object value, JCheckBox cb) {
+        Boolean chSelected = crendata.isSelected(value);
+        cb.setEnabled(true);
+        cb.setSelected(!Boolean.FALSE.equals(chSelected));
+        // Third state is "selected armed" to be consistent with org.openide.explorer.propertysheet.ButtonModel3Way
+        cb.getModel().setArmed(chSelected == null);
+        cb.getModel().setPressed(chSelected == null);
+        cb.setEnabled(crendata.isCheckEnabled(value));
+        cb.setBackground(getBackground());
+        return cb;
+    }
 
     int getTheCheckBoxWidth() {
         return theCheckBox.getSize().width;
@@ -322,15 +342,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 if (rendata instanceof CheckRenderDataProvider) {
                     CheckRenderDataProvider crendata = (CheckRenderDataProvider) rendata;
                     if (crendata.isCheckable(value)) {
-                        cb = theCheckBox;
-                        Boolean chSelected = crendata.isSelected(value);
-                        cb.setEnabled(true);
-                        cb.setSelected(!Boolean.FALSE.equals(chSelected));
-                        // Third state is "selected armed" to be consistent with org.openide.explorer.propertysheet.ButtonModel3Way
-                        cb.getModel().setArmed(chSelected == null);
-                        cb.getModel().setPressed(chSelected == null);
-                        cb.setEnabled(crendata.isCheckEnabled(value));
-                        cb.setBackground(getBackground());
+                        cb = setUpCheckBox(crendata, value, theCheckBox);
                     }
                 }
                 setCheckBox(cb);
@@ -401,6 +413,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private static class ExpansionHandleBorder implements Border {
 
         private static final boolean isGtk = "GTK".equals (UIManager.getLookAndFeel ().getID ()); //NOI18N
+        private static final boolean isNimbus = "Nimbus".equals (UIManager.getLookAndFeel ().getID ()); //NOI18N
 
         private Insets insets = new Insets(0,0,0,0);
         private static JLabel lExpandedIcon = null;
@@ -461,6 +474,9 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 } else {
                     iconY = 0;
                 }
+                if (isNimbus) {
+                    iconX += icon.getIconWidth()/3; // To look good
+                }
                 if (isGtk) {
                     JLabel lbl = ren.isExpanded () ? lExpandedIcon : lCollapsedIcon;
                     lbl.setSize (Math.max (getExpansionHandleWidth (), iconX + getExpansionHandleWidth ()), height);
@@ -472,8 +488,19 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             JCheckBox chBox = ren.getCheckBox();
             if (chBox != null) {
                 int chBoxX = getExpansionHandleWidth() + ren.getNestingDepth() * getNestingWidth();
+                Rectangle bounds = chBox.getBounds();
+                int chBoxY;
+                if (bounds.getHeight() < height) {
+                    chBoxY = (height / 2) - (((int) bounds.getHeight()) / 2);
+                } else {
+                    if (isNimbus) {
+                        chBoxY = 1;
+                    } else {
+                        chBoxY = 0;
+                    }
+                }
                 Dimension chDim = chBox.getSize();
-                java.awt.Graphics gch = g.create(chBoxX, 0, chDim.width, chDim.height);
+                java.awt.Graphics gch = g.create(chBoxX, chBoxY, chDim.width, chDim.height);
                 chBox.paint(gch);
             }
         }
@@ -597,5 +624,36 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             }
         }
         
+    }
+    
+    private static class RestrictedInsetsBorder implements Border {
+        
+        private final Border delegate;
+        
+        public RestrictedInsetsBorder(Border delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            delegate.paintBorder(c, g, x, y, width, height);
+        }
+
+        @Override
+        public Insets getBorderInsets(Component c) {
+            Insets insets = delegate.getBorderInsets(c);
+            if (insets.top > 1 || insets.left > 1 || insets.bottom > 1 || insets.right > 1) {
+                insets = new Insets(Math.min(insets.top, 1),
+                                    Math.min(insets.left, 1),
+                                    Math.min(insets.bottom, 1),
+                                    Math.min(insets.right, 1));
+            }
+            return insets;
+        }
+
+        @Override
+        public boolean isBorderOpaque() {
+            return delegate.isBorderOpaque();
+        }
     }
 }

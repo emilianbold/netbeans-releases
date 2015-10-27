@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.lexer;
@@ -236,6 +236,30 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
 
     public void testHereDoc53_15() throws Exception {
         performTest("lexer/heredoc_015");
+    }
+
+    public void testElvis01() throws Exception {
+        performTest("lexer/elvis_01");
+    }
+
+    public void testElvis02() throws Exception {
+        performTest("lexer/elvis_02");
+    }
+
+    public void testElvis03() throws Exception {
+        performTest("lexer/elvis_03");
+    }
+
+    public void testElvis04() throws Exception {
+        performTest("lexer/elvis_04");
+    }
+
+    public void testElvis05() throws Exception {
+        performTest("lexer/elvis_05");
+    }
+
+    public void testElvis06() throws Exception {
+        performTest("lexer/elvis_06");
     }
 
     public void testIssue225549() throws Exception {

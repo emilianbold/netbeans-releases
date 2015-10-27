@@ -70,6 +70,7 @@ public class DerbyServerNode extends AbstractNode implements Comparable {
             SystemAction.get(StartAction.class),
             SystemAction.get(StopAction.class),
             SystemAction.get(CreateDatabaseAction.class),
+            SystemAction.get(CreateSampleDBAction.class),
             SystemAction.get(DerbyPropertiesAction.class)
         };
     

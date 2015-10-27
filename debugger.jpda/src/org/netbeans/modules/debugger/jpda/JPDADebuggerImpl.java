@@ -154,6 +154,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 import org.netbeans.spi.debugger.jpda.Evaluator;
+import org.netbeans.spi.debugger.jpda.SmartSteppingCallback.StopOrStep;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -633,9 +634,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
     /**
      * Test whether we should stop here according to the smart-stepping rules.
      */
-    boolean stopHere(JPDAThread t) {
-        return getCompoundSmartSteppingListener ().stopHere
-                     (lookupProvider, t, getSmartSteppingFilter());
+    StopOrStep stopHere(JPDAThread t) {
+        CallStackFrame topFrame = null;
+        try {
+            CallStackFrame[] topFrameArr = t.getCallStack(0, 1);
+            if (topFrameArr.length > 0) {
+                topFrame = topFrameArr[0];
+            }
+        } catch (AbsentInformationException aiex) {}
+        if (topFrame != null) {
+            return getCompoundSmartSteppingListener().stopAt
+                        (lookupProvider, topFrame, getSmartSteppingFilter());
+        } else {
+            return getCompoundSmartSteppingListener().stopHere
+                        (lookupProvider, t, getSmartSteppingFilter()) ?
+                    StopOrStep.stop() : StopOrStep.skip();
+        }
     }
 
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.nodejs.exec;
 
@@ -45,13 +45,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable.FileLineParser;
 import org.openide.util.Pair;
 
 public class FileLineParserTest extends NbTestCase {
 
     private File dataDir;
     private File nodeJsSources;
-    private NodeExecutable.FileLineParser fileLineParser;
+    private FileLineParser fileLineParser;
 
 
     public FileLineParserTest(String name) {
@@ -68,7 +69,7 @@ public class FileLineParserTest extends NbTestCase {
         List<File> sourceRoots = new ArrayList<>();
         sourceRoots.add(dataDir);
         sourceRoots.add(nodeJsSources);
-        fileLineParser = new NodeExecutable.FileLineParser(sourceRoots);
+        fileLineParser = new FileLineParser(sourceRoots);
     }
 
     public void testFullPaths() {
@@ -85,6 +86,19 @@ public class FileLineParserTest extends NbTestCase {
                 nodeJs, 119);
         assertFilePattern("at node.js:906:3",
                 nodeJs, 906);
+    }
+
+    public void testIssue253600() {
+        Pair<String, Integer> fileNameLine = FileLineParser.getOutputFileNameLine(
+                "    at /media/oldhome/gapon/Download/example/node_modules/sails/node_modules/async/lib/async.js:607:21");
+        assertNotNull(fileNameLine);
+        assertEquals("/media/oldhome/gapon/Download/example/node_modules/sails/node_modules/async/lib/async.js", fileNameLine.first());
+        assertEquals(607, fileNameLine.second().intValue());
+        fileNameLine = FileLineParser.getOutputFileNameLine(
+                "at /media/oldhome/gapon/Download/example/node_modules/sails/node_modules/async/lib/async.js:607:21");
+        assertNotNull(fileNameLine);
+        assertEquals("/media/oldhome/gapon/Download/example/node_modules/sails/node_modules/async/lib/async.js", fileNameLine.first());
+        assertEquals(607, fileNameLine.second().intValue());
     }
 
     private void assertFilePattern(String input, File file, int line) {

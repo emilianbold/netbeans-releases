@@ -516,7 +516,7 @@ public class JavacParser extends Parser {
         //for now it creates a new parser and passes it outside the infrastructure
         //used by debugger private api
         if (task instanceof NewComilerTask) {
-            NewComilerTask nct = (NewComilerTask)task;
+            final NewComilerTask nct = (NewComilerTask)task;
             if (nct.getCompilationController() == null || nct.getTimeStamp() != parseId) {
                 try {
                     nct.setCompilationController(

@@ -261,20 +261,6 @@ public class FileContainer extends ProjectComponent {
         }
     }
 
-    public void markAsParsingPreprocStates(CharSequence absPath) {
-        FileEntry f = getFileEntry(absPath, false, false);
-        if (f == null) {
-            return;
-        }
-        synchronized (f) {
-            f.markAsParsingPreprocStates();
-        }
-        if (TRACE_PP_STATE_OUT) {
-            CharSequence path = getFileKey(absPath, false);
-            System.err.println("%nmarkAsParsingPreprocStates for file" + path + "%n");
-        }
-    }
-
     public FileEntry getEntry(CharSequence absPath) {
         CndUtils.assertTrue(CndPathUtilities.isPathAbsolute(absPath), "Path should be absolute: ", absPath); //NOI18N
         return getFileEntry(absPath, false, false);

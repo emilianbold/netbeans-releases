@@ -77,7 +77,7 @@ import org.openide.util.Lookup;
 @ProjectConvertor.Registration(requiredPattern = "(bower|package)\\.json", position = 1000)
 public final class ClientSideProjectConvertor implements ProjectConvertor {
 
-    private static final Logger LOGGER = Logger.getLogger(ClientSideProjectConvertor.class.getName());
+    static final Logger LOGGER = Logger.getLogger(ClientSideProjectConvertor.class.getName());
 
     private static final String[] JSON_FILES = new String[] {
         "package.json", // NOI18N
@@ -127,7 +127,7 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
                 return (String) name;
             }
         } catch (ParseException | IOException ex) {
-            LOGGER.log(Level.INFO, jsonFile.getPath(), ex);
+            LOGGER.log(Level.FINE, jsonFile.getPath(), ex);
         }
         return null;
     }
@@ -200,7 +200,8 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
 
     }
 
-    private static class ConvertorClassPathProvider implements ClassPathProvider {
+    private static final class ConvertorClassPathProvider implements ClassPathProvider {
+
         @Override
         @CheckForNull
         public ClassPath findClassPath(
@@ -209,7 +210,12 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             if (ClassPathProviderImpl.SOURCE_CP.equals(type)) {
                 final Project p = ProjectConvertors.getNonConvertorOwner(file);
                 if (p != null) {
-                    return p.getLookup().lookup(ClassPathProvider.class).findClassPath(file, type);
+                    ClassPathProvider classPathProvider = p.getLookup().lookup(ClassPathProvider.class);
+                    if (classPathProvider == null) { // #255912
+                        LOGGER.log(Level.INFO, "No ClassPathProvider found in lookup of project {0}", p.getClass().getName());
+                        return null;
+                    }
+                    return classPathProvider.findClassPath(file, type);
                 }
             }
             return null;

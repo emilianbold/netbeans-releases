@@ -2,66 +2,68 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Edit Global Filters Dialog Box</title>
+<title>New Profiling Point Wizard: Reset Results</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-09-14</p>
-<p><a id="GlobalFiltersPanel.HelpCtx" name="GlobalFiltersPanel.HelpCtx"></a></p>
-<div id="NBCSH3129"><!-- infolevel="all" infotype="General" --><a id="sthref402" name="sthref402"></a>
-<h1>Edit Global Filters Dialog Box</h1>
+<p><a id="ResetResultsCustomizer.HelpCtx" name="ResetResultsCustomizer.HelpCtx"></a></p>
+<div id="NBCSH3185"><!-- infolevel="all" infotype="General" --><a id="sthref402" name="sthref402"></a>
+<h1>New Profiling Point Wizard: Reset Results</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to edit, delete or modify global filters that are used in filter sets. You use filter sets to limit the classes that are profiled when analyzing application performance. How?</p>
+<p>Use to reset the collected profiling results each time that a thread in the application hits the profiling point. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG745">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
-<table summary="Descriptions of Edit Global Filters commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t8">Element</th>
-<th align="left" valign="bottom" id="r1c2-t8">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t8">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t8">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t8" headers="r1c1-t8">
-<p>New</p>
+<td style="text-align:left" id="r2c1-t8" headers="r1c1-t8">
+<p>Name</p>
 </td>
-<td align="left" headers="r2c1-t8 r1c2-t8">Creates a new row in the list and types the new name and values directly in the fields in the list.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t8" headers="r1c1-t8">
-<p>Edit</p>
-</td>
-<td align="left" headers="r3c1-t8 r1c2-t8">Modifies the selected filter. Click Edit and type directly in the field in the list to edit the name or value.
-<p>You can also edit a field by double-clicking in the field.</p>
+<td style="text-align:left" headers="r2c1-t8 r1c2-t8">Specifies the name that you want to use to identify the profiling point.
+<p>This name is used to identify the profiling point in the Profiling Points window.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t8" headers="r1c1-t8">
-<p>Delete</p>
+<td style="text-align:left" id="r3c1-t8" headers="r1c1-t8">
+<p>Location</p>
 </td>
-<td align="left" headers="r4c1-t8 r1c2-t8">Removes the selected filter from the list when you click <b>Delete</b>.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t8" headers="r1c1-t8">
-<p>Move Up and Move Down</p>
-</td>
-<td align="left" headers="r5c1-t8 r1c2-t8">Reorders the filter list when you click <b>Move Up</b> and <b>Move Down</b> on a selected filter.
-<p>The new order is also displayed in the Customize Filter Sets dialog box.</p>
+<td style="text-align:left" headers="r3c1-t8 r1c2-t8">Specifies the name of the file and the line in the source code where you want to place the profiling point. Click <b>Browse</b> to locate the file in your project.
+<p>Select <b>Begin</b> or <b>End</b> to specify if the profiling point is hit when a thread hits the beginning of the specified line or reaches the end of the line.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3134" name="NBCSH3134"></a>
+<a id="NBCSH3188" name="NBCSH3188"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG739">
-<param name="text" value="<html><u>&quot;Setting Profiling Filters&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG744">
+<param name="text" value="<html><u>&quot;Setting a Profiling Point&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
+<param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
@@ -70,6 +72,14 @@
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
 <param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

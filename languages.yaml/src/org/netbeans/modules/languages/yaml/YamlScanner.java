@@ -121,7 +121,7 @@ public class YamlScanner implements StructureScanner {
 
         BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
 
-        if (doc != null) {
+        //if (doc != null) {
             for (StructureItem item : items) {
                 try {
                     addBlocks(result, doc, result.getSnapshot().getText(), codeblocks, item);
@@ -130,7 +130,7 @@ public class YamlScanner implements StructureScanner {
                     break;
                 }
             }
-        }
+        //}
 
         return folds;
     }

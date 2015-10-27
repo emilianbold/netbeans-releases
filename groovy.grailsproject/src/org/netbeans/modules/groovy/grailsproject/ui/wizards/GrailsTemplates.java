@@ -61,7 +61,7 @@ public final class GrailsTemplates {
         "Service=Grails Service",
         "UnitTest=Grails Unit Test",
         "Controller=Grails Controller",
-        "TagLibrary=Grails Tag Library",
+        "TagLib=Grails Tag Library",
         "GantScript=Grails Gant Script",
         "DomainClass=Grails Domain Class",
         "IntegrationTest=Grails Integration Test"
@@ -113,11 +113,11 @@ public final class GrailsTemplates {
             description = "/org/netbeans/modules/groovy/grailsproject/resources/Service.html"
         ),
         @TemplateRegistration(
-            id = "TagLibrary",
+            id = "TagLib",
             position = 180,
             folder = "Groovy",
             category = "groovy",
-            displayName = "#TagLibrary",
+            displayName = "#TagLib",
             iconBase = "org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png",
             description = "/org/netbeans/modules/groovy/grailsproject/resources/TagLib.html"
         ),

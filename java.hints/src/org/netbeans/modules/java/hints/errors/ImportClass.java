@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
@@ -69,6 +70,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
@@ -130,7 +132,6 @@ public final class ImportClass implements ErrorRule<Void> {
     @Override
     public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Void> data) {
         resume();
-
         int errorPosition = offset + 1; //TODO: +1 required to work OK, rethink
         
         if (errorPosition == (-1)) {
@@ -156,6 +157,11 @@ public final class ImportClass implements ErrorRule<Void> {
         }
         
         FileObject file = info.getFileObject();
+        boolean useFQN = false;
+        if (file != null) {
+                CodeStyle cs = CodeStyle.getDefault(file);
+                useFQN = cs.useFQNs();
+        }
         String simpleName = ident.text().toString();
         ComputeImports imps = getCandidateFQNs(info, file, simpleName, data);
         if (imps == null) {
@@ -185,7 +191,10 @@ public final class ImportClass implements ErrorRule<Void> {
         String replaceSuffix = null;
         TreePath changePath = null;
 
-        if (path.getLeaf().getKind() == Kind.IMPORT) {
+        if (useFQN) {
+            changePath = path;
+            replaceSuffix = ""; // NOI18N
+        } else if (path.getLeaf().getKind() == Kind.IMPORT) {
             //for import package.*;, the error points to the import tree:
             Tree star = ((ImportTree) path.getLeaf()).getQualifiedIdentifier();
 
@@ -248,8 +257,15 @@ public final class ImportClass implements ErrorRule<Void> {
                 sort.append(orderString);
                 sort.append('#');
                 sort.append(fqn);
-                
-                fixes.add(new FixImport(file, fqn, ElementHandle.create(element), sort.toString(), prefered, info, changePath, replaceSuffix, doOrganize));
+
+                ElementHandle<Element> eh = ElementHandle.create(element);
+                if (useFQN) {
+                    fixes.add(new UseFQN(info, file, fqn, eh, "Z#" + fqn, treePath, prefered, false));
+                    fixes.add(UseFQN.createShared(info, file, fqn, eh, fqn, treePath, prefered));
+                } else {
+                    fixes.add(new FixImport(file, fqn, ElementHandle.create(element), sort.toString(), 
+                            prefered, info, changePath, replaceSuffix, doOrganize));
+                }
             }
         }
         
@@ -318,24 +334,185 @@ public final class ImportClass implements ErrorRule<Void> {
             return imp;
     }
     
-    static final class FixImport implements EnhancedFix {
-
+    @Messages("WRN_FileInvalid=Cannot resolve file - already deleted?")
+    static abstract class FixBase implements EnhancedFix {
+        static final Logger LOG = Logger.getLogger(FixImport.class.getName());
+        protected final String fqn;
+        protected final ElementHandle<Element> toImport;
+        protected final boolean isValid;
         private final FileObject file;
-        private final String fqn;
-        private final ElementHandle<Element> toImport;
         private final String sortText;
-        private final boolean isValid;
+
+        protected WorkingCopy copy;
+        
+        private FixBase(FileObject file, String fqn, ElementHandle<Element> toImport, String sortText, boolean isValid) {
+            this.isValid = isValid;
+            this.file = file;
+            this.fqn = fqn;
+            this.toImport = toImport;
+            this.sortText = sortText;
+        }
+        
+        protected abstract void perform();
+        protected abstract void performDoc(Document doc);
+    
+        public ChangeInfo implement() throws IOException {
+            JavaSource js = JavaSource.forFileObject(file);            
+            
+            Task task = new Task<WorkingCopy>() {
+                public void run(WorkingCopy copy) throws Exception {
+                    if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        return;
+                    }
+                    FixBase.this.copy = copy;
+                    try {
+                        perform();
+                    } finally {
+                        FixBase.this.copy = null;
+                    }
+                }
+            };
+            if (js != null) {
+                js.runModificationTask(task).commit();
+            } else {
+                DataObject od;
+                
+                try {
+                    od = DataObject.find(file);
+                } catch (DataObjectNotFoundException donfe) {
+                    LOG.log(Level.INFO, null, donfe);
+                    StatusDisplayer.getDefault().setStatusText(Bundle.WRN_FileInvalid());
+                    return null;
+                }
+                
+                EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
+                Document doc = ec != null ? ec.openDocument() : null;
+                if (doc != null) {
+                    performDoc(doc);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public int hashCode() {
+            return fqn.hashCode();
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (getClass().isInstance(o)) {
+                return fqn.equals(((FixBase) o).fqn);
+            }
+            return false;
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            return sortText;
+        }
+    }
+    
+    static final class UseFQN extends FixBase {
+        private final boolean all;
+        
+        static UseFQN createShared(CompilationInfo info, 
+                FileObject file, 
+                String fqn, 
+                ElementHandle<Element> toImport, 
+                String sortText, TreePath replacePath, boolean isValid) {
+            
+            String k = UseFQN.class.getName() + "#" + fqn; // NOI18N
+            Object o = info.getCachedValue(k);
+            UseFQN inst;
+            if (o instanceof UseFQN) {
+                inst = (UseFQN)o;
+                inst.addTreePath(TreePathHandle.create(replacePath, info));
+            } else {
+                inst = new UseFQN(info, file, fqn, toImport, sortText, replacePath, isValid, true);
+                info.putCachedValue(k, inst, CompilationInfo.CacheClearPolicy.ON_TASK_END);
+            }
+            return inst;
+        }
+        
+        private final TreePathHandle replacePathHandle;
+        private final Collection<TreePathHandle> additionalLocations = new ArrayList<>();
+        private final String sn;
+        
+        public UseFQN(CompilationInfo info, FileObject file, String fqn, ElementHandle<Element> toImport, String sortText, TreePath replacePath, boolean isValid, 
+                boolean all) {
+            super(file, fqn, toImport, sortText, isValid);
+            this.sn = replacePath.getLeaf().toString();
+            this.replacePathHandle = TreePathHandle.create(replacePath, info);
+            this.all = all;
+        }
+        
+        void addTreePath(TreePathHandle toReplace) {
+            this.additionalLocations.add(toReplace);
+        }
+
+        @Override
+        protected void perform() {
+            TreePath replacePath = replacePathHandle.resolve(copy);
+
+            if (replacePath == null) {
+                Logger.getAnonymousLogger().warning(String.format("Attempt to change import for FQN: %s, but the import cannot be resolved in the current context", fqn));
+                return;
+            }
+            Element el = toImport.resolve(copy);
+            if (el == null) {
+                return;
+            }
+            CharSequence elFQN = copy.getElementUtilities().getElementName(el, true);
+            IdentifierTree id = copy.getTreeMaker().Identifier(elFQN);
+            copy.rewrite(replacePath.getLeaf(), id);
+            
+            for (TreePathHandle tph : additionalLocations) {
+                replacePath = tph.resolve(copy);
+                if (replacePath == null) {
+                    continue;
+                }
+                copy.rewrite(replacePath.getLeaf(), id);
+            }
+        }
+
+        @Override
+        protected void performDoc(Document doc) {
+            // ???
+        }
+        
+        public String getText() {
+            String displayName = all ? 
+                    NbBundle.getMessage(ImportClass.class, "Use_FQN_for_All_X", fqn, sn):
+                    NbBundle.getMessage(ImportClass.class, "Use_FQN_for_X", fqn);
+            if (isValid) {
+                return displayName;
+            } else {
+                return JavaFixAllImports.NOT_VALID_IMPORT_HTML + displayName;
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            boolean x = super.equals(o);
+            if (x) {
+                x = ((UseFQN)o).all == all;
+            }
+            return x;
+        }
+        
+        
+    }
+    
+    static final class FixImport extends FixBase {
         private final @NullAllowed TreePathHandle replacePathHandle;
         private final @NullAllowed String suffix;
         private final boolean statik;
         private final boolean doOrganize;
         
-        public FixImport(FileObject file, String fqn, ElementHandle<Element> toImport, String sortText, boolean isValid, CompilationInfo info, @NullAllowed TreePath replacePath, @NullAllowed String replaceSuffix, boolean doOrganize) {
-            this.file = file;
-            this.fqn = fqn;
-            this.toImport = toImport;
-            this.sortText = sortText;
-            this.isValid = isValid;
+        public FixImport(FileObject file, String fqn, ElementHandle<Element> toImport, String sortText, boolean isValid, CompilationInfo info, @NullAllowed TreePath replacePath, @NullAllowed String replaceSuffix, 
+                boolean doOrganize) {
+            super(file, fqn, toImport, sortText, isValid);
             if (replacePath != null) {
                 this.replacePathHandle = TreePathHandle.create(replacePath, info);
                 this.suffix = replaceSuffix;
@@ -362,98 +539,50 @@ public final class ImportClass implements ErrorRule<Void> {
             }
         }
 
-        @Messages("WRN_FileInvalid=Cannot resolve file - already deleted?")
         @Override
-        public ChangeInfo implement() throws IOException {
-            JavaSource js = JavaSource.forFileObject(file);            
-            
-            Task task = new Task<WorkingCopy>() {
-                    @Override
-                    public void run(WorkingCopy copy) throws Exception {
-                        if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                            return;
-                        }
+        protected void performDoc(Document doc) {
+            String topLevelLanguageMIMEType = doc != null ? NbEditorUtilities.getMimeType(doc) : null;
+            if (topLevelLanguageMIMEType != null) {
+                Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
+                Collection<? extends ImportProcessor> instances = lookup.lookupAll(ImportProcessor.class);
 
-                        //XXX:
-                        if (replacePathHandle != null) {
-                            TreePath replacePath = replacePathHandle.resolve(copy);
+                for (ImportProcessor importsProcesor : instances) {
+                    importsProcesor.addImport(doc, fqn);
+                }
+            }
+        }
 
-                            if (replacePath == null) {
-                                Logger.getAnonymousLogger().warning(String.format("Attempt to change import for FQN: %s, but the import cannot be resolved in the current context", fqn));
-                                return;
-                            }
+        @Override
+        protected void perform() {
+            if (replacePathHandle != null) {
+                TreePath replacePath = replacePathHandle.resolve(copy);
 
-                            copy.rewrite(replacePath.getLeaf(), copy.getTreeMaker().Identifier(fqn));
+                if (replacePath == null) {
+                    Logger.getAnonymousLogger().warning(String.format("Attempt to change import for FQN: %s, but the import cannot be resolved in the current context", fqn));
+                    return;
+                }
 
-                            return;
-                        }
-                  
-                        Element te = toImport.resolve(copy);
-                        
-                        if (te == null) {
-                            Logger.getAnonymousLogger().warning(String.format("Attempt to fix import for FQN: %s, which does not have a TypeElement in currect context", fqn));
-                            return ;
-                        }
-                        
-                        if (doOrganize) {
-                            OrganizeImports.doOrganizeImports(copy, Collections.singleton(te), false);
-                        } else {
-                            CompilationUnitTree cut = GeneratorUtilities.get(copy).addImports(
-                                copy.getCompilationUnit(),
-                                Collections.singleton(te)
-                            );                        
-                            copy.rewrite(copy.getCompilationUnit(), cut);
-                        }
-                    }
-                    
-            };
+                copy.rewrite(replacePath.getLeaf(), copy.getTreeMaker().Identifier(fqn));
 
-            if (js != null) {
-                js.runModificationTask(task).commit();
+                return;
+            }
+
+            Element te = toImport.resolve(copy);
+
+            if (te == null) {
+                Logger.getAnonymousLogger().warning(String.format("Attempt to fix import for FQN: %s, which does not have a TypeElement in currect context", fqn));
+                return ;
+            }
+
+            if (doOrganize) {
+                OrganizeImports.doOrganizeImports(copy, Collections.singleton(te), false);
             } else {
-                DataObject od;
-                
-                try {
-                    od = DataObject.find(file);
-                } catch (DataObjectNotFoundException donfe) {
-                    LOG.log(Level.INFO, null, donfe);
-                    StatusDisplayer.getDefault().setStatusText(Bundle.WRN_FileInvalid());
-                    return null;
-                }
-                
-                EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
-                Document doc = ec != null ? ec.openDocument() : null;
-                String topLevelLanguageMIMEType = doc != null ? NbEditorUtilities.getMimeType(doc) : null;
-                if (topLevelLanguageMIMEType != null) {
-                    Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
-                    Collection<? extends ImportProcessor> instances = lookup.lookupAll(ImportProcessor.class);
-
-                    for (ImportProcessor importsProcesor : instances) {
-                        importsProcesor.addImport(doc, fqn);
-                    }
-                }
+                CompilationUnitTree cut = GeneratorUtilities.get(copy).addImports(
+                    copy.getCompilationUnit(),
+                    Collections.singleton(te)
+                );                        
+                copy.rewrite(copy.getCompilationUnit(), cut);
             }
-            return null;
-        }
-        private static final Logger LOG = Logger.getLogger(FixImport.class.getName());
-        
-        @Override
-        public int hashCode() {
-            return fqn.hashCode();
-        }
-        
-        @Override
-        public boolean equals(Object o) {
-            if (o instanceof FixImport) {
-                return fqn.equals(((FixImport) o).fqn);
-            }
-            
-            return false;
-        }
-
-        @Override
-        public CharSequence getSortText() {
-            return sortText;
         }
     }
 }

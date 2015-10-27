@@ -70,11 +70,10 @@ import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords={"#KW.GruntOptionsPanel"}, location="Html5", tabTitle= "Grunt")
-public class GruntOptionsPanel extends JPanel implements HelpCtx.Provider {
+public class GruntOptionsPanel extends JPanel {
 
     private static final Logger LOGGER = Logger.getLogger(GruntOptionsPanel.class.getName());
 
@@ -128,11 +127,6 @@ public class GruntOptionsPanel extends JPanel implements HelpCtx.Provider {
 
     void fireChange() {
         changeSupport.fireChange();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanel"); // NOI18N
     }
 
     /**

@@ -49,6 +49,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -62,7 +64,7 @@ import org.netbeans.modules.javaee.wildfly.config.gen.EjbRefType;
 import org.netbeans.modules.javaee.wildfly.config.gen.JbossWeb;
 import org.netbeans.modules.javaee.wildfly.config.gen.MessageDestinationRefType;
 import org.netbeans.modules.javaee.wildfly.config.gen.ResourceRefType;
-import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
+import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupportImpl;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.modules.schema2beans.AttrProp;
 import org.netbeans.modules.schema2beans.Common;
@@ -73,7 +75,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -87,7 +88,7 @@ import org.openide.util.lookup.Lookups;
 public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
         implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguration,
         DeploymentPlanConfiguration, PropertyChangeListener {
-
+    private static final Logger LOGGER = Logger.getLogger(WarDeploymentConfiguration.class.getName());
     private File jbossWebFile;
     private JbossWeb jbossWeb;
 
@@ -109,7 +110,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                     deploymentDescriptorDO.addPropertyChangeListener(this);
                 }
             } catch (DataObjectNotFoundException donfe) {
-                Exceptions.printStackTrace(donfe);
+                LOGGER.log(Level.WARNING, null, donfe);
             }
         }
     }
@@ -224,7 +225,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                         addConnectionFactoryReference(resourceRef.getResRefName());
                     }
                 } catch (ConfigurationException ce) {
-                    Exceptions.printStackTrace(ce);
+                    LOGGER.log(Level.WARNING, null, ce);
                 }
             } else if (newValue instanceof org.netbeans.modules.j2ee.dd.api.common.EjbRef) {
                 // a new ejb reference added
@@ -235,7 +236,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                         addEjbReference(ejbRef.getEjbRefName(), ejbRef.getEjbRefName());
                     }
                 } catch (ConfigurationException ce) {
-                    Exceptions.printStackTrace(ce);
+                    LOGGER.log(Level.WARNING, null, ce);
                 }
             } else if (newValue instanceof org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef) {
                 //a new message destination reference added
@@ -246,7 +247,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                             ? WildflyMessageDestination.QUEUE_PREFIX : WildflyMessageDestination.TOPIC_PREFIX;
                     addMsgDestReference(messageDestinationRef.getMessageDestinationRefName(), destPrefix);
                 } catch (ConfigurationException ce) {
-                    Exceptions.printStackTrace(ce);
+                    LOGGER.log(Level.WARNING, null, ce);
                 }
             }
         }
@@ -368,7 +369,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                 //if it doesn't exist yet, create a new one
                 ResourceRefType newRR = new ResourceRefType();
                 newRR.setResRefName(name);
-                newRR.setJndiName(MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4);
+                newRR.setJndiName(MessageDestinationSupportImpl.CONN_FACTORY_JNDI_NAME_JB4);
                 modifiedJbossWeb.addResourceRef(newRR);
             }
         });
@@ -455,7 +456,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
                 try {
                     jbossWeb = JbossWeb.createGraph(jbossWebFile);
                 } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                    LOGGER.log(Level.WARNING, null, ioe);
                 } catch (RuntimeException re) {
                     // jboss-web.xml is not parseable, do nothing
                 }
@@ -558,7 +559,7 @@ public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
             }
         } catch (BadLocationException ble) {
             // this should not occur, just log it if it happens
-            Exceptions.printStackTrace(ble);
+                LOGGER.log(Level.WARNING, null, ble);
         } catch (IOException ioe) {
             String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotUpdateFile", jbossWebFile.getAbsolutePath());
             throw new ConfigurationException(msg, ioe);

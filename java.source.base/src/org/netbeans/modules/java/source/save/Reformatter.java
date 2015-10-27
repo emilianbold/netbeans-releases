@@ -2116,26 +2116,31 @@ public class Reformatter implements ReformatTask {
                 }
                 accept(ELSE);
                 if (elseStat.getKind() == Tree.Kind.IF && cs.specialElseIf()) {
-                    space();
-                    scan(elseStat, p);
-                } else {
-                    WrapStyle wrapElse;
-                    boolean preserveNewLine = true;
-                    if (cs.specialElseIf() && elseStat.getKind() == Tree.Kind.BLOCK
-                            && ((BlockTree)elseStat).getStatements().size() == 1
-                            && ((BlockTree)elseStat).getStatements().get(0).getKind() == Tree.Kind.IF) {
-                        redundantIfBraces = CodeStyle.BracesGenerationStyle.ELIMINATE;
-                        wrapElse = CodeStyle.WrapStyle.WRAP_NEVER;
-                        preserveNewLine = false;
-                        lastIndent -= indentSize;
-                    } else {
-                        redundantIfBraces = cs.redundantIfBraces();
-                        if (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
-                            redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
-                        wrapElse = cs.wrapIfStatement();
+                    int index = tokens.index();
+                    int c = col;
+                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                    if (!spaces(1, false)) {
+                        scan(elseStat, p);
+                        return true;
                     }
-                    wrapStatement(wrapElse, redundantIfBraces, cs.spaceBeforeElseLeftBrace() ? 1 : 0, preserveNewLine, elseStat);
+                    rollback(index, c, d);
                 }
+                WrapStyle wrapElse;
+                boolean preserveNewLine = true;
+                if (cs.specialElseIf() && elseStat.getKind() == Tree.Kind.BLOCK
+                        && ((BlockTree)elseStat).getStatements().size() == 1
+                        && ((BlockTree)elseStat).getStatements().get(0).getKind() == Tree.Kind.IF) {
+                    redundantIfBraces = CodeStyle.BracesGenerationStyle.ELIMINATE;
+                    wrapElse = CodeStyle.WrapStyle.WRAP_NEVER;
+                    preserveNewLine = false;
+                    lastIndent -= indentSize;
+                } else {
+                    redundantIfBraces = cs.redundantIfBraces();
+                    if (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
+                        redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
+                    wrapElse = cs.wrapIfStatement();
+                }
+                wrapStatement(wrapElse, redundantIfBraces, cs.spaceBeforeElseLeftBrace() ? 1 : 0, preserveNewLine, elseStat);
             }
             return true;
         }
@@ -3111,6 +3116,7 @@ public class Reformatter implements ReformatTask {
                         lastWSToken = tokens.token();
                         break;
                     case LINE_COMMENT:
+                        containedNewLine = true;
                         if (lastWSToken != null) {
                             String spaces = after == 1 //after line comment
                                     ? getIndent()
@@ -3120,7 +3126,6 @@ public class Reformatter implements ReformatTask {
                             String text = lastWSToken.text().toString();
                             int idx = text.lastIndexOf('\n'); //NOI18N
                             if (idx >= 0) {
-                                containedNewLine = true;
                                 if (preserveNewline) {
                                     spaces = getNewlines(1) + getIndent();
                                     lastBlankLines = 1;
@@ -3363,21 +3368,34 @@ public class Reformatter implements ReformatTask {
                                 lastIdx = idx + 1;
                                 maxCount--;
                                 count--;
+                                beforeCnt--;
                             }
                             if ((idx = text.lastIndexOf('\n')) >= 0) { //NOI18N
                                 if (idx > lastIdx)
                                     addDiff(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }
-                            if (lastIdx > 0) {
-                                String ind = getIndent();
-                                if (!ind.contentEquals(text.substring(lastIdx)))
-                                    addDiff(new Diff(offset + lastIdx, tokens.offset(), ind));
-                                col = indent();
+                            if (lastIdx == 0 && count < 0 && after != 1) {
+                                count = 0;
                             }
+                            String ind;
+                            if (pendingDiff != null) {
+                                pendingDiff.text = beforeCnt < 0 ? getIndent() : getNewlines(count) + getIndent();
+                                if (!pendingDiff.text.contentEquals(pendingText)) {
+                                    addDiff(pendingDiff);
+                                    pendingDiff = null;
+                                }
+                                ind = after == 3 ? SPACE : beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
+                            } else {
+                                ind = after == 3 ? SPACE : getNewlines(count) + getIndent();
+                            }
+                            if (!ind.contentEquals(text.substring(lastIdx)))
+                                addDiff(new Diff(offset + lastIdx, tokens.offset(), ind));
                             lastToken = null;
+                            col = after == 3 ? col + 1 : indent();
                         }
                         reformatComment();
+                        count = 0;
                         after = 3;
                         break;
                     case JAVADOC_COMMENT:
@@ -3464,7 +3482,13 @@ public class Reformatter implements ReformatTask {
                                     addDiff(new Diff(offset, tokens.offset(), indent));
                             } else if (lastIdx > 0 && lastIdx < lastToken.length()) {
                                 pendingText = text.substring(lastIdx);
-                                pendingDiff = new Diff(offset + lastIdx, tokens.offset(), null);
+                                String indent = getIndent();
+                                if (!indent.contentEquals(pendingText)) {
+                                    addDiff(new Diff(offset + lastIdx, tokens.offset(), indent));
+                                    pendingText = null;
+                                } else {
+                                    pendingDiff = new Diff(offset + lastIdx, tokens.offset(), null);
+                                }
                             }
                             lastToken = null;
                         }
@@ -4092,6 +4116,7 @@ public class Reformatter implements ReformatTask {
             LinkedList<Pair<Integer, Integer>> marks = new LinkedList<Pair<Integer, Integer>>();
             int maxParamNameLength = 0;
             int maxExcNameLength = 0;
+            int initTextEndOffset = Integer.MAX_VALUE;
             if (javadocTokens != null) {
                 int state = 0; // 0 - initial text, 1 - after param tag, 2 - param description, 3 - return description,
                                // 4 - after throws tag, 5 - exception description, 6 - after pre tag, 7 - after other tag
@@ -4135,6 +4160,9 @@ public class Reformatter implements ReformatTask {
                                 if (insideTag)
                                     break;
                                 newState = 7;
+                            }
+                            if (lastWSOffset < initTextEndOffset && newState > 0) {
+                                initTextEndOffset = lastWSOffset;
                             }
                             if (currWSOffset >= 0 && afterText) {
                                 addMark(Pair.of(currWSOffset, state == 0 && cs.blankLineAfterJavadocDescription()
@@ -4336,6 +4364,9 @@ public class Reformatter implements ReformatTask {
             boolean noFormat = bof;
             int align = -1;
             for (int i = start; i < text.length(); i++) {
+                if (i >= initTextEndOffset) {
+                    blankLineString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR : EMPTY;
+                }
                 char c = text.charAt(i);
                 if (Character.isWhitespace(c)) {
                     if (enableCommentFormatting) {
@@ -4487,11 +4518,13 @@ public class Reformatter implements ReformatTask {
                             }
                             lastNewLinePos = -1;
                             if (c == '*') {
+                                int diff = 0;
                                 while(++i < text.length()) {
                                     col++;
                                     c = text.charAt(i);
                                     if (c == '\n') {
-                                        pendingDiff.text = NEWLINE + blankLineString;
+                                        pendingDiff.text = NEWLINE + blankLineString + NEWLINE;
+                                        diff++;
                                         preserveNewLines = true;
                                         lastNewLinePos = i;
                                         align = -1;
@@ -4501,7 +4534,7 @@ public class Reformatter implements ReformatTask {
                                     }
                                 }
                                 if (pendingDiff != null) {
-                                    int diff = offset + i - pendingDiff.end;
+                                    diff += offset + i - pendingDiff.end;
                                     pendingDiff.end += diff;
                                     col -= diff;
                                 }
@@ -4540,7 +4573,7 @@ public class Reformatter implements ReformatTask {
                                                 } else {
                                                     if (pendingDiff != null) {
                                                         pendingDiff.end = offset + i;
-                                                        pendingDiff.text = blankLineString;
+                                                        pendingDiff.text = NEWLINE + blankLineString;
                                                     } else {
                                                         pendingDiff = new Diff(offset + lastNewLinePos + 1, offset + i, blankLineString);
                                                     }
@@ -4552,8 +4585,8 @@ public class Reformatter implements ReformatTask {
                                                         addDiff(pendingDiff);
                                                     }
                                                 }
-                                                pendingDiff = new Diff(offset + currWSPos, offset + i, javadocTokens != null && lastNWSPos >= 0 && cs.generateParagraphTagOnBlankLines() ? SPACE + P_TAG : EMPTY);
-                                            } else if (javadocTokens != null && lastNWSPos >= 0 && cs.generateParagraphTagOnBlankLines()) {
+                                                pendingDiff = new Diff(offset + currWSPos, offset + i, javadocTokens != null && lastNWSPos >= 0 && i < initTextEndOffset && cs.generateParagraphTagOnBlankLines() ? SPACE + P_TAG : EMPTY);
+                                            } else if (javadocTokens != null && lastNWSPos >= 0 && i < initTextEndOffset && cs.generateParagraphTagOnBlankLines()) {
                                                 if (pendingDiff != null) {
                                                     String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
                                                     if (!sub.equals(pendingDiff.text)) {

@@ -65,7 +65,6 @@ import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
-import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.InsertPoint;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.Javadoc;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.SortBy;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -406,7 +405,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
 
             Encapsulator encapsulator = new Encapsulator(
                     Collections.singletonList(desc), desc.p,
-                    refactoring.getContext().lookup(InsertPoint.class),
+                    refactoring.getContext().lookup(Integer.class),
                     refactoring.getContext().lookup(SortBy.class),
                     refactoring.getContext().lookup(Javadoc.class));
 
@@ -500,7 +499,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
     static final class Encapsulator extends RefactoringVisitor {
 
         private final FileObject sourceFile;
-        private final InsertPoint insertPoint;
+        private final Integer insertPoint;
         private final SortBy sortBy;
         private final Javadoc javadocType;
         private Problem problem;
@@ -508,12 +507,12 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         private Map<VariableElement, EncapsulateDesc> fields;
         private boolean setterUsed;
 
-        public Encapsulator(List<EncapsulateDesc> descs, Problem problem, InsertPoint ip, SortBy sortBy, Javadoc jd) {
+        public Encapsulator(List<EncapsulateDesc> descs, Problem problem, Integer ip, SortBy sortBy, Javadoc jd) {
             assert descs != null && descs.size() > 0;
             this.sourceFile = descs.get(0).fieldHandle.getFileObject();
             this.descs = descs;
             this.problem = problem;
-            this.insertPoint = ip == null ? InsertPoint.DEFAULT : ip;
+            this.insertPoint = ip == null ? Integer.MIN_VALUE : ip;
             this.sortBy = sortBy == null ? SortBy.PAIRS : sortBy;
             this.javadocType = jd == null ? Javadoc.NONE : jd;
         }
@@ -609,17 +608,21 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         if (sortBy == SortBy.ALPHABETICALLY) {
                             Collections.sort(newMembers, new SortMethodsByNameComparator());
                         }
-                        if (insertPoint == InsertPoint.DEFAULT) {
-                            nct = GeneratorUtilities.get(workingCopy).insertClassMembers(node, newMembers);
+                        if (insertPoint < 0) {
+                            if(insertPoint > Integer.MIN_VALUE) {
+                                nct = GeneratorUtilities.get(workingCopy).insertClassMembers(node, newMembers, Math.abs(insertPoint));
+                            } else {
+                                nct = GeneratorUtilities.get(workingCopy).insertClassMembers(node, newMembers);
+                            }
                         } else {
                             List<? extends Tree> members = node.getMembers();
-                            if (insertPoint.getIndex() >= members.size()) {
+                            if (insertPoint >= members.size()) {
                                 // last method
                                 for (Tree mt : newMembers) {
                                     nct = make.addClassMember(nct, mt);
                                 }
                             } else {
-                                int idx = insertPoint.getIndex();
+                                int idx = insertPoint;
                                 for (Tree mt : newMembers) {
                                     nct = make.insertClassMember(nct, idx++, mt);
                                 }

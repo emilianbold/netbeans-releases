@@ -89,7 +89,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         if (zzState == YYINITIAL && zzLexicalState == YYINITIAL) {
             return null;
         }
-        return new LexerState(zzState, zzLexicalState, canFollowTag, indent, hasCssId, lastTag);
+        return new LexerState(zzState, zzLexicalState, canFollowTag, indent, hasCssId, lastTag, braceBalance, parenBalance, bracketBalance);
     }
 
     public void setState(LexerState state) {
@@ -99,6 +99,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.indent = state.indent;
         this.hasCssId = state.hasCssId;
         this.lastTag = state.lastTag;
+        this.braceBalance = state.braceBalance;
+        this.parenBalance = state.parenBalance;
+        this.bracketBalance = state.bracketBalance;
     }
 
     public JadeTokenId nextToken() throws java.io.IOException {
@@ -117,14 +120,21 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         final boolean hasCssId;
         /** last readed tag to switch embeding of js , css or html*/
         final TAG_TYPE lastTag;
+        /** balance of brances */
+        final int braceBalance;
+        final int parenBalance;
+        final int bracketBalance;
 
-        LexerState (int zzState, int zzLexicalState, boolean canFollowTag, int indent, boolean hasCssId, TAG_TYPE lastTag) {
+        LexerState (int zzState, int zzLexicalState, boolean canFollowTag, int indent, boolean hasCssId, TAG_TYPE lastTag, int braceBalance, int parenBalance, int bracketBalance) {
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.canFollowTag = canFollowTag;
             this.indent = indent;
             this.hasCssId = hasCssId;
             this.lastTag = lastTag;
+            this.braceBalance = braceBalance;
+            this.parenBalance = parenBalance;
+            this.bracketBalance = bracketBalance;
         }
 
         @Override
@@ -154,6 +164,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             if (this.lastTag != other.lastTag) {
                 return false;
             }
+            if ((this.braceBalance != other.braceBalance) || (this.parenBalance != other.parenBalance) || (this.bracketBalance != other.bracketBalance)) {
+                return false;
+            }
             return true;
         }
 
@@ -166,6 +179,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             hash = 31 * hash + (this.hasCssId ? 0 : 1);
             hash = 31 * hash + this.indent;
             hash = 31 * hash + this.lastTag.hashCode();
+            hash = 31 * hash + this.braceBalance;
+            hash = 31 * hash + this.parenBalance;
+            hash = 31 * hash + this.bracketBalance;
             return hash;
         }
 

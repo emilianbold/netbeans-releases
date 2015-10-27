@@ -234,6 +234,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocation"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.gridy = 1;
         add(jLabel1, gridBagConstraints);
         locationTextField.setColumns(15);
@@ -246,7 +247,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(locationTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
@@ -259,7 +260,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(jButton1, gridBagConstraints);
         jButton1.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
         jButton1.getAccessibleContext().setAccessibleDescription("ACSD_Browse_Button_InstallLoc");
@@ -268,6 +269,8 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ConfigurationLocation"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         gridBagConstraints.gridy = 2;
         add(jLabel2, gridBagConstraints);
         configurationTextField.setColumns(15);
@@ -280,7 +283,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(configurationTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton2, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
@@ -293,7 +296,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jButton2, gridBagConstraints);
         jButton2.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
         jButton2.getAccessibleContext().setAccessibleDescription("ACSD_Browse_Button_InstallLoc");
@@ -322,15 +325,24 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         String newLoc = browseInstallLocation();
         if (newLoc != null && !"".equals(newLoc)) {
             locationTextField.setText(newLoc);
-            if (configurationTextField.getText() == null || configurationTextField.getText().isEmpty()) {
-                configurationTextField.setText(newLoc + File.separatorChar
+            String configurationFilePath = newLoc + File.separatorChar
                         + "standalone" + File.separatorChar + "configuration"
-                        + File.separatorChar + "standalone-full.xml");
+                        + File.separatorChar + "standalone-full.xml";
+            if (configurationTextField.getText() == null || configurationTextField.getText().isEmpty()) {
+                if (new File(configurationFilePath).exists()) {
+                    configurationTextField.setText(configurationFilePath);
+                }
             } else if (!configurationTextField.getText().startsWith(newLoc)) {
-                NotifyDescriptor d = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(AddServerLocationVisualPanel.class, "MSG_WARN_INSTALLATION_DIFFERS_CONFIGURATION"),
-                        NotifyDescriptor.WARNING_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
+                NotifyDescriptor d = new NotifyDescriptor.Confirmation(
+                        NbBundle.getMessage(AddServerLocationVisualPanel.class, "MSG_WARN_INSTALLATION_DIFFERS_CONFIGURATION", configurationFilePath),
+                        NotifyDescriptor.OK_CANCEL_OPTION);
+                Object result = DialogDisplayer.getDefault().notify(d);
+                if (result == NotifyDescriptor.CANCEL_OPTION) {
+                    // keep the old content
+                    return;
+                } else {
+                    configurationTextField.setText(configurationFilePath);
+                }
             }
         }
     }

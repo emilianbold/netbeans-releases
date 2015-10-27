@@ -201,6 +201,17 @@ public class ModelUtils {
                     break;
                 }
             }
+            if ( object.getJSKind() == JsElement.Kind.WITH_OBJECT) {
+                for (JsWith innerWith :((JsWith)object).getInnerWiths()){
+                    if (!visited.contains(innerWith.getFullyQualifiedName())) {
+                        tmpObject = findJsObject(innerWith, offset, visited);
+                    }
+                    if (tmpObject != null) {
+                        result = tmpObject;
+                        break;
+                    }
+                }
+            }
             if (object instanceof JsArray) {
                 JsArray array = (JsArray)object;
                 for (TypeUsage type : array.getTypesInArray()) {

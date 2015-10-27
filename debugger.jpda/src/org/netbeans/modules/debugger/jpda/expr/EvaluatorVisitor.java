@@ -1984,13 +1984,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             elm = evaluationContext.getTrees().getElement(identifierPath);
             if (elm instanceof TypeElement && ((TypeElement) elm).asType() instanceof ErrorType) {
-                switch(elm.getKind()) {
-                    case ANNOTATION_TYPE:
-                    case CLASS:
-                    case ENUM:
-                    case INTERFACE:
-                        Assert.error(arg0, "unknownType", ((TypeElement) elm).getQualifiedName().toString());
-                }
                 currentPath = null; // Elements not resolved correctly
             }
         }
@@ -2570,6 +2563,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         ExpressionTree classIdentifier = arg0.getIdentifier();
         Mirror clazz = classIdentifier.accept(this, evaluationContext);
+        if (!(clazz instanceof ClassType)) {
+            Assert.error(classIdentifier, "unknownType", classIdentifier.toString());
+        }
         ClassType classType = (ClassType) clazz;
         //ReferenceType classType = getClassType(arg0, cType, evaluationContext);
         List<? extends ExpressionTree> args = arg0.getArguments();

@@ -47,13 +47,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -119,7 +120,8 @@ public class AddUseImportSuggestion extends SuggestionRule {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        if (fileObject == null || CodeUtils.isPhp52(fileObject)) {
+        if (fileObject == null
+                || CodeUtils.isPhpVersionLessThan(fileObject, PhpVersion.PHP_53)) {
             return;
         }
         int caretOffset = getCaretOffset();
@@ -304,7 +306,7 @@ public class AddUseImportSuggestion extends SuggestionRule {
             EditList edits = new EditList(doc);
             edits.replace(templateOffset, 0, "\n" + getGeneratedCode(), true, 0); //NOI18N
             edits.apply();
-            UiUtils.open(scope.getFileObject(), Utilities.getRowStart(doc, getOffsetRange().getEnd()));
+            UiUtils.open(scope.getFileObject(), LineDocumentUtils.getLineStart(doc, getOffsetRange().getEnd()));
         }
 
         private String getGeneratedCode() {
@@ -313,7 +315,7 @@ public class AddUseImportSuggestion extends SuggestionRule {
 
         private int getOffset() {
             try {
-                return Utilities.getRowEnd(doc, getReferenceElement().getOffset());
+                return LineDocumentUtils.getLineEnd(doc, getReferenceElement().getOffset());
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -377,7 +379,7 @@ public class AddUseImportSuggestion extends SuggestionRule {
             EditList edits = new EditList(doc);
             edits.replace(templateOffset, oldName.toString().length(), getGeneratedCode(), true, 0); //NOI18N
             edits.apply();
-            UiUtils.open(scope.getFileObject(), Utilities.getRowStart(doc, templateOffset));
+            UiUtils.open(scope.getFileObject(), LineDocumentUtils.getLineStart(doc, templateOffset));
         }
 
         private String getGeneratedCode() {
