@@ -39,60 +39,21 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.remote.Demuxer;
-import org.openide.windows.InputOutput;
+package org.netbeans.modules.docker;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerOutputTask implements Runnable {
+public class ContainerInfo {
 
-    private static final Logger LOGGER = Logger.getLogger(DockerOutputTask.class.getName());
+    private final boolean tty;
 
-    private final InputOutput io;
-
-    private final DockerRemote.LogResult logResult;
-
-    public DockerOutputTask(InputOutput io, DockerRemote.LogResult logResult) {
-        this.io = io;
-        this.logResult = logResult;
+    public ContainerInfo(boolean tty) {
+        this.tty = tty;
     }
 
-    @Override
-    public void run() {
-        Demuxer demux = new Demuxer(logResult.getLogStream());
-        Demuxer.Result r;
-        try {
-            while ((r = demux.getNext()) != null) {
-                String value = new String(r.getData(), "UTF-8");
-                if (r.isError()) {
-                    io.getErr().print(value);
-                } else {
-                    io.getOut().print(value);
-                }
-            }
-        } catch (UnsupportedEncodingException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        } finally {
-            close();
-        }
-    }
-
-    private void close() {
-        io.getOut().close();
-        try {
-            logResult.close();
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
+    public boolean hasTty() {
+        return tty;
     }
 }

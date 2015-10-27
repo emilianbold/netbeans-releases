@@ -54,53 +54,47 @@ import java.util.logging.Logger;
  *
  * @author Petr Hejl
  */
-public class StreamDemultiplexer implements StreamResult {
+public class DockerStreamResult implements StreamResult {
 
-    private static final Logger LOGGER = Logger.getLogger(StreamDemultiplexer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DockerStreamResult.class.getName());
 
     private final Socket s;
 
     private final OutputStream outputStream;
 
-    private final Demultiplexer demultiplexer;
+    private final Demuxer demultiplexer;
 
     private final InputStream stdOut;
 
     private final InputStream stdErr;
 
-    private Demultiplexer.Result last = Demultiplexer.Result.EMPTY;
+    private Demuxer.Result last = Demuxer.Result.EMPTY;
 
     private int remaining;
 
-    public StreamDemultiplexer(Socket s) throws IOException {
+    public DockerStreamResult(Socket s, InputStream is) throws IOException {
         this.s = s;
         this.outputStream = s.getOutputStream();
-        this.demultiplexer = new Demultiplexer(s.getInputStream());
+        this.demultiplexer = new Demuxer(is == null ? s.getInputStream() : is);
         this.stdOut = new ResultInputStream(false);
         this.stdErr = new ResultInputStream(true);
     }
 
     public OutputStream getStdIn() {
-        return new FilterOutputStream(outputStream) {
-            @Override
-            public void write(byte[] b, int off, int len) throws IOException {
-                byte[] buffer = new byte[8];
-                ByteBuffer.wrap(buffer).putInt(4, len);
-                out.write(buffer);
-                out.write(b, off, len);
-                out.flush();
-            }
-
-            @Override
-            public void write(int b) throws IOException {
-                byte[] buffer = new byte[9];
-                ByteBuffer.wrap(buffer).putInt(4, 1);
-                buffer[8] = (byte) b;
-                out.write(buffer);
-                out.flush();
-            }
-        };
-//        return outputStream;
+//        return new FilterOutputStream(outputStream) {
+//            @Override
+//            public void write(byte[] b, int off, int len) throws IOException {
+//                out.write(b, off, len);
+//                out.flush();
+//            }
+//
+//            @Override
+//            public void write(int b) throws IOException {
+//                out.write(b);
+//                out.flush();
+//            }
+//        };
+        return outputStream;
     }
 
     public InputStream getStdOut() {
@@ -109,6 +103,11 @@ public class StreamDemultiplexer implements StreamResult {
 
     public InputStream getStdErr() {
         return stdErr;
+    }
+
+    @Override
+    public boolean hasTty() {
+        return false;
     }
 
     @Override
@@ -131,7 +130,7 @@ public class StreamDemultiplexer implements StreamResult {
 
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
-            synchronized (StreamDemultiplexer.this) {
+            synchronized (DockerStreamResult.this) {
                 int size = fetchData();
                 if (size <= 0) {
                     return size;
@@ -146,7 +145,7 @@ public class StreamDemultiplexer implements StreamResult {
 
         @Override
         public int read() throws IOException {
-            synchronized (StreamDemultiplexer.this) {
+            synchronized (DockerStreamResult.this) {
                 int size = fetchData();
                 if (size <= 0) {
                     return size;
@@ -159,7 +158,7 @@ public class StreamDemultiplexer implements StreamResult {
         }
 
         private int fetchData() {
-            synchronized (StreamDemultiplexer.this) {
+            synchronized (DockerStreamResult.this) {
                 if (last == null) {
                     return -1;
                 }
@@ -171,10 +170,10 @@ public class StreamDemultiplexer implements StreamResult {
                     remaining = last.getData().length;
                 }
 
-                StreamDemultiplexer.this.notifyAll();
+                DockerStreamResult.this.notifyAll();
                 try {
                     while (remaining == 0 || last.isError() != error) {
-                        StreamDemultiplexer.this.wait();
+                        DockerStreamResult.this.wait();
                     }
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();

@@ -39,60 +39,91 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui;
+package org.netbeans.modules.docker.remote;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.remote.Demuxer;
-import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerOutputTask implements Runnable {
+public class Demuxer {
 
-    private static final Logger LOGGER = Logger.getLogger(DockerOutputTask.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Demuxer.class.getName());
 
-    private final InputOutput io;
+    private final InputStream is;
 
-    private final DockerRemote.LogResult logResult;
-
-    public DockerOutputTask(InputOutput io, DockerRemote.LogResult logResult) {
-        this.io = io;
-        this.logResult = logResult;
+    public Demuxer(InputStream is) {
+        this.is = is;
     }
 
-    @Override
-    public void run() {
-        Demuxer demux = new Demuxer(logResult.getLogStream());
-        Demuxer.Result r;
+    public Result getNext() {
+        byte[] buffer = new byte[8];
+        byte[] content = new byte[256];
+
         try {
-            while ((r = demux.getNext()) != null) {
-                String value = new String(r.getData(), "UTF-8");
-                if (r.isError()) {
-                    io.getErr().print(value);
-                } else {
-                    io.getOut().print(value);
+            int sum = 0;
+            do {
+                int read = is.read(buffer, sum, buffer.length - sum);
+                if (read < 0) {
+                    return null;
                 }
+                sum += read;
+            } while (sum < 8);
+            // now we have 8 bytes
+            assert buffer.length == 8;
+
+            boolean error;
+            int size = ByteBuffer.wrap(buffer).getInt(4);
+            if (buffer[0] == 0 || buffer[0] == 1) {
+                error = false;
+            } else if (buffer[0] == 2) {
+                error = true;
+            } else {
+                throw new IOException("Unparsable stream " + buffer[0]);
             }
-        } catch (UnsupportedEncodingException ex) {
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
+            sum = 0;
+            do {
+                int read = is.read(content, 0, Math.min(size, content.length));
+                if (read < 0) {
+                    return null;
+                }
+                bos.write(content, 0, read);
+                sum += read;
+            } while (sum < size);
+            return new Result(bos.toByteArray(), error);
+        } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
-        } finally {
-            close();
+            return null;
         }
     }
 
-    private void close() {
-        io.getOut().close();
-        try {
-            logResult.close();
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
+    public static class Result {
+
+        public static final Result EMPTY = new Result(new byte[]{}, false);
+
+        private final byte[] data;
+
+        private final boolean error;
+
+        private Result(byte[] data, boolean error) {
+            this.data = data;
+            this.error = error;
+        }
+
+        public byte[] getData() {
+            return data;
+        }
+
+        public boolean isError() {
+            return error;
         }
     }
 }

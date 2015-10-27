@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.lib.terminalemulator.LineDiscipline;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
@@ -121,21 +122,24 @@ public final class UiUtils {
         IOProvider provider = IOProvider.get("Terminal"); // NOI18N
         InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
         if (IOTerm.isSupported(io)) {
+            final Term term = IOTerm.term(io);
+            if (!result.hasTty()) {
+                term.pushStream(new LineDiscipline());
+            }
             IOTerm.connect(io, result.getStdIn(),
                     new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr());
-            if (IOResizable.isSupported(io)) {
-                IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
+            if (result.hasTty()) {
+                if (IOResizable.isSupported(io)) {
+                    IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
+                }
             }
             io.select();
-            if (IOTerm.isSupported(io)) {
-                final Term term = IOTerm.term(io);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        term.requestFocusInWindow();
-                    }
-                });
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    term.requestFocusInWindow();
+                }
+            });
         } else {
             StatusDisplayer.getDefault().setStatusText(Bundle.MSG_NoTerminalSupport());
         }

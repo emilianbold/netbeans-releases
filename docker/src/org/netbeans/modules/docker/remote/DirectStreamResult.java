@@ -41,89 +41,55 @@
  */
 package org.netbeans.modules.docker.remote;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.OutputStream;
+import java.net.Socket;
 
 /**
  *
  * @author Petr Hejl
  */
-public class Demultiplexer {
+public class DirectStreamResult implements StreamResult {
 
-    private static final Logger LOGGER = Logger.getLogger(Demultiplexer.class.getName());
+    private final Socket s;
 
-    private final InputStream is;
+    private final OutputStream stdIn;
 
-    public Demultiplexer(InputStream is) {
-        this.is = is;
+    private final InputStream stdOut;
+
+    private final InputStream stdErr;
+
+    DirectStreamResult(Socket s, InputStream is) throws IOException {
+        this.s = s;
+        this.stdIn = s.getOutputStream();
+        this.stdOut = is == null ? s.getInputStream() : is;
+        this.stdErr = null;
     }
 
-    public Result getNext() {
-        byte[] buffer = new byte[8];
-        byte[] content = new byte[256];
-
-        try {
-            int sum = 0;
-            do {
-                int read = is.read(buffer, sum, buffer.length - sum);
-                if (read < 0) {
-                    return null;
-                }
-                sum += read;
-            } while (sum < 8);
-            // now we have 8 bytes
-            assert buffer.length == 8;
-
-            boolean error;
-            int size = ByteBuffer.wrap(buffer).getInt(4);
-            if (buffer[0] == 0 || buffer[0] == 1) {
-                error = false;
-            } else if (buffer[0] == 2) {
-                error = true;
-            } else {
-                throw new IOException("Unparsable stream " + buffer[0]);
-            }
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
-            sum = 0;
-            do {
-                int read = is.read(content, 0, Math.min(size, content.length));
-                if (read < 0) {
-                    return null;
-                }
-                bos.write(content, 0, read);
-                sum += read;
-            } while (sum < size);
-            return new Result(bos.toByteArray(), error);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            return null;
-        }
+    @Override
+    public OutputStream getStdIn() {
+        return stdIn;
     }
 
-    public static class Result {
-
-        public static final Result EMPTY = new Result(new byte[]{}, false);
-
-        private final byte[] data;
-
-        private final boolean error;
-
-        private Result(byte[] data, boolean error) {
-            this.data = data;
-            this.error = error;
-        }
-
-        public byte[] getData() {
-            return data;
-        }
-
-        public boolean isError() {
-            return error;
-        }
+    @Override
+    public InputStream getStdOut() {
+        return stdOut;
     }
+
+    @Override
+    public InputStream getStdErr() {
+        return stdErr;
+    }
+
+    @Override
+    public boolean hasTty() {
+        return true;
+    }
+
+    @Override
+    public void close() throws IOException {
+        s.close();
+    }
+
 }

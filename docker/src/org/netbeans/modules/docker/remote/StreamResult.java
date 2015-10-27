@@ -56,4 +56,7 @@ public interface StreamResult extends Closeable {
     InputStream getStdOut();
 
     InputStream getStdErr();
+
+    boolean hasTty();
+
 }

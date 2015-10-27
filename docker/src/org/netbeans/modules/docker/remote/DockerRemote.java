@@ -68,7 +68,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.CheckedInputStream;
 import javax.swing.SwingUtilities;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -76,6 +75,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.docker.ContainerInfo;
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
@@ -161,6 +161,17 @@ public class DockerRemote {
         }
     }
 
+    public ContainerInfo getInfo(DockerContainer container) throws DockerException {
+        JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
+                "/containers/" + container.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
+        Boolean tty = null;
+        JSONObject config = (JSONObject) value.get("Config");
+        if (config != null) {
+            tty = (Boolean) config.get("Tty");
+        }
+        return new ContainerInfo(tty != null ? tty : false);
+    }
+
     public void start(DockerContainer container) throws DockerException {
         doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/start", null, false, START_STOP_CONTAINER_CODES);
     }
@@ -199,6 +210,7 @@ public class DockerRemote {
     public StreamResult attach(DockerContainer container, boolean logs) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
+        ContainerInfo info = getInfo(container);
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -224,13 +236,24 @@ public class DockerRemote {
                 throw new DockerRemoteException(responseCode, m.group(2));
             }
 
+            boolean chunked = false;
             String line;
             do {
                 line = HttpUtils.readResponseLine(is);
+                if (HttpUtils.isChunked(line)) {
+                    chunked = true;
+                }
             } while (line != null && !"".equals(line.trim()));
 
-            // FIXME may this be chunked ?
-            return new AttachResult(s);
+            if (chunked) {
+                is = new ChunkedInputStream(is);
+            }
+
+            if (info.hasTty()) {
+                return new DirectStreamResult(s, is);
+            } else {
+                return new DockerStreamResult(s, is);
+            }
         } catch (MalformedURLException e) {
             closeSocket(s);
             throw new DockerException(e);
@@ -506,43 +529,6 @@ public class DockerRemote {
         }
     }
 
-    public static class AttachResult implements StreamResult {
-
-        private final Socket s;
-
-        private final OutputStream stdIn;
-
-        private final InputStream stdOut;
-
-        private final InputStream stdErr;
-
-        AttachResult(Socket s) throws IOException {
-            this.s = s;
-            this.stdIn = s.getOutputStream();
-            this.stdOut = s.getInputStream();
-            this.stdErr = null;
-        }
-
-        @Override
-        public OutputStream getStdIn() {
-            return stdIn;
-        }
-
-        @Override
-        public InputStream getStdOut() {
-            return stdOut;
-        }
-
-        @Override
-        public InputStream getStdErr() {
-            return stdErr;
-        }
-
-        @Override
-        public void close() throws IOException {
-            s.close();
-        }
-    }
 
     public static class LogResult implements Closeable {
 
@@ -559,7 +545,7 @@ public class DockerRemote {
          * Returns stream providing multiplexed out end error logs.
          * See Docker documentation for format.
          *
-         * @return 
+         * @return
          */
         public InputStream getLogStream() {
             return logStream;
