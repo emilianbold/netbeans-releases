@@ -96,7 +96,7 @@ public class CacheSourceForBinaryQueryImplTest extends ClassIndexTestCase {
 
         beginTx();
 
-        this.cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath,srcPath,null,true,false,false,false);
+        this.cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,ClassPath.EMPTY,compilePath,ClassPath.EMPTY,ClassPath.EMPTY,srcPath,null,true,false,false,false);
         this.sfbq = new CacheSourceForBinaryQueryImpl ();
     }
 
