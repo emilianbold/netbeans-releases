@@ -1499,4 +1499,19 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
+    <!-- Pre-defined MIME types -->
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-defaults-mime-wav.xml">
+                <attr
+                    methodvalue="org.openide.filesystems.MIMEResolver.create" name="instanceCreate"/>
+                <attr name="instanceClass" stringvalue="org.openide.filesystems.MIMEResolver"/>
+                <attr name="mimeType" stringvalue="audio/wav"/>
+                <attr name="ext.0" stringvalue="wav"/>
+                <attr name="ext.1" stringvalue="WAV"/>
+                <attr name="displayName" stringvalue="audio/wav"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
