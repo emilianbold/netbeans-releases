@@ -41,87 +41,128 @@
  */
 package org.netbeans.modules.docker.remote;
 
-import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StreamDemultiplexer {
+public class StreamDemultiplexer implements Runnable, StreamResult {
 
     private static final Logger LOGGER = Logger.getLogger(StreamDemultiplexer.class.getName());
 
-    private final InputStream is;
+    private final RequestProcessor requestProcessor = new RequestProcessor(StreamDemultiplexer.class);
 
-    public StreamDemultiplexer(InputStream is) {
-        this.is = is;
+    private final Socket s;
+
+    private final OutputStream outputStream;
+
+    private final Demultiplexer demultiplexer;
+
+    private final PipedOutputStream outSource = new PipedOutputStream();
+
+    private final PipedOutputStream errSource = new PipedOutputStream();
+
+    private final PipedInputStream stdOut;
+
+    private final PipedInputStream stdErr;
+
+    // GuardedBy("this")
+    private boolean running;
+
+    public StreamDemultiplexer(Socket s) throws IOException {
+        this.s = s;
+        this.outputStream = s.getOutputStream();
+        this.demultiplexer = new Demultiplexer(s.getInputStream());
+        this.stdOut = new PipedInputStream(outSource);
+        this.stdErr = new PipedInputStream(errSource);
     }
 
-    public Result getNext() {
-        byte[] buffer = new byte[8];
-        byte[] content = new byte[256];
-
-        try {
-            int sum = 0;
-            do {
-                int read = is.read(buffer, sum, buffer.length - sum);
-                if (read < 0) {
-                    return null;
-                }
-                sum += read;
-            } while (sum < 8);
-            // now we have 8 bytes
-            assert buffer.length == 8;
-
-            boolean error;
-            int size = ByteBuffer.wrap(buffer).getInt(4);
-            if (buffer[0] == 0 || buffer[0] == 1) {
-                error = false;
-            } else if (buffer[0] == 2) {
-                error = true;
-            } else {
-                throw new IOException("Unparsable stream " + buffer[0]);
+    public OutputStream getStdIn() {
+        return new FilterOutputStream(outputStream) {
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                byte[] buffer = new byte[8];
+                ByteBuffer.wrap(buffer).putInt(4, len);
+                out.write(buffer);
+                out.write(b, off, len);
+                out.flush();
             }
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
-            sum = 0;
-            do {
-                int read = is.read(content, 0, Math.min(size, content.length));
-                if (read < 0) {
-                    return null;
+            @Override
+            public void write(int b) throws IOException {
+                byte[] buffer = new byte[9];
+                ByteBuffer.wrap(buffer).putInt(4, 1);
+                buffer[8] = (byte) b;
+                out.write(buffer);
+                out.flush();
+            }
+        };
+//        return outputStream;
+    }
+
+    public InputStream getStdOut() {
+        synchronized (this) {
+            if (!running) {
+                requestProcessor.post(this);
+                running = true;
+            }
+        }
+        return stdOut;
+    }
+
+    public InputStream getStdErr() {
+        synchronized (this) {
+            if (!running) {
+                requestProcessor.post(this);
+                running = true;
+            }
+        }
+        return stdErr;
+    }
+
+    @Override
+    public void run() {
+        try {
+            for (;;) {
+                Demultiplexer.Result r = demultiplexer.getNext();
+                if (r != null) {
+                    if (r.isError()) {
+                        errSource.write(r.getData());
+                    } else {
+                        outSource.write(r.getData());
+                    }
+                } else {
+                    break;
                 }
-                bos.write(content, 0, read);
-                sum += read;
-            } while (sum < size);
-            return new Result(bos.toByteArray(), error);
+            }
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
-            return null;
+        } finally {
+            close();
         }
     }
 
-    public static class Result {
-
-        private final byte[] data;
-
-        private final boolean error;
-
-        private Result(byte[] data, boolean error) {
-            this.data = data;
-            this.error = error;
-        }
-
-        public byte[] getData() {
-            return data;
-        }
-
-        public boolean isError() {
-            return error;
+    @Override
+    public void close() {
+        LOGGER.log(Level.INFO, "Closing");
+        try {
+            s.close();
+            outSource.close();
+            errSource.close();
+            requestProcessor.shutdownNow();
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, null, ex);
         }
     }
 }
