@@ -263,7 +263,11 @@ public class GraphContainer extends ProjectComponent implements CsmProgressListe
             if (file == null || !file.isValid()) {
                 return;
             }
-            current = ((ProjectBase)file.getProject()).getGraphStorage();
+            ProjectBase prj = (ProjectBase) file.getProject();
+            if (prj == null || !prj.isValid()) {
+                return;
+            }
+            current = prj.getGraphStorage();
             if (current == null) {
                 return;
             }
