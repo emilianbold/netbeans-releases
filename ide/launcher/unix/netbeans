@@ -230,7 +230,6 @@ case "`uname`" in
     Darwin*)
         eval launchNbexec \
             --jdkhome '"$netbeans_jdkhome"' \
-            -J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans \
             -J-Xdock:name=NetBeans \
             '"-J-Xdock:icon=$basedir/nb/netbeans.icns"' \
             --branding nb \
