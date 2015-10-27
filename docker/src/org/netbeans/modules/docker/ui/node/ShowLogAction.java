@@ -41,18 +41,16 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.api.extexecution.base.input.InputReaders;
-import org.netbeans.modules.docker.ui.UiUtils;
-import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.remote.StreamResult;
+import org.netbeans.modules.docker.ui.DockerOutputTask;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -81,12 +79,10 @@ public class ShowLogAction extends AbstractContainerAction {
     @Override
     protected void performAction(DockerContainer container) throws DockerException {
         DockerRemote facade = new DockerRemote(container.getInstance());
-        StreamResult r = facade.logs(container);
+        DockerRemote.LogResult r = facade.logs(container);
         InputOutput io = IOProvider.getDefault().getIO("Test", true);
-        InputReaderTask taskOut = InputReaderTask.newTask(InputReaders.forStream(r.getStdOut(), Charset.forName("UTF-8")), InputProcessors.printing(io.getOut()));
-        InputReaderTask taskErr = InputReaderTask.newTask(InputReaders.forStream(r.getStdErr(), Charset.forName("UTF-8")), InputProcessors.printing(io.getErr()));
-        RequestProcessor.getDefault().post(taskOut);
-        RequestProcessor.getDefault().post(taskErr);
+        io.select();
+        RequestProcessor.getDefault().post(new DockerOutputTask(io, r));
     }
 
 }

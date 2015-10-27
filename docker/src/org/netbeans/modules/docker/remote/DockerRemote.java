@@ -47,6 +47,7 @@ import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -67,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.CheckedInputStream;
 import javax.swing.SwingUtilities;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -287,7 +289,7 @@ public class DockerRemote {
        }
     }
 
-    public StreamResult logs(DockerContainer container) throws DockerException {
+    public LogResult logs(DockerContainer container) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         Socket s = null;
@@ -324,7 +326,7 @@ public class DockerRemote {
                 }
             } while (line != null && !"".equals(line.trim()));
 
-            return new StreamDemultiplexer(s, chunked);
+            return new LogResult(s, chunked);
         } catch (MalformedURLException e) {
             closeSocket(s);
             throw new DockerException(e);
@@ -521,16 +523,46 @@ public class DockerRemote {
             this.stdErr = null;
         }
 
+        @Override
         public OutputStream getStdIn() {
             return stdIn;
         }
 
+        @Override
         public InputStream getStdOut() {
             return stdOut;
         }
 
+        @Override
         public InputStream getStdErr() {
             return stdErr;
+        }
+
+        @Override
+        public void close() throws IOException {
+            s.close();
+        }
+    }
+
+    public static class LogResult implements Closeable {
+
+        private final Socket s;
+
+        private final InputStream logStream;
+
+        LogResult(Socket s, boolean chunked) throws IOException {
+            this.s = s;
+            this.logStream = chunked ? new ChunkedInputStream(s.getInputStream()) : s.getInputStream();
+        }
+
+        /**
+         * Returns stream providing multiplexed out end error logs.
+         * See Docker documentation for format.
+         *
+         * @return 
+         */
+        public InputStream getLogStream() {
+            return logStream;
         }
 
         @Override
