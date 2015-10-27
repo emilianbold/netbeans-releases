@@ -525,6 +525,7 @@ is divided into following sections:
                             <compilerarg line="@{{modulepath}}:${{empty.dir}}"/>
                             <compilerarg value="-upgrademodulepath"/>
                             <compilerarg line="@{{upgrademodulepath}}:${{empty.dir}}"/>
+                            <compilerarg line="${{javac.systemmodulepath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <compilerarg value="-processorpath" />
@@ -1744,6 +1745,12 @@ is divided into following sections:
                 </condition>
                 <property name="javac.modulepath" value=""/>
                 <property name="javac.upgrademodulepath" value=""/>
+                <condition property="javac.systemmodulepath.cmd.line.arg" value="-systemmodulepath '${{javac.systemmodulepath}}'" else="">
+                    <and>
+                        <isset property="javac.systemmodulepath"/>
+                        <length string="${{javac.systemmodulepath}}" when="greater" length="0"/>
+                    </and>
+                </condition>
             </target>
 
             <target name="-init-ap-cmdline-properties" depends="-init-modules-cmdline-properties">
