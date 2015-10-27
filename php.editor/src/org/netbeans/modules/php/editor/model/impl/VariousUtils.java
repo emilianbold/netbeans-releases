@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.model.impl;
 
@@ -221,6 +221,22 @@ public final class VariousUtils {
     }
 
     private VariousUtils() {
+    }
+
+    /**
+     * First, try to get return type from function declaration; if not set,
+     * try to get it from its PhpDoc.
+     * @return return type from function declaration, can be {@code null}
+     */
+    @CheckForNull
+    public static String getReturnType(Program root, FunctionDeclaration functionDeclaration) {
+        Expression returnType = functionDeclaration.getReturnType();
+        if (returnType != null) {
+            QualifiedName name = QualifiedName.create(returnType);
+            assert name != null : returnType;
+            return name.getName();
+        }
+        return getReturnTypeFromPHPDoc(root, functionDeclaration);
     }
 
     public static String getReturnTypeFromPHPDoc(Program root, FunctionDeclaration functionDeclaration) {

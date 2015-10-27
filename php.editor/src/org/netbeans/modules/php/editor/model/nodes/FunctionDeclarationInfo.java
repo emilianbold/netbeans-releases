@@ -46,10 +46,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -60,12 +62,16 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  * @author Radek Matous
  */
 public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
-    Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
+
+    private final Map<String, List<QualifiedName>> paramDocTypes;
+
 
     protected FunctionDeclarationInfo(Program program, FunctionDeclaration node) {
         super(node);
         if (program != null) {
             paramDocTypes = VariousUtils.getParamTypesFromPHPDoc(program, node);
+        } else {
+            paramDocTypes = Collections.emptyMap();
         }
     }
 
@@ -107,6 +113,15 @@ public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
             retval.add(parameterInfo.toParameter());
         }
         return retval;
+    }
+
+    @CheckForNull
+    public QualifiedName getReturnType() {
+        Expression returnType = getOriginalNode().getReturnType();
+        if (returnType == null) {
+            return null;
+        }
+        return QualifiedName.create(returnType);
     }
 
 }
