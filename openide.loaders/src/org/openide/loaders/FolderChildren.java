@@ -133,10 +133,6 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         this.pairs = pairs;
     }
 
-    static void waitRefresh() {
-        DataNodeUtils.reqProcessor().post(Task.EMPTY, 0, Thread.MIN_PRIORITY).waitFinished();
-    }
-
     /** If the folder changed its children we change our nodes.
      */
     @Override
@@ -585,7 +581,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         }
 
         final synchronized void scheduleRefresh(String by) {
-            task = DataNodeUtils.reqProcessor().post(this);
+            task = DataNodeUtils.reqProcessor(pair.primaryFile).post(this);
             err.log(Level.FINE, "Task initialized by {0} to {1} for {2}", new Object[] { by, task, this });
         }
     }
