@@ -195,7 +195,7 @@ public class DockerRemote {
                 null, false, Collections.singleton(HttpURLConnection.HTTP_OK));
     }
 
-    public AttachResult attach(DockerContainer container, boolean logs) throws DockerException {
+    public StreamResult attach(DockerContainer container, boolean logs) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         Socket s = null;

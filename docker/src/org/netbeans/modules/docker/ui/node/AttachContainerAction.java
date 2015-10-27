@@ -48,6 +48,7 @@ import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
+import org.netbeans.modules.docker.remote.StreamResult;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,7 +74,7 @@ public class AttachContainerAction extends AbstractContainerAction {
     @Override
     protected void performAction(DockerContainer container) throws DockerException {
         DockerRemote facade = new DockerRemote(container.getInstance());
-        DockerRemote.AttachResult r = facade.attach(container, false);
+        StreamResult r = facade.attach(container, false);
         UiUtils.openTerminal(container, r);
     }
 

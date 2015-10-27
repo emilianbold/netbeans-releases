@@ -58,6 +58,7 @@ import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
+import org.netbeans.modules.docker.remote.StreamResult;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
@@ -117,7 +118,7 @@ public final class UiUtils {
     }
 
     @NbBundle.Messages("MSG_NoTerminalSupport=No terminal support installed")
-    public static void openTerminal(final DockerContainer container, DockerRemote.AttachResult result) {
+    public static void openTerminal(final DockerContainer container, StreamResult result) {
         IOProvider provider = IOProvider.get("Terminal"); // NOI18N
         InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
         if (IOTerm.isSupported(io)) {
