@@ -4268,10 +4268,12 @@ assignment_expression
         (
             // IZ#152872: parser error in VLC on cast expression
             // #191198 -  Parser error in buf.c
-            (cast_array_initializer_head)=>cast_array_initializer
-            |
+        (cast_array_initializer_head)=>
+            cast_array_initializer 
+            (options {greedy=true;} : lazy_expression[false, false, 0])? // see postfix-expression in C99 (works in C++ with clang and gcc as well)
+        |
             lazy_expression[false, false, 0]
-            |
+        |
             throw_expression
         )
         (options {greedy=true;}:	
