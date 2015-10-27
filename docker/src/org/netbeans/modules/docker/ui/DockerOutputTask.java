@@ -43,13 +43,12 @@ package org.netbeans.modules.docker.ui;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.docker.remote.StreamDemultiplexer;
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -62,58 +61,29 @@ public class DockerOutputTask implements Runnable {
     private final InputOutput io;
 
     private final DockerRemote.LogResult logResult;
-    
-    private final InputStream is;
 
     public DockerOutputTask(InputOutput io, DockerRemote.LogResult logResult) {
         this.io = io;
         this.logResult = logResult;
-        this.is = logResult.getLogStream();
     }
 
     @Override
     public void run() {
-        byte[] buffer = new byte[8];
-        byte[] content = new byte[1024];
-        for (;;) {
-            try {
-                int sum = 0;
-                do {
-                    int read = is.read(buffer, sum, buffer.length - sum);
-                    if (read < 0) {
-                        close();
-                        return;
-                    }
-                    sum += read;
-                } while (sum < 8);
-                // now we have 8 bytes
-                assert buffer.length == 8;
-
-                OutputWriter out;
-                int size = ByteBuffer.wrap(buffer).getInt(4);
-                if (buffer[0] == 0 || buffer[0] == 1) {
-                    out = io.getOut();
-                } else if (buffer[0] == 2) {
-                    out = io.getErr();
+        StreamDemultiplexer demux = new StreamDemultiplexer(logResult.getLogStream());
+        StreamDemultiplexer.Result r;
+        try {
+            while ((r = demux.getNext()) != null) {
+                String value = new String(r.getData(), "UTF-8");
+                if (r.isError()) {
+                    io.getErr().print(value);
                 } else {
-                    throw new IOException("Unparsable stream " + buffer[0]);
+                    io.getOut().print(value);
                 }
-
-                sum = 0;
-                do {
-                    int read = is.read(content, 0, Math.min(size, content.length));
-                    if (read < 0) {
-                        close();
-                        return;
-                    }
-                    out.print(new String(content, 0, read, "UTF-8"));
-                    sum += read;
-                } while (sum < size);
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-                close();
-                return;
             }
+        } catch (UnsupportedEncodingException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } finally {
+            close();
         }
     }
 
