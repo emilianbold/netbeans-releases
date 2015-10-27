@@ -45,23 +45,18 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StreamDemultiplexer implements Runnable, StreamResult {
+public class StreamDemultiplexer implements StreamResult {
 
     private static final Logger LOGGER = Logger.getLogger(StreamDemultiplexer.class.getName());
-
-    private final RequestProcessor requestProcessor = new RequestProcessor(StreamDemultiplexer.class);
 
     private final Socket s;
 
@@ -69,23 +64,20 @@ public class StreamDemultiplexer implements Runnable, StreamResult {
 
     private final Demultiplexer demultiplexer;
 
-    private final PipedOutputStream outSource = new PipedOutputStream();
+    private final InputStream stdOut;
 
-    private final PipedOutputStream errSource = new PipedOutputStream();
+    private final InputStream stdErr;
 
-    private final PipedInputStream stdOut;
+    private Demultiplexer.Result last = Demultiplexer.Result.EMPTY;
 
-    private final PipedInputStream stdErr;
-
-    // GuardedBy("this")
-    private boolean running;
+    private int remaining;
 
     public StreamDemultiplexer(Socket s) throws IOException {
         this.s = s;
         this.outputStream = s.getOutputStream();
         this.demultiplexer = new Demultiplexer(s.getInputStream());
-        this.stdOut = new PipedInputStream(outSource);
-        this.stdErr = new PipedInputStream(errSource);
+        this.stdOut = new ResultInputStream(false);
+        this.stdErr = new ResultInputStream(true);
     }
 
     public OutputStream getStdIn() {
@@ -112,57 +104,83 @@ public class StreamDemultiplexer implements Runnable, StreamResult {
     }
 
     public InputStream getStdOut() {
-        synchronized (this) {
-            if (!running) {
-                requestProcessor.post(this);
-                running = true;
-            }
-        }
         return stdOut;
     }
 
     public InputStream getStdErr() {
-        synchronized (this) {
-            if (!running) {
-                requestProcessor.post(this);
-                running = true;
-            }
-        }
         return stdErr;
     }
 
     @Override
-    public void run() {
+    public void close() {
+        LOGGER.log(Level.INFO, "Closing", new Exception());
         try {
-            for (;;) {
-                Demultiplexer.Result r = demultiplexer.getNext();
-                if (r != null) {
-                    if (r.isError()) {
-                        errSource.write(r.getData());
-                    } else {
-                        outSource.write(r.getData());
-                    }
-                } else {
-                    break;
-                }
-            }
+            s.close();
         } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        } finally {
-            close();
+            LOGGER.log(Level.FINE, null, ex);
         }
     }
 
-    @Override
-    public void close() {
-        LOGGER.log(Level.INFO, "Closing");
-        try {
-            s.close();
-            outSource.close();
-            errSource.close();
-            requestProcessor.shutdownNow();
-        } catch (IOException ex) {
-            LOGGER.log(Level.FINE, null, ex);
+    private class ResultInputStream extends InputStream {
+
+        private final boolean error;
+
+        public ResultInputStream(boolean error) {
+            this.error = error;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            synchronized (StreamDemultiplexer.this) {
+                int size = fetchData();
+                if (size <= 0) {
+                    return size;
+                }
+
+                int limit = Math.min(len, remaining);
+                System.arraycopy(last.getData(), last.getData().length - remaining, b, off, limit);
+                remaining -= limit;
+                return limit;
+            }
+        }
+
+        @Override
+        public int read() throws IOException {
+            synchronized (StreamDemultiplexer.this) {
+                int size = fetchData();
+                if (size <= 0) {
+                    return size;
+                }
+
+                int value = last.getData()[last.getData().length - remaining];
+                remaining--;
+                return value;
+            }
+        }
+
+        private int fetchData() {
+            synchronized (StreamDemultiplexer.this) {
+                if (last == null) {
+                    return -1;
+                }
+                while (remaining == 0) {
+                    last = demultiplexer.getNext();
+                    if (last == null) {
+                        return -1;
+                    }
+                    remaining = last.getData().length;
+                }
+
+                StreamDemultiplexer.this.notifyAll();
+                try {
+                    while (remaining == 0 || last.isError() != error) {
+                        StreamDemultiplexer.this.wait();
+                    }
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+                return remaining;
+            }
         }
     }
 }

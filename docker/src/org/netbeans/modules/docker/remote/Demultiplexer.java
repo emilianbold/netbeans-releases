@@ -107,6 +107,8 @@ public class Demultiplexer {
 
     public static class Result {
 
+        public static final Result EMPTY = new Result(new byte[]{}, false);
+
         private final byte[] data;
 
         private final boolean error;
