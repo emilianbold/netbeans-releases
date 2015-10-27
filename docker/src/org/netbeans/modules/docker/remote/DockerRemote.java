@@ -208,8 +208,8 @@ public class DockerRemote {
                     + "/attach?logs=" + (logs ? 1 : 0) + "&stream=1&stdout=1&stdin=1&stderr=1 HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
             os.flush();
 
-            Reader reader = new InputStreamReader(s.getInputStream(), "ISO-8859-1");
-            String response = readResponseLine(reader);
+            InputStream is = s.getInputStream();
+            String response = HttpUtils.readResponseLine(is);
             if (response == null) {
                 throw new DockerException("No response from server");
             }
@@ -225,7 +225,7 @@ public class DockerRemote {
 
             String line;
             do {
-                line = readResponseLine(reader);
+                line = HttpUtils.readResponseLine(is);
             } while (line != null && !"".equals(line.trim()));
 
             return new AttachResult(s);
@@ -285,6 +285,56 @@ public class DockerRemote {
         } catch (IOException e) {
             throw new DockerException(e);
        }
+    }
+
+    public StreamResult logs(DockerContainer container) throws DockerException {
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+
+        Socket s = null;
+        try {
+            URL url = createURL(instance.getUrl(), null);
+            s = new Socket(url.getHost(), url.getPort());
+
+            OutputStream os = s.getOutputStream();
+            os.write(("GET /containers/" + container.getId()
+                    + "/logs?stderr=1&stdout=1&timestamps=1&follow=1 HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
+            os.flush();
+
+            InputStream is = s.getInputStream();
+            String response = HttpUtils.readResponseLine(is);
+            if (response == null) {
+                throw new DockerException("No response from server");
+            }
+            Matcher m = HTTP_RESPONSE_PATTERN.matcher(response);
+            if (!m.matches()) {
+                throw new DockerException("Wrong response from server");
+            }
+
+            int responseCode = Integer.parseInt(m.group(1));
+            if (responseCode != 101 && responseCode != HttpURLConnection.HTTP_OK) {
+                throw new DockerRemoteException(responseCode, m.group(2));
+            }
+
+            boolean chunked = false;
+            String line;
+            do {
+                line = HttpUtils.readResponseLine(is);
+                if (line != null && line.startsWith("Transfer-Encoding") && line.contains("chunked")) {
+                    chunked = true;
+                }
+            } while (line != null && !"".equals(line.trim()));
+
+            return new StreamDemultiplexer(s, chunked);
+        } catch (MalformedURLException e) {
+            closeSocket(s);
+            throw new DockerException(e);
+        } catch (IOException e) {
+            closeSocket(s);
+            throw new DockerException(e);
+        } catch (DockerException e) {
+            closeSocket(s);
+            throw e;
+        }
     }
 
     private static Object doGetRequest(@NonNull String url, @NonNull String action, Set<Integer> okCodes) throws DockerException {
@@ -419,27 +469,6 @@ public class DockerRemote {
         return new URL(realUrl);
     }
 
-    private static String readResponseLine(Reader is) throws IOException {
-        StringWriter sw = new StringWriter();
-        int b;
-        while ((b = is.read()) != -1) {
-            if (b == '\r') {
-                int next = is.read();
-                if (next == '\n') {
-                    return sw.toString();
-                } else if (next == -1) {
-                    return null;
-                } else {
-                    sw.write(b);
-                    sw.write(next);
-                }
-            } else {
-                sw.write(b);
-            }
-        }
-        return null;
-    }
-
     private static String readEventObject(Reader is) throws IOException {
         StringWriter sw = new StringWriter();
         int b;
@@ -475,7 +504,7 @@ public class DockerRemote {
         }
     }
 
-    public static class AttachResult implements Closeable {
+    public static class AttachResult implements StreamResult {
 
         private final Socket s;
 
