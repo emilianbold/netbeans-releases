@@ -49,8 +49,8 @@
 
 package org.netbeans.modules.java.navigation.actions;
 
+import com.sun.source.util.TreePath;
 import java.awt.Toolkit;
-import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.openide.awt.StatusDisplayer;
@@ -59,11 +59,21 @@ import org.openide.util.*;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.util.Collections;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
@@ -74,33 +84,61 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
  */
 public final class OpenAction extends AbstractAction {
     
-    private ElementHandle<? extends Element> elementHandle;   
-    private FileObject fileObject;
-    private String displayName;
+    private final Union2<ElementHandle<?>, TreePathHandle> handle;
+    private final FileObject fileObject;
+    private final String displayName;
 
-    public OpenAction( ElementHandle<? extends Element> elementHandle, FileObject fileObject, String displayName ) {
-        this.elementHandle = elementHandle;
+    public OpenAction(Union2<ElementHandle<?>,TreePathHandle> handle, FileObject fileObject, String displayName) {
+        this.handle = handle;
         this.fileObject = fileObject;
         this.displayName = displayName;
         putValue ( Action.NAME, NbBundle.getMessage ( OpenAction.class, "LBL_Goto" ) ); //NOI18N
     }
     
+    @Override
     public void actionPerformed (ActionEvent ev) {
-        if( null == fileObject ) {
+        if(null == fileObject) {
             Toolkit.getDefaultToolkit().beep();
             if( null != displayName ) {
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(OpenAction.class, "MSG_NoSource", displayName) );  //NOI18N
             }
-        } else {
+        } else if (handle.hasFirst()) {
             FileObject file = fileObject;
             if (isClassFile(file)) {
-                final FileObject src = findSource(file, elementHandle);
+                final FileObject src = findSource(file, handle.first());
                 if (src != null) {
                     file = src;
                 }
             }
-            ElementOpen.open(file, elementHandle);
+            ElementOpen.open(file, handle.first());
+        } else {
+            try {
+                final long[] pos = {-1};
+                ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        final CompilationInfo info = findJava(resultIterator);
+                        final TreePath tp = handle.second().resolve(info);
+                        pos[0] = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tp.getLeaf());
+                    }
+                    private CompilationInfo findJava(ResultIterator resIt) throws ParseException {
+                        if ("text/x-java".equals(resIt.getSnapshot().getMimeType())) {  //NOI18N
+                            return CompilationInfo.get(resIt.getParserResult());
+                        }
+                        for (Embedding e : resIt.getEmbeddings()) {
+                            final CompilationInfo info = findJava(resIt.getResultIterator(e));
+                            if (info != null) {
+                                return info;
+                            }
+                        }
+                        return null;
+                    }
+                });
+                UiUtils.open(fileObject, (int) pos[0]);
+            } catch (ParseException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
     }
 

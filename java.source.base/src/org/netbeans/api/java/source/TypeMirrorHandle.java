@@ -46,7 +46,6 @@ package org.netbeans.api.java.source;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.TypeVar;
@@ -54,6 +53,7 @@ import com.sun.tools.javac.code.TypeMetadata;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.code.Types.DefaultTypeVisitor;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
@@ -369,7 +369,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                     String[] signatures = element.getSignature();
                     assert signatures.length == 1;
                     Context context = info.impl.getJavacTask().getContext();
-                    return (T)new Type.ErrorType(Names.instance(context).table.fromString(signatures[0]), Symtab.instance(context).rootPackage, Type.noType);
+                    return (T)new Type.ErrorType(Names.instance(context).table.fromString(signatures[0]), ((JCTree.JCCompilationUnit)info.getCompilationUnit()).modle.rootPackage, Type.noType);
                 }
                 if (!(e instanceof ClassSymbol))
                     return null;
@@ -427,7 +427,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         private Type delegate = null;
         
         public PlaceholderType() {
-            this(TypeMetadata.empty);
+            this(TypeMetadata.EMPTY);
         }       
 
         public PlaceholderType(TypeMetadata md) {
@@ -440,7 +440,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         }
 
         @Override
-        public Type clone(TypeMetadata md) {
+        public Type cloneWithMetadata(TypeMetadata md) {
             PlaceholderType out = new PlaceholderType(md);
             out.delegate = delegate;
             return out;

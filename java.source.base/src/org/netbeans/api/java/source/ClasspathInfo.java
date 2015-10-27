@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,13 +61,10 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
-import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
-import org.netbeans.modules.java.source.parsing.CachingFileManager;
-import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.ProxyFileManager;
-import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.classpath.AptSourcePath;
 import org.netbeans.modules.java.source.classpath.SourcePath;
@@ -102,15 +98,18 @@ public final class ClasspathInfo {
         }
     }
 
-    private final CachingArchiveProvider archiveProvider;
-
     private final ClassPath srcClassPath;
     private final ClassPath bootClassPath;
+    private final ClassPath moduleBootPath;
     private final ClassPath compileClassPath;
+    private final ClassPath moduleCompilePath;
+    private final ClassPath moduleClassPath;
     private final ClassPath cachedAptSrcClassPath;
     private final ClassPath cachedSrcClassPath;
     private final ClassPath cachedBootClassPath;
     private final ClassPath cachedCompileClassPath;
+    private final ClassPath cachedModuleCompilePath;
+    private final ClassPath cachedModuleClassPath;
     private final ClassPath outputClassPath;
 
     private final ClassPathListener cpListener;
@@ -126,32 +125,36 @@ public final class ClasspathInfo {
     private ClassIndex usagesQuery;
 
     /** Creates a new instance of ClasspathInfo (private use the factory methods) */
-    private ClasspathInfo(final @NonNull CachingArchiveProvider archiveProvider,
-                          final @NonNull ClassPath bootCp,
+    private ClasspathInfo(final @NonNull ClassPath bootCp,
+                          final @NonNull ClassPath moduleBootP,
                           final @NonNull ClassPath compileCp,
+                          final @NonNull ClassPath moduleCompileP,
+                          final @NonNull ClassPath moduleClassP,
                           final @NullAllowed ClassPath srcCp,
                           final @NullAllowed JavaFileFilterImplementation filter,
                           final boolean backgroundCompilation,
                           final boolean ignoreExcludes,
                           final boolean hasMemoryFileManager,
                           final boolean useModifiedFiles) {
-        assert archiveProvider != null;
         assert bootCp != null;
         assert compileCp != null;
         this.cpListener = new ClassPathListener ();
-        this.archiveProvider = archiveProvider;
         this.bootClassPath = bootCp;
+        this.moduleBootPath = moduleBootP;
         this.compileClassPath = compileCp;
+        this.moduleCompilePath = moduleCompileP;
+        this.moduleClassPath = moduleClassP;
         this.listenerList = new ChangeSupport(this);
         this.cachedBootClassPath = CacheClassPath.forBootPath(this.bootClassPath,backgroundCompilation);
         this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath,backgroundCompilation);
+        this.cachedModuleCompilePath = CacheClassPath.forClassPath(this.moduleCompilePath,backgroundCompilation);
+        this.cachedModuleClassPath = CacheClassPath.forClassPath(this.moduleClassPath,backgroundCompilation);
         if (!backgroundCompilation) {
             this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
             this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
         }
         if (srcCp == null) {
-            this.cachedSrcClassPath = this.srcClassPath = this.outputClassPath = ClassPath.EMPTY;
-            this.cachedAptSrcClassPath = null;
+            this.cachedSrcClassPath = this.srcClassPath = this.outputClassPath = this.cachedAptSrcClassPath = ClassPath.EMPTY;
         } else {
             this.srcClassPath = srcCp;
             final ClassPathImplementation noApt = AptSourcePath.sources(srcCp);
@@ -190,12 +193,16 @@ public final class ClasspathInfo {
     @Override
     public String toString() {
         return String.format(
-            "ClasspathInfo [boot: %s, compile: %s, src: %s, internal boot: %s, internal compile: %s, internal src: %s, internal out: %s]", //NOI18N
+            "ClasspathInfo [boot: %s, module boot: %s, compile: %s, module compile: %s, module class: %s, src: %s, internal boot: %s, internal compile: %s, internal module class: %s, internal src: %s, internal out: %s]", //NOI18N
                 bootClassPath,
+                moduleBootPath,
                 compileClassPath,
+                moduleCompilePath,
+                moduleClassPath,
                 srcClassPath,
                 cachedBootClassPath,
                 cachedCompileClassPath,
+                cachedModuleClassPath,
                 cachedSrcClassPath,
                 outputClassPath);
     }
@@ -279,7 +286,7 @@ public final class ClasspathInfo {
             @NullAllowed final ClassPath sourcePath) {
         Parameters.notNull("bootPath", bootPath);       //NOI18N
         Parameters.notNull("classPath", classPath);     //NOI18N
-        return create (bootPath, classPath, sourcePath, null, false, false, false, true);
+        return create (bootPath, ClassPath.EMPTY, classPath, ClassPath.EMPTY, ClassPath.EMPTY, sourcePath, null, false, false, false, true);
     }
 
     @NonNull
@@ -295,25 +302,40 @@ public final class ClasspathInfo {
             //javac requires at least java.lang
             bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
         }
+        ClassPath moduleBootPath = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_BOOT_PATH);
+        if (moduleBootPath == null) {
+            moduleBootPath = bootPath;
+        }
         ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
         if (compilePath == null) {
             compilePath = ClassPath.EMPTY;
         }
+        ClassPath moduleCompilePath = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_COMPILE_PATH);
+        if (moduleCompilePath == null) {
+            moduleCompilePath = ClassPath.EMPTY;
+        }
+        ClassPath moduleClassPath = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_CLASS_PATH);
+        if (moduleClassPath == null) {
+            moduleClassPath = ClassPath.EMPTY;
+        }
         ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        return create (bootPath, compilePath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+        return create (bootPath, moduleBootPath, compilePath, moduleCompilePath, moduleClassPath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
 
     @NonNull
     private static ClasspathInfo create(
             @NonNull final ClassPath bootPath,
+            @NonNull final ClassPath moduleBootPath,
             @NonNull final ClassPath classPath,
+            @NonNull final ClassPath moduleCompilePath,
+            @NonNull final ClassPath moduleClassPath,
             @NullAllowed final ClassPath sourcePath,
             @NullAllowed final JavaFileFilterImplementation filter,
             final boolean backgroundCompilation,
             final boolean ignoreExcludes,
             final boolean hasMemoryFileManager,
             final boolean useModifiedFiles) {
-        return new ClasspathInfo(CachingArchiveProvider.getDefault(), bootPath, classPath, sourcePath,
+        return new ClasspathInfo(bootPath, moduleBootPath, classPath, moduleCompilePath, moduleClassPath, sourcePath,
                 filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
     }
 
@@ -378,33 +400,22 @@ public final class ClasspathInfo {
 
     @NonNull
     private synchronized JavaFileManager createFileManager() {
-            final boolean hasSources = this.cachedSrcClassPath != ClassPath.EMPTY;
-            final SiblingSource siblings = SiblingSupport.create();
-            final JavaFileManager fileManager = new ProxyFileManager (
-                new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
-                new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
-                hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
-                    : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ?
-                    new AptSourceFileManager(
-                            this.cachedSrcClassPath,
-                            this.cachedAptSrcClassPath,
-                            siblings.getProvider(),
-                            fmTx
-                    ) : null,
-                hasSources ?
-                    new OutputFileManager(
-                            this.archiveProvider,
-                            this.outputClassPath,
-                            this.cachedSrcClassPath,
-                            this.cachedAptSrcClassPath,
-                            siblings.getProvider(),
-                            fmTx) : null,
-                new TreeLoaderOutputFileManager(this.archiveProvider, fmTx),
-                this.memoryFileManager,
-                this.pgTx,
-                siblings);
-        return fileManager;
+        final SiblingSource siblings = SiblingSupport.create();
+        final ProxyFileManager.Configuration cfg = ProxyFileManager.Configuration.create(
+            moduleBootPath,
+            cachedModuleCompilePath,
+            cachedBootClassPath,
+            moduleCompilePath.entries().isEmpty() ? cachedCompileClassPath : cachedModuleClassPath,
+            cachedSrcClassPath,
+            outputClassPath,
+            cachedAptSrcClassPath,
+            siblings,
+            fmTx,
+            pgTx);
+        cfg.setFilter(filter);
+        cfg.setIgnoreExcludes(ignoreExcludes);
+        cfg.setUseModifiedFiles(useModifiedFiles);
+        return new ProxyFileManager(cfg);
     }
 
 
@@ -476,14 +487,17 @@ public final class ClasspathInfo {
 
         @Override
         public ClasspathInfo create (final ClassPath bootPath,
+                final ClassPath moduleBootPath,
                 final ClassPath classPath,
+                final ClassPath moduleCompilePath,
+                final ClassPath moduleClassPath,
                 final ClassPath sourcePath,
                 final JavaFileFilterImplementation filter,
                 final boolean backgroundCompilation,
                 final boolean ignoreExcludes,
                 final boolean hasMemoryFileManager,
                 final boolean useModifiedFiles) {
-            return ClasspathInfo.create(bootPath, classPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
+            return ClasspathInfo.create(bootPath, moduleBootPath, classPath, moduleCompilePath, moduleClassPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles);
         }
 
         @Override

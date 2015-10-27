@@ -46,19 +46,25 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
@@ -127,10 +133,15 @@ public class FolderArchive implements Archive {
     };
     
     @Override
-    public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException {
+    public Iterable<JavaFileObject> getFiles(
+            @NonNull String folderName,
+            @NullAllowed final ClassPath.Entry entry,
+            @NullAllowed final Set<JavaFileObject.Kind> kinds,
+            @NullAllowed final JavaFileFilterImplementation filter,
+            final boolean recursive) throws IOException {
         assert folderName != null;
         if (folderName.length()>0) {
-            folderName+='/';                                                                            //NOI18N
+            folderName+='/';    //NOI18N
         }
         if (entry == null || entry.includes(folderName)) {
             File folder = new File (this.root, folderName.replace('/', File.separatorChar));      //NOI18N
@@ -141,25 +152,19 @@ public class FolderArchive implements Archive {
             if (normalize) {
                 folder = FileUtil.normalizeFile(folder);
             }
-            final File[] content = folder.listFiles();
-            if (content != null) {
-                List<JavaFileObject> result = new ArrayList<>(content.length);
-                for (File f : content) {
-                    final JavaFileObject.Kind fKind = FileObjects.getKind(FileObjects.getExtension(f.getName()));
+            return visit(folder, root, encoding(), filter, recursive, (f) -> {
+                final JavaFileObject.Kind fKind = FileObjects.getKind(FileObjects.getExtension(f.getName()));
+                try {
                     if ((kinds == null || kinds.contains(fKind)) &&
                         f.isFile() &&
                         (entry == null || entry.includes(BaseUtilities.toURI(f).toURL()))) {
-                        result.add(FileObjects.fileFileObject(
-                                f,
-                                this.root,
-                                filter,
-                                fKind == JavaFileObject.Kind.CLASS ?
-                                        UNKNOWN_CHARSET :
-                                        encoding()));
+                        return fKind;
                     }
+                } catch (MalformedURLException e) {
+                    //pass
                 }
-                return Collections.unmodifiableList(result);
-            }
+                return null;
+            });
         }
         return Collections.<JavaFileObject>emptyList();
     }
@@ -238,4 +243,39 @@ public class FolderArchive implements Archive {
             return sourceRoot;
         }
     }
+
+    @NonNull
+    private static List<JavaFileObject> visit(
+            @NonNull final File folder,
+            @NonNull final File root,
+            @NonNull final Charset encoding,
+            @NullAllowed final JavaFileFilterImplementation filter,
+            final boolean recursive,
+            @NonNull Function<File,JavaFileObject.Kind> accept) {
+        final List<JavaFileObject> res = new ArrayList<>();
+        final Deque<File> todo = new ArrayDeque<>();
+        todo.offer(folder);
+        while (!todo.isEmpty()) {
+            final File active = todo.removeLast();  //DFS
+            final File[] content = active.listFiles();
+            if (content != null) {
+                for (File f : content) {
+                    final JavaFileObject.Kind fKind = accept.apply(f);
+                    if (fKind != null) {
+                        res.add(FileObjects.fileFileObject(
+                            f,
+                            root,
+                            filter,
+                            fKind == JavaFileObject.Kind.CLASS ?
+                                    UNKNOWN_CHARSET :
+                                    encoding));
+                    } else if (recursive && f.isDirectory()) {
+                        todo.offer(f);
+                    }
+                }
+            }
+        }
+        return Collections.unmodifiableList(res);
+    }
+
 }

@@ -51,6 +51,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -195,6 +196,10 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
 
     public Boolean visit(Element arg0) {
         // no need for hint
+        return false;
+    }
+
+    public Boolean visitModule(ModuleElement e, Void p) {
         return false;
     }
 

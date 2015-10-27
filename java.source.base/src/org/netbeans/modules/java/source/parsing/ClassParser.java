@@ -179,6 +179,9 @@ public class ClassParser extends Parser {
             }
             if (currentPhase.compareTo(requiredPhase)<0) {
                 ciImpl.setPhase(requiredPhase);
+                if (currentPhase == JavaSource.Phase.MODIFIED) {
+                    ciImpl.getJavacTask().analyze(); // Ensure proper javac initialization
+                }
             }
             result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl));
         }

@@ -142,8 +142,8 @@ public class FileObjects {
     public static final String RAPT  = "rapt"; //NOI18N
     public static final String RES   = "res";  //NOI18N
     public static final char NBFS_SEPARATOR_CHAR = '/';  //NOI18N
-
     public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
+    public static final String PROTO_NBJRT = "nbjrt"; //NOI18N
 
     private static final Charset SYSTEM_ENCODING = Charset.defaultCharset();
     private static final Charset UTF8_ENCODING = Charset.forName("UTF-8");  //NOI18N

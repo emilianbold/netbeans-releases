@@ -603,6 +603,9 @@ public class JavadocHelper {
             }
             pkgName = FileObjects.convertPackage2Folder(((PackageElement) element).getQualifiedName().toString());
             pageName = PACKAGE_SUMMARY;
+        } else if (element.getKind() == ElementKind.MODULE) {
+            //The module-info has no javadoc, at least now.
+            return Collections.emptyList();
         } else {
             Element e = element;
             StringBuilder sb = new StringBuilder();

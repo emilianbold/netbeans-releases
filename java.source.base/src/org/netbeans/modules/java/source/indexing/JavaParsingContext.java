@@ -62,6 +62,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -88,6 +89,8 @@ import org.openide.util.lookup.Lookups;
 //@NotThreadSafe
 final class JavaParsingContext {
 
+    static final String ATTR_MODULE_NAME = "moduleName"; //NOI18N
+
     private final Context ctx;
     private final boolean rootNotNeeded;    
     private final ClasspathInfo cpInfo;
@@ -113,9 +116,21 @@ final class JavaParsingContext {
             if (bootPath == null) {
                 bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
             }
+            ClassPath moduleBootPath = ClassPath.getClassPath(ctx.getRoot(), JavaClassPathConstants.MODULE_BOOT_PATH);
+            if (moduleBootPath == null) {
+                moduleBootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+            }
             ClassPath compilePath = ClassPath.getClassPath(ctx.getRoot(), ClassPath.COMPILE);
             if (compilePath == null) {
                 compilePath = ClassPath.EMPTY;
+            }
+            ClassPath moduleCompilePath = ClassPath.getClassPath(ctx.getRoot(), JavaClassPathConstants.MODULE_COMPILE_PATH);
+            if (moduleCompilePath == null) {
+                moduleCompilePath = ClassPath.EMPTY;
+            }
+            ClassPath moduleClassPath = ClassPath.getClassPath(ctx.getRoot(), JavaClassPathConstants.MODULE_CLASS_PATH);
+            if (moduleClassPath == null) {
+                moduleClassPath = ClassPath.EMPTY;
             }
             ClassPath srcPath = ClassPath.getClassPath(ctx.getRoot(), ClassPath.SOURCE);
             if (srcPath == null) {
@@ -123,7 +138,10 @@ final class JavaParsingContext {
             }
             cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
                 bootPath,
+                moduleBootPath,
                 compilePath,
+                moduleCompilePath,
+                moduleClassPath,
                 srcPath,
                 null,
                 true,
@@ -135,12 +153,12 @@ final class JavaParsingContext {
         }
     }
 
-    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
+    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath moduleBootPath, final ClassPath compilePath, final ClassPath moduleCompilePath, final ClassPath moduleClassPath, final ClassPath sourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException {
         ctx = context;
         rootNotNeeded = false;
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
-        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath, sourcePath,
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, moduleBootPath, compilePath, moduleCompilePath, moduleClassPath, sourcePath,
                 filter, true, context.isSourceForBinaryRootIndexing(),
                 !virtualSources.isEmpty(), context.checkForEditorModifications());
         registerVirtualSources(cpInfo, virtualSources);
@@ -220,6 +238,15 @@ final class JavaParsingContext {
             processorGenerated = TransactionContext.get().get(ProcessorGenerated.class);
         }
         return processorGenerated;
+    }
+
+    @CheckForNull
+    String getModuleName() {
+        try {
+            return JavaIndex.getAttribute(ctx.getRootURI(), ATTR_MODULE_NAME, null);
+        } catch (IOException ioe) {
+            return null;
+        }
     }
 
     void analyze(

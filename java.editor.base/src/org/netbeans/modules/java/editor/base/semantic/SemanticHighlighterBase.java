@@ -67,6 +67,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
@@ -341,10 +342,12 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
                 
                 Coloring c = collection2Coloring(u.spec);
                 
-                Token t = v.tree2Token.get(u.tree.getLeaf());
+                List<Token> tl = v.tree2Tokens.get(u.tree.getLeaf());
                 
-                if (t != null) {
-                    newColoring.put(t, c);
+                if (tl != null) {
+                    for (Token t : tl) {
+                        newColoring.put(t, c);
+                    }
                 }
             }
         }
@@ -377,7 +380,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
     }
     
     private enum UseTypes {
-        READ, WRITE, EXECUTE, DECLARATION, CLASS_USE;
+        READ, WRITE, EXECUTE, DECLARATION, CLASS_USE, MODULE_USE;
     }
     
     private static Coloring collection2Coloring(Collection<ColoringAttributes> attr) {
@@ -439,7 +442,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         private Document doc;
         private Map<Element, List<Use>> type2Uses;
         
-        private Map<Tree, Token> tree2Token;
+        private Map<Tree, List<Token>> tree2Tokens;
         private TokenList tl;
         private long memberSelectBypass = -1;
         
@@ -453,7 +456,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             this.doc  = doc;
             type2Uses = new HashMap<Element, List<Use>>();
             
-            tree2Token = new IdentityHashMap<Tree, Token>();
+            tree2Tokens = new IdentityHashMap<Tree, List<Token>>();
             
             tl = new TokenList(info, doc, cancel);
             
@@ -462,7 +465,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         }
         
         private void firstIdentifier(String name) {
-            tl.firstIdentifier(getCurrentPath(), name, tree2Token);
+            tl.firstIdentifier(getCurrentPath(), name, tree2Tokens);
         }
         
         @Override
@@ -521,14 +524,20 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             
             memberSelectBypass = -1;
             
+            Element el = info.getTrees().getElement(getCurrentPath());
+            
+            if (el != null && el.getKind() == ElementKind.MODULE) {
+                handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.MODULE_USE));
+                tl.moduleNameHere(tree, tree2Tokens);
+                return null;
+            }
+
             Tree expr = tree.getExpression();
             
             if (expr instanceof IdentifierTree) {
                 TreePath tp = new TreePath(getCurrentPath(), expr);
                 handlePossibleIdentifier(tp, EnumSet.of(UseTypes.READ));
             }
-            
-            Element el = info.getTrees().getElement(getCurrentPath());
             
             if (el != null && el.getKind().isField()) {
                 handlePossibleIdentifier(getCurrentPath(), d == null ? EnumSet.of(UseTypes.READ) : d);
@@ -677,6 +686,11 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
                 c = getMethodColoring((ExecutableElement) decl, nct);
             }
             
+            if (decl != null && decl.getKind() == ElementKind.MODULE) {
+                c = new ArrayList<ColoringAttributes>();
+                c.add(ColoringAttributes.MODULE);
+            }
+
             if (decl != null && (decl.getKind().isClass() || decl.getKind().isInterface())) {
                 //class use make look like read variable access:
                 if (type.contains(UseTypes.READ)) {
@@ -695,7 +709,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
                     case ANNOTATION_TYPE: c.add(ColoringAttributes.ANNOTATION_TYPE); break;
                     case ENUM: c.add(ColoringAttributes.ENUM); break;
                 }
-            }
+            }                       
             
             if (decl != null && type.contains(UseTypes.DECLARATION)) {
                 if (c == null) {
@@ -772,6 +786,17 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             tl.moveToEnd(tree.getImports());
 	    scan(tree.getTypeDecls(), d);
 	    return null;
+        }
+
+        @Override
+        public Void visitModule(ModuleTree tree, EnumSet<UseTypes> d) {
+            Element e = info.getTrees().getElement(getCurrentPath());
+            if (e != null && e.getKind() == ElementKind.MODULE) {
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getName()), EnumSet.of(UseTypes.DECLARATION), e, true, false);
+                tl.moduleNameHere(tree.getName(), tree2Tokens);
+            }
+            scan(tree.getDirectives(), d);
+            return null;
         }
 
         private long startOf(List<? extends Tree> trees) {
@@ -869,7 +894,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
                 memberSelectBypass = -1;
             }
             
-            tl.identifierHere(tree, tree2Token);
+            tl.identifierHere(tree, tree2Tokens);
             
             if (d != null) {
                 handlePossibleIdentifier(getCurrentPath(), d);
@@ -1178,7 +1203,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             super.visitBinary(tree, EnumSet.of(UseTypes.READ));
             return null;
         }
-
+                
         @Override
         public Void visitClass(ClassTree tree, EnumSet<UseTypes> d) {
             tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));

@@ -31,6 +31,7 @@
 package org.netbeans.modules.java.editor.base.semantic;
 
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -180,7 +181,15 @@ public class TokenList {
         }
     }
 
-    public void firstIdentifier(final TreePath tp, final String name, final Map<Tree, Token> tree2Token) {
+    public void firstIdentifier(final TreePath tp, final String name, final Map<Tree, List<Token>> tree2Tokens) {
+        Token t = firstIdentifier(tp, name);
+        if (t != null) {
+            tree2Tokens.put(tp.getLeaf(), Collections.singletonList(t));
+        }
+    }
+
+    public Token firstIdentifier(final TreePath tp, final String name) {
+        final Token[] ret = new Token[] {null};
         doc.render(new Runnable() {
             @Override
             public void run() {
@@ -204,16 +213,17 @@ public class TokenList {
 
                 if (next) {
                     if (name.equals(info.getTreeUtilities().decodeIdentifier(ts.token().text()).toString())) {
-                        tree2Token.put(tp.getLeaf(), ts.token());
+                        ret[0] = ts.token();
                     } else {
 //                            System.err.println("looking for: " + name + ", not found");
                     }
                 }
             }
         });
+        return ret[0];
     }
 
-    public void identifierHere(final IdentifierTree tree, final Map<Tree, Token> tree2Token) {
+    public void identifierHere(final IdentifierTree tree, final Map<Tree, List<Token>> tree2Tokens) {
         doc.render(new Runnable() {
             @Override
             public void run() {
@@ -234,9 +244,43 @@ public class TokenList {
 
                 if (t.id() == JavaTokenId.IDENTIFIER && tree.getName().toString().equals(info.getTreeUtilities().decodeIdentifier(t.text()).toString())) {
     //                System.err.println("visit ident 1");
-                    tree2Token.put(tree, ts.token());
+                    tree2Tokens.put(tree, Collections.singletonList(ts.token()));
                 } else {
     //                System.err.println("visit ident 2");
+                }
+            }
+        });
+    }
+    
+    public void moduleNameHere(final ExpressionTree tree, final Map<Tree, List<Token>> tree2Tokens) {
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                if (cancel.get()) {
+                    return ;
+                }
+                
+                if (ts != null && !ts.isValid()) {
+                    cancel.set(true);
+                    return ;
+                }
+                
+                if (ts == null) {
+                    return ;
+                }
+                
+                ts.move((int)sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+                int end = (int)sourcePositions.getEndPosition(info.getCompilationUnit(), tree);
+                
+                List<Token> tokens = null;
+                while(ts.moveNext() && ts.offset() <= end) {
+                    Token t = ts.token();
+                    if (t.id() == JavaTokenId.IDENTIFIER) {
+                        if (tokens == null) {
+                            tree2Tokens.put(tree, tokens = new ArrayList<>());
+                        }
+                        tokens.add(t);
+                    }
                 }
             }
         });
