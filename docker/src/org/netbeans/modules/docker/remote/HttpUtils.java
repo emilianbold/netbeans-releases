@@ -44,8 +44,6 @@ package org.netbeans.modules.docker.remote;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringWriter;
 
 /**
  *
@@ -78,4 +76,7 @@ public final class HttpUtils {
         return null;
     }
 
+    public static boolean isChunked(String line) {
+        return line != null && line.startsWith("Transfer-Encoding") && line.contains("chunked"); // NOI18N
+    }
 }

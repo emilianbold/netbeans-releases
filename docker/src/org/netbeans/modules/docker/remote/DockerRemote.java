@@ -227,6 +227,7 @@ public class DockerRemote {
                 line = HttpUtils.readResponseLine(is);
             } while (line != null && !"".equals(line.trim()));
 
+            // FIXME may this be chunked ?
             return new AttachResult(s);
         } catch (MalformedURLException e) {
             closeSocket(s);
@@ -258,7 +259,7 @@ public class DockerRemote {
 
                 JSONParser parser = new JSONParser();
                 try (InputStreamReader r = new InputStreamReader(
-                        (conn.getInputStream()))) {
+                        conn.getInputStream(), "UTF-8")) { // NOI18N
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
@@ -318,7 +319,7 @@ public class DockerRemote {
             String line;
             do {
                 line = HttpUtils.readResponseLine(is);
-                if (line != null && line.startsWith("Transfer-Encoding") && line.contains("chunked")) {
+                if (HttpUtils.isChunked(line)) {
                     chunked = true;
                 }
             } while (line != null && !"".equals(line.trim()));
