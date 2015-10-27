@@ -1248,21 +1248,6 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
 	Host host = Host.byName(dt.getHostName());
         Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
 	EngineDescriptor engine = ndi.getEngineDescriptor();
-	// CR 6997426, cause gdb problem IZ 193248
-	if (engine.hasCapability(EngineCapability.DERIVE_EXECUTABLE)) {
-	    ndi.setTarget("-"); //NOI18N
-        } else {
-            String execPath = ndi.getTarget();
-            if (host.getPlatform() == Platform.MacOSX_x86) {
-                execPath = executor.readlsof(dt.getPid());
-            } else if (host.getPlatform() == Platform.Windows_x86) {
-                // omit arguments (IZ 230518)
-                //execPath = execPath.split(" ")[0]; // NOI18N
-            } else {
-                execPath = executor.readlink(dt.getPid());
-            }
-            ndi.setTarget(execPath);
-        }
         
         if (dt.getProjectMode() == DebugTarget.ProjectMode.NO_PROJECT) {
             conf.getProfile().setRunDirectory(executor.readDirLink(dt.getPid()));
@@ -1304,6 +1289,26 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
                 // end of the partial fix of the issue #252827
             }
             ndi.setTarget(symbolFile);
+        } else {
+            // CR 6997426, cause gdb problem IZ 193248
+            if (engine.hasCapability(EngineCapability.DERIVE_EXECUTABLE)) {
+                ndi.setTarget("-"); //NOI18N
+            } else {
+                String execPath = ndi.getTarget();
+                switch (host.getPlatform()) {
+                    case MacOSX_x86:
+                        execPath = executor.readlsof(dt.getPid());
+                        break;
+                    case Windows_x86:
+                        // omit arguments (IZ 230518)
+                        //execPath = execPath.split(" ")[0]; // NOI18N
+                        break;
+                    default:
+                        execPath = executor.readlink(dt.getPid());
+                        break;
+                }
+                ndi.setTarget(execPath);
+            }
         }
         if (isStandalone()) {
             startDebugger(getExistingDebugger(ndi), ndi);
