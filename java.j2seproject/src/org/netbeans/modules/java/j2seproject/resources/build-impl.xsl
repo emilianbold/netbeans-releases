@@ -449,6 +449,10 @@ is divided into following sections:
                         <xsl:attribute name="default">${javac.modulepath}</xsl:attribute>
                     </attribute>
                     <attribute>
+                        <xsl:attribute name="name">upgrademodulepath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.upgrademodulepath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">processorpath</xsl:attribute>
                         <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
                     </attribute>
@@ -518,8 +522,10 @@ is divided into following sections:
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <compilerarg value="-modulepath"/>
-                            <compilerarg line="@{{modulepath}}"/>
-                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <compilerarg line="@{{modulepath}}:${{empty.dir}}"/>
+                            <compilerarg value="-upgrademodulepath"/>
+                            <compilerarg line="@{{upgrademodulepath}}:${{empty.dir}}"/>
+                            <compilerarg line="${{javac.systemmodulepath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <compilerarg value="-processorpath" />
@@ -1733,12 +1739,16 @@ is divided into following sections:
 
             <target name="-init-modules-cmdline-properties">
                 <condition property="modules.supported.internal" value="true">
+                    <not>
+                        <matches string="${{javac.source}}" pattern="1\.[0-8](\..*)?"/>
+                    </not>
+                </condition>
+                <property name="javac.modulepath" value=""/>
+                <property name="javac.upgrademodulepath" value=""/>
+                <condition property="javac.systemmodulepath.cmd.line.arg" value="-systemmodulepath '${{javac.systemmodulepath}}'" else="">
                     <and>
-                        <not>
-                            <matches string="${{javac.source}}" pattern="1\.[0-8](\..*)?"/>
-                        </not>
-                        <isset property="javac.modulepath"/>
-                        <length string="${{javac.modulepath}}" when="greater" length="0"/>
+                        <isset property="javac.systemmodulepath"/>
+                        <length string="${{javac.systemmodulepath}}" when="greater" length="0"/>
                     </and>
                 </condition>
             </target>
