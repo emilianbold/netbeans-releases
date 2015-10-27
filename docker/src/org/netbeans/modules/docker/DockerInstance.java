@@ -58,7 +58,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.remote.DockerEventBus;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
-import org.openide.util.Parameters;
 
 /**
  *
@@ -122,6 +121,8 @@ public class DockerInstance {
 
     static Collection<? extends DockerInstance> findAll() {
         Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
+        assert global != null;
+
         List<DockerInstance> instances = new ArrayList<>();
         try {
             for (String name : global.childrenNames()) {
