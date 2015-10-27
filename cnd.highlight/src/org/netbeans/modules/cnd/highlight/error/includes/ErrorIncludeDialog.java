@@ -77,6 +77,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -631,17 +632,19 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     
     private void openElement(final int selected){
         if (baseProject != null && baseProject.isValid()) {
-            final String taskName = "Open include"; //NOI18N
-            Runnable run = new Runnable() {
+            ListModel lm = rightList.getModel();
+            if (lm instanceof ErrorFilesModel) {
+                ErrorFilesModel m = (ErrorFilesModel)lm;
+                final CsmOffsetable error = m.getFailedDirective(selected);
+                Runnable run = new Runnable() {
 
-                @Override
-                public void run() {
-                    ErrorFilesModel m = (ErrorFilesModel)rightList.getModel();
-                    CsmOffsetable error = m.getFailedDirective(selected);
-                    CsmUtilities.openSource(error);
-                }
-            };
-            CsmModelAccessor.getModel().enqueue(run, taskName);
+                    @Override
+                    public void run() {
+                        CsmUtilities.openSource(error);
+                    }
+                };
+                CsmModelAccessor.getModel().enqueue(run, "Open include"); //NOI18N
+            }
         }
     }
     
