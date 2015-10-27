@@ -47,7 +47,6 @@ import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
