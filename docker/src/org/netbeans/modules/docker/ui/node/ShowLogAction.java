@@ -39,87 +39,54 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.remote;
+package org.netbeans.modules.docker.ui.node;
 
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.nio.charset.Charset;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.InputReaderTask;
+import org.netbeans.api.extexecution.base.input.InputReaders;
+import org.netbeans.modules.docker.ui.UiUtils;
+import org.netbeans.modules.docker.ContainerStatus;
+import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.DockerUtils;
+import org.netbeans.modules.docker.remote.DockerEvent;
+import org.netbeans.modules.docker.remote.DockerException;
+import org.netbeans.modules.docker.remote.DockerRemote;
+import org.netbeans.modules.docker.remote.StreamResult;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Petr Hejl
  */
-public class ChunkedInputStream extends FilterInputStream {
+public class ShowLogAction extends AbstractContainerAction {
 
-    private int remaining;
+    @NbBundle.Messages("LBL_ShowLogAction=Show Log")
+    public ShowLogAction() {
+        super(Bundle.LBL_ShowLogAction(), null);
+    }
 
-    private boolean end;
-
-    public ChunkedInputStream(InputStream is) {
-        super(is);
+    @NbBundle.Messages({
+        "# {0} - container id",
+        "MSG_ShowingLog=Showing log for container {0}"
+    })
+    @Override
+    protected String getProgressMessage(DockerContainer container) {
+        return Bundle.MSG_ShowingLog(DockerUtils.getShortId(container));
     }
 
     @Override
-    public int read() throws IOException {
-        if (end) {
-            return -1;
-        }
-
-        if (remaining == 0) {
-            String line = HttpUtils.readResponseLine(in);
-            if (line == null) {
-                end = true;
-                return -1;
-            }
-            int semicolon = line.indexOf(';');
-            if (semicolon > 0) {
-                line = line.substring(0, semicolon);
-            }
-            try {
-                remaining = Integer.parseInt(line, 16);
-                if (remaining == 0) {
-                    end = true;
-                    return -1;
-                }
-            } catch (NumberFormatException ex) {
-                throw new IOException("Wrong chunk size");
-            }
-        }
-        remaining--;
-        int ret = in.read();
-        if (remaining == 0) {
-            HttpUtils.readResponseLine(in);
-        }
-        return ret;
+    protected void performAction(DockerContainer container) throws DockerException {
+        DockerRemote facade = new DockerRemote(container.getInstance());
+        StreamResult r = facade.logs(container);
+        InputOutput io = IOProvider.getDefault().getIO("Test", true);
+        InputReaderTask taskOut = InputReaderTask.newTask(InputReaders.forStream(r.getStdOut(), Charset.forName("UTF-8")), InputProcessors.printing(io.getOut()));
+        InputReaderTask taskErr = InputReaderTask.newTask(InputReaders.forStream(r.getStdErr(), Charset.forName("UTF-8")), InputProcessors.printing(io.getErr()));
+        RequestProcessor.getDefault().post(taskOut);
+        RequestProcessor.getDefault().post(taskErr);
     }
 
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        if (end) {
-            return -1;
-        }
-        if (len == 0) {
-            return 0;
-        }
-        if (remaining == 0) {
-            int ret = read();
-            if (ret < 0) {
-                return ret;
-            }
-            b[off] = (byte) ret;
-            return 1;
-        } else {
-            int count = 0;
-            int limit = off + Math.min(len, remaining);
-            for (int i = off; i < limit; i++) {
-                int value = read();
-                if (value < 0) {
-                    return count;
-                }
-                count++;
-                b[i] = (byte) value;
-            }
-            return count;
-        }
-    }
 }

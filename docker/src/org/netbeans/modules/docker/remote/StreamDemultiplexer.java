@@ -139,7 +139,7 @@ public class StreamDemultiplexer implements Runnable, StreamResult {
             try {
                 int sum = 0;
                 do {
-                    int read = inputStream.read(buffer, sum, buffer.length);
+                    int read = inputStream.read(buffer, sum, buffer.length - sum);
                     if (read < 0) {
                         close();
                         return;
@@ -166,18 +166,7 @@ public class StreamDemultiplexer implements Runnable, StreamResult {
                         close();
                         return;
                     }
-                    int last = 0;
-                    for (int i = 0; i < read; i++) {
-                        if (content[i] == '\n') {
-                            if (i < 1 || content[i - 1] != '\r') {
-                                out.write(content, last, i - last);
-                                out.write('\r');
-                                out.write('\n');
-                                last = i + 1;
-                            }
-                        }
-                    }
-                    out.write(content, last, read);
+                    out.write(content, 0, read);
                     sum += read;
                 } while (sum < size);
             } catch (IOException ex) {
@@ -190,11 +179,10 @@ public class StreamDemultiplexer implements Runnable, StreamResult {
 
     @Override
     public void close() {
-        LOGGER.log(Level.INFO, "Closing");
+        LOGGER.log(Level.INFO, "Closing", new Exception());
         try {
             s.close();
-            stdOut.close();
-            stdErr.close();
+            requestProcessor.shutdownNow();
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
