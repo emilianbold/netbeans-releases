@@ -354,7 +354,7 @@ public class DockerRemote {
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
-            return new LogResult(s, info.hasTty() ? new Direct(is) : new Demuxer(is));
+            return new LogResult(s, info.hasTty() ? new DirectFetcher(is) : new Demuxer(is));
         } catch (MalformedURLException e) {
             closeSocket(s);
             throw new DockerException(e);
@@ -556,11 +556,11 @@ public class DockerRemote {
         }
     }
 
-    private static class Direct implements StreamItem.Fetcher {
+    private static class DirectFetcher implements StreamItem.Fetcher {
 
         private final InputStream is;
 
-        public Direct(InputStream is) {
+        public DirectFetcher(InputStream is) {
             this.is = is;
         }
 
