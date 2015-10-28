@@ -253,7 +253,7 @@ public class DockerRemote {
             if (info.hasTty()) {
                 return new DirectStreamResult(s, is);
             } else {
-                return new DockerStreamResult(s, is);
+                return new MuxedStreamResult(s, is);
             }
         } catch (MalformedURLException e) {
             closeSocket(s);

@@ -54,9 +54,9 @@ import java.util.logging.Logger;
  *
  * @author Petr Hejl
  */
-public class DockerStreamResult implements StreamResult {
+public class MuxedStreamResult implements StreamResult {
 
-    private static final Logger LOGGER = Logger.getLogger(DockerStreamResult.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MuxedStreamResult.class.getName());
 
     private final Socket s;
 
@@ -72,7 +72,7 @@ public class DockerStreamResult implements StreamResult {
 
     private int remaining;
 
-    public DockerStreamResult(Socket s, InputStream is) throws IOException {
+    public MuxedStreamResult(Socket s, InputStream is) throws IOException {
         this.s = s;
         this.outputStream = s.getOutputStream();
         this.demultiplexer = new Demuxer(is == null ? s.getInputStream() : is);
@@ -117,7 +117,7 @@ public class DockerStreamResult implements StreamResult {
 
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
-            synchronized (DockerStreamResult.this) {
+            synchronized (MuxedStreamResult.this) {
                 int size = fetchData();
                 if (size <= 0) {
                     return size;
@@ -132,7 +132,7 @@ public class DockerStreamResult implements StreamResult {
 
         @Override
         public int read() throws IOException {
-            synchronized (DockerStreamResult.this) {
+            synchronized (MuxedStreamResult.this) {
                 int size = fetchData();
                 if (size <= 0) {
                     return size;
@@ -145,7 +145,7 @@ public class DockerStreamResult implements StreamResult {
         }
 
         private int fetchData() {
-            synchronized (DockerStreamResult.this) {
+            synchronized (MuxedStreamResult.this) {
                 if (last == null) {
                     return -1;
                 }
@@ -157,10 +157,10 @@ public class DockerStreamResult implements StreamResult {
                     remaining = last.getData().length;
                 }
 
-                DockerStreamResult.this.notifyAll();
+                MuxedStreamResult.this.notifyAll();
                 try {
                     while (remaining == 0 || last.isError() != error) {
-                        DockerStreamResult.this.wait();
+                        MuxedStreamResult.this.wait();
                     }
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
