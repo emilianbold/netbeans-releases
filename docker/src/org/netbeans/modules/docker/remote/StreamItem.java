@@ -41,68 +41,34 @@
  */
 package org.netbeans.modules.docker.remote;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author Petr Hejl
  */
-public class Demuxer implements StreamItem.Fetcher {
+public class StreamItem {
 
-    private static final Logger LOGGER = Logger.getLogger(Demuxer.class.getName());
+    public static final StreamItem EMPTY = new StreamItem(new byte[]{}, false);
 
-    private final InputStream is;
+    private final byte[] data;
 
-    public Demuxer(InputStream is) {
-        this.is = is;
+    private final boolean error;
+
+    public StreamItem(byte[] data, boolean error) {
+        this.data = data;
+        this.error = error;
     }
 
-    @Override
-    public StreamItem fetch() {
-        byte[] buffer = new byte[8];
-        byte[] content = new byte[256];
+    public byte[] getData() {
+        return data;
+    }
 
-        try {
-            int sum = 0;
-            do {
-                int read = is.read(buffer, sum, buffer.length - sum);
-                if (read < 0) {
-                    return null;
-                }
-                sum += read;
-            } while (sum < 8);
-            // now we have 8 bytes
-            assert buffer.length == 8;
+    public boolean isError() {
+        return error;
+    }
 
-            boolean error;
-            int size = ByteBuffer.wrap(buffer).getInt(4);
-            if (buffer[0] == 0 || buffer[0] == 1) {
-                error = false;
-            } else if (buffer[0] == 2) {
-                error = true;
-            } else {
-                throw new IOException("Unparsable stream " + buffer[0]);
-            }
+    public static interface Fetcher {
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
-            sum = 0;
-            do {
-                int read = is.read(content, 0, Math.min(size, content.length));
-                if (read < 0) {
-                    return null;
-                }
-                bos.write(content, 0, read);
-                sum += read;
-            } while (sum < size);
-            return new StreamItem(bos.toByteArray(), error);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            return null;
-        }
+        StreamItem fetch();
+
     }
 }

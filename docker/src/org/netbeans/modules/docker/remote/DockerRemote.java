@@ -80,6 +80,7 @@ import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -315,6 +316,7 @@ public class DockerRemote {
     public LogResult logs(DockerContainer container) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
+        ContainerInfo info = getInfo(container);
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -349,7 +351,10 @@ public class DockerRemote {
                 }
             } while (line != null && !"".equals(line.trim()));
 
-            return new LogResult(s, chunked);
+            if (chunked) {
+                is = new ChunkedInputStream(is);
+            }
+            return new LogResult(s, info.hasTty() ? new Direct(is) : new Demuxer(is));
         } catch (MalformedURLException e) {
             closeSocket(s);
             throw new DockerException(e);
@@ -534,21 +539,15 @@ public class DockerRemote {
 
         private final Socket s;
 
-        private final InputStream logStream;
+        private final StreamItem.Fetcher fetcher;
 
-        LogResult(Socket s, boolean chunked) throws IOException {
+        public LogResult(Socket s, StreamItem.Fetcher fetcher) {
             this.s = s;
-            this.logStream = chunked ? new ChunkedInputStream(s.getInputStream()) : s.getInputStream();
+            this.fetcher = fetcher;
         }
 
-        /**
-         * Returns stream providing multiplexed out end error logs.
-         * See Docker documentation for format.
-         *
-         * @return
-         */
-        public InputStream getLogStream() {
-            return logStream;
+        public StreamItem.Fetcher getFetcher() {
+            return fetcher;
         }
 
         @Override
@@ -557,6 +556,32 @@ public class DockerRemote {
         }
     }
 
+    private static class Direct implements StreamItem.Fetcher {
+
+        private final InputStream is;
+
+        public Direct(InputStream is) {
+            this.is = is;
+        }
+
+        @Override
+        public StreamItem fetch() {
+            try {
+                byte[] buffer = new byte[256];
+                int count = is.read(buffer);
+                if (count < 0) {
+                    return null;
+                }
+                byte[] data = new byte[count];
+                System.arraycopy(buffer, 0, data, 0, count);
+                return new StreamItem(data, false);
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+                return null;
+            }
+        }
+
+    }
     public static interface ConnectionListener {
 
         void onConnect(HttpURLConnection connection);

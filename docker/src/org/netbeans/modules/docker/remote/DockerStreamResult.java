@@ -68,7 +68,7 @@ public class DockerStreamResult implements StreamResult {
 
     private final InputStream stdErr;
 
-    private Demuxer.Result last = Demuxer.Result.EMPTY;
+    private StreamItem last = StreamItem.EMPTY;
 
     private int remaining;
 
@@ -81,19 +81,6 @@ public class DockerStreamResult implements StreamResult {
     }
 
     public OutputStream getStdIn() {
-//        return new FilterOutputStream(outputStream) {
-//            @Override
-//            public void write(byte[] b, int off, int len) throws IOException {
-//                out.write(b, off, len);
-//                out.flush();
-//            }
-//
-//            @Override
-//            public void write(int b) throws IOException {
-//                out.write(b);
-//                out.flush();
-//            }
-//        };
         return outputStream;
     }
 
@@ -163,7 +150,7 @@ public class DockerStreamResult implements StreamResult {
                     return -1;
                 }
                 while (remaining == 0) {
-                    last = demultiplexer.getNext();
+                    last = demultiplexer.fetch();
                     if (last == null) {
                         return -1;
                     }
