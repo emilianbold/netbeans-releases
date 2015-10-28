@@ -81,7 +81,7 @@ class Utilities {
                 }
             }
         }
-        return position;
+        return -1;
     }
     
     // take const modifier into account
