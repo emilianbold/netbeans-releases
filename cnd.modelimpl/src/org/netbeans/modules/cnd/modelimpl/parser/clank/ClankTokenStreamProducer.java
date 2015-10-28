@@ -794,7 +794,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 }
             }
             if (exitedInclusion != null) {
-                // the exit from #include 
+                // if already done, then just exit
+                if (state == State.DONE && !exitingFromInterestedFile) {
+                    return true;
+                }
+                // the exit from #include
                 return postIncludeAction(exitedFromFileImpl, exitedFrom);
             } else {
                 // just exit from start file
