@@ -793,6 +793,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                     assert state == State.DONE : "expected DONE instead of " + state + " for " + this.interestedFile;
                 }
             }
+            if (state == State.CORRUPTED_INCLUDE_CHAIN) {
+                // nothing can be done
+                return true;
+            }
             if (exitedInclusion != null) {
                 // if already done, then just exit
                 if (state == State.DONE && !exitingFromInterestedFile) {
