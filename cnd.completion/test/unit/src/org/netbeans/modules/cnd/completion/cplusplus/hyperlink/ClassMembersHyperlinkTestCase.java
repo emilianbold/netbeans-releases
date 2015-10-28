@@ -1185,6 +1185,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug255328.cpp", 17, 27, "bug255328.cpp", 2, 5);
     }
     
+    public void testBug246680() throws Exception {
+        // Bug 246680 - C99: nested c99 initializer (2)
+        performTest("bug246680.c", 11, 21, "bug246680.c", 6, 7);
+        performTest("bug246680.c", 11, 27, "bug246680.c", 5, 11);
+        performTest("bug246680.c", 11, 33, "bug246680.c", 4, 17);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
