@@ -541,6 +541,10 @@ public class CsmCompletionExpression {
                 return "PARENTHESIS_OPEN"; // NOI18N
             case PARENTHESIS:
                 return "PARENTHESIS"; // NOI18N
+            case DECLTYPE_OPEN:
+                return "DECLTYPE_OPEN"; // NOI18N
+            case DECLTYPE:
+                return "DECLTYPE"; // NOI18N
             case METHOD_OPEN:
                 return "METHOD_OPEN"; // NOI18N
             case METHOD:
