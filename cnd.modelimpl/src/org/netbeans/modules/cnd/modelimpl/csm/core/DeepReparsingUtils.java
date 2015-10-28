@@ -127,7 +127,7 @@ public final class DeepReparsingUtils {
             LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
         }
         changedFileProject.markAsParsingPreprocStates(fileImpl);
-        fileImpl.markReparseNeeded(false);
+        fileImpl.markReparseNeeded(true);
         ParserQueue.instance().addForPartialReparse(fileImpl);
     }
 
