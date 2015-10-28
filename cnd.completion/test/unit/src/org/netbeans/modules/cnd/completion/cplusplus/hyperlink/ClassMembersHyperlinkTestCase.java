@@ -1192,6 +1192,15 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug246680.c", 11, 33, "bug246680.c", 4, 17);
     }
     
+    public void testBug255903() throws Exception {
+        // Bug 255903 - unresolved enumerators in struct initializer
+        performTest("bug255903.c", 13, 16, "bug255903.c", 9, 5);
+        performTest("bug255903.c", 14, 20, "bug255903.c", 3, 5);
+        performTest("bug255903.c", 15, 20, "bug255903.c", 3, 5);
+        performTest("bug255903.c", 16, 14, "bug255903.c", 8, 7);
+        performTest("bug255903.c", 16, 34, "bug255903.c", 7, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
