@@ -259,7 +259,8 @@ public class FormatStringAudit extends AbstractCodeAudit {
                                 }
                             } else if (state == State.FORMAT && tokenId.equals(CppTokenId.STRING_LITERAL)) {
                                 formatString.append(token.text().toString());
-                            } else if (state == State.FORMAT && !tokenId.equals(CppTokenId.STRING_LITERAL) 
+                            } else if (state == State.FORMAT && !tokenId.equals(CppTokenId.STRING_LITERAL)
+                                                             && !tokenId.equals(CppTokenId.RPAREN) 
                                                              && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
                                                              && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
                                 // skip checking for complicated expressions
@@ -302,8 +303,7 @@ public class FormatStringAudit extends AbstractCodeAudit {
                                 if (parameterOffset == -1) {
                                     parameterOffset = docTokenSequence.offset();
                                 }
-                            } else if (state == State.VAR_ARGS && tokenId.equals(CppTokenId.RPAREN)) {
-                                // terminate
+                            } else if ((state == State.VAR_ARGS || state == State.FORMAT) && tokenId.equals(CppTokenId.RPAREN)) {
                                 if (parameterBuffer.length() > 0) {
                                     parameters.add(new Parameter(parameterBuffer.toString(), parameterOffset, !containsMacros));
                                 }
