@@ -111,14 +111,16 @@ public final class DockerRegistry {
         Parameters.notNull("displayName", displayName);
         Parameters.notNull("url", url);
 
+        DockerInstance instance;
         synchronized (this) {
             if (instances.containsKey(url)) {
                 throw new IllegalStateException("Docker instance already exist: " + url);
             }
-            DockerInstance instance = DockerInstance.create(displayName, url, null, null);
+            instance = DockerInstance.create(displayName, url, null, null);
             instances.put(url, instance);
-            return instance;
         }
+        changeSupport.fireChange();
+        return instance;
     }
 
     public Collection<? extends DockerInstance> getInstances() {
