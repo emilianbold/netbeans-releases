@@ -61,6 +61,7 @@ import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.remote.StreamResult;
+import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
@@ -123,18 +124,18 @@ public final class UiUtils {
         IOProvider provider = IOProvider.get("Terminal"); // NOI18N
         InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), new Action[] {new TerminalOptionsAction()});
         if (IOTerm.isSupported(io)) {
-            final Term term = IOTerm.term(io);
-            if (!result.hasTty()) {
-                term.pushStream(new LineDiscipline());
+            
+            if (!result.hasTty() && IOEmulation.isSupported(io)) {
+                IOEmulation.setDisciplined(io);
             }
             IOTerm.connect(io, result.getStdIn(),
                     new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr());
-            if (result.hasTty()) {
-                if (IOResizable.isSupported(io)) {
-                    IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
-                }
+            if (result.hasTty() && IOResizable.isSupported(io)) {
+                IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
             }
             io.select();
+            // XXX is there a better way ?
+            final Term term = IOTerm.term(io);
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
