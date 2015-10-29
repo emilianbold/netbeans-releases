@@ -145,9 +145,11 @@ public final class UiUtils {
         }
     }
 
-    private static class TerminalResizeListener implements PropertyChangeListener {
+    private static class TerminalResizeListener implements PropertyChangeListener, Closeable {
 
         private final DockerContainer container;
+
+        private final RequestProcessor requestProcessor = new RequestProcessor(TerminalResizeListener.class);
 
         private final RequestProcessor.Task task;
 
@@ -158,7 +160,7 @@ public final class UiUtils {
 
         public TerminalResizeListener(DockerContainer container) {
             this.container = container;
-            this.task = RequestProcessor.getDefault().create(new Runnable() {
+            this.task = requestProcessor.create(new Runnable() {
                 @Override
                 public void run() {
                     Dimension newValue;
@@ -190,15 +192,20 @@ public final class UiUtils {
                 }
             }
         }
+
+        @Override
+        public void close() throws IOException {
+            requestProcessor.shutdownNow();
+        }
     }
 
     private static class TerminalInputStream extends FilterInputStream {
 
         private final InputOutput io;
 
-        private final Closeable close;
+        private final Closeable[] close;
 
-        public TerminalInputStream(InputOutput io, InputStream in, Closeable close) {
+        public TerminalInputStream(InputOutput io, InputStream in, Closeable... close) {
             super(in);
             this.io = io;
             this.close = close;
@@ -234,10 +241,12 @@ public final class UiUtils {
 
         private void closeTerminal() {
             IOTerm.disconnect(io, null);
-            try {
-                close.close();
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, null, ex);
+            for (Closeable c : close) {
+                try {
+                    c.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
             }
         }
     }
