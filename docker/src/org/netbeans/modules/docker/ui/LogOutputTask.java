@@ -44,10 +44,12 @@ package org.netbeans.modules.docker.ui;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.remote.StreamItem;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 /**
@@ -58,6 +60,8 @@ public class LogOutputTask implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(LogOutputTask.class.getName());
 
+    private final RequestProcessor requestProcessor = new RequestProcessor(LogOutputTask.class);
+
     private final InputOutput io;
 
     private final DockerRemote.LogResult logResult;
@@ -65,6 +69,10 @@ public class LogOutputTask implements Runnable {
     public LogOutputTask(InputOutput io, DockerRemote.LogResult logResult) {
         this.io = io;
         this.logResult = logResult;
+    }
+
+    public Future start() {
+        return requestProcessor.submit(this);
     }
 
     @Override

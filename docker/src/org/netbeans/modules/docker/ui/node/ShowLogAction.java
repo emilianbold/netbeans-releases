@@ -75,13 +75,7 @@ public class ShowLogAction extends AbstractContainerAction {
 
     @Override
     protected void performAction(DockerContainer container) throws DockerException {
-        DockerRemote facade = new DockerRemote(container.getInstance());
-        DockerRemote.LogResult r = facade.logs(container);
-        Pair<InputOutput, Boolean> io = UiUtils.getLogInputOutput(container);
-        io.first().select();
-        if (!io.second()) {
-            RequestProcessor.getDefault().post(new LogOutputTask(io.first(), r));
-        }
+        UiUtils.openLog(container);
     }
 
 }

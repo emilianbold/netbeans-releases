@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -86,41 +87,12 @@ public final class UiUtils {
 
     private static final int RESIZE_DELAY = 500;
 
-    private static final Map<DockerContainer, InputOutput> LOGS = new WeakHashMap<>();
+    private static final Map<DockerContainer, LogConnect> LOGS = new WeakHashMap<>();
 
     private static final Map<DockerContainer, InputOutput> TERMS = new WeakHashMap<>();
 
     private UiUtils() {
         super();
-    }
-
-    @NbBundle.Messages({
-        "# {0} - container id",
-        "LBL_LogInputOutput=Log {0}"
-    })
-    public static Pair<InputOutput, Boolean> getLogInputOutput(DockerContainer container) {
-        synchronized (LOGS) {
-            InputOutput io = LOGS.get(container);
-            if (io == null) {
-                io = IOProvider.getDefault().getIO(Bundle.LBL_LogInputOutput(DockerUtils.getShortId(container)), true);
-                LOGS.put(container, io);
-                return Pair.of(io, false);
-            }
-            return Pair.of(io, true);
-        }
-    }
-
-    public static Pair<InputOutput, Boolean> getTerminalInputOutput(DockerContainer container) {
-        synchronized (TERMS) {
-            InputOutput io = TERMS.get(container);
-            if (io == null) {
-                io = IOProvider.get("Terminal") // NOI18N
-                        .getIO(DockerUtils.getShortId(container), new Action[] {new TerminalOptionsAction()});
-                TERMS.put(container, io);
-                return Pair.of(io, false);
-            }
-            return Pair.of(io, IOConnect.isSupported(io) && IOConnect.isConnected(io));
-        }
     }
 
     public static void performRemoteAction(final String displayName, final Callable<Void> action, final Runnable eventFinish) {
@@ -155,16 +127,38 @@ public final class UiUtils {
         }
     }
 
-    public static void openTerminal(final DockerContainer container, StreamResult result) {
+    public static void openLog(DockerContainer container) throws DockerException {
+        LogConnect logIO = getLogInputOutput(container);
+        if (logIO.isConnected()) {
+            logIO.getInputOutput().select();
+            return;
+        }
+
+        DockerRemote facade = new DockerRemote(container.getInstance());
+        DockerRemote.LogResult result = facade.logs(container);
+        try {
+            logIO.getInputOutput().getOut().reset();
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+        logIO.connect(result);
+        logIO.getInputOutput().select();
+    }
+
+    public static void openTerminal(DockerContainer container, boolean logs) throws DockerException {
         Pair<InputOutput, Boolean> termIO = getTerminalInputOutput(container);
         InputOutput io = termIO.first();
         if (IOTerm.isSupported(io)) {
             if (termIO.second()) {
                 focusTerminal(io);
             } else {
+                DockerRemote facade = new DockerRemote(container.getInstance());
+                StreamResult result = facade.attach(container, logs);
+
                 if (!result.hasTty() && IOEmulation.isSupported(io)) {
                     IOEmulation.setDisciplined(io);
                 }
+                // XXX reset the output ?
                 IOTerm.connect(io, result.getStdIn(),
                         new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr(), "UTF-8");
                 if (result.hasTty() && IOResizable.isSupported(io)) {
@@ -174,6 +168,35 @@ public final class UiUtils {
             }
         } else {
             io.select();
+        }
+    }
+
+    @NbBundle.Messages({
+        "# {0} - container id",
+        "LBL_LogInputOutput=Log {0}"
+    })
+    private static LogConnect getLogInputOutput(DockerContainer container) {
+        synchronized (LOGS) {
+            LogConnect connect = LOGS.get(container);
+            if (connect == null) {
+                InputOutput io = IOProvider.getDefault().getIO(Bundle.LBL_LogInputOutput(DockerUtils.getShortId(container)), true);
+                connect = new LogConnect(io);
+                LOGS.put(container, connect);
+            }
+            return connect;
+        }
+    }
+
+    private static Pair<InputOutput, Boolean> getTerminalInputOutput(DockerContainer container) {
+        synchronized (TERMS) {
+            InputOutput io = TERMS.get(container);
+            if (io == null) {
+                io = IOProvider.get("Terminal") // NOI18N
+                        .getIO(DockerUtils.getShortId(container), new Action[] {new TerminalOptionsAction()});
+                TERMS.put(container, io);
+                return Pair.of(io, false);
+            }
+            return Pair.of(io, IOConnect.isSupported(io) && IOConnect.isConnected(io));
         }
     }
 
@@ -294,6 +317,29 @@ public final class UiUtils {
                     LOGGER.log(Level.FINE, null, ex);
                 }
             }
+        }
+    }
+
+    private static class LogConnect {
+
+        private final InputOutput io;
+
+        private Future task;
+
+        public LogConnect(InputOutput io) {
+            this.io = io;
+        }
+
+        public InputOutput getInputOutput() {
+            return io;
+        }
+
+        public synchronized void connect(DockerRemote.LogResult result) {
+            task = new LogOutputTask(io, result).start();
+        }
+
+        public synchronized boolean isConnected() {
+            return task != null && !task.isDone();
         }
     }
 }

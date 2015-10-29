@@ -146,9 +146,7 @@ public class RunTagAction extends NodeAction {
                         DockerContainer container = remote.createContainer(config);
                         remote.start(container);
 
-                        final DockerRemote facade = new DockerRemote(container.getInstance());
-                        StreamResult r = facade.attach(container, true);
-                        UiUtils.openTerminal(container, r);
+                        UiUtils.openTerminal(container, true);
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }
