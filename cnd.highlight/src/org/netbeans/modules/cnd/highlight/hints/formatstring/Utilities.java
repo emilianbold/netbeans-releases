@@ -127,10 +127,10 @@ class Utilities {
                 return Arrays.asList("c");                                // NOI18N
             } else if (type.contains("short")) {                          // NOI18N
                 return Arrays.asList("hd", "hi");                         // NOI18N
-            } else if (type.contains("intmax_t")) {                       // NOI18N
-                return Arrays.asList("jd", "ji");                         // NOI18N
             } else if (type.contains("uintmax_t")) {                      // NOI18N
                 return Arrays.asList("jo", "ju", "jx", "jX");             // NOI18N
+            } else if (type.contains("intmax_t")) {                       // NOI18N
+                return Arrays.asList("jd", "ji");                         // NOI18N
             } else if (type.contains("size_t")) {                         // NOI18N
                 return Arrays.asList("zd", "zi","zo", "zu", "zx", "zX");  // NOI18N
             } else if (type.contains("ptrdiff_t")) {                      // NOI18N
