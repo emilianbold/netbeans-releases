@@ -321,6 +321,8 @@ public final class UiUtils {
                     LOGGER.log(Level.FINE, null, ex);
                 }
             }
+            // disconnect all is needed as we call getOut().reset()
+            // because of that getOut()
             if (IOConnect.isSupported(io)) {
                 IOConnect.disconnectAll(io, null);
             }
