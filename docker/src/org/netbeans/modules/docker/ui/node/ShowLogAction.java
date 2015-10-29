@@ -41,17 +41,14 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import org.netbeans.api.extexecution.base.input.InputProcessors;
-import org.netbeans.api.extexecution.base.input.InputReaderTask;
-import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.ui.DockerOutputTask;
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -80,9 +77,11 @@ public class ShowLogAction extends AbstractContainerAction {
     protected void performAction(DockerContainer container) throws DockerException {
         DockerRemote facade = new DockerRemote(container.getInstance());
         DockerRemote.LogResult r = facade.logs(container);
-        InputOutput io = IOProvider.getDefault().getIO("Test", true);
-        io.select();
-        RequestProcessor.getDefault().post(new DockerOutputTask(io, r));
+        Pair<InputOutput, Boolean> io = UiUtils.getLogInputOutput(container);
+        io.first().select();
+        if (!io.second()) {
+            RequestProcessor.getDefault().post(new DockerOutputTask(io.first(), r));
+        }
     }
 
 }

@@ -47,7 +47,6 @@ import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.remote.Demuxer;
 import org.netbeans.modules.docker.remote.StreamItem;
 import org.openide.windows.InputOutput;
 

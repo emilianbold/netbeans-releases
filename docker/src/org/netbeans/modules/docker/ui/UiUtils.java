@@ -48,13 +48,14 @@ import java.io.Closeable;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.lib.terminalemulator.LineDiscipline;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
@@ -67,6 +68,7 @@ import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -83,8 +85,22 @@ public final class UiUtils {
 
     private static final int RESIZE_DELAY = 500;
 
+    private static final Map<DockerContainer, InputOutput> LOGS = new WeakHashMap<>();
+
     private UiUtils() {
         super();
+    }
+
+    public static Pair<InputOutput, Boolean> getLogInputOutput(DockerContainer container) {
+        synchronized (LOGS) {
+            InputOutput io = LOGS.get(container);
+            if (io == null) {
+                io = IOProvider.getDefault().getIO(DockerUtils.getShortId(container) + " log", true);
+                LOGS.put(container, io);
+                return Pair.of(io, false);
+            }
+            return Pair.of(io, true);
+        }
     }
 
     public static void performRemoteAction(final String displayName, final Callable<Void> action, final Runnable eventFinish) {
@@ -124,7 +140,6 @@ public final class UiUtils {
         IOProvider provider = IOProvider.get("Terminal"); // NOI18N
         InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), new Action[] {new TerminalOptionsAction()});
         if (IOTerm.isSupported(io)) {
-            
             if (!result.hasTty() && IOEmulation.isSupported(io)) {
                 IOEmulation.setDisciplined(io);
             }
