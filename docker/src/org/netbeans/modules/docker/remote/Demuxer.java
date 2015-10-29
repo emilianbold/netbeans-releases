@@ -52,11 +52,16 @@ import java.util.logging.Logger;
  *
  * @author Petr Hejl
  */
+//@NotThreadSafe
 public class Demuxer implements StreamItem.Fetcher {
 
     private static final Logger LOGGER = Logger.getLogger(Demuxer.class.getName());
 
     private final InputStream is;
+
+    private byte[] buffer = new byte[8];
+
+    private byte[] content = new byte[256];
 
     public Demuxer(InputStream is) {
         this.is = is;
@@ -64,9 +69,6 @@ public class Demuxer implements StreamItem.Fetcher {
 
     @Override
     public StreamItem fetch() {
-        byte[] buffer = new byte[8];
-        byte[] content = new byte[256];
-
         try {
             int sum = 0;
             do {

@@ -95,7 +95,6 @@ public class MuxedStreamResult implements StreamResult {
 
     @Override
     public void close() {
-        LOGGER.log(Level.INFO, "Closing", new Exception());
         try {
             s.close();
         } catch (IOException ex) {
