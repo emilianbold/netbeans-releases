@@ -80,7 +80,6 @@ import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
