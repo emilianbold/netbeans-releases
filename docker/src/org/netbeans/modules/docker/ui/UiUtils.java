@@ -68,6 +68,7 @@ import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -93,11 +94,15 @@ public final class UiUtils {
         super();
     }
 
+    @NbBundle.Messages({
+        "# {0} - container id",
+        "LBL_LogInputOutput=Log {0}"
+    })
     public static Pair<InputOutput, Boolean> getLogInputOutput(DockerContainer container) {
         synchronized (LOGS) {
             InputOutput io = LOGS.get(container);
             if (io == null) {
-                io = IOProvider.getDefault().getIO(DockerUtils.getShortId(container) + " Log", true);
+                io = IOProvider.getDefault().getIO(Bundle.LBL_LogInputOutput(DockerUtils.getShortId(container)), true);
                 LOGS.put(container, io);
                 return Pair.of(io, false);
             }
