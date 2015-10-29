@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.Pair;
+import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.CompilerDefinitions;
 
 /**
  *
@@ -60,7 +60,7 @@ public class SPICompilerAccesor {
     
     public List<List<String>> getSystemIncludesAndDefines() {
         if (compiler instanceof CCCCompiler) {
-            Pair systemIncludesAndDefines = ((CCCCompiler) compiler).getFreshSystemIncludesAndDefines();
+            CompilerDefinitions systemIncludesAndDefines = ((CCCCompiler) compiler).getFreshCompilerDefinitions();
             List<List<String>> res = new ArrayList<List<String>>();
             res.add(systemIncludesAndDefines.systemIncludeDirectoriesList);
             res.add(systemIncludesAndDefines.systemPreprocessorSymbolsList);

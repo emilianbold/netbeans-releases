@@ -677,6 +677,39 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return SPI_ACCESSOR.expandIncludePaths(vec, compilerConfiguration, compiler, makeConfiguration);
     }
 
+    /**
+     * List pre-included system headers.
+     * 
+     * @return list <FSPath> of pre-included system headers.
+     */
+    public List<FSPath> getSystemIncludeHeaders() {
+        List<FSPath> vec = new ArrayList<>();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) { // FIXUP: sometimes itemConfiguration is null (should not happen)
+            return vec;
+        }
+        CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return vec;
+        }
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+        if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+            // Get include paths from compiler
+            if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
+                FileSystem fs = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
+                if (makeConfiguration.isMakefileConfiguration()) {
+                    vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeHeaders(getImportantFlags())));
+                } else {
+                    String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
+                    vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeHeaders(importantFlags)));
+                }
+            }
+        }
+        return vec;
+    }
+
     @Override
     public List<FSPath> getUserIncludePaths() {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
