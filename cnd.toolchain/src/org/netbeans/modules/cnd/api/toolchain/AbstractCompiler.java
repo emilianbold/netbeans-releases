@@ -67,8 +67,8 @@ public abstract class AbstractCompiler extends Tool {
                 includeFilePrefix = ""; // NOI18N
                 CompilerDescriptor c = getDescriptor();
                 if (c != null) {
-                    String path = getPath().replace('\\', '/'); // NOI18N
                     if (c.getRemoveIncludePathPrefix() != null) {
+                        String path = getPath().replace('\\', '/'); // NOI18N
                         int i = path.toLowerCase().indexOf("/bin"); // NOI18N
                         if (i > 0) {
                             includeFilePrefix = path.substring(0, i);
@@ -187,6 +187,14 @@ public abstract class AbstractCompiler extends Tool {
         return Collections.<String>emptyList();
     }
 
+    public List<String> getSystemIncludeHeaders() {
+        return Collections.<String>emptyList();
+    }
+
+    public List<String> getSystemIncludeHeaders(String flags) {
+        return Collections.<String>emptyList();
+    }
+
     /**
      * @return true if settings were really replaced by new one
      */
@@ -198,6 +206,13 @@ public abstract class AbstractCompiler extends Tool {
      * @return true if settings were really replaced by new one
      */
     public boolean setSystemIncludeDirectories(List<String> values) {
+        return false;
+    }
+
+    /**
+     * @return true if settings were really replaced by new one
+     */
+    public boolean setSystemIncludeHeaders(List<String> values) {
         return false;
     }
 
@@ -221,10 +236,10 @@ public abstract class AbstractCompiler extends Tool {
     /**
      * restore default compiler system properties,
      * i.e. default include paths, predefined macros, ...
-     * Same as <code>resetSystemProperties(false)</code>
+     * Same as <code>resetCompilerDefinitions(false)</code>
      */
-    public final void resetSystemProperties() {
-        resetSystemProperties(false);
+    public final void resetCompilerDefinitions() {
+        resetCompilerDefinitions(false);
     }
 
     /**
@@ -234,7 +249,7 @@ public abstract class AbstractCompiler extends Tool {
      *      {@link #waitReady(boolean)} is called;
      *      when <code>false</code> do reset immediately
      */
-    public void resetSystemProperties(boolean lazy) {
+    public void resetCompilerDefinitions(boolean lazy) {
     }
 
     public void saveSettings(Preferences prefs, String prefix) {

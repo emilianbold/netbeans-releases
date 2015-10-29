@@ -76,8 +76,8 @@ import org.openide.util.NbBundle;
     }
 
     @Override
-    protected CCCCompiler.Pair getFreshSystemIncludesAndDefines() {
-        CCCCompiler.Pair res = new CCCCompiler.Pair();
+    protected CCCCompiler.CompilerDefinitions getFreshCompilerDefinitions() {
+        CCCCompiler.CompilerDefinitions res = new CCCCompiler.CompilerDefinitions();
         try {
             getSystemIncludesAndDefines(getCompilerFingerPrintCommand(), true, res);
             completePredefinedMacros(res);
@@ -101,12 +101,12 @@ import org.openide.util.NbBundle;
     }
     
     @Override
-    protected MyCallable<Pair> getCallable(){
-        return new MyCallable<Pair>() {
+    protected MyCallable<CompilerDefinitions> getCallable(){
+        return new MyCallable<CompilerDefinitions>() {
 
             @Override
-            public Pair call(String p) {
-                Pair tmp = new Pair();
+            public CompilerDefinitions call(String p) {
+                CompilerDefinitions tmp = new CompilerDefinitions();
                 try {
                     getSystemIncludesAndDefines(getCompilerFingerPrintCommand()+" "+p, true, tmp); // NOI18N
                     completePredefinedMacros(tmp);
@@ -151,7 +151,7 @@ import org.openide.util.NbBundle;
     }
     
     @Override
-    protected void parseCompilerOutput(BufferedReader reader, CCCCompiler.Pair pair) {
+    protected void parseCompilerOutput(BufferedReader reader, CCCCompiler.CompilerDefinitions pair) {
         try {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -163,6 +163,9 @@ import org.openide.util.NbBundle;
                             break;
                         case SystemPath:
                             addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(res.getResult()));
+                            break;
+                        case SystemIncludeHeader:
+                            addUnique(pair.systemIncludeHeadersList, applyPathPrefix(res.getResult()));
                             break;
                     }
                 }
