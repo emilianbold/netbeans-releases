@@ -69,6 +69,7 @@ import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
@@ -155,10 +156,14 @@ public final class UiUtils {
                 DockerRemote facade = new DockerRemote(container.getInstance());
                 StreamResult result = facade.attach(container, logs);
 
+                try {
+                    io.getOut().reset();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
                 if (!result.hasTty() && IOEmulation.isSupported(io)) {
                     IOEmulation.setDisciplined(io);
                 }
-                // XXX reset the output ?
                 IOTerm.connect(io, result.getStdIn(),
                         new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr(), "UTF-8");
                 if (result.hasTty() && IOResizable.isSupported(io)) {
@@ -310,7 +315,6 @@ public final class UiUtils {
         }
 
         private void closeTerminal() {
-            IOTerm.disconnect(io, null);
             for (Closeable c : close) {
                 try {
                     c.close();
@@ -318,6 +322,11 @@ public final class UiUtils {
                     LOGGER.log(Level.FINE, null, ex);
                 }
             }
+            if (IOConnect.isSupported(io)) {
+                IOConnect.disconnectAll(io, null);
+            }
+            //IOTerm.disconnect(io, null);
+            LOGGER.log(Level.INFO, "Closing terminal", new Exception());
         }
     }
 
