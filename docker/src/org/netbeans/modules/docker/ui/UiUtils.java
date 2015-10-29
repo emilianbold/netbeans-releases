@@ -105,7 +105,7 @@ public final class UiUtils {
         }
     }
 
-    public static Pair<InputOutput, Boolean> getTermInputOutput(DockerContainer container) {
+    public static Pair<InputOutput, Boolean> getTerminalInputOutput(DockerContainer container) {
         synchronized (TERMS) {
             InputOutput io = TERMS.get(container);
             if (io == null) {
@@ -151,7 +151,7 @@ public final class UiUtils {
     }
 
     public static void openTerminal(final DockerContainer container, StreamResult result) {
-        Pair<InputOutput, Boolean> termIO = getTermInputOutput(container);
+        Pair<InputOutput, Boolean> termIO = getTerminalInputOutput(container);
         InputOutput io = termIO.first();
         if (IOTerm.isSupported(io)) {
             if (termIO.second()) {
