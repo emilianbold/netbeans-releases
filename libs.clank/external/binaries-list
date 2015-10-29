@@ -1,6 +1,6 @@
-#changeset:   15888:971085e1e2e5
+#changeset:   15896:8b80d52f4211
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Oct 26 22:53:13 2015 +0300
-#summary:     fixing #256187 - [newcodemodel] incosistency between FileEntry.size and Buffer.size
-A5B914B3530E2B26750CD420DA10139E870A39EC clank_0.3.6.zip
+#date:        Wed Oct 28 22:31:29 2015 +0300
+#summary:     fixed #256187 - [newcodemodel] incosistency between FileEntry.size and Buffer.size
+EDB5715F20F8F49250553EAF66579C5DD812EB38 clank_0.3.6.zip

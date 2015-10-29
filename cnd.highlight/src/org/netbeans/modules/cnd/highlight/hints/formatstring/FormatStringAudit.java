@@ -209,9 +209,9 @@ public class FormatStringAudit extends AbstractCodeAudit {
         CsmReference reference = CsmReferenceResolver.getDefault().findReference(file, doc, statement.getStartOffset());
         if (reference != null) {
             CsmObject object = reference.getReferencedObject();
-            if (Utilities.isFormattedPrintFunction(object)) {
+            final int formatStringPosition = Utilities.checkFormattedPrintFunction(object);
+            if (formatStringPosition > -1) {
                 final int startOffset = reference.getStartOffset();
-
                 doc.render(new Runnable() {
                     @Override
                     public void run() {
@@ -219,106 +219,99 @@ public class FormatStringAudit extends AbstractCodeAudit {
                         if (docTokenSequence == null) {
                             return;
                         }
-
-                        final CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
-                        StringBuilder paramBuf = new StringBuilder();
-                        ArrayList<Parameter> params = new ArrayList<>();
-
-                        State state = State.DEFAULT;
-                        boolean formatFlag = false;  // detect was format string already processed
-                        StringBuilder formatString = null;
-                        int paramOffset = -1;
-                        int bracketsCounter = 0;
+                        
+                        CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
+                        State state = State.START;
                         int formatStringOffset = -1;
-                        boolean doNotResolveType = false;
-
+                        int innerBracketsCounter = 0;
+                        int parameterPosition = 0;
+                        int parameterOffset = -1;
+                        boolean containsMacros = false;
+                        StringBuilder formatString = null;
+                        ArrayList<Parameter> parameters = new ArrayList<>();
+                        StringBuilder parameterBuffer = new StringBuilder();
                         while (docTokenSequence.moveNext()) {
                             Token<TokenId> token = docTokenSequence.token();
                             TokenId tokenId = token.id();
-                            if (tokenId.equals(CppTokenId.IDENTIFIER) && state == State.DEFAULT) {
-                                CsmReference reference = rr.findReference(file, doc, docTokenSequence.offset());
-                                CsmObject object = reference.getReferencedObject();
-                                state = State.START;
-                            } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.START) {
-                                state = State.IN_PARAM;
-                            } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM) {
-                                state = State.IN_PARAM_BRACKET;
-                                bracketsCounter++;
-                                if (formatFlag) {
-                                    paramBuf.append(token.text());
-                                    if (paramOffset == -1) {
-                                        paramOffset = docTokenSequence.offset();
-                                    }
+                            if (state == State.START && tokenId.equals(CppTokenId.LPAREN)) {
+                                state = State.BEFOR_FORMAT;
+                            } else if (tokenId.equals(CppTokenId.COMMA)) {
+                                parameterPosition++;
+                                
+                                if (state == State.FORMAT) { // if state is FORMAT it should be changed to VAR_ARGS
+                                    state = State.VAR_ARGS;
+                                } else if (state == State.VAR_ARGS) { // if state is VAR_ARGS parameter should be stored
+                                    parameters.add(new Parameter(parameterBuffer.toString(), parameterOffset, !containsMacros));
+                                    // set default values
+                                    assert (innerBracketsCounter == 0);
+                                    containsMacros = false;
+                                    parameterOffset = -1;
+                                    parameterBuffer = new StringBuilder();
                                 }
-                            } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM_BRACKET) {
-                                bracketsCounter++;
-                                if (formatFlag) {
-                                    paramBuf.append(token.text());
-                                    if (paramOffset == -1) {
-                                        paramOffset = docTokenSequence.offset();
-                                    }
+                            } else if (state == State.BEFOR_FORMAT && parameterPosition == formatStringPosition) {
+                                state = State.FORMAT;
+                                formatString = new StringBuilder();
+                                if (tokenId.equals(CppTokenId.STRING_LITERAL)) {
+                                    formatStringOffset = docTokenSequence.offset();
+                                    formatString.append(token.text().toString());
+                                } else {
+                                    return; // skip checking for complicated expressions
                                 }
-                            } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM_BRACKET) {
-                                bracketsCounter--;
-                                if (bracketsCounter == 0) {
-                                    state = State.IN_PARAM;
+                            } else if (state == State.FORMAT && tokenId.equals(CppTokenId.STRING_LITERAL)) {
+                                formatString.append(token.text().toString());
+                            } else if (state == State.FORMAT && !tokenId.equals(CppTokenId.STRING_LITERAL)
+                                                             && !tokenId.equals(CppTokenId.RPAREN) 
+                                                             && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
+                                                             && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                                // skip checking for complicated expressions
+                                return; 
+                            } else if (state == State.VAR_ARGS && !tokenId.equals(CppTokenId.LPAREN)
+                                                              && !tokenId.equals(CppTokenId.RPAREN)
+                                                              && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
+                                                              && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                                parameterBuffer.append(token.text());
+                                if (parameterOffset == -1) {
+                                    parameterOffset = docTokenSequence.offset();
                                 }
-                                if (formatFlag) {
-                                    paramBuf.append(token.text());
-                                    if (paramOffset == -1) {
-                                        paramOffset = docTokenSequence.offset();
-                                    }
+                                // do not resolve expression type if it contains macros
+                                CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
+                                if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
+                                    containsMacros = true;
                                 }
-                            } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
-                                if (paramBuf.length() > 0) {
-                                    params.add(new Parameter(paramBuf.toString(), paramOffset, !doNotResolveType));
-                                    paramOffset = -1;
+                            } else if (state == State.VAR_ARGS && tokenId.equals(CppTokenId.LPAREN)) {
+                                innerBracketsCounter++;
+                                state = State.VAR_ARGS_IN_BRACKETS;
+                                
+                                parameterBuffer.append(token.text());
+                                if (parameterOffset == -1) {
+                                    parameterOffset = docTokenSequence.offset();
+                                }
+                            } else if (state == State.VAR_ARGS_IN_BRACKETS && tokenId.equals(CppTokenId.LPAREN)) {
+                                innerBracketsCounter++;
+                                
+                                parameterBuffer.append(token.text());
+                                if (parameterOffset == -1) {
+                                    parameterOffset = docTokenSequence.offset();
+                                }
+                            } else if (state == State.VAR_ARGS_IN_BRACKETS && tokenId.equals(CppTokenId.RPAREN)) {
+                                innerBracketsCounter--;
+                                if (innerBracketsCounter == 0) {
+                                    state = State.VAR_ARGS;
+                                }
+                                
+                                parameterBuffer.append(token.text());
+                                if (parameterOffset == -1) {
+                                    parameterOffset = docTokenSequence.offset();
+                                }
+                            } else if ((state == State.VAR_ARGS || state == State.FORMAT) && tokenId.equals(CppTokenId.RPAREN)) {
+                                if (parameterBuffer.length() > 0) {
+                                    parameters.add(new Parameter(parameterBuffer.toString(), parameterOffset, !containsMacros));
                                 }
                                 result.add(new FormattedPrintFunction(file
                                                                      ,formatStringOffset
                                                                      ,(formatString == null) ? "" : formatString.toString()
-                                                                     ,params));
+                                                                     ,parameters));
                                 return;
-                            } else if (state == State.IN_PARAM && tokenId.equals(CppTokenId.STRING_LITERAL) && !formatFlag) {
-                                params = new ArrayList<>();
-                                if (formatString == null) {
-                                    formatString = new StringBuilder();
-                                }
-                                formatString.append(token.text().toString());
-                                formatStringOffset = docTokenSequence.offset();
-                            } else if (state == State.IN_PARAM && !formatFlag && formatString != null && tokenId.equals(CppTokenId.COMMA)) {
-                                formatFlag = true;
-                            } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
-                                if (paramBuf.length() > 0) {
-                                    params.add(new Parameter(paramBuf.toString(), paramOffset, !doNotResolveType));
-                                    paramOffset = -1;
-                                }
-                                doNotResolveType = false;
-                                paramBuf = new StringBuilder();
-                            } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
-                                    && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
-                                    && formatFlag) {
-                                if (paramBuf.length() == 0 && tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)) {
-                                    // skip whitespoaces before the parameter
-                                    continue;
-                                }
-                                if (paramOffset == -1) {
-                                    // save start offset of the parameter
-                                    paramOffset = docTokenSequence.offset();
-                                }
-                                // skip macro parameters
-                                CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
-                                if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
-                                    doNotResolveType = true;
-                                }
-                                paramBuf.append(token.text());
-                            } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
-                                    && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
-                                // skip check in case of string concatenation with macros
-                                CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
-                                if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
-                                    break;
-                                }
                             }
                         }
                     }
@@ -328,10 +321,11 @@ public class FormatStringAudit extends AbstractCodeAudit {
     }
     
     private static enum State {
-        DEFAULT,
         START,
-        IN_PARAM,
-        IN_PARAM_BRACKET
+        BEFOR_FORMAT,
+        FORMAT,
+        VAR_ARGS,
+        VAR_ARGS_IN_BRACKETS
     }
     
     @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 4000)
