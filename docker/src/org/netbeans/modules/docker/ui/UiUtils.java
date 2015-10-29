@@ -161,7 +161,7 @@ public final class UiUtils {
                     IOEmulation.setDisciplined(io);
                 }
                 IOTerm.connect(io, result.getStdIn(),
-                        new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr());
+                        new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr(), "UTF-8");
                 if (result.hasTty() && IOResizable.isSupported(io)) {
                     IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
                 }
