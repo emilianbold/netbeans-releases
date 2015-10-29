@@ -45,7 +45,7 @@ import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.ui.DockerOutputTask;
+import org.netbeans.modules.docker.ui.LogOutputTask;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -80,7 +80,7 @@ public class ShowLogAction extends AbstractContainerAction {
         Pair<InputOutput, Boolean> io = UiUtils.getLogInputOutput(container);
         io.first().select();
         if (!io.second()) {
-            RequestProcessor.getDefault().post(new DockerOutputTask(io.first(), r));
+            RequestProcessor.getDefault().post(new LogOutputTask(io.first(), r));
         }
     }
 

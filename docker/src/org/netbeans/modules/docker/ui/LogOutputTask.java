@@ -54,15 +54,15 @@ import org.openide.windows.InputOutput;
  *
  * @author Petr Hejl
  */
-public class DockerOutputTask implements Runnable {
+public class LogOutputTask implements Runnable {
 
-    private static final Logger LOGGER = Logger.getLogger(DockerOutputTask.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LogOutputTask.class.getName());
 
     private final InputOutput io;
 
     private final DockerRemote.LogResult logResult;
 
-    public DockerOutputTask(InputOutput io, DockerRemote.LogResult logResult) {
+    public LogOutputTask(InputOutput io, DockerRemote.LogResult logResult) {
         this.io = io;
         this.logResult = logResult;
     }
