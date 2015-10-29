@@ -68,7 +68,6 @@ import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -151,7 +150,6 @@ public final class UiUtils {
         }
     }
 
-    @NbBundle.Messages("MSG_NoTerminalSupport=No terminal support installed")
     public static void openTerminal(final DockerContainer container, StreamResult result) {
         Pair<InputOutput, Boolean> termIO = getTermInputOutput(container);
         InputOutput io = termIO.first();
