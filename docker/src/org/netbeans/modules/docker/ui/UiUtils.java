@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
@@ -120,7 +121,7 @@ public final class UiUtils {
     @NbBundle.Messages("MSG_NoTerminalSupport=No terminal support installed")
     public static void openTerminal(final DockerContainer container, StreamResult result) {
         IOProvider provider = IOProvider.get("Terminal"); // NOI18N
-        InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), true);
+        InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), new Action[] {new TerminalOptionsAction()});
         if (IOTerm.isSupported(io)) {
             final Term term = IOTerm.term(io);
             if (!result.hasTty()) {
