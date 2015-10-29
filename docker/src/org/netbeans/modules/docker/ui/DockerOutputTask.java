@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.remote.DockerRemote;
@@ -73,7 +74,8 @@ public class DockerOutputTask implements Runnable {
         StreamItem r;
         try {
             while ((r = fetcher.fetch()) != null) {
-                String value = new String(r.getData(), "UTF-8");
+                ByteBuffer buffer = r.getData();
+                String value = new String(buffer.array(), buffer.position(), buffer.limit(), "UTF-8");
                 if (r.isError()) {
                     io.getErr().print(value);
                 } else {

@@ -41,12 +41,10 @@
  */
 package org.netbeans.modules.docker.remote;
 
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,8 +67,6 @@ public class MuxedStreamResult implements StreamResult {
     private final InputStream stdErr;
 
     private StreamItem last = StreamItem.EMPTY;
-
-    private int remaining;
 
     public MuxedStreamResult(Socket s, InputStream is) throws IOException {
         this.s = s;
@@ -123,9 +119,8 @@ public class MuxedStreamResult implements StreamResult {
                     return size;
                 }
 
-                int limit = Math.min(len, remaining);
-                System.arraycopy(last.getData(), last.getData().length - remaining, b, off, limit);
-                remaining -= limit;
+                int limit = Math.min(len, last.getData().remaining());
+                last.getData().get(b, off, limit);
                 return limit;
             }
         }
@@ -138,9 +133,7 @@ public class MuxedStreamResult implements StreamResult {
                     return size;
                 }
 
-                int value = last.getData()[last.getData().length - remaining];
-                remaining--;
-                return value;
+                return last.getData().get();
             }
         }
 
@@ -149,23 +142,22 @@ public class MuxedStreamResult implements StreamResult {
                 if (last == null) {
                     return -1;
                 }
-                while (remaining == 0) {
+                while (!last.getData().hasRemaining()) {
                     last = demultiplexer.fetch();
                     if (last == null) {
                         return -1;
                     }
-                    remaining = last.getData().length;
                 }
 
                 MuxedStreamResult.this.notifyAll();
                 try {
-                    while (remaining == 0 || last.isError() != error) {
+                    while (!last.getData().hasRemaining() || last.isError() != error) {
                         MuxedStreamResult.this.wait();
                     }
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 }
-                return remaining;
+                return last.getData().remaining();
             }
         }
     }

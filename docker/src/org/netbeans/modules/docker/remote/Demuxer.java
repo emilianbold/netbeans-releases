@@ -99,7 +99,7 @@ public class Demuxer implements StreamItem.Fetcher {
                 bos.write(content, 0, read);
                 sum += read;
             } while (sum < size);
-            return new StreamItem(bos.toByteArray(), error);
+            return new StreamItem(ByteBuffer.wrap(bos.toByteArray()), error);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             return null;

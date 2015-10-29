@@ -59,6 +59,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -559,6 +560,8 @@ public class DockerRemote {
 
         private final InputStream is;
 
+        private final byte[] buffer = new byte[1024];
+
         public DirectFetcher(InputStream is) {
             this.is = is;
         }
@@ -566,14 +569,11 @@ public class DockerRemote {
         @Override
         public StreamItem fetch() {
             try {
-                byte[] buffer = new byte[256];
                 int count = is.read(buffer);
                 if (count < 0) {
                     return null;
                 }
-                byte[] data = new byte[count];
-                System.arraycopy(buffer, 0, data, 0, count);
-                return new StreamItem(data, false);
+                return new StreamItem(ByteBuffer.wrap(buffer, 0, count), false);
             } catch (IOException ex) {
                 LOGGER.log(Level.FINE, null, ex);
                 return null;

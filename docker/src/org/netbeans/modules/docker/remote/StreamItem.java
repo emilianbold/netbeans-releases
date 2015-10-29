@@ -41,24 +41,26 @@
  */
 package org.netbeans.modules.docker.remote;
 
+import java.nio.ByteBuffer;
+
 /**
  *
  * @author Petr Hejl
  */
 public class StreamItem {
 
-    public static final StreamItem EMPTY = new StreamItem(new byte[]{}, false);
+    public static final StreamItem EMPTY = new StreamItem(ByteBuffer.allocate(0), false);
 
-    private final byte[] data;
+    private final ByteBuffer data;
 
     private final boolean error;
 
-    public StreamItem(byte[] data, boolean error) {
+    public StreamItem(ByteBuffer data, boolean error) {
         this.data = data;
         this.error = error;
     }
 
-    public byte[] getData() {
+    public ByteBuffer getData() {
         return data;
     }
 
