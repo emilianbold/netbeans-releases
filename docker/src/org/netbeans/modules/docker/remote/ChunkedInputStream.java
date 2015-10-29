@@ -49,11 +49,14 @@ import java.io.InputStream;
  *
  * @author Petr Hejl
  */
+// @NotThreadSafe
 public class ChunkedInputStream extends FilterInputStream {
 
-    private int remaining;
+    private boolean started;
 
-    private boolean end;
+    private boolean finished;
+
+    private int remaining;
 
     public ChunkedInputStream(InputStream is) {
         super(is);
@@ -61,14 +64,55 @@ public class ChunkedInputStream extends FilterInputStream {
 
     @Override
     public int read() throws IOException {
-        if (end) {
+        int current = fetchData();
+        if (current < 0) {
+            return -1;
+        }
+        remaining--;
+        return in.read();
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        if (len == 0) {
+            return 0;
+        }
+        int current = fetchData();
+        if (current < 0) {
             return -1;
         }
 
+        int count = 0;
+        int limit = off + Math.min(len, remaining);
+        for (int i = off; i < limit; i++) {
+            int value = in.read();
+            if (value < 0) {
+                return count;
+            }
+            count++;
+            b[i] = (byte) value;
+        }
+        remaining -= count;
+        return count;
+    }
+
+    private int fetchData() throws IOException {
+        if (finished) {
+            return -1;
+        }
         if (remaining == 0) {
+            if (started) {
+                // read end of previous chunk
+                String line = HttpUtils.readResponseLine(in);
+                if (!line.isEmpty()) {
+                    throw new IOException("Chunk content has additional data: " + line);
+                }
+            } else {
+                started = true;
+            }
             String line = HttpUtils.readResponseLine(in);
             if (line == null) {
-                end = true;
+                finished = true;
                 return -1;
             }
             int semicolon = line.indexOf(';');
@@ -78,48 +122,13 @@ public class ChunkedInputStream extends FilterInputStream {
             try {
                 remaining = Integer.parseInt(line, 16);
                 if (remaining == 0) {
-                    end = true;
+                    finished = true;
                     return -1;
                 }
             } catch (NumberFormatException ex) {
                 throw new IOException("Wrong chunk size");
             }
         }
-        remaining--;
-        int ret = in.read();
-        if (remaining == 0) {
-            HttpUtils.readResponseLine(in);
-        }
-        return ret;
-    }
-
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        if (end) {
-            return -1;
-        }
-        if (len == 0) {
-            return 0;
-        }
-        if (remaining == 0) {
-            int ret = read();
-            if (ret < 0) {
-                return ret;
-            }
-            b[off] = (byte) ret;
-            return 1;
-        } else {
-            int count = 0;
-            int limit = off + Math.min(len, remaining);
-            for (int i = off; i < limit; i++) {
-                int value = read();
-                if (value < 0) {
-                    return count;
-                }
-                count++;
-                b[i] = (byte) value;
-            }
-            return count;
-        }
+        return remaining;
     }
 }
