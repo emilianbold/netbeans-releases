@@ -155,15 +155,7 @@ public final class UiUtils {
         InputOutput io = termIO.first();
         if (IOTerm.isSupported(io)) {
             if (termIO.second()) {
-                io.select();
-                // XXX is there a better way ?
-                final Term term = IOTerm.term(io);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        term.requestFocusInWindow();
-                    }
-                });
+                focusTerminal(io);
             } else {
                 if (!result.hasTty() && IOEmulation.isSupported(io)) {
                     IOEmulation.setDisciplined(io);
@@ -173,18 +165,24 @@ public final class UiUtils {
                 if (result.hasTty() && IOResizable.isSupported(io)) {
                     IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
                 }
-                io.select();
-                // XXX is there a better way ?
-                final Term term = IOTerm.term(io);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        term.requestFocusInWindow();
-                    }
-                });
+                focusTerminal(io);
             }
         } else {
             io.select();
+        }
+    }
+
+    private static void focusTerminal(InputOutput io) {
+        io.select();
+        if (IOTerm.isSupported(io)) {
+            // XXX is there a better way ?
+            final Term term = IOTerm.term(io);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    term.requestFocusInWindow();
+                }
+            });
         }
     }
 
