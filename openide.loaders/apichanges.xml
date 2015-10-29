@@ -109,6 +109,25 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="org.openide.loaders.DataFolder.SortMode.NATURAL">
+          <api name="loaders"/>
+          <summary>Introduces SortMode for natural sorting.</summary>
+          <version major="7" minor="65"/>
+          <date day="21" month="10" year="2015"/>
+          <author login="jhavlin"/>
+          <compatibility addition="yes" binary="compatible" source="compatible"
+                         semantic="compatible" deprecation="no" deletion="no"
+                         modification="no"/>
+          <description>
+              <p>
+                  Added support for natural sorting of DataObjects. This means
+                  that the sort is case insensitive and number sequences are
+                  sorted by value rather than lexicographically.
+              </p>
+          </description>
+          <class package="org.openide.loaders" name="DataFolder"/>
+          <issue number="242226"/>
+      </change>
       <change id="templates.separation">
           <api name="loaders"/>
           <summary>Separate template handling</summary>
