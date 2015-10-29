@@ -62,6 +62,7 @@ import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.remote.StreamResult;
+import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
@@ -87,6 +88,8 @@ public final class UiUtils {
 
     private static final Map<DockerContainer, InputOutput> LOGS = new WeakHashMap<>();
 
+    private static final Map<DockerContainer, InputOutput> TERMS = new WeakHashMap<>();
+
     private UiUtils() {
         super();
     }
@@ -95,11 +98,24 @@ public final class UiUtils {
         synchronized (LOGS) {
             InputOutput io = LOGS.get(container);
             if (io == null) {
-                io = IOProvider.getDefault().getIO(DockerUtils.getShortId(container) + " log", true);
+                io = IOProvider.getDefault().getIO(DockerUtils.getShortId(container) + " Log", true);
                 LOGS.put(container, io);
                 return Pair.of(io, false);
             }
             return Pair.of(io, true);
+        }
+    }
+
+    public static Pair<InputOutput, Boolean> getTermInputOutput(DockerContainer container) {
+        synchronized (TERMS) {
+            InputOutput io = TERMS.get(container);
+            if (io == null) {
+                io = IOProvider.get("Terminal") // NOI18N
+                        .getIO(DockerUtils.getShortId(container), new Action[] {new TerminalOptionsAction()});
+                TERMS.put(container, io);
+                return Pair.of(io, false);
+            }
+            return Pair.of(io, IOConnect.isSupported(io) && IOConnect.isConnected(io));
         }
     }
 
@@ -137,28 +153,40 @@ public final class UiUtils {
 
     @NbBundle.Messages("MSG_NoTerminalSupport=No terminal support installed")
     public static void openTerminal(final DockerContainer container, StreamResult result) {
-        IOProvider provider = IOProvider.get("Terminal"); // NOI18N
-        InputOutput io = provider.getIO(DockerUtils.getShortId(container.getId()), new Action[] {new TerminalOptionsAction()});
+        Pair<InputOutput, Boolean> termIO = getTermInputOutput(container);
+        InputOutput io = termIO.first();
         if (IOTerm.isSupported(io)) {
-            if (!result.hasTty() && IOEmulation.isSupported(io)) {
-                IOEmulation.setDisciplined(io);
-            }
-            IOTerm.connect(io, result.getStdIn(),
-                    new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr());
-            if (result.hasTty() && IOResizable.isSupported(io)) {
-                IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
-            }
-            io.select();
-            // XXX is there a better way ?
-            final Term term = IOTerm.term(io);
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    term.requestFocusInWindow();
+            if (termIO.second()) {
+                io.select();
+                // XXX is there a better way ?
+                final Term term = IOTerm.term(io);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        term.requestFocusInWindow();
+                    }
+                });
+            } else {
+                if (!result.hasTty() && IOEmulation.isSupported(io)) {
+                    IOEmulation.setDisciplined(io);
                 }
-            });
+                IOTerm.connect(io, result.getStdIn(),
+                        new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr());
+                if (result.hasTty() && IOResizable.isSupported(io)) {
+                    IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
+                }
+                io.select();
+                // XXX is there a better way ?
+                final Term term = IOTerm.term(io);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        term.requestFocusInWindow();
+                    }
+                });
+            }
         } else {
-            StatusDisplayer.getDefault().setStatusText(Bundle.MSG_NoTerminalSupport());
+            io.select();
         }
     }
 
