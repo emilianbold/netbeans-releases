@@ -66,6 +66,7 @@ import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
@@ -94,7 +95,7 @@ import org.openide.windows.WindowManager;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ide.spi.IDEServices.class)
 public class IDEServicesImpl implements IDEServices {
     private static final Logger LOG = Logger.getLogger(IDEServicesImpl.class.getName());
-    private final RequestProcessor RP = new RequestProcessor("Netbeans IDE Services for Team"); // IDE
+    private final RequestProcessor RP = new RequestProcessor("Netbeans IDE Services for Team", 10); // IDE
     private Method fillStackTraceAnalyzer;
 
     @Override
@@ -199,14 +200,24 @@ public class IDEServicesImpl implements IDEServices {
 
     @Override
     public void applyPatch(final File patchFile) {
-        final File context = selectPatchContext();
-        if (context != null) {
-            try {
-                PatchUtils.applyPatch(patchFile, context);
-            } catch (IOException ex) {
-                LOG.log(Level.INFO, ex.getMessage(), ex);
-            } 
-        }
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                final File context = selectPatchContext();
+                if (context != null) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                PatchUtils.applyPatch(patchFile, context);
+                            } catch (IOException ex) {
+                                LOG.log(Level.INFO, ex.getMessage(), ex);
+                            } 
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @Override

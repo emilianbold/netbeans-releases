@@ -2253,7 +2253,6 @@ public final class FileImpl implements CsmFile,
         tsRef.clear();
         stateCache.clearStateCache();
         final FileBuffer buf = this.getBuffer();
-        ClankDriver.invalidate(buf);
         APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
 
     }
