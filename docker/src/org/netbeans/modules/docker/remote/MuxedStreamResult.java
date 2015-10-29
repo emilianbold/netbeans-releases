@@ -111,7 +111,7 @@ public class MuxedStreamResult implements StreamResult {
         }
 
         @Override
-        public int read(byte[] b, int off, int len) throws IOException {
+        public int read(byte[] b, int off, int len) {
             synchronized (MuxedStreamResult.this) {
                 int size = fetchData();
                 if (size <= 0) {
@@ -125,7 +125,7 @@ public class MuxedStreamResult implements StreamResult {
         }
 
         @Override
-        public int read() throws IOException {
+        public int read() {
             synchronized (MuxedStreamResult.this) {
                 int size = fetchData();
                 if (size <= 0) {
@@ -138,23 +138,29 @@ public class MuxedStreamResult implements StreamResult {
 
         private int fetchData() {
             synchronized (MuxedStreamResult.this) {
-                if (last == null) {
-                    return -1;
-                }
-                while (!last.getData().hasRemaining()) {
-                    last = demultiplexer.fetch();
+                try {
                     if (last == null) {
                         return -1;
                     }
+                    while (!last.getData().hasRemaining()) {
+                        last = demultiplexer.fetch();
+                        if (last == null) {
+                            return -1;
+                        }
+                    }
+                } finally {
+                    MuxedStreamResult.this.notifyAll();
                 }
 
-                MuxedStreamResult.this.notifyAll();
                 try {
-                    while (!last.getData().hasRemaining() || last.isError() != error) {
+                    while (last != null && last.isError() != error) {
                         MuxedStreamResult.this.wait();
                     }
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
+                }
+                if (last == null) {
+                    return -1;
                 }
                 return last.getData().remaining();
             }

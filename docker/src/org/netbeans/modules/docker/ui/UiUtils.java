@@ -179,7 +179,8 @@ public final class UiUtils {
         synchronized (LOGS) {
             LogConnect connect = LOGS.get(container);
             if (connect == null) {
-                InputOutput io = IOProvider.getDefault().getIO(Bundle.LBL_LogInputOutput(DockerUtils.getShortId(container)), true);
+                InputOutput io = IOProvider.getDefault().getIO(
+                        Bundle.LBL_LogInputOutput(DockerUtils.getShortId(container)), true);
                 connect = new LogConnect(io);
                 LOGS.put(container, connect);
             }
