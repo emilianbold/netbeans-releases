@@ -64,24 +64,27 @@ import org.openide.util.RequestProcessor;
  * @author John Baker
  */
 public class SQLHistoryManager  {
-
-    JAXBContext context;
-    private static final String SQL_HISTORY_DIRECTORY = "Databases/SQLHISTORY"; // NOI18N
-    private static final String SQL_HISTORY_FILE = "sql_history.xml"; // NOI18N
     public static final String OPT_SQL_STATEMENTS_SAVED_FOR_HISTORY = "SQL_STATEMENTS_SAVED_FOR_HISTORY"; // NOI18N
     public static final int DEFAULT_SQL_STATEMENTS_SAVED_FOR_HISTORY = 100;
     public static final int MAX_SQL_STATEMENTS_SAVED_FOR_HISTORY = 10000;
-    private static SQLHistoryManager _instance = null;    
+    public static final String PROP_SAVED = "saved"; //NOI18N
+    
+    private static final String SQL_HISTORY_DIRECTORY = "Databases/SQLHISTORY"; // NOI18N
+    private static final String SQL_HISTORY_FILE = "sql_history.xml"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger(SQLHistoryEntry.class.getName());
-    private SQLHistory sqlHistory;
     private static final RequestProcessor RP = new RequestProcessor(
             SQLHistoryManager.class.getName(), 1, false, false);
+    // Time between call to save and real save - usefull to accumulate before save
+    private static final int SAVE_DELAY = 5 * 1000;    
+    
+    private static SQLHistoryManager _instance = null;    
+    
     private final RequestProcessor.Task SAVER = RP.create(new Saver());
     private final PropertyChangeSupport PROPERTY_CHANGE_SUPPORT =
             new PropertyChangeSupport(this);
-    // Time between call to save and real save - usefull to accumulate before save
-    private static final int SAVE_DELAY = 5 * 1000;
-    static final String PROP_SAVED = "saved";                           //NOI18N
+    
+    private JAXBContext context;
+    private SQLHistory sqlHistory;
 
     protected SQLHistoryManager() {
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
@@ -155,16 +158,14 @@ public class SQLHistoryManager  {
 
     public void saveSQL(SQLHistoryEntry sqlStored) {
         sqlHistory.add(sqlStored);
-            }
+    }
 
     private void loadHistory() {
-        try {
+        try (InputStream is = getHistoryRoot(false).getInputStream()) {
             Unmarshaller unmarshaller = context.createUnmarshaller();
-            InputStream is = getHistoryRoot(false).getInputStream();
             sqlHistory = (SQLHistory) unmarshaller.unmarshal(is);
             sqlHistory.setHistoryLimit(getListSize());
-            is.close();
-        } catch (Exception ex) {
+        } catch (JAXBException | IOException | RuntimeException ex) {
             sqlHistory = new SQLHistory();
             sqlHistory.setHistoryLimit(getListSize());
             LOGGER.log(Level.INFO, ex.getMessage());
@@ -172,7 +173,7 @@ public class SQLHistoryManager  {
     }
     
     public void save() {
-        // On call to save schedule real saving, as save is a oftem calleed
+        // On call to save schedule real saving, as save is a often calleed
         // method, this can bundle multiple saves into one write.
         // See bug #209720.
         //
@@ -220,7 +221,7 @@ public class SQLHistoryManager  {
                             Marshaller marshaller = context.createMarshaller();
                             os = targetFile.getOutputStream();
                             marshaller.marshal(sqlHistory, os);
-                        } catch (Exception ex) {
+                        } catch (JAXBException | IOException | RuntimeException ex) {
                             LOGGER.log(Level.INFO, ex.getMessage(), ex);
                         } finally {
                             try {
