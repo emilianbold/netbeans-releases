@@ -115,25 +115,52 @@ public final class Startup {
      * references to LF customizers for supported LFs.
      */
     private void initialize() {
-        LookAndFeel lf = getLookAndFeel();
+        LFInstanceOrName lfon = getLookAndFeel();
         boolean forceLaf = false;
-        if (lf instanceof MetalLookAndFeel) {
+        if (lfon.lf instanceof MetalLookAndFeel) {
             //Metal theme must be assigned before using the look and feel
-            forceLaf = installTheme(lf);
+            forceLaf = installTheme(lfon.lf);
         }
         // overall defaults for all LFs
         // defaults for supported LFs
 
         try {
-            if (lf != UIManager.getLookAndFeel() || forceLaf) {
-                UIManager.setLookAndFeel (lf);
+            if (forceLaf ||
+                (lfon.lf != null && lfon.lf != UIManager.getLookAndFeel()) ||
+                (lfon.lfClassName != null && !lfon.lfClassName.equals(UIManager.getLookAndFeel().getClass().getName()))) {
+                if (lfon.lf != null) {
+                    UIManager.setLookAndFeel(lfon.lf);
+                    uiClass = lfon.lf.getClass();
+                } else {
+                    boolean success = false;
+                    try {
+                        UIManager.setLookAndFeel(lfon.lfClassName);
+                        success = true;
+                        uiClass = UIManager.getLookAndFeel().getClass();
+                    } catch (ClassNotFoundException ex) {
+                        System.err.println("Custom UI class " + lfon.lfClassName + " not found."); // NOI18N
+                    } catch (IllegalAccessException ex) {
+                        System.err.println("Custom UI class " + lfon.lfClassName + " not possible to access."); // NOI18N
+                    } catch (InstantiationException ex) {
+                        System.err.println("Custom UI class " + lfon.lfClassName + " not possible to instantiate."); // NOI18N
+                    } catch (UnsupportedLookAndFeelException ex) {
+                        System.err.println("Custom UI class " + lfon.lfClassName + " not supported as a look & feel."); // NOI18N
+                    }
+                    if (!success) {
+                        //#144402 - try fallback to Metal L&F
+                        LookAndFeel mlf = new MetalLookAndFeel();
+                        installTheme(mlf);
+                        UIManager.setLookAndFeel(mlf);
+                        uiClass = MetalLookAndFeel.class;
+                    }
+                }
             }
         } catch (Exception e) {
-            System.err.println ("Could not install look and feel " + lf);
+            System.err.println ("Could not install look and feel " + lfon.getClassName());
         }
     }
 
-    private LookAndFeel getLookAndFeel() {
+    private LFInstanceOrName getLookAndFeel() {
       // related to #118534 - log info about Nimbus L&F
       if (uiClass != null && uiClass.getName().contains(NIMBUS)) {
           Logger.getLogger(getClass().getName()).warning(
@@ -147,39 +174,22 @@ public final class Startup {
           if ("default".equals(uiClassName)) { // NOI18N
               uiClassName = defaultLaF();
           }
-          try {
-              uiClass = UIUtils.classForName(uiClassName);
-          } catch (ClassNotFoundException e) {
-              System.err.println("Custom UI class " + uiClassName + " not on classpath."); // NOI18N
-
-              //#144402 - try fallback to Metal L&F
+          if (uiClassName.equals(MetalLookAndFeel.class.getName())) {
+              return new LFInstanceOrName(new MetalLookAndFeel());
+          } else {
+            return new LFInstanceOrName(uiClassName);
+          }
+      } else {
+          LookAndFeel lf = UIManager.getLookAndFeel();
+          if (uiClass != lf.getClass()) {
               try {
-                uiClass = UIUtils.classForName("javax.swing.plaf.metal.MetalLookAndFeel"); //NOI18N
-              } catch( Exception newEx) {
-                  newEx.printStackTrace();
+                lf = (LookAndFeel) uiClass.newInstance();
+              } catch (IllegalAccessException | InstantiationException ex) {
+                  return new LFInstanceOrName(uiClass.getName());
               }
-          } catch (Exception e) {
-              System.err.println("While loading: " + uiClassName); // NOI18N
-              e.printStackTrace();
           }
+          return new LFInstanceOrName(lf);
       }
-      LookAndFeel result = null;
-      if (uiClass != null) {
-          try {
-
-              LookAndFeel lf = UIManager.getLookAndFeel();
-              if (uiClass != lf.getClass()) {
-                  result = (LookAndFeel) uiClass.newInstance();
-              } else {
-                  result = UIManager.getLookAndFeel();
-              }
-          } catch (Exception e) {
-              System.err.println("Cannot load custom UI class " + uiClass); //NOI18N
-              e.printStackTrace();
-              result = UIManager.getLookAndFeel();
-          }
-      }
-      return result;
     }
 
     /** Default NetBeans logic for finding out the right L&F.
@@ -614,4 +624,28 @@ public final class Startup {
             }
         }
     }
+
+    private static final class LFInstanceOrName {
+        final LookAndFeel lf;
+        final String lfClassName;
+
+        public LFInstanceOrName(LookAndFeel lf) {
+            this.lf = lf;
+            this.lfClassName = null;
+        }
+
+        public LFInstanceOrName(String lfClassName) {
+            this.lf = null;
+            this.lfClassName = lfClassName;
+        }
+
+        public String getClassName() {
+            if (lf != null) {
+                return lf.getClass().getName();
+            } else {
+                return lfClassName;
+            }
+        }
+    }
+
 }
