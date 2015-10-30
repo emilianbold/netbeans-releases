@@ -53,13 +53,13 @@ public class HubImageInfo {
 
     private final String description;
 
-    private final int stars;
+    private final long stars;
 
     private final boolean official;
 
     private final boolean automated;
 
-    public HubImageInfo(String name, String description, int stars, boolean official, boolean automated) {
+    public HubImageInfo(String name, String description, long stars, boolean official, boolean automated) {
         this.name = name;
         this.description = description;
         this.stars = stars;
@@ -75,7 +75,7 @@ public class HubImageInfo {
         return description;
     }
 
-    public int getStars() {
+    public long getStars() {
         return stars;
     }
 

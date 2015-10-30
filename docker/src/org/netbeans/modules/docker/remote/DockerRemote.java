@@ -160,7 +160,7 @@ public class DockerRemote {
                 JSONObject json = (JSONObject) o;
                 String name = (String) json.get("name");
                 String description = (String) json.get("description");
-                int stars = (int) json.getOrDefault("stars", 0);
+                long stars = (long) json.getOrDefault("star_count", 0);
                 boolean official = (boolean) json.getOrDefault("is_official", false);
                 boolean automated = (boolean) json.getOrDefault("is_automated", false);
                 ret.add(new HubImageInfo(name, description, stars, official, automated));

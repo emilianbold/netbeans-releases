@@ -42,6 +42,8 @@
 package org.netbeans.modules.docker.ui.pull;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
@@ -56,6 +58,21 @@ import org.openide.util.RequestProcessor;
  * @author Petr Hejl
  */
 public class DockerSearchPanel extends javax.swing.JPanel {
+
+    private static final Comparator<HubImageInfo> COMPARATOR = new Comparator<HubImageInfo>() {
+
+        @Override
+        public int compare(HubImageInfo o1, HubImageInfo o2) {
+            if (o1.getStars() > o2.getStars()) {
+                return -1;
+            }
+            if (o1.getStars() < o2.getStars()) {
+                return 1;
+            }
+            // FIXME null values
+            return o1.getName().compareTo(o2.getName());
+        }
+    };
 
     private final DockerInstance instance;
 
@@ -78,6 +95,7 @@ public class DockerSearchPanel extends javax.swing.JPanel {
             public void run() {
                 DockerRemote facade = new DockerRemote(instance);
                 final List<HubImageInfo> images = facade.search(searchTerm);
+                Collections.sort(images, COMPARATOR);
 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
