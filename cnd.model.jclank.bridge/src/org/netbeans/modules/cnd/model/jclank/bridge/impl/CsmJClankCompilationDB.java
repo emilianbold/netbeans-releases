@@ -154,8 +154,12 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
         }
 
         // handle -include
-        for (String path : nfi.getIncludeFiles()) {
-            builder.addIncFile(path);
+        for (FSPath fSPath : nfi.getIncludeFiles()) {
+            FileObject fileObject = fSPath.getFileObject();
+            if (fileObject != null && fileObject.isData()) {
+                //builder.addIncFile(fSPath.getURL());
+                builder.addIncFile(fSPath.getPath());
+            }
         }
 
         // -D

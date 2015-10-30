@@ -334,7 +334,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final List<FSPath> sysIncludes;
         private final List<FSPath> usrIncludes;
         private final List<FSPath> sysIncludeHeaders;
-        private final List<String> usrFiles;
+        private final List<FSPath> usrFiles;
         private final List<String> sysMacros;
         private final List<String> usrMacros;
         private final List<NativeFileItemImpl> files = new ArrayList<>();
@@ -370,7 +370,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             List<FSPath> sysIncludes = new ArrayList<>();
             List<FSPath> usrIncludes = new ArrayList<>();
             List<FSPath> sysIncludeHeaders = new ArrayList<>();
-            List<String> usrFiles = new ArrayList<>();
+            List<FSPath> usrFiles = new ArrayList<>();
             List<String> sysMacros = new ArrayList<>();
             List<String> usrMacros = new ArrayList<>();
             List<String> undefinedMacros = new ArrayList<>();
@@ -517,7 +517,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         private NativeProjectImpl(FileObject projectRoot,
-                List<FSPath> sysIncludes, List<FSPath> usrIncludes,  List<FSPath> sysIncludeHeaders, List<String> usrFiles,
+                List<FSPath> sysIncludes, List<FSPath> usrIncludes,  List<FSPath> sysIncludeHeaders, List<FSPath> usrFiles,
                 List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros) {
 
             this.projectRoot = projectRoot;
@@ -666,7 +666,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public List<String> getIncludeFiles() {
+        public List<FSPath> getIncludeFiles() {
             return this.usrFiles;
         }
 
@@ -826,7 +826,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public List<String> getIncludeFiles() {
+        public List<FSPath> getIncludeFiles() {
             return project.getIncludeFiles();
         }
 
