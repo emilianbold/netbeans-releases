@@ -98,7 +98,9 @@ public abstract class APTAbstractWalker extends APTWalker {
                 final Collection<IncludeDirEntry> extractIncludeFileEntries = APTHandlersSupportImpl.extractIncludeFileEntries(includeHandler);
                 int index = 0 - extractIncludeFileEntries.size();
                 for (IncludeDirEntry includeDirEntry : extractIncludeFileEntries) {
-                    APT fake = new APTIncludeFake(includeDirEntry.getAsSharedCharSequence().toString(), index++);
+                    FileSystem fileSystem = includeDirEntry.getFileSystem();
+                    boolean system = fileSystem != startFileSystem;
+                    APT fake = new APTIncludeFake(fileSystem, includeDirEntry.getAsSharedCharSequence().toString(), system, index++);
                     onAPT(fake, false);
                 }
             }
@@ -109,7 +111,12 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void onInclude(APT apt) {
         super.onInclude(apt);
         if (getIncludeHandler() != null) {
-            APTIncludeResolver resolver = getIncludeHandler().getResolver(startFileSystem, startPath);
+            FileSystem fs = startFileSystem;
+            if (apt instanceof APTIncludeFake) {
+                // when handling "-include " use it's FileSystem
+                fs = ((APTIncludeFake) apt).getFileSystem();
+            }
+            APTIncludeResolver resolver = getIncludeHandler().getResolver(fs, startPath);
             ResolvedPath resolvedPath = resolver.resolveInclude((APTInclude)apt, getMacroMap());
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {

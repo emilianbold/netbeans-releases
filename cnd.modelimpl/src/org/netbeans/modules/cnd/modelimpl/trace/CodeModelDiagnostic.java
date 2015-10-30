@@ -167,7 +167,7 @@ public final class CodeModelDiagnostic {
                             }
                             if (!item.getIncludeFiles().isEmpty()) {
                                 printOut.print("\tUser Include Files:\n");// NOI18N
-                                for (FSPath path : item.getSystemIncludeHeaders()) {
+                                for (FSPath path : item.getIncludeFiles()) {
                                     String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
                                     FileObject valid = path.getFileObject();
                                     if (valid != null && !valid.isValid()) {

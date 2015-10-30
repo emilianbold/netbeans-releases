@@ -148,8 +148,7 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
         for (FSPath fSPath : nfi.getSystemIncludeHeaders()) {
             FileObject fileObject = fSPath.getFileObject();
             if (fileObject != null && fileObject.isData()) {
-                //builder.addIncFile(fSPath.getURL());
-                builder.addIncFile(fSPath.getPath());
+                builder.addIncFile(fSPath.getURL().toString());
             }
         }
 
@@ -157,8 +156,7 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
         for (FSPath fSPath : nfi.getIncludeFiles()) {
             FileObject fileObject = fSPath.getFileObject();
             if (fileObject != null && fileObject.isData()) {
-                //builder.addIncFile(fSPath.getURL());
-                builder.addIncFile(fSPath.getPath());
+                builder.addIncFile(fSPath.getURL().toString());
             }
         }
 

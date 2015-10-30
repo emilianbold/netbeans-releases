@@ -169,9 +169,15 @@ public final class ClankPPCallback extends FileInfoCallback {
         ResolvedPath resolvedPath = createResolvedPath(curFile, directive);
         StringRef fileNameSpelling = directive.getFileNameSpelling();
         String spelling = Casts.toCharSequence(fileNameSpelling.data(), fileNameSpelling.size()).toString();
+        boolean system = directive.isAngled();
+        if (spelling.startsWith(RFS_PREFIX)) {
+            // this is system pre-include header file
+            spelling = ClankFileSystemProviderImpl.getPathFromUrl(spelling);
+            system = true;
+        }
         ClankFileInfoWrapper currentFileWrapper = includeStack.get(stacksSize - 1);
         final int includeDirectiveIndex = currentFileWrapper.getNextIncludeDirectiveIndex();
-        ClankInclusionDirectiveWrapper inclDirectiveWrapper = new ClankInclusionDirectiveWrapper(directive
+        ClankInclusionDirectiveWrapper inclDirectiveWrapper = new ClankInclusionDirectiveWrapper(directive, system
                                                                                                 ,includeDirectiveIndex
                                                                                                 ,resolvedPath
                                                                                                 ,spelling);
@@ -244,6 +250,14 @@ public final class ClankPPCallback extends FileInfoCallback {
                 FileSystem includedFileFS = CndFileSystemProvider.urlToFileSystem(fileEntryPathUrl);
                 assert includeFs == includedFileFS : "search dir fs=" + includeFs + "\n vs. file=" + fileEntryPathUrl + "\nfs=" + includedFileFS;
             }
+        } else if (fileEntryPathUrl.startsWith(RFS_PREFIX)) {
+            // this could be -include for system headers
+            assert (searchPathSize == 0) : "expected emtpy " + searchPathUrl + " for " + fileEntryPathUrl;
+            searchedAbsPath = "";
+            // FS is in prefix
+            includeFs = CndFileSystemProvider.urlToFileSystem(fileEntryPathUrl);
+            // abs path in postfix
+            includedAbsPath = ClankFileSystemProviderImpl.getPathFromUrl(fileEntryPathUrl);
         } else {
             includeFs = startFileSystem;
             searchedAbsPath = searchPathUrl;
@@ -686,9 +700,9 @@ public final class ClankPPCallback extends FileInfoCallback {
         private final int includeDirectiveIndex;
         private boolean recursive;
 
-        public ClankInclusionDirectiveWrapper(InclusionDirectiveInfo clankDelegate, int includeDirectiveIndex, ResolvedPath resolvedPath, String spelling) {
+        public ClankInclusionDirectiveWrapper(InclusionDirectiveInfo clankDelegate, boolean system, int includeDirectiveIndex, ResolvedPath resolvedPath, String spelling) {
             super(clankDelegate);
-            this.isAngled = clankDelegate.isAngled();
+            this.isAngled = system;
             this.includeDirectiveIndex = includeDirectiveIndex;
             this.resolvedPath = resolvedPath;
             this.spelling = spelling;

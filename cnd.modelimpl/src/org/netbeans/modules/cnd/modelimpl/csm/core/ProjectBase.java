@@ -1475,12 +1475,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<FSPath> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
-        List<String> includeFileEntries = new ArrayList<>();
+        List<FSPath> includeFileEntries = new ArrayList<>();
         for (FSPath systemIncludeHeader : nativeFile.getSystemIncludeHeaders()) {
-            includeFileEntries.add(systemIncludeHeader.getPath());
+            includeFileEntries.add(systemIncludeHeader);
         }
         for (FSPath includeFile : nativeFile.getIncludeFiles()) {
-            includeFileEntries.add(includeFile.getPath());
+            includeFileEntries.add(includeFile);
         }
         String entryKey = FileContainer.getFileKey(nativeFile.getAbsolutePath(), true).toString();
         if (CndUtils.isDebugMode()) {
