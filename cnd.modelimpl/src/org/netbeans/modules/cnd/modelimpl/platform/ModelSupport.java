@@ -625,7 +625,7 @@ public class ModelSupport implements PropertyChangeListener {
                     }
                     EditorCookie editor = curObj.getLookup().lookup(EditorCookie.class);
                     Document doc = editor != null ? editor.getDocument() : null;
-                    if (doc != null && doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
+                    if (doc != null && doc.getProperty(CsmUtilities.CND_REFACTORING_MARKER) != Boolean.TRUE) {
                         FileObject primaryFile = curObj.getPrimaryFile();
                         long lastModified = primaryFile.lastModified().getTime();
                         final FileBufferDoc buffer = new FileBufferDoc(primaryFile, doc);
@@ -638,7 +638,7 @@ public class ModelSupport implements PropertyChangeListener {
                 } else {
                     EditorCookie editor = curObj.getLookup().lookup(EditorCookie.class);
                     Document doc = editor != null ? editor.getDocument() : null;
-                    if (doc != null && doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
+                    if (doc != null && doc.getProperty(CsmUtilities.CND_REFACTORING_MARKER) != Boolean.TRUE) {
                         FileObject primaryFile = curObj.getPrimaryFile();
                         long lastModified = primaryFile.lastModified().getTime();
                         final FileBufferDoc buffer = new FileBufferDoc(primaryFile, doc);
