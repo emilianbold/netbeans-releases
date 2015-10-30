@@ -820,7 +820,9 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public List<FSPath> getSystemIncludeHeaders() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            List<FSPath> result = project.getSystemIncludeHeaders();
+            checkAbsolute(result);
+            return result;
         }
 
         @Override
