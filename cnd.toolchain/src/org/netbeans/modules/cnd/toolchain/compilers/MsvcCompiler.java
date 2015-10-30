@@ -63,8 +63,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
    public MsvcCompiler createCopy(CompilerFlavor flavor) {
        MsvcCompiler copy = new MsvcCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath()); // NOI18N
        if (isReady()) {
-           copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
-           copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+            copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
+            copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
             copy.copySystemIncludeHeaders(getSystemIncludeHeaders());
        }
        return copy;

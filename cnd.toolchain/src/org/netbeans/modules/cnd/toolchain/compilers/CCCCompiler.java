@@ -302,7 +302,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 return particular.systemIncludeHeadersList;
             }
         }
-        return getSystemIncludeDirectories();
+        return getSystemIncludeHeaders();
     }
 
     @Override
