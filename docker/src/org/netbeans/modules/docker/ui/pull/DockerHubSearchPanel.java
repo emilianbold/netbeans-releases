@@ -156,6 +156,8 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         private void update(DocumentEvent e) {
             String text = searchTextField.getText().trim();
             pullButton.setEnabled(!text.isEmpty());
+            imageList.clearSelection();
+
             if (text.isEmpty()) {
                 searchTask.cancel();
                 imageListScrollPane.setViewportView(null);
@@ -201,6 +203,7 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
             }
         });
 
+        imageList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         imageListScrollPane.setViewportView(imageList);
 
         searchTextLabel.setLabelFor(searchTextField);
@@ -249,10 +252,18 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
+                String toPull;
+                DockerHubImageItem selected = imageList.getSelectedValue();
+                if (selected != null) {
+                    toPull = selected.getHubImage().getName();
+                } else {
+                    toPull = searchTextField.getText().trim();
+                }
+                toPull = DockerUtils.appendTag(toPull);
+
                 DockerRemote facade = new DockerRemote(instance);
                 try {
-                    String image = DockerUtils.appendTag(searchTextField.getText().trim());
-                    facade.pull(image, new StatusEvent.Listener() {
+                    facade.pull(toPull, new StatusEvent.Listener() {
                         @Override
                         public void onEvent(StatusEvent event) {
                             System.out.println(event);
