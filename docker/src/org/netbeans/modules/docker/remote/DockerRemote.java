@@ -80,7 +80,7 @@ import org.netbeans.modules.docker.ContainerInfo;
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.HubImageInfo;
+import org.netbeans.modules.docker.DockerHubImage;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -151,11 +151,11 @@ public class DockerRemote {
         return Collections.emptyList();
     }
 
-    public List<HubImageInfo> search(String searchTerm) {
+    public List<DockerHubImage> search(String searchTerm) {
         try {
             JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
                     "/images/search?term=" + searchTerm, Collections.singleton(HttpURLConnection.HTTP_OK));
-            List<HubImageInfo> ret = new ArrayList<>(value.size());
+            List<DockerHubImage> ret = new ArrayList<>(value.size());
             for (Object o : value) {
                 JSONObject json = (JSONObject) o;
                 String name = (String) json.get("name");
@@ -163,7 +163,7 @@ public class DockerRemote {
                 long stars = (long) json.getOrDefault("star_count", 0);
                 boolean official = (boolean) json.getOrDefault("is_official", false);
                 boolean automated = (boolean) json.getOrDefault("is_automated", false);
-                ret.add(new HubImageInfo(name, description, stars, official, automated));
+                ret.add(new DockerHubImage(name, description, stars, official, automated));
             }
             return ret;
         } catch (DockerException ex) {

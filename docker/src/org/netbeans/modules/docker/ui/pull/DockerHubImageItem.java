@@ -39,81 +39,43 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker;
+package org.netbeans.modules.docker.ui.pull;
 
-import java.util.Objects;
+import org.netbeans.modules.docker.DockerHubImage;
 
 /**
  *
  * @author Petr Hejl
  */
-public class HubImageInfo {
+public class DockerHubImageItem implements Comparable<DockerHubImageItem> {
+    
+    private final DockerHubImage imageInfo;
 
-    private final String name;
-
-    private final String description;
-
-    private final long stars;
-
-    private final boolean official;
-
-    private final boolean automated;
-
-    public HubImageInfo(String name, String description, long stars, boolean official, boolean automated) {
-        this.name = name;
-        this.description = description;
-        this.stars = stars;
-        this.official = official;
-        this.automated = automated;
+    public DockerHubImageItem(DockerHubImage imageInfo) {
+        this.imageInfo = imageInfo;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public long getStars() {
-        return stars;
-    }
-
-    public boolean isOfficial() {
-        return official;
-    }
-
-    public boolean isAutomated() {
-        return automated;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.name);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final HubImageInfo other = (HubImageInfo) obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        return true;
+    public DockerHubImage getImageInfo() {
+        return imageInfo;
     }
 
     @Override
     public String toString() {
-        return "HubImageInfo{" + "name=" + name + '}';
+        return "<html><b>" + imageInfo.getName() + "</b> (" + imageInfo.getDescription() + ")</html>";
+    }
+
+    @Override
+    public int compareTo(DockerHubImageItem o) {
+        DockerHubImage o1 = getImageInfo();
+        DockerHubImage o2 = o.getImageInfo();
+
+        if (o1.getStars() > o2.getStars()) {
+            return -1;
+        }
+        if (o1.getStars() < o2.getStars()) {
+            return 1;
+        }
+        // FIXME null values
+        return o1.getName().compareTo(o2.getName());
     }
 }

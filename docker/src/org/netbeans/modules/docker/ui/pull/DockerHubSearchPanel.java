@@ -43,47 +43,36 @@ package org.netbeans.modules.docker.ui.pull;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.docker.DockerInstance;
-import org.netbeans.modules.docker.HubImageInfo;
+import org.netbeans.modules.docker.DockerHubImage;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.openide.util.NbBundle;
+import org.openide.awt.HtmlRenderer;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerSearchPanel extends javax.swing.JPanel {
-
-    private static final Comparator<HubImageInfo> COMPARATOR = new Comparator<HubImageInfo>() {
-
-        @Override
-        public int compare(HubImageInfo o1, HubImageInfo o2) {
-            if (o1.getStars() > o2.getStars()) {
-                return -1;
-            }
-            if (o1.getStars() < o2.getStars()) {
-                return 1;
-            }
-            // FIXME null values
-            return o1.getName().compareTo(o2.getName());
-        }
-    };
+public class DockerHubSearchPanel extends javax.swing.JPanel {
 
     private final DockerInstance instance;
+    
+    private final HtmlRenderer.Renderer renderer;
 
-    private List<HubImageInfo> availableImages = new ArrayList<>();
+    private List<DockerHubImageItem> availableImages = new ArrayList<>();
 
     /**
      * Creates new form DockerPullPanel
      */
-    public DockerSearchPanel(DockerInstance instance) {
+    public DockerHubSearchPanel(DockerInstance instance) {
         this.instance = instance;
 
+        this.renderer = HtmlRenderer.createRenderer();
+        this.renderer.setHtml(true);
+        this.renderer.setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
         initComponents();
     }
 
@@ -94,16 +83,21 @@ public class DockerSearchPanel extends javax.swing.JPanel {
             @Override
             public void run() {
                 DockerRemote facade = new DockerRemote(instance);
-                final List<HubImageInfo> images = facade.search(searchTerm);
-                Collections.sort(images, COMPARATOR);
+                final List<DockerHubImage> images = facade.search(searchTerm);
+
+                final List<DockerHubImageItem> fresh = new ArrayList<>(images.size());
+                for (DockerHubImage info : images) {
+                    fresh.add(new DockerHubImageItem(info));
+                }
+                Collections.sort(fresh);
 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
 
-                        availableImages = new ArrayList<>(images);
+                        availableImages = fresh;
                         DefaultListModel model = new DefaultListModel();
-                        for (HubImageInfo image : availableImages) {
+                        for (DockerHubImageItem image : fresh) {
                             model.addElement(image);
                         }
 
@@ -118,9 +112,9 @@ public class DockerSearchPanel extends javax.swing.JPanel {
         };
 
         searchButton.setEnabled(false);
-        final DefaultListModel model = new DefaultListModel();
-        model.addElement(NbBundle.getMessage(DockerSearchPanel.class, "DockerSearchPanel.searching"));
-        imageList.setModel(model);
+//        final DefaultListModel model = new DefaultListModel();
+//        model.addElement(NbBundle.getMessage(DockerSearchPanel.class, "DockerSearchPanel.searching"));
+//        imageList.setModel(model);
 
         RequestProcessor.getDefault().post(runner);
     }
@@ -140,15 +134,16 @@ public class DockerSearchPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         imageList = new javax.swing.JList<>();
 
-        org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(DockerSearchPanel.class, "DockerSearchPanel.searchButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(DockerHubSearchPanel.class, "DockerHubSearchPanel.searchButton.text")); // NOI18N
         searchButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 searchButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(pullButton, org.openide.util.NbBundle.getMessage(DockerSearchPanel.class, "DockerSearchPanel.pullButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(pullButton, org.openide.util.NbBundle.getMessage(DockerHubSearchPanel.class, "DockerHubSearchPanel.pullButton.text")); // NOI18N
 
+        imageList.setCellRenderer(renderer);
         jScrollPane1.setViewportView(imageList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -189,7 +184,7 @@ public class DockerSearchPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList<String> imageList;
+    private javax.swing.JList<org.netbeans.modules.docker.ui.pull.DockerHubImageItem> imageList;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton pullButton;
     private javax.swing.JButton searchButton;

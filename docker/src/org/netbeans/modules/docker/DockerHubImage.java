@@ -39,76 +39,81 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker;
 
-import java.awt.Dialog;
-import javax.swing.JButton;
-import org.netbeans.modules.docker.DockerInstance;
-import org.netbeans.modules.docker.ui.pull.DockerHubSearchPanel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import java.util.Objects;
 
 /**
  *
  * @author Petr Hejl
  */
-public class PullImageAction extends NodeAction {
+public class DockerHubImage {
 
-    @NbBundle.Messages({
-        "LBL_Close=Close",
-        "LBL_SearchImage=Search Image"
-    })
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        DockerInstance instance = activatedNodes[0].getLookup().lookup(DockerInstance.class);
-        if (instance != null) {
-            DockerHubSearchPanel panel = new DockerHubSearchPanel(instance);
-            JButton close = new JButton(Bundle.LBL_Close());
-//            close.getAccessibleContext()
-//                    .setAccessibleDescription(NbBundle.getMessage(PullImageAction.class, "CTL_Close"));
+    private final String name;
 
-            DialogDescriptor descriptor
-                    = new DialogDescriptor(panel, Bundle.LBL_SearchImage(),
-                            true, new Object[]{close}, close, DialogDescriptor.DEFAULT_ALIGN,
-                            new HelpCtx(DockerHubSearchPanel.class), null); // NOI18N
-            Dialog dlg = null;
+    private final String description;
 
-            try {
-                dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-                dlg.setVisible(true);
-            } finally {
-                if (dlg != null) {
-                    dlg.dispose();
-                }
-            }
-        }
+    private final long stars;
+
+    private final boolean official;
+
+    private final boolean automated;
+
+    public DockerHubImage(String name, String description, long stars, boolean official, boolean automated) {
+        this.name = name;
+        this.description = description;
+        this.stars = stars;
+        this.official = official;
+        this.automated = automated;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public long getStars() {
+        return stars;
+    }
+
+    public boolean isOfficial() {
+        return official;
+    }
+
+    public boolean isAutomated() {
+        return automated;
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.name);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
             return false;
         }
-        return activatedNodes[0].getLookup().lookup(DockerInstance.class) != null;
-    }
-
-    @NbBundle.Messages("LBL_Pull=Pull...")
-    @Override
-    public String getName() {
-        return Bundle.LBL_Pull();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DockerHubImage other = (DockerHubImage) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
-    protected boolean asynchronous() {
-        return false;
+    public String toString() {
+        return "HubImageInfo{" + "name=" + name + '}';
     }
 }
