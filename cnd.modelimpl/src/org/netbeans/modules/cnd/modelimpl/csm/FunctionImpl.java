@@ -369,7 +369,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return AstUtil.getRawNameInChildren(ast);
     }
 
-    protected boolean isCStyleStatic() {
+    public boolean isCStyleStatic() {
         return isStatic() && CsmKindUtilities.isFile(getScope());
     }
 
