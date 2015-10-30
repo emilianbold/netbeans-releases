@@ -173,9 +173,19 @@ public final class CsmProjectContentResolver {
                     assert CsmKindUtilities.isTypedef(ob) || CsmKindUtilities.isTypeAlias(ob);
                     CsmTypedef td = (CsmTypedef) ob;
                     CsmType type = td.getType();
-                    if (td.isTypeUnnamed() && type != null) {
+                    if (type != null && (!isCpp() || td.isTypeUnnamed())) {
                         CsmClassifier classifier = type.getClassifier();
-                        if (CsmKindUtilities.isEnum(classifier)) {
+                        if (CsmKindUtilities.isClass(classifier)) {
+                            if (!isCpp()) {
+                                // This works only for C
+                                for (CsmMember member : ((CsmClass) classifier).getMembers()) {
+                                    if (CsmKindUtilities.isEnum(member)) {
+                                        elemEnum = (CsmEnum) member;
+                                        break;
+                                    }    
+                                }
+                            }
+                        } else if (CsmKindUtilities.isEnum(classifier)) {
                             elemEnum = (CsmEnum) classifier;
                         } else if (CsmKindUtilities.isEnumForwardDeclaration(classifier)) {
                             elemEnum = ((CsmEnumForwardDeclaration)classifier).getCsmEnum();
@@ -1736,6 +1746,18 @@ public final class CsmProjectContentResolver {
             nextInheritanceLevel = CHILD_INHERITANCE;
         }
         return new VisibilityInfo(nextInheritanceLevel, nextMinVisibility, false);
+    }
+    
+    private boolean isCpp() {
+        // Or use CsmFileInfoQuery here?
+        if (startFile != null) {
+            switch (startFile.getFileType()) {
+                case SOURCE_C_FILE:
+                case SOURCE_FORTRAN_FILE:
+                    return false;
+            }
+        }
+        return true;
     }
 
     public static CharSequence[] splitQualifiedName(String qualified) {
