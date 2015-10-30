@@ -42,6 +42,7 @@
 package org.netbeans.modules.docker;
 
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.docker.remote.DockerEvent;
 
 /**
@@ -101,5 +102,14 @@ public final class DockerUtils {
             default:
                 return null;
         }
+    }
+
+    @NonNull
+    public static String appendTag(String image) {
+        String ret = image;
+        if (!image.contains(":") && !image.contains("@")) { // NOI18N
+            ret += ":latest"; // NOI18N
+        }
+        return ret;
     }
 }
