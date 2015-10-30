@@ -1201,6 +1201,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug255903.c", 16, 34, "bug255903.c", 7, 9);
     }
     
+    public void testBug255898() throws Exception {
+        // Bug 255898 - unresolved enumerator from unnamed enum
+        performTest("bug255898.c", 4, 17, "bug255898.h", 3, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
