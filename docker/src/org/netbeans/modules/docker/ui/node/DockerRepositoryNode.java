@@ -58,14 +58,18 @@ public class DockerRepositoryNode extends AbstractNode {
     private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_instance.png"; // NOI18N
 
     @NbBundle.Messages("LBL_Repository=Repository")
-    public DockerRepositoryNode(DockerRepositoryChildFactory factory) {
-        super(Children.create(factory, true), Lookups.fixed(factory));
+    public DockerRepositoryNode(DockerInstance instance, DockerRepositoryChildFactory factory) {
+        super(Children.create(factory, true), Lookups.fixed(instance, factory));
         setDisplayName(Bundle.LBL_Repository());
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
     }
     
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] { SystemAction.get(RefreshAction.class) };
+        return new Action[] { 
+            SystemAction.get(PullImageAction.class),
+            null,
+            SystemAction.get(RefreshAction.class)
+        };
     }
 }

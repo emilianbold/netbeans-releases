@@ -48,7 +48,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
-import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerRegistry;
 import org.netbeans.modules.docker.ui.wizard.DockerPropertiesPanel;
 import org.openide.DialogDisplayer;

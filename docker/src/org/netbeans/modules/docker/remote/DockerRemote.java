@@ -80,6 +80,7 @@ import org.netbeans.modules.docker.ContainerInfo;
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
+import org.netbeans.modules.docker.HubImageInfo;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -126,7 +127,7 @@ public class DockerRemote {
             }
             return ret;
         } catch (DockerException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
         }
         return Collections.emptyList();
     }
@@ -145,7 +146,28 @@ public class DockerRemote {
             }
             return ret;
         } catch (DockerException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return Collections.emptyList();
+    }
+
+    public List<HubImageInfo> search(String searchTerm) {
+        try {
+            JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
+                    "/images/search?term=" + searchTerm, Collections.singleton(HttpURLConnection.HTTP_OK));
+            List<HubImageInfo> ret = new ArrayList<>(value.size());
+            for (Object o : value) {
+                JSONObject json = (JSONObject) o;
+                String name = (String) json.get("name");
+                String description = (String) json.get("description");
+                int stars = (int) json.getOrDefault("stars", 0);
+                boolean official = (boolean) json.getOrDefault("is_official", false);
+                boolean automated = (boolean) json.getOrDefault("is_automated", false);
+                ret.add(new HubImageInfo(name, description, stars, official, automated));
+            }
+            return ret;
+        } catch (DockerException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
         return Collections.emptyList();
     }
@@ -533,7 +555,6 @@ public class DockerRemote {
             }
         }
     }
-
 
     public static class LogResult implements Closeable {
 

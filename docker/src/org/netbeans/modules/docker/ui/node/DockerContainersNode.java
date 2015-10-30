@@ -42,6 +42,7 @@
 package org.netbeans.modules.docker.ui.node;
 
 import javax.swing.Action;
+import org.netbeans.modules.docker.DockerInstance;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
@@ -57,8 +58,8 @@ public class DockerContainersNode extends AbstractNode {
     private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_instance.png"; // NOI18N
 
     @NbBundle.Messages("LBL_Containers=Containers")
-    public DockerContainersNode(DockerContainersChildFactory factory) {
-        super(Children.create(factory, true), Lookups.fixed(factory));
+    public DockerContainersNode(DockerInstance instance, DockerContainersChildFactory factory) {
+        super(Children.create(factory, true), Lookups.fixed(instance, factory));
         setDisplayName(Bundle.LBL_Containers());
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
     }
