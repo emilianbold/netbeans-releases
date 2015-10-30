@@ -49,7 +49,13 @@
 
 package org.netbeans.modules.java.navigation.actions;
 
+import com.sun.source.tree.ExportsTree;
+import com.sun.source.tree.ProvidesTree;
+import com.sun.source.tree.RequiresTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.UsesTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.awt.Toolkit;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementOpen;
@@ -59,14 +65,20 @@ import org.openide.util.*;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.Collections;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ModuleElement;
+import javax.lang.model.element.QualifiedNameable;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
@@ -133,31 +145,24 @@ public final class OpenAction extends AbstractAction {
             if (!checkFile(fileObject, displayName)) {
                 return;
             }
-            try {
-                final long[] pos = {-1};
-                ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        final CompilationInfo info = findJava(resultIterator);
-                        final TreePath tp = handle.resolve(info);
-                        pos[0] = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tp.getLeaf());
-                    }
-                    private CompilationInfo findJava(ResultIterator resIt) throws ParseException {
-                        if ("text/x-java".equals(resIt.getSnapshot().getMimeType())) {  //NOI18N
-                            return CompilationInfo.get(resIt.getParserResult());
-                        }
-                        for (Embedding e : resIt.getEmbeddings()) {
-                            final CompilationInfo info = findJava(resIt.getResultIterator(e));
-                            if (info != null) {
-                                return info;
-                            }
-                        }
-                        return null;
-                    }
-                });
-                UiUtils.open(fileObject, (int) pos[0]);
-            } catch (ParseException e) {
-                Exceptions.printStackTrace(e);
+            ElementOpen.open(fileObject, handle);
+        };
+    }
+
+    @NonNull
+    public static Openable openable(
+        @NonNull final ModuleElement module,
+        @NonNull final ModuleElement.Directive directive,
+        @NonNull final ClasspathInfo cpInfo) {
+        final ElementHandle<ModuleElement> moduleHandle = ElementHandle.create(module);
+        final Object[] directiveHandle = createDirectiveHandle(directive);
+        return () -> {
+            final FileObject source = SourceUtils.getFile(moduleHandle, cpInfo);
+            if (source != null) {
+                TreePathHandle path = resolveDirectiveHandle(source, directiveHandle);
+                if (path != null) {
+                    ElementOpen.open(source, path);
+                }
             }
         };
     }
@@ -210,5 +215,90 @@ public final class OpenAction extends AbstractAction {
                     ClassPathSupport.createClassPath(owner),
                     ClassPath.EMPTY,
                     ClassPath.EMPTY));
+    }
+
+    @NonNull
+    private static Object[] createDirectiveHandle(@NonNull ModuleElement.Directive dir) {
+        switch (dir.getKind()) {
+            case EXPORTS:
+                return new Object[] {dir.getKind(), ((ModuleElement.ExportsDirective)dir).getPackage().getQualifiedName().toString()};
+            case REQUIRES:
+                return new Object[] {dir.getKind(), ((ModuleElement.RequiresDirective)dir).getDependency().getQualifiedName().toString()};
+            case USES:
+                return new Object[] {dir.getKind(), ((ModuleElement.UsesDirective)dir).getService().getQualifiedName().toString()};
+            case PROVIDES:
+                return new Object[] {dir.getKind(), ((ModuleElement.ProvidesDirective)dir).getImplementation().getQualifiedName().toString()};
+            default:
+                throw new IllegalArgumentException(String.valueOf(dir));
+        }
+    }
+
+    private static TreePathHandle resolveDirectiveHandle(
+            @NonNull final FileObject file,
+            @NonNull final Object[] handle) {
+        final JavaSource js = JavaSource.forFileObject(file);
+        if (js == null) {
+            return null;
+        }
+        try {
+            final TreePathHandle[] res = new TreePathHandle[1];
+            js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
+                @Override
+                public void run(final CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    new TreePathScanner<Void, Void>() {
+                        @Override
+                        public Void visitExports(ExportsTree node, Void p) {
+                            if (matches(handle, ModuleElement.DirectiveKind.EXPORTS, node.getExportName())) {
+                                res[0] = TreePathHandle.create(getCurrentPath(), cc);
+                            }
+                            return super.visitExports(node, p);
+                        }
+
+                        @Override
+                        public Void visitRequires(RequiresTree node, Void p) {
+                            if (matches(handle, ModuleElement.DirectiveKind.REQUIRES, node.getModuleName())) {
+                                res[0] = TreePathHandle.create(getCurrentPath(), cc);
+                            }
+                            return super.visitRequires(node, p);
+                        }
+
+                        @Override
+                        public Void visitUses(UsesTree node, Void p) {
+                            if (matches(handle, ModuleElement.DirectiveKind.USES, node.getServiceName())) {
+                                res[0] = TreePathHandle.create(getCurrentPath(), cc);
+                            }
+                            return super.visitUses(node, p);
+                        }
+
+                        @Override
+                        public Void visitProvides(ProvidesTree node, Void p) {
+                            if (matches(handle, ModuleElement.DirectiveKind.PROVIDES, node.getImplementationName())) {
+                                res[0] = TreePathHandle.create(getCurrentPath(), cc);
+                            }
+                            return super.visitProvides(node, p);
+                        }
+
+                        private boolean matches(
+                            final Object[] handle,
+                            final ModuleElement.DirectiveKind kind,
+                            final Tree selector) {
+                            if (handle[0] != kind) {
+                                return false;
+                            }
+                            final TreePath selectorPath = new TreePath(getCurrentPath(), selector);
+                            final Element e = cc.getTrees().getElement(selectorPath);
+                            return e instanceof QualifiedNameable ?
+                                ((QualifiedNameable)e).getQualifiedName().contentEquals((String)handle[1]) :
+                                false;
+                        }
+                    }.scan(cc.getCompilationUnit(), null);
+                }
+            }, true);
+            return res[0];
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            return null;
+        }
     }
 }

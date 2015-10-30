@@ -79,13 +79,17 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
+import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
+import org.netbeans.modules.java.navigation.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -373,6 +377,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         target.subs = new HashSet<>();
         for (ModuleElement.Directive dir : module.getDirectives()) {
             if (isImportant(dir)) {
+                final ClasspathInfo cpInfo = info.getClasspathInfo();
                 final Description dirDesc;
                 if (ctx.isSource) {
                     final DirectiveTree dt = ctx.getDirectiveTree(dir);
@@ -381,15 +386,16 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                         getDirectiveInternalName(dir, fqn),
                         TreePathHandle.create(TreePath.getPath(info.getCompilationUnit(), dt), info),
                         dir.getKind(),
-                        info.getClasspathInfo(),
+                        cpInfo,
                         ctx.getStartPosition(dir));
                 } else {
+                    final ElementHandle<ModuleElement> moduleHandle = ElementHandle.create(module);
                     dirDesc = Description.directive(
                         ui,
                         getDirectiveInternalName(dir, fqn),
                         dir.getKind(),
-                        info.getClasspathInfo(),
-                        ()->{});
+                        cpInfo,
+                        OpenAction.openable(module, dir, cpInfo));
                 }
                 dirDesc.htmlHeader = createHtmlHeader(info, dir, fqn);
                 target.subs.add(dirDesc);
