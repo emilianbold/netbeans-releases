@@ -117,6 +117,7 @@ import org.openide.windows.WindowManager;
  * @author Vladimir Voskresensky
  */
 public class CsmUtilities {
+    public static final String CND_REFACTORING_MARKER = "cnd.refactoring.modification.event"; // NOI18N
 
     // Default classifier text for auto type
     public static final String AUTO_KEYWORD = "auto"; // NOI18N
