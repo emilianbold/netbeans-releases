@@ -59,6 +59,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -154,7 +155,7 @@ public class DockerRemote {
     public List<DockerHubImage> search(String searchTerm) {
         try {
             JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
-                    "/images/search?term=" + searchTerm, Collections.singleton(HttpURLConnection.HTTP_OK));
+                    "/images/search?term=" + URLEncoder.encode(searchTerm, "UTF-8"), Collections.singleton(HttpURLConnection.HTTP_OK));
             List<DockerHubImage> ret = new ArrayList<>(value.size());
             for (Object o : value) {
                 JSONObject json = (JSONObject) o;
@@ -167,6 +168,8 @@ public class DockerRemote {
             }
             return ret;
         } catch (DockerException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (UnsupportedEncodingException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
         return Collections.emptyList();
@@ -289,6 +292,68 @@ public class DockerRemote {
         }
     }
 
+    // this call is BLOCKING
+    public void pull(String imageName, StatusEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+
+        try {
+            URL httpUrl = createURL(instance.getUrl(), "/images/create?fromImage=" + URLEncoder.encode(imageName, "UTF-8"));
+            HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
+            try {
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Accept", "application/json");
+
+                if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
+                }
+
+                if (connectionListener != null) {
+                    connectionListener.onConnect(conn);
+                }
+
+                JSONParser parser = new JSONParser();
+                try (InputStreamReader r = new InputStreamReader(
+                        conn.getInputStream(), "UTF-8")) { // NOI18N
+                    String line;
+                    while ((line = readEventObject(r)) != null) {
+                        JSONObject o = (JSONObject) parser.parse(line);
+                        boolean error = false;
+                        String id = (String) o.get("id");
+                        String status = (String) o.get("status");
+                        if (status == null) {
+                            status = (String) o.get("error");
+                            error = status != null;
+                        }
+                        if (status == null) {
+                            LOGGER.log(Level.INFO, "Unknown event {0}", o);
+                            continue;
+                        }
+
+                        String progress = (String) o.get("progress");
+                        StatusEvent.Progress detail = null;
+                        JSONObject detailObj = (JSONObject) o.get("progressDetail");
+                        if (detailObj != null) {
+                            long current = ((Number) detailObj.getOrDefault("current", 1)).longValue();
+                            long total = ((Number) detailObj.getOrDefault("total", 1)).longValue();
+                            detail = new StatusEvent.Progress(current, total);
+                        }
+                        listener.onEvent(new StatusEvent(instance, id, status, progress, error, detail));
+                        parser.reset();
+                    }
+                } catch (ParseException ex) {
+                    throw new DockerException(ex);
+                }
+            } finally {
+                conn.disconnect();
+            }
+        } catch (MalformedURLException e) {
+            throw new DockerException(e);
+        } catch (IOException e) {
+            throw new DockerException(e);
+       }
+    }
+
+    // this call is BLOCKING
     public void events(Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
@@ -303,7 +368,9 @@ public class DockerRemote {
                     throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
                 }
 
-                connectionListener.onConnect(conn);
+                if (connectionListener != null) {
+                    connectionListener.onConnect(conn);
+                }
 
                 JSONParser parser = new JSONParser();
                 try (InputStreamReader r = new InputStreamReader(
@@ -316,7 +383,7 @@ public class DockerRemote {
                         String from = (String) o.get("from");
                         long time = (Long) o.get("time");
                         if (status == null) {
-                            LOGGER.log(Level.INFO, "Unknown event {0}", o.get("status"));
+                            LOGGER.log(Level.INFO, "Unknown event {0}", o);
                         } else {
                             listener.onEvent(new DockerEvent(instance, status, id, from, time));
                         }
@@ -504,7 +571,8 @@ public class DockerRemote {
         }
     }
 
-    private static URL createURL(@NonNull String url, @NullAllowed String action) throws MalformedURLException {
+    private static URL createURL(@NonNull String url, @NullAllowed String action) throws MalformedURLException, UnsupportedEncodingException {
+        // FIXME optimize
         String realUrl;
         if (url.startsWith("tcp://")) {
             realUrl = "http://" + url.substring(6);

@@ -51,8 +51,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerHubImage;
+import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
+import org.netbeans.modules.docker.remote.StatusEvent;
 import org.openide.awt.HtmlRenderer;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -162,6 +165,11 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         imageListLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(pullButton, org.openide.util.NbBundle.getMessage(DockerHubSearchPanel.class, "DockerHubSearchPanel.pullButton.text")); // NOI18N
+        pullButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pullButtonActionPerformed(evt);
+            }
+        });
 
         jScrollPane1.setViewportView(imageList);
 
@@ -206,6 +214,29 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void pullButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pullButtonActionPerformed
+//        RequestProcessor.getDefault().post(new Runnable() {
+//            @Override
+//            public void run() {
+//                DockerRemote facade = new DockerRemote(instance);
+//                try {
+//                    String image = searchTextField.getText().trim();
+//                    if (!image.contains(":") && !image.contains("@")) {
+//                        image += ":latest";
+//                    }
+//                    facade.pull(image, new StatusEvent.Listener() {
+//                        @Override
+//                        public void onEvent(StatusEvent event) {
+//                            System.out.println(event);
+//                        }
+//                    }, null);
+//                } catch (DockerException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//        });
+    }//GEN-LAST:event_pullButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
