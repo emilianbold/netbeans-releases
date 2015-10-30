@@ -31,6 +31,8 @@
 package org.netbeans.api.java.source.ui;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -56,13 +58,11 @@ import org.netbeans.modules.java.source.parsing.ClassParser;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -198,6 +198,67 @@ public final class ElementOpen {
             res = beo.open(ClasspathInfo.create(bootCp, cp, src), toOpen, cancel);
         }
         return res;
+    }
+
+    /**
+     * Opens given {@link TreePathHandle}.
+     * @param toSearch the {@link FileObject} used to resolve the {@link TreePathHandle} in
+     * @param toOpen   {@link TreePathHandle} of the {@link Tree} which should be opened.
+     * @return true if and only if the declaration was correctly opened,
+     *                false otherwise
+     * @since 1.44
+     */
+    public static boolean open(
+            @NonNull final FileObject toSearch,
+            @NonNull final TreePathHandle toOpen) {
+        final AtomicBoolean cancel = new AtomicBoolean();
+        if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
+            final boolean[] result = new boolean[1];
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    public void run() {
+                        result[0] = open(toSearch, toOpen, cancel);
+                    }
+                },
+                NbBundle.getMessage(ElementOpen.class, "TXT_CalculatingDeclPos"),
+                cancel,
+                false);
+            return result[0];
+        } else {
+            return open(toSearch, toOpen, cancel);
+        }
+    }
+
+    private static boolean open(
+            @NonNull final FileObject toSearch,
+            @NonNull final TreePathHandle toOpen,
+            @NonNull final AtomicBoolean cancel) {
+        Parameters.notNull("toSearch", toSearch);   //NOI18N
+        Parameters.notNull("toOpen", toOpen);       //NOI18N
+        try {
+            final long[] pos = {-1, -1};
+            final JavaSource js = JavaSource.forFileObject(toSearch);
+            if (js != null) {
+                js.runUserActionTask(new Task<CompilationController> () {
+                    @Override
+                    public void run(CompilationController cc) throws Exception {
+                        if (cancel.get()) {
+                            return;
+                        }
+                        cc.toPhase(JavaSource.Phase.RESOLVED);
+                        final TreePath tp = toOpen.resolve(cc);
+                        if (tp != null) {
+                            final SourcePositions sourcePos = cc.getTrees().getSourcePositions();
+                            pos[0] = sourcePos.getStartPosition(cc.getCompilationUnit(), tp.getLeaf());
+                            pos[1] = sourcePos.getEndPosition(cc.getCompilationUnit(), tp.getLeaf());
+                        }
+                    }
+                }, true);
+            }
+            return cancel.get() ? false : doOpen(toSearch, (int) pos[0], (int)pos[1]);
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+            return false;
+        }
     }
 
     // Private methods ---------------------------------------------------------
