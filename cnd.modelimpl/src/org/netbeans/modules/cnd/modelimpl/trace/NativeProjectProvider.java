@@ -86,12 +86,12 @@ public final class NativeProjectProvider {
 
     public static NativeProject createProject(String projectRoot, List<File> files,
             List<String> libProjectsPaths,
-	    List<String> sysIncludes, List<String> usrIncludes, List<String> usrFiles,
+	    List<String> sysIncludes, List<String> usrIncludes, List<String> sysIncludeHeaders, List<String> usrFiles,
 	    List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros, boolean pathsRelCurFile) throws IOException {
 
         InstanceContent ic = new InstanceContent();
         NativeProjectImpl project = new NativeProjectImpl(projectRoot, libProjectsPaths,
-		sysIncludes, usrIncludes, usrFiles, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, ic);
+		sysIncludes, usrIncludes, sysIncludeHeaders, usrFiles, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, ic);
 
         TraceProjectLookupProvider lkp = Lookup.getDefault().lookup(TraceProjectLookupProvider.class);
         if (lkp != null) {
@@ -189,6 +189,7 @@ public final class NativeProjectProvider {
 	
 	private final List<String> sysIncludes;
 	private final List<String> usrIncludes;
+        private final List<String> sysIncludeHeaders;
 	private final List<String> usrFiles;
 	private final List<String> sysMacros;
 	private final List<String> usrMacros;
@@ -208,7 +209,7 @@ public final class NativeProjectProvider {
 
 	private NativeProjectImpl(String projectRoot,
                 List<String> libProjectsPaths,
-		List<String> sysIncludes, List<String> usrIncludes,  List<String> usrFiles,
+		List<String> sysIncludes, List<String> usrIncludes, List<String>  sysIncludeHeaders, List<String> usrFiles,
 		List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros,
 		boolean pathsRelCurFile, InstanceContent ic) {
 
@@ -235,6 +236,7 @@ public final class NativeProjectProvider {
 	    
 	    this.sysIncludes = createIncludes(sysIncludes);
 	    this.usrIncludes = createIncludes(usrIncludes);
+            this.sysIncludeHeaders = createIncludes(sysIncludeHeaders);
 	    this.usrFiles = createIncludes(usrFiles);
 	    this.sysMacros = new ArrayList<>(sysMacros);
 	    this.usrMacros = new ArrayList<>(usrMacros);
@@ -394,6 +396,11 @@ public final class NativeProjectProvider {
         }
 
         @Override
+        public List<FSPath> getSystemIncludeHeaders() {
+            return CndFileUtils.toFSPathList(CndFileUtils.getLocalFileSystem(), this.sysIncludeHeaders);
+        }
+
+        @Override
         public List<String> getIncludeFiles() {
             return this.usrFiles;
         }
@@ -493,6 +500,12 @@ public final class NativeProjectProvider {
         public List<FSPath> getUserIncludePaths() {
 	    List<FSPath> result = project.getUserIncludePaths();
             return project.pathsRelCurFile ? toAbsolute(result) : result;
+        }
+
+        @Override
+        public List<FSPath> getSystemIncludeHeaders() {
+	    List<FSPath> result = project.getSystemIncludeHeaders();
+	    return project.pathsRelCurFile ? toAbsolute(result) : result;
         }
 
         @Override

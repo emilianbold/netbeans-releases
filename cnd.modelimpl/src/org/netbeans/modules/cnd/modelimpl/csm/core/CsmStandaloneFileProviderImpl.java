@@ -333,6 +333,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         private final List<FSPath> sysIncludes;
         private final List<FSPath> usrIncludes;
+        private final List<FSPath> sysIncludeHeaders;
         private final List<String> usrFiles;
         private final List<String> sysMacros;
         private final List<String> usrMacros;
@@ -368,6 +369,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             CsmModel model = ModelImpl.instance();
             List<FSPath> sysIncludes = new ArrayList<>();
             List<FSPath> usrIncludes = new ArrayList<>();
+            List<FSPath> sysIncludeHeaders = new ArrayList<>();
             List<String> usrFiles = new ArrayList<>();
             List<String> sysMacros = new ArrayList<>();
             List<String> usrMacros = new ArrayList<>();
@@ -412,21 +414,24 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 Exceptions.printStackTrace(ex);
                 fs = CndFileUtils.getLocalFileSystem();
             }
-            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, usrFiles, sysMacros, usrMacros, undefinedMacros);
+            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysIncludeHeaders, usrFiles, sysMacros, usrMacros, undefinedMacros);
             if (itemPrototype != null) {
                 sysIncludes.addAll(itemPrototype.getSystemIncludePaths());
                 sysMacros.addAll(itemPrototype.getSystemMacroDefinitions());
+                sysIncludeHeaders.addAll(itemPrototype.getSystemIncludeHeaders());
                 usrIncludes.addAll(itemPrototype.getUserIncludePaths());
                 usrFiles.addAll(itemPrototype.getIncludeFiles());
                 usrMacros.addAll(itemPrototype.getUserMacroDefinitions());
             } else if (prototype != null) {
                 sysIncludes.addAll(prototype.getSystemIncludePaths());
                 sysMacros.addAll(prototype.getSystemMacroDefinitions());
+                sysIncludeHeaders.addAll(prototype.getSystemIncludeHeaders());
                 usrIncludes.addAll(prototype.getUserIncludePaths());
                 usrFiles.addAll(prototype.getIncludeFiles());
                 usrMacros.addAll(prototype.getUserMacroDefinitions());
             } else  {
                 sysIncludes.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang, impl)));
+                sysIncludeHeaders.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludeHeaders(lang, impl)));
                 sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang, impl));
             }
             impl.checkPaths();
@@ -512,12 +517,13 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         private NativeProjectImpl(FileObject projectRoot,
-                List<FSPath> sysIncludes, List<FSPath> usrIncludes, List<String> usrFiles,
+                List<FSPath> sysIncludes, List<FSPath> usrIncludes,  List<FSPath> sysIncludeHeaders, List<String> usrFiles,
                 List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros) {
 
             this.projectRoot = projectRoot;
             this.fileSystem = getFileSystem(projectRoot);
             this.sysIncludes = sysIncludes;
+            this.sysIncludeHeaders = sysIncludeHeaders;
             this.usrIncludes = usrIncludes;
             this.usrFiles = usrFiles;
             this.sysMacros = sysMacros;
@@ -652,6 +658,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         @Override
         public List<FSPath> getUserIncludePaths() {
             return this.usrIncludes;
+        }
+
+        @Override
+        public List<FSPath> getSystemIncludeHeaders() {
+            return this.sysIncludeHeaders;
         }
 
         @Override
@@ -805,6 +816,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             List<FSPath> result = project.getUserIncludePaths();
             checkAbsolute(result);
             return result;
+        }
+
+        @Override
+        public List<FSPath> getSystemIncludeHeaders() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override

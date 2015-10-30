@@ -127,6 +127,13 @@ public interface NativeFileItem {
     public List<FSPath> getUserIncludePaths();
     
     /**
+     * Returns a list of system pre-included headers.
+     * @return list of included files
+     * A path is always an absolute path.
+     */
+    public List<FSPath> getSystemIncludeHeaders();
+
+    /**
      * Returns a list of '-include file' options 
      * as if #include "file" appeared as the first line of the primary source file.
      * However, the first directory searched for file is the preprocessor's working directory 
