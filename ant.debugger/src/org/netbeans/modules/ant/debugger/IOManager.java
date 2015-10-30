@@ -64,6 +64,7 @@ public class IOManager {
     
     protected InputOutput                   debuggerIO = null;
     private OutputWriter                    debuggerOut;
+    private OutputWriter                    debuggerErr;
     private String                          name;
     private boolean                         closed = false;
 
@@ -81,6 +82,7 @@ public class IOManager {
         debuggerIO = IOProvider.getDefault ().getIO (title, true);
         debuggerIO.setFocusTaken (false);
         debuggerOut = debuggerIO.getOut ();
+        debuggerErr = debuggerIO.getErr ();
     }
     
     
@@ -96,10 +98,21 @@ public class IOManager {
         final String text, 
         final Object line
     ) {
+        println(text, line, false);
+    }
+
+    /**
+    * Prints given text to the output.
+    */
+    public void println (
+        final String text, 
+        final Object line,
+        final boolean important
+    ) {
         if (text == null)
             throw new NullPointerException ();
         synchronized (buffer) {
-            buffer.addLast (new Text (text, line));
+            buffer.addLast (new Text (text, line, important));
         }
         if (task == null)
             task = RequestProcessor.getDefault ().post (new Runnable () {
@@ -110,12 +123,16 @@ public class IOManager {
                         for (i = 0; i < k; i++) {
                             Text t = (Text) buffer.removeFirst ();
                             try {
+                                OutputWriter ow = (t.important) ? debuggerErr : debuggerOut;
                                 if (t.line != null) {
-                                    debuggerOut.println (t.text, listener);
+                                    ow.println (t.text, listener, t.important);
                                     lines.put (t.text, t.line);
                                 } else
-                                    debuggerOut.println (t.text);
-                                debuggerOut.flush ();
+                                    ow.println (t.text, null, t.important);
+                                ow.flush ();
+                                if (t.important) {
+                                    debuggerIO.select();
+                                }
                                 if (closed)
                                     debuggerOut.close ();
                                 StatusDisplayer.getDefault ().setStatusText (t.text);
@@ -166,12 +183,14 @@ public class IOManager {
     }
     
     private static class Text {
-        private String text;
-        private Object line;
+        private final String text;
+        private final Object line;
+        private final boolean important;
         
-        private Text (String text, Object line) {
+        private Text (String text, Object line, boolean important) {
             this.text = text;
             this.line = line;
+            this.important = important;
         }
     }
 }
