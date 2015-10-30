@@ -700,8 +700,36 @@ class EntrySupportLazy extends EntrySupport {
                 return null;
             }
             Set<Entry> entriesToRemove = new HashSet<Entry>(state.getEntries());
-            entriesToRemove.removeAll(newEntries);
+            removeAllOpt(entriesToRemove, newEntries);
             return entriesToRemove;
+        }
+    }
+
+    /**
+     * Optimized version of removeAll for HashSets. The implementation in
+     * {@link java.util.AbstractSet#removeAll(java.util.Collection)} (at least
+     * in Java 8) calls toRemove.contains(x) for each element x in base if
+     * base.size() &lt;= toRemove.size(), which is very slow if toRemove is big
+     * ArrayList, whose complexity of method "contains" is linear.
+     *
+     * See bug 230180.
+     *
+     * @param base A set from which the elements will be removed.
+     * @param toRemove A collection with elements to remove.
+     *
+     * @return True if the base collection was modified, false otherwise.
+     */
+    private static boolean removeAllOpt(
+            Set<Entry> base, Collection<? extends Entry> toRemove) {
+
+        if ((toRemove instanceof ArrayList
+                && toRemove.size() > 100
+                && toRemove.size() >= base.size())) {
+            HashSet<Entry> toRemoveAsSet = new HashSet<Entry>();
+            toRemoveAsSet.addAll(toRemove);
+            return base.removeAll(toRemoveAsSet);
+        } else {
+            return base.removeAll(toRemove);
         }
     }
 
