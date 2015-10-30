@@ -141,8 +141,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         final CompilationUnitTree cuTree = info.getCompilationUnit();
         Context ctx = null;
         if (!canceled.get()) {
-            Trees trees = info.getTrees();
-            ctx = new PositionVisitor(trees, canceled).scan(cuTree, null);
+            ctx = new PositionVisitor(info, canceled).scan(cuTree, null);
         }
         final boolean fqn = ui.getFilters().isFqn();
         final List<? extends Element> elements;
@@ -189,8 +188,17 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     }
 
     private static final class Context {
+        private final boolean isSource;
         private final Map<Object/*Element | Directive*/,Long> pos = new HashMap<>();
         private final Map<ModuleElement.Directive, DirectiveTree> directives = new HashMap<>();
+
+        Context(boolean isSource) {
+            this.isSource = isSource;
+        }
+
+        boolean isSourceFile() {
+            return isSource;
+        }
 
         long getStartPosition(@NonNull final Element element) {
             final Long res = pos.get(element);
@@ -220,13 +228,14 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         private final Context ctx;
         private CompilationUnitTree cu;
 
-        public PositionVisitor (final Trees trees, final AtomicBoolean canceled) {
-            assert trees != null;
+        public PositionVisitor (
+                @NonNull final CompilationInfo info,
+                @NonNull final AtomicBoolean canceled) {
             assert canceled != null;
-            this.trees = trees;
+            this.trees = info.getTrees();
             this.sourcePositions = trees.getSourcePositions();
             this.canceled = canceled;
-            this.ctx = new Context();
+            this.ctx = new Context(info.getCompilationUnit() != null);
         }
 
         @Override
@@ -332,7 +341,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 ui,
                 getSimpleName(e),
                 ElementHandle.create(e),
-                e.getKind(),
+                info.getClasspathInfo(),
+                e.getModifiers(),
+                ctx.getStartPosition(e),
                 inherited,
                 encElement != null && encElement.getKind() == ElementKind.PACKAGE);
         
@@ -350,10 +361,6 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             d.htmlHeader = me.getQualifiedName().toString();
             addModuleDirectives(me, d, ctx, info, fqn);
         }
-        d.modifiers = e.getModifiers();
-        d.pos = ctx.getStartPosition(e);
-        d.cpInfo = info.getClasspathInfo();
-        
         return d;
     }
 
@@ -366,16 +373,26 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         target.subs = new HashSet<>();
         for (ModuleElement.Directive dir : module.getDirectives()) {
             if (isImportant(dir)) {
-                final DirectiveTree dt = ctx.getDirectiveTree(dir);
-                final Description dirDesc = Description.directive(
+                final Description dirDesc;
+                if (ctx.isSource) {
+                    final DirectiveTree dt = ctx.getDirectiveTree(dir);
+                     dirDesc = Description.directive(
                         ui,
                         getDirectiveInternalName(dir, fqn),
                         TreePathHandle.create(TreePath.getPath(info.getCompilationUnit(), dt), info),
-                        dir.getKind());
+                        dir.getKind(),
+                        info.getClasspathInfo(),
+                        ctx.getStartPosition(dir));
+                } else {
+                    dirDesc = Description.directive(
+                        ui,
+                        getDirectiveInternalName(dir, fqn),
+                        dir.getKind(),
+                        info.getClasspathInfo(),
+                        ()->{});
+                }
                 dirDesc.htmlHeader = createHtmlHeader(info, dir, fqn);
                 target.subs.add(dirDesc);
-                dirDesc.pos = ctx.getStartPosition(dir);
-                dirDesc.cpInfo = info.getClasspathInfo();
             }
         }
     }

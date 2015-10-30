@@ -60,14 +60,17 @@ import org.openide.util.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.util.Collections;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.modules.java.navigation.ElementNode;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -83,43 +86,60 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
  * @author tim, Dafe Simonek
  */
 public final class OpenAction extends AbstractAction {
-    
-    private final Union2<ElementHandle<?>, TreePathHandle> handle;
-    private final FileObject fileObject;
-    private final String displayName;
 
-    public OpenAction(Union2<ElementHandle<?>,TreePathHandle> handle, FileObject fileObject, String displayName) {
-        this.handle = handle;
-        this.fileObject = fileObject;
-        this.displayName = displayName;
+    private final Openable performer;
+
+    private OpenAction(@NonNull final Openable performer) {
+        Parameters.notNull("performer", performer); //NOI18N
+        this.performer = performer;
         putValue ( Action.NAME, NbBundle.getMessage ( OpenAction.class, "LBL_Goto" ) ); //NOI18N
     }
-    
+
     @Override
     public void actionPerformed (ActionEvent ev) {
-        if(null == fileObject) {
-            Toolkit.getDefaultToolkit().beep();
-            if( null != displayName ) {
-                StatusDisplayer.getDefault().setStatusText(
-                        NbBundle.getMessage(OpenAction.class, "MSG_NoSource", displayName) );  //NOI18N
+        performer.open();
+    }
+
+    public boolean isEnabled () {
+          return true;
+    }
+
+    @NonNull
+    public static Openable openable(
+            @NonNull final ElementHandle<?> handle,
+            @NonNull final FileObject fileObject,
+            @NonNull final String displayName) {
+        return () -> {
+            if (!checkFile(fileObject, displayName)) {
+                return;
             }
-        } else if (handle.hasFirst()) {
             FileObject file = fileObject;
             if (isClassFile(file)) {
-                final FileObject src = findSource(file, handle.first());
+                final FileObject src = findSource(file, handle);
                 if (src != null) {
                     file = src;
                 }
             }
-            ElementOpen.open(file, handle.first());
-        } else {
+            ElementOpen.open(file, handle);
+        };
+    }
+
+    @NonNull
+    public static Openable openable(
+            @NonNull final TreePathHandle handle,
+            @NonNull final FileObject fileObject,
+            @NonNull final String displayName) {
+        return () -> {
+            if (!checkFile(fileObject, displayName)) {
+                return;
+            }
             try {
                 final long[] pos = {-1};
                 ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         final CompilationInfo info = findJava(resultIterator);
-                        final TreePath tp = handle.second().resolve(info);
+                        final TreePath tp = handle.resolve(info);
                         pos[0] = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tp.getLeaf());
                     }
                     private CompilationInfo findJava(ResultIterator resIt) throws ParseException {
@@ -139,11 +159,26 @@ public final class OpenAction extends AbstractAction {
             } catch (ParseException e) {
                 Exceptions.printStackTrace(e);
             }
-        }
+        };
     }
 
-    public boolean isEnabled () {
-          return true;
+    @NonNull
+    public static OpenAction create(@NonNull final Openable openable) {
+        return new OpenAction(openable);
+    }
+
+    private static boolean checkFile(
+            @NullAllowed final FileObject fileObject,
+            @NullAllowed final String displayName) {
+        if(null == fileObject) {
+            Toolkit.getDefaultToolkit().beep();
+            if(null != displayName) {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(OpenAction.class, "MSG_NoSource", displayName));  //NOI18N
+            }
+            return false;
+        }
+        return true;
     }
 
     private static boolean isClassFile(@NonNull final FileObject file) {

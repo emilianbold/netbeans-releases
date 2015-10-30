@@ -564,10 +564,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if ( root == null ) {
             return null;
         }
-        final ElementHandle<? extends Element> eh =
-            node.getDescritption().handle != null && node.getDescritption().handle.hasFirst() ?
-                node.getDescritption().handle.first() :
-                null;
+        final ElementHandle<? extends Element> eh = node.getDescritption().getElementHandle();
         if (eh == null) {
             return null;
         }

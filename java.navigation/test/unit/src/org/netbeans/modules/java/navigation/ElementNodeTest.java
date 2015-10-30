@@ -44,6 +44,7 @@ package org.netbeans.modules.java.navigation;
 
 import com.sun.source.util.TreePath;
 import java.io.File;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -86,10 +87,8 @@ public class ElementNodeTest extends NbTestCase {
                 counter.incrementAndGet();
                 return info.getFileObject();
             }
-        }, "test", ElementHandle.create(el), el.getKind(), false,
+        }, "test", ElementHandle.create(el), info.getClasspathInfo(), Collections.emptySet(), -1, false,
             el.getEnclosingElement().getKind() == ElementKind.PACKAGE);
-
-        d.cpInfo = info.getClasspathInfo();
         
         Node n = new ElementNode(d);
 
@@ -116,9 +115,8 @@ public class ElementNodeTest extends NbTestCase {
                 counter.incrementAndGet();
                 return null;
             }
-        }, "test", ElementHandle.create(el), el.getKind(), false, el.getEnclosingElement().getKind() == ElementKind.PACKAGE);
+        }, "test", ElementHandle.create(el), info.getClasspathInfo(), Collections.emptySet(), -1, false, el.getEnclosingElement().getKind() == ElementKind.PACKAGE);
 
-        d.cpInfo = info.getClasspathInfo();
 
         Node n = new ElementNode(d);
 
