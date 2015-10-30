@@ -72,7 +72,7 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
 
         this.renderer = HtmlRenderer.createRenderer();
         this.renderer.setHtml(true);
-        this.renderer.setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
+        //this.renderer.setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
         initComponents();
     }
 

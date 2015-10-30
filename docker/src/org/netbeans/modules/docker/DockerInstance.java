@@ -125,7 +125,11 @@ public class DockerInstance {
 
         List<DockerInstance> instances = new ArrayList<>();
         try {
-            for (String name : global.childrenNames()) {
+            String[] names = global.childrenNames();
+            if (names.length == 0){
+                LOGGER.log(Level.INFO, "No preferences nodes");
+            }
+            for (String name : names) {
                 Preferences p = global.node(name);
                 String displayName = p.get(DISPLAY_NAME_KEY, null);
                 String url = p.get(URL_KEY, null);

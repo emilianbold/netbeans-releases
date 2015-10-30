@@ -48,26 +48,33 @@ import org.netbeans.modules.docker.DockerHubImage;
  * @author Petr Hejl
  */
 public class DockerHubImageItem implements Comparable<DockerHubImageItem> {
-    
-    private final DockerHubImage imageInfo;
+
+    private final DockerHubImage hubImage;
 
     public DockerHubImageItem(DockerHubImage imageInfo) {
-        this.imageInfo = imageInfo;
+        this.hubImage = imageInfo;
     }
 
-    public DockerHubImage getImageInfo() {
-        return imageInfo;
+    public DockerHubImage getHubImage() {
+        return hubImage;
     }
 
     @Override
     public String toString() {
-        return "<html><b>" + imageInfo.getName() + "</b> (" + imageInfo.getDescription() + ")</html>";
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><b>").append(hubImage.getName()).append("</b>");
+        String description = hubImage.getDescription();
+        if (description != null && !description.isEmpty()) {
+            sb.append(" (").append(description).append(")");
+        }
+        sb.append("</html>");
+        return sb.toString();
     }
 
     @Override
     public int compareTo(DockerHubImageItem o) {
-        DockerHubImage o1 = getImageInfo();
-        DockerHubImage o2 = o.getImageInfo();
+        DockerHubImage o1 = hubImage;
+        DockerHubImage o2 = o.hubImage;
 
         if (o1.getStars() > o2.getStars()) {
             return -1;
