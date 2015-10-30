@@ -81,8 +81,7 @@ class DelegatingCellEditor implements TableCellEditor {
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         Outline outline = (Outline) table;
-        OutlineModel om = (OutlineModel) outline.getModel();
-        Node n = DelegatingCellRenderer.getNodeAt(om, row);
+        Node n = DelegatingCellRenderer.getNodeAt(outline, row);
         if (n instanceof TreeModelNode) {
             TreeModelNode tmn = (TreeModelNode) n;
             TableRendererModel trm = tmn.getModel();
@@ -133,8 +132,7 @@ class DelegatingCellEditor implements TableCellEditor {
         } else {
             row = outline.getSelectedRow();
         }
-        OutlineModel om = (OutlineModel) outline.getModel();
-        Node n = DelegatingCellRenderer.getNodeAt(om, row);
+        Node n = DelegatingCellRenderer.getNodeAt(outline, row);
         if (n instanceof TreeModelNode) {
             TreeModelNode tmn = (TreeModelNode) n;
             TableRendererModel trm = tmn.getModel();
@@ -166,8 +164,7 @@ class DelegatingCellEditor implements TableCellEditor {
         // Locate the editor under the event location
         //int column = outline.columnAtPoint(p);
         int row = outline.rowAtPoint(p);
-        OutlineModel om = (OutlineModel) outline.getModel();
-        Node n = DelegatingCellRenderer.getNodeAt(om, row);
+        Node n = DelegatingCellRenderer.getNodeAt(outline, row);
         if (n instanceof TreeModelNode) {
             TreeModelNode tmn = (TreeModelNode) n;
             TableRendererModel trm = tmn.getModel();
