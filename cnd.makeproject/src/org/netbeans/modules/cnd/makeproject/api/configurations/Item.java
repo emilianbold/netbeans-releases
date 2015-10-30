@@ -682,6 +682,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
      * 
      * @return list <FSPath> of pre-included system headers.
      */
+    @Override
     public List<FSPath> getSystemIncludeHeaders() {
         List<FSPath> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -1138,6 +1139,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             res += 37 * macro.hashCode();
         }
         for(FSPath aPath : getSystemIncludePaths()) {
+            res += 37 * aPath.getPath().hashCode();
+        }
+        for(FSPath aPath : getSystemIncludeHeaders()) {
             res += 37 * aPath.getPath().hashCode();
         }
         for(String macro: getSystemMacroDefinitions()) {

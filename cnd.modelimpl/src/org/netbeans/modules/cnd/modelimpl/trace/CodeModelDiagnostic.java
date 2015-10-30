@@ -154,6 +154,17 @@ public final class CodeModelDiagnostic {
                                 }
                                 printOut.printf("\t\t%s%s%n", msg, valid == null ? "[invalid]" : "");// NOI18N
                             }
+                            if (!item.getSystemIncludeHeaders().isEmpty()) {
+                                printOut.print("\tSystem pre-included headers:\n");// NOI18N
+                                for (FSPath path : item.getSystemIncludeHeaders()) {
+                                    String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
+                                    FileObject valid = path.getFileObject();
+                                    if (valid != null && !valid.isValid()) {
+                                        valid = null;
+                                    }
+                                    printOut.printf("\t\t%s%s%n", msg, valid == null ? "[invalid]" : "");// NOI18N
+                                }
+                            }
                             if (!item.getIncludeFiles().isEmpty()) {
                                 printOut.print("\tUser Include Files:\n");// NOI18N
                                 for (String path : item.getIncludeFiles()) {

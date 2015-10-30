@@ -124,7 +124,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
-import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -1476,7 +1475,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<FSPath> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
-        List<String> includeFileEntries = nativeFile.getIncludeFiles();
+        List<String> includeFileEntries = new ArrayList<>();
+        for (FSPath systemIncludeHeader : nativeFile.getSystemIncludeHeaders()) {
+            includeFileEntries.add(systemIncludeHeader.getPath());
+        }
+        includeFileEntries.addAll(nativeFile.getIncludeFiles());
         String entryKey = FileContainer.getFileKey(nativeFile.getAbsolutePath(), true).toString();
         if (CndUtils.isDebugMode()) {
             FileSystem curPrjFS = getFileSystem();
@@ -3490,6 +3493,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         public List<FSPath> getSystemIncludePaths() {
             if (project != null) {
                 return project.getSystemIncludePaths();
+            }
+            return Collections.<FSPath>emptyList();
+        }
+
+        @Override
+        public List<FSPath> getSystemIncludeHeaders() {
+            if (project != null) {
+                return project.getSystemIncludeHeaders();
             }
             return Collections.<FSPath>emptyList();
         }
