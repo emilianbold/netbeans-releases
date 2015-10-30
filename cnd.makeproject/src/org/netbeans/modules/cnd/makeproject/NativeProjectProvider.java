@@ -676,8 +676,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     @Override
-    public List<String> getIncludeFiles() {
-        ArrayList<String> vec = new ArrayList<>();
+    public List<FSPath> getIncludeFiles() {
+        ArrayList<FSPath> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
@@ -689,10 +689,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             while (iter.hasNext()) {
                 String path = iter.next();
                 if (CndPathUtilities.isPathAbsolute(path)) {
-                    vec.add(path);
+                    vec.add(new FSPath(fs, path));
                 } else {
                     path = CndPathUtilities.toAbsolutePath(fs, getProjectRoot(), path);
-                    vec.add(path);
+                    vec.add(new FSPath(fs, path));
                 }
             }
         }

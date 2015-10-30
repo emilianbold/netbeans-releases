@@ -1479,7 +1479,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         for (FSPath systemIncludeHeader : nativeFile.getSystemIncludeHeaders()) {
             includeFileEntries.add(systemIncludeHeader.getPath());
         }
-        includeFileEntries.addAll(nativeFile.getIncludeFiles());
+        for (FSPath includeFile : nativeFile.getIncludeFiles()) {
+            includeFileEntries.add(includeFile.getPath());
+        }
         String entryKey = FileContainer.getFileKey(nativeFile.getAbsolutePath(), true).toString();
         if (CndUtils.isDebugMode()) {
             FileSystem curPrjFS = getFileSystem();
@@ -3474,7 +3476,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @Override
-        public List<String> getIncludeFiles() {
+        public List<FSPath> getIncludeFiles() {
             if (project != null) {
                 return project.getIncludeFiles();
             }

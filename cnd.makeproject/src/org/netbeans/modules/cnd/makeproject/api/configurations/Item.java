@@ -778,15 +778,15 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     @Override
-    public List<String> getIncludeFiles() {
+    public List<FSPath> getIncludeFiles() {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) { // FIXUP: sometimes itemConfiguration is null (should not happen)
-            return Collections.<String>emptyList();
+            return Collections.<FSPath>emptyList();
         }
         CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
         if (compilerSet == null) {
-            return Collections.<String>emptyList();
+            return Collections.<FSPath>emptyList();
         }
         AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
@@ -805,22 +805,38 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 vec2.addAll(list.get(i));
             }
             ExecutionEnvironment env = compiler.getExecutionEnvironment();            
+            FileSystem compilerFS = FileSystemProvider.getFileSystem(env);
+            FileSystem projectFS = fileSystem;
             MacroConverter macroConverter = null;
-            List<String> result = new ArrayList<>();            
+            List<FSPath> result = new ArrayList<>();
             for (String p : vec2) {
+                boolean compilerContext = false;
                 if (p.contains("$")) { // NOI18N
                     // macro based path
                     if (macroConverter == null) {
                         macroConverter = new MacroConverter(env);
                     }
                     p = macroConverter.expand(p);
+                    compilerContext = true;
                 }
-                String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
-                result.add(absPath);
+                if (p.startsWith("///")) { //NOI18N
+                    // It is absolute path onbuild host
+                    compilerContext = true;
+                }
+                if (compilerContext && CndPathUtilities.isPathAbsolute(compilerFS, p)) {
+                    result.add(new FSPath(compilerFS, p));
+                    continue;
+                }
+                if (CndPathUtilities.isPathAbsolute(projectFS, p)) {
+                    result.add(new FSPath(projectFS, p));
+                } else {
+                    String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
+                    result.add(new FSPath(projectFS, absPath));
+                }
             }
             return result;
         }
-        return Collections.<String>emptyList();
+        return Collections.<FSPath>emptyList();
     }
 
     @Override
@@ -1129,7 +1145,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         for(FSPath aPath : getUserIncludePaths()) {
             res += 37 * aPath.getPath().hashCode();
         }
-        for(String aPath : getIncludeFiles()) {
+        for(FSPath aPath : getIncludeFiles()) {
             res += 37 * aPath.hashCode();
         }
         for(String macro: getUserMacroDefinitions()) {

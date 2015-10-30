@@ -137,7 +137,7 @@ public interface NativeProject {
      * If not found there, it is searched for in the remainder of the #include "..." search chain as normal. 
      * @return list of included files
      */
-    public List<String> getIncludeFiles();
+    public List<FSPath> getIncludeFiles();
     
     /**
      * Returns a list <String> of compiler defined macro definitions used when parsing 'orpan' source files.

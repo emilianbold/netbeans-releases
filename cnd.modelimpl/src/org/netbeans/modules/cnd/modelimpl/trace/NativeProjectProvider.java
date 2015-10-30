@@ -401,8 +401,8 @@ public final class NativeProjectProvider {
         }
 
         @Override
-        public List<String> getIncludeFiles() {
-            return this.usrFiles;
+        public List<FSPath> getIncludeFiles() {
+            return CndFileUtils.toFSPathList(CndFileUtils.getLocalFileSystem(), this.usrFiles);
         }
 
         @Override
@@ -509,7 +509,7 @@ public final class NativeProjectProvider {
         }
 
         @Override
-        public List<String> getIncludeFiles() {
+        public List<FSPath> getIncludeFiles() {
             return project.getIncludeFiles();
         }
 	
