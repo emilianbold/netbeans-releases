@@ -345,6 +345,9 @@ public class DockerRemote {
                 }
             } finally {
                 conn.disconnect();
+                if (connectionListener != null) {
+                    connectionListener.onDisconnect();
+                }
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -394,6 +397,9 @@ public class DockerRemote {
                 }
             } finally {
                 conn.disconnect();
+                if (connectionListener != null) {
+                    connectionListener.onDisconnect();
+                }
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -673,5 +679,8 @@ public class DockerRemote {
     public static interface ConnectionListener {
 
         void onConnect(HttpURLConnection connection);
+
+        void onDisconnect();
+
     }
 }

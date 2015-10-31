@@ -168,6 +168,11 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
     }
 
     @Override
+    public void onDisconnect() {
+        // noop
+    }
+
+    @Override
     public void close() {
         stop();
     }

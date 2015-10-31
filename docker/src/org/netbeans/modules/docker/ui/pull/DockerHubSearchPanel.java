@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.pull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +60,8 @@ import org.openide.awt.HtmlRenderer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -261,16 +264,18 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
                 }
                 toPull = DockerUtils.appendTag(toPull);
 
-                DockerRemote facade = new DockerRemote(instance);
+                InputOutput io = IOProvider.getDefault().getIO("Pull " + toPull, false);
                 try {
-                    facade.pull(toPull, new StatusEvent.Listener() {
-                        @Override
-                        public void onEvent(StatusEvent event) {
-                            System.out.println(event);
-                        }
-                    }, null);
+                    io.getOut().reset();
+                    io.select();
+                    DockerRemote facade = new DockerRemote(instance);
+                    facade.pull(toPull, new PullOutputListener(io), null);
                 } catch (DockerException ex) {
                     Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    io.getOut().close();
                 }
             }
         });
