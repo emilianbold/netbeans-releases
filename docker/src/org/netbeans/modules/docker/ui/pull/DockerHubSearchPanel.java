@@ -41,21 +41,26 @@
  */
 package org.netbeans.modules.docker.ui.pull;
 
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerHubImage;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.remote.StatusEvent;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -264,7 +269,14 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
                 }
                 toPull = DockerUtils.appendTag(toPull);
 
-                InputOutput io = IOProvider.getDefault().getIO("Pull " + toPull, false);
+                final InputOutput io = IOProvider.getDefault().getIO("Pulling " + toPull, false);
+                ProgressHandle handle = ProgressHandleFactory.createHandle("Pulling " + toPull, new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        io.select();
+                    }
+                });
+                handle.start();
                 try {
                     io.getOut().reset();
                     io.select();
@@ -276,6 +288,7 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
                     Exceptions.printStackTrace(ex);
                 } finally {
                     io.getOut().close();
+                    handle.finish();
                 }
             }
         });
