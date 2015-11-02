@@ -99,6 +99,7 @@ import static org.clang.basic.ClangGlobals.*;
 import static org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileSystemProviderImpl.RFS_PREFIX;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -307,6 +308,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             if (path != null) {
                 String headerPath = path.getPath();
                 if (headerPath.endsWith(FileNameStr) && (headerPath.length() > FileNameStr.length())) {
+                    headerPath = CndFileSystemProvider.toUrl(path).toString();
                     String recoveryDir = headerPath.substring(0, headerPath.length() - FileNameStr.length()-1/*slash*/);
                     RecoveryPath.$assign(recoveryDir);
                     return true;
