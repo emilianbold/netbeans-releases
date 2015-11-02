@@ -201,6 +201,8 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         imageListLabel = new javax.swing.JLabel();
 
         messagePanel.setLayout(new java.awt.GridBagLayout());
+
+        messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         messagePanel.add(messageLabel, new java.awt.GridBagConstraints());
 
         org.openide.awt.Mnemonics.setLocalizedText(pullButton, org.openide.util.NbBundle.getMessage(DockerHubSearchPanel.class, "DockerHubSearchPanel.pullButton.text")); // NOI18N
