@@ -1147,6 +1147,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug246684.cpp", 7, 39, "bug246684.cpp", 1, 1);
     }
     
+    public void testBug255900() throws Exception {
+        // Bug 255900 - Unresolved static function in generated header file
+        performTest("bug255900.h", 2, 9, "bug255900.cpp", 2, 1);
+        performTest("bug255900.h", 3, 9, "bug255900.cpp", 3, 1);
+        performTest("bug255900.h", 4, 9, "bug255900.cpp", 1, 1);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

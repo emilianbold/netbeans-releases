@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.Pair;
+import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.CompilerDefinitions;
 
 /**
  *
@@ -58,18 +58,19 @@ public class SPICompilerAccesor {
         this.compiler = compiler;
     }
     
-    public List<List<String>> getSystemIncludesAndDefines() {
+    public List<List<String>> getCompilerDefinitions() {
         if (compiler instanceof CCCCompiler) {
-            Pair systemIncludesAndDefines = ((CCCCompiler) compiler).getFreshSystemIncludesAndDefines();
+            CompilerDefinitions systemIncludesAndDefines = ((CCCCompiler) compiler).getFreshCompilerDefinitions();
             List<List<String>> res = new ArrayList<List<String>>();
             res.add(systemIncludesAndDefines.systemIncludeDirectoriesList);
             res.add(systemIncludesAndDefines.systemPreprocessorSymbolsList);
+            res.add(systemIncludesAndDefines.systemIncludeHeadersList);
             return res;
         }
         return null;
     }
 
-    public void applySystemIncludesAndDefines(List<List<String>> pair) {
+    public void applyCompilerDefinitions(List<List<String>> pair) {
         if (compiler instanceof CCCCompiler) {
             List<Integer> user = merge(((CCCCompiler) compiler).getSystemIncludeDirectories(), pair.get(0));
             ((CCCCompiler) compiler).setSystemIncludeDirectories(pair.get(0));
@@ -78,6 +79,10 @@ public class SPICompilerAccesor {
             user = merge(((CCCCompiler) compiler).getSystemPreprocessorSymbols(), pair.get(1));
             ((CCCCompiler) compiler).setSystemPreprocessorSymbols(pair.get(1));
             setUserAdded(user, ((CCCCompiler) compiler).getSystemPreprocessorSymbols());
+
+            user = merge(((CCCCompiler) compiler).getSystemIncludeHeaders(), pair.get(2));
+            ((CCCCompiler) compiler).setSystemIncludeHeaders(pair.get(2));
+            setUserAdded(user, ((CCCCompiler) compiler).getSystemIncludeHeaders());
         }
     }
     

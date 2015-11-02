@@ -127,6 +127,13 @@ public interface NativeFileItem {
     public List<FSPath> getUserIncludePaths();
     
     /**
+     * Returns a list of system pre-included headers.
+     * @return list of included files
+     * A path is always an absolute path.
+     */
+    public List<FSPath> getSystemIncludeHeaders();
+
+    /**
      * Returns a list of '-include file' options 
      * as if #include "file" appeared as the first line of the primary source file.
      * However, the first directory searched for file is the preprocessor's working directory 
@@ -134,7 +141,7 @@ public interface NativeFileItem {
      * If not found there, it is searched for in the remainder of the #include "..." search chain as normal. 
      * @return list of included files
      */
-    public List<String> getIncludeFiles();
+    public List<FSPath> getIncludeFiles();
     
     /**
      * Returns a list <String> of compiler defined macro definitions used when compiling this file item.

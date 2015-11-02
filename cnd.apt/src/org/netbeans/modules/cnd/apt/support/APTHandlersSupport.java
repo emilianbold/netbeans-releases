@@ -50,8 +50,8 @@ import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
+import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
@@ -76,7 +76,7 @@ public class APTHandlersSupport {
         APTHandlersSupportImpl.invalidatePreprocHandler(preprocHandler);
     }
  
-    public static PPIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, List<String> includeFileEntries, APTFileSearch fileSearch) {
+    public static PPIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, List<FSPath> includeFileEntries, APTFileSearch fileSearch) {
         return APTHandlersSupportImpl.createIncludeHandler(startFile, sysIncludePaths, userIncludePaths, includeFileEntries, fileSearch);
     }
 
