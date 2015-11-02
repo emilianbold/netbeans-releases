@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.discovery.services;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -70,7 +69,6 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -78,7 +76,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.CharSequences;
 
 /**
  *
@@ -237,17 +234,20 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     }
 
     @Override
-    public NativeFileSearch getPackageFileSearch(ExecutionEnvironment env) {
+    public NativeFileSearch getPackageFileSearch(final ExecutionEnvironment env) {
         final PkgConfig pkg = getPkgConfig(env);
         if (pkg != null) {
             return new NativeFileSearch() {
                 @Override
-                public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+                public Collection<FSPath> searchFile(NativeProject project, String fileName) {
                     Collection<ResolvedPath> resolvedPath = pkg.getResolvedPath(fileName);
-                    ArrayList<CharSequence> res = new ArrayList<>(1);
+                    ArrayList<FSPath> res = new ArrayList<>(1);
                     if (resolvedPath != null) {
+                        FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
+                        char fileSeparatorChar = FileSystemProvider.getFileSeparatorChar(fileSystem);
                         for(ResolvedPath path : resolvedPath) {
-                            res.add(CharSequences.create(CharSequenceUtils.concatenate(path.getIncludePath(),File.separator,fileName)));
+                            String absPath = path.getIncludePath()+fileSeparatorChar+fileName;
+                            res.add(new FSPath(fileSystem, absPath));
                         }
                     }
                     return res;

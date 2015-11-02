@@ -97,6 +97,7 @@ import org.openide.util.Pair;
 import org.openide.util.Utilities;
 import static org.clang.basic.ClangGlobals.*;
 import static org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileSystemProviderImpl.RFS_PREFIX;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
@@ -302,8 +303,9 @@ public final class ClankPPCallback extends FileInfoCallback {
         if (fileSearch != null) {
             char$ptr curFilePath = curFile.getName();
             String FileNameStr = Native.$toString(FileName.data(), FileName.size());
-            String headerPath = fileSearch.searchInclude(FileNameStr, Native.$toString(curFilePath));
-            if (headerPath != null) {
+            FSPath path = fileSearch.searchInclude(FileNameStr, Native.$toString(curFilePath));
+            if (path != null) {
+                String headerPath = path.getPath();
                 if (headerPath.endsWith(FileNameStr) && (headerPath.length() > FileNameStr.length())) {
                     String recoveryDir = headerPath.substring(0, headerPath.length() - FileNameStr.length()-1/*slash*/);
                     RecoveryPath.$assign(recoveryDir);
