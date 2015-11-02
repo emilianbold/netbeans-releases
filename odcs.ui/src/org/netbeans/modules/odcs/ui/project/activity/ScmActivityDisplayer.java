@@ -175,8 +175,7 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
     @Override
     String getUserName() {
         if (isRepoActivity()) {
-            Author author = activity.getAuthor();
-            return author != null ? author.getFullname() : "SYSTEM"; // NOI18N
+            return getUserNameFromActivity(activity);
         } else {
             return activity.getProperty(PROP_USERNAME);
         }

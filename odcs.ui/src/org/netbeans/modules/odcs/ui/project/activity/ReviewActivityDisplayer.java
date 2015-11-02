@@ -82,7 +82,7 @@ public final class ReviewActivityDisplayer extends ActivityDisplayer {
 
     @Override
     String getUserName() {
-        return activity.getAuthor().getFullname();
+        return getUserNameFromActivity(activity);
     }
 
     @Override
