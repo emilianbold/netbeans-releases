@@ -191,9 +191,22 @@ public class CompletionUtilities {
         return out;
     }
 
+    private static int[] getIdentifierBlock(BaseDocument doc, int offset) 
+    throws BadLocationException {
+        int[] ret = null;
+        if (offset >= 0) {
+            int wordStart = LineDocumentUtils.getWordStart(doc, offset);
+            int wordEnd = LineDocumentUtils.getWordEnd(doc, offset);
+            if (wordStart >= 0 && wordEnd >= 0) {
+                ret = new int[] {wordStart, wordEnd};
+            }
+        }
+        return ret;
+    }
+    
     private static int[] getIdentifierAndMethodBlock(BaseDocument doc, int offset)
     throws BadLocationException {
-        int[] idBlk = Utilities.getIdentifierBlock(doc, offset);
+        int[] idBlk = getIdentifierBlock(doc, offset);
         if (idBlk != null) {
             int[] funBlk = getFunctionBlock(doc, idBlk);
             if (funBlk != null) {
@@ -223,7 +236,7 @@ public class CompletionUtilities {
     }
 
     private static int[] getIdentifierAndInstantiationBlock(BaseDocument doc, int offset) throws BadLocationException {
-        int[] idBlk = Utilities.getIdentifierBlock(doc, offset);
+        int[] idBlk = getIdentifierBlock(doc, offset);
         if (idBlk != null) {
             int[] instBlk = getInstantiationBlock(doc, idBlk);
             if (instBlk != null) {
