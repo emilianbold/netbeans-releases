@@ -43,7 +43,6 @@ package org.netbeans.modules.docker.ui.node;
 
 import javax.swing.Action;
 import org.netbeans.modules.docker.DockerInstance;
-import org.netbeans.modules.docker.ui.pull.PullImageAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;

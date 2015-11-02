@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.pull;
+package org.netbeans.modules.docker.ui.node;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -53,6 +53,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
+import org.netbeans.modules.docker.ui.pull.DockerHubSearchPanel;
+import org.netbeans.modules.docker.ui.pull.PullOutputListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
