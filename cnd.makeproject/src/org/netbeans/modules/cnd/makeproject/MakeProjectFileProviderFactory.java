@@ -287,6 +287,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                                 for(CharSequence absPath : list) {
                                     res.add(new FSPath(fileSystem, absPath.toString()));
                                 }
+                                return res;
                             }
                             ExecutionEnvironment env;
                             if (conf != null){
