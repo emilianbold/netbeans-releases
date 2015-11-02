@@ -67,6 +67,14 @@ public class ContainerCommandVisual extends javax.swing.JPanel {
         return commandTextField.getText().trim();
     }
 
+    public boolean isInteractive() {
+        return interactiveCheckBox.isSelected();
+    }
+
+    public boolean hasTty() {
+        return ttyCheckBox.isSelected();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -78,9 +86,15 @@ public class ContainerCommandVisual extends javax.swing.JPanel {
 
         commandLabel = new javax.swing.JLabel();
         commandTextField = new javax.swing.JTextField();
+        interactiveCheckBox = new javax.swing.JCheckBox();
+        ttyCheckBox = new javax.swing.JCheckBox();
 
         commandLabel.setLabelFor(commandTextField);
         org.openide.awt.Mnemonics.setLocalizedText(commandLabel, org.openide.util.NbBundle.getMessage(ContainerCommandVisual.class, "ContainerCommandVisual.commandLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(interactiveCheckBox, org.openide.util.NbBundle.getMessage(ContainerCommandVisual.class, "ContainerCommandVisual.interactiveCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(ttyCheckBox, org.openide.util.NbBundle.getMessage(ContainerCommandVisual.class, "ContainerCommandVisual.ttyCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -90,6 +104,11 @@ public class ContainerCommandVisual extends javax.swing.JPanel {
                 .addComponent(commandLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(commandTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(interactiveCheckBox)
+                    .addComponent(ttyCheckBox))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -97,7 +116,11 @@ public class ContainerCommandVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(commandLabel)
                     .addComponent(commandTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 281, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(interactiveCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(ttyCheckBox)
+                .addGap(0, 223, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -105,5 +128,7 @@ public class ContainerCommandVisual extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel commandLabel;
     private javax.swing.JTextField commandTextField;
+    private javax.swing.JCheckBox interactiveCheckBox;
+    private javax.swing.JCheckBox ttyCheckBox;
     // End of variables declaration//GEN-END:variables
 }

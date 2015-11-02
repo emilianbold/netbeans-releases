@@ -99,6 +99,8 @@ public class ContainerCommandPanel implements WizardDescriptor.Panel<WizardDescr
     @Override
     public void storeSettings(WizardDescriptor wiz) {
         wiz.putProperty("command", component.getCommand());
+        wiz.putProperty("interactive", component.isInteractive());
+        wiz.putProperty("tty", component.hasTty());
     }
 
 }

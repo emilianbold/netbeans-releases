@@ -45,8 +45,10 @@ import org.netbeans.modules.docker.ui.UiUtils;
 import java.awt.Component;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JComponent;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
@@ -59,6 +61,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -134,18 +137,31 @@ public class RunTagAction extends NodeAction {
                     try {
                         DockerRemote remote = new DockerRemote(tag.getImage().getInstance());
                         JSONObject config = new JSONObject();
-                        config.put("OpenStdin", true);
-                        config.put("StdinOnce", true);
-                        config.put("Tty", true);
+                        boolean interactive = (Boolean) wiz.getProperty("interactive");
+                        boolean tty = (Boolean) wiz.getProperty("tty");
+
+                        if (interactive) {
+                            config.put("OpenStdin", true);
+                            config.put("StdinOnce", true);
+                            config.put("AttachStdin", true);
+                        }
+                        if (tty) {
+                            config.put("Tty", true);
+                        }
+
+                        String[] parsed = Utilities.parseParameters((String) wiz.getProperty("command"));
                         config.put("Image", tag.getTag());
-                        config.put("Cmd", (String) wiz.getProperty("command"));
-                        config.put("AttachStdin", true);
+                        JSONArray cmdArray = new JSONArray();
+                        cmdArray.addAll(Arrays.asList(parsed));
+                        config.put("Cmd", cmdArray);
                         config.put("AttachStdout", true);
                         config.put("AttachStderr", true);
                         DockerContainer container = remote.createContainer(config);
                         remote.start(container);
 
-                        UiUtils.openTerminal(container, true);
+                        if (tty || interactive) {
+                            UiUtils.openTerminal(container, true);
+                        }
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }
