@@ -260,6 +260,87 @@ public class ModelTest extends ModelTestBase {
         assertNotNull(ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(program),"myfnc4")));
     }
 
+    public void testReturnTypes01() throws Exception {
+        Model model = getModel(getTestSource("testfiles/model/returnTypes01.php"));
+        FileScope program = model.getFileScope();
+        assertNotNull(program);
+        assertEquals(1, program.getElements().size());
+        FunctionScope functionScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(program), "foo"));
+        assertNotNull(functionScope);
+        Collection<? extends String> returnTypeNames = functionScope.getReturnTypeNames();
+        assertEquals(1, returnTypeNames.size());
+        assertEquals("DateTime", ModelUtils.getFirst(returnTypeNames));
+    }
+
+    public void testReturnTypes02() throws Exception {
+        Model model = getModel(getTestSource("testfiles/model/returnTypes02.php"));
+        FileScope program = model.getFileScope();
+        assertNotNull(program);
+        assertEquals(1, program.getElements().size());
+        FunctionScope functionScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(program), "foo"));
+        assertNotNull(functionScope);
+        Collection<? extends String> returnTypeNames = functionScope.getReturnTypeNames();
+        assertEquals(1, returnTypeNames.size());
+        assertEquals("array", ModelUtils.getFirst(returnTypeNames));
+    }
+
+    public void testReturnTypes03() throws Exception {
+        Model model = getModel(getTestSource("testfiles/model/returnTypes03.php"));
+        FileScope program = model.getFileScope();
+        assertNotNull(program);
+        assertEquals(1, program.getElements().size());
+        // iface
+        InterfaceScope iface = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredInterfaces(program), "A"));
+        assertNotNull(iface);
+        MethodScope ifaceMethod = ModelUtils.getFirst(iface.getDeclaredMethods(), "make");
+        assertNotNull(ifaceMethod);
+        Collection<? extends String> ifaceMethodReturnTypes = ifaceMethod.getReturnTypeNames();
+        assertEquals(1, ifaceMethodReturnTypes.size());
+        assertEquals("\\A", ModelUtils.getFirst(ifaceMethodReturnTypes));
+        // class
+        ClassScope clazz = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredClasses(program), "B"));
+        assertNotNull(clazz);
+        MethodScope clazzMethod = ModelUtils.getFirst(clazz.getDeclaredMethods(), "make");
+        assertNotNull(clazzMethod);
+        Collection<? extends String> clazzMethodReturnTypes = clazzMethod.getReturnTypeNames();
+        assertEquals(1, clazzMethodReturnTypes.size());
+        assertEquals("\\A", ModelUtils.getFirst(clazzMethodReturnTypes));
+        // trait
+        TraitScope trait = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredTraits(program), "C"));
+        assertNotNull(trait);
+        MethodScope traitMethod = ModelUtils.getFirst(trait.getDeclaredMethods(), "make");
+        assertNotNull(traitMethod);
+        Collection<? extends String> traitMethodReturnTypes = traitMethod.getReturnTypeNames();
+        assertEquals(1, traitMethodReturnTypes.size());
+        assertEquals("\\C", ModelUtils.getFirst(traitMethodReturnTypes));
+    }
+
+    public void testReturnTypes04() throws Exception {
+        Model model = getModel(getTestSource("testfiles/model/returnTypes04.php"));
+        FileScope program = model.getFileScope();
+        assertNotNull(program);
+        assertEquals(1, program.getElements().size());
+        FunctionScope foo = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(program), "foo"));
+        assertNotNull(foo);
+        Collection<? extends String> fooReturnTypeNames = foo.getReturnTypeNames();
+        assertEquals(1, fooReturnTypeNames.size());
+        assertEquals("Iterator", ModelUtils.getFirst(fooReturnTypeNames));
+        FunctionScope bar = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(program), "bar"));
+        assertNotNull(bar);
+        Collection<? extends String> barReturnTypeNames = bar.getReturnTypeNames();
+        assertEquals(1, barReturnTypeNames.size());
+        assertEquals("DateTime", ModelUtils.getFirst(barReturnTypeNames));
+    }
+
+    // XXX lambda functions need to be improved
+    public void xtestReturnTypes05() throws Exception {
+        Model model = getModel(getTestSource("testfiles/model/returnTypes05.php"));
+        FileScope program = model.getFileScope();
+        assertNotNull(program);
+        assertEquals(1, program.getElements().size());
+        Collection<? extends FunctionScope> declaredFunctions = ModelUtils.getDeclaredFunctions(program);
+    }
+
     public void testIssue202460 () throws Exception {
         Model model = getModel(getTestSource("testfiles/model/issue202460.php"));
         FileScope topScope = model.getFileScope();

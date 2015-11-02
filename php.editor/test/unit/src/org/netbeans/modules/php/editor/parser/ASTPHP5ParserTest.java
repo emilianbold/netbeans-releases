@@ -536,6 +536,22 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/coalesce_02");
     }
 
+    public void testReturnTypes01() throws Exception {
+        performTest("parser/returnTypes_01");
+    }
+
+    public void testReturnTypes02() throws Exception {
+        performTest("parser/returnTypes_02");
+    }
+
+    public void testReturnTypes03() throws Exception {
+        performTest("parser/returnTypes_03");
+    }
+
+    public void testReturnTypes04() throws Exception {
+        performTest("parser/returnTypes_04");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
