@@ -39,18 +39,29 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.ui.pull;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.DockerInstance;
-import org.netbeans.modules.docker.ui.pull.DockerHubSearchPanel;
+import org.netbeans.modules.docker.remote.DockerException;
+import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -59,33 +70,68 @@ import org.openide.util.actions.NodeAction;
 public class PullImageAction extends NodeAction {
 
     @NbBundle.Messages({
-        "LBL_Close=Close",
+        "LBL_Pull=&Pull",
         "LBL_SearchImage=Search Image"
     })
     @Override
     protected void performAction(Node[] activatedNodes) {
         DockerInstance instance = activatedNodes[0].getLookup().lookup(DockerInstance.class);
         if (instance != null) {
-            DockerHubSearchPanel panel = new DockerHubSearchPanel(instance);
-            JButton close = new JButton(Bundle.LBL_Close());
-//            close.getAccessibleContext()
-//                    .setAccessibleDescription(NbBundle.getMessage(PullImageAction.class, "CTL_Close"));
+            JButton pullButton = new JButton();
+            Mnemonics.setLocalizedText(pullButton, Bundle.LBL_Pull());
+            DockerHubSearchPanel panel = new DockerHubSearchPanel(instance, pullButton);
 
             DialogDescriptor descriptor
                     = new DialogDescriptor(panel, Bundle.LBL_SearchImage(),
-                            true, new Object[]{close}, close, DialogDescriptor.DEFAULT_ALIGN,
-                            new HelpCtx(DockerHubSearchPanel.class), null); // NOI18N
+                            true, new Object[] {pullButton, DialogDescriptor.CANCEL_OPTION}, pullButton,
+                            DialogDescriptor.DEFAULT_ALIGN, null, null);
+            descriptor.setClosingOptions(new Object[] {pullButton, DialogDescriptor.CANCEL_OPTION});
             Dialog dlg = null;
 
             try {
                 dlg = DialogDisplayer.getDefault().createDialog(descriptor);
                 dlg.setVisible(true);
+
+                if (descriptor.getValue() == pullButton) {
+                    perform(instance, panel.getImageName());
+                }
             } finally {
                 if (dlg != null) {
                     dlg.dispose();
                 }
             }
         }
+    }
+
+    private void perform(final DockerInstance instance, final String imageName) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                String toPull = imageName;
+
+                final InputOutput io = IOProvider.getDefault().getIO("Pulling " + toPull, false);
+                ProgressHandle handle = ProgressHandleFactory.createHandle("Pulling " + toPull, new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        io.select();
+                    }
+                });
+                handle.start();
+                try {
+                    io.getOut().reset();
+                    io.select();
+                    DockerRemote facade = new DockerRemote(instance);
+                    facade.pull(toPull, new PullOutputListener(io), null);
+                } catch (DockerException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    io.getOut().close();
+                    handle.finish();
+                }
+            }
+        });
     }
 
     @Override
@@ -96,10 +142,10 @@ public class PullImageAction extends NodeAction {
         return activatedNodes[0].getLookup().lookup(DockerInstance.class) != null;
     }
 
-    @NbBundle.Messages("LBL_Pull=Pull...")
+    @NbBundle.Messages("LBL_PullImageAction=Pull...")
     @Override
     public String getName() {
-        return Bundle.LBL_Pull();
+        return Bundle.LBL_PullImageAction();
     }
 
     @Override

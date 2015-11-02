@@ -41,32 +41,24 @@
  */
 package org.netbeans.modules.docker.ui.pull;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerHubImage;
 import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.awt.HtmlRenderer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 
 /**
  *
@@ -77,6 +69,8 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
     private static final int SEARCH_DELAY = 1000;
 
     private final DockerInstance instance;
+
+    private final JButton pullButton;
 
     private final AtomicReference<String> searchTerm = new AtomicReference<>();
 
@@ -90,16 +84,19 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
     /**
      * Creates new form DockerPullPanel
      */
-    public DockerHubSearchPanel(DockerInstance instance) {
+    public DockerHubSearchPanel(DockerInstance instance, JButton pullButton) {
         this.instance = instance;
+        this.pullButton = pullButton;
 
         initComponents();
 
+        this.pullButton.setEnabled(false);
         imageListScrollPane.setViewportView(null);
 
         HtmlRenderer.Renderer renderer = HtmlRenderer.createRenderer();
         renderer.setHtml(true);
         this.imageList.setCellRenderer(renderer);
+        this.imageList.addListSelectionListener(new SelectionListener());
         this.searchTextField.getDocument().addDocumentListener(new SearchListener());
     }
 
@@ -144,6 +141,18 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         });
     }
 
+    public String getImageName() {
+        String toPull;
+        DockerHubImageItem selected = imageList.getSelectedValue();
+        if (selected != null) {
+            toPull = selected.getHubImage().getName();
+        } else {
+            toPull = searchTextField.getText().trim();
+        }
+        toPull = DockerUtils.appendTag(toPull);
+        return toPull;
+    }
+
     private class SearchListener implements DocumentListener {
 
         @Override
@@ -169,16 +178,30 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
             if (text.isEmpty()) {
                 searchTask.cancel();
                 imageListScrollPane.setViewportView(null);
+                resultTextField.setText("");
             } else {
                 messageLabel.setText(NbBundle.getMessage(
                         DockerHubSearchPanel.class, "DockerHubSearchPanel.searching"));
                 imageListScrollPane.setViewportView(messagePanel);
                 searchTerm.set(text);
                 searchTask.schedule(SEARCH_DELAY);
+                resultTextField.setText(getImageName());
             }
 
             repaint();
             revalidate();
+        }
+    }
+    
+    private class SelectionListener implements ListSelectionListener {
+
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            
+            resultTextField.setText(getImageName());
         }
     }
 
@@ -194,24 +217,17 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         messagePanel = new javax.swing.JPanel();
         messageLabel = new javax.swing.JLabel();
         searchTextField = new javax.swing.JTextField();
-        pullButton = new javax.swing.JButton();
         imageListScrollPane = new javax.swing.JScrollPane();
         imageList = new javax.swing.JList<>();
         searchTextLabel = new javax.swing.JLabel();
         imageListLabel = new javax.swing.JLabel();
+        resultTextField = new javax.swing.JTextField();
+        resultLabel = new javax.swing.JLabel();
 
         messagePanel.setLayout(new java.awt.GridBagLayout());
 
         messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         messagePanel.add(messageLabel, new java.awt.GridBagConstraints());
-
-        org.openide.awt.Mnemonics.setLocalizedText(pullButton, org.openide.util.NbBundle.getMessage(DockerHubSearchPanel.class, "DockerHubSearchPanel.pullButton.text")); // NOI18N
-        pullButton.setEnabled(false);
-        pullButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pullButtonActionPerformed(evt);
-            }
-        });
 
         imageList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         imageListScrollPane.setViewportView(imageList);
@@ -222,6 +238,12 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         imageListLabel.setLabelFor(imageList);
         org.openide.awt.Mnemonics.setLocalizedText(imageListLabel, org.openide.util.NbBundle.getMessage(DockerHubSearchPanel.class, "DockerHubSearchPanel.imageListLabel.text")); // NOI18N
 
+        resultTextField.setEditable(false);
+        resultTextField.setFocusable(false);
+
+        resultLabel.setLabelFor(resultTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(resultLabel, org.openide.util.NbBundle.getMessage(DockerHubSearchPanel.class, "DockerHubSearchPanel.resultLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -229,15 +251,14 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(imageListScrollPane)
+                    .addComponent(imageListScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 721, Short.MAX_VALUE)
                     .addComponent(searchTextField)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 661, Short.MAX_VALUE)
-                        .addComponent(pullButton))
+                    .addComponent(resultTextField)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(searchTextLabel)
-                            .addComponent(imageListLabel))
+                            .addComponent(imageListLabel)
+                            .addComponent(resultLabel))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -251,50 +272,14 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(imageListLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(imageListScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE)
+                .addComponent(imageListScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pullButton)
+                .addComponent(resultLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(resultTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void pullButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pullButtonActionPerformed
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                String toPull;
-                DockerHubImageItem selected = imageList.getSelectedValue();
-                if (selected != null) {
-                    toPull = selected.getHubImage().getName();
-                } else {
-                    toPull = searchTextField.getText().trim();
-                }
-                toPull = DockerUtils.appendTag(toPull);
-
-                final InputOutput io = IOProvider.getDefault().getIO("Pulling " + toPull, false);
-                ProgressHandle handle = ProgressHandleFactory.createHandle("Pulling " + toPull, new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        io.select();
-                    }
-                });
-                handle.start();
-                try {
-                    io.getOut().reset();
-                    io.select();
-                    DockerRemote facade = new DockerRemote(instance);
-                    facade.pull(toPull, new PullOutputListener(io), null);
-                } catch (DockerException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    io.getOut().close();
-                    handle.finish();
-                }
-            }
-        });
-    }//GEN-LAST:event_pullButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -303,7 +288,8 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane imageListScrollPane;
     private javax.swing.JLabel messageLabel;
     private javax.swing.JPanel messagePanel;
-    private javax.swing.JButton pullButton;
+    private javax.swing.JLabel resultLabel;
+    private javax.swing.JTextField resultTextField;
     private javax.swing.JTextField searchTextField;
     private javax.swing.JLabel searchTextLabel;
     // End of variables declaration//GEN-END:variables

@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui.node;
 
 import javax.swing.Action;
 import org.netbeans.modules.docker.DockerInstance;
+import org.netbeans.modules.docker.ui.pull.PullImageAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -68,7 +69,11 @@ public class DockerInstanceNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] { SystemAction.get(RemoveInstanceAction.class) };
+        return new Action[] {
+            SystemAction.get(PullImageAction.class),
+            null,
+            SystemAction.get(RemoveInstanceAction.class)
+        };
     }
 
     private static Children.Array createChildren(DockerInstance instance) {

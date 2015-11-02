@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import org.netbeans.modules.docker.ui.pull.PullImageAction;
 import javax.swing.Action;
 import org.netbeans.modules.docker.DockerInstance;
 import org.openide.nodes.AbstractNode;
@@ -67,8 +68,6 @@ public class DockerRepositoryNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] { 
-            SystemAction.get(PullImageAction.class),
-            null,
             SystemAction.get(RefreshAction.class)
         };
     }
