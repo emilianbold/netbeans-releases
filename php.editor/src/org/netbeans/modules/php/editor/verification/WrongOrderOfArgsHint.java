@@ -220,7 +220,7 @@ public class WrongOrderOfArgsHint extends HintRule {
     private static class RearrangedFunctionDeclaration extends FunctionDeclaration {
 
         public RearrangedFunctionDeclaration(FunctionDeclaration node) {
-            super(node.getStartOffset(), node.getEndOffset(), node.getFunctionName(), node.getFormalParameters(), node.getBody(), node.isReference());
+            super(node.getStartOffset(), node.getEndOffset(), node.getFunctionName(), node.getFormalParameters(), node.getReturnType(), node.getBody(), node.isReference());
         }
 
         @Override

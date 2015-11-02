@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
  * Represents a lambda function declaration
  * e.g.<pre>
  * function & (parameters) use (lexical vars) { body }
+ * function & (parameters): return_type use (lexical vars) { body }
  * </pre>
  * @see http://wiki.php.net/rfc/closures
  */
 public class LambdaFunctionDeclaration extends Expression {
 
-    private boolean isReference;
-    private boolean isStatic;
+    private final boolean isReference;
+    private final boolean isStatic;
     private final List<FormalParameter> formalParameters = new ArrayList<>();
+    @NullAllowed
+    private final Expression returnType;
     private final List<Expression> lexicalVariables = new ArrayList<>();
-    private Block body;
+    private final Block body;
 
-    public LambdaFunctionDeclaration(int start, int end, List formalParameters, List lexicalVars, Block body, boolean isReference, boolean isStatic) {
+
+    public LambdaFunctionDeclaration(int start, int end, List formalParameters, Expression returnType, List lexicalVars, Block body, boolean isReference, boolean isStatic) {
         super(start, end);
 
         if (formalParameters == null) {
             throw new IllegalArgumentException();
         }
-
         this.isReference = isReference;
         this.isStatic = isStatic;
-
         this.formalParameters.addAll(formalParameters);
+        this.returnType = returnType;
         if (lexicalVars != null) {
             this.lexicalVariables.addAll(lexicalVars);
         }
-        if (body != null) {
-            this.body = body;
-        }
+        this.body = body;
     }
 
     /**
@@ -94,6 +97,16 @@ public class LambdaFunctionDeclaration extends Expression {
      */
     public List<FormalParameter> getFormalParameters() {
         return this.formalParameters;
+    }
+
+    /**
+     * Return type of this function declaration, can be {@code null}.
+     *
+     * @return return type of this function declaration, can be {@code null}
+     */
+    @CheckForNull
+    public Expression getReturnType() {
+        return returnType;
     }
 
     /**
@@ -135,9 +148,10 @@ public class LambdaFunctionDeclaration extends Expression {
         for (Expression expression : getLexicalVariables()) {
             sbLex.append(expression).append(","); //NOI18N
         }
-        return (isStatic() ? "static " : " ")
-                + "function" + (isReference() ? " & " : "") + "(" + sbParams.toString() + ")"
-                + (sbLex.length() > 0 ? " use (" + sbLex.toString() + ")" : "")
+        return (isStatic() ? "static " : " ") // NOI18N
+                + "function" + (isReference() ? " & " : "") + "(" + sbParams.toString() + ")" // NOI18N
+                + (getReturnType() != null ? ": " + getReturnType() : "") // NOI18N
+                + (sbLex.length() > 0 ? " use (" + sbLex.toString() + ")" : "") // NOI18N
                 + getBody(); //NOI18N
     }
 

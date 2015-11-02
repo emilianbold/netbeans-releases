@@ -75,4 +75,16 @@ public class Php70FeaturesTest extends PHPLexerTestBase {
         performTest("lexer/coalesce_05");
     }
 
+    public void testReturnTypes01() throws Exception {
+        performTest("lexer/return_types_01");
+    }
+
+    public void testReturnTypes02() throws Exception {
+        performTest("lexer/return_types_02");
+    }
+
+    public void testReturnTypes03() throws Exception {
+        performTest("lexer/return_types_03");
+    }
+
 }
