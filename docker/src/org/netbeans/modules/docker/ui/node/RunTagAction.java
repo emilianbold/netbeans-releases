@@ -51,7 +51,6 @@ import org.json.simple.JSONObject;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.remote.StreamResult;
 import org.netbeans.modules.docker.ui.run.ContainerCommandPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
