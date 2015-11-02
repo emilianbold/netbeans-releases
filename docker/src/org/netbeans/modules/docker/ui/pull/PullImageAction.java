@@ -44,6 +44,8 @@ package org.netbeans.modules.docker.ui.pull;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
@@ -55,7 +57,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -68,6 +69,8 @@ import org.openide.windows.InputOutput;
  * @author Petr Hejl
  */
 public class PullImageAction extends NodeAction {
+
+    private static final Logger LOGGER = Logger.getLogger(PullImageAction.class.getName());
 
     @NbBundle.Messages({
         "LBL_Pull=&Pull",
@@ -103,14 +106,18 @@ public class PullImageAction extends NodeAction {
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - image name",
+        "MSG_Pulling=Pulling {0}"
+    })
     private void perform(final DockerInstance instance, final String imageName) {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
                 String toPull = imageName;
 
-                final InputOutput io = IOProvider.getDefault().getIO("Pulling " + toPull, false);
-                ProgressHandle handle = ProgressHandleFactory.createHandle("Pulling " + toPull, new AbstractAction() {
+                final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Pulling(toPull), false);
+                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Pulling(toPull), new AbstractAction() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         io.select();
@@ -123,9 +130,9 @@ public class PullImageAction extends NodeAction {
                     DockerRemote facade = new DockerRemote(instance);
                     facade.pull(toPull, new PullOutputListener(io), null);
                 } catch (DockerException ex) {
-                    Exceptions.printStackTrace(ex);
+                    io.getErr().println(ex.getMessage());
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOGGER.log(Level.INFO, null, ex);
                 } finally {
                     io.getOut().close();
                     handle.finish();
