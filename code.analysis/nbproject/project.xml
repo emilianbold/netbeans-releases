@@ -252,6 +252,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.ide.analysis.modernize</friend>
                 <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.java.analysis.parfait</friend>
