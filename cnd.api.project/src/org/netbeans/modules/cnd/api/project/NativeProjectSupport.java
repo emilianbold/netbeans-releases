@@ -48,6 +48,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import org.netbeans.modules.cnd.spi.project.NativeFileSearchProvider;
 import org.netbeans.modules.cnd.spi.project.NativeProjectExecutionProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -107,8 +108,8 @@ public final class NativeProjectSupport {
         }
         return new NativeFileSearch() {
             @Override
-            public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
-                Collection<CharSequence> out = new LinkedHashSet<CharSequence>();
+            public Collection<FSPath> searchFile(NativeProject project, String fileName) {
+                Collection<FSPath> out = new LinkedHashSet<FSPath>();
                 for (NativeFileSearch searcher : delegates) {
                     out.addAll(searcher.searchFile(project, fileName));
                 }

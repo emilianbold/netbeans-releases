@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.cnd.apt.support.spi;
 
+import org.netbeans.modules.cnd.utils.FSPath;
+
 /**
  *
  * @author Alexander Simom
  */
 public interface APTFileSearchImplementation {
-    public String searchInclude(String include, CharSequence basePath);
+    public FSPath searchInclude(String include, CharSequence basePath);
 }
