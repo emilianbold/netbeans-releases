@@ -43,7 +43,6 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
@@ -447,6 +446,7 @@ public class PrintASTVisitor implements Visitor {
                 new String[]{"isReference", (node.isReference()?"true":"false")});
         printNode.addChild(node.getFunctionName());
         printNode.addChildrenGroup("FormalParameters", node.getFormalParameters());
+        printNode.addChild(node.getReturnType());
         printNode.addChild(node.getBody());
         printNode.print(this);
     }
@@ -517,6 +517,7 @@ public class PrintASTVisitor implements Visitor {
         XMLPrintNode printNode = new XMLPrintNode(declaration, "LambdaFunctionDeclaration",
                 new String[] {"isReference", declaration.isReference() ? "true" : "false"});
         printNode.addChildren(declaration.getFormalParameters());
+        printNode.addChild(declaration.getReturnType());
         printNode.addChildren(declaration.getLexicalVariables());
         printNode.addChild(declaration.getBody());
         printNode.print(this);

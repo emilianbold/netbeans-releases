@@ -424,4 +424,20 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/elvis_02.php");
     }
 
+    public void testReturnTypes01() throws Exception {
+        checkErrors("testfiles/parser/returnTypes_01.php");
+    }
+
+    public void testReturnTypes02() throws Exception {
+        checkErrors("testfiles/parser/returnTypes_02.php");
+    }
+
+    public void testReturnTypes03() throws Exception {
+        checkErrors("testfiles/parser/returnTypes_03.php");
+    }
+
+    public void testReturnTypes04() throws Exception {
+        checkErrors("testfiles/parser/returnTypes_04.php");
+    }
+
 }
