@@ -62,11 +62,11 @@ public class DockerTagNode extends AbstractNode {
     public DockerTagNode(DockerTag tag) {
         super(Children.LEAF, Lookups.fixed(tag));
         this.tag = tag;
-        if ("<none>:<none>".equals(tag.getTag())) {
-            setDisplayName(tag.getTag() + " [" + DockerUtils.getShortId(tag.getImage().getId()) + "]");
-        } else {
-            setDisplayName(tag.getTag());
-        }
+//        if ("<none>:<none>".equals(tag.getTag())) {
+        setDisplayName(tag.getTag() + " [" + DockerUtils.getShortId(tag.getImage().getId()) + "]");
+//        } else {
+//            setDisplayName(tag.getTag());
+//        }
         setShortDescription(DockerUtils.getShortId(tag.getImage().getId()));
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
     }
