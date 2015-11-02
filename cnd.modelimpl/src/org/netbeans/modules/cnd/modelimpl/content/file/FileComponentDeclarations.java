@@ -461,12 +461,14 @@ public class FileComponentDeclarations extends FileComponent {
                 addStaticVariableDeclaration(uidDecl);
             }
         }
-        if (CsmKindUtilities.isFunctionDeclaration(decl)) {
+        if (CsmKindUtilities.isFunction(decl)) {
             if (decl instanceof FunctionImpl<?>) {
                 FunctionImpl<?> fi = (FunctionImpl<?>) decl;
-                if (!NamespaceImpl.isNamespaceScope(fi)) {
-                    fi.setScope(decl.getContainingFile());
-                    addStaticFunctionDeclaration(uidDecl);
+                if (fi.isCStyleStatic()) {
+                    if (!NamespaceImpl.isNamespaceScope(fi)) {
+                        fi.setScope(decl.getContainingFile());
+                        addStaticFunctionDeclaration(uidDecl);
+                    }
                 }
             }
         }

@@ -677,6 +677,40 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return SPI_ACCESSOR.expandIncludePaths(vec, compilerConfiguration, compiler, makeConfiguration);
     }
 
+    /**
+     * List pre-included system headers.
+     * 
+     * @return list <FSPath> of pre-included system headers.
+     */
+    @Override
+    public List<FSPath> getSystemIncludeHeaders() {
+        List<FSPath> vec = new ArrayList<>();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) { // FIXUP: sometimes itemConfiguration is null (should not happen)
+            return vec;
+        }
+        CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return vec;
+        }
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+        if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+            // Get include paths from compiler
+            if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
+                FileSystem fs = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
+                if (makeConfiguration.isMakefileConfiguration()) {
+                    vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeHeaders(getImportantFlags())));
+                } else {
+                    String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
+                    vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeHeaders(importantFlags)));
+                }
+            }
+        }
+        return vec;
+    }
+
     @Override
     public List<FSPath> getUserIncludePaths() {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -744,15 +778,15 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     @Override
-    public List<String> getIncludeFiles() {
+    public List<FSPath> getIncludeFiles() {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) { // FIXUP: sometimes itemConfiguration is null (should not happen)
-            return Collections.<String>emptyList();
+            return Collections.<FSPath>emptyList();
         }
         CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
         if (compilerSet == null) {
-            return Collections.<String>emptyList();
+            return Collections.<FSPath>emptyList();
         }
         AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
@@ -771,22 +805,38 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 vec2.addAll(list.get(i));
             }
             ExecutionEnvironment env = compiler.getExecutionEnvironment();            
+            FileSystem compilerFS = FileSystemProvider.getFileSystem(env);
+            FileSystem projectFS = fileSystem;
             MacroConverter macroConverter = null;
-            List<String> result = new ArrayList<>();            
+            List<FSPath> result = new ArrayList<>();
             for (String p : vec2) {
+                boolean compilerContext = false;
                 if (p.contains("$")) { // NOI18N
                     // macro based path
                     if (macroConverter == null) {
                         macroConverter = new MacroConverter(env);
                     }
                     p = macroConverter.expand(p);
+                    compilerContext = true;
                 }
-                String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
-                result.add(absPath);
+                if (p.startsWith("///")) { //NOI18N
+                    // It is absolute path onbuild host
+                    compilerContext = true;
+                }
+                if (compilerContext && CndPathUtilities.isPathAbsolute(compilerFS, p)) {
+                    result.add(new FSPath(compilerFS, p));
+                    continue;
+                }
+                if (CndPathUtilities.isPathAbsolute(projectFS, p)) {
+                    result.add(new FSPath(projectFS, p));
+                } else {
+                    String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
+                    result.add(new FSPath(projectFS, absPath));
+                }
             }
             return result;
         }
-        return Collections.<String>emptyList();
+        return Collections.<FSPath>emptyList();
     }
 
     @Override
@@ -1095,7 +1145,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         for(FSPath aPath : getUserIncludePaths()) {
             res += 37 * aPath.getPath().hashCode();
         }
-        for(String aPath : getIncludeFiles()) {
+        for(FSPath aPath : getIncludeFiles()) {
             res += 37 * aPath.hashCode();
         }
         for(String macro: getUserMacroDefinitions()) {
@@ -1105,6 +1155,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             res += 37 * macro.hashCode();
         }
         for(FSPath aPath : getSystemIncludePaths()) {
+            res += 37 * aPath.getPath().hashCode();
+        }
+        for(FSPath aPath : getSystemIncludeHeaders()) {
             res += 37 * aPath.getPath().hashCode();
         }
         for(String macro: getSystemMacroDefinitions()) {

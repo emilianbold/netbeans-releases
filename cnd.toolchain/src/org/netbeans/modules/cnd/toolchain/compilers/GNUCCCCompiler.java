@@ -83,8 +83,8 @@ import org.openide.util.NbBundle;
     }
 
     @Override
-    protected Pair getFreshSystemIncludesAndDefines() {
-        Pair res = new Pair();
+    protected CompilerDefinitions getFreshCompilerDefinitions() {
+        CompilerDefinitions res = new CompilerDefinitions();
         try {
             getSystemIncludesAndDefines(getCompilerStderrCommand(), false, res);
             getSystemIncludesAndDefines(getCompilerStdoutCommand(), true, res);
@@ -109,12 +109,12 @@ import org.openide.util.NbBundle;
     }
     
     @Override
-    protected MyCallable<Pair> getCallable(){
-        return new MyCallable<Pair>() {
+    protected MyCallable<CompilerDefinitions> getCallable(){
+        return new MyCallable<CompilerDefinitions>() {
 
             @Override
-            public Pair call(String p) {
-                Pair tmp = new Pair();
+            public CompilerDefinitions call(String p) {
+                CompilerDefinitions tmp = new CompilerDefinitions();
                 try {
                     getSystemIncludesAndDefines(getCompilerStderrCommand()+" "+p, false, tmp); // NOI18N
                     getSystemIncludesAndDefines(getCompilerStdoutCommand()+" "+p, true, tmp); // NOI18N
@@ -157,7 +157,7 @@ import org.openide.util.NbBundle;
     }
 
    @Override
-   protected void parseCompilerOutput(BufferedReader reader, Pair pair) {
+   protected void parseCompilerOutput(BufferedReader reader, CompilerDefinitions pair) {
 
        try {
            String line;

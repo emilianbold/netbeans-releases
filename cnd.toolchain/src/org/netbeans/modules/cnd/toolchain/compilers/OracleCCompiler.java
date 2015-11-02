@@ -64,6 +64,7 @@ public class OracleCCompiler extends OracleCCppCompiler {
         if (isReady()) {
             copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
             copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+            copy.copySystemIncludeHeaders(getSystemIncludeHeaders());
         }
         return copy;
     }
