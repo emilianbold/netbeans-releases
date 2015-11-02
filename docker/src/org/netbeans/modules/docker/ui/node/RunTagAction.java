@@ -160,7 +160,7 @@ public class RunTagAction extends NodeAction {
                         remote.start(container);
 
                         if (tty || interactive) {
-                            UiUtils.openTerminal(container, true);
+                            UiUtils.openTerminal(container, interactive, true);
                         }
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);

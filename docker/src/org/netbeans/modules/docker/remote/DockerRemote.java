@@ -233,7 +233,7 @@ public class DockerRemote {
                 null, false, Collections.singleton(HttpURLConnection.HTTP_OK));
     }
 
-    public StreamResult attach(DockerContainer container, boolean logs) throws DockerException {
+    public StreamResult attach(DockerContainer container, boolean stdin, boolean logs) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         ContainerInfo info = getInfo(container);
@@ -244,7 +244,9 @@ public class DockerRemote {
 
             OutputStream os = s.getOutputStream();
             os.write(("POST /containers/" + container.getId()
-                    + "/attach?logs=" + (logs ? 1 : 0) + "&stream=1&stdout=1&stdin=1&stderr=1 HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
+                    + "/attach?logs=" + (logs ? 1 : 0)
+                    + "&stream=1&stdout=1&stdin="+ (stdin ? 1 : 0)
+                    + "&stderr=1 HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
             os.flush();
 
             InputStream is = s.getInputStream();

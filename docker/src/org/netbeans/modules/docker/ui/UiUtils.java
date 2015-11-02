@@ -145,7 +145,7 @@ public final class UiUtils {
         logIO.getInputOutput().select();
     }
 
-    public static void openTerminal(DockerContainer container, boolean logs) throws DockerException {
+    public static void openTerminal(DockerContainer container, boolean stdin, boolean logs) throws DockerException {
         Pair<InputOutput, Boolean> termIO = getTerminalInputOutput(container);
         InputOutput io = termIO.first();
         if (IOTerm.isSupported(io)) {
@@ -153,7 +153,7 @@ public final class UiUtils {
                 focusTerminal(io);
             } else {
                 DockerRemote facade = new DockerRemote(container.getInstance());
-                StreamResult result = facade.attach(container, logs);
+                StreamResult result = facade.attach(container, stdin, logs);
 
                 try {
                     io.getOut().reset();
@@ -163,7 +163,7 @@ public final class UiUtils {
                 if (!result.hasTty() && IOEmulation.isSupported(io)) {
                     IOEmulation.setDisciplined(io);
                 }
-                IOTerm.connect(io, result.getStdIn(),
+                IOTerm.connect(io, stdin ? result.getStdIn() : null,
                         new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr(), "UTF-8");
                 if (result.hasTty() && IOResizable.isSupported(io)) {
                     IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
