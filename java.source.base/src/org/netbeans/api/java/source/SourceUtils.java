@@ -920,6 +920,7 @@ public class SourceUtils {
 
                     @Override
                     public void run(CompilationController control) throws Exception {
+                        control.toPhase(Phase.ELEMENTS_RESOLVED);
                         final JavacElements elms = (JavacElements)control.getElements();
                         TypeElement type = elms.getTypeElementByBinaryName(qualifiedName);
                         if (type == null) {
@@ -993,6 +994,7 @@ public class SourceUtils {
                 js.runUserActionTask(new Task<CompilationController>() {
                     @Override
                     public void run(CompilationController control) throws Exception {
+                        control.toPhase(Phase.ELEMENTS_RESOLVED);
                         final URL rootURL = root.toURL();
                         Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(rootURL);                        
                         List<ElementHandle<TypeElement>> classes = new LinkedList<>();

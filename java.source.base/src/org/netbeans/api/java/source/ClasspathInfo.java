@@ -286,7 +286,23 @@ public final class ClasspathInfo {
             @NullAllowed final ClassPath sourcePath) {
         Parameters.notNull("bootPath", bootPath);       //NOI18N
         Parameters.notNull("classPath", classPath);     //NOI18N
-        return create (bootPath, ClassPath.EMPTY, classPath, ClassPath.EMPTY, ClassPath.EMPTY, sourcePath, null, false, false, false, true);
+        return create (bootPath, ClassPath.EMPTY, classPath, ClassPath.EMPTY, ClassPath.EMPTY, sourcePath);
+    }
+
+    @NonNull
+    public static ClasspathInfo create(
+            @NonNull final ClassPath bootPath,
+            @NonNull final ClassPath moduleBootPath,
+            @NonNull final ClassPath classPath,
+            @NonNull final ClassPath moduleCompilePath,
+            @NonNull final ClassPath moduleClassPath,
+            @NullAllowed final ClassPath sourcePath) {
+        Parameters.notNull("bootPath", bootPath);       //NOI18N
+        Parameters.notNull("moduleBootPath", moduleBootPath);       //NOI18N
+        Parameters.notNull("classPath", classPath);     //NOI18N
+        Parameters.notNull("moduleCompilePath", moduleCompilePath);     //NOI18N
+        Parameters.notNull("moduleClassPath", moduleClassPath);     //NOI18N
+        return create (bootPath, moduleBootPath, classPath, moduleCompilePath, moduleClassPath, sourcePath, null, false, false, false, true);
     }
 
     @NonNull
@@ -359,8 +375,14 @@ public final class ClasspathInfo {
 	switch( pathKind ) {
 	    case BOOT:
 		return this.bootClassPath;
+	    case MODULE_BOOT:
+		return this.moduleBootPath;
 	    case COMPILE:
 		return this.compileClassPath;
+	    case MODULE_COMPILE:
+		return this.moduleCompilePath;
+	    case MODULE_CLASS:
+		return this.moduleClassPath;
 	    case SOURCE:
 		return this.srcClassPath;
 	    default:
@@ -375,6 +397,10 @@ public final class ClasspathInfo {
 		return this.cachedBootClassPath;
 	    case COMPILE:
 		return this.cachedCompileClassPath;
+	    case MODULE_COMPILE:
+		return this.cachedModuleCompilePath;
+	    case MODULE_CLASS:
+		return this.cachedModuleClassPath;
 	    case SOURCE:
 		return this.cachedSrcClassPath;
 	    case OUTPUT:
@@ -451,7 +477,10 @@ public final class ClasspathInfo {
 
     public static enum PathKind {
 	BOOT,
+        MODULE_BOOT,
 	COMPILE,
+        MODULE_COMPILE,
+        MODULE_CLASS,
 	SOURCE,
 	OUTPUT,
 
