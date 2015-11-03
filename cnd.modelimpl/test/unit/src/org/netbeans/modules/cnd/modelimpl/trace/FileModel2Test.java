@@ -550,4 +550,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 246693 - c99 initializer, unexpected token: == 
         performTest("bug246693.cpp");
     }
+    
+    public void testBug256281() throws Exception {
+        // Bug 256281 - parser error in builtins.h
+        performTest("bug256281.cpp");
+    }
 }
