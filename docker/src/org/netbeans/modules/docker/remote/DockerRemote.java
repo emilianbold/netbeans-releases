@@ -151,6 +151,11 @@ public class DockerRemote {
     }
 
     public List<DockerHubImage> search(String searchTerm) {
+        // the api does not allow this TAG and DIGEST separator characters
+        if (searchTerm.contains(":") || searchTerm.contains("@")) { // NOI18N
+            return Collections.emptyList();
+        }
+
         try {
             JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
                     "/images/search?term=" + URLEncoder.encode(searchTerm, "UTF-8"), Collections.singleton(HttpURLConnection.HTTP_OK));
