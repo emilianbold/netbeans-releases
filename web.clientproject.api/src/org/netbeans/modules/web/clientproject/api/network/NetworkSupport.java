@@ -267,11 +267,8 @@ public final class NetworkSupport {
             checkInterrupted();
             HttpURLConnection httpUrlConnection = (HttpURLConnection) url.openConnection();
             httpUrlConnection.setRequestMethod("HEAD"); // NOI18N
-            InputStream inputStream = httpUrlConnection.getInputStream();
-            try {
+            try (InputStream inputStream = httpUrlConnection.getInputStream()) {
                 return httpUrlConnection.getContentLength();
-            } finally {
-                inputStream.close();
             }
         }
         return -1;
@@ -294,8 +291,7 @@ public final class NetworkSupport {
     }
 
     private static File copyToFile(InputStream is, File target, @NullAllowed ProgressHandle progressHandle, int contentLength) throws IOException, InterruptedException {
-        OutputStream os = new FileOutputStream(target);
-        try {
+        try (OutputStream os = new FileOutputStream(target)) {
             final byte[] buffer = new byte[65536];
             int len;
             int read = 0;
@@ -312,8 +308,6 @@ public final class NetworkSupport {
                     progressHandle.progress(read);
                 }
             }
-        } finally {
-            os.close();
         }
         return target;
     }
