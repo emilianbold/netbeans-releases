@@ -44,14 +44,8 @@ package org.netbeans.modules.docker.ui.node;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
-import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.ui.LogOutputTask;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 
 /**
  *
