@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.CsmCompletionResult;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MutableObject;
 
 /**
@@ -195,8 +196,10 @@ public class CompletionUtilities {
     throws BadLocationException {
         int[] ret = null;
         if (offset >= 0) {
+            // find word start using input offset
             int wordStart = LineDocumentUtils.getWordStart(doc, offset);
-            int wordEnd = LineDocumentUtils.getWordEnd(doc, offset);
+            // find word end using word start
+            int wordEnd = LineDocumentUtils.getWordEnd(doc, wordStart);
             if (wordStart >= 0 && wordEnd >= 0) {
                 ret = new int[] {wordStart, wordEnd};
             }
