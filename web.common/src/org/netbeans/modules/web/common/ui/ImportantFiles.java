@@ -77,6 +77,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -85,7 +86,7 @@ import org.openide.util.WeakListeners;
 public final class ImportantFiles {
 
     static final Logger LOGGER = Logger.getLogger(ImportantFiles.class.getName());
-
+    
 
     private ImportantFiles() {
     }
@@ -114,8 +115,11 @@ public final class ImportantFiles {
 
     private static final class ImportantFilesNodeList implements NodeList<Node>, LookupListener, ChangeListener {
 
+        private static final RequestProcessor RP = new RequestProcessor(ImportantFilesNodeList.class);
+
         private final Lookup.Result<ImportantFilesImplementation> lookupResult;
         private final ImportantFilesChildren importantFilesChildren;
+        private final RequestProcessor.Task refreshTask; // #256017
         final ChangeSupport changeSupport = new ChangeSupport(this);
 
         // @GuardedBy("thread")
@@ -126,6 +130,12 @@ public final class ImportantFiles {
             assert project != null;
             lookupResult = project.getLookup().lookupResult(ImportantFilesImplementation.class);
             importantFilesChildren = new ImportantFilesChildren(lookupResult);
+            refreshTask = RP.create(new Runnable() {
+                @Override
+                public void run() {
+                    stateChangedInternal();
+                }
+            });
         }
 
         @Override
@@ -173,6 +183,10 @@ public final class ImportantFiles {
 
         @Override
         public void stateChanged(ChangeEvent e) {
+            refreshTask.schedule(100);
+        }
+
+        void stateChangedInternal() {
             importantFilesChildren.refreshImportantFiles();
             fireChange();
         }
