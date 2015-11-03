@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -265,15 +266,7 @@ public class DockerRemote {
                 throw new DockerRemoteException(responseCode, m.group(2));
             }
 
-            boolean chunked = false;
-            String line;
-            do {
-                line = HttpUtils.readResponseLine(is);
-                if (HttpUtils.isChunked(line)) {
-                    chunked = true;
-                }
-            } while (line != null && !"".equals(line.trim()));
-
+            boolean chunked = HttpUtils.isChunked(HttpUtils.parseHeaders(is));
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
@@ -440,15 +433,7 @@ public class DockerRemote {
                 throw new DockerRemoteException(responseCode, m.group(2));
             }
 
-            boolean chunked = false;
-            String line;
-            do {
-                line = HttpUtils.readResponseLine(is);
-                if (HttpUtils.isChunked(line)) {
-                    chunked = true;
-                }
-            } while (line != null && !"".equals(line.trim()));
-
+            boolean chunked = HttpUtils.isChunked(HttpUtils.parseHeaders(is));
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
@@ -495,32 +480,18 @@ public class DockerRemote {
                 throw new DockerRemoteException(responseCode, m.group(2));
             }
 
-            int length = 0;
-            boolean chunked = false;
-            String line;
-            do {
-                line = HttpUtils.readResponseLine(is);
-                if (HttpUtils.isChunked(line)) {
-                    chunked = true;
-                } else if (line.contains("Content-Length")) {
-                    int semi = line.indexOf(":");
-                    String strLen = line.substring(semi + 1);
-                    length = Integer.parseInt(strLen.trim());
-                }
-            } while (line != null && !"".equals(line.trim()));
+            Map<String, String> headers = HttpUtils.parseHeaders(is);
+            int length = HttpUtils.getLength(headers);
 
-            byte[] content = new byte[length];
-            int count = 0;
-            do {
-                count += is.read(content, count, length - count);
-            } while (count < length);
+            boolean chunked = HttpUtils.isChunked(headers);
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
+
             JSONObject value;
             try {
                 JSONParser parser = new JSONParser();
-                value = (JSONObject) parser.parse(new String(content, "UTF-8"));
+                value = (JSONObject) parser.parse(HttpUtils.readContent(is, length, "UTF-8"));
             } catch (ParseException ex) {
                 throw new DockerException(ex);
             }
@@ -543,7 +514,7 @@ public class DockerRemote {
             }
 
             responseCode = Integer.parseInt(m.group(1));
-            if (responseCode != 204) {
+            if (responseCode != HttpURLConnection.HTTP_NO_CONTENT) {
                 throw new DockerRemoteException(responseCode, m.group(2));
             }
 

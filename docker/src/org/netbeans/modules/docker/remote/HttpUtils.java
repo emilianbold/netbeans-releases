@@ -44,6 +44,9 @@ package org.netbeans.modules.docker.remote;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  *
@@ -76,7 +79,55 @@ public final class HttpUtils {
         return null;
     }
 
-    public static boolean isChunked(String line) {
-        return line != null && line.startsWith("Transfer-Encoding") && line.contains("chunked"); // NOI18N
+    public static Map<String, String> parseHeaders(InputStream is) throws IOException {
+        Map<String, String> result = new HashMap<>();
+        String line;
+        for (;;) {
+            line = HttpUtils.readResponseLine(is).trim();
+            if (line != null && !"".equals(line)) {
+                int index = line.indexOf(':'); // NOI18N
+                if (index <= 0) {
+                    throw new IOException("Invalid header: " + line);
+                }
+                if (index == line.length() - 1) {
+                    // XXX empty header ?
+                    continue;
+                }
+                result.put(line.substring(0, index).toUpperCase(Locale.ENGLISH).trim(), line.substring(index + 1).trim());
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    public static String readContent(InputStream is, int length, String encoding) throws IOException {
+        byte[] content = new byte[length];
+        int count = 0;
+        do {
+             int current = is.read(content, count, length - count);
+             if (current < 0 && count < length) {
+                 throw new IOException("Stream closed before reading content");
+             }
+             count += current;
+        } while (count < length);
+        return new String(content, encoding);
+    }
+
+    public static boolean isChunked(Map<String, String> headers) {
+        String value = headers.get("TRANSFER-ENCODING"); // NOI18N
+        return value != null && value.contains("chunked"); // NOI18N
+    }
+
+    public static int getLength(Map<String, String> headers)  throws IOException {
+        String value = headers.get("CONTENT-LENGTH"); // NOI18N
+        if (value == null) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ex) {
+            throw new IOException("Wrong content length: " + value);
+        }
     }
 }
