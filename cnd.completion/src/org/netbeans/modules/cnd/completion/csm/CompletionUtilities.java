@@ -195,14 +195,21 @@ public class CompletionUtilities {
     private static int[] getIdentifierBlock(BaseDocument doc, int offset) 
     throws BadLocationException {
         int[] ret = null;
-        if (offset >= 0) {
-            // find word start using input offset
+        if (offset == 0) {
+            // we use this branch only for zero offset, because for ID spanned as
+            // [ID-start, ID-end] when offset is ID-start, then
+            // LineDocumentUtils.getWordStart(doc, offset) returns the prev word start, not ID-start;
+            // when offset is ID-end, then LineDocumentUtils.getWordEnd(doc, offset) 
+            // returns end of the next word, not ID-end
+            // BUT for Zero it is OK.
             int wordStart = LineDocumentUtils.getWordStart(doc, offset);
             // find word end using word start
             int wordEnd = LineDocumentUtils.getWordEnd(doc, wordStart);
             if (wordStart >= 0 && wordEnd >= 0) {
                 ret = new int[] {wordStart, wordEnd};
             }
+        } else if (offset > 0) {
+            ret = Utilities.getIdentifierBlock(doc, offset);
         }
         return ret;
     }
