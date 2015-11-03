@@ -245,7 +245,10 @@ public final class NetworkSupport {
                 }
             }
             checkInterrupted();
-            return Pair.of(resource.openStream(), contentLength);
+            // #255861
+            HttpURLConnection connection = (HttpURLConnection) resource.openConnection();
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0"); // NOI18N
+            return Pair.of(connection.getInputStream(), contentLength);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             throw new NetworkException(url, ex);
