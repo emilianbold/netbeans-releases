@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import org.netbeans.modules.docker.ContainerInfo;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerException;
+import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,8 +73,9 @@ public class AttachContainerAction extends AbstractContainerAction {
 
     @Override
     protected void performAction(DockerContainer container) throws DockerException {
-        // FIXME may be it is not interactive
-        UiUtils.openTerminal(container, null, true, false);
+        DockerRemote facade = new DockerRemote(container.getInstance());
+        ContainerInfo info = facade.getInfo(container);
+        UiUtils.openTerminal(container, null, info.isOpenStdin(), false);
     }
 
     @Override

@@ -47,13 +47,20 @@ package org.netbeans.modules.docker;
  */
 public class ContainerInfo {
 
+    private final boolean openStdin;
+
     private final boolean tty;
 
-    public ContainerInfo(boolean tty) {
+    public ContainerInfo(boolean openStdin, boolean tty) {
+        this.openStdin = openStdin;
         this.tty = tty;
     }
 
-    public boolean hasTty() {
+    public boolean isOpenStdin() {
+        return openStdin;
+    }
+
+    public boolean isTty() {
         return tty;
     }
 }

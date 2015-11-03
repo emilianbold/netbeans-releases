@@ -188,12 +188,14 @@ public class DockerRemote {
     public ContainerInfo getInfo(DockerContainer container) throws DockerException {
         JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
                 "/containers/" + container.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
-        Boolean tty = null;
+        boolean tty = false;
+        boolean openStdin = false;
         JSONObject config = (JSONObject) value.get("Config");
         if (config != null) {
-            tty = (Boolean) config.get("Tty");
+            tty = (boolean) config.getOrDefault("Tty", false);
+            openStdin = (boolean) config.getOrDefault("OpenStdin", false);
         }
-        return new ContainerInfo(tty != null ? tty : false);
+        return new ContainerInfo(openStdin, tty);
     }
 
     public void start(DockerContainer container) throws DockerException {
@@ -259,7 +261,7 @@ public class DockerRemote {
                 is = new ChunkedInputStream(is);
             }
 
-            if (info.hasTty()) {
+            if (info.isTty()) {
                 return new DirectStreamResult(s, is);
             } else {
                 return new MuxedStreamResult(s, is);
@@ -417,7 +419,7 @@ public class DockerRemote {
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
-            return new LogResult(s, info.hasTty() ? new DirectFetcher(is) : new Demuxer(is));
+            return new LogResult(s, info.isTty() ? new DirectFetcher(is) : new Demuxer(is));
         } catch (MalformedURLException e) {
             closeSocket(s);
             throw new DockerException(e);
