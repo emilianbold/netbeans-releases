@@ -50,9 +50,11 @@ import java.util.List;
 import javax.swing.JComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.remote.DockerRemote;
+import org.netbeans.modules.docker.remote.StreamResult;
 import org.netbeans.modules.docker.ui.run.ContainerCommandPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -60,6 +62,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
@@ -156,11 +159,11 @@ public class RunTagAction extends NodeAction {
                         config.put("Cmd", cmdArray);
                         config.put("AttachStdout", true);
                         config.put("AttachStderr", true);
-                        DockerContainer container = remote.createContainer(config);
-                        remote.start(container);
+                        Pair<DockerContainer, StreamResult> result = remote.run(config);
+                        //remote.start(container);
 
                         if (tty || interactive) {
-                            UiUtils.openTerminal(container, interactive, true);
+                            UiUtils.openTerminal(result.first(), result.second(), interactive, true);
                         }
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);

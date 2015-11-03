@@ -145,7 +145,7 @@ public final class UiUtils {
         logIO.getInputOutput().select();
     }
 
-    public static void openTerminal(DockerContainer container, boolean stdin, boolean logs) throws DockerException {
+    public static void openTerminal(DockerContainer container, StreamResult r, boolean stdin, boolean logs) throws DockerException {
         Pair<InputOutput, Boolean> termIO = getTerminalInputOutput(container);
         InputOutput io = termIO.first();
         if (IOTerm.isSupported(io)) {
@@ -153,7 +153,7 @@ public final class UiUtils {
                 focusTerminal(io);
             } else {
                 DockerRemote facade = new DockerRemote(container.getInstance());
-                StreamResult result = facade.attach(container, stdin, logs);
+                StreamResult result = r != null ? r : facade.attach(container, stdin, logs);
 
                 try {
                     io.getOut().reset();
@@ -245,7 +245,7 @@ public final class UiUtils {
                     try {
                         remote.resizeTerminal(TerminalResizeListener.this.container, newValue.height, newValue.width);
                     } catch (DockerException ex) {
-                        LOGGER.log(Level.FINE, null, ex);
+                        LOGGER.log(Level.INFO, null, ex);
                     }
                 }
             }, true);

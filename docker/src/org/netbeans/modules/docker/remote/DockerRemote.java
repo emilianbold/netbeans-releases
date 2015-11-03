@@ -83,6 +83,7 @@ import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.DockerHubImage;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 
 /**
  *
@@ -452,6 +453,101 @@ public class DockerRemote {
                 is = new ChunkedInputStream(is);
             }
             return new LogResult(s, info.hasTty() ? new DirectFetcher(is) : new Demuxer(is));
+        } catch (MalformedURLException e) {
+            closeSocket(s);
+            throw new DockerException(e);
+        } catch (IOException e) {
+            closeSocket(s);
+            throw new DockerException(e);
+        } catch (DockerException e) {
+            closeSocket(s);
+            throw e;
+        }
+    }
+
+    public Pair<DockerContainer, StreamResult> run(JSONObject configuration) throws DockerException {
+        Socket s = null;
+        try {
+            URL url = createURL(instance.getUrl(), null);
+            s = new Socket(url.getHost(), url.getPort());
+
+            byte[] data = configuration.toJSONString().getBytes("UTF-8");
+
+            OutputStream os = s.getOutputStream();
+            os.write(("POST /containers/create HTTP/1.1\r\n"
+                    + "Content-Type: application/json\r\n"
+                    + "Content-Length: " + data.length + "\r\n\r\n").getBytes("ISO-8859-1"));
+            os.write(data);
+            os.flush();
+
+            InputStream is = s.getInputStream();
+            String response = HttpUtils.readResponseLine(is);
+            if (response == null) {
+                throw new DockerException("No response from server");
+            }
+            Matcher m = HTTP_RESPONSE_PATTERN.matcher(response);
+            if (!m.matches()) {
+                throw new DockerException("Wrong response from server");
+            }
+
+            int responseCode = Integer.parseInt(m.group(1));
+            if (responseCode != HttpURLConnection.HTTP_CREATED) {
+                throw new DockerRemoteException(responseCode, m.group(2));
+            }
+
+            int length = 0;
+            boolean chunked = false;
+            String line;
+            do {
+                line = HttpUtils.readResponseLine(is);
+                if (HttpUtils.isChunked(line)) {
+                    chunked = true;
+                } else if (line.contains("Content-Length")) {
+                    int semi = line.indexOf(":");
+                    String strLen = line.substring(semi + 1);
+                    length = Integer.parseInt(strLen.trim());
+                }
+            } while (line != null && !"".equals(line.trim()));
+
+            byte[] content = new byte[length];
+            int count = 0;
+            do {
+                count += is.read(content, count, length - count);
+            } while (count < length);
+            if (chunked) {
+                is = new ChunkedInputStream(is);
+            }
+            JSONObject value;
+            try {
+                JSONParser parser = new JSONParser();
+                value = (JSONObject) parser.parse(new String(content, "UTF-8"));
+            } catch (ParseException ex) {
+                throw new DockerException(ex);
+            }
+
+            String id = (String) value.get("Id");
+            DockerContainer container = instance.getContainerFactory().create(id,
+                    (String) configuration.get("Image"), ContainerStatus.STOPPED);
+            StreamResult r = attach(container, true, true);
+
+            os.write(("POST /containers/" + id + "/start HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
+            os.flush();
+
+            response = HttpUtils.readResponseLine(is);
+            if (response == null) {
+                throw new DockerException("No response from server");
+            }
+            m = HTTP_RESPONSE_PATTERN.matcher(response);
+            if (!m.matches()) {
+                throw new DockerException("Wrong response from server");
+            }
+
+            responseCode = Integer.parseInt(m.group(1));
+            if (responseCode != 204) {
+                throw new DockerRemoteException(responseCode, m.group(2));
+            }
+
+            return Pair.of(container, r);
         } catch (MalformedURLException e) {
             closeSocket(s);
             throw new DockerException(e);

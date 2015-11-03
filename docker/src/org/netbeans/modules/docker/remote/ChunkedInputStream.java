@@ -122,6 +122,11 @@ public class ChunkedInputStream extends FilterInputStream {
             try {
                 remaining = Integer.parseInt(line, 16);
                 if (remaining == 0) {
+                    // end of chunk stream
+                    line = HttpUtils.readResponseLine(in);
+                    if (!line.isEmpty()) {
+                        throw new IOException("End of chunk stream contains additional data: " + line);
+                    }
                     finished = true;
                     return -1;
                 }

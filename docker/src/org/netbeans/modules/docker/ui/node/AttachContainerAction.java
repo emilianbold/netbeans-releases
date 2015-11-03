@@ -72,7 +72,7 @@ public class AttachContainerAction extends AbstractContainerAction {
     @Override
     protected void performAction(DockerContainer container) throws DockerException {
         // FIXME may be it is not interactive
-        UiUtils.openTerminal(container, true, false);
+        UiUtils.openTerminal(container, null, true, false);
     }
 
     @Override
