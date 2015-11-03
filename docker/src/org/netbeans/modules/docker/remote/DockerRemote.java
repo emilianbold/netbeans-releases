@@ -69,8 +69,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -93,8 +91,6 @@ import org.openide.util.Pair;
 public class DockerRemote {
 
     private static final Logger LOGGER = Logger.getLogger(DockerRemote.class.getName());
-
-    private static final Pattern HTTP_RESPONSE_PATTERN = Pattern.compile("^HTTP/1\\.1 (\\d\\d\\d) (.*)$");
 
     private static final Set<Integer> START_STOP_CONTAINER_CODES = new HashSet<>();
 
@@ -252,18 +248,10 @@ public class DockerRemote {
             os.flush();
 
             InputStream is = s.getInputStream();
-            String response = HttpUtils.readResponseLine(is);
-            if (response == null) {
-                throw new DockerException("No response from server");
-            }
-            Matcher m = HTTP_RESPONSE_PATTERN.matcher(response);
-            if (!m.matches()) {
-                throw new DockerException("Wrong response from server");
-            }
-
-            int responseCode = Integer.parseInt(m.group(1));
+            Pair<Integer, String> response = HttpUtils.readResponse(is);
+            int responseCode = response.first();
             if (responseCode != 101 && responseCode != HttpURLConnection.HTTP_OK) {
-                throw new DockerRemoteException(responseCode, m.group(2));
+                throw new DockerRemoteException(responseCode, response.second());
             }
 
             boolean chunked = HttpUtils.isChunked(HttpUtils.parseHeaders(is));
@@ -419,18 +407,10 @@ public class DockerRemote {
             os.flush();
 
             InputStream is = s.getInputStream();
-            String response = HttpUtils.readResponseLine(is);
-            if (response == null) {
-                throw new DockerException("No response from server");
-            }
-            Matcher m = HTTP_RESPONSE_PATTERN.matcher(response);
-            if (!m.matches()) {
-                throw new DockerException("Wrong response from server");
-            }
-
-            int responseCode = Integer.parseInt(m.group(1));
+            Pair<Integer, String> response = HttpUtils.readResponse(is);
+            int responseCode = response.first();
             if (responseCode != 101 && responseCode != HttpURLConnection.HTTP_OK) {
-                throw new DockerRemoteException(responseCode, m.group(2));
+                throw new DockerRemoteException(responseCode, response.second());
             }
 
             boolean chunked = HttpUtils.isChunked(HttpUtils.parseHeaders(is));
@@ -466,18 +446,9 @@ public class DockerRemote {
             os.flush();
 
             InputStream is = s.getInputStream();
-            String response = HttpUtils.readResponseLine(is);
-            if (response == null) {
-                throw new DockerException("No response from server");
-            }
-            Matcher m = HTTP_RESPONSE_PATTERN.matcher(response);
-            if (!m.matches()) {
-                throw new DockerException("Wrong response from server");
-            }
-
-            int responseCode = Integer.parseInt(m.group(1));
-            if (responseCode != HttpURLConnection.HTTP_CREATED) {
-                throw new DockerRemoteException(responseCode, m.group(2));
+            Pair<Integer, String> response = HttpUtils.readResponse(is);
+            if (response.first() != HttpURLConnection.HTTP_CREATED) {
+                throw new DockerRemoteException(response.first(), response.second());
             }
 
             Map<String, String> headers = HttpUtils.parseHeaders(is);
@@ -504,18 +475,9 @@ public class DockerRemote {
             os.write(("POST /containers/" + id + "/start HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
             os.flush();
 
-            response = HttpUtils.readResponseLine(is);
-            if (response == null) {
-                throw new DockerException("No response from server");
-            }
-            m = HTTP_RESPONSE_PATTERN.matcher(response);
-            if (!m.matches()) {
-                throw new DockerException("Wrong response from server");
-            }
-
-            responseCode = Integer.parseInt(m.group(1));
-            if (responseCode != HttpURLConnection.HTTP_NO_CONTENT) {
-                throw new DockerRemoteException(responseCode, m.group(2));
+            response = HttpUtils.readResponse(is);
+            if (response.first() != HttpURLConnection.HTTP_NO_CONTENT) {
+                throw new DockerRemoteException(response.first(), response.second());
             }
 
             return Pair.of(container, r);

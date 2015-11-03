@@ -47,12 +47,17 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.openide.util.Pair;
 
 /**
  *
  * @author Petr Hejl
  */
 public final class HttpUtils {
+
+    private static final Pattern HTTP_RESPONSE_PATTERN = Pattern.compile("^HTTP/1\\.1 (\\d\\d\\d) (.*)$");
 
     private HttpUtils() {
         super();
@@ -77,6 +82,20 @@ public final class HttpUtils {
             }
         }
         return null;
+    }
+
+    public static Pair<Integer, String> readResponse(InputStream is) throws IOException {
+        String response = HttpUtils.readResponseLine(is);
+        if (response == null) {
+            throw new IOException("No response from server");
+        }
+        Matcher m = HTTP_RESPONSE_PATTERN.matcher(response);
+        if (!m.matches()) {
+            throw new IOException("Wrong response from server");
+        }
+
+        int responseCode = Integer.parseInt(m.group(1));
+        return Pair.of(responseCode, m.group(2));
     }
 
     public static Map<String, String> parseHeaders(InputStream is) throws IOException {
