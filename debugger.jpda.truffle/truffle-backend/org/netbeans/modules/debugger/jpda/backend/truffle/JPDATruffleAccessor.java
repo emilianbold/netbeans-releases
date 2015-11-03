@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.debug.Breakpoint;
 import com.oracle.truffle.api.debug.Debugger;
@@ -143,15 +142,6 @@ public class JPDATruffleAccessor extends Object {
         }
     }
     
-    /*
-    static JPDATruffleDebugManager setUpDebugManager() {
-        if (debugManager == null) {
-            debugManager = JPDATruffleDebugManager.setUp();
-        }
-        return debugManager;
-    }*/
-    
-    //static JPDATruffleDebugManager setUpDebugManagerFor(ScriptEngine engine) {
     static JPDATruffleDebugManager setUpDebugManagerFor(/*ExecutionEvent*/Object event, boolean doStepInto) {
         ExecutionEvent execEvent = (ExecutionEvent) event;
         Debugger debugger = execEvent.getDebugger();
@@ -211,7 +201,6 @@ public class JPDATruffleAccessor extends Object {
             case 2: evt.prepareStepOver(1);
                     break;
             case 3: evt.prepareStepOut();
-                    //System.err.println("Successful step out = "+success);
                     break;
             default:
                     throw new IllegalStateException("Unknown step command: "+stepCmd);
@@ -550,27 +539,6 @@ public class JPDATruffleAccessor extends Object {
         ((Breakpoint) br).dispose();
     }
     
-    /*
-    static String evaluateToStr(String expression) {
-        //System.err.println("evaluate("+expression+")");
-        final Source source = Source.fromText(expression, "EVAL");
-        Object value;
-        try {
-            value = debugManager.eval(source);
-        } catch (DebugException ex) {
-            return "> "+ex.getLocalizedMessage()+" <";
-        }
-        //System.err.println("  value = "+value);
-        if (value == null) {
-            return null;
-        }
-        Visualizer visualizer = debugManager.getVisualizer();
-        String strValue = visualizer.displayValue(value, TruffleObject.DISPLAY_TRIM);
-        //System.err.println("evaluate("+expression+") = "+strValue);
-        return strValue;
-    }
-    */
-    
     static Object evaluate(/*SuspendedEvent*/Object suspendedEvent, Object frameInstance, String expression) {
         //System.err.println("evaluate("+expression+")");
         SuspendedEvent evt = (SuspendedEvent) suspendedEvent;
@@ -598,30 +566,6 @@ public class JPDATruffleAccessor extends Object {
         TruffleObject to = new TruffleObject(visualizer, strValue, value);
         return to;
     }
-    
-    /*
-    static Object evaluate(String expression, Object frameInstance) {
-        FrameInstance fi = (FrameInstance) frameInstance;
-        MaterializedFrame frame = fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true).materialize();
-        final Source source = Source.fromText(expression, "EVAL");
-        Node node = fi.getCallNode();
-        DebugSupportProvider dsp = getDebugSupport(node);
-        Visualizer visualizer = dsp.getVisualizer();
-        Object value;
-        try {
-            value = dsp.evalInContext(source, node, frame);
-            //value = debugManager.getDebugger().eval(source, fi.getCallNode(), frame);
-        } catch (DebugSupportException ex) {
-            return new TruffleObject(visualizer, ex.getLocalizedMessage(), ex);
-        }
-        if (value == null) {
-            return null;
-        }
-        String strValue = visualizer.displayValue(value, TruffleObject.DISPLAY_TRIM);
-        TruffleObject to = new TruffleObject(visualizer, strValue, value);
-        return to;
-    }
-    */
     
     static Object[] getFrameSlots(FrameInstance frameInstance) {
         FrameInstance fi = (FrameInstance) frameInstance;
