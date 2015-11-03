@@ -138,10 +138,10 @@ public final class HttpUtils {
         return value != null && value.contains("chunked"); // NOI18N
     }
 
-    public static int getLength(Map<String, String> headers)  throws IOException {
+    public static Integer getLength(Map<String, String> headers)  throws IOException {
         String value = headers.get("CONTENT-LENGTH"); // NOI18N
         if (value == null) {
-            return 0;
+            return null;
         }
         try {
             return Integer.parseInt(value);

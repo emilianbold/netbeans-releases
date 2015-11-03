@@ -327,7 +327,7 @@ public final class UiUtils {
                 IOConnect.disconnectAll(io, null);
             }
             //IOTerm.disconnect(io, null);
-            LOGGER.log(Level.INFO, "Closing terminal", new Exception());
+            //LOGGER.log(Level.INFO, "Closing terminal", new Exception());
         }
     }
 

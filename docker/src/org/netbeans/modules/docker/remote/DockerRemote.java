@@ -415,11 +415,30 @@ public class DockerRemote {
                 throw new DockerRemoteException(responseCode, response.second());
             }
 
-            boolean chunked = HttpUtils.isChunked(HttpUtils.parseHeaders(is));
+            Map<String, String> headers = HttpUtils.parseHeaders(is);
+            boolean chunked = HttpUtils.isChunked(headers);
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
-            return new LogResult(s, info.isTty() ? new DirectFetcher(is) : new Demuxer(is));
+
+            StreamItem.Fetcher fetcher;
+            Integer length = HttpUtils.getLength(headers);
+            // if there was no log it may return just standard reply with content length 0
+            if (length != null && length == 0) {
+                assert !chunked;
+                LOGGER.log(Level.INFO, "Empty logs");
+                fetcher = new StreamItem.Fetcher() {
+                    @Override
+                    public StreamItem fetch() {
+                        return null;
+                    }
+                };
+            } else if (info.isTty()) {
+                fetcher = new DirectFetcher(is);
+            } else {
+                fetcher = new Demuxer(is);
+            }
+            return new LogResult(s, fetcher);
         } catch (MalformedURLException e) {
             closeSocket(s);
             throw new DockerException(e);
@@ -454,7 +473,8 @@ public class DockerRemote {
             }
 
             Map<String, String> headers = HttpUtils.parseHeaders(is);
-            int length = HttpUtils.getLength(headers);
+            Integer length = HttpUtils.getLength(headers);
+            assert length != null;
 
             boolean chunked = HttpUtils.isChunked(headers);
             if (chunked) {
