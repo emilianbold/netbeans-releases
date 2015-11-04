@@ -56,6 +56,7 @@ import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerHubImage;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerRemote;
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -141,7 +142,7 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         });
     }
 
-    public String getImageName() {
+    public String getImage() {
         String toPull;
         DockerHubImageItem selected = imageList.getSelectedValue();
         if (selected != null) {
@@ -185,7 +186,7 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
                 imageListScrollPane.setViewportView(messagePanel);
                 searchTerm.set(text);
                 searchTask.schedule(SEARCH_DELAY);
-                resultTextField.setText(getImageName());
+                resultTextField.setText(getImage());
             }
 
             repaint();
@@ -201,7 +202,7 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
                 return;
             }
             
-            resultTextField.setText(getImageName());
+            resultTextField.setText(getImage());
         }
     }
 

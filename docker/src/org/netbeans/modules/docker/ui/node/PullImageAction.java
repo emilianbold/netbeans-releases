@@ -98,7 +98,7 @@ public class PullImageAction extends NodeAction {
                 dlg.setVisible(true);
 
                 if (descriptor.getValue() == pullButton) {
-                    perform(instance, panel.getImageName());
+                    perform(instance, panel.getImage());
                 }
             } finally {
                 if (dlg != null) {
@@ -112,14 +112,12 @@ public class PullImageAction extends NodeAction {
         "# {0} - image name",
         "MSG_Pulling=Pulling {0}"
     })
-    private void perform(final DockerInstance instance, final String imageName) {
+    private void perform(final DockerInstance instance, final String image) {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                String toPull = imageName;
-
-                final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Pulling(toPull), false);
-                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Pulling(toPull), new AbstractAction() {
+                final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Pulling(image), false);
+                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Pulling(image), new AbstractAction() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         io.select();
@@ -130,7 +128,7 @@ public class PullImageAction extends NodeAction {
                     io.getOut().reset();
                     io.select();
                     DockerRemote facade = new DockerRemote(instance);
-                    facade.pull(toPull, new PullOutputListener(io), null);
+                    facade.pull(image, new PullOutputListener(io), null);
                 } catch (DockerException ex) {
                     io.getErr().println(ex.getMessage());
                 } catch (IOException ex) {
