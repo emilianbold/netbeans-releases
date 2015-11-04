@@ -58,7 +58,8 @@ public class DockerEvent extends EventObject {
 
         // container events for API 1.21: attach, commit, copy, create, destroy, die, exec_create, exec_start, export, kill, oom, pause, rename, resize, restart, start, stop, top, unpause
         ATTACH("attach", true),
-        COMMIT("commit", true),
+        // commit is technically container event, but it creates image
+        COMMIT("commit", false),
         COPY("copy", true),
         CREATE("create", true),
         DESTROY("destroy", true),

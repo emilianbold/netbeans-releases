@@ -59,7 +59,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -158,7 +157,7 @@ public class DockerRemote {
 
         try {
             JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
-                    "/images/search?term=" + URLEncoder.encode(searchTerm, "UTF-8"), Collections.singleton(HttpURLConnection.HTTP_OK));
+                    "/images/search?term=" + HttpUtils.encodeParameter(searchTerm), Collections.singleton(HttpURLConnection.HTTP_OK));
             List<DockerHubImage> ret = new ArrayList<>(value.size());
             for (Object o : value) {
                 JSONObject json = (JSONObject) o;
@@ -185,6 +184,52 @@ public class DockerRemote {
             // FIXME image id
             return instance.getContainerFactory().create((String) value.get("Id"),
                     (String) configuration.get("Image"), ContainerStatus.STOPPED);
+        } catch (UnsupportedEncodingException ex) {
+            throw new DockerException(ex);
+        }
+    }
+
+    public DockerImage commitContainer(DockerContainer container, String repository, String tag,
+            String author, String message, boolean pause) throws DockerException {
+
+        if (repository == null && tag != null) {
+            throw new IllegalArgumentException("Repository can't be empty when using tag");
+        }
+
+        try {
+            StringBuilder action = new StringBuilder("/commit");
+            action.append("?");
+            action.append("container=").append(container.getId());
+            if (repository != null) {
+                action.append("&repo=").append(HttpUtils.encodeParameter(repository));
+                if (tag != null) {
+                    action.append("&tag=").append(HttpUtils.encodeParameter(tag));
+                }
+            }
+            if (author != null) {
+                action.append("&author=").append(HttpUtils.encodeParameter(author));
+            }
+            if (message != null) {
+                action.append("&comment=").append(HttpUtils.encodeParameter(message));
+            }
+            if (!pause) {
+                action.append("&pause=0");
+            }
+
+            JSONObject value = (JSONObject) doPostRequest(instance.getUrl(), action.toString(), null,
+                    true, Collections.singleton(HttpURLConnection.HTTP_CREATED));
+
+            String id = (String) value.get("Id");
+
+            // XXX we send it as older API does not have the commit event
+            instance.getEventBus().sendEvent(
+                    new DockerEvent(instance, DockerEvent.Status.COMMIT,
+                            id, container.getId(), System.currentTimeMillis() / 1000));
+
+            // FIXME image size and time parameters
+            return new DockerImage(instance, Collections.singletonList(tag), (String) value.get("Id"),
+                    System.currentTimeMillis() / 1000, 0, 0);
+
         } catch (UnsupportedEncodingException ex) {
             throw new DockerException(ex);
         }
@@ -225,6 +270,12 @@ public class DockerRemote {
         String id = DockerUtils.getTag(tag);
         JSONArray value = (JSONArray) doDeleteRequest(instance.getUrl(), "/images/" + id, true,
                 REMOVE_IMAGE_CODES);
+
+        // XXX to be precise we should emit DELETE event if we
+        // delete the last image, but for our purpose this is enough
+        instance.getEventBus().sendEvent(
+                new DockerEvent(instance, DockerEvent.Status.UNTAG,
+                        tag.getId(), null, System.currentTimeMillis() / 1000));
     }
 
     public void remove(DockerContainer container) throws DockerException {
@@ -288,7 +339,7 @@ public class DockerRemote {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL httpUrl = createURL(instance.getUrl(), "/images/create?fromImage=" + URLEncoder.encode(imageName, "UTF-8"));
+            URL httpUrl = createURL(instance.getUrl(), "/images/create?fromImage=" + HttpUtils.encodeParameter(imageName));
             HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
             try {
                 conn.setRequestMethod("POST");

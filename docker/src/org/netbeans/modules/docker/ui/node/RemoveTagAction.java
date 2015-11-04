@@ -74,11 +74,6 @@ public class RemoveTagAction extends NodeAction {
                         DockerInstance instance = tag.getImage().getInstance();
                         DockerRemote facade = new DockerRemote(instance);
                         facade.remove(tag);
-                        // XXX to be precise we should emit DELETE event if we
-                        // delete the last image, but for our purpose this is enough
-                        instance.getEventBus().sendEvent(
-                                new DockerEvent(instance, DockerEvent.Status.UNTAG,
-                                        tag.getId(), null, System.currentTimeMillis() / 1000));
                         return null;
                     }
                 }, null);

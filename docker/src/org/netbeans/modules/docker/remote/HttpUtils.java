@@ -44,6 +44,8 @@ package org.netbeans.modules.docker.remote;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -148,5 +150,9 @@ public final class HttpUtils {
         } catch (NumberFormatException ex) {
             throw new IOException("Wrong content length: " + value);
         }
+    }
+    
+    public static String encodeParameter(String value) throws UnsupportedEncodingException {
+        return URLEncoder.encode(value, "UTF-8");
     }
 }
