@@ -59,9 +59,9 @@ import org.openide.nodes.Node;
  *
  * @author Petr Hejl
  */
-public class DockerRepositoryChildFactory extends ChildFactory<DockerTag> implements Refreshable {
+public class DockerImagesChildFactory extends ChildFactory<DockerTag> implements Refreshable {
 
-    private static final Logger LOGGER = Logger.getLogger(DockerRepositoryChildFactory.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DockerImagesChildFactory.class.getName());
 
     private static final Comparator<DockerTag> COMPARATOR = new Comparator<DockerTag>() {
 
@@ -75,14 +75,14 @@ public class DockerRepositoryChildFactory extends ChildFactory<DockerTag> implem
 
     private DockerEvent lastEvent;
 
-    public DockerRepositoryChildFactory(DockerInstance instance) {
+    public DockerImagesChildFactory(DockerInstance instance) {
         this.instance = instance;
         instance.getEventBus().addImageListener(new DockerEvent.Listener() {
             @Override
             public void onEvent(DockerEvent event) {
                 if (DockerEvent.Status.PUSH != event.getStatus()) {
                     DockerEvent previous;
-                    synchronized (DockerRepositoryChildFactory.this) {
+                    synchronized (DockerImagesChildFactory.this) {
                         previous = lastEvent;
                         lastEvent = event;
                     }

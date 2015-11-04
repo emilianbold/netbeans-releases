@@ -53,12 +53,12 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Hejl
  */
-public class DockerRepositoryNode extends AbstractNode {
+public class DockerImagesNode extends AbstractNode {
 
     private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_instance.png"; // NOI18N
 
-    @NbBundle.Messages("LBL_Repository=Repository")
-    public DockerRepositoryNode(DockerInstance instance, DockerRepositoryChildFactory factory) {
+    @NbBundle.Messages("LBL_Repository=Images")
+    public DockerImagesNode(DockerInstance instance, DockerImagesChildFactory factory) {
         super(Children.create(factory, true), Lookups.fixed(instance, factory));
         setDisplayName(Bundle.LBL_Repository());
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);

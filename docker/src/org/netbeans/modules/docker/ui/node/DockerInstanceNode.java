@@ -77,9 +77,9 @@ public class DockerInstanceNode extends AbstractNode {
 
     private static Children.Array createChildren(DockerInstance instance) {
         Children.Array ret = new Children.Array();
-        DockerRepositoryChildFactory factoryRepo = new DockerRepositoryChildFactory(instance);
+        DockerImagesChildFactory factoryRepo = new DockerImagesChildFactory(instance);
         DockerContainersChildFactory factoryCont = new DockerContainersChildFactory(instance);
-        ret.add(new Node[] {new DockerRepositoryNode(instance, factoryRepo),
+        ret.add(new Node[] {new DockerImagesNode(instance, factoryRepo),
             new DockerContainersNode(instance, factoryCont)});
         return ret;
     }
