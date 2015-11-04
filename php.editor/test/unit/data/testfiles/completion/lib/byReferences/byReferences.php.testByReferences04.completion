@@ -1,0 +1,3 @@
+Code completion result for source line:
+function &my_sort2(arr|ay &$data) {
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)

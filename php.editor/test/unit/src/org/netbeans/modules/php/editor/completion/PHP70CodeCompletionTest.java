@@ -130,4 +130,49 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/scalarTypeHints.php", "function __construct(boo^l $arg) {", false);
     }
 
+    public void testReturnType01() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function current(): ^Comment;", false);
+    }
+
+    public void testReturnType02() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function current(): Comm^ent;", false);
+    }
+
+    public void testReturnType03() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &my_array_sort(array &$data): ^array {", false);
+    }
+
+    // XXX
+    public void testReturnType04() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &my_array_sort(array &$data): arr^ay {", false);
+    }
+
+    public void testReturnType05() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function foo(): ^Comment {", false);
+    }
+
+    public void testReturnType06() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function foo(): Comm^ent {", false);
+    }
+
+    public void testReturnType07() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): ^\\My\\Firm\\Comment {", false);
+    }
+
+    public void testReturnType08() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): \\^My\\Firm\\Comment {", false);
+    }
+
+    public void testReturnType09() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): \\My\\Fi^rm\\Comment {", false);
+    }
+
+    public void testReturnType10() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): \\My\\Firm\\^Comment {", false);
+    }
+
+    public void testReturnType11() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): \\My\\Firm\\Comm^ent {", false);
+    }
+
 }

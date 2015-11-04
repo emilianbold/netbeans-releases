@@ -686,21 +686,24 @@ final class CompletionContextFinder {
         boolean isNamespaceSeparator = false;
         boolean testCompletionSeparator = true;
         int orgOffset = tokenSequence.offset();
-        int leftPosition = -1;
         tokenSequence.moveNext();
         while (tokenSequence.movePrevious()) {
-            leftPosition++;
             Token<PHPTokenId> cToken = tokenSequence.token();
             PHPTokenId id = cToken.id();
             if (CTX_DELIMITERS.contains(id)) {
-                break;
+                // check reference character (&) [unfortunately, cannot distinguish & as a operator and as a reference mark]
+                if (!isReference(cToken)) {
+                    break;
+                }
             }
             if (!isFunctionDeclaration) {
                 if (!isCompletionSeparator && testCompletionSeparator) {
                     if (isEqualSign(cToken)) {
                         isCompletionSeparator = true;
                         contextForSeparator = CompletionContext.DEFAULT_PARAMETER_VALUE;
-                    } else if (isParamSeparator(cToken)) {
+                    } else if (isParamSeparator(cToken)
+                            || isReturnTypeSeparator(cToken)
+                            || isArray(token)) {
                         isCompletionSeparator = true;
                         contextForSeparator = CompletionContext.TYPE_NAME;
                     } else if (isAcceptedPrefix(cToken)) {
@@ -748,7 +751,7 @@ final class CompletionContextFinder {
     }
 
     private static boolean isReference(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "&".contentEquals(token.text()); //NOI18N
+        return token.id().equals(PHPTokenId.PHP_OPERATOR) && "&".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isLeftBracket(Token<PHPTokenId> token) {
@@ -765,6 +768,15 @@ final class CompletionContextFinder {
 
     private static boolean isParamSeparator(Token<PHPTokenId> token) {
         return isComma(token) || isLeftBracket(token); //NOI18N
+    }
+
+    private static boolean isReturnTypeSeparator(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_TOKEN)
+                && ":".contentEquals(token.text()); // NOI18N
+    }
+
+    private static boolean isArray(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_ARRAY);
     }
 
     private static boolean isAcceptedPrefix(Token<PHPTokenId> token) {
