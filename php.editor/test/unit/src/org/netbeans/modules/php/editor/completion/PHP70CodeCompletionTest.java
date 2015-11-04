@@ -142,7 +142,6 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &my_array_sort(array &$data): ^array {", false);
     }
 
-    // XXX
     public void testReturnType04() throws Exception {
         checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &my_array_sort(array &$data): arr^ay {", false);
     }

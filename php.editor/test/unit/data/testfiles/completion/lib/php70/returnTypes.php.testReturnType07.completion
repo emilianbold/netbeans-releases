@@ -10,6 +10,7 @@ CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
 CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
+KEYWORD    array                                      null
 KEYWORD    bool                                       null
 KEYWORD    callable                                   null
 KEYWORD    float                                      null

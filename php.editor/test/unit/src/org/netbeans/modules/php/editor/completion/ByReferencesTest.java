@@ -78,7 +78,6 @@ public class ByReferencesTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort2(^array &$data) {", false);
     }
 
-    // xxx
     public void testByReferences04() throws Exception {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort2(arr^ay &$data) {", false);
     }
@@ -115,7 +114,6 @@ public class ByReferencesTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort7(^array &$data1, Collection &$data2) {", false);
     }
 
-    // XXX
     public void testByReferences13() throws Exception {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort7(ar^ray &$data1, Collection &$data2) {", false);
     }
@@ -132,7 +130,6 @@ public class ByReferencesTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function my_sort8(^array &$data1, Collection &$data2) {", false);
     }
 
-    // XXX
     public void testByReferences17() throws Exception {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function my_sort8(arr^ay &$data1, Collection &$data2) {", false);
     }
@@ -149,7 +146,6 @@ public class ByReferencesTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort9(^array $data1, Collection &$data2) {", false);
     }
 
-    // XXX
     public void testByReferences21() throws Exception {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort9(arr^ay $data1, Collection &$data2) {", false);
     }
@@ -166,7 +162,6 @@ public class ByReferencesTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort10(^array &$data1, Collection $data2) {", false);
     }
 
-    // XXX
     public void testByReferences25() throws Exception {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort10(arr^ay &$data1, Collection $data2) {", false);
     }
@@ -183,7 +178,6 @@ public class ByReferencesTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function my_sort11(^array $data1, Collection &$data2) {", false);
     }
 
-    // XXX
     public void testByReferences29() throws Exception {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function my_sort11(arr^ay $data1, Collection &$data2) {", false);
     }
@@ -200,7 +194,6 @@ public class ByReferencesTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort12(^array $data1, Collection $data2) {", false);
     }
 
-    // XXX
     public void testByReferences33() throws Exception {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort12(arr^ay $data1, Collection $data2) {", false);
     }

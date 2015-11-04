@@ -6,6 +6,7 @@ CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php
 CLASS      InstanceOfFoo                   [PUBLIC]   issue204958.php
 ------------------------------------
+KEYWORD    array                                      null
 KEYWORD    bool                                       null
 KEYWORD    callable                                   null
 KEYWORD    float                                      null

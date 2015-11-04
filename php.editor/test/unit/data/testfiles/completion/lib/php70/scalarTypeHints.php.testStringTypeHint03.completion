@@ -10,6 +10,7 @@ CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 PACKAGE    Firm                            [PUBLIC]   My
 CLASS      Comment                         [PUBLIC]   My\Firm
 CLASS      CommentsIterator                [PUBLIC]   My\Firm
+KEYWORD    array                                      null
 KEYWORD    bool                                       null
 KEYWORD    callable                                   null
 KEYWORD    float                                      null
