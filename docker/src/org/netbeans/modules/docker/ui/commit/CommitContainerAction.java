@@ -92,7 +92,8 @@ public class CommitContainerAction extends NodeAction {
                 dlg.setVisible(true);
 
                 if (descriptor.getValue() == commitButton) {
-                    perform(container, null, null, null, null, true);
+                    perform(container, panel.getRepository(), panel.getTag(),
+                            panel.getAuthor(), panel.getMessage(), panel.isPause());
                 }
             } finally {
                 if (dlg != null) {

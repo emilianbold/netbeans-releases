@@ -55,7 +55,9 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.docker.DockerContainer;
@@ -93,6 +95,31 @@ public final class UiUtils {
 
     private UiUtils() {
         super();
+    }
+
+    public static String getValue(Object o) {
+        if (o == null) {
+            return null;
+        }
+        if (o instanceof JTextComponent) {
+            return getValue((JTextComponent) o);
+        }
+        return getValue(o.toString());
+    }
+
+    public static String getValue(JTextComponent c) {
+        return getValue(c.getText());
+    }
+
+    public static String getValue(String str) {
+        String value = str;
+        if (value != null) {
+            value = value.trim();
+            if (value.isEmpty()) {
+                return null;
+            }
+        }
+        return value;
     }
 
     public static void performRemoteAction(final String displayName, final Callable<Void> action, final Runnable eventFinish) {
