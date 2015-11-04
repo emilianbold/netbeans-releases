@@ -42,21 +42,14 @@
 package org.netbeans.modules.docker.ui.commit;
 
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.DockerContainer;
-import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.ui.pull.DockerHubSearchPanel;
-import org.netbeans.modules.docker.ui.pull.PullOutputListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -65,8 +58,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 
 /**
  *
