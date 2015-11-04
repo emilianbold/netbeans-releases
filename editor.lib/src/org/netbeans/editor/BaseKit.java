@@ -88,6 +88,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.AbstractDocument;
+import static javax.swing.text.DefaultEditorKit.selectionBackwardAction;
+import static javax.swing.text.DefaultEditorKit.selectionDownAction;
+import static javax.swing.text.DefaultEditorKit.selectionForwardAction;
+import static javax.swing.text.DefaultEditorKit.selectionUpAction;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import javax.swing.text.View;
@@ -108,6 +112,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.api.editor.NavigationHistory;
+import org.netbeans.editor.BaseCaret.EditorCaretData;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
@@ -1120,7 +1125,8 @@ public class BaseKit extends DefaultEditorKit {
                     }
 
                     try {
-                    final Position insertionOffset = doc.createPosition(computeInsertionOffset(target.getCaret()), Position.Bias.Backward);
+                        for (BaseCaret.EditorCaretData caret : ((BaseCaret)target.getCaret()).getCarets()) {
+                    final Position insertionOffset = doc.createPosition(computeInsertionOffset(caret), Position.Bias.Backward);
                     String replacedText = "";
                     if (Utilities.isSelectionShowing(target.getCaret())) {
                         int p0 = Math.min(target.getCaret().getDot(), target.getCaret().getMark());
@@ -1179,6 +1185,7 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     } finally {
                         transaction.close();
+                    }
                     }
                     } catch (BadLocationException ble) {
                         LOG.log(Level.FINE, null, ble);
@@ -1302,12 +1309,12 @@ public class BaseKit extends DefaultEditorKit {
             }
         }
 
-        private int computeInsertionOffset(Caret caret) {
-            if (Utilities.isSelectionShowing(caret)) {
-                return Math.min(caret.getMark(), caret.getDot());
-            } else {
+        private int computeInsertionOffset(EditorCaretData caret) {
+//            if (Utilities.isSelectionShowing(caret)) {
+//                return Math.min(caret.getMark(), caret.getDot());
+//            } else {
                 return caret.getDot();
-            }
+//            }
         }
     } // End of DefaultKeyTypedAction class
 
@@ -2216,8 +2223,42 @@ public class BaseKit extends DefaultEditorKit {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
+                Caret caret = target.getCaret();
+                if(caret instanceof BaseCaret) {
+                    BaseCaret baseCaret = (BaseCaret) caret;
+                    for (EditorCaretData editorCaret : baseCaret.getCarets()) {
+                        try {
+                            int dot = editorCaret.getDot();
+                            Point p = caret.getMagicCaretPosition();
+                            if (p == null) {
+                                Rectangle r = target.modelToView(dot);
+                                if (r != null) {
+                                    p = new Point(r.x, r.y);
+                                    caret.setMagicCaretPosition(p);
+                                } else {
+                                    return; // model to view failed
+                                }
+                            }
+                            try {
+                                dot = Utilities.getPositionAbove(target, dot, p.x);
+                                boolean select = selectionUpAction.equals(getValue(Action.NAME));
+                                if (select) {
+                                    editorCaret.moveDot(dot);
+                                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                        baseCaret.updateRectangularUpDownSelection();
+                                    }
+                                } else {
+                                    editorCaret.setDot(dot);
+                                }
+                            } catch (BadLocationException e) {
+                                // the position stays the same
+                            }
+                        } catch (BadLocationException ex) {
+                            target.getToolkit().beep();
+                        }
+                    }
+                } else {
                 try {
-                    Caret caret = target.getCaret();
                     int dot = caret.getDot();
                     Point p = caret.getMagicCaretPosition();
                     if (p == null) {
@@ -2249,6 +2290,7 @@ public class BaseKit extends DefaultEditorKit {
                     target.getToolkit().beep();
                 }
             }
+            }
         }
     }
 
@@ -2266,8 +2308,42 @@ public class BaseKit extends DefaultEditorKit {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
+                Caret caret = target.getCaret();
+                if (caret instanceof BaseCaret) {
+                    BaseCaret baseCaret = (BaseCaret) caret;
+                    for (EditorCaretData editorCaret : baseCaret.getCarets()) {
+                    try {
+                        int dot = editorCaret.getDot();
+                        Point p = caret.getMagicCaretPosition();
+                        if (p == null) {
+                            Rectangle r = target.modelToView(dot);
+                            if (r != null) {
+                                p = new Point(r.x, r.y);
+                                caret.setMagicCaretPosition(p);
+                            } else {
+                                return; // model to view failed
+                            }
+                        }
+                        try {
+                            dot = Utilities.getPositionBelow(target, dot, p.x);
+                            boolean select = selectionDownAction.equals(getValue(Action.NAME));
+                            if (select) {
+                                editorCaret.moveDot(dot);
+                                if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                    baseCaret.updateRectangularUpDownSelection();
+                                }
+                            } else {
+                                editorCaret.setDot(dot);
+                            }
+                        } catch (BadLocationException e) {
+                            // position stays the same
+                        }
+                    } catch (BadLocationException ex) {
+                        target.getToolkit().beep();
+                    }
+                    }
+                } else {
                 try {
-                    Caret caret = target.getCaret();
                     int dot = caret.getDot();
                     Point p = caret.getMagicCaretPosition();
                     if (p == null) {
@@ -2297,6 +2373,7 @@ public class BaseKit extends DefaultEditorKit {
                     }
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
+                }
                 }
             }
         }
@@ -2424,6 +2501,40 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
+                if (caret instanceof BaseCaret) {
+                    BaseCaret baseCaret = (BaseCaret) caret;
+                    for (EditorCaretData editorCaret : baseCaret.getCarets()) {
+                        try {
+                            int pos;
+                            boolean select = selectionForwardAction.equals(getValue(Action.NAME));
+                            if (!select && Utilities.isSelectionShowing(caret)) {
+                                pos = target.getSelectionEnd();
+                                if (pos != editorCaret.getDot()) {
+                                    pos--;
+                                } else {
+                                    // clear the selection, but do not move the cursor
+                                    editorCaret.setDot(pos);
+                                    return;
+                                }
+                            } else {
+                                pos = editorCaret.getDot();
+                            }
+                            int dot = target.getUI().getNextVisualPositionFrom(target,
+                                    pos, Position.Bias.Forward, SwingConstants.EAST, null);
+                            if (select) {
+                                if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                    ((BaseCaret) caret).extendRectangularSelection(true, false);
+                                } else {
+                                    editorCaret.moveDot(dot);
+                                }
+                            } else {
+                                editorCaret.setDot(dot);
+                            }
+                        } catch (BadLocationException ex) {
+                            target.getToolkit().beep();
+                        }
+                    }
+                } else {
                 try {
                     int pos;
                     boolean select = selectionForwardAction.equals(getValue(Action.NAME));
@@ -2454,6 +2565,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
+            }
             }
         }
     }
@@ -2565,45 +2677,74 @@ public class BaseKit extends DefaultEditorKit {
     })
     public static class BackwardAction extends LocalBaseAction {
 
-        static final long serialVersionUID =-3048379822817847356L;
+        static final long serialVersionUID = -3048379822817847356L;
 
         public BackwardAction() {
             super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
-                  | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
+                    | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
-                try {
-                    int pos;
-                    boolean select = selectionBackwardAction.equals(getValue(Action.NAME));
-                    if (!select && Utilities.isSelectionShowing(caret))
-                    {
-                        pos = target.getSelectionStart(); 
-                        if (pos != caret.getDot()) {
-                            pos++;
-                        } else {
-                            // clear the selection, but do not move the cursor
-                            caret.setDot(pos);
-                            return;
+                if(caret instanceof BaseCaret) {
+                    for (EditorCaretData editorCaret : ((BaseCaret) caret).getCarets()) {
+                        try {
+                            int pos;
+                            boolean select = selectionBackwardAction.equals(getValue(Action.NAME));
+                            if (!select && Utilities.isSelectionShowing(caret)) {
+                                pos = target.getSelectionStart();
+                                if (pos != editorCaret.getDot()) {
+                                    pos++;
+                                } else {
+                                    // clear the selection, but do not move the cursor
+                                    editorCaret.setDot(pos);
+                                    return;
+                                }
+                            } else {
+                                pos = editorCaret.getDot();
+                            }
+                            int dot = target.getUI().getNextVisualPositionFrom(target,
+                                    pos, Position.Bias.Backward, SwingConstants.WEST, null);
+                            if (select) {
+                                editorCaret.moveDot(dot);
+                            } else {
+                                editorCaret.setDot(dot);
+                            }
+                        } catch (BadLocationException ex) {
+                            target.getToolkit().beep();
                         }
                     }
-                    else
-                        pos = caret.getDot();
-                    int dot = target.getUI().getNextVisualPositionFrom(target,
-                              pos, Position.Bias.Backward, SwingConstants.WEST, null);
-                    if (select) {
-                        if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                            ((BaseCaret)caret).extendRectangularSelection(false, false);
+                } else {
+                    try {
+                        int pos;
+                        boolean select = selectionBackwardAction.equals(getValue(Action.NAME));
+                        if (!select && Utilities.isSelectionShowing(caret)) {
+                            pos = target.getSelectionStart();
+                            if (pos != caret.getDot()) {
+                                pos++;
+                            } else {
+                                // clear the selection, but do not move the cursor
+                                caret.setDot(pos);
+                                return;
+                            }
                         } else {
-                            caret.moveDot(dot);
+                            pos = caret.getDot();
                         }
-                    } else {
-                        caret.setDot(dot);
+                        int dot = target.getUI().getNextVisualPositionFrom(target,
+                                pos, Position.Bias.Backward, SwingConstants.WEST, null);
+                        if (select) {
+                            if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                                ((BaseCaret) caret).extendRectangularSelection(false, false);
+                            } else {
+                                caret.moveDot(dot);
+                            }
+                        } else {
+                            caret.setDot(dot);
+                        }
+                    } catch (BadLocationException ex) {
+                        target.getToolkit().beep();
                     }
-                } catch (BadLocationException ex) {
-                    target.getToolkit().beep();
                 }
             }
         }
