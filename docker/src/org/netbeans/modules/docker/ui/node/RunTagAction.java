@@ -50,7 +50,6 @@ import java.util.List;
 import javax.swing.JComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.remote.DockerRemote;
@@ -160,11 +159,8 @@ public class RunTagAction extends NodeAction {
                         config.put("AttachStdout", true);
                         config.put("AttachStderr", true);
                         Pair<DockerContainer, StreamResult> result = remote.run(config);
-                        //remote.start(container);
 
-                        if (tty || interactive) {
-                            UiUtils.openTerminal(result.first(), result.second(), interactive, true);
-                        }
+                        UiUtils.openTerminal(result.first(), result.second(), interactive, true);
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }
