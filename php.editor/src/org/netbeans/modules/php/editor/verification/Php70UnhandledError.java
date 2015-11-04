@@ -52,6 +52,7 @@ import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
@@ -132,18 +133,21 @@ public class Php70UnhandledError extends UnhandledErrorRule {
         @Override
         public void visit(FunctionDeclaration node) {
             checkScalarTypes(node.getFormalParameters());
+            checkReturnType(node.getReturnType());
             super.visit(node);
         }
 
         @Override
         public void visit(MethodDeclaration node) {
             checkScalarTypes(node.getFunction().getFormalParameters());
+            checkReturnType(node.getFunction().getReturnType());
             super.visit(node);
         }
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
             checkScalarTypes(node.getFormalParameters());
+            checkReturnType(node.getReturnType());
         }
 
         private void checkScalarTypes(List<FormalParameter> formalParameters) {
@@ -153,6 +157,12 @@ public class Php70UnhandledError extends UnhandledErrorRule {
                         && TYPES_FOR_SOURCES.contains(typeName)) {
                     createError(formalParameter);
                 }
+            }
+        }
+
+        private void checkReturnType(Expression returnType) {
+            if (returnType != null) {
+                createError(returnType);
             }
         }
 
