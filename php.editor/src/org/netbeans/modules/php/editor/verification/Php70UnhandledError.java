@@ -148,6 +148,7 @@ public class Php70UnhandledError extends UnhandledErrorRule {
         public void visit(LambdaFunctionDeclaration node) {
             checkScalarTypes(node.getFormalParameters());
             checkReturnType(node.getReturnType());
+            super.visit(node);
         }
 
         private void checkScalarTypes(List<FormalParameter> formalParameters) {
