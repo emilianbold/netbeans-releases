@@ -378,7 +378,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             case TYPE_NAME:
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteTypeNames(completionResult, request);
-                autoCompleteKeywords(completionResult, request, Type.getTypesForHints());
+                autoCompleteKeywords(completionResult, request, Type.getTypesForEditor());
                 break;
             case STRING:
                 // LOCAL VARIABLES

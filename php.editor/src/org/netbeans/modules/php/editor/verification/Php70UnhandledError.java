@@ -92,15 +92,16 @@ public class Php70UnhandledError extends UnhandledErrorRule {
 
     private static final class CheckVisitor extends DefaultVisitor {
 
-        private static final Set<String> TYPES_FOR_HINTS;
+        private static final Set<String> TYPES_FOR_SOURCES;
 
         private final List<VerificationError> errors = new ArrayList<>();
         private final FileObject fileObject;
 
 
         static {
-            TYPES_FOR_HINTS = Collections.synchronizedSet(new HashSet<>(Type.getTypesForHints()));
-            TYPES_FOR_HINTS.remove(Type.CALLABLE);
+            TYPES_FOR_SOURCES = Collections.synchronizedSet(new HashSet<>(Type.getTypesForEditor()));
+            TYPES_FOR_SOURCES.remove(Type.ARRAY);
+            TYPES_FOR_SOURCES.remove(Type.CALLABLE);
         }
 
 
@@ -149,7 +150,7 @@ public class Php70UnhandledError extends UnhandledErrorRule {
             for (FormalParameter formalParameter : formalParameters) {
                 String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
                 if (typeName != null
-                        && TYPES_FOR_HINTS.contains(typeName)) {
+                        && TYPES_FOR_SOURCES.contains(typeName)) {
                     createError(formalParameter);
                 }
             }
