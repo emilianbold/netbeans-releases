@@ -206,4 +206,12 @@ public class ByReferencesTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort12(array $data1, Colle^ction $data2) {", false);
     }
 
+    public void testByReferences36() throws Exception {
+        checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort13(array &$data1, ^Collection &...$data2) {", false);
+    }
+
+    public void testByReferences37() throws Exception {
+        checkCompletion("testfiles/completion/lib/byReferences/byReferences.php", "function &my_sort13(array &$data1, Coll^ection &...$data2) {", false);
+    }
+
 }
