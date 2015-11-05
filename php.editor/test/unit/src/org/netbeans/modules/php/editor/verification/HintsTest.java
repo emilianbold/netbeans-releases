@@ -69,6 +69,38 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHint.php");
     }
 
+    public void testImplementAbstractMethodsHintFix_01() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Extendin^gClass1", "Implement");
+    }
+
+    public void testImplementAbstractMethodsHintFix_02() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Extendin^gClass2", "Implement");
+    }
+
+    public void testImplementAbstractMethodsHintFix_03() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Extendin^gClass3", "Implement");
+    }
+
+    public void testImplementAbstractMethodsHintFix_04() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Extendin^gClass4", "Implement");
+    }
+
+    public void testImplementAbstractMethodsHintFix_05() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Extendin^gClass5", "Implement");
+    }
+
+    public void testImplementAbstractMethodsHintFix_06() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Implementi^ngClass", "Implement");
+    }
+
+    public void testImplementAbstractMethodsHintFix_07() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Extendin^gClass1", "Declare");
+    }
+
+    public void testImplementAbstractMethodsHintFix_08() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Implementi^ngClass", "Declare");
+    }
+
     public void testMethodRedeclarationHint() throws Exception {
         checkHints(new MethodRedeclarationHintError(), "testMethodRedeclarationHint.php");
     }
