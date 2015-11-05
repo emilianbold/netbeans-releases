@@ -468,6 +468,11 @@ METHOD     bar()                           [PUBLIC]   My\Firm
 METHOD     bar()                           [PUBLIC]   issue141999.php
 METHOD     bar()                           [PUBLIC]   issue200178.php
 METHOD     bar(Test &$t)                   [PUBLIC]   issue142024.php
+METHOD     baz($data)                      [PUBLIC]   My\Firm
+METHOD     bazz(&...$data)                 [PUBLIC]   My\Firm
+METHOD     bazz()                          [PUBLIC]   My\Firm
+METHOD     bazz()                          [PUBLIC]   My\Firm
+METHOD     bazz(...$data)                  [PUBLIC]   My\Firm
 METHOD     boolTypeHint(bool $arg)         [PUBLIC]   scalarTypeHints.php
 METHOD     callableTypeHint(callable $arg  [PUBLIC]   callableTypeHint.php
 METHOD     cfnc2()                         [PUBLIC]   Second
@@ -513,6 +518,8 @@ METHOD     my_sort1(Collection $data)      [PUBLIC]   byReferences.php
 METHOD     my_sort10(array &$data1, Colle  [PUBLIC]   byReferences.php
 METHOD     my_sort11(array $data1, Collec  [PUBLIC]   byReferences.php
 METHOD     my_sort12(array $data1, Collec  [PUBLIC]   byReferences.php
+METHOD     my_sort13(array &$data1)        [PUBLIC]   byReferences.php
+METHOD     my_sort13(array &$data1, Colle  [PUBLIC]   byReferences.php
 METHOD     my_sort2(array &$data)          [PUBLIC]   byReferences.php
 METHOD     my_sort3(MyClass &$data)        [PUBLIC]   byReferences.php
 METHOD     my_sort4($data)                 [PUBLIC]   byReferences.php
