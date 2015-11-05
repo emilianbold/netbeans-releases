@@ -68,6 +68,10 @@ public class Reference extends Expression {
         this(start, end, (Expression) classInstanciation);
     }
 
+    public Reference(int start, int end, Variadic variadic) {
+        this(start, end, (Expression) variadic);
+    }
+
     /**
      * Returns the expression of this expression statement.
      *

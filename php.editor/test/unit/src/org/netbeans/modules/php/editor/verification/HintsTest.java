@@ -393,6 +393,10 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53_OR_OLDER), "testArraySyntaxSuggestion.php", ")^; //huhu");
     }
 
+    public void testIssue248213() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testIssue248213.php", "function __construct(&...$f^oo) {");
+    }
+
     public void testIssue249306() throws Exception {
         checkHints(new InitializeFieldSuggestion(), "testIssue249306.php", "function __construct(...$f^oo) {");
     }

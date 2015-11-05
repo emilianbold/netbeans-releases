@@ -77,6 +77,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation.Operator;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.filesystems.FileObject;
@@ -446,7 +447,14 @@ public final class CodeUtils {
             paramName.append("&");
             Reference reference = (Reference) paramNameExpr;
 
-            if (reference.getExpression() instanceof Variable) {
+            Expression expression = reference.getExpression();
+            if (expression instanceof Variadic) {
+                Variadic variadic = (Variadic) expression;
+                paramName.append("..."); //NOI18N
+                expression = variadic.getExpression();
+            }
+
+            if (expression instanceof Variable) {
                 Variable var = (Variable) reference.getExpression();
 
                 if (var.isDollared()) {
