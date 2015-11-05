@@ -42,11 +42,15 @@
 package org.netbeans.modules.docker.ui.build;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
@@ -59,13 +63,15 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Petr Hejl
  */
 public class BuildImageAction extends NodeAction {
-    
+
     private static final Logger LOGGER = Logger.getLogger(CommitContainerAction.class.getName());
 
     @NbBundle.Messages({
@@ -110,15 +116,26 @@ public class BuildImageAction extends NodeAction {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_Building(buildContext));
+                final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Building(buildContext), false);
+                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Building(buildContext), new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        io.select();
+                    }
+                });
                 handle.start();
                 try {
+                    io.getOut().reset();
+                    io.select();
                     DockerRemote facade = new DockerRemote(instance);
-                    facade.build(new File(buildContext), dockerfile != null ? new File(dockerfile) : null);
+                    facade.build(new File(buildContext), dockerfile != null ? new File(dockerfile) : null,
+                            new BuildOutputListener(io));
                 } catch (DockerException ex) {
-                    // FIXME inform user
+                    io.getErr().println(ex.getMessage());
+                } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                 } finally {
+                    io.getOut().close();
                     handle.finish();
                 }
             }

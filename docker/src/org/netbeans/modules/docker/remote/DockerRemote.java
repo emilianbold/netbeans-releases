@@ -408,7 +408,11 @@ public class DockerRemote {
     }
 
     // this call is BLOCKING
-    public DockerImage build(@NonNull File buildContext, @NullAllowed File dockerfile) throws DockerException {
+    public DockerImage build(@NonNull File buildContext, @NullAllowed File dockerfile,
+            BuildEvent.Listener listener) throws DockerException {
+
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+
         if (!buildContext.isDirectory()) {
             throw new IllegalArgumentException("Build context has to be a directory");
         }
@@ -426,42 +430,54 @@ public class DockerRemote {
             URL url = createURL(instance.getUrl(), null);
             s = new Socket(url.getHost(), url.getPort());
 
-            OutputStream os = s.getOutputStream();
+            StringBuilder request = new StringBuilder();
+            request.append("POST /build");
             if (dockerfileName != null) {
-                os.write(("POST /build?dockerfile=" + dockerfileName + " HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
-            } else {
-                os.write(("POST /build HTTP/1.1\r\n"
-                        + "Transfer-Encoding: chunked\r\n"
-                        + "Content-Type: application/tar\r\n"
-                        + "Content-Encoding: gzip\r\n\r\n").getBytes("ISO-8859-1"));
+                request.append("?dockerfile=").append(HttpUtils.encodeParameter(dockerfileName));
             }
+            request.append(" HTTP/1.1\r\n");
+            request.append("Transfer-Encoding: chunked\r\n");
+            request.append("Content-Type: application/tar\r\n");
+            request.append("Content-Encoding: gzip\r\n\r\n");
+
+            OutputStream os = s.getOutputStream();
+            os.write(request.toString().getBytes("ISO-8859-1"));
             os.flush();
 
-
             ChunkedOutputStream cos = new ChunkedOutputStream(new BufferedOutputStream(os));
-            GZIPOutputStream gzos = new GZIPOutputStream(cos);
-            ArchiveOutputStream aos = new ArchiveStreamFactory().createArchiveOutputStream(
-                    ArchiveStreamFactory.TAR, gzos);
-
-            FileObject context = FileUtil.toFileObject(FileUtil.normalizeFile(buildContext));
-            for (Enumeration<? extends FileObject> e = context.getChildren(true); e.hasMoreElements(); ) {
-                FileObject child = e.nextElement();
-                if (child.isFolder()) {
-                    continue;
+            try {
+                GZIPOutputStream gzos = new GZIPOutputStream(cos);
+                try {
+                    ArchiveOutputStream aos = new ArchiveStreamFactory().createArchiveOutputStream(
+                            ArchiveStreamFactory.TAR, gzos);
+                    try {
+                        // FIXME exclude dockerignored files
+                        FileObject context = FileUtil.toFileObject(FileUtil.normalizeFile(buildContext));
+                        for (Enumeration<? extends FileObject> e = context.getChildren(true); e.hasMoreElements();) {
+                            FileObject child = e.nextElement();
+                            if (child.isFolder()) {
+                                continue;
+                            }
+                            TarArchiveEntry entry = new TarArchiveEntry(FileUtil.toFile(child),
+                                    FileUtil.getRelativePath(context, child));
+                            aos.putArchiveEntry(entry);
+                            try (InputStream is = new BufferedInputStream(child.getInputStream())) {
+                                FileUtil.copy(is, aos);
+                            }
+                            aos.closeArchiveEntry();
+                        }
+                    } finally {
+                        aos.finish();
+                        aos.flush();
+                    }
+                } finally {
+                    gzos.finish();
+                    gzos.flush();
                 }
-                TarArchiveEntry entry = new TarArchiveEntry(FileUtil.toFile(child), FileUtil.getRelativePath(context, child));
-                aos.putArchiveEntry(entry);
-                try (InputStream is = new BufferedInputStream(child.getInputStream())) {
-                    FileUtil.copy(is, aos);
-                }
-                aos.closeArchiveEntry();
+            } finally {
+                cos.finish();
+                cos.flush();
             }
-            aos.finish();
-            aos.flush();
-            gzos.finish();
-            gzos.flush();
-            cos.finish();
-            cos.flush();
 
             InputStream is = s.getInputStream();
             Pair<Integer, String> response = HttpUtils.readResponse(is);
@@ -475,11 +491,34 @@ public class DockerRemote {
                 is = new ChunkedInputStream(is);
             }
 
-            try (InputStreamReader r = new InputStreamReader(is, "UTF-8")) { // NOI18N
+            JSONParser parser = new JSONParser();
+            try (InputStreamReader r = new InputStreamReader(
+                    is, "UTF-8")) { // NOI18N
                 String line;
                 while ((line = readEventObject(r)) != null) {
-                    System.out.println("===" + line);
+                    JSONObject o = (JSONObject) parser.parse(line);
+                    String stream = (String) o.get("stream");
+                    if (stream != null) {
+                        listener.onEvent(new BuildEvent(instance, stream, false, null));
+                    } else {
+                        String error = (String) o.get("error");
+                        if (error != null) {
+                            BuildEvent.Error detail = null;
+                            JSONObject detailObj = (JSONObject) o.get("errorDetail");
+                            if (detailObj != null) {
+                                long code = ((Number) detailObj.getOrDefault("code", "0")).longValue();
+                                String mesage = (String) detailObj.get("message");
+                                detail = new BuildEvent.Error(code, mesage);
+                            }
+                            listener.onEvent(new BuildEvent(instance, error, true, detail));
+                        } else {
+                            LOGGER.log(Level.INFO, "Unknown event {0}", o);    
+                        }
+                    }
+                    parser.reset();
                 }
+            } catch (ParseException ex) {
+                throw new DockerException(ex);
             }
             return null;
         } catch (MalformedURLException e) {
