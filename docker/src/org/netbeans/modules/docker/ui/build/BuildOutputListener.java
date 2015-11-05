@@ -60,7 +60,7 @@ public class BuildOutputListener implements BuildEvent.Listener {
     public void onEvent(BuildEvent event) {
         if (event.isError()) {
             // FIXME should we display more details ?
-            io.getErr().print(event.getMessage());
+            io.getErr().println(event.getMessage());
         } else {
             io.getOut().println(event.getMessage());
         }

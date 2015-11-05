@@ -511,7 +511,7 @@ public class DockerRemote {
                     JSONObject o = (JSONObject) parser.parse(line);
                     String stream = (String) o.get("stream");
                     if (stream != null) {
-                        listener.onEvent(new BuildEvent(instance, stream, false, null));
+                        listener.onEvent(new BuildEvent(instance, stream.trim(), false, null));
                     } else {
                         String error = (String) o.get("error");
                         if (error != null) {

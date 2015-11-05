@@ -52,6 +52,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
+import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.remote.StreamResult;
 import org.netbeans.modules.docker.ui.run.ContainerCommandPanel;
@@ -152,7 +153,7 @@ public class RunTagAction extends NodeAction {
                         }
 
                         String[] parsed = Utilities.parseParameters((String) wiz.getProperty("command"));
-                        config.put("Image", tag.getTag());
+                        config.put("Image", DockerUtils.getTag(tag));
                         JSONArray cmdArray = new JSONArray();
                         cmdArray.addAll(Arrays.asList(parsed));
                         config.put("Cmd", cmdArray);
