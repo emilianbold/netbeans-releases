@@ -1629,6 +1629,16 @@ optional_class_type:classType is_variadic:isVariadic T_VARIABLE:var
 	RESULT = parameter;
 :}
 
+| optional_class_type:classType T_REFERENCE:ref T_ELLIPSIS:ell T_VARIABLE:var
+{:
+	int start = classType == null ? refleft : classTypeleft;
+	Variable v = new Variable(varleft, varright, var);
+	Variadic variadic = new Variadic(ellleft, varright, v);
+	Reference ref_var = new Reference (refleft, varright, variadic);
+	FormalParameter parameter = new FormalParameter(start, varright, classType, ref_var);
+	RESULT = parameter;
+:}
+
 | optional_class_type:classType is_variadic:isVariadic T_VARIABLE:var T_EQUAL static_scalar:scalar
 {:
 	int start = classType == null ? (isVariadic ? isVariadicleft : varleft) : classTypeleft;
