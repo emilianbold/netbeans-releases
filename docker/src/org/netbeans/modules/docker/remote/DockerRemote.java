@@ -58,8 +58,11 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.ProxySelector;
 import java.net.Socket;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -317,7 +320,7 @@ public class DockerRemote {
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
-            s = new Socket(url.getHost(), url.getPort());
+            s = createSocket(url);
 
             OutputStream os = s.getOutputStream();
             os.write(("POST /containers/" + container.getId()
@@ -361,7 +364,7 @@ public class DockerRemote {
 
         try {
             URL httpUrl = createURL(instance.getUrl(), "/images/create?fromImage=" + HttpUtils.encodeParameter(imageName));
-            HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
+            HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Accept", "application/json");
@@ -440,7 +443,7 @@ public class DockerRemote {
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
-            s = new Socket(url.getHost(), url.getPort());
+            s = createSocket(url);
 
             StringBuilder request = new StringBuilder();
             request.append("POST /build");
@@ -554,7 +557,7 @@ public class DockerRemote {
 
         try {
             URL httpUrl = createURL(instance.getUrl(), since != null ? "/events?since=" + since : "/events");
-            HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
+            HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Accept", "application/json");
@@ -607,7 +610,7 @@ public class DockerRemote {
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
-            s = new Socket(url.getHost(), url.getPort());
+            s = createSocket(url);
 
             OutputStream os = s.getOutputStream();
             os.write(("GET /containers/" + container.getId()
@@ -661,7 +664,7 @@ public class DockerRemote {
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
-            s = new Socket(url.getHost(), url.getPort());
+            s = createSocket(url);
 
             byte[] data = configuration.toJSONString().getBytes("UTF-8");
 
@@ -721,12 +724,12 @@ public class DockerRemote {
         }
     }
 
-    private static Object doGetRequest(@NonNull String url, @NonNull String action, Set<Integer> okCodes) throws DockerException {
+    private Object doGetRequest(@NonNull String url, @NonNull String action, Set<Integer> okCodes) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
             URL httpUrl = createURL(url, action);
-            HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
+            HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Accept", "application/json");
@@ -753,13 +756,13 @@ public class DockerRemote {
         }
     }
 
-    private static Object doPostRequest(@NonNull String url, @NonNull String action,
+    private Object doPostRequest(@NonNull String url, @NonNull String action,
             @NullAllowed InputStream data, boolean output, Set<Integer> okCodes) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
             URL httpUrl = createURL(url, action);
-            HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
+            HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
@@ -797,12 +800,12 @@ public class DockerRemote {
         }
     }
 
-    private static Object doDeleteRequest(@NonNull String url, @NonNull String action, boolean output, Set<Integer> okCodes) throws DockerException {
+    private Object doDeleteRequest(@NonNull String url, @NonNull String action, boolean output, Set<Integer> okCodes) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
             URL httpUrl = createURL(url, action);
-            HttpURLConnection conn = (HttpURLConnection) httpUrl.openConnection();
+            HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("DELETE");
                 conn.setRequestProperty("Accept", "application/json");
@@ -833,6 +836,25 @@ public class DockerRemote {
             throw new DockerException(e);
         } catch (IOException e) {
             throw new DockerException(e);
+        }
+    }
+
+    private Socket createSocket(URL url) throws IOException {
+        try {
+            Socket s = new Socket(ProxySelector.getDefault().select(url.toURI()).get(0));
+            s.connect(new InetSocketAddress(url.getHost(), url.getPort()));
+            return s;
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    private HttpURLConnection createConnection(URL url) throws IOException {
+        assert "http".equals(url.getProtocol()) || "https".equals(url.getProtocol()); // NOI18N
+        try {
+            return (HttpURLConnection) url.openConnection(ProxySelector.getDefault().select(url.toURI()).get(0));
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
         }
     }
 
