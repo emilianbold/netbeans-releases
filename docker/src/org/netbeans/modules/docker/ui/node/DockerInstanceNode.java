@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import org.netbeans.modules.docker.ui.pull.PullImageAction;
 import javax.swing.Action;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.ui.build.BuildImageAction;
