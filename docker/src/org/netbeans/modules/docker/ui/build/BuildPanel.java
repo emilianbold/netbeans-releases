@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.docker.ui.build;
 
+import org.netbeans.modules.docker.ui.UiUtils;
+
 /**
  *
  * @author Petr Hejl
@@ -53,6 +55,14 @@ public class BuildPanel extends javax.swing.JPanel {
     public BuildPanel() {
         initComponents();
     }
+    
+    public String getBuildContext() {
+        return UiUtils.getValue(contextTextField);
+    }
+    
+    public String getDockerfile() {
+        return UiUtils.getValue(dockerfileTextField);
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -63,19 +73,58 @@ public class BuildPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        contextLabel = new javax.swing.JLabel();
+        contextTextField = new javax.swing.JTextField();
+        browseContextButton = new javax.swing.JButton();
+        dcokerfileLabel = new javax.swing.JLabel();
+        dockerfileTextField = new javax.swing.JTextField();
+
+        org.openide.awt.Mnemonics.setLocalizedText(contextLabel, org.openide.util.NbBundle.getMessage(BuildPanel.class, "BuildPanel.contextLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(browseContextButton, org.openide.util.NbBundle.getMessage(BuildPanel.class, "BuildPanel.browseContextButton.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(dcokerfileLabel, org.openide.util.NbBundle.getMessage(BuildPanel.class, "BuildPanel.dcokerfileLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 500, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(contextLabel)
+                    .addComponent(dcokerfileLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(contextTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseContextButton))
+                    .addComponent(dockerfileTextField))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(contextLabel)
+                    .addComponent(contextTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseContextButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dcokerfileLabel)
+                    .addComponent(dockerfileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseContextButton;
+    private javax.swing.JLabel contextLabel;
+    private javax.swing.JTextField contextTextField;
+    private javax.swing.JLabel dcokerfileLabel;
+    private javax.swing.JTextField dockerfileTextField;
     // End of variables declaration//GEN-END:variables
 }

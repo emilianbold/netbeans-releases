@@ -39,51 +39,37 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.remote;
 
-import javax.swing.Action;
-import org.netbeans.modules.docker.DockerInstance;
-import org.netbeans.modules.docker.ui.build.BuildImageAction;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerInstanceNode extends AbstractNode {
+public class ChunkedOutputStream extends FilterOutputStream {
 
-    private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_instance.png"; // NOI18N
-
-    private final DockerInstance instance;
-
-    public DockerInstanceNode(DockerInstance instance) {
-        super(createChildren(instance), Lookups.fixed(instance));
-        this.instance = instance;
-        setDisplayName(instance.getDisplayName());
-        setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
+    public ChunkedOutputStream(OutputStream out) {
+        super(out);
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(PullImageAction.class),
-            null,
-            SystemAction.get(BuildImageAction.class),
-            null,
-            SystemAction.get(RemoveInstanceAction.class)
-        };
+    public void write(byte[] b, int off, int len) throws IOException {
+        out.write((Integer.toHexString(len) + "\r\n").getBytes("ISO-8859-1")); // NOI18N
+        out.write(b, off, len);
+        out.write("\r\n".getBytes("ISO-8859-1")); // NOI18N
     }
 
-    private static Children.Array createChildren(DockerInstance instance) {
-        Children.Array ret = new Children.Array();
-        DockerImagesChildFactory factoryRepo = new DockerImagesChildFactory(instance);
-        DockerContainersChildFactory factoryCont = new DockerContainersChildFactory(instance);
-        ret.add(new Node[] {new DockerImagesNode(instance, factoryRepo),
-            new DockerContainersNode(instance, factoryCont)});
-        return ret;
+    @Override
+    public void write(int b) throws IOException {
+        out.write("1\r\n".getBytes("ISO-8859-1")); // NOI18N
+        out.write(b);
+        out.write("\r\n".getBytes("ISO-8859-1")); // NOI18N
+    }
+
+    public void finish() throws IOException {
+        out.write("0\r\n\r\n".getBytes("ISO-8859-1")); // NOI18N
     }
 }

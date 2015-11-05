@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.remote;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import org.netbeans.modules.docker.DockerImage;
 import org.netbeans.modules.docker.DockerContainer;
@@ -48,6 +49,7 @@ import org.netbeans.modules.docker.DockerTag;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -62,13 +64,19 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 import javax.swing.SwingUtilities;
+import org.apache.commons.compress.archivers.ArchiveException;
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -80,6 +88,7 @@ import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.DockerHubImage;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 
@@ -396,6 +405,95 @@ public class DockerRemote {
         } catch (IOException e) {
             throw new DockerException(e);
        }
+    }
+
+    // this call is BLOCKING
+    public DockerImage build(@NonNull File buildContext, @NullAllowed File dockerfile) throws DockerException {
+        if (!buildContext.isDirectory()) {
+            throw new IllegalArgumentException("Build context has to be a directory");
+        }
+        if (dockerfile != null && !dockerfile.isFile()) {
+            throw new IllegalArgumentException("Dockerfile has to be a file");
+        }
+
+        String dockerfileName = null;
+        if (dockerfile != null) {
+            dockerfileName = dockerfile.getName();
+        }
+
+        Socket s = null;
+        try {
+            URL url = createURL(instance.getUrl(), null);
+            s = new Socket(url.getHost(), url.getPort());
+
+            OutputStream os = s.getOutputStream();
+            if (dockerfileName != null) {
+                os.write(("POST /build?dockerfile=" + dockerfileName + " HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
+            } else {
+                os.write(("POST /build HTTP/1.1\r\n"
+                        + "Transfer-Encoding: chunked\r\n"
+                        + "Content-Type: application/tar\r\n\r\n").getBytes("ISO-8859-1"));
+            }
+            os.flush();
+
+
+            ChunkedOutputStream cos = new ChunkedOutputStream(new BufferedOutputStream(os));
+            ArchiveOutputStream aos = new ArchiveStreamFactory().createArchiveOutputStream(
+                    ArchiveStreamFactory.TAR, cos);
+
+            FileObject context = FileUtil.toFileObject(FileUtil.normalizeFile(buildContext));
+            for (Enumeration<? extends FileObject> e = context.getChildren(true); e.hasMoreElements(); ) {
+                FileObject child = e.nextElement();
+                if (child.isFolder()) {
+                    continue;
+                }
+                TarArchiveEntry entry = new TarArchiveEntry(FileUtil.toFile(child), FileUtil.getRelativePath(context, child));
+                aos.putArchiveEntry(entry);
+                InputStream is = new BufferedInputStream(child.getInputStream());
+                try {
+                    FileUtil.copy(is, aos);
+                } finally {
+                    is.close();
+                }
+                aos.closeArchiveEntry();
+            }
+            aos.finish();
+            aos.flush();
+            cos.finish();
+            cos.flush();
+
+            InputStream is = s.getInputStream();
+            Pair<Integer, String> response = HttpUtils.readResponse(is);
+            int responseCode = response.first();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new DockerRemoteException(responseCode, response.second());
+            }
+
+            boolean chunked = HttpUtils.isChunked(HttpUtils.parseHeaders(is));
+            if (chunked) {
+                is = new ChunkedInputStream(is);
+            }
+
+            try (InputStreamReader r = new InputStreamReader(is, "UTF-8")) { // NOI18N
+                String line;
+                while ((line = readEventObject(r)) != null) {
+                    System.out.println("===" + line);
+                }
+            }
+            return null;
+        } catch (MalformedURLException e) {
+            closeSocket(s);
+            throw new DockerException(e);
+        } catch (ArchiveException e) {
+            closeSocket(s);
+            throw new DockerException(e);
+        } catch (IOException e) {
+            closeSocket(s);
+            throw new DockerException(e);
+        } catch (DockerException e) {
+            closeSocket(s);
+            throw e;
+        }
     }
 
     // this call is BLOCKING

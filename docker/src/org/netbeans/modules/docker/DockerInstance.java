@@ -141,6 +141,7 @@ public class DockerInstance {
                     LOGGER.log(Level.INFO, "Invalid Docker instance {0}", name);
                 }
             }
+            LOGGER.log(Level.FINE, "Loaded {0} Docker instances", instances.size());
         } catch (BackingStoreException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
