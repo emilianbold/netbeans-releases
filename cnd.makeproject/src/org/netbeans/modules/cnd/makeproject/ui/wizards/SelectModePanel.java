@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JFileChooser;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.api.project.Project;
@@ -113,6 +114,9 @@ public class SelectModePanel extends javax.swing.JPanel {
         initComponents();
         instructions.setEditorKit(new HTMLEditorKit());
         instructions.setBackground(instructionPanel.getBackground());
+        instructions.setForeground(instructionPanel.getForeground());
+        instructions.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+
         disableHostSensitiveComponents();
         refreshRunnable = new RefreshRunnable();
         refreshSourceFolderTask = RP2.create(refreshRunnable);

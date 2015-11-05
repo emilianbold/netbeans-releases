@@ -60,6 +60,7 @@ import java.net.URL;
 import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -328,6 +329,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         Mnemonics.setLocalizedText(jLabel1, this.firer.getCategoriesName());
         Mnemonics.setLocalizedText(jLabel2, this.firer.getTemplatesName());
         this.description.setEditorKit(new HTMLEditorKit());
+        description.setBackground(getBackground());
+        description.setForeground(getForeground());
+        description.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 
         // please wait node, see issue 52900
         pleaseWait = new AbstractNode (Children.LEAF) {
