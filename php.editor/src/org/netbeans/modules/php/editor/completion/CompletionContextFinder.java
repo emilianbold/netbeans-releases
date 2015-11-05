@@ -693,9 +693,9 @@ final class CompletionContextFinder {
             PHPTokenId id = cToken.id();
             if (first) {
                 first = false;
-                if (PHPTokenId.PHP_SEMICOLON.equals(id)) {
-                    // e.g. interface method like this (no prefix):
-                    // function current(): ^;
+                if (PHPTokenId.PHP_SEMICOLON.equals(id)
+                        || PHPTokenId.PHP_CURLY_OPEN.equals(id)) {
+                    // return type right before ";" or "{":
                     continue;
                 }
             }
