@@ -432,14 +432,16 @@ public class DockerRemote {
             } else {
                 os.write(("POST /build HTTP/1.1\r\n"
                         + "Transfer-Encoding: chunked\r\n"
-                        + "Content-Type: application/tar\r\n\r\n").getBytes("ISO-8859-1"));
+                        + "Content-Type: application/tar\r\n"
+                        + "Content-Encoding: gzip\r\n\r\n").getBytes("ISO-8859-1"));
             }
             os.flush();
 
 
             ChunkedOutputStream cos = new ChunkedOutputStream(new BufferedOutputStream(os));
+            GZIPOutputStream gzos = new GZIPOutputStream(cos);
             ArchiveOutputStream aos = new ArchiveStreamFactory().createArchiveOutputStream(
-                    ArchiveStreamFactory.TAR, cos);
+                    ArchiveStreamFactory.TAR, gzos);
 
             FileObject context = FileUtil.toFileObject(FileUtil.normalizeFile(buildContext));
             for (Enumeration<? extends FileObject> e = context.getChildren(true); e.hasMoreElements(); ) {
@@ -449,16 +451,15 @@ public class DockerRemote {
                 }
                 TarArchiveEntry entry = new TarArchiveEntry(FileUtil.toFile(child), FileUtil.getRelativePath(context, child));
                 aos.putArchiveEntry(entry);
-                InputStream is = new BufferedInputStream(child.getInputStream());
-                try {
+                try (InputStream is = new BufferedInputStream(child.getInputStream())) {
                     FileUtil.copy(is, aos);
-                } finally {
-                    is.close();
                 }
                 aos.closeArchiveEntry();
             }
             aos.finish();
             aos.flush();
+            gzos.finish();
+            gzos.flush();
             cos.finish();
             cos.flush();
 
