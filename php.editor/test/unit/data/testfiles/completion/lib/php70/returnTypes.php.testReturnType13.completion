@@ -1,0 +1,18 @@
+Code completion result for source line:
+function bazz(...$data): |Comment {
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+PACKAGE    My                              [PUBLIC]   null
+CLASS      Comment                         [PUBLIC]   My\Firm
+CLASS      CommentsIterator                [PUBLIC]   My\Firm
+------------------------------------
+PACKAGE    Firm                            [PUBLIC]   My
+CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
+CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
+CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
+CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
+KEYWORD    array                                      null
+KEYWORD    bool                                       null
+KEYWORD    callable                                   null
+KEYWORD    float                                      null
+KEYWORD    int                                        null
+KEYWORD    string                                     null

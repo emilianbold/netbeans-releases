@@ -174,4 +174,16 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): \\My\\Firm\\Comm^ent {", false);
     }
 
+    public void testReturnType12() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function baz($data): ^Comment {", false);
+    }
+
+    public void testReturnType13() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function bazz(...$data): ^Comment {", false);
+    }
+
+    public void testReturnType14() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function bazz(&...$data): ^Comment {", false);
+    }
+
 }
