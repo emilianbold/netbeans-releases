@@ -94,7 +94,7 @@ public class Demuxer implements StreamItem.Fetcher {
             ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
             sum = 0;
             do {
-                int read = is.read(content, 0, Math.min(size, content.length));
+                int read = is.read(content, 0, Math.min(size - sum, content.length));
                 if (read < 0) {
                     return null;
                 }
