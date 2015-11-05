@@ -512,6 +512,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/testVariadicFunctions_01");
     }
 
+    public void testVariadicFunctions_02() throws Exception {
+        performTest("parser/testVariadicFunctions_02");
+    }
+
     public void testArgumentUnpacking_01() throws Exception {
         performTest("parser/argumentUnpacking_01");
     }
