@@ -116,7 +116,7 @@ public class CommitContainerAction extends NodeAction {
                 handle.start();
                 try {
                     DockerRemote facade = new DockerRemote(container.getInstance());
-                    facade.commitContainer(container, repository, tag, author, message, pause);
+                    facade.commit(container, repository, tag, author, message, pause);
                 } catch (DockerException ex) {
                     // FIXME inform user
                     LOGGER.log(Level.INFO, null, ex);

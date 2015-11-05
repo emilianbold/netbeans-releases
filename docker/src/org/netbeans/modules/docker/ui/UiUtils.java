@@ -55,7 +55,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.progress.ProgressHandle;
@@ -248,9 +247,9 @@ public final class UiUtils {
 
     private static class TerminalResizeListener implements PropertyChangeListener, Closeable {
 
-        private final DockerContainer container;
+        private static final RequestProcessor RP = new RequestProcessor(TerminalResizeListener.class);
 
-        private final RequestProcessor requestProcessor = new RequestProcessor(TerminalResizeListener.class);
+        private final DockerContainer container;
 
         private final RequestProcessor.Task task;
 
@@ -261,7 +260,7 @@ public final class UiUtils {
 
         public TerminalResizeListener(DockerContainer container) {
             this.container = container;
-            this.task = requestProcessor.create(new Runnable() {
+            this.task = RP.create(new Runnable() {
                 @Override
                 public void run() {
                     Dimension newValue;
@@ -296,7 +295,7 @@ public final class UiUtils {
 
         @Override
         public void close() throws IOException {
-            requestProcessor.shutdownNow();
+            task.cancel();
         }
     }
 

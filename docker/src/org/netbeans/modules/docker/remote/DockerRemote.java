@@ -91,6 +91,7 @@ import org.netbeans.modules.docker.DockerHubImage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -112,10 +113,19 @@ public class DockerRemote {
         Collections.addAll(REMOVE_IMAGE_CODES, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_NOT_FOUND);
     }
 
+    private final RequestProcessor requestProcessor = new RequestProcessor(DockerRemote.class);
+
     private final DockerInstance instance;
+    
+    private final boolean emitEvents;
 
     public DockerRemote(DockerInstance instance) {
+        this(instance, true);
+    }
+
+    public DockerRemote(DockerInstance instance, boolean emitEvents) {
         this.instance = instance;
+        this.emitEvents = emitEvents;
     }
 
     public List<DockerImage> getImages() {
@@ -178,9 +188,7 @@ public class DockerRemote {
                 ret.add(new DockerHubImage(name, description, stars, official, automated));
             }
             return ret;
-        } catch (DockerException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        } catch (UnsupportedEncodingException ex) {
+        } catch (DockerException | UnsupportedEncodingException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
         return Collections.emptyList();
@@ -198,7 +206,7 @@ public class DockerRemote {
         }
     }
 
-    public DockerImage commitContainer(DockerContainer container, String repository, String tag,
+    public DockerImage commit(DockerContainer container, String repository, String tag,
             String author, String message, boolean pause) throws DockerException {
 
         if (repository == null && tag != null) {
@@ -231,9 +239,11 @@ public class DockerRemote {
             String id = (String) value.get("Id");
 
             // XXX we send it as older API does not have the commit event
-            instance.getEventBus().sendEvent(
-                    new DockerEvent(instance, DockerEvent.Status.COMMIT,
-                            id, container.getId(), System.currentTimeMillis() / 1000));
+            if (emitEvents) {
+                instance.getEventBus().sendEvent(
+                        new DockerEvent(instance, DockerEvent.Status.COMMIT,
+                                id, container.getId(), System.currentTimeMillis() / 1000));
+            }
 
             // FIXME image size and time parameters
             return new DockerImage(instance, Collections.singletonList(tag), (String) value.get("Id"),
@@ -282,9 +292,11 @@ public class DockerRemote {
 
         // XXX to be precise we should emit DELETE event if we
         // delete the last image, but for our purpose this is enough
-        instance.getEventBus().sendEvent(
-                new DockerEvent(instance, DockerEvent.Status.UNTAG,
-                        tag.getId(), null, System.currentTimeMillis() / 1000));
+        if (emitEvents) {
+            instance.getEventBus().sendEvent(
+                    new DockerEvent(instance, DockerEvent.Status.UNTAG,
+                            tag.getId(), null, System.currentTimeMillis() / 1000));
+        }
     }
 
     public void remove(DockerContainer container) throws DockerException {
