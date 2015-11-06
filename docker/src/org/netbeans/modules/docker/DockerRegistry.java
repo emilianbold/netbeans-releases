@@ -116,7 +116,7 @@ public final class DockerRegistry {
             if (instances.containsKey(url)) {
                 throw new IllegalStateException("Docker instance already exist: " + url);
             }
-            instance = DockerInstance.create(displayName, url, null, null);
+            instance = DockerInstance.create(displayName, url, null, null, null);
             instances.put(url, instance);
         }
         changeSupport.fireChange();

@@ -218,6 +218,14 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <public-packages/>
+            <class-path-extension>
+                <runtime-relative-path>ext/bcpkix-jdk15on-153.jar</runtime-relative-path>
+                <binary-origin>external/bcpkix-jdk15on-153.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/bcprov-jdk15on-153.jar</runtime-relative-path>
+                <binary-origin>external/bcprov-jdk15on-153.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

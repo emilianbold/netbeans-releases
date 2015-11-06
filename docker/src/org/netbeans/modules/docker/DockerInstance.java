@@ -73,6 +73,8 @@ public class DockerInstance {
 
     private static final String URL_KEY = "url";
 
+    private static final String CA_CERTIFICATE_PATH_KEY = "ca_certificate";
+
     private static final String CERTIFICATE_PATH_KEY = "certificate";
 
     private static final String KEY_PATH_KEY = "key";
@@ -96,12 +98,15 @@ public class DockerInstance {
 
     @NonNull
     static DockerInstance create(@NonNull String displayName, @NonNull String url,
-            @NullAllowed File certificate, @NullAllowed File key) {
+            @NullAllowed File caCertificate, @NullAllowed File certificate, @NullAllowed File key) {
         Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
         // XXX synchronization ?
         Preferences prefs = global.node(escapeUrl(url));
         prefs.put(DISPLAY_NAME_KEY, displayName);
         prefs.put(URL_KEY, url);
+        if (caCertificate != null) {
+            prefs.put(CA_CERTIFICATE_PATH_KEY, certificate.getPath());
+        }
         if (certificate != null) {
             prefs.put(CERTIFICATE_PATH_KEY, certificate.getPath());
         }
@@ -162,6 +167,11 @@ public class DockerInstance {
 
     public String getUrl() {
         return prefs.get(URL_KEY, null);
+    }
+
+    public File getCaCertificateFile() {
+        String path = prefs.get(CA_CERTIFICATE_PATH_KEY, null);
+        return path == null ? null : new File(path);
     }
 
     public File getCertificateFile() {

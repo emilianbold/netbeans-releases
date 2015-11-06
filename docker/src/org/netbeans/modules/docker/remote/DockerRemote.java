@@ -75,6 +75,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import javax.swing.SwingUtilities;
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
@@ -119,7 +121,7 @@ public class DockerRemote {
     private final RequestProcessor requestProcessor = new RequestProcessor(DockerRemote.class);
 
     private final DockerInstance instance;
-    
+
     private final boolean emitEvents;
 
     public DockerRemote(DockerInstance instance) {
@@ -527,7 +529,7 @@ public class DockerRemote {
                             }
                             listener.onEvent(new BuildEvent(instance, error, true, detail));
                         } else {
-                            LOGGER.log(Level.INFO, "Unknown event {0}", o);    
+                            LOGGER.log(Level.INFO, "Unknown event {0}", o);
                         }
                     }
                     parser.reset();
@@ -841,9 +843,14 @@ public class DockerRemote {
 
     private Socket createSocket(URL url) throws IOException {
         try {
-            Socket s = new Socket(ProxySelector.getDefault().select(url.toURI()).get(0));
-            s.connect(new InetSocketAddress(url.getHost(), url.getPort()));
-            return s;
+            if ("https".equals(url.getProtocol())) { // NOI18N
+                SSLContext context = SecureContextProvider.getInstance().getSSLContext(instance);
+                return context.getSocketFactory().createSocket(url.getHost(), url.getPort());
+            } else {
+                Socket s = new Socket(ProxySelector.getDefault().select(url.toURI()).get(0));
+                s.connect(new InetSocketAddress(url.getHost(), url.getPort()));
+                return s;
+            }
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
@@ -852,7 +859,12 @@ public class DockerRemote {
     private HttpURLConnection createConnection(URL url) throws IOException {
         assert "http".equals(url.getProtocol()) || "https".equals(url.getProtocol()); // NOI18N
         try {
-            return (HttpURLConnection) url.openConnection(ProxySelector.getDefault().select(url.toURI()).get(0));
+            HttpURLConnection ret = (HttpURLConnection) url.openConnection(ProxySelector.getDefault().select(url.toURI()).get(0));
+            if (ret instanceof HttpsURLConnection) {
+                ((HttpsURLConnection) ret).setSSLSocketFactory(
+                        SecureContextProvider.getInstance().getSSLContext(instance).getSocketFactory());
+            }
+            return ret;
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
