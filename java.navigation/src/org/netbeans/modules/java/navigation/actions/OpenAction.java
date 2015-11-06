@@ -109,7 +109,15 @@ public final class OpenAction extends AbstractAction {
 
     @Override
     public void actionPerformed (ActionEvent ev) {
-        performer.open();
+        try {
+            performer.open();
+        } catch (CannotOpen co) {
+            final String msg = co.getLocalizedMessage();
+            Toolkit.getDefaultToolkit().beep();
+            if(msg != null) {
+                StatusDisplayer.getDefault().setStatusText(msg);
+            }
+        }
     }
 
     public boolean isEnabled () {
@@ -122,9 +130,7 @@ public final class OpenAction extends AbstractAction {
             @NonNull final FileObject fileObject,
             @NonNull final String displayName) {
         return () -> {
-            if (!checkFile(fileObject, displayName)) {
-                return;
-            }
+            checkFile(fileObject, displayName);
             FileObject file = fileObject;
             if (isClassFile(file)) {
                 final FileObject src = findSource(file, handle);
@@ -132,7 +138,9 @@ public final class OpenAction extends AbstractAction {
                     file = src;
                 }
             }
-            ElementOpen.open(file, handle);
+            if (!ElementOpen.open(file, handle)) {
+                noSource(displayName);
+            }
         };
     }
 
@@ -142,10 +150,10 @@ public final class OpenAction extends AbstractAction {
             @NonNull final FileObject fileObject,
             @NonNull final String displayName) {
         return () -> {
-            if (!checkFile(fileObject, displayName)) {
-                return;
+            checkFile(fileObject, displayName);
+            if(!ElementOpen.open(fileObject, handle)) {
+                noSource(displayName);
             }
-            ElementOpen.open(fileObject, handle);
         };
     }
 
@@ -154,15 +162,20 @@ public final class OpenAction extends AbstractAction {
         @NonNull final ModuleElement module,
         @NonNull final ModuleElement.Directive directive,
         @NonNull final ClasspathInfo cpInfo) {
+        final String displayName = module.getQualifiedName().toString();
         final ElementHandle<ModuleElement> moduleHandle = ElementHandle.create(module);
         final Object[] directiveHandle = createDirectiveHandle(directive);
         return () -> {
             final FileObject source = SourceUtils.getFile(moduleHandle, cpInfo);
-            if (source != null) {
-                TreePathHandle path = resolveDirectiveHandle(source, directiveHandle);
-                if (path != null) {
-                    ElementOpen.open(source, path);
-                }
+            if (source == null) {
+                noSource(displayName);
+            }
+            TreePathHandle path = resolveDirectiveHandle(source, directiveHandle);
+            if (path == null) {
+                noSource(displayName);
+            }
+            if (!ElementOpen.open(source, path)) {
+                noSource(displayName);
             }
         };
     }
@@ -172,18 +185,18 @@ public final class OpenAction extends AbstractAction {
         return new OpenAction(openable);
     }
 
-    private static boolean checkFile(
+    private static void checkFile(
             @NullAllowed final FileObject fileObject,
             @NullAllowed final String displayName) {
         if(null == fileObject) {
-            Toolkit.getDefaultToolkit().beep();
-            if(null != displayName) {
-                StatusDisplayer.getDefault().setStatusText(
-                        NbBundle.getMessage(OpenAction.class, "MSG_NoSource", displayName));  //NOI18N
-            }
-            return false;
+            noSource(displayName);
         }
-        return true;
+    }
+
+    private static void noSource(@NullAllowed final String displayName) {
+        throw new CannotOpen(displayName == null ?
+                NbBundle.getMessage(OpenAction.class, "MSG_NoSource_Generic"):
+                NbBundle.getMessage(OpenAction.class, "MSG_NoSource", displayName));
     }
 
     private static boolean isClassFile(@NonNull final FileObject file) {
@@ -299,6 +312,12 @@ public final class OpenAction extends AbstractAction {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
             return null;
+        }
+    }
+
+    private static final class CannotOpen extends RuntimeException {
+        CannotOpen(@NullAllowed final String localizedMessage) {
+            super(localizedMessage);
         }
     }
 }
