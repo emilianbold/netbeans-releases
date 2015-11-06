@@ -139,7 +139,7 @@ final class JarArchiveRootProvider implements ArchiveRootProvider {
 
 
     @Override
-    public boolean isArchiveRoot(URL url) {
+    public boolean isArchiveArtefact(URL url) {
         return PROTOCOL.equals(url.getProtocol());
     }
 

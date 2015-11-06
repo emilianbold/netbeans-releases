@@ -1882,7 +1882,7 @@ public final class FileUtil extends Object {
     public static FileObject getArchiveFile(FileObject fo) {
         Parameters.notNull("fo", fo);   //NOI18N
         for (ArchiveRootProvider provider : getArchiveRootProviders()) {
-            if (provider.isArchiveRoot(fo)) {
+            if (provider.isArchiveArtefact(fo)) {
                 final FileObject file = provider.getArchiveFile(fo);
                 if (file != null) {
                     return file;
@@ -1904,7 +1904,7 @@ public final class FileUtil extends Object {
      */
     public static URL getArchiveFile(URL url) {
         for (ArchiveRootProvider provider : getArchiveRootProviders()) {
-            if (provider.isArchiveRoot(url)) {
+            if (provider.isArchiveArtefact(url)) {
                 final URL file = provider.getArchiveFile(url);
                 if (file != null) {
                     return file;
@@ -1951,10 +1951,10 @@ public final class FileUtil extends Object {
      * @return true if the file is inside an archive
      * @since 9.6
      */
-    public static boolean isArchiveRoot(FileObject fo) {
+    public static boolean isArchiveArtefact(FileObject fo) {
         Parameters.notNull("fileObject", fo);  //NOI18N
         for (ArchiveRootProvider provider : getArchiveRootProviders()) {
-            if (provider.isArchiveRoot(fo)) {
+            if (provider.isArchiveArtefact(fo)) {
                 return true;
             }
         }
@@ -1967,10 +1967,10 @@ public final class FileUtil extends Object {
      * @return true if the url points inside an archive
      * @since 9.6
      */
-    public static boolean isArchiveRoot(URL url) {
+    public static boolean isArchiveArtefact(URL url) {
         Parameters.notNull("url", url);  //NOI18N
         for (ArchiveRootProvider provider : getArchiveRootProviders()) {
-            if (provider.isArchiveRoot(url)) {
+            if (provider.isArchiveArtefact(url)) {
                 return true;
             }
         }
@@ -2028,7 +2028,7 @@ public final class FileUtil extends Object {
      */
     public static File archiveOrDirForURL(URL entry) {
         final String u = entry.toString();
-        if (isArchiveRoot(entry)) {
+        if (isArchiveArtefact(entry)) {
             entry = getArchiveFile(entry);
             try {
                 return u.endsWith("!/") && entry != null && "file".equals(entry.getProtocol()) ?  //NOI18N

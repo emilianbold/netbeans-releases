@@ -780,7 +780,7 @@ public final class ClassPath {
             String pathInArchive = "";
             boolean folder = false;
             File f = FileUtil.archiveOrDirForURL(u);
-            if (f == null && FileUtil.isArchiveRoot(u)) {
+            if (f == null && FileUtil.isArchiveArtefact(u)) {
                 switch (pathEmbeddingMode) {
                     case EXCLUDE:
                     case INCLUDE:

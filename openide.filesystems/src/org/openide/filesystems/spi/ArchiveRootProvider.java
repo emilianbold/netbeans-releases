@@ -84,7 +84,7 @@ public interface ArchiveRootProvider {
      * @param url the url to be tested
      * @return true if the url points inside an archive
      */
-    boolean isArchiveRoot(URL url);
+    boolean isArchiveArtefact(URL url);
 
     /**
      * Tests if an file is inside an archive.
@@ -93,9 +93,9 @@ public interface ArchiveRootProvider {
      * @param fo the file to be tested
      * @return true if the file is inside an archive
      */
-    default boolean isArchiveRoot(FileObject fo) {
+    default boolean isArchiveArtefact(FileObject fo) {
         final URL url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-        return url == null ? false : isArchiveRoot(url);
+        return url == null ? false : isArchiveArtefact(url);
     }
 
     /**
