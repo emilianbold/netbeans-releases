@@ -349,7 +349,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 URL url = entry.getURL();
                 String pathInArchive = "";  //NOI18N
                 boolean wasFolder = false;
-                if (FileUtil.isArchiveArtefact(url)) {
+                if (FileUtil.isArchiveArtifact(url)) {
                     String path = url.getPath();
                     int index = path.lastIndexOf(URL_EMBEDDING); //NOI18N
                     if (index >= 0) {

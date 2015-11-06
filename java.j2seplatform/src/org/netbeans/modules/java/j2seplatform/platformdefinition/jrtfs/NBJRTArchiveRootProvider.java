@@ -80,7 +80,7 @@ public class NBJRTArchiveRootProvider implements ArchiveRootProvider {
     }
 
     @Override
-    public boolean isArchiveArtefact(@NonNull final URL url) {
+    public boolean isArchiveArtifact(@NonNull final URL url) {
         return NBJRTUtil.PROTOCOL.equals(url.getProtocol());
     }
 

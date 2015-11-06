@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
                 To support JDK 9 image file as an archive the FileUtil's method
                 <code>getArchiveFile</code>,<code>getArchiveRoot</code> and <code>isArchiveFile</code>
                 are pluggable using a new SPI <code>ArchiveFileProvider</code>.
-                In addition to these methods a new method <code>isArchiveRoot</code> was added.
+                In addition to these methods a new method <code>isArchiveArtifact</code> was added.
                 This method can be used if given <code>URL</code> points into an archive.
             </description>
             <class name="FileUtil" package="org.openide.filesystems"/>

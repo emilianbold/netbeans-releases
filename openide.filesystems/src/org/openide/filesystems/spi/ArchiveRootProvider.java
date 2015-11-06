@@ -48,7 +48,7 @@ import org.openide.filesystems.URLMapper;
 
 /**
  * A possibility to plug a support for java archives into FileUtil.
- * The interface is used by {@link FileUtil.isArchiveRoot}, {@link FileUtil.isArchiveFile},
+ * The interface is used by {@link FileUtil.isArchiveArtifact}, {@link FileUtil.isArchiveFile},
  * {@link FileUtil.getArchiveRoot}, {@link FileUtil.getArchiveFile}.
  * The implementations are registered in global lookup.
  * @author Tomas Zezula
@@ -84,18 +84,18 @@ public interface ArchiveRootProvider {
      * @param url the url to be tested
      * @return true if the url points inside an archive
      */
-    boolean isArchiveArtefact(URL url);
+    boolean isArchiveArtifact(URL url);
 
     /**
      * Tests if an file is inside an archive.
-     * The default implementation delegates to {@link ArchiveRootProvider#isArchiveRoot(URL)},
+     * The default implementation delegates to {@link ArchiveRootProvider#isArchiveArtifact(URL)},
      * it can be overridden by an implementation in more efficient way.
      * @param fo the file to be tested
      * @return true if the file is inside an archive
      */
-    default boolean isArchiveArtefact(FileObject fo) {
+    default boolean isArchiveArtifact(FileObject fo) {
         final URL url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-        return url == null ? false : isArchiveArtefact(url);
+        return url == null ? false : isArchiveArtifact(url);
     }
 
     /**
