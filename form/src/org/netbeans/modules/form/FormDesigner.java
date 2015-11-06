@@ -2628,7 +2628,6 @@ public class FormDesigner {
                         // bindings for the the cloned instance (e.g. in remove undo)
                         updateDone = true;
                     }
-                    structureChanged = true;
                 }
                 else if (type == FormModelEvent.COMPONENT_REMOVED) {
                     RADComponent removed = ev.getComponent();
