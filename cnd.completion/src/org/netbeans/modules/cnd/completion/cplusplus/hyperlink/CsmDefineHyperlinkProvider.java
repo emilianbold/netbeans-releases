@@ -52,6 +52,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
@@ -104,12 +105,17 @@ public final class CsmDefineHyperlinkProvider extends CsmHyperlinkProvider {
         if (!preJump(doc, target, offset, "opening-csm-element", type)) { //NOI18N
             return false;
         }
-        TokenItem<TokenId> jumpToken = getJumpToken();        
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
-        CsmObject primary = findTargetObject(doc, jumpToken, offset, false);
-        CsmOffsetable item = toJumpObject(primary, csmFile, offset);
-        UIGesturesSupport.submit("USG_CND_HYPERLINK", type); //NOI18N
-        return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
+        try {
+            CsmCacheManager.enter();
+            TokenItem<TokenId> jumpToken = getJumpToken();
+            CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
+            CsmObject primary = findTargetObject(doc, jumpToken, offset, false);
+            CsmOffsetable item = toJumpObject(primary, csmFile, offset);
+            UIGesturesSupport.submit("USG_CND_HYPERLINK", type); //NOI18N
+            return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
+        } finally {
+            CsmCacheManager.leave();
+        }
     }
 
     @Override
