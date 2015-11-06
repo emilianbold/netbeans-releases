@@ -151,7 +151,7 @@ public final class HttpUtils {
             throw new IOException("Wrong content length: " + value);
         }
     }
-    
+
     public static String encodeParameter(String value) throws UnsupportedEncodingException {
         return URLEncoder.encode(value, "UTF-8");
     }
