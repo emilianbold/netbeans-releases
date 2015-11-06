@@ -58,6 +58,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelListener;
@@ -109,6 +110,7 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         assert mimeType != null;
         initComponents();
         descriptionTextArea.setContentType("text/html"); // NOI18N
+        descriptionTextArea.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         errorTree.setCellRenderer( this );
         errorTree.setRootVisible( false );
         errorTree.setShowsRootHandles( true );
