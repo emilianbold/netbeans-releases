@@ -1265,27 +1265,47 @@ public class SourceUtils {
                 final FileObject root = URLMapper.findFileObject(rootUrl);
                 if (root != null) {
                     if (root.getFileObject(MODULE_INFO, FileObjects.CLASS) != null) {
+                        final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(rootUrl);
+                        if (sfbqRes.preferSources()) {
+                            //Build folder of the project
+                            for (FileObject srcRoot : sfbqRes.getRoots()) {
+                                try {
+                                    final String moduleName = JavaIndex.getAttribute(srcRoot.toURL(), MODULE_NAME, null);
+                                    if (moduleName != null) {
+                                        return moduleName;
+                                    }
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
+                                }
+                            }
+                        }
+                        //Regular module folder
                         final String moduleName = root.getNameExt();
                         if (SourceVersion.isName(moduleName)) {
                             return moduleName;
                         }
                     } else {
+                        //Cache folder
                         try {
                             final URL srcRoot = JavaIndex.getSourceRootForClassFolder(rootUrl);
                             if (srcRoot != null) {
                                 String moduleName = JavaIndex.getAttribute(srcRoot, MODULE_NAME, null);
-                                if (moduleName == null) {
-                                    for (URL binRoot : BinaryForSourceQuery.findBinaryRoots(srcRoot).getRoots()) {
-                                        if (FileObjects.JAR.equals(binRoot.getProtocol())) {
-                                            return autoName(FileObjects.stripExtension(FileUtil.archiveOrDirForURL(binRoot).getName()));
-                                        }
+                                if (moduleName != null) {
+                                    //Has module-info
+                                    return moduleName;
+                                }
+                                //No module -> automatic module
+                                for (URL binRoot : BinaryForSourceQuery.findBinaryRoots(srcRoot).getRoots()) {
+                                    if (FileObjects.JAR.equals(binRoot.getProtocol())) {
+                                        return autoName(FileObjects.stripExtension(FileUtil.archiveOrDirForURL(binRoot).getName()));
                                     }
                                 }
                             }
-                        } catch (IOException ex) {}
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
-                return null;
             } else {
                 //Jar
                 final FileObject root = URLMapper.findFileObject(rootUrl);
@@ -1304,8 +1324,8 @@ public class SourceUtils {
                         return autoName(file.getName());
                     }
                 }
-                return null;
             }
+            return null;
         }
     }
 
