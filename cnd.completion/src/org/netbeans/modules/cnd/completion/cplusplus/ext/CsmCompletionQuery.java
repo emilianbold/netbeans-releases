@@ -1973,7 +1973,7 @@ abstract public class CsmCompletionQuery {
                                 } else { // not last item or finding type
                                     // find type of variable
                                     if (nextKind != ExprKind.SCOPE) {
-                                        if (first && !findType) {
+                                        if (first) {
                                             lastType = findExactVarType(var, varPos);
                                         }
                                         if (lastType == null || isAutoType(lastType)) {
@@ -3509,7 +3509,7 @@ abstract public class CsmCompletionQuery {
             private Boolean staticOnly;
 
             private Boolean findType;
-
+            
             private boolean lastTypeGiven;
             private CsmType lastType;
 
@@ -3525,7 +3525,7 @@ abstract public class CsmCompletionQuery {
                 this.findType = findType;
                 return this;
             }
-
+            
             ContextPropertyChanger setLastType(CsmType lastType) {
                 this.lastType = lastType;
                 lastTypeGiven = true;

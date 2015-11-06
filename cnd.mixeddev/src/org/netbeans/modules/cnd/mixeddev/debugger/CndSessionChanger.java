@@ -59,7 +59,9 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarge
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.utils.PsProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -96,24 +98,30 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
         if (ret == null) {
             final DebugTarget target = new DebugTarget();
             target.setPid(longPid);
+            // local case only
             target.setHostName("localhost"); // NOI18N
+            target.getConfig().setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocal()));
 
             final CountDownLatch latch = new CountDownLatch(1);
-            NativeDebuggerManager.get().addDebuggerStateListener(new NativeDebuggerManager.DebuggerStateListener() {
+            final NativeDebuggerManager.DebuggerStateListener listener = new NativeDebuggerManager.DebuggerStateListener() {
                 @Override
                 public void notifyAttached(NativeDebugger debugger, long pid) {
                     if (pid == longPid) {
+                        // we now remove in finally block - should we still remove it here?
                         NativeDebuggerManager.get().removeDebuggerStateListener(this);
                         debugger.stepTo(funcName);
                         latch.countDown();
                     }
                 }
-            });
+            };
+            NativeDebuggerManager.get().addDebuggerStateListener(listener);
             NativeDebuggerManager.get().attach(target);
             try {
                 latch.await(100, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
+            } finally {                
+                NativeDebuggerManager.get().removeDebuggerStateListener(listener);
             }
             NativeDebugger currentDebugger = NativeDebuggerManager.get().currentDebugger();
             if (currentDebugger != null) {

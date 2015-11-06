@@ -96,7 +96,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
             @Override
             public void run() {
                 if (reset) {
-                    compiler.resetSystemProperties();
+                    compiler.resetCompilerDefinitions();
                 }
                 final List<String> includesList = compiler.getSystemIncludeDirectories();
                 final List<String> definesList = compiler.getSystemPreprocessorSymbols();

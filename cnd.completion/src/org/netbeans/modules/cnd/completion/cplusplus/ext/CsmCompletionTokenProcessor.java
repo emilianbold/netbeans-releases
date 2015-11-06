@@ -2075,11 +2075,20 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             // create correspondent *_OPEN expression ID
                             int openExpID = tokenID2OpenExpID(tokenID);
                             CsmCompletionExpression opExp = createTokenExp(openExpID);
-                            if (topID == CONVERSION && tokenID != CppTokenId.SCOPE) {
-                                // Now we know that previous exp is PARENTHESIS, not CONVERSION.
-                                top.setExpID(PARENTHESIS);
+                            if (topID == CONVERSION) {
+                                if (tokenID != CppTokenId.SCOPE) {
+                                    // Now we know that previous exp is PARENTHESIS, not CONVERSION.
+                                    top.setExpID(PARENTHESIS);
+                                    opExp.addParameter(top);
+                                } else {
+                                    // CONVERSION should be standalone node and
+                                    // SCOPE_OPEN should start with an empty variable
+                                    pushExp(top); 
+                                    opExp.addParameter(createEmptyVariable(tokenOffset));
+                                }
+                            } else {
+                                opExp.addParameter(top);
                             }
-                            opExp.addParameter(top);
                             pushExp(opExp);
                         }
                         break;

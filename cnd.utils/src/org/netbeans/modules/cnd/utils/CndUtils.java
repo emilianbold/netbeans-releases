@@ -66,7 +66,7 @@ public class CndUtils {
 
     private static boolean releaseMode;
     private static volatile Throwable lastAssertion;
-
+    private static final int STACK_THREASHOLD = Integer.valueOf(System.getProperty("cnd.utils.same.stacks", "3")); // NOI18N
     static {
         String text = System.getProperty("cnd.release.mode");
         if (text == null) {
@@ -233,7 +233,7 @@ public class CndUtils {
                         counter = old;
                     }
                     int i = counter.incrementAndGet();
-                    if (i > 3) {
+                    if (i > STACK_THREASHOLD) {
                         level = Level.FINE;
                     }
                     break;

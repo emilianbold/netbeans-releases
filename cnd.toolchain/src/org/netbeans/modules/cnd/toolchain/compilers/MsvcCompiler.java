@@ -63,8 +63,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
    public MsvcCompiler createCopy(CompilerFlavor flavor) {
        MsvcCompiler copy = new MsvcCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath()); // NOI18N
        if (isReady()) {
-           copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
-           copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+            copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
+            copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+            copy.copySystemIncludeHeaders(getSystemIncludeHeaders());
        }
        return copy;
    }
@@ -83,8 +84,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     }
 
    @Override
-   protected Pair getFreshSystemIncludesAndDefines() {
-        Pair res = new Pair();
+   protected CompilerDefinitions getFreshCompilerDefinitions() {
+        CompilerDefinitions res = new CompilerDefinitions();
         completePredefinedMacros(res);
         String list = System.getenv("INCLUDE"); // NOI18N
         if (list != null) {

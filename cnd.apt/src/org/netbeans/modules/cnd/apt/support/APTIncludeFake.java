@@ -49,16 +49,21 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
+import org.openide.filesystems.FileSystem;
 
 /**
  * fake include node for "-include file" option of preprocessor
  * @author Vladimir Voskresensky
  */
 public final class APTIncludeFake implements APTInclude {
+    private final FileSystem fs;
     private final String filePath;
+    private final boolean system;
     private final APTToken token;
-    public APTIncludeFake(String filePath, int line) {
+    public APTIncludeFake(FileSystem fs, String filePath, boolean system, int line) {
+        this.fs = fs;
         this.filePath = filePath;
+        this.system = system;
         this.token = APTUtils.createAPTToken(APTTokenTypes.INCLUDE);
         this.token.setColumn(0);
         this.token.setLine(line);
@@ -81,7 +86,7 @@ public final class APTIncludeFake implements APTInclude {
 
     @Override
     public boolean isSystem(APTMacroCallback callback) {
-        return false;
+        return system;
     }
 
     @Override
@@ -134,6 +139,10 @@ public final class APTIncludeFake implements APTInclude {
         throw new UnsupportedOperationException("Not supposed to be used."); // NOI18N
     }
 
+    public FileSystem getFileSystem() {
+        return fs;
+    }
+    
     @Override
     public String toString() {
         return "-include " + filePath; // NOI18N

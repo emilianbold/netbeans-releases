@@ -340,7 +340,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if (prj != null) {
             disposeProject(prj, cleanRepository);
             if (!prj.isArtificial()) {
-                LibraryManager.getInstance(prj.getUnitId()).onProjectClose(prj.getUID());
+                LibraryManager.getInstance(prj.getUnitId()).onProjectClose(prj.getUID(), cleanRepository);
             }
         }
 

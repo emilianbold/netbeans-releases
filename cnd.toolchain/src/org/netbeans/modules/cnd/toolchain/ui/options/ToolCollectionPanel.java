@@ -734,7 +734,7 @@ import org.openide.util.Utilities;
             Tool tool = manager.getCurrentCompilerSet().getTool(toolKind);
             APIAccessor.get().setToolPath(tool, toolPath);
             if (tool instanceof AbstractCompiler) {
-                ((AbstractCompiler) tool).resetSystemProperties(true);
+                ((AbstractCompiler) tool).resetCompilerDefinitions(true);
             }
             manager.fireCompilerSetChange();
             manager.fireCompilerSetModified();

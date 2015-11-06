@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -354,8 +355,8 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
      * Method ensures that instantiating of a template doesn't cause a recursion.
      * Repeating pattern in instantiations in most cases means recursion.
      * 
-     * @param template
-     * @param mapping
+     * @param template to instantiate
+     * @param mapping with which instantiation should happen. Can be null.
      * @return true if template shouldn't be instantiated, false otherwise
      */
     private static boolean isRecursiveInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, final int recursionLimit) {                
@@ -363,7 +364,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         
         Map<TemplateMapKey, Integer> repeatings = new HashMap<>();
         
-        repeatings.put(new TemplateMapKey(mapping), 1);
+        if (mapping != null) {
+            repeatings.put(new TemplateMapKey(mapping), 1);
+        }
         
         while (CsmKindUtilities.isInstantiation(current) || current instanceof Type) {
             Map<CsmTemplateParameter, CsmSpecializationParameter> origMapping = null;
@@ -1545,6 +1548,11 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         return new Type(type, instantiation, templateParamResolver);       
     }       
+    
+    public static boolean isRecursiveInstantiation(CsmObject instantiation) {
+        // TODO: think about constant "MAX_RECURSIVE_INSTANTIATIONS - 1"
+        return isRecursiveInstantiation(instantiation, null, MAX_RECURSIVE_INSTANTIATIONS - 1);
+    }
     
     public static CsmType unfoldInstantiatedType(CsmType type) {
         CsmType result = type;

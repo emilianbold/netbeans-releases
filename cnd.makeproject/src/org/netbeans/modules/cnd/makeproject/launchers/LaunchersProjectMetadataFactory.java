@@ -47,20 +47,23 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
     
     private void initListeners(FileChangeListener fileChangeListener, FileObject projectDir) {
         FileObject nbproject = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-        FileObject publicLaunchers = nbproject.getFileObject(NAME);
-        if (publicLaunchers != null) {
-            publicLaunchers.removeFileChangeListener(fileChangeListener);
-            publicLaunchers.addFileChangeListener(fileChangeListener);
-        }        
-        final FileObject privateNbFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
-        if (privateNbFolder != null && privateNbFolder.isValid()) {
-            privateNbFolder.removeFileChangeListener(fileChangeListener);
-            privateNbFolder.addFileChangeListener(fileChangeListener);
-            FileObject privateLaunchers = privateNbFolder.getFileObject(NAME);
-            if (privateLaunchers != null) {
-                privateLaunchers.removeFileChangeListener(fileChangeListener);
-                privateLaunchers.addFileChangeListener(fileChangeListener);
-                LaunchersRegistryFactory.getInstance(projectDir).setPrivateLaucnhersListener(fileChangeListener);  //for debugging purposes only
+        // check nbproject in case it was deleted while opening
+        if (nbproject != null && nbproject.isValid()) {
+            FileObject publicLaunchers = nbproject.getFileObject(NAME);
+            if (publicLaunchers != null) {
+                publicLaunchers.removeFileChangeListener(fileChangeListener);
+                publicLaunchers.addFileChangeListener(fileChangeListener);
+            }
+            final FileObject privateNbFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
+            if (privateNbFolder != null && privateNbFolder.isValid()) {
+                privateNbFolder.removeFileChangeListener(fileChangeListener);
+                privateNbFolder.addFileChangeListener(fileChangeListener);
+                FileObject privateLaunchers = privateNbFolder.getFileObject(NAME);
+                if (privateLaunchers != null) {
+                    privateLaunchers.removeFileChangeListener(fileChangeListener);
+                    privateLaunchers.addFileChangeListener(fileChangeListener);
+                    LaunchersRegistryFactory.getInstance(projectDir).setPrivateLaucnhersListener(fileChangeListener);  //for debugging purposes only
+                }
             }
         }
     }

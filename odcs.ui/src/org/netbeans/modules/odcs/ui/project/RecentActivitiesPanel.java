@@ -328,40 +328,49 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
         DateSeparatorPanel currentDatePanel = null;
         pnlContent.removeAll();
         boolean isEmpty = true;
+        RuntimeException ex = null;
         for (Activity activity : activities) {
-            isEmpty = false;
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.insets = new Insets(0, 3, 0, 0);
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1.0;
-            gbc.gridwidth = GridBagConstraints.REMAINDER;
-            Date currentDate = activity.getTimestamp();
-            // group activities by days
-            if (isAnotherDay(lastDate, currentDate)) {
-                GridBagConstraints gbc1 = new GridBagConstraints();
-                gbc1.insets = new Insets(3, 3, 0, 3);
-                gbc1.anchor = GridBagConstraints.NORTHWEST;
-                gbc1.fill = GridBagConstraints.HORIZONTAL;
-                gbc1.weightx = 1.0;
-                gbc1.gridwidth = GridBagConstraints.REMAINDER;
-                currentDatePanel = new DateSeparatorPanel(currentDate);
-                currentDatePanel.addMouseListener(new ExpandableMouseListener(currentDatePanel, this));
-                pnlContent.add(currentDatePanel, gbc1);
+            try {
+                isEmpty = false;
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.insets = new Insets(0, 3, 0, 0);
+                gbc.anchor = GridBagConstraints.NORTHWEST;
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.weightx = 1.0;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                Date currentDate = activity.getTimestamp();
+                // group activities by days
+                if (isAnotherDay(lastDate, currentDate)) {
+                    GridBagConstraints gbc1 = new GridBagConstraints();
+                    gbc1.insets = new Insets(3, 3, 0, 3);
+                    gbc1.anchor = GridBagConstraints.NORTHWEST;
+                    gbc1.fill = GridBagConstraints.HORIZONTAL;
+                    gbc1.weightx = 1.0;
+                    gbc1.gridwidth = GridBagConstraints.REMAINDER;
+                    currentDatePanel = new DateSeparatorPanel(currentDate);
+                    currentDatePanel.addMouseListener(new ExpandableMouseListener(currentDatePanel, this));
+                    pnlContent.add(currentDatePanel, gbc1);
+                }
+                if (maxWidth == -1) {
+                    maxWidth = this.getVisibleRect().width - 150;
+                }
+                ActivityPanel activityPanel = activity2Panel.get(activity);
+                if (activityPanel == null) {
+                    activityPanel = new ActivityPanel(activity, projectHandle, maxWidth);
+                    activity2Panel.put(activity, activityPanel);
+                }
+                if (activityPanel.hasDetails()) {
+                    activityPanel.addMouseListener(new ExpandableMouseListener(activityPanel, this));
+                }
+                currentDatePanel.addActivityPanel(activityPanel, gbc);
+                lastDate = currentDate;
+            } catch (RuntimeException e) {
+                // for robustness - working with external data the specific activity displayers may
+                // fail - it is still a bug but we don't want to ruin the list of activities completely
+                if (ex == null) {
+                    ex = e;
+                }
             }
-            if (maxWidth == -1) {
-                maxWidth = this.getVisibleRect().width - 150;
-            }
-            ActivityPanel activityPanel = activity2Panel.get(activity);
-            if (activityPanel == null) {
-                activityPanel = new ActivityPanel(activity, projectHandle, maxWidth);
-                activity2Panel.put(activity, activityPanel);
-            }
-            if (activityPanel.hasDetails()) {
-                activityPanel.addMouseListener(new ExpandableMouseListener(activityPanel, this));
-            }
-            currentDatePanel.addActivityPanel(activityPanel, gbc);
-            lastDate = currentDate;
         }
         if (isEmpty) {
             showEmptyContent();
@@ -372,6 +381,9 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
             pnlContent.add(new JLabel(), gbc1);
             pnlContent.revalidate();
             this.repaint();
+        }
+        if (ex != null) {
+            throw ex;
         }
     }
 

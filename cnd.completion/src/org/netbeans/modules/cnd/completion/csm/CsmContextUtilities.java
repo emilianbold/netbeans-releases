@@ -642,7 +642,9 @@ public class CsmContextUtilities {
             TokenSequence<TokenId> cppts = (TokenSequence<TokenId>)CsmCacheMap.getFromCache(cache, tsKey, found);
             if (cppts != null || !found[0]) {
                 if (cppts == null) {
-                    CharSequence expressionText = expression.getExpandedText();
+                    // expression.getText() here is used because we have offset - 
+                    // it is bound to the text on screen, not expanded one.
+                    CharSequence expressionText = expression.getText();
                     TokenHierarchy<CharSequence> hi = TokenHierarchy.create(expressionText, CppTokenId.languageCpp());
                     List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
                     // Go from inner to outer TSes
@@ -871,6 +873,7 @@ public class CsmContextUtilities {
                         if (fieldType != null) {
                             classifier = CsmBaseUtilities.getOriginalClassifier(fieldType.getClassifier(), fieldType.getContainingFile());
                             arrayDepth = fieldType.getArrayDepth(); // TODO: do something like CsmBaseUtilities.isPointer
+                            arrayDepth += fieldType.isPointer() ? 1 : 0;
                         }
                         break;
                     }
@@ -893,6 +896,7 @@ public class CsmContextUtilities {
                             if (fieldType != null) {
                                 classifier = CsmBaseUtilities.getOriginalClassifier(fieldType.getClassifier(), fieldType.getContainingFile());
                                 arrayDepth = fieldType.getArrayDepth(); // TODO: do something like CsmBaseUtilities.isPointer
+                                arrayDepth += fieldType.isPointer() ? 1 : 0;
                             }
                         }
                     }

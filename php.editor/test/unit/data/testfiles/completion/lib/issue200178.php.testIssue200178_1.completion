@@ -14,5 +14,6 @@ CLASS      Bar                             [PUBLIC]   issue243684.php
 CLASS      Barrr                           [PUBLIC]   test204104.php
 CLASS      Barrr                           [PUBLIC]   test204104_02.php
 METHOD     Barriers()                      [PUBLIC]   html.php
+METHOD     bar()                           [PUBLIC]   My\Firm
 METHOD     bar()                           [PUBLIC]   issue141999.php
 METHOD     bar(Test &$t)                   [PUBLIC]   issue142024.php

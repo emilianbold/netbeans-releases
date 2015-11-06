@@ -78,6 +78,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
 import org.w3c.dom.Element;
@@ -410,6 +411,9 @@ public class AntDebugger extends ActionsProviderSupport {
         }
     }
     
+    @NbBundle.Messages({"# {0} - a target name",
+                        "# {1} - script location",
+                        "MSG_TargetNotFound=Unable to find the target \"{0}\" in script {1}"})
     void targetStarted(AntEvent event) {
         if (finished) {
             return ;
@@ -480,7 +484,7 @@ public class AntDebugger extends ActionsProviderSupport {
         }
         
         if (target == null) {
-            Exceptions.printStackTrace(new IllegalStateException("Unable to find the target from "+event+", target name = "+targetName+", script location = "+event.getScriptLocation()));
+            ioManager.println(Bundle.MSG_TargetNotFound(targetName, event.getScriptLocation()), null, true);
         }
         callStackList.addFirst(target);
         currentTargetName = targetName;

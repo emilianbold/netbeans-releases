@@ -79,6 +79,14 @@ public final class PHPBracesMatcher implements BracesMatcher {
             TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
 
             if (ts != null) {
+                // #240157
+                if (searchForward(ts, offset)){
+                    offset--;
+                    if (offset < 0) {
+                        return null;
+                    }
+                }
+
                 ts.move(offset);
 
                 if (!ts.moveNext()) {
@@ -159,6 +167,14 @@ public final class PHPBracesMatcher implements BracesMatcher {
             TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
 
             if (ts != null) {
+                // #240157
+                if (searchForward(ts, offset)){
+                    offset--;
+                    if (offset < 0) {
+                        return null;
+                    }
+                }
+
                 ts.move(offset);
 
                 if (!ts.moveNext()) {
@@ -212,4 +228,38 @@ public final class PHPBracesMatcher implements BracesMatcher {
         }
     }
 
+    private boolean searchForward(TokenSequence<? extends PHPTokenId> ts, int offset) {
+        // if there is a brace token just before a caret position, search foward
+        // e.g. if (isSomething()^), if (isSomething())^{
+        // "^" is the caret
+        if (context.isSearchingBackward()) {
+            ts.move(offset);
+            if (ts.movePrevious()) {
+                Token<? extends PHPTokenId> previousToken = ts.token();
+                if (previousToken != null && isBraceToken(previousToken)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isBraceToken(Token<? extends PHPTokenId> token) {
+        PHPTokenId id = token.id();
+        return LexUtilities.textEquals(token.text(), '(') // NOI18N
+                || LexUtilities.textEquals(token.text(), ')') // NOI18N
+                || id == PHPTokenId.PHP_CURLY_OPEN
+                || id == PHPTokenId.PHP_CURLY_CLOSE
+                || LexUtilities.textEquals(token.text(), '[') // NOI18N
+                || LexUtilities.textEquals(token.text(), ']') // NOI18N
+                || LexUtilities.textEquals(token.text(), '$', '{') // NOI18N
+                || LexUtilities.textEquals(token.text(), ':') // NOI18N
+                || id == PHPTokenId.PHP_ENDFOR
+                || id == PHPTokenId.PHP_ENDFOREACH
+                || id == PHPTokenId.PHP_ENDIF
+                || id == PHPTokenId.PHP_ENDSWITCH
+                || id == PHPTokenId.PHP_ENDWHILE
+                || id == PHPTokenId.PHP_ELSEIF
+                || id == PHPTokenId.PHP_ELSE;
+    }
 }

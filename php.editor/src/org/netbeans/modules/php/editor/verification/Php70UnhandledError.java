@@ -52,6 +52,7 @@ import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
@@ -92,15 +93,16 @@ public class Php70UnhandledError extends UnhandledErrorRule {
 
     private static final class CheckVisitor extends DefaultVisitor {
 
-        private static final Set<String> TYPES_FOR_HINTS;
+        private static final Set<String> TYPES_FOR_SOURCES;
 
         private final List<VerificationError> errors = new ArrayList<>();
         private final FileObject fileObject;
 
 
         static {
-            TYPES_FOR_HINTS = Collections.synchronizedSet(new HashSet<>(Type.getTypesForHints()));
-            TYPES_FOR_HINTS.remove(Type.CALLABLE);
+            TYPES_FOR_SOURCES = Collections.synchronizedSet(new HashSet<>(Type.getTypesForEditor()));
+            TYPES_FOR_SOURCES.remove(Type.ARRAY);
+            TYPES_FOR_SOURCES.remove(Type.CALLABLE);
         }
 
 
@@ -131,27 +133,37 @@ public class Php70UnhandledError extends UnhandledErrorRule {
         @Override
         public void visit(FunctionDeclaration node) {
             checkScalarTypes(node.getFormalParameters());
+            checkReturnType(node.getReturnType());
             super.visit(node);
         }
 
         @Override
         public void visit(MethodDeclaration node) {
             checkScalarTypes(node.getFunction().getFormalParameters());
+            checkReturnType(node.getFunction().getReturnType());
             super.visit(node);
         }
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
             checkScalarTypes(node.getFormalParameters());
+            checkReturnType(node.getReturnType());
+            super.visit(node);
         }
 
         private void checkScalarTypes(List<FormalParameter> formalParameters) {
             for (FormalParameter formalParameter : formalParameters) {
                 String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
                 if (typeName != null
-                        && TYPES_FOR_HINTS.contains(typeName)) {
+                        && TYPES_FOR_SOURCES.contains(typeName)) {
                     createError(formalParameter);
                 }
+            }
+        }
+
+        private void checkReturnType(Expression returnType) {
+            if (returnType != null) {
+                createError(returnType);
             }
         }
 

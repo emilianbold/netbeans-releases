@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
-import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.Pair;
+import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.CompilerDefinitions;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
@@ -771,7 +771,7 @@ public class GNUCCCCompilerTest {
     }
     
     private static final class MyGNUCCCompiler  extends GNUCCCompiler {
-        Pair pair = new Pair();
+        CompilerDefinitions pair = new CompilerDefinitions();
         protected MyGNUCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
             super(env, flavor, kind, name, displayName, path);
         }

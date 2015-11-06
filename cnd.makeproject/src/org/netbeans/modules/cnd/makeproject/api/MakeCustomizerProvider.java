@@ -55,7 +55,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
@@ -95,12 +94,10 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     public static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
     public static final String COMMAND_APPLY = "APPLY";  // NOI18N
     private DialogDescriptor dialogDescriptor;
-    private final Map<Project, Dialog> customizerPerProject = new WeakHashMap<>(); // Is is weak needed here?
     private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private String currentCommand;
     private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<>(MakeContext.Kind.class);
     private final Set<ActionListener> actionListenerList = new HashSet<>();
-    private static final RequestProcessor RP = new RequestProcessor("MakeCustomizerProvider", 1); //NOI18N
     private static final RequestProcessor RP_SAVE = new RequestProcessor("MakeCustomizerProviderSave", 1); //NOI18N
 
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
@@ -130,27 +127,10 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             //TODO: show warning dialog
             return;
         }
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                showCustomizerWorker(preselectedNodeName, items, folders);
-            }
-        });
+        showCustomizerWorker(preselectedNodeName, items, folders);
     }
 
     private void showCustomizerWorker(String preselectedNodeName, List<Item> items, List<Folder> folders) {
-
-        if (customizerPerProject.containsKey(project)) {
-            Dialog dlg = customizerPerProject.get(project);
-
-            // check if the project is being customized
-            if (dlg.isShowing()) {
-                // make it showed
-                dlg.setVisible(true);
-                return;
-            }
-        }
-
         if (folders != null) {
             for (Folder folder : folders) {
                 if (folder != null) {
@@ -219,20 +199,19 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
 
         dialogDescriptor = new DialogDescriptor(
-                innerPane, // innerPane
+                innerPane,                      // innerPane
                 dialogTitle,
-                true, // modal
-                options, // options
-                options[OPTION_OK], // initial value
-                DialogDescriptor.BOTTOM_ALIGN, // options align
-                null, // helpCtx
-                null);                                 // listener
+                true,                           // modal
+                options,                        // options
+                options[OPTION_OK],             // initial value
+                DialogDescriptor.BOTTOM_ALIGN,  // options align
+                null,                           // helpCtx
+                null);                          // listener
 
         dialogDescriptor.setClosingOptions(new Object[]{options[OPTION_OK], options[OPTION_CANCEL]});
         innerPane.setDialogDescriptor(dialogDescriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-
-        customizerPerProject.put(project, dialog);
+        
         currentCommand = COMMAND_CANCEL;
 
         try {

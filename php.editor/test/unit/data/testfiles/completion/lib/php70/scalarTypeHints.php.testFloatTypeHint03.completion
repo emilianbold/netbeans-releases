@@ -1,11 +1,16 @@
 Code completion result for source line:
 function __construct(|float $arg) {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+PACKAGE    My                              [PUBLIC]   null
 CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
 CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 ------------------------------------
+PACKAGE    Firm                            [PUBLIC]   My
+CLASS      Comment                         [PUBLIC]   My\Firm
+CLASS      CommentsIterator                [PUBLIC]   My\Firm
+KEYWORD    array                                      null
 KEYWORD    bool                                       null
 KEYWORD    callable                                   null
 KEYWORD    float                                      null

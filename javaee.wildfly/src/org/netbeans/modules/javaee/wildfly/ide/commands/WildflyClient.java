@@ -155,7 +155,6 @@ import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyJaxrsResourceNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyWebModuleNode;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
 
@@ -947,16 +946,19 @@ public class WildflyClient {
             if (isSuccessfulOutcome(cl, response)) {
                 String serverUrl = "http://" + serverAddress + ':' + ip.getProperty(WildflyPluginProperties.PROPERTY_PORT);
                 // List<ModelNode>
-                List names = modelNodeAsList(cl, readResult(cl, response));
-                for (Object jaxrsResource : names) {
-                    String resourceClass = modelNodeAsString(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_CLASSNAME));
-                    String resourcePath = modelNodeAsString(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_PATH));
-                    List methods = modelNodeAsList(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_METHODS));
-                    String key = resourceClass + "___" + resourcePath;
-                    if(jaxrsResources.containsKey(key)) {
-                        jaxrsResources.get(key).addMethods(methods);
-                    } else {
-                        jaxrsResources.put(key, new WildflyJaxrsResource(resourceClass, resourcePath, serverUrl, methods));
+                Object result = readResult(cl, response);
+                if(modelNodeIsDefined(cl, result)) {
+                    List names = modelNodeAsList(cl, result);
+                    for (Object jaxrsResource : names) {
+                        String resourceClass = modelNodeAsString(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_CLASSNAME));
+                        String resourcePath = modelNodeAsString(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_PATH));
+                        List methods = modelNodeAsList(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_METHODS));
+                        String key = resourceClass + "___" + resourcePath;
+                        if(jaxrsResources.containsKey(key)) {
+                            jaxrsResources.get(key).addMethods(methods);
+                        } else {
+                            jaxrsResources.put(key, new WildflyJaxrsResource(resourceClass, resourcePath, serverUrl, methods));
+                        }
                     }
                 }
             }

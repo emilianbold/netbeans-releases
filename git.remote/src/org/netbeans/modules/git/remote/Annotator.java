@@ -93,6 +93,7 @@ import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
@@ -148,10 +149,13 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         List<Action> actions = new LinkedList<>();
         if (destination.equals(ActionDestination.MainMenu)) {
             if (noneVersioned) {
-                addAction("org-netbeans-modules-git-remote-ui-clone-CloneAction", null, actions, true);
-                addAction("org-netbeans-modules-git-remote-ui-init-InitAction", null, actions, true);
-                actions.add(null);
-                actions.add(SystemAction.get(RepositoryBrowserAction.class));
+                FileSystem defaultFileSystem = VCSFileProxySupport.getDefaultFileSystem();
+                if (defaultFileSystem != null) {
+                    addAction("org-netbeans-modules-git-remote-ui-clone-CloneAction", null, actions, true);
+                    addAction("org-netbeans-modules-git-remote-ui-init-InitAction", null, actions, true);
+                    actions.add(null);
+                    actions.add(SystemAction.get(RepositoryBrowserAction.class));
+                }
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
                 actions.add(new DiffMenu(destination, null));
@@ -178,8 +182,11 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
         } else {
             Lookup lkp = context.getElements();
-            if (noneVersioned) {                    
-                addAction("org-netbeans-modules-git-remote-ui-init-InitAction", context, actions);
+            if (noneVersioned) {
+                Set<VCSFileProxy> files = context.getFiles();
+                if (files != null && files.size() > 0 && files.iterator().next().toFile() == null) {
+                    addAction("org-netbeans-modules-git-remote-ui-init-InitAction", context, actions);
+                }
             } else {
                 Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));

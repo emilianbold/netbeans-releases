@@ -268,7 +268,12 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
             try {
                 int rowStartOfClassEnd = LineDocumentUtils.getLineStart(doc, classScope.getBlockRange().getEnd());
                 int rowEndOfPreviousRow = rowStartOfClassEnd - 1;
-                int newMethodPossibleOffset = LineDocumentUtils.getLineStart(doc, rowEndOfPreviousRow);
+
+                // #254173 the previous row may have something to break the code
+                // e.g. "{" for the class declaration, a field accross multiple lines
+                int rowStartOfPreviousRow = LineDocumentUtils.getLineStart(doc, rowEndOfPreviousRow);
+                int newMethodPossibleOffset = rowStartOfPreviousRow < rowEndOfPreviousRow ? rowStartOfClassEnd : rowStartOfPreviousRow;
+
                 int newMethodLineOffset = LineDocumentUtils.getLineIndex(doc, newMethodPossibleOffset);
                 int classDeclarationLineOffset = LineDocumentUtils.getLineIndex(doc, classDeclarationOffset);
                 if (newMethodLineOffset == classDeclarationLineOffset) {

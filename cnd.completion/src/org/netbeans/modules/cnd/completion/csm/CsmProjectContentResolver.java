@@ -173,9 +173,19 @@ public final class CsmProjectContentResolver {
                     assert CsmKindUtilities.isTypedef(ob) || CsmKindUtilities.isTypeAlias(ob);
                     CsmTypedef td = (CsmTypedef) ob;
                     CsmType type = td.getType();
-                    if (td.isTypeUnnamed() && type != null) {
+                    if (type != null && (!isCpp() || td.isTypeUnnamed())) {
                         CsmClassifier classifier = type.getClassifier();
-                        if (CsmKindUtilities.isEnum(classifier)) {
+                        if (CsmKindUtilities.isClass(classifier)) {
+                            if (!isCpp()) {
+                                // This works only for C
+                                for (CsmMember member : ((CsmClass) classifier).getMembers()) {
+                                    if (CsmKindUtilities.isEnum(member)) {
+                                        elemEnum = (CsmEnum) member;
+                                        break;
+                                    }    
+                                }
+                            }
+                        } else if (CsmKindUtilities.isEnum(classifier)) {
                             elemEnum = (CsmEnum) classifier;
                         } else if (CsmKindUtilities.isEnumForwardDeclaration(classifier)) {
                             elemEnum = ((CsmEnumForwardDeclaration)classifier).getCsmEnum();
@@ -473,6 +483,7 @@ public final class CsmProjectContentResolver {
                 if (CsmKindUtilities.isFile(elem.getScope())) {
                     CsmFile currentFile = (CsmFile) elem.getScope();
                     fillFileLocalFunctions(strPrefix, match, currentFile, needDeclFromUnnamedNS, false, out);
+                    fillFileLocalIncludeFunctions(strPrefix, match, currentFile, out);
                     for (Iterator<CsmContext.CsmContextEntry> it2 = context.iterator(); it2.hasNext();) {
                         CsmContext.CsmContextEntry elem2 = it2.next();
                         if (CsmKindUtilities.isNamespaceDefinition(elem2.getScope())) {
@@ -684,49 +695,7 @@ public final class CsmProjectContentResolver {
     }
 
     public static void fillFileLocalVariablesByFilter(CsmFilter filter, CsmFile file, Collection<CsmVariable> out) {
-        fillFileLocalIncludeVariables(filter, file, out, new HashSet<CsmFile>(), true);
-    }
-
-    private static void fillFileLocalIncludeVariables(CsmFilter filter, CsmFile file,
-            Collection<CsmVariable> out, Set<CsmFile> antiLoop, boolean first) {
-        if (antiLoop.contains(file)) {
-            return;
-        }
-        if (first) {
-            // check #inlcude stack at first
-            List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(file);
-            for (CsmInclude include : includeStack) {
-                CsmFile srcFile = include.getContainingFile();
-                int endOffset = include.getStartOffset();
-                Iterator<CsmVariable> it = CsmSelect.getStaticVariables(srcFile, filter);
-                while (it.hasNext()) {
-                    CsmOffsetableDeclaration decl = it.next();
-                    if (CsmOffsetUtilities.isAfterObject(decl, endOffset)) {
-                        if (CsmKindUtilities.isFileLocalVariable(decl)) {
-                            out.add((CsmVariable) decl);
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-        antiLoop.add(file);
-        for (CsmInclude incl : file.getIncludes()) {
-            CsmFile f = incl.getIncludeFile();
-            if (f != null) {
-                fillFileLocalIncludeVariables(filter, f, out, antiLoop, false);
-            }
-        }
-        if (!first) {
-            Iterator<CsmVariable> it = CsmSelect.getStaticVariables(file, filter);
-            while (it.hasNext()) {
-                CsmOffsetableDeclaration decl = it.next();
-                if (CsmKindUtilities.isFileLocalVariable(decl)) {
-                    out.add((CsmVariable) decl);
-                }
-            }
-        }
+        fillFileLocalIncludeSymbols(new LocalVariablesCollector(out, filter), file, new HashSet<CsmFile>(), true);
     }
 
     private void fillFileLocalIncludeNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match,
@@ -751,6 +720,20 @@ public final class CsmProjectContentResolver {
             // external linkage, so need to filter results before adding to out.
             out.addAll(filterFileLocalStaticVariables(allLocalDecls));
         }
+    }
+    
+    private void fillFileLocalIncludeFunctions(String strPrefix, boolean match,
+            CsmFile file, Map<CharSequence, CsmFunction> out) {
+        CsmDeclaration.Kind[] kinds = new CsmDeclaration.Kind[]{
+            CsmDeclaration.Kind.FUNCTION,
+            CsmDeclaration.Kind.FUNCTION_DEFINITION};
+        CsmFilter filter = CsmContextUtilities.createFilter(kinds,
+                strPrefix, match, caseSensitive, false);
+        fillFileLocalFunctionsByFilter(filter, file, out);
+    }
+
+    public static void fillFileLocalFunctionsByFilter(CsmFilter filter, CsmFile file, Map<CharSequence, CsmFunction> out) {
+        fillFileLocalIncludeSymbols(new LocalFunctionsCollector(out, filter), file, new HashSet<CsmFile>(), true);
     }
 
     private void fillFileLocalIncludeNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match,
@@ -1736,6 +1719,117 @@ public final class CsmProjectContentResolver {
             nextInheritanceLevel = CHILD_INHERITANCE;
         }
         return new VisibilityInfo(nextInheritanceLevel, nextMinVisibility, false);
+    }
+    
+    private boolean isCpp() {
+        // Or use CsmFileInfoQuery here?
+        if (startFile != null) {
+            switch (startFile.getFileType()) {
+                case SOURCE_C_FILE:
+                case SOURCE_FORTRAN_FILE:
+                    return false;
+            }
+        }
+        return true;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // staff to help with local symbols visible via #include directives
+    
+    private static abstract class LocalSymbolsCollector<S extends CsmOffsetableDeclaration> {
+        
+        protected final CsmFilter filter;
+
+        public LocalSymbolsCollector(CsmFilter filter) {
+            this.filter = filter;
+        }
+
+        public abstract Iterator<S> getStaticSymbols(CsmFile file);
+        
+        public abstract void handle(S symbol);
+        
+    }
+    
+    private final static class LocalVariablesCollector extends LocalSymbolsCollector<CsmVariable> {
+        
+        private final Collection<CsmVariable> out;
+
+        public LocalVariablesCollector(Collection<CsmVariable> out, CsmFilter filter) {
+            super(filter);
+            this.out = out;
+        }
+
+        @Override
+        public Iterator<CsmVariable> getStaticSymbols(CsmFile file) {
+            return CsmSelect.getStaticVariables(file, filter);
+        }
+
+        @Override
+        public void handle(CsmVariable symbol) {
+            if (CsmKindUtilities.isFileLocalVariable(symbol)) {
+                out.add(symbol);
+            }
+        }
+    }
+    
+    private final static class LocalFunctionsCollector extends LocalSymbolsCollector<CsmFunction> {
+        
+        private final Map<CharSequence, CsmFunction> out;
+
+        public LocalFunctionsCollector(Map<CharSequence, CsmFunction> out, CsmFilter filter) {
+            super(filter);
+            this.out = out;
+        }
+
+        @Override
+        public Iterator<CsmFunction> getStaticSymbols(CsmFile file) {
+            return CsmSelect.getStaticFunctions(file, filter);
+        }
+
+        @Override
+        public void handle(CsmFunction symbol) {
+            if (CsmKindUtilities.isFileLocalFunction(symbol)) {
+                out.put(symbol.getSignature(), symbol);
+            }
+        }
+    }
+    
+    private static <S extends CsmOffsetableDeclaration> void fillFileLocalIncludeSymbols(LocalSymbolsCollector<S> collector, 
+        CsmFile file, Set<CsmFile> antiLoop, boolean first) {
+        if (antiLoop.contains(file)) {
+            return;
+        }
+        if (first) {
+            // check #inlcude stack at first
+            List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(file);
+            for (CsmInclude include : includeStack) {
+                CsmFile srcFile = include.getContainingFile();
+                int endOffset = include.getStartOffset();
+                Iterator<S> it = collector.getStaticSymbols(srcFile);
+                while (it.hasNext()) {
+                    S decl = it.next();
+                    if (CsmOffsetUtilities.isAfterObject(decl, endOffset)) {
+                        collector.handle(decl);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        antiLoop.add(file);
+        for (CsmInclude incl : file.getIncludes()) {
+            CsmFile f = incl.getIncludeFile();
+            if (f != null) {
+                fillFileLocalIncludeSymbols(collector, f, antiLoop, false);
+            }
+        }
+        if (!first) {
+            Iterator<S> it = collector.getStaticSymbols(file);
+            while (it.hasNext()) {
+                S decl = it.next();
+                collector.handle(decl);
+            }
+        }
     }
 
     public static CharSequence[] splitQualifiedName(String qualified) {

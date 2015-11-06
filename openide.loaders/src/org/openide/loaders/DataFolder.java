@@ -1108,6 +1108,15 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
          */
         public static final SortMode EXTENSIONS = new FolderComparator(FolderComparator.EXTENSIONS);
 
+        /**
+         * Folder go first (sorted naturally by name) followed by files sorted
+         * by natural name and extension. Natural means that number sequences
+         * are evaluated and compared by value rather than lexicographically.
+         *
+         * @since org.openide.loaders 7.65
+         */
+        public static final SortMode NATURAL = new FolderComparator(FolderComparator.NATURAL);
+
         /** Method to write the sort mode to a folder's attributes.
         * @param folder folder write this mode to
         */
@@ -1126,6 +1135,10 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 x = "M"; // NOI18N
             } else if (this == SIZE) {
                 x = "S"; // NOI18N
+            } else if (this == EXTENSIONS) {
+                x = "X"; // NOI18N
+            } else if (this == NATURAL) {
+                x = "L"; // NOI18N
             } else {
                 x = "O"; // NOI18N
             }
@@ -1148,6 +1161,8 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             case 'O': return NONE;
             case 'M': return LAST_MODIFIED;
             case 'S': return SIZE;
+            case 'X': return EXTENSIONS;
+            case 'L': return NATURAL;
             case 'F':
             default:
                 return FOLDER_NAMES;

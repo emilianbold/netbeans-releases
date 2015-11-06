@@ -45,6 +45,14 @@
 package org.netbeans.modules.php.editor;
 
 import javax.swing.text.BadLocationException;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
+import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 
 /**
  * Test for PHPBracesMatcher
@@ -181,5 +189,250 @@ public class PHPBracesMatcherTest extends PHPTestBase {
                 + "^endswitch;\n");
     }
 
+    public void testIssue240157_01() throws Exception {
+        matchesBackward("if (isSomething@(^~)){}");
+        matchesForward("if (isSomething~(^@)){}");
+    }
 
+    public void testIssue240157_02() throws Exception {
+        matchesBackward("if (isSomething~(@)^){}");
+        matchesForward("if ~(isSomething~()^@){}");
+    }
+
+    public void testIssue240157_03() throws Exception {
+        matchesBackward("if ~(isSomething()@)^{}");
+        matchesForward("if (isSomething())^@{~}");
+    }
+
+    public void testIssue240157_04() throws Exception {
+        matchesBackward("if (isSomething())@{^~}");
+        matchesForward("if (isSomething())~{^@}");
+    }
+
+    public void testIssue240157_05() throws Exception {
+        matchesBackward("if (isSomething())~{@}^");
+    }
+
+    public void testIssue240157_06() throws Exception {
+        matchesBackward("if (isSomething^@(~)){}");
+        matchesForward("if (isSomething^@(~)){}");
+    }
+
+    public void testIssue240157_07() throws Exception {
+        matchesBackward("if @(^isSomething()~){}");
+    }
+
+    public void testIssue240157_08() throws Exception {
+        matchesBackward("if @^(isSomething()~){}");
+        matchesForward("if @^(isSomething()~){}");
+    }
+
+    public void testIssue240157_09() throws Exception {
+        matchesBackward("if (isSomething()) ^@{~}");
+        matchesForward("if (isSomething()) ^@{~}");
+    }
+
+    public void testIssue240157_10() throws Exception {
+        matchesBackward("echo \"Some string with braced @${^variables[ $index ]~} in it.\";");
+    }
+
+    public void testIssue240157_11() throws Exception {
+        matchesBackward("echo \"Some string with braced ${variables~[ $index @]^} in it.\";");
+    }
+
+    public void testIssue240157_AlternativeSyntax_01() throws Exception {
+        matchesBackward(
+                "if ($i == 0) @:^\n"
+                + "    if ($j == 0) :\n"
+                + "    endif;\n"
+                + "~elseif ($i == 1):\n"
+                + "    if ($j == 2):\n"
+                + "        $l = 33;\n"
+                + "    else:\n"
+                + "        $l = 22;\n"
+                + "    endif;\n"
+                + "endif;\n"
+                + "\n"
+        );
+    }
+
+    public void testIssue240157_AlternativeSyntax_02() throws Exception {
+        matchesBackward(
+                "if ($i == 0) ~:\n"
+                + "    if ($j == 0) :\n"
+                + "    endif;\n"
+                + "@elseif^ ($i == 1):\n"
+                + "    if ($j == 2):\n"
+                + "        $l = 33;\n"
+                + "    else:\n"
+                + "        $l = 22;\n"
+                + "    endif;\n"
+                + "endif;\n"
+                + "\n"
+        );
+    }
+
+    public void testIssue240157_AlternativeSyntax_03() throws Exception {
+        matchesBackward(
+                "if ($i == 0) :\n"
+                + "    if ($j == 0) :\n"
+                + "    endif;\n"
+                + "elseif ($i == 1):\n"
+                + "    if ($j == 2):\n"
+                + "        $l = 33;\n"
+                + "    else~:\n"
+                + "        $l = 22;\n"
+                + "    @endif^;\n"
+                + "endif;\n"
+                + "\n"
+        );
+    }
+
+    public void testIssue240157_AlternativeSyntax_04() throws Exception {
+        matchesBackward(
+                "if ($i == 0) ^@:\n"
+                + "    if ($j == 0) :\n"
+                + "    endif;\n"
+                + "~elseif ($i == 1):\n"
+                + "    if ($j == 2):\n"
+                + "        $l = 33;\n"
+                + "    else:\n"
+                + "        $l = 22;\n"
+                + "    endif;\n"
+                + "endif;\n"
+                + "\n"
+        );
+    }
+
+    public void testIssue240157_AlternativeSyntax_05() throws Exception {
+        matchesBackward(
+                "if ($i == 0) :\n"
+                + "    if ($j == 0) :\n"
+                + "    endif;\n"
+                + "elseif ($i == 1)~:\n"
+                + "    if ($j == 2):\n"
+                + "        $l = 33;\n"
+                + "    else:\n"
+                + "        $l = 22;\n"
+                + "    endif;\n"
+                + "@en^dif;\n"
+                + "\n"
+        );
+    }
+
+    public void testIssue240157_AlternativeSyntax_06() throws Exception {
+        matchesBackward(
+                "for ($i = 0; $i < count($array); $i++) ~:\n"
+                + "    for ($i = 0; $i < count($array); $i++) :\n"
+                + "    endfor;\n"
+                + "@endfor^;"
+                + "\n"
+        );
+    }
+
+    public void testIssue240157_AlternativeSyntax_07() throws Exception {
+        matchesBackward(
+                "for ($i = 0; $i < count($array); $i++) :\n"
+                + "    for ($i = 0; $i < count($array); $i++) ~:\n"
+                + "    ^@endfor;\n"
+                + "endfor;"
+                + "\n"
+        );
+    }
+
+    public void testIssue240157_AlternativeSyntax_08() throws Exception {
+        matchesBackward(
+                "while (true)~:\n"
+                + "    while(false):\n"
+                + "        if ($a == 1):\n"
+                + "\n            "
+                + "        endif;\n"
+                + "    endwhile;\n"
+                + "@endwhile^;\n");
+    }
+
+    public void testIssue240157_AlternativeSyntax_09() throws Exception {
+        matchesBackward(
+                "while (true)~:\n"
+                + "    while(false):\n"
+                + "        if ($a == 1):\n"
+                + "\n            "
+                + "        endif;\n"
+                + "    endwhile;\n"
+                + "^@endwhile;\n"
+        );
+    }
+
+    public void testIssue240157_AlternativeSyntax_10() throws Exception {
+        matchesBackward(
+                "switch ($i)~:\n"
+                + "    case 22:\n"
+                + "        $i = 44;\n"
+                + "        break;\n"
+                + "    case 33:\n"
+                + "    case 44:\n"
+                + "        $i = 55;\n"
+                + "        break;\n"
+                + "    default:\n"
+                + "        $i = 66;\n"
+                + "@endswitch^;\n"
+        );
+    }
+
+    public void testIssue240157_AlternativeSyntax_11() throws Exception {
+        matchesBackward(
+                "switch ($i)~:\n"
+                + "    case 22:\n"
+                + "        $i = 44;\n"
+                + "        break;\n"
+                + "    case 33:\n"
+                + "    case 44:\n"
+                + "        $i = 55;\n"
+                + "        break;\n"
+                + "    default:\n"
+                + "        $i = 66;\n"
+                + "^@endswitch;\n"
+        );
+    }
+
+    private void matchesBackward(String original) throws BadLocationException {
+        matches(original, true);
+    }
+
+    private void matchesForward(String original) throws BadLocationException {
+        matches(original, false);
+    }
+
+    /**
+     * "^": a caret position, "@": an origin position, "~": a matching position.
+     *
+     * @param original code
+     * @param backward {@code true} if search backward, otherwise {@code false}
+     * @throws BadLocationException
+     */
+    private void matches(final String original, boolean backward) throws BadLocationException {
+        BracesMatcherFactory factory = MimeLookup.getLookup(getPreferredMimeType()).lookup(BracesMatcherFactory.class);
+        String wrappedOriginal = wrapAsPhp(original);
+        int caretPosition = wrappedOriginal.replaceAll("(@|~)", "").indexOf('^');
+        int originPosition = wrappedOriginal.replaceAll("(\\^|~)", "").indexOf('@');
+        int matchingPosition = wrappedOriginal.replaceAll("(\\^|@)", "").indexOf('~');
+        wrappedOriginal = wrappedOriginal.replaceAll("(\\^|@|~)", "");
+
+        BaseDocument doc = getDocument(wrappedOriginal);
+
+        MatcherContext context = BracesMatchingTestUtils.createMatcherContext(doc, caretPosition, backward, 1);
+        BracesMatcher matcher = factory.createMatcher(context);
+        int[] origin = null, matches = null;
+        try {
+            origin = matcher.findOrigin();
+            matches = matcher.findMatches();
+        } catch (InterruptedException ex) {
+        }
+
+        assertNotNull("Did not find origin for " + " position " + originPosition, origin);
+        assertNotNull("Did not find matches for " + " position " + matchingPosition, matches);
+
+        assertEquals("Incorrect origin", originPosition, origin[0]);
+        assertEquals("Incorrect matches", matchingPosition, matches[0]);
+    }
 }

@@ -73,8 +73,7 @@ class DelegatingCellRenderer implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Outline outline = (Outline) table;
-        OutlineModel om = (OutlineModel) outline.getModel();
-        Node n = getNodeAt(om, row);
+        Node n = getNodeAt(outline, row);
         if (n instanceof TreeModelNode) {
             TreeModelNode tmn = (TreeModelNode) n;
             TableRendererModel trm = tmn.getModel();
@@ -92,8 +91,10 @@ class DelegatingCellRenderer implements TableCellRenderer {
         return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     }
 
-    static final Node getNodeAt(OutlineModel om, int row) {
+    static final Node getNodeAt(Outline outline, int rowInUI) {
         Node result = null;
+        OutlineModel om = (OutlineModel) outline.getModel();
+        int row = outline.convertRowIndexToModel(rowInUI);
         TreePath path = om.getLayout().getPathForRow(row);
         if (path != null) {
             result = Visualizer.findNode(path.getLastPathComponent());

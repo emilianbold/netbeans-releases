@@ -1,6 +1,6 @@
-#changeset:   15883:d69fda690151
+#changeset:   15896:8b80d52f4211
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Oct 22 16:03:23 2015 +0300
-#summary:     extra fix #253863 - [newcodemodel] broken code model in file if file has been excluded from project
-99529DC0E1426A102A98EF5494B6F6AA6E497F62 clank_0.3.6.zip
+#date:        Wed Oct 28 22:31:29 2015 +0300
+#summary:     fixed #256187 - [newcodemodel] incosistency between FileEntry.size and Buffer.size
+EDB5715F20F8F49250553EAF66579C5DD812EB38 clank_0.3.6.zip

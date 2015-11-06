@@ -53,4 +53,9 @@ public interface RemoteServerListProvider {
      * @return list of remote servers that have been set up in the IDE
      */
     List<ExecutionEnvironment> getRemoteServers();
+
+    /**
+     *  @return host selected as default
+     */
+    ExecutionEnvironment getDefailtServer();
 }

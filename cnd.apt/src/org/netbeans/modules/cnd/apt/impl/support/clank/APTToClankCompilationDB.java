@@ -137,7 +137,16 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
         // handle -include
         for (IncludeDirEntry incFile : includeHandler.getUserIncludeFilePaths()) {
             // FIXME: relative path can be passed to builder
-            builder.addIncFile(incFile.getPath());
+            
+            // TODO: now getUserIncludeFilePaths contains both: user -include and 
+            // special -include extracted from compiler built-ins
+            // they could be in different file systems; may be they need to be split
+            FSPath fsPath = new FSPath(incFile.getFileSystem(), incFile.getPath());
+            FileObject fileObject = fsPath.getFileObject();
+            if (fileObject != null && fileObject.isData()) {
+                CharSequence incPathUrl = fsPath.getURL();
+                builder.addIncFile(incPathUrl.toString());
+            }
         }
 
         ClankFileMacroMap macroMap = (ClankFileMacroMap)ppHandler.getMacroMap();

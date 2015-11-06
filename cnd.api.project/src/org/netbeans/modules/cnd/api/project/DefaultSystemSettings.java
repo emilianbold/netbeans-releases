@@ -77,6 +77,13 @@ public abstract class DefaultSystemSettings {
      * @return Unmodifiable list of strings or empty list.
      */
     public abstract List<String> getSystemIncludes(NativeFileItem.Language language, NativeProject project);
+
+    /**
+     * Obtain a list of default system pre-included headers for given language.
+     * Return empty list if language is neither C nor C++ or no default compilers were found.
+     * @return Unmodifiable list of strings or empty list.
+     */
+    public abstract List<String> getSystemIncludeHeaders(NativeFileItem.Language language, NativeProject project);
     
     /**
      * Obtain a list of default system macros for given language. 
@@ -93,9 +100,14 @@ public abstract class DefaultSystemSettings {
         }
       
         @Override
+        public List<String> getSystemIncludeHeaders(NativeFileItem.Language language, NativeProject project) {
+            return Collections.emptyList();
+        }
+
+        @Override
         public List<String> getSystemMacros(NativeFileItem.Language language, NativeProject project) {
             return Collections.emptyList();
         }
-      
+
     }
 }

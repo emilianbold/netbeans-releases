@@ -43,9 +43,6 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
@@ -76,8 +73,8 @@ import org.openide.util.NbBundle;
     }
 
     @Override
-    protected CCCCompiler.Pair getFreshSystemIncludesAndDefines() {
-        CCCCompiler.Pair res = new CCCCompiler.Pair();
+    protected CCCCompiler.CompilerDefinitions getFreshCompilerDefinitions() {
+        CCCCompiler.CompilerDefinitions res = new CCCCompiler.CompilerDefinitions();
         try {
             getSystemIncludesAndDefines(getCompilerFingerPrintCommand(), true, res);
             completePredefinedMacros(res);
@@ -101,12 +98,12 @@ import org.openide.util.NbBundle;
     }
     
     @Override
-    protected MyCallable<Pair> getCallable(){
-        return new MyCallable<Pair>() {
+    protected MyCallable<CompilerDefinitions> getCallable(){
+        return new MyCallable<CompilerDefinitions>() {
 
             @Override
-            public Pair call(String p) {
-                Pair tmp = new Pair();
+            public CompilerDefinitions call(String p) {
+                CompilerDefinitions tmp = new CompilerDefinitions();
                 try {
                     getSystemIncludesAndDefines(getCompilerFingerPrintCommand()+" "+p, true, tmp); // NOI18N
                     completePredefinedMacros(tmp);
@@ -118,40 +115,8 @@ import org.openide.util.NbBundle;
         };
     }
 
-    protected Collection<String> getSystemPaths(String line) {
-        List<String> res =getIncludePaths(line, "-include"); // NOI18N
-        res.addAll(getIncludePaths(line, "-I")); // NOI18N
-        return res;
-    }
-
-    private List<String> getIncludePaths(String line, String prefix) {
-        List<String> res = new ArrayList<String>();
-        int includeIndex = line.indexOf(prefix); // NOI18N
-        while (includeIndex > 0) {
-            String token;
-            int rest = includeIndex+prefix.length();
-            if (line.charAt(includeIndex+prefix.length()) == ' ') {
-                rest++;
-            }
-            int spaceIndex = line.indexOf(' ', rest); // NOI18N
-            if (spaceIndex > 0) {
-                token = line.substring(rest, spaceIndex);
-            } else {
-                token = line.substring(rest);
-            }
-            if (!token.equals("-xbuiltin")) { //NOI18N
-                res.add(token);
-            }
-            if (spaceIndex < 0) {
-                break;
-            }
-            includeIndex = line.indexOf(prefix, spaceIndex); // NOI18N
-        }
-        return res;
-    }
-    
     @Override
-    protected void parseCompilerOutput(BufferedReader reader, CCCCompiler.Pair pair) {
+    protected void parseCompilerOutput(BufferedReader reader, CCCCompiler.CompilerDefinitions pair) {
         try {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -163,6 +128,9 @@ import org.openide.util.NbBundle;
                             break;
                         case SystemPath:
                             addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(res.getResult()));
+                            break;
+                        case SystemIncludeHeader:
+                            addUnique(pair.systemIncludeHeadersList, applyPathPrefix(res.getResult()));
                             break;
                     }
                 }

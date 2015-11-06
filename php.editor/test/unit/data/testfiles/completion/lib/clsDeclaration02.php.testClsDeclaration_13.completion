@@ -20,6 +20,7 @@ PACKAGE    Froo                            [PUBLIC]   null
 PACKAGE    God                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    More                            [PUBLIC]   null
+PACKAGE    My                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Name                            [PUBLIC]   null
@@ -76,6 +77,7 @@ PACKAGE    Bat                             [PUBLIC]   Baz
 PACKAGE    Bom                             [PUBLIC]   Fom
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
+PACKAGE    Firm                            [PUBLIC]   My
 PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Name                            [PUBLIC]   More
 PACKAGE    Name                            [PUBLIC]   Other
@@ -265,6 +267,7 @@ CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MockClass                       [PUBLIC]   MC
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
 CLASS      MyClass                         [PUBLIC]   MyClass.php
+CLASS      MyClass                         [PUBLIC]   byReferences.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
 CLASS      MyCls                           [PUBLIC]   issue236184.php
 CLASS      MyNewClass123                   [PUBLIC]   Foo

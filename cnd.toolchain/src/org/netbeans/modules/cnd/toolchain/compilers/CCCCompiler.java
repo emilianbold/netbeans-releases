@@ -76,8 +76,13 @@ public abstract class CCCCompiler extends AbstractCompiler {
     private static final String DEV_NULL = "/dev/null"; // NOI18N
     private static final String NB69_VERSION_PATTERN = "/var/cache/cnd/remote-includes/"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
+    private static final String SYSTEM_INCLUDE_KEY = ".systemIncludes"; //NOI18N
+    private static final String SYSTEM_INCLUDE_HEADER_KEY = ".systemIncludeHeaders"; //NOI18N
+    private static final String SYSTEM_MACROS_KEY = ".systemMacros"; //NOI18N
+    private static final String USER_ADDED_KEY = ".useradded."; //NOI18N
+    private static final String LIST_COUNT_KEY = ".count"; //NOI18N
 
-    private volatile Pair compilerDefinitions;
+    private volatile CompilerDefinitions compilerDefinitions;
     private static File emptyFile = null;
 
     protected CCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
@@ -103,7 +108,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
     private boolean copySystemIncludeDirectoriesImpl(List<String> values, boolean normalize) {
         assert values != null;
         if (compilerDefinitions == null) {
-            compilerDefinitions = new Pair();
+            compilerDefinitions = new CompilerDefinitions();
         }
         if (values.equals(compilerDefinitions.systemIncludeDirectoriesList)) {
             return false;
@@ -116,12 +121,45 @@ public abstract class CCCCompiler extends AbstractCompiler {
         compilerDefinitions.systemIncludeDirectoriesList = systemIncludeDirectoriesList;
         return true;
     }
+
+    @Override
+    public boolean setSystemIncludeHeaders(List<String> values) {
+        return copySystemIncludeDirectoriesImpl(values, true);
+    }
+
+    protected final boolean copySystemIncludeHeaders(List<String> values) {
+        boolean res = copySystemIncludeHeadersImpl(values, false);
+        if (res) {
+            if (values instanceof CompilerDefinition) {
+                compilerDefinitions.systemIncludeHeadersList.userAddedDefinitions.clear();
+                compilerDefinitions.systemIncludeHeadersList.userAddedDefinitions.addAll(((CompilerDefinition)values).userAddedDefinitions);
+            }
+        }
+        return res;
+    }
+
+    private boolean copySystemIncludeHeadersImpl(List<String> values, boolean normalize) {
+        assert values != null;
+        if (compilerDefinitions == null) {
+            compilerDefinitions = new CompilerDefinitions();
+        }
+        if (values.equals(compilerDefinitions.systemIncludeHeadersList)) {
+            return false;
+        }
+        CompilerDefinition systemIncludeHeadersList = new CompilerDefinition(values);
+        if (normalize) {
+            normalizePaths(systemIncludeHeadersList);
+        }
+        systemIncludeHeadersList.userAddedDefinitions.addAll(compilerDefinitions.systemIncludeHeadersList.userAddedDefinitions);
+        compilerDefinitions.systemIncludeHeadersList = systemIncludeHeadersList;
+        return true;
+    }
     
     @Override
     public boolean setSystemPreprocessorSymbols(List<String> values) {
         assert values != null;
         if (compilerDefinitions == null) {
-            compilerDefinitions = new Pair();
+            compilerDefinitions = new CompilerDefinitions();
         }
         if (values.equals(compilerDefinitions.systemPreprocessorSymbolsList)) {
             return false;
@@ -145,23 +183,23 @@ public abstract class CCCCompiler extends AbstractCompiler {
 
     @Override
     public List<String> getSystemPreprocessorSymbols() {
-        Pair cur = compilerDefinitions;
+        CompilerDefinitions cur = compilerDefinitions;
         if (cur == null) {
-            cur = resetAndGetSystemProperties();
+            cur = resetAndGetCompilerDefinitions();
         }
         return cur.systemPreprocessorSymbolsList;
     }
     
-    private final Map<String,Pair> particularModel = new HashMap<String,Pair>();
+    private final Map<String,CompilerDefinitions> particularModel = new HashMap<String,CompilerDefinitions>();
     
     @Override
     public List<String> getSystemPreprocessorSymbols(String flags) {
         if (flags != null && !flags.isEmpty()) {
-            Pair particular;
+            CompilerDefinitions particular;
             synchronized (particularModel) {
                 particular = particularModel.get(flags);
                 if (particular == null) {
-                    MyCallable<Pair> callable = getCallable();
+                    MyCallable<CompilerDefinitions> callable = getCallable();
                     particular = callable.call(flags);
                     particularModel.put(flags, particular);
                     if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
@@ -176,27 +214,40 @@ public abstract class CCCCompiler extends AbstractCompiler {
         return predefinedMacrosByFlags(getSystemPreprocessorSymbols(), flags);
     }
 
-    private void applyUserAddedDefinitions(Pair particular) {
-        List<String> systemPreprocessorSymbols = getSystemPreprocessorSymbols();
-        if (systemPreprocessorSymbols instanceof CompilerDefinition) {
-            for (int i : ((CompilerDefinition) systemPreprocessorSymbols).userAddedDefinitions) {
-                addUniqueOrReplace(particular.systemPreprocessorSymbolsList, systemPreprocessorSymbols.get(i));
+    private void applyUserAddedDefinitions(CompilerDefinitions particular) {
+        {
+            List<String> systemPreprocessorSymbols = getSystemPreprocessorSymbols();
+            if (systemPreprocessorSymbols instanceof CompilerDefinition) {
+                for (int i : ((CompilerDefinition) systemPreprocessorSymbols).userAddedDefinitions) {
+                    addUniqueOrReplace(particular.systemPreprocessorSymbolsList, systemPreprocessorSymbols.get(i));
+                }
             }
         }
-        List<String> systemIncludeDirectories = getSystemIncludeDirectories();
-        if (systemIncludeDirectories instanceof CompilerDefinition) {
-            for (int i : ((CompilerDefinition) systemIncludeDirectories).userAddedDefinitions) {
-                // TODO implement "merge" which inserts user's path in best place
-                addUnique(particular.systemIncludeDirectoriesList, systemIncludeDirectories.get(i));
+        {
+            List<String> systemIncludeDirectories = getSystemIncludeDirectories();
+            if (systemIncludeDirectories instanceof CompilerDefinition) {
+                for (int i : ((CompilerDefinition) systemIncludeDirectories).userAddedDefinitions) {
+                    // TODO implement "merge" which inserts user's path in best place
+                    addUnique(particular.systemIncludeDirectoriesList, systemIncludeDirectories.get(i));
+                }
+            }
+        }
+        {
+            List<String> systemIncludeHeaders = getSystemIncludeHeaders();
+            if (systemIncludeHeaders instanceof CompilerDefinition) {
+                for (int i : ((CompilerDefinition) systemIncludeHeaders).userAddedDefinitions) {
+                    // TODO implement "merge" which inserts user's path in best place
+                    addUnique(particular.systemIncludeHeadersList, systemIncludeHeaders.get(i));
+                }
             }
         }
     }
     
     @Override
     public List<String> getSystemIncludeDirectories() {
-        Pair cur = compilerDefinitions;
+        CompilerDefinitions cur = compilerDefinitions;
         if (cur == null) {
-            cur = resetAndGetSystemProperties();
+            cur = resetAndGetCompilerDefinitions();
         }
         return cur.systemIncludeDirectoriesList;
     }
@@ -204,11 +255,11 @@ public abstract class CCCCompiler extends AbstractCompiler {
     @Override
     public List<String> getSystemIncludeDirectories(String flags) {
         if (flags != null && !flags.isEmpty()) {
-            Pair particular;
+            CompilerDefinitions particular;
             synchronized (particularModel) {
                 particular = particularModel.get(flags);
                 if (particular == null) {
-                    MyCallable<Pair> callable = getCallable();
+                    MyCallable<CompilerDefinitions> callable = getCallable();
                     particular = callable.call(flags);
                     particularModel.put(flags, particular);
                     if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
@@ -224,6 +275,37 @@ public abstract class CCCCompiler extends AbstractCompiler {
     }
 
     @Override
+    public List<String> getSystemIncludeHeaders() {
+        CompilerDefinitions cur = compilerDefinitions;
+        if (cur == null) {
+            cur = resetAndGetCompilerDefinitions();
+        }
+        return cur.systemIncludeHeadersList;
+    }
+
+    @Override
+    public List<String> getSystemIncludeHeaders(String flags) {
+        if (flags != null && !flags.isEmpty()) {
+            CompilerDefinitions particular;
+            synchronized (particularModel) {
+                particular = particularModel.get(flags);
+                if (particular == null) {
+                    MyCallable<CompilerDefinitions> callable = getCallable();
+                    particular = callable.call(flags);
+                    particularModel.put(flags, particular);
+                    if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                        applyUserAddedDefinitions(particular);
+                    }
+                }
+            }
+            if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                return particular.systemIncludeHeadersList;
+            }
+        }
+        return getSystemIncludeHeaders();
+    }
+
+    @Override
     public boolean isReady() {
         return compilerDefinitions != null;
     }
@@ -231,23 +313,23 @@ public abstract class CCCCompiler extends AbstractCompiler {
     @Override
     public void waitReady(boolean reset) {
         if (reset || !isReady()) {
-            resetSystemProperties();
+            resetCompilerDefinitions();
         }
     }
 
-    private Pair resetAndGetSystemProperties() {
+    private CompilerDefinitions resetAndGetCompilerDefinitions() {
         CndUtils.assertNonUiThread();
-        Pair res = getFreshSystemIncludesAndDefines();
+        CompilerDefinitions res = getFreshCompilerDefinitions();
         compilerDefinitions = res;
         return res;
     }
 
     @Override
-    public final void resetSystemProperties(boolean lazy) {
+    public final void resetCompilerDefinitions(boolean lazy) {
         if (lazy) {
             compilerDefinitions = null;
         } else {
-            resetAndGetSystemProperties();
+            resetAndGetCompilerDefinitions();
         }
     }
 
@@ -255,101 +337,142 @@ public abstract class CCCCompiler extends AbstractCompiler {
     @Override
     public void loadSettings(Preferences prefs, String prefix) {
         String version = prefs.get(CompilerSetPreferences.VERSION_KEY, "1.0"); // NOI18N
-        List<String> includeDirList = new ArrayList<String>();
-        List<Integer> userAddedInclude = new ArrayList<Integer>();
-        String includeDirPrefix = prefix + ".systemIncludes"; // NOI18N
-        int includeDirCount = prefs.getInt(includeDirPrefix + ".count", 0); // NOI18N
-        for (int i = 0; i < includeDirCount; ++i) {
-            String includeDir = prefs.get(includeDirPrefix + '.' + i, null); // NOI18N
-            if (includeDir != null) {
-                if ("1.1".equals(version)) { // NOI18N
-                    if (Utilities.isWindows()) {
-                        includeDir = includeDir.replace('\\', '/'); // NOI18N
-                    }
-                    int start = includeDir.indexOf(NB69_VERSION_PATTERN);
-                    if (start > 0) {
-                        includeDir = includeDir.substring(start+NB69_VERSION_PATTERN.length());
-                        int index = includeDir.indexOf('/'); // NOI18N
-                        if (index > 0) {
-                            includeDir = includeDir.substring(index);
+        {
+            List<String> includeDirList = new ArrayList<String>();
+            List<Integer> userAddedInclude = new ArrayList<Integer>();
+            String includeDirPrefix = prefix + SYSTEM_INCLUDE_KEY;
+            int includeDirCount = prefs.getInt(includeDirPrefix + LIST_COUNT_KEY, 0);
+            for (int i = 0; i < includeDirCount; ++i) {
+                String includeDir = prefs.get(includeDirPrefix + '.' + i, null); // NOI18N
+                if (includeDir != null) {
+                    if ("1.1".equals(version)) { // NOI18N
+                        if (Utilities.isWindows()) {
+                            includeDir = includeDir.replace('\\', '/'); // NOI18N
                         }
+                        int start = includeDir.indexOf(NB69_VERSION_PATTERN);
+                        if (start > 0) {
+                            includeDir = includeDir.substring(start+NB69_VERSION_PATTERN.length());
+                            int index = includeDir.indexOf('/'); // NOI18N
+                            if (index > 0) {
+                                includeDir = includeDir.substring(index);
+                            }
+                        }
+
                     }
-                    
-                }
-                includeDirList.add(includeDir);
-                String added = prefs.get(includeDirPrefix + ".useradded." + i, null); // NOI18N
-                if ("true".equals(added)) { // NOI18N
-                    userAddedInclude.add(includeDirList.size()-1);
+                    includeDirList.add(includeDir);
+                    String added = prefs.get(includeDirPrefix + USER_ADDED_KEY + i, null);
+                    if ("true".equals(added)) { // NOI18N
+                        userAddedInclude.add(includeDirList.size()-1);
+                    }
                 }
             }
-        }
-        if (includeDirList.isEmpty()) {
-            // try to load using the old way;  this might be removed at some moment in future
-            List<String> oldIncludeDirList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-            if (oldIncludeDirList != null) {
-                includeDirList.addAll(oldIncludeDirList);
+            if (includeDirList.isEmpty()) {
+                // try to load using the old way;  this might be removed at some moment in future
+                List<String> oldIncludeDirList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
+                if (oldIncludeDirList != null) {
+                    includeDirList.addAll(oldIncludeDirList);
+                }
             }
-        }
-        copySystemIncludeDirectories(includeDirList);
-        if (!userAddedInclude.isEmpty()) {
-            for(Integer i : userAddedInclude) {
-                compilerDefinitions.systemIncludeDirectoriesList.setUserAdded(true, i);
+            copySystemIncludeDirectories(includeDirList);
+            if (!userAddedInclude.isEmpty()) {
+                for(Integer i : userAddedInclude) {
+                    compilerDefinitions.systemIncludeDirectoriesList.setUserAdded(true, i);
+                }
             }
         }
 
-        List<String> preprocSymbolList = new ArrayList<String>();
-        List<Integer> userAddedpreprocSymbol = new ArrayList<Integer>();
-        String preprocSymbolPrefix = prefix + ".systemMacros"; // NOI18N
-        int preprocSymbolCount = prefs.getInt(preprocSymbolPrefix + ".count", 0); // NOI18N
-        for (int i = 0; i < preprocSymbolCount; ++i) {
-            String preprocSymbol = prefs.get(preprocSymbolPrefix + '.' + i, null); // NOI18N
-            if (preprocSymbol != null) {
-                preprocSymbolList.add(preprocSymbol);
-                String added = prefs.get(preprocSymbolPrefix + ".useradded." + i, null); // NOI18N
-                if ("true".equals(added)) { // NOI18N
-                    userAddedpreprocSymbol.add(preprocSymbolList.size()-1);
+        {
+            List<String> includeHeaderList = new ArrayList<String>();
+            List<Integer> userAddedIncludeHeaders = new ArrayList<Integer>();
+            String includeHeaderPrefix = prefix + SYSTEM_INCLUDE_HEADER_KEY;
+            int includeHeaderCount = prefs.getInt(includeHeaderPrefix + LIST_COUNT_KEY, 0);
+            for (int i = 0; i < includeHeaderCount; ++i) {
+                String includeHeader = prefs.get(includeHeaderPrefix + '.' + i, null); // NOI18N
+                if (includeHeader != null) {
+                    includeHeaderList.add(includeHeader);
+                    String added = prefs.get(includeHeaderPrefix + USER_ADDED_KEY + i, null);
+                    if ("true".equals(added)) { // NOI18N
+                        userAddedIncludeHeaders.add(includeHeaderList.size()-1);
+                    }
+                }
+            }
+            copySystemIncludeHeaders(includeHeaderList);
+            if (!userAddedIncludeHeaders.isEmpty()) {
+                for(Integer i : userAddedIncludeHeaders) {
+                    compilerDefinitions.systemIncludeHeadersList.setUserAdded(true, i);
                 }
             }
         }
-        if (preprocSymbolList.isEmpty()) {
-            // try to load using the old way;  this might be removed at some moment in future
-            List<String> oldPreprocSymbolList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-            if (oldPreprocSymbolList != null) {
-                preprocSymbolList.addAll(oldPreprocSymbolList);
+
+        {
+            List<String> preprocSymbolList = new ArrayList<String>();
+            List<Integer> userAddedpreprocSymbol = new ArrayList<Integer>();
+            String preprocSymbolPrefix = prefix + SYSTEM_MACROS_KEY;
+            int preprocSymbolCount = prefs.getInt(preprocSymbolPrefix + LIST_COUNT_KEY, 0);
+            for (int i = 0; i < preprocSymbolCount; ++i) {
+                String preprocSymbol = prefs.get(preprocSymbolPrefix + '.' + i, null); // NOI18N
+                if (preprocSymbol != null) {
+                    preprocSymbolList.add(preprocSymbol);
+                    String added = prefs.get(preprocSymbolPrefix + USER_ADDED_KEY + i, null);
+                    if ("true".equals(added)) { // NOI18N
+                        userAddedpreprocSymbol.add(preprocSymbolList.size()-1);
+                    }
+                }
             }
-        }
-        copySystemPreprocessorSymbols(preprocSymbolList);
-        if (!userAddedpreprocSymbol.isEmpty()) {
-            for(Integer i : userAddedpreprocSymbol) {
-                compilerDefinitions.systemPreprocessorSymbolsList.setUserAdded(true, i);
+            if (preprocSymbolList.isEmpty()) {
+                // try to load using the old way;  this might be removed at some moment in future
+                List<String> oldPreprocSymbolList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
+                if (oldPreprocSymbolList != null) {
+                    preprocSymbolList.addAll(oldPreprocSymbolList);
+                }
+            }
+            copySystemPreprocessorSymbols(preprocSymbolList);
+            if (!userAddedpreprocSymbol.isEmpty()) {
+                for(Integer i : userAddedpreprocSymbol) {
+                    compilerDefinitions.systemPreprocessorSymbolsList.setUserAdded(true, i);
+                }
             }
         }
     }
 
     @Override
     public void saveSettings(Preferences prefs, String prefix) {
-        List<String> includeDirList = getSystemIncludeDirectories();
-        String includeDirPrefix = prefix + ".systemIncludes"; // NOI18N
-        prefs.putInt(includeDirPrefix + ".count", includeDirList.size()); // NOI18N
-        for (int i = 0; i < includeDirList.size(); ++i) {
-            prefs.put(includeDirPrefix + '.' + i, includeDirList.get(i)); // NOI18N
-            if (compilerDefinitions.systemIncludeDirectoriesList.isUserAdded(i)) {
-                prefs.put(includeDirPrefix + ".useradded." + i, "true"); // NOI18N
+        {
+            List<String> includeDirList = getSystemIncludeDirectories();
+            String includeDirPrefix = prefix + SYSTEM_INCLUDE_KEY;
+            prefs.putInt(includeDirPrefix + LIST_COUNT_KEY, includeDirList.size());
+            for (int i = 0; i < includeDirList.size(); ++i) {
+                prefs.put(includeDirPrefix + '.' + i, includeDirList.get(i)); // NOI18N
+                if (compilerDefinitions.systemIncludeDirectoriesList.isUserAdded(i)) {
+                    prefs.put(includeDirPrefix + USER_ADDED_KEY + i, "true"); // NOI18N
+                }
             }
         }
-
-        List<String> preprocSymbolList = getSystemPreprocessorSymbols();
-        String preprocSymbolPrefix = prefix + ".systemMacros"; // NOI18N
-        prefs.putInt(preprocSymbolPrefix + ".count", preprocSymbolList.size()); // NOI18N
-        for (int i = 0; i < preprocSymbolList.size(); ++i) {
-            prefs.put(preprocSymbolPrefix + '.' + i, preprocSymbolList.get(i)); // NOI18N
-            if (compilerDefinitions.systemPreprocessorSymbolsList.isUserAdded(i)) {
-                prefs.put(preprocSymbolPrefix + ".useradded." + i, "true"); // NOI18N
+        {
+            List<String> includeHeaderList = getSystemIncludeHeaders();
+            String includeHeaderPrefix = prefix + SYSTEM_INCLUDE_HEADER_KEY;
+            prefs.putInt(includeHeaderPrefix + LIST_COUNT_KEY, includeHeaderList.size());
+            for (int i = 0; i < includeHeaderList.size(); ++i) {
+                prefs.put(includeHeaderPrefix + '.' + i, includeHeaderList.get(i)); // NOI18N
+                if (compilerDefinitions.systemIncludeHeadersList.isUserAdded(i)) {
+                    prefs.put(includeHeaderPrefix + USER_ADDED_KEY + i, "true"); // NOI18N
+                }
+            }
+        }
+        {
+            List<String> preprocSymbolList = getSystemPreprocessorSymbols();
+            String preprocSymbolPrefix = prefix + SYSTEM_MACROS_KEY;
+            prefs.putInt(preprocSymbolPrefix + LIST_COUNT_KEY, preprocSymbolList.size());
+            for (int i = 0; i < preprocSymbolList.size(); ++i) {
+                prefs.put(preprocSymbolPrefix + '.' + i, preprocSymbolList.get(i)); // NOI18N
+                if (compilerDefinitions.systemPreprocessorSymbolsList.isUserAdded(i)) {
+                    prefs.put(preprocSymbolPrefix + USER_ADDED_KEY + i, "true"); // NOI18N
+                }
             }
         }
     }
 
-    protected final void getSystemIncludesAndDefines(String arguments, final boolean stdout, Pair pair) throws IOException {
+    protected final void getSystemIncludesAndDefines(String arguments, final boolean stdout, CompilerDefinitions pair) throws IOException {
         String compilerPath = getPath();
         if (compilerPath == null || compilerPath.length() == 0) {
             return;
@@ -428,9 +551,9 @@ public abstract class CCCCompiler extends AbstractCompiler {
     }
 
     // To be overridden
-    protected abstract void parseCompilerOutput(BufferedReader reader, Pair pair);
+    protected abstract void parseCompilerOutput(BufferedReader reader, CompilerDefinitions pair);
 
-    protected abstract Pair getFreshSystemIncludesAndDefines();
+    protected abstract CompilerDefinitions getFreshCompilerDefinitions();
 
     protected String getDefaultPath() {
         CompilerDescriptor compiler = getDescriptor();
@@ -710,7 +833,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         return macrosList;
     }
     
-    protected void completePredefinedMacros(Pair pair) {
+    protected void completePredefinedMacros(CompilerDefinitions pair) {
         final CompilerDescriptor descriptor = getDescriptor();
         if (descriptor != null) {
             final List<PredefinedMacro> predefinedMacros = descriptor.getPredefinedMacros();
@@ -731,7 +854,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
     }
     
     //For testing. Compare compiler macros definition with real mactos privided by compiler.
-    protected void checkModel(Pair res, MyCallable<Pair> get) {
+    protected void checkModel(CompilerDefinitions res, MyCallable<CompilerDefinitions> get) {
         if (!LOG.isLoggable(Level.FINE)) {
             return;
         }
@@ -780,7 +903,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
         Collections.sort(allFlags);
         for (String flag : allFlags) {
-            Pair tmp = get.call(flag);
+            CompilerDefinitions tmp = get.call(flag);
             if (tmp.systemPreprocessorSymbolsList.size() <= 6 || tmp.exitCode != 0) {
                 if (LOG.isLoggable(Level.FINER)) {
                     buf.append("\nThe flag ").append(flag).append(" is not supported. Exit code "+tmp.exitCode); // NOI18N
@@ -1192,19 +1315,20 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
     }
    
-    protected abstract MyCallable<Pair> getCallable();
+    protected abstract MyCallable<CompilerDefinitions> getCallable();
     
-    protected static final class Pair {
+    protected static final class CompilerDefinitions {
         public CompilerDefinition systemIncludeDirectoriesList;
         public CompilerDefinition systemPreprocessorSymbolsList;
+        public CompilerDefinition systemIncludeHeadersList;
         public int exitCode;
-        public Pair(){
+        public CompilerDefinitions(){
             systemIncludeDirectoriesList = new CompilerDefinition(0);
             systemPreprocessorSymbolsList = new CompilerDefinition(0);
+            systemIncludeHeadersList = new CompilerDefinition(0);
             exitCode = 0;
         }
     }
-    
     
     public static final class CompilerDefinition extends ArrayList<String> {
         private List<Integer> userAddedDefinitions = new ArrayList<Integer>(0);
@@ -1278,30 +1402,50 @@ public abstract class CCCCompiler extends AbstractCompiler {
             return macro.startsWith("__LINE__") || macro.startsWith("__FILE__") || macro.startsWith("__DATE__") || macro.startsWith("__TIME__"); // NOI18N
                 
         }
-        private void diff(Pair golden, Pair particular) {
+        private void diff(CompilerDefinitions golden, CompilerDefinitions particular) {
             diffMacros(golden, particular);
             diffPaths(golden, particular);
         }
-        private void diffPaths(Pair golden, Pair particular) {
-            if (particular.systemIncludeDirectoriesList.size()==0) {
-                changedPaths = false;
-                return;
-            }
-            if (particular.systemIncludeDirectoriesList.size() != golden.systemIncludeDirectoriesList.size()) {
-                changedPaths = true;
-                return;
-            }
-            for(int i = 0; i < golden.systemIncludeDirectoriesList.size(); i++) {
-                String s1 = golden.systemIncludeDirectoriesList.get(i);
-                String s2 = particular.systemIncludeDirectoriesList.get(i);
-                if (!s1.equals(s2)) {
+        private void diffPaths(CompilerDefinitions golden, CompilerDefinitions particular) {
+            {
+                if (particular.systemIncludeDirectoriesList.size()==0) {
+                    changedPaths = false;
+                    return;
+                }
+                if (particular.systemIncludeDirectoriesList.size() != golden.systemIncludeDirectoriesList.size()) {
                     changedPaths = true;
                     return;
+                }
+                for(int i = 0; i < golden.systemIncludeDirectoriesList.size(); i++) {
+                    String s1 = golden.systemIncludeDirectoriesList.get(i);
+                    String s2 = particular.systemIncludeDirectoriesList.get(i);
+                    if (!s1.equals(s2)) {
+                        changedPaths = true;
+                        return;
+                    }
+                }
+            }
+            {
+                if (particular.systemIncludeHeadersList.size()==0) {
+                    changedPaths = false;
+                    return;
+                }
+                if (particular.systemIncludeHeadersList.size() != golden.systemIncludeHeadersList.size()) {
+                    changedPaths = true;
+                    return;
+                }
+                for(int i = 0; i < golden.systemIncludeHeadersList.size(); i++) {
+                    String s1 = golden.systemIncludeHeadersList.get(i);
+                    String s2 = particular.systemIncludeHeadersList.get(i);
+                    if (!s1.equals(s2)) {
+                        changedPaths = true;
+                        return;
+                    }
                 }
             }
             changedPaths = false;
         }
-        private void diffMacros(Pair golden, Pair particular) {
+        private void diffMacros(CompilerDefinitions golden, CompilerDefinitions particular) {
             for (String t : particular.systemPreprocessorSymbolsList) {
                 String pattern = t;
                 int i = t.indexOf('='); // NOI18N

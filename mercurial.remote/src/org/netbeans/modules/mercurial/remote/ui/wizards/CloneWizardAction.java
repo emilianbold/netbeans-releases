@@ -74,6 +74,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
     private ClonePathsWizardPanel clonePathsWizardPanel;
     private PanelsIterator wizardIterator;
     private String errorMessage;
+    private VCSFileProxy root;
 
 
     public static synchronized CloneWizardAction getInstance() {
@@ -81,6 +82,14 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
             instance = new CloneWizardAction();
         }
         return instance;
+    }
+
+    public void setRoot(VCSFileProxy root) {
+        this.root = root;
+    }
+
+    public VCSFileProxy getRoot() {
+        return root;
     }
 
     @SuppressWarnings("unchecked")
@@ -103,7 +112,6 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         VCSFileProxy cloneFile = null;
         if (!cancelled) {
             String targetFolderPath = (String) wizardDescriptor.getProperty("directory"); //NOI18N
-            VCSFileProxy root = (VCSFileProxy) wizardDescriptor.getProperty("root"); // NOI18N
             HgModuleConfig.getDefault(root).getPreferences().put(CloneDestinationDirectoryWizardPanel.CLONE_TARGET_DIRECTORY, targetFolderPath);
             final HgURL repository = (HgURL) wizardDescriptor.getProperty("repository"); // NOI18N
             final VCSFileProxy directory = VCSFileProxySupport.getResource(root, targetFolderPath);
@@ -174,9 +182,10 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
 
         @Override
         protected WizardDescriptor.Panel[] initializePanels() {
-            cloneRepositoryWizardPanel = new CloneRepositoryWizardPanel();
-            clonePathsWizardPanel = new ClonePathsWizardPanel();
-            cloneDestinationDirectoryWizardPanel = new CloneDestinationDirectoryWizardPanel();
+            root = CloneWizardAction.getInstance().getRoot();
+            cloneRepositoryWizardPanel = new CloneRepositoryWizardPanel(root);
+            clonePathsWizardPanel = new ClonePathsWizardPanel(root);
+            cloneDestinationDirectoryWizardPanel = new CloneDestinationDirectoryWizardPanel(root);
             panels = new WizardDescriptor.Panel[] {                
                 cloneRepositoryWizardPanel, clonePathsWizardPanel, cloneDestinationDirectoryWizardPanel
             };

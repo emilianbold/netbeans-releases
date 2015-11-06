@@ -87,6 +87,9 @@ public class FormalParameter extends ASTNode {
     }
 
     public boolean isVariadic() {
+        if (isReference()) {
+            return ((Reference)getParameterName()).getExpression() instanceof Variadic;
+        }
         return getParameterName() instanceof Variadic;
     }
 

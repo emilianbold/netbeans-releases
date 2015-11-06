@@ -97,7 +97,6 @@ class WildflyStartRunnable implements Runnable {
     private final static String JBOSS_HOME = "JBOSS_HOME";// NOI18N
     private final static String STANDALONE_SH = separatorChar + "bin" + separatorChar + "standalone.sh";// NOI18N
     private final static String STANDALONE_BAT = separatorChar + "bin" + separatorChar + "standalone.bat";// NOI18N
-    private final static String STANDALONE_PS1 = separatorChar + "bin" + separatorChar + "standalone.ps1";// NOI18N
 
     private final static String CONF_BAT = separatorChar + "bin" + separatorChar + CONF_FILE_NAME;// NOI18N
 
@@ -334,10 +333,6 @@ class WildflyStartRunnable implements Runnable {
 
     private String getServerRunFileName(final String serverLocation) {
         if(Utilities.isWindows()) {
-            File runtimeFile = new File(serverLocation + STANDALONE_PS1);
-            if(runtimeFile.exists()) {
-                return serverLocation + STANDALONE_PS1;
-            }
             return serverLocation + STANDALONE_BAT;
         }
         return serverLocation + STANDALONE_SH;

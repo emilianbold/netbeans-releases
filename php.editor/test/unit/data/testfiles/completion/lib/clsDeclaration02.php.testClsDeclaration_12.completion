@@ -20,6 +20,7 @@ PACKAGE    Froo                            [PUBLIC]   null
 PACKAGE    God                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    More                            [PUBLIC]   null
+PACKAGE    My                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Name                            [PUBLIC]   null
@@ -73,6 +74,7 @@ PACKAGE    Bat                             [PUBLIC]   Baz
 PACKAGE    Bom                             [PUBLIC]   Fom
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
+PACKAGE    Firm                            [PUBLIC]   My
 PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Name                            [PUBLIC]   More
 PACKAGE    Name                            [PUBLIC]   Other
@@ -109,6 +111,9 @@ PACKAGE    url                             [PUBLIC]   foo\lib
 CLASS      CIface1                         [PUBLIC]   First
 CLASS      CIface2                         [PUBLIC]   Second
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
+CLASS      Collection                      [PUBLIC]   byReferences.php
+CLASS      Comment                         [PUBLIC]   My\Firm
+CLASS      CommentsIterator                [PUBLIC]   My\Firm
 CLASS      If1                             [PUBLIC]   tests166339.php
 CLASS      If2                             [PUBLIC]   tests166339.php
 CLASS      Iface1                          [PUBLIC]   issue242351.php
@@ -120,6 +125,7 @@ CLASS      Interface2                      [PUBLIC]   test204104.php
 CLASS      Interface2                      [PUBLIC]   test204104_02.php
 CLASS      InterfaceName1                  [PUBLIC]   issue242398_01.php
 CLASS      InterfaceName2                  [PUBLIC]   issue242398_02.php
+CLASS      MyIface                         [PUBLIC]   byReferences.php
 CLASS      MyIface                         [PUBLIC]   insideInterface.php
 CLASS      MySecondIface                   [PUBLIC]   insideInterface.php
 CLASS      MyTestInterface                 [PUBLIC]   test225454.php

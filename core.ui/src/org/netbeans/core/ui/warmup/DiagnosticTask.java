@@ -96,13 +96,13 @@ public final class DiagnosticTask implements Runnable {
             OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
             MBeanServer mserver = ManagementFactory.getPlatformMBeanServer();
             // w/o dependency on Sun's JDK
-            // long freeMem = ((com.sun.management.OperatingSystemMXBean)osBean).getTotalPhysicalMemorySize();
-            long freeMem = (Long)mserver.getAttribute(osBean.getObjectName(), "TotalPhysicalMemorySize");   // NOI18N
-            LOG.log(Level.INFO, "Total memory {0}", freeMem);
+            // long totalMem = ((com.sun.management.OperatingSystemMXBean)osBean).getTotalPhysicalMemorySize();
+            long totalMem = (Long)mserver.getAttribute(osBean.getObjectName(), "TotalPhysicalMemorySize");   // NOI18N
+            LOG.log(Level.INFO, "Total memory {0}", totalMem);
 
             LogRecord lr = new LogRecord(Level.INFO, "MEMORY");
             lr.setResourceBundle(NbBundle.getBundle(DiagnosticTask.class));
-            lr.setParameters(new Object[] {freeMem});
+            lr.setParameters(new Object[] {totalMem});
             Logger.getLogger("org.netbeans.ui.performance").log(lr);
         } catch (SecurityException ex) {
             LOG.log(Level.INFO, null, ex);

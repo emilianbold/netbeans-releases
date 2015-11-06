@@ -15,5 +15,6 @@ CLASS      Foooo                           [PUBLIC]   test204104_02.php
 CLASS      foo                             [PUBLIC]   tests178955.php
 CLASS      foo2                            [PUBLIC]   tests178955.php
 METHOD     foo($func_arg)                  [PUBLIC]   var_scope.php
+METHOD     foo()                           [PUBLIC]   My\Firm
 METHOD     foo_TestCCOnMethods()           [PUBLIC]   test_cc_on_methods.php
 CONSTANT   FOO 42                          [PUBLIC]   Name\Space
