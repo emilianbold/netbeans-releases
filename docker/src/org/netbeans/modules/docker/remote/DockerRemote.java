@@ -274,20 +274,44 @@ public class DockerRemote {
 
     public void start(DockerContainer container) throws DockerException {
         doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/start", null, false, START_STOP_CONTAINER_CODES);
+        
+        if (emitEvents) {
+            instance.getEventBus().sendEvent(
+                    new DockerEvent(instance, DockerEvent.Status.START,
+                            container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
+        }
     }
 
     public void stop(DockerContainer container) throws DockerException {
         doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/stop", null, false, START_STOP_CONTAINER_CODES);
+        
+        if (emitEvents) {
+            instance.getEventBus().sendEvent(
+                    new DockerEvent(instance, DockerEvent.Status.DIE,
+                            container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
+        }
     }
 
     public void pause(DockerContainer container) throws DockerException {
         doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/pause", null, false,
                 Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
+        
+        if (emitEvents) {
+            instance.getEventBus().sendEvent(
+                    new DockerEvent(instance, DockerEvent.Status.PAUSE,
+                            container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
+        }
     }
 
     public void unpause(DockerContainer container) throws DockerException {
         doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/unpause", null, false,
                 Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
+        
+        if (emitEvents) {
+            instance.getEventBus().sendEvent(
+                    new DockerEvent(instance, DockerEvent.Status.UNPAUSE,
+                            container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
+        }
     }
 
     public void remove(DockerTag tag) throws DockerException {
@@ -307,6 +331,12 @@ public class DockerRemote {
     public void remove(DockerContainer container) throws DockerException {
         doDeleteRequest(instance.getUrl(), "/containers/" + container.getId(), false,
                 REMOVE_CONTAINER_CODES);
+
+        if (emitEvents) {
+            instance.getEventBus().sendEvent(
+                    new DockerEvent(instance, DockerEvent.Status.DESTROY,
+                            container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
+        }
     }
 
     public void resizeTerminal(DockerContainer container, int rows, int columns) throws DockerException {
@@ -336,6 +366,12 @@ public class DockerRemote {
             int responseCode = response.first();
             if (responseCode != 101 && responseCode != HttpURLConnection.HTTP_OK) {
                 throw new DockerRemoteException(responseCode, response.second());
+            }
+
+            if (emitEvents) {
+                instance.getEventBus().sendEvent(
+                        new DockerEvent(instance, DockerEvent.Status.ATTACH,
+                                container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
             }
 
             boolean chunked = HttpUtils.isChunked(HttpUtils.parseHeaders(is));

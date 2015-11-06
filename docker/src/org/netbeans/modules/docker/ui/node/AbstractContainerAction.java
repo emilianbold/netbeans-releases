@@ -86,15 +86,11 @@ public abstract class AbstractContainerAction extends NodeAction {
                     public Void call() throws Exception {
                         performAction(container);
                         if (status != null) {
-                            DockerInstance instance = container.getInstance();
-                            DockerEvent event = new DockerEvent(instance, status, container.getId(),
-                                    container.getImage(), System.currentTimeMillis() / 1000);
                             // just to be sure we do not miss the update
-                            ContainerStatus containerStatus = DockerUtils.getContainerStatus(event);
+                            ContainerStatus containerStatus = DockerUtils.getContainerStatus(status);
                             if (containerStatus != null) {
                                 container.setStatus(containerStatus);
                             }
-                            instance.getEventBus().sendEvent(event);
                         }
                         return null;
                     }

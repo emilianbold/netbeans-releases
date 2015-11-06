@@ -126,7 +126,7 @@ public class DockerEvent extends EventObject {
 
     private final long time;
 
-    public DockerEvent(DockerInstance instance, Status status, String id, String from, long time) {
+    DockerEvent(DockerInstance instance, Status status, String id, String from, long time) {
         super(instance);
         this.instance = instance;
         this.status = status;

@@ -89,7 +89,11 @@ public final class DockerUtils {
 
     @CheckForNull
     public static ContainerStatus getContainerStatus(DockerEvent event) {
-        DockerEvent.Status status = event.getStatus();
+        return getContainerStatus(event.getStatus());
+    }
+    
+    @CheckForNull
+    public static ContainerStatus getContainerStatus(DockerEvent.Status status) {
         switch (status) {
             case DIE:
                 return ContainerStatus.STOPPED;

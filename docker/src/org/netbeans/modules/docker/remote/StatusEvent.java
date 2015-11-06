@@ -64,7 +64,7 @@ public class StatusEvent extends EventObject {
 
     private final boolean error;
 
-    public StatusEvent(DockerInstance instance, String id, String message,
+    StatusEvent(DockerInstance instance, String id, String message,
             String progress, boolean error, Progress detail) {
         super(instance);
         this.instance = instance;

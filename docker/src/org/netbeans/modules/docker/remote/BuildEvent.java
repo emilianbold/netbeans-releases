@@ -60,7 +60,7 @@ public class BuildEvent extends EventObject {
 
     private final boolean error;
 
-    public BuildEvent(DockerInstance instance, String message, boolean error, Error detail) {
+    BuildEvent(DockerInstance instance, String message, boolean error, Error detail) {
         super(instance);
         this.instance = instance;
         this.message = message;

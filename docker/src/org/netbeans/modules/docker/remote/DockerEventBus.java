@@ -118,7 +118,7 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
         }
     }
 
-    public void sendEvent(DockerEvent event) {
+    void sendEvent(DockerEvent event) {
         List<DockerEvent.Listener> toFire;
         synchronized (this) {
             if (event.getStatus().isContainer()) {
