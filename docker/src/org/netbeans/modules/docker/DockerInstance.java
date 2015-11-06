@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.remote.DockerEventBus;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -105,13 +106,13 @@ public class DockerInstance {
         prefs.put(DISPLAY_NAME_KEY, displayName);
         prefs.put(URL_KEY, url);
         if (caCertificate != null) {
-            prefs.put(CA_CERTIFICATE_PATH_KEY, certificate.getPath());
+            prefs.put(CA_CERTIFICATE_PATH_KEY, FileUtil.normalizeFile(caCertificate).getAbsolutePath());
         }
         if (certificate != null) {
-            prefs.put(CERTIFICATE_PATH_KEY, certificate.getPath());
+            prefs.put(CERTIFICATE_PATH_KEY, FileUtil.normalizeFile(certificate).getAbsolutePath());
         }
         if (key != null) {
-            prefs.put(KEY_PATH_KEY, key.getPath());
+            prefs.put(KEY_PATH_KEY, FileUtil.normalizeFile(key).getAbsolutePath());
         }
         try {
             prefs.flush();

@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.docker.ui.wizard;
 
+import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,6 +73,10 @@ public class DockerPropertiesVisual extends javax.swing.JPanel {
         return urlTextField.getText().trim();
     }
 
+    public String getCertPath() {
+        return certTextField.getText().trim();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -84,6 +91,9 @@ public class DockerPropertiesVisual extends javax.swing.JPanel {
         explanationLabel = new javax.swing.JLabel();
         nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
+        certDirectoryLabel = new javax.swing.JLabel();
+        certTextField = new javax.swing.JTextField();
+        browseButton = new javax.swing.JButton();
 
         urlLabel.setLabelFor(urlTextField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.urlLabel.text")); // NOI18N
@@ -97,6 +107,15 @@ public class DockerPropertiesVisual extends javax.swing.JPanel {
 
         nameTextField.setText(org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.nameTextField.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(certDirectoryLabel, org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.certDirectoryLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.browseButton.text")); // NOI18N
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -104,12 +123,17 @@ public class DockerPropertiesVisual extends javax.swing.JPanel {
             .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(nameLabel)
-                    .addComponent(urlLabel))
+                    .addComponent(certDirectoryLabel)
+                    .addComponent(urlLabel)
+                    .addComponent(nameLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(nameTextField)
-                    .addComponent(urlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)))
+                    .addComponent(urlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(certTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseButton))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -121,14 +145,34 @@ public class DockerPropertiesVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(urlLabel)
                     .addComponent(urlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(certDirectoryLabel)
+                    .addComponent(certTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        String text = certTextField.getText();
+        if (text != null && !text.trim().isEmpty()) {
+            chooser.setSelectedFile(new File(text));
+            chooser.setCurrentDirectory(new File(text));
+        }
+        if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
+            certTextField.setText(chooser.getSelectedFile().getAbsolutePath());
+        }
+    }//GEN-LAST:event_browseButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseButton;
+    private javax.swing.JLabel certDirectoryLabel;
+    private javax.swing.JTextField certTextField;
     private javax.swing.JLabel explanationLabel;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;

@@ -44,6 +44,7 @@ package org.netbeans.modules.docker.ui.node;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,8 +92,10 @@ public class AddDockerInstanceAction implements ActionListener {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle("Add Docker Instance");
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
+            File certPath = new File((String) wiz.getProperty("certPath"));
             DockerRegistry.getInstance().createInstance((String) wiz.getProperty("displayName"),
-                    (String) wiz.getProperty("url"));
+                    (String) wiz.getProperty("url"), new File(certPath, "ca.pem"),
+                    new File(certPath, "cert.pem"), new File(certPath, "key.pem"));
         }
     }
 }

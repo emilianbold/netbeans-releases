@@ -48,12 +48,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -81,6 +83,8 @@ public final class SecureContextProvider {
     private static final Logger LOGGER = Logger.getLogger(SecureContextProvider.class.getName());
 
     private static final SecureContextProvider INSTANCE = new SecureContextProvider();
+
+    private final SecureRandom random = new SecureRandom();
 
     private final Map<DockerInstance, ContextHolder> cache = new WeakHashMap<>();
 
@@ -150,7 +154,7 @@ public final class SecureContextProvider {
     private SSLContext createSSLContext(File caCert, File clientCert, File clientKey) throws IOException {
         assert (clientCert != null && clientKey != null) || (clientCert == null && clientKey == null);
         try {
-            String keyStorePassword = "change!me";
+            char[] keyStorePassword = new BigInteger(130, random).toString(32).toCharArray();
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             Certificate caCertObject;
             try (InputStream is = new BufferedInputStream(new FileInputStream(caCert))) {
@@ -189,11 +193,11 @@ public final class SecureContextProvider {
                 keyStore.load(null, null);
                 keyStore.setCertificateEntry("client", clientCertObject);
                 keyStore.setKeyEntry("key", clientKeyObject,
-                        keyStorePassword.toCharArray(), new Certificate[]{clientCertObject});
+                        keyStorePassword, new Certificate[]{clientCertObject});
 
                 kmfactory = KeyManagerFactory.getInstance(
                         KeyManagerFactory.getDefaultAlgorithm());
-                kmfactory.init(keyStore, keyStorePassword.toCharArray());
+                kmfactory.init(keyStore, keyStorePassword);
             }
 
             SSLContext context = SSLContext.getInstance("TLS");

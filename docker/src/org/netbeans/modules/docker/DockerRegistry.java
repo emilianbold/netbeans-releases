@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.docker;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,6 +54,7 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
@@ -107,7 +109,8 @@ public final class DockerRegistry {
         return ret;
     }
 
-    public DockerInstance createInstance(@NonNull String displayName, @NonNull String url) {
+    public DockerInstance createInstance(@NonNull String displayName, @NonNull String url,
+            @NullAllowed File caCertificate, @NullAllowed File certificate, @NullAllowed File key) {
         Parameters.notNull("displayName", displayName);
         Parameters.notNull("url", url);
 
@@ -116,7 +119,7 @@ public final class DockerRegistry {
             if (instances.containsKey(url)) {
                 throw new IllegalStateException("Docker instance already exist: " + url);
             }
-            instance = DockerInstance.create(displayName, url, null, null, null);
+            instance = DockerInstance.create(displayName, url, caCertificate, certificate, key);
             instances.put(url, instance);
         }
         changeSupport.fireChange();

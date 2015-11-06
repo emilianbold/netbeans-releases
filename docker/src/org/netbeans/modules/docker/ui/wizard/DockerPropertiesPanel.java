@@ -100,6 +100,7 @@ public class DockerPropertiesPanel implements WizardDescriptor.Panel<WizardDescr
     public void storeSettings(WizardDescriptor wiz) {
         wiz.putProperty("displayName", component.getDisplayName());
         wiz.putProperty("url", component.getUrl());
+        wiz.putProperty("certPath", component.getCertPath());
     }
 
 }
