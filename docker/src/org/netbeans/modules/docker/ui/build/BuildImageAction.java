@@ -129,7 +129,7 @@ public class BuildImageAction extends NodeAction {
                     io.select();
                     DockerRemote facade = new DockerRemote(instance);
                     facade.build(new File(buildContext), dockerfile != null ? new File(dockerfile) : null,
-                            new BuildOutputListener(io));
+                            null, null, new BuildOutputListener(io));
                 } catch (DockerException ex) {
                     io.getErr().println(ex.getMessage());
                 } catch (IOException ex) {

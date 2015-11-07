@@ -74,6 +74,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -105,6 +107,8 @@ import org.openide.util.RequestProcessor;
 public class DockerRemote {
 
     private static final Logger LOGGER = Logger.getLogger(DockerRemote.class.getName());
+
+    private static final Pattern ID_PATTERN = Pattern.compile(".*([0-9a-f]{12}([0-9a-f]{52})?).*");
 
     private static final Set<Integer> START_STOP_CONTAINER_CODES = new HashSet<>();
 
@@ -274,7 +278,7 @@ public class DockerRemote {
 
     public void start(DockerContainer container) throws DockerException {
         doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/start", null, false, START_STOP_CONTAINER_CODES);
-        
+
         if (emitEvents) {
             instance.getEventBus().sendEvent(
                     new DockerEvent(instance, DockerEvent.Status.START,
@@ -284,7 +288,7 @@ public class DockerRemote {
 
     public void stop(DockerContainer container) throws DockerException {
         doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/stop", null, false, START_STOP_CONTAINER_CODES);
-        
+
         if (emitEvents) {
             instance.getEventBus().sendEvent(
                     new DockerEvent(instance, DockerEvent.Status.DIE,
@@ -295,7 +299,7 @@ public class DockerRemote {
     public void pause(DockerContainer container) throws DockerException {
         doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/pause", null, false,
                 Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
-        
+
         if (emitEvents) {
             instance.getEventBus().sendEvent(
                     new DockerEvent(instance, DockerEvent.Status.PAUSE,
@@ -306,7 +310,7 @@ public class DockerRemote {
     public void unpause(DockerContainer container) throws DockerException {
         doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/unpause", null, false,
                 Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
-        
+
         if (emitEvents) {
             instance.getEventBus().sendEvent(
                     new DockerEvent(instance, DockerEvent.Status.UNPAUSE,
@@ -462,7 +466,7 @@ public class DockerRemote {
 
     // this call is BLOCKING
     public DockerImage build(@NonNull File buildContext, @NullAllowed File dockerfile,
-            BuildEvent.Listener listener) throws DockerException {
+            String repository, String tag, BuildEvent.Listener listener) throws DockerException {
 
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
@@ -471,6 +475,9 @@ public class DockerRemote {
         }
         if (dockerfile != null && !dockerfile.isFile()) {
             throw new IllegalArgumentException("Dockerfile has to be a file");
+        }
+        if (repository == null && tag != null) {
+            throw new IllegalArgumentException("Repository can't be empty when using tag");
         }
 
         String dockerfileName = null;
@@ -485,8 +492,22 @@ public class DockerRemote {
 
             StringBuilder request = new StringBuilder();
             request.append("POST /build");
+            boolean parameter = false;
             if (dockerfileName != null) {
-                request.append("?dockerfile=").append(HttpUtils.encodeParameter(dockerfileName));
+                request.append("?");
+                parameter = true;
+                request.append("dockerfile=").append(HttpUtils.encodeParameter(dockerfileName));
+            }
+            if (repository != null) {
+                if (!parameter) {
+                    request.append("?");
+                } else {
+                    request.append("&");
+                }
+                request.append("t=").append(HttpUtils.encodeParameter(repository));
+                if (tag != null) {
+                    request.append(":").append(tag);
+                }
             }
             request.append(" HTTP/1.1\r\n");
             request.append("Transfer-Encoding: chunked\r\n");
@@ -548,9 +569,10 @@ public class DockerRemote {
             try (InputStreamReader r = new InputStreamReader(
                     is, "UTF-8")) { // NOI18N
                 String line;
+                String stream = null;
                 while ((line = readEventObject(r)) != null) {
                     JSONObject o = (JSONObject) parser.parse(line);
-                    String stream = (String) o.get("stream");
+                    stream = (String) o.get("stream");
                     if (stream != null) {
                         listener.onEvent(new BuildEvent(instance, stream.trim(), false, null));
                     } else {
@@ -569,6 +591,18 @@ public class DockerRemote {
                         }
                     }
                     parser.reset();
+                }
+
+                // the docker itself does not emit any event for built image
+                // we assume the last stream contains the built image id
+                if (stream != null && emitEvents) {
+                    Matcher m = ID_PATTERN.matcher(stream.trim());
+                    if (m.matches()) {
+                        // FIXME as there is no BUILD event we use PULL event
+                        instance.getEventBus().sendEvent(
+                                new DockerEvent(instance, DockerEvent.Status.PULL,
+                                        m.group(1), null, System.currentTimeMillis() / 1000));
+                    }
                 }
             } catch (ParseException ex) {
                 throw new DockerException(ex);

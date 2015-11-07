@@ -87,7 +87,7 @@ public class DockerImagesChildFactory extends ChildFactory<DockerTag> implements
                         lastEvent = event;
                     }
                     if (!event.equalsIgnoringTime(previous)) {
-                        LOGGER.log(Level.INFO, "Refreshing repository");
+                        LOGGER.log(Level.FINE, "Refreshing images");
                         refresh();
                     }
                 }

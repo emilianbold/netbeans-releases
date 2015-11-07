@@ -95,7 +95,7 @@ public class DockerContainersChildFactory extends ChildFactory<DockerContainer> 
                     }
                     // FIXME sometimes from is different tag (yet same image)
                     if (!event.equalsIgnoringTime(previous)) {
-                        LOGGER.log(Level.INFO, "Refreshing containers");
+                        LOGGER.log(Level.FINE, "Refreshing containers");
                         refresh();
                     }
                 }
