@@ -581,7 +581,7 @@ public class DockerRemote {
                             BuildEvent.Error detail = null;
                             JSONObject detailObj = (JSONObject) o.get("errorDetail");
                             if (detailObj != null) {
-                                long code = ((Number) detailObj.getOrDefault("code", "0")).longValue();
+                                long code = ((Number) detailObj.getOrDefault("code", 0)).longValue();
                                 String mesage = (String) detailObj.get("message");
                                 detail = new BuildEvent.Error(code, mesage);
                             }
