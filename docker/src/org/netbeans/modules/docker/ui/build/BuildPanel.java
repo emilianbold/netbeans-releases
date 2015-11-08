@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.docker.ui.build;
 
+import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.docker.ui.UiUtils;
 
 /**
@@ -82,6 +85,11 @@ public class BuildPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(contextLabel, org.openide.util.NbBundle.getMessage(BuildPanel.class, "BuildPanel.contextLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseContextButton, org.openide.util.NbBundle.getMessage(BuildPanel.class, "BuildPanel.browseContextButton.text")); // NOI18N
+        browseContextButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseContextButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(dcokerfileLabel, org.openide.util.NbBundle.getMessage(BuildPanel.class, "BuildPanel.dcokerfileLabel.text")); // NOI18N
 
@@ -118,6 +126,19 @@ public class BuildPanel extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void browseContextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseContextButtonActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        String text = contextTextField.getText();
+        if (text != null && !text.trim().isEmpty()) {
+            chooser.setSelectedFile(new File(text));
+            chooser.setCurrentDirectory(new File(text));
+        }
+        if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
+            contextTextField.setText(chooser.getSelectedFile().getAbsolutePath());
+        }
+    }//GEN-LAST:event_browseContextButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
