@@ -110,10 +110,11 @@ public final class BuildContextVisual extends JPanel {
         buildContextTextField = new javax.swing.JTextField();
         buildContextButton = new javax.swing.JButton();
         repositoryLabel = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        repositoryComboBox = new javax.swing.JComboBox<>();
         tagLabel = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        tagTextField = new javax.swing.JTextField();
 
+        buldContextLabel.setLabelFor(buildContextTextField);
         org.openide.awt.Mnemonics.setLocalizedText(buldContextLabel, org.openide.util.NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.buldContextLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(buildContextButton, org.openide.util.NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.buildContextButton.text")); // NOI18N
@@ -123,10 +124,12 @@ public final class BuildContextVisual extends JPanel {
             }
         });
 
+        repositoryLabel.setLabelFor(repositoryComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(repositoryLabel, org.openide.util.NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.repositoryLabel.text")); // NOI18N
 
-        jComboBox1.setEditable(true);
+        repositoryComboBox.setEditable(true);
 
+        tagLabel.setLabelFor(tagTextField);
         org.openide.awt.Mnemonics.setLocalizedText(tagLabel, org.openide.util.NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.tagLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -144,8 +147,8 @@ public final class BuildContextVisual extends JPanel {
                         .addComponent(buildContextTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buildContextButton))
-                    .addComponent(jComboBox1, 0, 329, Short.MAX_VALUE)
-                    .addComponent(jTextField1)))
+                    .addComponent(repositoryComboBox, 0, 329, Short.MAX_VALUE)
+                    .addComponent(tagTextField)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -157,11 +160,11 @@ public final class BuildContextVisual extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(repositoryLabel)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(repositoryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tagLabel)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(tagTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -182,9 +185,9 @@ public final class BuildContextVisual extends JPanel {
     private javax.swing.JButton buildContextButton;
     private javax.swing.JTextField buildContextTextField;
     private javax.swing.JLabel buldContextLabel;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JComboBox<String> repositoryComboBox;
     private javax.swing.JLabel repositoryLabel;
     private javax.swing.JLabel tagLabel;
+    private javax.swing.JTextField tagTextField;
     // End of variables declaration//GEN-END:variables
 }

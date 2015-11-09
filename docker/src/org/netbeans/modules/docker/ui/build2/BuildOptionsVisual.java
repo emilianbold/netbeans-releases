@@ -79,6 +79,7 @@ public final class BuildOptionsVisual extends JPanel {
         dockerfileTextField = new javax.swing.JTextField();
         dockerfileButton = new javax.swing.JButton();
 
+        dockerfileLabel.setLabelFor(dockerfileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(dockerfileLabel, org.openide.util.NbBundle.getMessage(BuildOptionsVisual.class, "BuildOptionsVisual.dockerfileLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(dockerfileButton, org.openide.util.NbBundle.getMessage(BuildOptionsVisual.class, "BuildOptionsVisual.dockerfileButton.text")); // NOI18N
