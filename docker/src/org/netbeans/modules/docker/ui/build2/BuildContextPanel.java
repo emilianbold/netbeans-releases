@@ -126,6 +126,13 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
         if (wizard == null) {
             wizard = wiz;
         }
+
+        component.setBuildContext((String) wiz.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY));
+        component.setRepository((String) wiz.getProperty(BuildImageWizard.REPOSITORY_PROPERTY));
+        component.setTag((String) wiz.getProperty(BuildImageWizard.TAG_PROPERTY));
+
+        // XXX revalidate; is this bug?
+        changeSupport.fireChange();
     }
 
     @Override

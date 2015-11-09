@@ -90,12 +90,24 @@ public final class BuildContextVisual extends JPanel {
         return UiUtils.getValue(buildContextTextField);
     }
 
+    public void setBuildContext(String buildContext) {
+        buildContextTextField.setText(buildContext);
+    }
+
     public String getRepository() {
         return UiUtils.getValue(repositoryComboBox);
     }
 
+    public void setRepository(String repository) {
+        repositoryComboBox.getEditor().setItem(repository);
+    }
+
     public String getTag() {
         return UiUtils.getValue(tagTextField);
+    }
+
+    public void setTag(String tag) {
+        tagTextField.setText(tag);
     }
 
     @NbBundle.Messages("LBL_BuildContext=Build Context")

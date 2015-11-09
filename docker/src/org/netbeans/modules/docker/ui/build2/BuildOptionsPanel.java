@@ -58,7 +58,7 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
      * component from this class, just use getComponent().
      */
     private BuildOptionsVisual component;
-    
+
     private WizardDescriptor wizard;
 
     // Get the visual component for the panel. In this template, the component
@@ -119,6 +119,9 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
             dockerfile = DockerUtils.DOCKER_FILE;
         }
         component.setDockerfile(dockerfile);
+
+        // XXX revalidate; is this bug?
+        changeSupport.fireChange();
     }
 
     @Override
