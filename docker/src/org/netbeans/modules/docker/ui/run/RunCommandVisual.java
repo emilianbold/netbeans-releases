@@ -58,10 +58,10 @@ public class RunCommandVisual extends javax.swing.JPanel {
     }
 
 
-    @NbBundle.Messages("MSG_RunProperties=Run Command")
+    @NbBundle.Messages("LBL_RunCommand=Command")
     @Override
     public String getName() {
-        return Bundle.MSG_RunProperties();
+        return Bundle.LBL_RunCommand();
     }
 
     public String getCommand() {
