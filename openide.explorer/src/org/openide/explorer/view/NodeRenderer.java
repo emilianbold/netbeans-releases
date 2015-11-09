@@ -137,7 +137,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
     public Component getTreeCellRendererComponent(
         JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus
     ) {
-        assert EventQueue.isDispatchThread() || System.getProperty("nbjunit.workdir") != null : "Should be called in EDT only!";
+        assertEDTAccess();
         VisualizerNode vis = findVisualizerNode(value);
 
         if (vis == draggedOver) {
@@ -172,7 +172,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
     public Component getListCellRendererComponent(
         JList list, Object value, int index, boolean sel, boolean cellHasFocus
     ) {
-        assert EventQueue.isDispatchThread() || System.getProperty("nbjunit.workdir") != null : "Should be called in EDT only!";
+        assertEDTAccess();
         VisualizerNode vis = findVisualizerNode(value);
 
         if (vis == draggedOver) {
@@ -292,5 +292,22 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
     /** DnD operation exits. Revert to the normal look and feel. */
     static void dragExit() {
         draggedOver = null;
+    }
+
+    private void assertEDTAccess () {
+        boolean check = false;
+        assert check = true;
+        if (check && !(EventQueue.isDispatchThread() && System.getProperty("nbjunit.workdir") == null)) {
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            boolean whitespaced = false;
+            for (int i = 0; i < stackTrace.length; ++i) {
+                StackTraceElement elem = stackTrace[i];
+                if ("org.openide.explorer.view.TreeView".equals(elem.getClassName()) && "<init>".equals(elem.getMethodName())) {
+                    whitespaced = true;
+                    break;
+                }
+            }
+            assert whitespaced || EventQueue.isDispatchThread() : "Should be called in EDT only!";
+        }
     }
 }
