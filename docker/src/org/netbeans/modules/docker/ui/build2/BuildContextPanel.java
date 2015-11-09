@@ -105,10 +105,6 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
             return false;
         }
         return true;
-        // If it depends on some condition (form filled out...) and
-        // this condition changes (last form field filled in...) then
-        // use ChangeSupport to implement add/removeChangeListener below.
-        // WizardDescriptor.ERROR/WARNING/INFORMATION_MESSAGE will also be useful.
     }
 
     @Override
@@ -130,7 +126,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
-        // use wiz.putProperty to remember current panel state
+        wiz.putProperty(BuildImageAction.BUILD_CONTEXT_PROPERTY, component.getBuildContext());
     }
 
     @Override

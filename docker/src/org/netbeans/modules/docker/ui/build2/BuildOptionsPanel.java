@@ -41,18 +41,25 @@
  */
 package org.netbeans.modules.docker.ui.build2;
 
+import java.io.File;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.DockerUtils;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
-public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private BuildOptionsVisual component;
+    
+    private WizardDescriptor wizard;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -62,6 +69,7 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
     public BuildOptionsVisual getComponent() {
         if (component == null) {
             component = new BuildOptionsVisual();
+            component.addChangeListener(this);
         }
         return component;
     }
@@ -76,24 +84,36 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
+        // clear the error message
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
+
+        String buildContext = (String) wizard.getProperty(BuildImageAction.BUILD_CONTEXT_PROPERTY);
+        String dockerfile = component.getDockerfile();
+        if (dockerfile == null || !new File(buildContext, dockerfile).isFile()) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The Dockerfile does not exist.");
+            return false;
+        }
         return true;
-        // If it depends on some condition (form filled out...) and
-        // this condition changes (last form field filled in...) then
-        // use ChangeSupport to implement add/removeChangeListener below.
-        // WizardDescriptor.ERROR/WARNING/INFORMATION_MESSAGE will also be useful.
     }
 
     @Override
     public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     @Override
     public void readSettings(WizardDescriptor wiz) {
+        if (wizard == null) {
+            wizard = wiz;
+        }
+
         String dockerfile = (String) wiz.getProperty(BuildImageAction.DOCKERFILE_PROPERTY);
         if (dockerfile == null) {
             dockerfile = DockerUtils.DOCKER_FILE;
@@ -104,6 +124,11 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
     @Override
     public void storeSettings(WizardDescriptor wiz) {
         wiz.putProperty(BuildImageAction.DOCKERFILE_PROPERTY, component.getDockerfile());
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
     }
 
 }
