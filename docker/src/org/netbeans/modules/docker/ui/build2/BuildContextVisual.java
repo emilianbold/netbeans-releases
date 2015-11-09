@@ -210,7 +210,6 @@ public final class BuildContextVisual extends JPanel {
         String buildText = UiUtils.getValue(buildContextTextField);
         if (buildText != null) {
             chooser.setSelectedFile(new File(buildText));
-            chooser.setCurrentDirectory(new File(buildText));
         }
         if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
             buildContextTextField.setText(chooser.getSelectedFile().getAbsolutePath());
