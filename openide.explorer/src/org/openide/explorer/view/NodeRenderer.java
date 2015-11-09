@@ -297,7 +297,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
     private void assertEDTAccess () {
         boolean check = false;
         assert check = true;
-        if (check && !(EventQueue.isDispatchThread() && System.getProperty("nbjunit.workdir") == null)) {
+        if (check && !EventQueue.isDispatchThread() && System.getProperty("nbjunit.workdir") == null) {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             boolean whitespaced = false;
             for (int i = 0; i < stackTrace.length; ++i) {
