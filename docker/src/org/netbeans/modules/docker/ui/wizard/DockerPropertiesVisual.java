@@ -73,8 +73,16 @@ public class DockerPropertiesVisual extends javax.swing.JPanel {
         return urlTextField.getText().trim();
     }
 
+    public void setUrl(String url) {
+        urlTextField.setText(url);
+    }
+
     public String getCertPath() {
         return certTextField.getText().trim();
+    }
+
+    public void setCertPath(String path) {
+        certTextField.setText(path);
     }
 
     /**

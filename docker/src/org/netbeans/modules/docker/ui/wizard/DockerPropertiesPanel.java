@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.docker.ui.wizard;
 
+import java.io.File;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
 
 public class DockerPropertiesPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
@@ -94,6 +96,16 @@ public class DockerPropertiesPanel implements WizardDescriptor.Panel<WizardDescr
     @Override
     public void readSettings(WizardDescriptor wiz) {
         // use wiz.getProperty to retrieve previous panel state
+        if (Utilities.isMac() || Utilities.isWindows()) {
+            component.setUrl("https://192.168.59.103:2376"); // NOI18N
+            File docker = new File(System.getProperty("user.home"), ".docker"); // NOI18N
+            if (!docker.isDirectory()) {
+                docker = new File(System.getProperty("user.home"), ".boot2docker"); // NOI18N
+            }
+            if (docker.isDirectory()) {
+                component.setCertPath(docker.getAbsolutePath());
+            }
+        }
     }
 
     @Override
