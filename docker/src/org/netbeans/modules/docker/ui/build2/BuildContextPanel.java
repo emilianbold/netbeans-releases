@@ -48,6 +48,7 @@ import org.netbeans.modules.docker.DockerUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
 
@@ -84,6 +85,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public boolean isFinishPanel() {
+        // build context can't be null when this is called
         String buildContext = component.getBuildContext();
         String dockerfile = (String) wizard.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY);
         if (dockerfile == null) {
@@ -92,6 +94,10 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
         return new File(buildContext, dockerfile).isFile();
     }
 
+    @NbBundle.Messages({
+        "MSG_NonExistingBuildContext=The build context does not exist.",
+        "MSG_EmptyRepository=The repository must not be empty when using tag.",
+    })
     @Override
     public boolean isValid() {
         // clear the error message
@@ -101,11 +107,11 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
         String buildContext = component.getBuildContext();
         if (buildContext == null || !new File(buildContext).isDirectory()) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The build context does not exist.");
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingBuildContext());
             return false;
         }
         if (component.getRepository() == null && component.getTag() != null) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The repository must not be empty when using tag.");
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyRepository());
             return false;
         }
         return true;
