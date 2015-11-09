@@ -73,7 +73,7 @@ public final class BuildImageAction extends NodeAction {
         return true;
     }
 
-    @NbBundle.Messages("LBL_BuildImageAction=Build2...")
+    @NbBundle.Messages("LBL_BuildImageAction=Build...")
     @Override
     public String getName() {
         return Bundle.LBL_BuildImageAction();

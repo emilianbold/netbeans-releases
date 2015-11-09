@@ -45,6 +45,7 @@ import org.netbeans.modules.docker.ui.pull.PullImageAction;
 import javax.swing.Action;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.ui.build.BuildImageAction;
+import org.netbeans.modules.docker.ui.build2.BuildImageAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -74,8 +75,6 @@ public class DockerInstanceNode extends AbstractNode {
             SystemAction.get(PullImageAction.class),
             null,
             SystemAction.get(BuildImageAction.class),
-            null,
-            SystemAction.get(org.netbeans.modules.docker.ui.build2.BuildImageAction.class),
             null,
             SystemAction.get(RemoveInstanceAction.class)
         };
