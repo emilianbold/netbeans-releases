@@ -39,54 +39,66 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.ui.build2;
 
-import org.netbeans.modules.docker.ui.pull.PullImageAction;
-import javax.swing.Action;
-import org.netbeans.modules.docker.DockerInstance;
-import org.netbeans.modules.docker.ui.build.BuildImageAction;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
-/**
- *
- * @author Petr Hejl
- */
-public class DockerInstanceNode extends AbstractNode {
+public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_instance.png"; // NOI18N
+    /**
+     * The visual component that displays this panel. If you need to access the
+     * component from this class, just use getComponent().
+     */
+    private BuildOptionsVisual component;
 
-    private final DockerInstance instance;
-
-    public DockerInstanceNode(DockerInstance instance) {
-        super(createChildren(instance), Lookups.fixed(instance));
-        this.instance = instance;
-        setDisplayName(instance.getDisplayName());
-        setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
+    // Get the visual component for the panel. In this template, the component
+    // is kept separate. This can be more efficient: if the wizard is created
+    // but never displayed, or not all panels are displayed, it is better to
+    // create only those which really need to be visible.
+    @Override
+    public BuildOptionsVisual getComponent() {
+        if (component == null) {
+            component = new BuildOptionsVisual();
+        }
+        return component;
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(PullImageAction.class),
-            null,
-            SystemAction.get(BuildImageAction.class),
-            null,
-            SystemAction.get(org.netbeans.modules.docker.ui.build2.BuildImageAction.class),
-            null,
-            SystemAction.get(RemoveInstanceAction.class)
-        };
+    public HelpCtx getHelp() {
+        // Show no Help button for this panel:
+        return HelpCtx.DEFAULT_HELP;
+        // If you have context help:
+        // return new HelpCtx("help.key.here");
     }
 
-    private static Children.Array createChildren(DockerInstance instance) {
-        Children.Array ret = new Children.Array();
-        DockerImagesChildFactory factoryRepo = new DockerImagesChildFactory(instance);
-        DockerContainersChildFactory factoryCont = new DockerContainersChildFactory(instance);
-        ret.add(new Node[] {new DockerImagesNode(instance, factoryRepo),
-            new DockerContainersNode(instance, factoryCont)});
-        return ret;
+    @Override
+    public boolean isValid() {
+        // If it is always OK to press Next or Finish, then:
+        return true;
+        // If it depends on some condition (form filled out...) and
+        // this condition changes (last form field filled in...) then
+        // use ChangeSupport to implement add/removeChangeListener below.
+        // WizardDescriptor.ERROR/WARNING/INFORMATION_MESSAGE will also be useful.
     }
+
+    @Override
+    public void addChangeListener(ChangeListener l) {
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+    }
+
+    @Override
+    public void readSettings(WizardDescriptor wiz) {
+        // use wiz.getProperty to retrieve previous panel state
+    }
+
+    @Override
+    public void storeSettings(WizardDescriptor wiz) {
+        // use wiz.putProperty to remember current panel state
+    }
+
 }
