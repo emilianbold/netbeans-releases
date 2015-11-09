@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.ui.run;
 
 import org.netbeans.modules.docker.ui.UiUtils;
 import java.awt.Component;
@@ -55,7 +55,6 @@ import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.remote.StreamResult;
-import org.netbeans.modules.docker.ui.run.ContainerCommandPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.nodes.Node;
@@ -114,7 +113,7 @@ public class RunTagAction extends NodeAction {
 
     private void perform(final DockerTag tag) {
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-        panels.add(new ContainerCommandPanel());
+        panels.add(new RunCommandPanel());
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
             Component c = panels.get(i).getComponent();

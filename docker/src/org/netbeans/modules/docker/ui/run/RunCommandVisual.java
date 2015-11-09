@@ -47,17 +47,17 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class ContainerCommandVisual extends javax.swing.JPanel {
+public class RunCommandVisual extends javax.swing.JPanel {
 
     /**
      * Creates new form ContainerImagePanel
      */
-    public ContainerCommandVisual() {
+    public RunCommandVisual() {
         initComponents();
     }
 
 
-    @NbBundle.Messages("MSG_RunProperties=Run Properties")
+    @NbBundle.Messages("MSG_RunProperties=Run Command")
     @Override
     public String getName() {
         return Bundle.MSG_RunProperties();
@@ -90,11 +90,11 @@ public class ContainerCommandVisual extends javax.swing.JPanel {
         ttyCheckBox = new javax.swing.JCheckBox();
 
         commandLabel.setLabelFor(commandTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(commandLabel, org.openide.util.NbBundle.getMessage(ContainerCommandVisual.class, "ContainerCommandVisual.commandLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(commandLabel, org.openide.util.NbBundle.getMessage(RunCommandVisual.class, "RunCommandVisual.commandLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(interactiveCheckBox, org.openide.util.NbBundle.getMessage(ContainerCommandVisual.class, "ContainerCommandVisual.interactiveCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(interactiveCheckBox, org.openide.util.NbBundle.getMessage(RunCommandVisual.class, "RunCommandVisual.interactiveCheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(ttyCheckBox, org.openide.util.NbBundle.getMessage(ContainerCommandVisual.class, "ContainerCommandVisual.ttyCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ttyCheckBox, org.openide.util.NbBundle.getMessage(RunCommandVisual.class, "RunCommandVisual.ttyCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -103,7 +103,7 @@ public class ContainerCommandVisual extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(commandLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(commandTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE))
+                .addComponent(commandTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(interactiveCheckBox)
@@ -119,8 +119,7 @@ public class ContainerCommandVisual extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(interactiveCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(ttyCheckBox)
-                .addGap(0, 223, Short.MAX_VALUE))
+                .addComponent(ttyCheckBox))
         );
     }// </editor-fold>//GEN-END:initComponents
 

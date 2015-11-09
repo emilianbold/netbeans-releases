@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import org.netbeans.modules.docker.ui.run.RunTagAction;
 import javax.swing.Action;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.DockerTag;
