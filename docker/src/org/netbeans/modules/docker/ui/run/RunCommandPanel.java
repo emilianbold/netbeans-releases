@@ -45,7 +45,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class RunCommandPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+public class RunCommandPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -71,6 +71,11 @@ public class RunCommandPanel implements WizardDescriptor.Panel<WizardDescriptor>
         return HelpCtx.DEFAULT_HELP;
         // If you have context help:
         // return new HelpCtx("help.key.here");
+    }
+
+    @Override
+    public boolean isFinishPanel() {
+        return true;
     }
 
     @Override
