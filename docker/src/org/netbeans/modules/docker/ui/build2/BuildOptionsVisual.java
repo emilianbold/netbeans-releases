@@ -42,6 +42,7 @@
 package org.netbeans.modules.docker.ui.build2;
 
 import javax.swing.JPanel;
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.NbBundle;
 
 public final class BuildOptionsVisual extends JPanel {
@@ -52,6 +53,14 @@ public final class BuildOptionsVisual extends JPanel {
         dockerfileTextField.setText("Dockerfile"); // NOI18N
     }
 
+    public String getDockerfile() {
+        return UiUtils.getValue(dockerfileTextField);
+    }
+    
+    public void setDockerfile(String dockerfile) {
+        dockerfileTextField.setText(dockerfile);
+    }
+    
     @NbBundle.Messages("LBL_BuildOptions=Build Options")
     @Override
     public String getName() {

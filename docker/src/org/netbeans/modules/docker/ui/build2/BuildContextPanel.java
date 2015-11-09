@@ -44,11 +44,12 @@ package org.netbeans.modules.docker.ui.build2;
 import java.io.File;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.DockerUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
-public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -80,7 +81,17 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
         // If you have context help:
         // return new HelpCtx("help.key.here");
     }
-    
+
+    @Override
+    public boolean isFinishPanel() {
+        String buildContext = component.getBuildContext();
+        String dockerfile = (String) wizard.getProperty(BuildImageAction.DOCKERFILE_PROPERTY);
+        if (dockerfile == null) {
+            dockerfile = DockerUtils.DOCKER_FILE;
+        }
+        return new File(buildContext, dockerfile).isFile();
+    }
+
     @Override
     public boolean isValid() {
         // clear the error message

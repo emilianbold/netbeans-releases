@@ -51,6 +51,8 @@ import org.netbeans.modules.docker.remote.DockerEvent;
  */
 public final class DockerUtils {
 
+    public static final String DOCKER_FILE = "Dockerfile"; // NOI18N
+
     private DockerUtils() {
         super();
     }

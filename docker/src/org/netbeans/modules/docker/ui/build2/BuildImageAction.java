@@ -42,13 +42,11 @@
 package org.netbeans.modules.docker.ui.build2;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.docker.DockerInstance;
-import org.netbeans.modules.docker.DockerTag;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.nodes.Node;
@@ -59,6 +57,10 @@ import org.openide.util.actions.NodeAction;
 
 public final class BuildImageAction extends NodeAction {
 
+    static final String BUILD_CONTEXT_PROPERTY = "buildContext";
+    
+    static final String DOCKERFILE_PROPERTY = "dockerfile";
+    
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node node : activatedNodes) {
