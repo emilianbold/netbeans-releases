@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -88,6 +89,7 @@ import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.CharSequences;
@@ -255,9 +257,9 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         }
 
         @Override
-        public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+        public Collection<FSPath> searchFile(NativeProject project, String fileName) {
             if (MakeOptions.getInstance().isFixUnresolvedInclude()) {
-                Collection<CharSequence> res;
+                Collection<FSPath> res;
                 for(NativeProject np : NativeProjectRegistry.getDefault().getOpenProjects()) {
                     if (np == project) {
                         Lookup.Provider p = np.getProject();
@@ -272,11 +274,21 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             if (i >= 0) {
                                 name = fileName.substring(i+1);
                             }
-                            res = projectSearchBase.get(CharSequences.create(name));
-                            if (res != null && res.size() > 0) {
+                            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration((Project)p);
+                            List<CharSequence> list = projectSearchBase.get(CharSequences.create(name));
+                            if (list != null && list.size() > 0) {
+                                FileSystem fileSystem;
+                                if (conf != null) {
+                                    fileSystem = conf.getFileSystem();
+                                } else {
+                                    fileSystem = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal());
+                                }
+                                res = new ArrayList<>(list.size());
+                                for(CharSequence absPath : list) {
+                                    res.add(new FSPath(fileSystem, absPath.toString()));
+                                }
                                 return res;
                             }
-                            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration((Project)p);
                             ExecutionEnvironment env;
                             if (conf != null){
                                 env = conf.getDevelopmentHost().getExecutionEnvironment();
@@ -287,7 +299,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             if (res != null && res.size() > 0) {
                                 return res;
                             }
-                            return Collections.<CharSequence>emptyList();
+                            return Collections.<FSPath>emptyList();
                         }
                     }
                 }
@@ -301,11 +313,11 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     return res;
                 }
             }
-            return Collections.<CharSequence>emptyList();
+            return Collections.<FSPath>emptyList();
         }
 
-        private Collection<CharSequence> defaultSearch(NativeProject project, String fileName, ExecutionEnvironment env) {
-            Collection<CharSequence> res = null;
+        private Collection<FSPath> defaultSearch(NativeProject project, String fileName, ExecutionEnvironment env) {
+            Collection<FSPath> res = null;
             if (env == null) {
                 env = ExecutionEnvironmentFactory.getLocal();
             }

@@ -45,6 +45,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
+import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -98,6 +99,8 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
         initComponents();
         explanation.setEditorKit(new HTMLEditorKit());
         explanation.setBackground(getBackground());
+        explanation.setForeground(getForeground());
+        explanation.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         explanation.setText(details);
     }
 

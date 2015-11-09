@@ -51,6 +51,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -135,6 +136,10 @@ import org.openide.util.NbBundle;
         }
         st.append("</html>"); // NOI18N
         jTextArea1.setEditorKit(new HTMLEditorKit());
+        jTextArea1.setBackground(getBackground());
+        jTextArea1.setForeground(getForeground());
+        jTextArea1.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+
         jTextArea1.setText(st.toString());
 
         SyncUtils.arrangeComboBox(cbSyncMode, data.getExecutionEnvironment());

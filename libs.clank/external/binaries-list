@@ -1,6 +1,6 @@
-#changeset:   15896:8b80d52f4211
+#changeset:   15905:1ad3d8dd8542
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Oct 28 22:31:29 2015 +0300
-#summary:     fixed #256187 - [newcodemodel] incosistency between FileEntry.size and Buffer.size
-EDB5715F20F8F49250553EAF66579C5DD812EB38 clank_0.3.6.zip
+#date:        Mon Nov 02 22:42:35 2015 +0300
+#summary:     fixed #256326 - [newcodemodel] regression in vlc
+A5E4E9FC81C8B8BA32F7E9310D4EF64E14E1647E clank_0.3.6.zip

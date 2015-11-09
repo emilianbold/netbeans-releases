@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.qnavigator.navigator;
 
-package org.netbeans.modules.cnd.apt.support.spi;
-
-import org.netbeans.modules.cnd.utils.FSPath;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
  *
- * @author Alexander Simom
+ * @author Alexander Simon
  */
-public interface APTFileSearchImplementation {
-    public FSPath searchInclude(String include, CharSequence basePath);
+public class GoToDefinitionAction extends AbstractAction {
+
+    private final CsmOffsetable csmObject;
+
+    public GoToDefinitionAction(String name, CsmOffsetable csmObject) {
+        this.csmObject = csmObject;
+        putValue(Action.NAME, name);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (CsmKindUtilities.isInclude(csmObject)) {
+            CsmFile includeFile = ((CsmInclude)csmObject).getIncludeFile();
+            if (includeFile != null) {
+                CsmUtilities.openSource(includeFile, 1, 1);
+            }
+        } else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
+            CsmFunctionDefinition definition = (CsmFunctionDefinition)csmObject;
+            CsmFunction declaration = definition.getDeclaration();
+            if (declaration != null && declaration != definition) {
+                CsmUtilities.openSource(declaration);
+            }
+        } else if (CsmKindUtilities.isFunctionDeclaration(csmObject)) {
+            CsmFunction declaration = (CsmFunction)csmObject;
+            CsmFunctionDefinition definition = declaration.getDefinition();
+            if (definition != null && definition != declaration) {
+                CsmUtilities.openSource(definition);
+            }
+        }
+    }
 }
