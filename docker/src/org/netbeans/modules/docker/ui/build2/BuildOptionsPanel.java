@@ -89,7 +89,7 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
-        String buildContext = (String) wizard.getProperty(BuildImageAction.BUILD_CONTEXT_PROPERTY);
+        String buildContext = (String) wizard.getProperty(BuildWizard.BUILD_CONTEXT_PROPERTY);
         String dockerfile = component.getDockerfile();
         if (dockerfile == null || !new File(buildContext, dockerfile).isFile()) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The Dockerfile does not exist.");
@@ -114,7 +114,7 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
             wizard = wiz;
         }
 
-        String dockerfile = (String) wiz.getProperty(BuildImageAction.DOCKERFILE_PROPERTY);
+        String dockerfile = (String) wiz.getProperty(BuildWizard.DOCKERFILE_PROPERTY);
         if (dockerfile == null) {
             dockerfile = DockerUtils.DOCKER_FILE;
         }
@@ -123,7 +123,7 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
-        wiz.putProperty(BuildImageAction.DOCKERFILE_PROPERTY, component.getDockerfile());
+        wiz.putProperty(BuildWizard.DOCKERFILE_PROPERTY, component.getDockerfile());
     }
 
     @Override

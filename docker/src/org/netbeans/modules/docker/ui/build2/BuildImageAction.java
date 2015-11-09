@@ -41,14 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.build2;
 
-import java.awt.Component;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.JComponent;
 import org.netbeans.modules.docker.DockerInstance;
-import org.openide.DialogDisplayer;
-import org.openide.WizardDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -57,10 +50,6 @@ import org.openide.util.actions.NodeAction;
 
 public final class BuildImageAction extends NodeAction {
 
-    static final String BUILD_CONTEXT_PROPERTY = "buildContext";
-    
-    static final String DOCKERFILE_PROPERTY = "dockerfile";
-    
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node node : activatedNodes) {
@@ -99,32 +88,11 @@ public final class BuildImageAction extends NodeAction {
     protected boolean asynchronous() {
         return false;
     }
+
     
     private void perform(DockerInstance instance) {
-        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-        panels.add(new BuildContextPanel());
-        panels.add(new BuildOptionsPanel());
-        String[] steps = new String[panels.size()];
-        for (int i = 0; i < panels.size(); i++) {
-            Component c = panels.get(i).getComponent();
-            // Default step name to component name of panel.
-            steps[i] = c.getName();
-            if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent) c;
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-                jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
-            }
-        }
-        WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels));
-        // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wiz.setTitleFormat(new MessageFormat("{0}"));
-        wiz.setTitle("Build Image");
-        if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            // do something
-        }
+        BuildWizard wizard = new BuildWizard(instance);
+        wizard.show();
     }
 
 }
