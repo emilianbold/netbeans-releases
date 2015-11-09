@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.docker.ui.build2;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -48,6 +50,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -62,19 +65,14 @@ public final class BuildContextVisual extends JPanel {
     public BuildContextVisual() {
         initComponents();
 
-        buildContextTextField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                changeSupport.fireChange();
-            }
+        DefaultDocumentListener listener = new DefaultDocumentListener();
+        buildContextTextField.getDocument().addDocumentListener(listener);
+        ((JTextComponent) repositoryComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(listener);
+        tagTextField.getDocument().addDocumentListener(listener);
 
+        repositoryComboBox.addActionListener(new ActionListener() {
             @Override
-            public void removeUpdate(DocumentEvent e) {
-                changeSupport.fireChange();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
             }
         });
@@ -87,15 +85,41 @@ public final class BuildContextVisual extends JPanel {
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
-    
+
     public String getBuildContext() {
         return UiUtils.getValue(buildContextTextField);
+    }
+
+    public String getRepository() {
+        return UiUtils.getValue(repositoryComboBox);
+    }
+
+    public String getTag() {
+        return UiUtils.getValue(tagTextField);
     }
 
     @NbBundle.Messages("LBL_BuildContext=Build Context")
     @Override
     public String getName() {
         return Bundle.LBL_BuildContext();
+    }
+
+    private class DefaultDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changeSupport.fireChange();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changeSupport.fireChange();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            changeSupport.fireChange();
+        }
     }
 
     /**

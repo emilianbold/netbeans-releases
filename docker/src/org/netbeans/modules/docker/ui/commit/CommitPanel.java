@@ -149,7 +149,7 @@ public class CommitPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     public String getRepository() {
-        return UiUtils.getValue(repositoryComboBox.getSelectedItem());
+        return UiUtils.getValue(repositoryComboBox);
     }
 
     public String getTag() {

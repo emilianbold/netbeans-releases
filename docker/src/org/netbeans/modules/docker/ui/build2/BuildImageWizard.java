@@ -74,6 +74,10 @@ public class BuildImageWizard {
 
     public static final String DOCKERFILE_PROPERTY = "dockerfile";
 
+    public static final String REPOSITORY_PROPERTY = "repository";
+
+    public static final String TAG_PROPERTY = "tag";
+
     private static final Logger LOGGER = Logger.getLogger(BuildImageAction.class.getName());
 
     private final DockerInstance instance;
@@ -104,7 +108,9 @@ public class BuildImageWizard {
         wiz.setTitle(Bundle.LBL_BuildImage());
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
             build(instance, (String) wiz.getProperty(BUILD_CONTEXT_PROPERTY),
-                    (String) wiz.getProperty(DOCKERFILE_PROPERTY));
+                    (String) wiz.getProperty(DOCKERFILE_PROPERTY),
+                    (String) wiz.getProperty(REPOSITORY_PROPERTY),
+                    (String) wiz.getProperty(TAG_PROPERTY));
         }
     }
 
@@ -112,7 +118,9 @@ public class BuildImageWizard {
         "# {0} - context",
         "MSG_Building=Building {0}"
     })
-    private void build(final DockerInstance instance, final String buildContext, final String dockerfile) {
+    private void build(final DockerInstance instance, final String buildContext,
+            final String dockerfile, final String repository, final String tag) {
+
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
@@ -129,7 +137,7 @@ public class BuildImageWizard {
                     io.select();
                     DockerRemote facade = new DockerRemote(instance);
                     facade.build(new File(buildContext), dockerfile != null ? new File(buildContext, dockerfile) : null,
-                            null, null, new BuildEvent.Listener() {
+                            repository, tag, new BuildEvent.Listener() {
                         @Override
                         public void onEvent(BuildEvent event) {
                             if (event.isError()) {

@@ -55,6 +55,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.progress.ProgressHandle;
@@ -96,14 +97,11 @@ public final class UiUtils {
         super();
     }
 
-    public static String getValue(Object o) {
-        if (o == null) {
-            return null;
+    public static String getValue(JComboBox<String> combo) {
+        if (combo.isEditable()) {
+            return getValue((String) combo.getEditor().getItem());
         }
-        if (o instanceof JTextComponent) {
-            return getValue((JTextComponent) o);
-        }
-        return getValue(o.toString());
+        return getValue((String) combo.getSelectedItem());
     }
 
     public static String getValue(JTextComponent c) {

@@ -104,6 +104,10 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The build context does not exist.");
             return false;
         }
+        if (component.getRepository() == null && component.getTag() != null) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The repository must not be empty when using tag.");
+            return false;
+        }
         return true;
     }
 
@@ -127,6 +131,8 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
     @Override
     public void storeSettings(WizardDescriptor wiz) {
         wiz.putProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY, component.getBuildContext());
+        wiz.putProperty(BuildImageWizard.REPOSITORY_PROPERTY, component.getRepository());
+        wiz.putProperty(BuildImageWizard.TAG_PROPERTY, component.getTag());
     }
 
     @Override
