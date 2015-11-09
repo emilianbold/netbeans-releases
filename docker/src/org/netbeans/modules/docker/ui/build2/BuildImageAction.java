@@ -88,7 +88,6 @@ public final class BuildImageAction extends NodeAction {
     protected boolean asynchronous() {
         return false;
     }
-
     
     private void perform(DockerInstance instance) {
         BuildImageWizard wizard = new BuildImageWizard(instance);

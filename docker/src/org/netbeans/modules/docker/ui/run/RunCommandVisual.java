@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.run;
 
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,15 +65,27 @@ public class RunCommandVisual extends javax.swing.JPanel {
     }
 
     public String getCommand() {
-        return commandTextField.getText().trim();
+        return UiUtils.getValue(commandTextField);
+    }
+
+    public void setCommand(String command) {
+        commandTextField.setText(command);
     }
 
     public boolean isInteractive() {
         return interactiveCheckBox.isSelected();
     }
 
+    public void setInteractive(boolean interactive) {
+        interactiveCheckBox.setSelected(interactive);
+    }
+
     public boolean hasTty() {
         return ttyCheckBox.isSelected();
+    }
+
+    public void setTty(boolean tty) {
+        ttyCheckBox.setSelected(tty);
     }
 
     /**

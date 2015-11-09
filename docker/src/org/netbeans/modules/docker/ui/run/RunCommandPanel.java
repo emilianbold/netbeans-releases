@@ -75,12 +75,7 @@ public class RunCommandPanel implements WizardDescriptor.Panel<WizardDescriptor>
 
     @Override
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
         return true;
-        // If it depends on some condition (form filled out...) and
-        // this condition changes (last form field filled in...) then
-        // use ChangeSupport to implement add/removeChangeListener below.
-        // WizardDescriptor.ERROR/WARNING/INFORMATION_MESSAGE will also be useful.
     }
 
     @Override
@@ -93,14 +88,18 @@ public class RunCommandPanel implements WizardDescriptor.Panel<WizardDescriptor>
 
     @Override
     public void readSettings(WizardDescriptor wiz) {
-        // use wiz.getProperty to retrieve previous panel state
+        component.setCommand((String) wiz.getProperty(RunTagWizard.COMMAND_PROPERTY));
+        Boolean interactive = (Boolean) wiz.getProperty(RunTagWizard.INTERACTIVE_PROPERTY);
+        component.setInteractive(interactive != null ? interactive : false);
+        Boolean tty = (Boolean) wiz.getProperty(RunTagWizard.TTY_PROPERTY);
+        component.setTty(tty != null ? tty : false);
     }
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
-        wiz.putProperty("command", component.getCommand());
-        wiz.putProperty("interactive", component.isInteractive());
-        wiz.putProperty("tty", component.hasTty());
+        wiz.putProperty(RunTagWizard.COMMAND_PROPERTY, component.getCommand());
+        wiz.putProperty(RunTagWizard.INTERACTIVE_PROPERTY, component.isInteractive());
+        wiz.putProperty(RunTagWizard.TTY_PROPERTY, component.hasTty());
     }
 
 }

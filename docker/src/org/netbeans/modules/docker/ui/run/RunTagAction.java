@@ -111,62 +111,8 @@ public class RunTagAction extends NodeAction {
         return false;
     }
 
-    private void perform(final DockerTag tag) {
-        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-        panels.add(new RunCommandPanel());
-        String[] steps = new String[panels.size()];
-        for (int i = 0; i < panels.size(); i++) {
-            Component c = panels.get(i).getComponent();
-            // Default step name to component name of panel.
-            steps[i] = c.getName();
-            if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent) c;
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-                jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
-            }
-        }
-        final WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels));
-        // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wiz.setTitleFormat(new MessageFormat("{0}"));
-        wiz.setTitle("Run");
-        if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        DockerRemote remote = new DockerRemote(tag.getImage().getInstance());
-                        JSONObject config = new JSONObject();
-                        boolean interactive = (Boolean) wiz.getProperty("interactive");
-                        boolean tty = (Boolean) wiz.getProperty("tty");
-
-                        if (interactive) {
-                            config.put("OpenStdin", true);
-                            config.put("StdinOnce", true);
-                            config.put("AttachStdin", true);
-                        }
-                        if (tty) {
-                            config.put("Tty", true);
-                        }
-
-                        String[] parsed = Utilities.parseParameters((String) wiz.getProperty("command"));
-                        config.put("Image", DockerUtils.getTag(tag));
-                        JSONArray cmdArray = new JSONArray();
-                        cmdArray.addAll(Arrays.asList(parsed));
-                        config.put("Cmd", cmdArray);
-                        config.put("AttachStdout", true);
-                        config.put("AttachStderr", true);
-                        Pair<DockerContainer, StreamResult> result = remote.run(config);
-
-                        UiUtils.openTerminal(result.first(), result.second(), interactive, true);
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-
-        }
+    private void perform(DockerTag tag) {
+        RunTagWizard wizard = new RunTagWizard(tag);
+        wizard.show();
     }
 }
