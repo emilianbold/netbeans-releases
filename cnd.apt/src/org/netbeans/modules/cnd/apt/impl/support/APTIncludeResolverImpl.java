@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
 
@@ -191,9 +192,9 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         }
         if (result == null && fileSearch != null) {
             if (APTTraceFlags.FIX_NOT_FOUND_INCLUDES) {
-                String path = fileSearch.searchInclude(includedFile, baseFile);
+                FSPath path = fileSearch.searchInclude(includedFile, baseFile);
                 if (path != null) {
-                    result = APTIncludeUtils.resolveFilePath(fileSystem, CndPathUtilities.getBaseName(path), path);
+                    result = APTIncludeUtils.resolveFilePath(path.getFileSystem(), CndPathUtilities.getBaseName(path.getPath()), path.getPath());
                 }
             }
         }

@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
@@ -79,6 +80,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         initComponents();
         instructionsTextPane.setEditorKit(new HTMLEditorKit());
         instructionsTextPane.setBackground(instructionPanel.getBackground());
+        instructionsTextPane.setForeground(instructionPanel.getForeground());
+        instructionsTextPane.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         this.controller = buildActionsDescriptorPanel;
         documentListener = new DocumentAdapter() {
             @Override

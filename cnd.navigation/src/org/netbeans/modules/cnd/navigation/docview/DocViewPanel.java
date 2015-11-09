@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.navigation.docview;
 
+import javax.swing.JTextPane;
+
 /**
  *
  * @author alsimon
@@ -80,6 +82,7 @@ public class DocViewPanel extends javax.swing.JPanel {
 
     void setData(final CharSequence doc) {
         editorPane.setContentType("text/html"); //NOI18N
+        editorPane.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         editorPane.setText(doc.toString());
         editorPane.select(0, 0);
     }

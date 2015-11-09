@@ -43,11 +43,12 @@
 package org.netbeans.modules.cnd.api.project;
 
 import java.util.Collection;
+import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  *
  * @author Alexander Simon
  */
 public interface NativeFileSearch {
-    Collection<CharSequence> searchFile(NativeProject project, String fileName);
+    Collection<FSPath> searchFile(NativeProject project, String fileName);
 }

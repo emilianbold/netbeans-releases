@@ -77,6 +77,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextPane;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -395,6 +396,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         
         guessList = new JEditorPane();
         guessList.setContentType("text/html");  // NOI18N
+        guessList.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         guessList.setEditable(false);
         
         JSplitPane pane = new JSplitPane();

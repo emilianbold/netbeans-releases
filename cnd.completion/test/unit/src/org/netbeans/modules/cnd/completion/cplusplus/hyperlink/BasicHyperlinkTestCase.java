@@ -1154,6 +1154,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug255900.h", 4, 9, "bug255900.cpp", 1, 1);
     }
     
+    public void testBug256296() throws Exception {
+        // Bug 256296 - Additional parens in expression break parser
+        performTest("bug256296.cpp", 8, 32, "bug256296.cpp", 3, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

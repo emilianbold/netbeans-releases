@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.modelui.parsing.ParsingProblemDetectorImpl.Measure;
 import org.openide.DialogDescriptor;
@@ -79,6 +80,8 @@ public class ParsingProblemResolver extends javax.swing.JPanel {
         }
         explanation.setEditorKit(new HTMLEditorKit());
         explanation.setBackground(getBackground());
+        explanation.setForeground(getForeground());
+        explanation.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         explanation.setText(NbBundle.getMessage(ParsingProblemDetectorImpl.class, "Explanation")); // NOI18N
 
     }

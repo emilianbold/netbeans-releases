@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -138,9 +139,9 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
             } else {
                 nameExt = relativePath;
             }
-            Collection<CharSequence> searchFile = nativeFileSearch.searchFile(nativeProject, nameExt);
+            Collection<FSPath> searchFile = nativeFileSearch.searchFile(nativeProject, nameExt);
             if (searchFile.size() == 1) {
-                return _resolveRelativePath(relativeDir, searchFile.iterator().next().toString());
+                return _resolveRelativePath(relativeDir, searchFile.iterator().next().getPath());
             }
         }
         return null;

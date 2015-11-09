@@ -639,8 +639,9 @@ public class CsmContextUtilities {
             CsmCacheMap cache = CsmCacheManager.getClientCache(CsmContextUtilities.class, CACHE_INITIALIZER);
             boolean[] found = new boolean[] { false };
             ObjectKey tsKey = new ObjectKey(var);
-            TokenSequence<TokenId> cppts = (TokenSequence<TokenId>)CsmCacheMap.getFromCache(cache, tsKey, found);
-            if (cppts != null || !found[0]) {
+            ContextClassInitializerData data = (ContextClassInitializerData)CsmCacheMap.getFromCache(cache, tsKey, found);
+            if (data != null || !found[0]) {
+                TokenSequence<TokenId> cppts = (data != null) ? data.cppts : null;
                 if (cppts == null) {
                     // expression.getText() here is used because we have offset - 
                     // it is bound to the text on screen, not expanded one.
@@ -657,36 +658,42 @@ public class CsmContextUtilities {
                             cppts = uts;
                         }
                     }
-                    if (cache != null) {
-                        cache.put(tsKey, CsmCacheMap.toValue(cppts, Integer.MAX_VALUE));
-                    }
                 }
                 if (cppts != null) {
+                    List<InitPathItem> cachedPathSequence = (data != null) ?  data.lastPathSequence : Collections.<InitPathItem>emptyList();
+                    ListIterator<InitPathItem> cachedPathIter = (!cachedPathSequence.isEmpty()) ? 
+                        cachedPathSequence.listIterator(cachedPathSequence.size()) 
+                        : cachedPathSequence.listIterator();
+                    
                     CsmClass contextClass = varCls;
                     int contextArrayDepth = var.getType().getArrayDepth();
+                    List<InitPathItem> pathSequence = new ArrayList<InitPathItem>(); // for example: { a : { .b= { c : ...
 
                     cppts.move(offset - expression.getStartOffset());
                     cppts.movePrevious();
                     if (checkValidInitializerIdent(cppts) || (cppts.token() != null && !CppTokenId.IDENTIFIER.equals(cppts.token().id()))) {
-                        List<InitPathItem> pathSequence = new ArrayList<InitPathItem>(); // for example: { a : { .b= { c : ...
-
                         String innerClass = null; // { .ptr = & (MyClass) {.field = 0} }
                                                   //             ^ 
                                                   
+                        MutableObject<Boolean> shouldPathsBeMerged = new MutableObject<Boolean>(false);
                         MutableObject<Integer> skipped = new MutableObject<Integer>(0);
                         boolean foundPosition = true;
-                        while (foundPosition && innerClass == null) {
+                        while (foundPosition && !shouldPathsBeMerged.value && innerClass == null) {
                             foundPosition = findInitializerStart(cppts);
-                            Token<TokenId> ident = getInitializerIdentToken(cppts);
-                            foundPosition |= findUpperInitializer(cppts, skipped);
+                            int startOffset = cppts.offset();
+                            Token<TokenId> startIdent = getInitializerIdentToken(cppts);
+                            foundPosition |= findUpperInitializer(cppts, cachedPathIter, skipped, shouldPathsBeMerged);
                             innerClass = getInitializerInnerClassName(cppts);
-                            if (foundPosition) {
-                                pathSequence.add(0, new InitPathItem(ident, skipped.value));
+                            if (shouldPathsBeMerged.value) {
+                                mergePaths(pathSequence, cachedPathIter, startIdent, skipped.value, startOffset);
+                            } else if (foundPosition) {
+                                pathSequence.add(0, new InitPathItem(startIdent, skipped.value, startOffset));
                             }
                         }
-                        final boolean finishedSuccessfully = !cppts.movePrevious() || innerClass != null;
+                        final boolean finishedSuccessfully = shouldPathsBeMerged.value || !cppts.movePrevious() || innerClass != null;
                         if (finishedSuccessfully && !pathSequence.isEmpty()) {
-                            pathSequence.remove(pathSequence.size() - 1); // remove last because we are providing context for it!
+                            cachedPathSequence = pathSequence;
+                            //pathSequence.remove(pathSequence.size() - 1); // remove last because we are providing context for it!
                             if (innerClass != null) {
                                 if (finder != null) {
                                     CsmClassifier castedCls = CompletionSupport.getClassFromName(finder, innerClass, true);
@@ -704,11 +711,52 @@ public class CsmContextUtilities {
                             result = resolveInitializerContext(pathSequence, contextClass, contextArrayDepth);
                         }
                     }
+                    
+                    if (cache != null) {
+                        cache.put(tsKey, CsmCacheMap.toValue(
+                            new ContextClassInitializerData(cppts, cachedPathSequence), 
+                            Integer.MAX_VALUE
+                        ));
+                    }
                 }
             }
             return result;
         }
         return null;
+    }
+    
+    private static boolean canMergePaths(ListIterator<InitPathItem> lastPathIter, int currentOffset) {
+        if (lastPathIter.hasPrevious()) {
+            InitPathItem lastPathItem = lastPathIter.previous();
+            while (lastPathItem != null && lastPathItem.offset >= currentOffset) {
+                if (lastPathItem.offset == currentOffset) {
+                    // they are the same, move forward to start merging from current item
+                    lastPathIter.next();
+                    return true;
+                } else {
+                    // lastPathItem.offset > currentOffset
+                    if (lastPathIter.hasPrevious()) {
+                        lastPathItem = lastPathIter.previous();
+                    } else {
+                        lastPathItem = null;
+                    }
+                }
+            }
+            if (lastPathItem != null) {
+                // just move forward to start from current item next time
+                lastPathIter.next();
+            }
+        }
+        return false;
+    }
+    
+    private static void mergePaths(List<InitPathItem> pathSequence, ListIterator<InitPathItem> lastPathIter, Token<TokenId> ident, int skipped, int offset) {
+        InitPathItem lastPathItem = lastPathIter.previous();
+        pathSequence.add(0, new InitPathItem(ident, lastPathItem.position + skipped, offset));
+        while (lastPathIter.hasPrevious()) {
+            lastPathItem = lastPathIter.previous();
+            pathSequence.add(0, lastPathItem);
+        }
     }
     
     private static boolean findInitializerStart(TokenSequence<TokenId> cppts) {
@@ -737,10 +785,22 @@ public class CsmContextUtilities {
             && (CppTokenId.LBRACE.equals(cppts.token().id()) || CppTokenId.COMMA.equals(cppts.token().id()));
     }
     
-    private static boolean findUpperInitializer(TokenSequence<TokenId> cppts, MutableObject<Integer> skippedHolder) {
+    private static boolean findUpperInitializer(
+        TokenSequence<TokenId> cppts, 
+        ListIterator<InitPathItem> lastPathIter, 
+        MutableObject<Integer> skippedHolder, 
+        MutableObject<Boolean> shouldPathsBeMerged
+    ) {
         int level = 0;
         int skipped = 0;
         do {
+            if (level == 0) {
+                if (canMergePaths(lastPathIter, cppts.offset())) {
+                    skippedHolder.value = skipped;
+                    shouldPathsBeMerged.value = true;
+                    return false;
+                }
+            }
             if (CppTokenId.LBRACE.equals(cppts.token().id())) {
                 --level;
             } else if (CppTokenId.RBRACE.equals(cppts.token().id())) {
@@ -862,7 +922,9 @@ public class CsmContextUtilities {
         }
         CsmClass context = initialContext;
         int contextArrayDepth = initialArrayDepth;
-        for (InitPathItem item : pathSequence) {
+        int index = 0;
+        for (Iterator<InitPathItem> itemIter = pathSequence.iterator(); index < pathSequence.size() - 1; index++) {
+            InitPathItem item = itemIter.next();
             CsmClassifier classifier = null;
             int arrayDepth = 0;
             if (item.isIdentBased()) {
@@ -976,10 +1038,13 @@ public class CsmContextUtilities {
         public final Token<TokenId> ident;
         
         public final int position;
+        
+        public final int offset;
 
-        public InitPathItem(Token<TokenId> ident, int position) {
+        public InitPathItem(Token<TokenId> ident, int position, int offset) {
             this.ident = ident;
             this.position = position;
+            this.offset = offset;
         }
         
         public boolean isIdentBased() {
@@ -990,6 +1055,18 @@ public class CsmContextUtilities {
         public String toString() {
             return isIdentBased() ? ("[" + ident.text() + ", " + position + "]") // NOI18N
                 : "[" + position + "]"; // NOI18N
+        }
+    }
+    
+    private static final class ContextClassInitializerData {
+        
+        public final TokenSequence<TokenId> cppts;
+        
+        public final List<InitPathItem> lastPathSequence;
+
+        public ContextClassInitializerData(TokenSequence<TokenId> cppts, List<InitPathItem> lastPathSequence) {
+            this.cppts = cppts;
+            this.lastPathSequence = lastPathSequence;
         }
     }
     
