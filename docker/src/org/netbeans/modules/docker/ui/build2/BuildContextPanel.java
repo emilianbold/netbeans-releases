@@ -85,7 +85,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
     @Override
     public boolean isFinishPanel() {
         String buildContext = component.getBuildContext();
-        String dockerfile = (String) wizard.getProperty(BuildWizard.DOCKERFILE_PROPERTY);
+        String dockerfile = (String) wizard.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY);
         if (dockerfile == null) {
             dockerfile = DockerUtils.DOCKER_FILE;
         }
@@ -126,7 +126,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
-        wiz.putProperty(BuildWizard.BUILD_CONTEXT_PROPERTY, component.getBuildContext());
+        wiz.putProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY, component.getBuildContext());
     }
 
     @Override

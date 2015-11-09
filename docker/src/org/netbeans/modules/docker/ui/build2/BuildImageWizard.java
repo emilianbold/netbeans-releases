@@ -67,7 +67,7 @@ import org.openide.windows.InputOutput;
  *
  * @author Petr Hejl
  */
-public class BuildWizard {
+public class BuildImageWizard {
 
     public static final String BUILD_CONTEXT_PROPERTY = "buildContext";
 
@@ -77,7 +77,7 @@ public class BuildWizard {
 
     private final DockerInstance instance;
 
-    public BuildWizard(DockerInstance instance) {
+    public BuildImageWizard(DockerInstance instance) {
         this.instance = instance;
     }
 

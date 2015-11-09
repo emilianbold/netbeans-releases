@@ -91,7 +91,7 @@ public final class BuildImageAction extends NodeAction {
 
     
     private void perform(DockerInstance instance) {
-        BuildWizard wizard = new BuildWizard(instance);
+        BuildImageWizard wizard = new BuildImageWizard(instance);
         wizard.show();
     }
 
