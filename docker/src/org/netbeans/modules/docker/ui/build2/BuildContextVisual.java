@@ -45,11 +45,16 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.docker.ui.UiUtils;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 public final class BuildContextVisual extends JPanel {
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     /**
      * Creates new form BuildVisualPanel1
@@ -57,7 +62,34 @@ public final class BuildContextVisual extends JPanel {
     public BuildContextVisual() {
         initComponents();
 
-        dockerfileTextField.setText("Dockerfile"); // NOI18N
+        buildContextTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+        });
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+    
+    public String getBuildContext() {
+        return UiUtils.getValue(buildContextTextField);
     }
 
     @NbBundle.Messages("LBL_BuildContext=Build Context")
@@ -77,9 +109,6 @@ public final class BuildContextVisual extends JPanel {
         buldContextLabel = new javax.swing.JLabel();
         buildContextTextField = new javax.swing.JTextField();
         buildContextButton = new javax.swing.JButton();
-        dockerfileLabel = new javax.swing.JLabel();
-        dockerfileTextField = new javax.swing.JTextField();
-        dockerfileButton = new javax.swing.JButton();
         repositoryLabel = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox<>();
         tagLabel = new javax.swing.JLabel();
@@ -91,15 +120,6 @@ public final class BuildContextVisual extends JPanel {
         buildContextButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buildContextButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(dockerfileLabel, org.openide.util.NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.dockerfileLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(dockerfileButton, org.openide.util.NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.dockerfileButton.text")); // NOI18N
-        dockerfileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dockerfileButtonActionPerformed(evt);
             }
         });
 
@@ -116,19 +136,14 @@ public final class BuildContextVisual extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(buldContextLabel)
-                    .addComponent(dockerfileLabel)
                     .addComponent(repositoryLabel)
                     .addComponent(tagLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(dockerfileTextField)
-                            .addComponent(buildContextTextField))
+                        .addComponent(buildContextTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(buildContextButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(dockerfileButton, javax.swing.GroupLayout.Alignment.TRAILING)))
+                        .addComponent(buildContextButton))
                     .addComponent(jComboBox1, 0, 329, Short.MAX_VALUE)
                     .addComponent(jTextField1)))
         );
@@ -140,11 +155,6 @@ public final class BuildContextVisual extends JPanel {
                     .addComponent(buildContextTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(buildContextButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(dockerfileLabel)
-                    .addComponent(dockerfileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(dockerfileButton))
-                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(repositoryLabel)
                     .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -168,62 +178,10 @@ public final class BuildContextVisual extends JPanel {
         }
     }//GEN-LAST:event_buildContextButtonActionPerformed
 
-    private void dockerfileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dockerfileButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        String buildText = UiUtils.getValue(buildContextTextField);
-        String dockerText = UiUtils.getValue(dockerfileTextField);
-
-        File file = null;
-        if (buildText != null || dockerText != null) {
-            if (dockerText == null) {
-                file = new File(buildText);
-                chooser.setSelectedFile(file);
-                chooser.setCurrentDirectory(file);
-            } else if (buildText == null) {
-                file = new File(dockerText);
-                chooser.setSelectedFile(file);
-                chooser.setCurrentDirectory(file);
-            } else {
-                // XXX
-                file = new File(buildText);
-                if (!file.isDirectory()) {
-                    file = file.getParentFile();
-                }
-                file = new File(file, dockerText);
-            }
-        }
-        if (file != null) {
-            chooser.setSelectedFile(file);
-            chooser.setCurrentDirectory(file);
-        }
-
-        if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
-            if (buildText != null) {
-                File build = FileUtil.normalizeFile(new File(buildText));
-                File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
-                if (selected.getAbsolutePath().startsWith(build.getAbsolutePath())) {
-                    String text = selected.getAbsolutePath().substring(build.getAbsolutePath().length());
-                    if (text.startsWith(File.separator) && !text.startsWith("//")) { // NOI18N
-                        text = text.substring(1);
-                    }
-                    dockerfileTextField.setText(text);
-                } else {
-                    dockerfileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
-                }
-            } else {
-                dockerfileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
-            }
-        }
-    }//GEN-LAST:event_dockerfileButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buildContextButton;
     private javax.swing.JTextField buildContextTextField;
     private javax.swing.JLabel buldContextLabel;
-    private javax.swing.JButton dockerfileButton;
-    private javax.swing.JLabel dockerfileLabel;
-    private javax.swing.JTextField dockerfileTextField;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel repositoryLabel;

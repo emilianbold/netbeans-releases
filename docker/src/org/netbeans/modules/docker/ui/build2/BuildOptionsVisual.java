@@ -42,19 +42,20 @@
 package org.netbeans.modules.docker.ui.build2;
 
 import javax.swing.JPanel;
+import org.openide.util.NbBundle;
 
 public final class BuildOptionsVisual extends JPanel {
 
-    /**
-     * Creates new form BuildVisualPanel2
-     */
     public BuildOptionsVisual() {
         initComponents();
+
+        dockerfileTextField.setText("Dockerfile"); // NOI18N
     }
 
+    @NbBundle.Messages("LBL_BuildOptions=Build Options")
     @Override
     public String getName() {
-        return "Build Options";
+        return Bundle.LBL_BuildOptions();
     }
 
     /**
@@ -65,18 +66,91 @@ public final class BuildOptionsVisual extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        dockerfileLabel = new javax.swing.JLabel();
+        dockerfileTextField = new javax.swing.JTextField();
+        dockerfileButton = new javax.swing.JButton();
+
+        org.openide.awt.Mnemonics.setLocalizedText(dockerfileLabel, org.openide.util.NbBundle.getMessage(BuildOptionsVisual.class, "BuildOptionsVisual.dockerfileLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(dockerfileButton, org.openide.util.NbBundle.getMessage(BuildOptionsVisual.class, "BuildOptionsVisual.dockerfileButton.text")); // NOI18N
+        dockerfileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dockerfileButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 440, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(dockerfileLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dockerfileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dockerfileButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(dockerfileLabel)
+                .addComponent(dockerfileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(dockerfileButton))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void dockerfileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dockerfileButtonActionPerformed
+//        JFileChooser chooser = new JFileChooser();
+//        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+//        String buildText = UiUtils.getValue(buildContextTextField);
+//        String dockerText = UiUtils.getValue(dockerfileTextField);
+//
+//        File file = null;
+//        if (buildText != null || dockerText != null) {
+//            if (dockerText == null) {
+//                file = new File(buildText);
+//                chooser.setSelectedFile(file);
+//                chooser.setCurrentDirectory(file);
+//            } else if (buildText == null) {
+//                file = new File(dockerText);
+//                chooser.setSelectedFile(file);
+//                chooser.setCurrentDirectory(file);
+//            } else {
+//                // XXX
+//                file = new File(buildText);
+//                if (!file.isDirectory()) {
+//                    file = file.getParentFile();
+//                }
+//                file = new File(file, dockerText);
+//            }
+//        }
+//        if (file != null) {
+//            chooser.setSelectedFile(file);
+//            chooser.setCurrentDirectory(file);
+//        }
+//
+//        if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
+//            if (buildText != null) {
+//                File build = FileUtil.normalizeFile(new File(buildText));
+//                File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
+//                if (selected.getAbsolutePath().startsWith(build.getAbsolutePath())) {
+//                    String text = selected.getAbsolutePath().substring(build.getAbsolutePath().length());
+//                    if (text.startsWith(File.separator) && !text.startsWith("//")) { // NOI18N
+//                        text = text.substring(1);
+//                    }
+//                    dockerfileTextField.setText(text);
+//                } else {
+//                    dockerfileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
+//                }
+//            } else {
+//                dockerfileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
+//            }
+//        }
+    }//GEN-LAST:event_dockerfileButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton dockerfileButton;
+    private javax.swing.JLabel dockerfileLabel;
+    private javax.swing.JTextField dockerfileTextField;
     // End of variables declaration//GEN-END:variables
 }

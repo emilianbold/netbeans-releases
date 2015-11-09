@@ -41,17 +41,24 @@
  */
 package org.netbeans.modules.docker.ui.build2;
 
+import java.io.File;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
-public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private BuildContextVisual component;
+
+    private WizardDescriptor wizard;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -61,6 +68,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
     public BuildContextVisual getComponent() {
         if (component == null) {
             component = new BuildContextVisual();
+            component.addChangeListener(this);
         }
         return component;
     }
@@ -72,10 +80,19 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
         // If you have context help:
         // return new HelpCtx("help.key.here");
     }
-
+    
     @Override
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
+        // clear the error message
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
+
+        String buildContext = component.getBuildContext();
+        if (buildContext == null || !new File(buildContext).isDirectory()) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The build context does not exist.");
+            return false;
+        }
         return true;
         // If it depends on some condition (form filled out...) and
         // this condition changes (last form field filled in...) then
@@ -85,15 +102,19 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     @Override
     public void readSettings(WizardDescriptor wiz) {
-        // use wiz.getProperty to retrieve previous panel state
+        if (wizard == null) {
+            wizard = wiz;
+        }
     }
 
     @Override
@@ -101,4 +122,8 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
         // use wiz.putProperty to remember current panel state
     }
 
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
+    }
 }
