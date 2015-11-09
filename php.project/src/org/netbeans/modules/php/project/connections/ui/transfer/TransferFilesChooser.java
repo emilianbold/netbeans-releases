@@ -51,6 +51,7 @@ import org.netbeans.modules.php.project.connections.ui.transfer.tree.TransferSel
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 public final class TransferFilesChooser {
@@ -92,13 +93,22 @@ public final class TransferFilesChooser {
         return new TransferFilesChooser(transferFiles, TransferType.UPLOAD, timestamp);
     }
 
+    public Set<TransferFile> showDialog() {
+        return Mutex.EVENT.readAccess(new Mutex.Action<Set<TransferFile>>() {
+            @Override
+            public Set<TransferFile> run() {
+                return showDialogInernal();
+            }
+        });
+    }
+
     @NbBundle.Messages({
         "TransferFilesChooser.title.download=File Download",
         "TransferFilesChooser.title.upload=File Upload",
         "TransferFilesChooser.button.downloadWithMnemonics=&Download",
         "TransferFilesChooser.button.uploadWithMnemonics=&Upload"
     })
-    public Set<TransferFile> showDialog() {
+    Set<TransferFile> showDialogInernal() {
         String title;
         String buttonLabel;
         switch (transferType) {
