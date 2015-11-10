@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.ui.wizard;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.docker.DockerRegistry;
-import org.netbeans.modules.docker.ui.wizard.DockerPropertiesPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.awt.ActionID;
@@ -71,31 +70,7 @@ public class AddDockerInstanceAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-        panels.add(new DockerPropertiesPanel());
-        String[] steps = new String[panels.size()];
-        for (int i = 0; i < panels.size(); i++) {
-            Component c = panels.get(i).getComponent();
-            // Default step name to component name of panel.
-            steps[i] = c.getName();
-            if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent) c;
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-                jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
-            }
-        }
-        WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<WizardDescriptor>(panels));
-        // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wiz.setTitleFormat(new MessageFormat("{0}"));
-        wiz.setTitle("Add Docker Instance");
-        if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            File certPath = new File((String) wiz.getProperty("certPath"));
-            DockerRegistry.getInstance().createInstance((String) wiz.getProperty("displayName"),
-                    (String) wiz.getProperty("url"), new File(certPath, "ca.pem"),
-                    new File(certPath, "cert.pem"), new File(certPath, "key.pem"));
-        }
+        AddDockerInstanceWizard wizard = new AddDockerInstanceWizard();
+        wizard.show();
     }
 }

@@ -44,33 +44,34 @@ package org.netbeans.modules.docker.ui.wizard;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerPropertiesVisual extends javax.swing.JPanel {
+public class DockerConnectionVisual extends javax.swing.JPanel {
 
     /**
      * Creates new form DockerWizardVisual
      */
-    public DockerPropertiesVisual() {
+    public DockerConnectionVisual() {
         initComponents();
     }
 
-    @NbBundle.Messages("MSG_ConnectionProperties=Connection Properties")
+    @NbBundle.Messages("MSG_Connection=Connection")
     @Override
     public String getName() {
-        return Bundle.MSG_ConnectionProperties();
+        return Bundle.MSG_Connection();
     }
 
     public String getDisplayName() {
-        return nameTextField.getText().trim();
+        return UiUtils.getValue(nameTextField);
     }
 
     public String getUrl() {
-        return urlTextField.getText().trim();
+        return UiUtils.getValue(urlTextField);
     }
 
     public void setUrl(String url) {
@@ -78,7 +79,7 @@ public class DockerPropertiesVisual extends javax.swing.JPanel {
     }
 
     public String getCertPath() {
-        return certTextField.getText().trim();
+        return UiUtils.getValue(certTextField);
     }
 
     public void setCertPath(String path) {
@@ -104,20 +105,20 @@ public class DockerPropertiesVisual extends javax.swing.JPanel {
         browseButton = new javax.swing.JButton();
 
         urlLabel.setLabelFor(urlTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.urlLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.urlLabel.text")); // NOI18N
 
-        urlTextField.setText(org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.urlTextField.text")); // NOI18N
+        urlTextField.setText(org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.urlTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(explanationLabel, org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.explanationLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(explanationLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.explanationLabel.text")); // NOI18N
 
         nameLabel.setLabelFor(nameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.nameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.nameLabel.text")); // NOI18N
 
-        nameTextField.setText(org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.nameTextField.text")); // NOI18N
+        nameTextField.setText(org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.nameTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(certDirectoryLabel, org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.certDirectoryLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(certDirectoryLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.certDirectoryLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(DockerPropertiesVisual.class, "DockerPropertiesVisual.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
