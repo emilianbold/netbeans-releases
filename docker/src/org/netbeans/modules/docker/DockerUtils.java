@@ -54,6 +54,12 @@ public final class DockerUtils {
 
     public static final String DOCKER_FILE = "Dockerfile"; // NOI18N
 
+    private static final Pattern REPOSITORY_PATTERN = Pattern.compile("^[a-z0-9_\\.-]+$");
+
+    private static final Pattern NAMESPACE_PATTERN = Pattern.compile("^[a-z0-9_-]+$");
+
+    private static final Pattern FORBIDDEN_REPOSITORY_PATTERN = Pattern.compile("^[a-f0-9]{64}$");
+
     private static final Pattern TAG_PATTERN = Pattern.compile("^[A-Za-z0-9_\\.-]+$");
 
     private DockerUtils() {
@@ -71,12 +77,76 @@ public final class DockerUtils {
         return id;
     }
 
+    public static String normalizeRepository(String repository) {
+        // XXX check validity ?
+        int index = repository.indexOf('/');
+        if (index <= 0) {
+            return repository;
+        }
+        String registry = repository.substring(0, index);
+        if ("index.docker.io".equals(registry) || "docker.io".equals(registry)) { // NOI18N
+            if (index + 1 == repository.length()) {
+                return "";
+            }
+            return repository.substring(index + 1);
+        }
+        return repository;
+    }
+
     public static String getTag(DockerTag tag) {
         String id = tag.getTag();
         if (id.equals("<none>:<none>")) { // NOI18N
             id = tag.getImage().getId();
         }
         return id;
+    }
+
+    public static boolean isValidRepository(String repository) {
+        // FIXME certain docker revisions disallow different things
+        // especially consecutive _.-
+        if (repository == null) {
+            return false;
+        }
+        // must not contain schema
+        if (repository.contains("://")) { // NOI18N
+            return false;
+        }
+
+        String[] parts = repository.split("/");
+        if (parts.length > 3) {
+            return false;
+        }
+        if (parts.length == 1) {
+            return REPOSITORY_PATTERN.matcher(parts[0]).matches()
+                    && !FORBIDDEN_REPOSITORY_PATTERN.matcher(parts[0]).matches();
+        }
+
+        String registry = null;
+        String ns = null;
+        String repo = null;
+        if (parts.length == 2) {
+            String namespace = parts[0];
+            if (namespace.contains(".") || namespace.contains(":")) {
+                // registry host
+                registry = namespace;
+            } else {
+                ns = namespace;
+            }
+            repo = parts[1];
+        } else if (parts.length == 3) {
+            registry = parts[0];
+            ns = parts[1];
+            repo = parts[2];
+        }
+        if (ns != null && (!NAMESPACE_PATTERN.matcher(ns).matches() || ns.length() < 2 || ns.length() > 255
+                || ns.startsWith("-") || ns.endsWith("-"))) {
+            return false;
+        }
+        if (repo != null && (!REPOSITORY_PATTERN.matcher(repo).matches()
+                || FORBIDDEN_REPOSITORY_PATTERN.matcher(repo).matches())) {
+            return false;
+        }
+        return true;
     }
 
     public static boolean isValidTag(String tag) {
