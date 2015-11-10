@@ -205,7 +205,10 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
 
         String certPath = (String) wiz.getProperty(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY);
         if (certPath == null) {
-            if (Utilities.isMac() || Utilities.isWindows()) {
+            String envPath = System.getenv("DOCKER_CERT_PATH"); // NOI18N
+            if (envPath != null && new File(envPath).isDirectory()) {
+                certPath = envPath;
+            } else if (Utilities.isMac() || Utilities.isWindows()) {
                 File docker = new File(System.getProperty("user.home"), ".docker"); // NOI18N
                 if (!docker.isDirectory()) {
                     docker = new File(System.getProperty("user.home"), ".boot2docker"); // NOI18N
