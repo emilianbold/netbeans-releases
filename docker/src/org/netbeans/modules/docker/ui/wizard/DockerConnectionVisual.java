@@ -44,7 +44,9 @@ package org.netbeans.modules.docker.ui.wizard;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.ui.UiUtils;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,6 +55,8 @@ import org.openide.util.NbBundle;
  */
 public class DockerConnectionVisual extends javax.swing.JPanel {
 
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
     /**
      * Creates new form DockerWizardVisual
      */
@@ -60,10 +64,12 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
         initComponents();
     }
 
-    @NbBundle.Messages("MSG_Connection=Connection")
-    @Override
-    public String getName() {
-        return Bundle.MSG_Connection();
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     public String getDisplayName() {
@@ -84,6 +90,12 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
 
     public void setCertPath(String path) {
         certTextField.setText(path);
+    }
+
+    @NbBundle.Messages("MSG_Connection=Connection")
+    @Override
+    public String getName() {
+        return Bundle.MSG_Connection();
     }
 
     /**

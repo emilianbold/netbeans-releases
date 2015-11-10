@@ -42,12 +42,16 @@
 package org.netbeans.modules.docker.ui.wizard;
 
 import java.io.File;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
-public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -63,6 +67,7 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
     public DockerConnectionVisual getComponent() {
         if (component == null) {
             component = new DockerConnectionVisual();
+            component.addChangeListener(this);
         }
         return component;
     }
@@ -82,10 +87,12 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     @Override
@@ -110,4 +117,8 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
         wiz.putProperty("certPath", component.getCertPath());
     }
 
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
+    }
 }
