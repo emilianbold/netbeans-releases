@@ -854,8 +854,9 @@ pseudo
 
 propertyDeclaration
     :
-    STAR? property ws? COLON ws? propertyValue (ws? prio)?
-    | {isCssPreprocessorSource()}? STAR? property ws? COLON ws? cp_propertyValue //cp_expression may contain the IMPORT_SYM
+{isCssPreprocessorSource()}? STAR? property ws? COLON ws? cp_propertyValue //cp_expression may contain the IMPORT_SYM
+    | STAR? property ws? COLON ws? propertyValue (ws? prio)?
+    
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -1238,7 +1239,7 @@ sass_selector_interpolation_exp :
 
 sass_interpolation_expression_var
     :
-        HASH_SYMBOL LBRACE cp_expression RBRACE //XXX possibly allow cp_expression inside
+        HASH_SYMBOL LBRACE WS? cp_expression WS? RBRACE //XXX possibly allow cp_expression inside
     ;
 
 //SASS nested properties:
