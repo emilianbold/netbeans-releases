@@ -1031,7 +1031,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         } else if (pid != -1) {
             // attach
             image = Long.toString(pid);
-            if (program == null) {
+            if (program == null || program.isEmpty()) {
                 program = "-";				// NOI18N
             }
             // If we're capturing, we'll be attaching to ss_attach and even
