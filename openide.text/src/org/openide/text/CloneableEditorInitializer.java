@@ -413,6 +413,7 @@ final class CloneableEditorInitializer implements Runnable {
         }
 
         try {
+            ces.prepareDocument(); // Ensure prepareDocument() is called when existing component is deserialized after IDE restart
             setDocument(ces.openDocument());
             ces.getPositionManager().documentOpened(new WeakReference<StyledDocument>(doc));
             assert (doc != null) : "ces.openDocument() returned null"; // NOI18N
