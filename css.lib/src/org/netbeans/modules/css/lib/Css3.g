@@ -854,8 +854,9 @@ pseudo
 
 propertyDeclaration
     :
-    STAR? property ws? COLON ws? propertyValue (ws? prio)?
-    | {isCssPreprocessorSource()}? STAR? property ws? COLON ws? cp_propertyValue //cp_expression may contain the IMPORT_SYM
+{isCssPreprocessorSource()}? STAR? property ws? COLON ws? cp_propertyValue //cp_expression may contain the IMPORT_SYM
+    | STAR? property ws? COLON ws? propertyValue (ws? prio)?
+    
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
