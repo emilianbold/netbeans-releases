@@ -441,7 +441,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         }
     }
 
-    protected void removeStateListener(StateListener sl) {
+    @Override
+    public void removeStateListener(StateListener sl) {
         actionsLock.writeLock().lock();
         try {
             actions.remove(sl);
@@ -485,13 +486,17 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             @Override
             public void run() {
                 // update explicitly registered actions
+                List<StateListener> actionsCopy;
+                
                 actionsLock.readLock().lock();
                 try {
-                    for (StateListener action : actions) {
-                        action.update(state);
-                    }
+                    actionsCopy = new ArrayList<StateListener>(actions);
                 } finally {
                     actionsLock.readLock().unlock();
+                }
+                
+                for (StateListener action : actionsCopy) {
+                    action.update(state);
                 }
 
                 // update actions managed by ActionEnabler
