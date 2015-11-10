@@ -46,6 +46,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.DockerUtils;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
@@ -91,8 +93,23 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
 
         String buildContext = (String) wizard.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY);
         String dockerfile = component.getDockerfile();
-        if (dockerfile == null || !new File(buildContext, dockerfile).isFile()) {
+        if (dockerfile == null) {
+            dockerfile = DockerUtils.DOCKER_FILE;
+        }
+        File file = new File(dockerfile);
+        if (!file.isAbsolute()) {
+            file = new File(buildContext, dockerfile);
+        }
+
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        // the last check avoids entires like Dockerfile/ to be considered valid files
+        if (fo == null || !fo.isData() || !dockerfile.endsWith(fo.getNameExt())) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The Dockerfile does not exist.");
+            return false;
+        }
+        FileObject build = FileUtil.toFileObject(FileUtil.normalizeFile(new File(buildContext)));
+        if (build == null || !FileUtil.isParentOf(build, fo)) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The Dockerfile is outside of the build context.");
             return false;
         }
         return true;
