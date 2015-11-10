@@ -41,29 +41,10 @@
  */
 package org.netbeans.modules.docker.ui.run;
 
-import org.netbeans.modules.docker.ui.UiUtils;
-import java.awt.Component;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.JComponent;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
-import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.remote.DockerRemote;
-import org.netbeans.modules.docker.remote.StreamResult;
-import org.openide.DialogDisplayer;
-import org.openide.WizardDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
 
 /**
