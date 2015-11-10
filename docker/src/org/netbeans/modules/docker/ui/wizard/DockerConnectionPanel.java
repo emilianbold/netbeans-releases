@@ -42,11 +42,16 @@
 package org.netbeans.modules.docker.ui.wizard;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.DockerInstance;
+import org.netbeans.modules.docker.DockerRegistry;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
@@ -58,6 +63,8 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
      * component from this class, just use getComponent().
      */
     private DockerConnectionVisual component;
+
+    private WizardDescriptor wizard;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -80,8 +87,72 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
         // return new HelpCtx("help.key.here");
     }
 
+    @NbBundle.Messages({
+        "MSG_EmptyDisplayName=Display name must not be empty.",
+        "MSG_AlreadyUsedDisplayName=Display name is already used by another instance.",
+        "MSG_EmptyUrl=URL must not be empty.",
+        "MSG_InvalidUrl=URL must be valid http or https URL.",
+        "MSG_NonExistingCertificatePath=The certificates path does not exist.",
+        "# {0} - missing file",
+        "MSG_CertificatePathMissingFile=The certificates path does not contain {0}."
+    })
     @Override
     public boolean isValid() {
+        String displayName = component.getDisplayName();
+        if (displayName == null) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyDisplayName());
+            return false;
+        }
+        for (DockerInstance instance : DockerRegistry.getInstance().getInstances()) {
+            if (displayName.equals(instance.getDisplayName())) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_AlreadyUsedDisplayName());
+                return false;
+            }
+        }
+
+        String url = component.getUrl();
+        if (url == null) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyUrl());
+            return false;
+        }
+        boolean urlWrong = false;
+        try {
+            URL realUrl = new URL(url);
+            if (!"http".equals(realUrl.getProtocol()) && !"https".equals(realUrl.getProtocol())) { // NOI18N
+                urlWrong = true;
+            }
+        } catch (MalformedURLException ex) {
+            urlWrong = true;
+        }
+        if (urlWrong) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_InvalidUrl());
+            return false;
+        }
+
+        String certPath = component.getCertPath();
+        if (certPath != null) {
+            File certPathFile = new File(certPath);
+            if (!certPathFile.isDirectory()) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingCertificatePath());
+                return false;
+            }
+            if (!new File(certPathFile, AddDockerInstanceWizard.DEFAULT_CA_FILE).isFile()) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        Bundle.MSG_CertificatePathMissingFile(AddDockerInstanceWizard.DEFAULT_CA_FILE));
+                return false;
+            }
+            if (!new File(certPathFile, AddDockerInstanceWizard.DEFAULT_CERT_FILE).isFile()) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        Bundle.MSG_CertificatePathMissingFile(AddDockerInstanceWizard.DEFAULT_CERT_FILE));
+                return false;
+            }
+            if (!new File(certPathFile, AddDockerInstanceWizard.DEFAULT_KEY_FILE).isFile()) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        Bundle.MSG_CertificatePathMissingFile(AddDockerInstanceWizard.DEFAULT_KEY_FILE));
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -97,7 +168,10 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public void readSettings(WizardDescriptor wiz) {
-        // use wiz.getProperty to retrieve previous panel state
+        if (wizard == null) {
+            wizard = wiz;
+        }
+
         if (Utilities.isMac() || Utilities.isWindows()) {
             component.setUrl("https://192.168.59.103:2376"); // NOI18N
             File docker = new File(System.getProperty("user.home"), ".docker"); // NOI18N
@@ -112,9 +186,9 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
-        wiz.putProperty("displayName", component.getDisplayName());
-        wiz.putProperty("url", component.getUrl());
-        wiz.putProperty("certPath", component.getCertPath());
+        wiz.putProperty(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY, component.getDisplayName());
+        wiz.putProperty(AddDockerInstanceWizard.URL_PROPERTY, component.getUrl());
+        wiz.putProperty(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY, component.getCertPath());
     }
 
     @Override

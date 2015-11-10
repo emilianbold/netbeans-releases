@@ -45,6 +45,8 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -62,6 +64,11 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
      */
     public DockerConnectionVisual() {
         initComponents();
+
+        DefaultDocumentListener listener = new DefaultDocumentListener();
+        nameTextField.getDocument().addDocumentListener(listener);
+        urlTextField.getDocument().addDocumentListener(listener);
+        certTextField.getDocument().addDocumentListener(listener);
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -96,6 +103,24 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
     @Override
     public String getName() {
         return Bundle.MSG_Connection();
+    }
+
+    private class DefaultDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changeSupport.fireChange();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changeSupport.fireChange();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            changeSupport.fireChange();
+        }
     }
 
     /**
@@ -182,7 +207,6 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
         String text = certTextField.getText();
         if (text != null && !text.trim().isEmpty()) {
             chooser.setSelectedFile(new File(text));
-            chooser.setCurrentDirectory(new File(text));
         }
         if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
             certTextField.setText(chooser.getSelectedFile().getAbsolutePath());
