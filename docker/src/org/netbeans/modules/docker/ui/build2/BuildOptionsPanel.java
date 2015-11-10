@@ -50,6 +50,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
@@ -84,6 +85,10 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
         // return new HelpCtx("help.key.here");
     }
 
+    @NbBundle.Messages({
+        "MSG_NonExistingDockerfile=The Dockerfile does not exist.",
+        "MSG_NonRelativeDockerfile=The Dockerfile must be inside the build context."
+    })
     @Override
     public boolean isValid() {
         // clear the error message
@@ -104,12 +109,12 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         // the last check avoids entires like Dockerfile/ to be considered valid files
         if (fo == null || !fo.isData() || !dockerfile.endsWith(fo.getNameExt())) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The Dockerfile does not exist.");
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingDockerfile());
             return false;
         }
         FileObject build = FileUtil.toFileObject(FileUtil.normalizeFile(new File(buildContext)));
         if (build == null || !FileUtil.isParentOf(build, fo)) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "The Dockerfile is outside of the build context.");
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonRelativeDockerfile());
             return false;
         }
         return true;
