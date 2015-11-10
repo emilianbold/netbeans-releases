@@ -1885,4 +1885,12 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  }\n"
                 + "}");
     }
+    
+    public void testSpacesInSassInterpolation() {
+        assertParses(".test {\n"
+                + "    &.#{ $active_class } > a {\n"
+                + "        background: $active-bg;\n"
+                + "    }\n"
+                + "}");
+    }
 }
