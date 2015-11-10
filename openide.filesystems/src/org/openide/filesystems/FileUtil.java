@@ -1949,7 +1949,7 @@ public final class FileUtil extends Object {
      * Tests if an file is inside an archive.
      * @param fo the file to be tested
      * @return true if the file is inside an archive
-     * @since 9.6
+     * @since 9.10
      */
     public static boolean isArchiveArtifact(FileObject fo) {
         Parameters.notNull("fileObject", fo);  //NOI18N
@@ -1965,7 +1965,7 @@ public final class FileUtil extends Object {
      * Tests if an {@link URL} denotes a file inside an archive.
      * @param url the url to be tested
      * @return true if the url points inside an archive
-     * @since 9.6
+     * @since 9.10
      */
     public static boolean isArchiveArtifact(URL url) {
         Parameters.notNull("url", url);  //NOI18N

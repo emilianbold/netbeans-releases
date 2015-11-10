@@ -79,7 +79,7 @@ public class SourceLevelQuery {
 
     /**
      * The minimal supported source level.
-     * @since 1.59
+     * @since 1.60
      */
     public static final SpecificationVersion MINIMAL_SOURCE_LEVEL = new SpecificationVersion("1.6");  //NOI18N
     private static final Logger LOGGER = Logger.getLogger(SourceLevelQuery.class.getName());

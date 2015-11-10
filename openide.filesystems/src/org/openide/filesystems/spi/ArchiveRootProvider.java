@@ -52,7 +52,7 @@ import org.openide.filesystems.URLMapper;
  * {@link FileUtil.getArchiveRoot}, {@link FileUtil.getArchiveFile}.
  * The implementations are registered in global lookup.
  * @author Tomas Zezula
- * @since 9.6
+ * @since 9.10
  */
 public interface ArchiveRootProvider {
 

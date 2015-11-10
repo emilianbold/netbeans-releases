@@ -730,7 +730,7 @@ public final class ClassPath {
     /**
      * Policy for handling in archive path.
      * @see #toString(ClassPath.PathConversionMode, ClassPath.PathEmbeddingMode)
-     * @since 1.50
+     * @since 1.52
      */
     public enum PathEmbeddingMode {
         /**
@@ -766,7 +766,7 @@ public final class ClassPath {
      * @param conversionMode policy for converting unusual entries
      * @param pathEmbeddingMode policy for handling in archive path
      * @return a conventionally-formatted representation of the classpath
-     * @since 1.50
+     * @since 1.52
      * @see File#pathSeparator
      * @see FileUtil#archiveOrDirForURL
      * @see ClassPathSupport#createClassPath(String)

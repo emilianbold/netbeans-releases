@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
         <change id="ArchiveRootProvider">
             <api name="filesystems"/>
             <summary>Pluggable archive files support for FileUtil</summary>
-            <version major="9" minor="6"/>
+            <version major="9" minor="10"/>
             <date year="2015" month="5" day="28"/>
             <author login="tzezula"/>
             <compatibility addition="yes" semantic="compatible" binary="compatible"/>

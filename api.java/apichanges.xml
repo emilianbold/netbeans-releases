@@ -79,7 +79,7 @@ made subject to such option by the copyright holder.
         <change id="SourceLevelQuery-MINIMAL_SOURCE_LEVEL">
             <api name="queries"/>
             <summary>Added <code>MINIMAL_SOURCE_LEVEL</code> into <code>SourceLevelQuery</code></summary>
-            <version major="1" minor="59"/>
+            <version major="1" minor="60"/>
             <date day="15" month="6" year="2015"/>
             <author login="tzezula"/>
             <compatibility semantic="compatible" source="compatible" binary="compatible"/>
