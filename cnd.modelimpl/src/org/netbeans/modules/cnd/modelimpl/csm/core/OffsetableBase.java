@@ -52,9 +52,13 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import static org.netbeans.modules.cnd.apt.utils.APTUtils.NOT_AN_EXPANDED_TOKEN;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
+import org.netbeans.modules.cnd.modelimpl.parser.TokenBasedAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -120,6 +124,16 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
             }
         }
         return 0;
+    }
+    
+    public static int getMacroStartMarker(AST node) {
+        if (node != null) {
+            TokenBasedAST csmAst = AstUtil.getFirstTokenBasedAST(node);
+            if (csmAst != null && APTUtils.isMacroExpandedToken(csmAst.getToken())) {
+                return APTUtils.getExpandedTokenMarker((APTToken) csmAst.getToken());
+            }
+        }
+        return NOT_AN_EXPANDED_TOKEN;
     }
 
     public static int getEndOffset(AST node) {

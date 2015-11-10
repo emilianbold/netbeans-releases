@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
-import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
 
 /**
  *
@@ -81,6 +80,7 @@ class ClankToAPTToken implements APTToken {
         long/*<SourceLocation, SourceLocation>*/ lastExpansionRange = -1L;
         int lastExpandedStartOffset = 0;
         APTCommentToken lastEndOffsetToken = null;
+        int macroTokenIndex = -1;
         ///////
 
         for (int i = 0; i < nrTokens; i++) {
@@ -147,10 +147,14 @@ class ClankToAPTToken implements APTToken {
                 converted = ClankToAPTToken.convert(PP, token, offset, spell, needLineColumns);
             }
             if (needToWrapAsMacro) {
-                // TODO: can introduce more light weight token, but for now reuse MacroExpandedToken
                 assert endOffsetToken != null;
-                converted = new MacroExpandedToken(converted, converted, endOffsetToken);
+                if (info == null) {
+                    ++macroTokenIndex; // first token is a fake one
+                }
+                converted = new ClankMacroExpandedToken(converted, endOffsetToken, macroTokenIndex);
                 assert info == null || APTUtils.isCommentToken(converted) : "annotated token must be macro expanded comment";
+            } else {
+                macroTokenIndex = -1;
             }
             out[i] = converted;
         }
