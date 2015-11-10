@@ -56,6 +56,10 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -63,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Exceptions;
 
 /**
  * Lazy statements
@@ -70,7 +75,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Vladimir Kvashin, Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 abstract public class LazyStatementImpl extends StatementBase implements CsmScope {
-
+    
     private static final List<CsmStatement> ANTILOOP_EMPTY_LIST = Collections.<CsmStatement>unmodifiableList(new ArrayList<CsmStatement>(0));
     // for PERF reason we use field as lock and container of "in-resolve" state
     private final ThreadLocal<AtomicBoolean> inResolveLazyStatements_AndStatementsRefLoc = new ThreadLocal<AtomicBoolean>() {
@@ -81,8 +86,8 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
     };
     private volatile SoftReference<List<CsmStatement>> statements = null;
     
-    protected LazyStatementImpl(CsmFile file, int start, int end, CsmFunction scope) {
-        super(file, start, end, scope);
+    protected LazyStatementImpl(CsmFile file, int start, int end, int macroStartMarker, CsmFunction scope) {
+        super(file, start, end, macroStartMarker, scope);
     }
 
     @Override
@@ -154,7 +159,7 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
 
     private boolean renderStatements(List<CsmStatement> list) {
         FileImpl file = (FileImpl) getContainingFile();
-        TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset(), getFirstTokenID(), true);
+        TokenStream stream = getStatementTokenStream(file);
         if (stream == null) {
             int startOffset = getStartOffset();
             int[] lineColumn = file.getLineColumn(startOffset);
@@ -182,6 +187,31 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
                 }
             }            
         }
+    }
+    
+    private TokenStream getStatementTokenStream(FileImpl file) {
+        TokenStream ts = file.getTokenStream(getStartOffset(), getEndOffset(), 0, true);
+        if (macroStartMarker >= 0) {
+            try {
+                Token token = ts.nextToken();
+                while (!isLastToken(token) && APTUtils.isMacroExpandedToken(token)) {
+                    if (APTUtils.getExpandedTokenMarker((APTToken) token) == macroStartMarker) {
+                        assert token.getType() == getFirstTokenID();
+                        break;
+                    }
+                    token = ts.nextToken();
+                }
+                return new PrependedTokenStream(ts, token);
+            } catch (TokenStreamException ex) {
+                Exceptions.printStackTrace(ex);
+                return ts;
+            }
+        }
+        return ts;
+    }
+    
+    private boolean isLastToken(Token token)  {
+        return token == null || token.getType() == Token.EOF_TYPE;
     }
 
     public void renderStatements(AST ast, List<CsmStatement> list, Map<Integer, CsmObject> objects) {
@@ -214,5 +244,29 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
     public LazyStatementImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.statements = null;
+    }
+    
+    private static final class PrependedTokenStream implements TokenStream {
+        
+        private final TokenStream delegate;
+        
+        private final Token token;
+        
+        private boolean first;
+
+        public PrependedTokenStream(TokenStream delegate, Token token) {
+            this.delegate = delegate;
+            this.token = token;
+            this.first = true;
+        }
+        
+        @Override
+        public Token nextToken() throws TokenStreamException {
+            if (first) {
+                first = false;
+                return token;
+            }
+            return delegate.nextToken();
+        }
     }
 }

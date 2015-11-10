@@ -66,20 +66,26 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
 
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
+    protected final int macroStartMarker;
 
     protected StatementBase(AST ast, CsmFile file, CsmScope scope) {
-        this(ast, file, getStartOffset(ast), getEndOffset(ast), scope);
+        this(ast, file, getStartOffset(ast), getEndOffset(ast), getMacroStartMarker(ast), scope);
     }
 
     protected StatementBase(CsmFile file, int start, int end, CsmScope scope) {
-        this(null, file, start, end, scope);
+        this(null, file, start, end, 0, scope);
+    }
+    
+    protected StatementBase(CsmFile file, int start, int end, int macroStartMarker, CsmScope scope) {
+        this(null, file, start, end, macroStartMarker, scope);
     }
 
-    private StatementBase(AST ast, CsmFile file, int start, int end, CsmScope scope) {
+    private StatementBase(AST ast, CsmFile file, int start, int end, int macroStartMarker, CsmScope scope) {
         super(file, start, end);
         if (scope != null) {
             setScope(scope);
         }
+        this.macroStartMarker = macroStartMarker;
     }
 
     @Override
@@ -113,11 +119,13 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
+        output.writeInt(macroStartMarker);
     }
 
     protected StatementBase(RepositoryDataInput input) throws IOException {
         super(input);
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.macroStartMarker = input.readInt();
     }
 
     public interface StatementBuilderContainer {
