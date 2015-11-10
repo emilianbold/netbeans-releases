@@ -94,7 +94,8 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
         "MSG_InvalidUrl=URL must be valid http or https URL.",
         "MSG_NonExistingCertificatePath=The certificates path does not exist.",
         "# {0} - missing file",
-        "MSG_CertificatePathMissingFile=The certificates path does not contain {0}."
+        "MSG_CertificatePathMissingFile=The certificates path does not contain {0}.",
+        "MSG_NoCertificatesForSecure=No certificates configured for secured connection."
     })
     @Override
     public boolean isValid() {
@@ -120,9 +121,11 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyUrl());
             return false;
         }
+
+        URL realUrl = null;
         boolean urlWrong = false;
         try {
-            URL realUrl = new URL(url);
+            realUrl = new URL(url);
             if (!"http".equals(realUrl.getProtocol()) && !"https".equals(realUrl.getProtocol())) { // NOI18N
                 urlWrong = true;
             }
@@ -158,6 +161,10 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
             }
         }
 
+        if (realUrl != null && "https".equals(realUrl.getProtocol()) && certPath == null) { // NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, Bundle.MSG_NoCertificatesForSecure());
+        }
+
         return true;
     }
 
@@ -171,22 +178,44 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
         changeSupport.removeChangeListener(l);
     }
 
+    @NbBundle.Messages({
+        "LBL_DefaultDisplayName=Local Docker"
+    })
     @Override
     public void readSettings(WizardDescriptor wiz) {
         if (wizard == null) {
             wizard = wiz;
         }
 
-        if (Utilities.isMac() || Utilities.isWindows()) {
-            component.setUrl("https://192.168.59.103:2376"); // NOI18N
-            File docker = new File(System.getProperty("user.home"), ".docker"); // NOI18N
-            if (!docker.isDirectory()) {
-                docker = new File(System.getProperty("user.home"), ".boot2docker"); // NOI18N
-            }
-            if (docker.isDirectory()) {
-                component.setCertPath(docker.getAbsolutePath());
+        String displayName = (String) wiz.getProperty(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY);
+        if (displayName == null) {
+            displayName = Bundle.LBL_DefaultDisplayName();
+        }
+        component.setDisplayName(displayName);
+
+        String url = (String) wiz.getProperty(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY);
+        if (url == null) {
+            if (Utilities.isMac() || Utilities.isWindows()) {
+                url = "https://192.168.59.103:2376"; // NOI18N
+            } else {
+                url = "http://127.0.0.1:2375"; // NOI18N
             }
         }
+        component.setUrl(url);
+
+        String certPath = (String) wiz.getProperty(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY);
+        if (certPath == null) {
+            if (Utilities.isMac() || Utilities.isWindows()) {
+                File docker = new File(System.getProperty("user.home"), ".docker"); // NOI18N
+                if (!docker.isDirectory()) {
+                    docker = new File(System.getProperty("user.home"), ".boot2docker"); // NOI18N
+                }
+                if (docker.isDirectory()) {
+                    certPath = docker.getAbsolutePath();
+                }
+            }
+        }
+        component.setCertPath(certPath);
 
         // XXX revalidate; is this bug?
         changeSupport.fireChange();

@@ -50,6 +50,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -64,6 +65,11 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
      */
     public DockerConnectionVisual() {
         initComponents();
+
+        // do not show the port binding explanation on mac and windows
+        if (!Utilities.isMac() && !Utilities.isMac()) {
+            explanationLabel.setVisible(false);
+        }
 
         DefaultDocumentListener listener = new DefaultDocumentListener();
         nameTextField.getDocument().addDocumentListener(listener);
@@ -81,6 +87,10 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
 
     public String getDisplayName() {
         return UiUtils.getValue(nameTextField);
+    }
+
+    public void setDisplayName(String displayName) {
+        nameTextField.setText(displayName);
     }
 
     public String getUrl() {
@@ -144,14 +154,10 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
         urlLabel.setLabelFor(urlTextField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.urlLabel.text")); // NOI18N
 
-        urlTextField.setText(org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.urlTextField.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(explanationLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.explanationLabel.text")); // NOI18N
 
         nameLabel.setLabelFor(nameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.nameLabel.text")); // NOI18N
-
-        nameTextField.setText(org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.nameTextField.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(certDirectoryLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.certDirectoryLabel.text")); // NOI18N
 
