@@ -224,6 +224,14 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>com.google.guava</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.eclipse.mylyn.commons.repositories.core</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.eclipse.core.net</code-name-base>
                         <compile-dependency/>
                     </test-dependency>

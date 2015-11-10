@@ -52,6 +52,7 @@ import javax.swing.Icon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.projectapi.SPIAccessor;
+import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectManagerImplementation;
 import org.openide.filesystems.FileObject;
@@ -238,6 +239,7 @@ public final class ProjectManager {
      */
     public void clearNonProjectCache() {
         impl.clearNonProjectCache();
+        SimpleFileOwnerQueryImplementation.reset();
     }
     
     /**

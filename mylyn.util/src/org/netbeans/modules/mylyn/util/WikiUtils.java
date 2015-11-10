@@ -43,9 +43,9 @@ package org.netbeans.modules.mylyn.util;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.eclipse.mylyn.wikitext.core.WikiText;
 import org.eclipse.mylyn.wikitext.core.parser.MarkupParser;
 import org.eclipse.mylyn.wikitext.core.parser.markup.MarkupLanguage;
+import org.eclipse.mylyn.wikitext.core.util.ServiceLocator;
 import org.netbeans.modules.mylyn.util.wiki.WikiEditPanel;
 
 /**
@@ -68,7 +68,7 @@ public class WikiUtils {
             LOG.log(Level.FINE, "Wiki language name is empty"); //NOI18N
             return null;
         }
-        MarkupLanguage markupLanguage = WikiText.getMarkupLanguage(language);
+        MarkupLanguage markupLanguage = ServiceLocator.getInstance().getMarkupLanguage(language);
         if (markupLanguage == null) {
             LOG.log(Level.FINE, "Markup language for name {0} not found",language); //NOI18N
             return null;

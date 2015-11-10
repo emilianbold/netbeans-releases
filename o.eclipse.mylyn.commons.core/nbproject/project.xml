@@ -8,7 +8,7 @@
            <public-packages/>
            <class-path-extension>
                <runtime-relative-path>org-eclipse-mylyn-commons-core.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.commons.core_3.10.0.20130926-1710_nosignature.jar</binary-origin>
+               <binary-origin>external/org.eclipse.mylyn.commons.core_3.17.0.v20150625-2042.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

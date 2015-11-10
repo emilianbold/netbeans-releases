@@ -1,5 +1,5 @@
 Name: Mylyn Commons NET library
-Version: 3.10.0
+Version: 3.17
 License: EPL-v10
 OSR: 5852
 Origin: http://www.eclipse.org/mylyn/
