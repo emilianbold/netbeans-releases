@@ -98,6 +98,11 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
     })
     @Override
     public boolean isValid() {
+        // clear the error message
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
+
         String displayName = component.getDisplayName();
         if (displayName == null) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyDisplayName());
@@ -182,6 +187,9 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
                 component.setCertPath(docker.getAbsolutePath());
             }
         }
+
+        // XXX revalidate; is this bug?
+        changeSupport.fireChange();
     }
 
     @Override
