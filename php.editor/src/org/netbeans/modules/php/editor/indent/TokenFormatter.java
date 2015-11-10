@@ -1525,6 +1525,12 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_AFTER_CLOSE_PHP_TAG:
                                         break;
+                                    case WHITESPACE_BEFORE_RETURN_TYPE_SEPARATOR:
+                                        countSpaces = 0;
+                                        break;
+                                    case WHITESPACE_AFTER_RETURN_TYPE_SEPARATOR:
+                                        countSpaces = 1;
+                                        break;
                                     default:
                                     //no-op
                                 }
