@@ -1,5 +1,5 @@
 Name: Mylyn Bugzilla Connector
-Version: 3.14.0
+Version: 3.17
 License: EPL-v10
 OSR: 5852
 Origin: http://www.eclipse.org/mylyn

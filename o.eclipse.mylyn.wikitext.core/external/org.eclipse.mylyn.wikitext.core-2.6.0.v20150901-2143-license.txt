@@ -1,6 +1,6 @@
 Name: %Bundle-Name.0
-Version: 1.9.0
-License: EPL-v10
+Version: 2.6.0
+License: EPL-v10 (see also about.html inside this JAR file)
 OSR: 
 Origin: 
 Description: 

@@ -1,5 +1,5 @@
 Name: Apache Jakarta Commons Lang
-Version: 2.3
+Version: 2.6
 License: Apache-2.0
 OSR: 2345
 Description: Provides a host of helper utilities for the java.lang API
