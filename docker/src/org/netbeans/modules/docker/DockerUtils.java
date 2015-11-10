@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker;
 
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.docker.remote.DockerEvent;
@@ -52,6 +53,8 @@ import org.netbeans.modules.docker.remote.DockerEvent;
 public final class DockerUtils {
 
     public static final String DOCKER_FILE = "Dockerfile"; // NOI18N
+
+    private static final Pattern TAG_PATTERN = Pattern.compile("^[A-Za-z0-9_\\.-]+$");
 
     private DockerUtils() {
         super();
@@ -76,6 +79,13 @@ public final class DockerUtils {
         return id;
     }
 
+    public static boolean isValidTag(String tag) {
+        if (tag == null || tag.length() < 1 || tag.length() > 128) {
+            return false;
+        }
+        return TAG_PATTERN.matcher(tag).matches();
+    }
+
     public static ContainerStatus getContainerStatus(String status) {
         if (status == null) {
             return ContainerStatus.STOPPED;
@@ -93,7 +103,7 @@ public final class DockerUtils {
     public static ContainerStatus getContainerStatus(DockerEvent event) {
         return getContainerStatus(event.getStatus());
     }
-    
+
     @CheckForNull
     public static ContainerStatus getContainerStatus(DockerEvent.Status status) {
         switch (status) {

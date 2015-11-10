@@ -117,6 +117,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
     @NbBundle.Messages({
         "MSG_NonExistingBuildContext=The build context does not exist.",
         "MSG_EmptyRepository=The repository must not be empty when using tag.",
+        "MSG_TagInvalid=Tag is not valid; only [A-Za-z0-9_.-] chars allowed."
     })
     @Override
     public boolean isValid() {
@@ -132,6 +133,11 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
         }
         if (component.getRepository() == null && component.getTag() != null) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyRepository());
+            return false;
+        }
+        String tag = component.getTag();
+        if (tag != null && !DockerUtils.isValidTag(tag)) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_TagInvalid());
             return false;
         }
         return true;
