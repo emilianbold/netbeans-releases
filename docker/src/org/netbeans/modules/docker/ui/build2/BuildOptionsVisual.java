@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.docker.ui.build2;
 
+import java.io.File;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -52,6 +55,8 @@ import org.openide.util.NbBundle;
 public final class BuildOptionsVisual extends JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private String buildContext;
 
     public BuildOptionsVisual() {
         initComponents();
@@ -81,15 +86,19 @@ public final class BuildOptionsVisual extends JPanel {
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
-    
+
+    public void setBuildContext(String buildContext) {
+        this.buildContext = buildContext;
+    }
+
     public String getDockerfile() {
         return UiUtils.getValue(dockerfileTextField);
     }
-    
+
     public void setDockerfile(String dockerfile) {
         dockerfileTextField.setText(dockerfile);
     }
-    
+
     @NbBundle.Messages("LBL_BuildOptions=Build Options")
     @Override
     public String getName() {
@@ -139,52 +148,20 @@ public final class BuildOptionsVisual extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void dockerfileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dockerfileButtonActionPerformed
-//        JFileChooser chooser = new JFileChooser();
-//        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-//        String buildText = UiUtils.getValue(buildContextTextField);
-//        String dockerText = UiUtils.getValue(dockerfileTextField);
-//
-//        File file = null;
-//        if (buildText != null || dockerText != null) {
-//            if (dockerText == null) {
-//                file = new File(buildText);
-//                chooser.setSelectedFile(file);
-//                chooser.setCurrentDirectory(file);
-//            } else if (buildText == null) {
-//                file = new File(dockerText);
-//                chooser.setSelectedFile(file);
-//                chooser.setCurrentDirectory(file);
-//            } else {
-//                // XXX
-//                file = new File(buildText);
-//                if (!file.isDirectory()) {
-//                    file = file.getParentFile();
-//                }
-//                file = new File(file, dockerText);
-//            }
-//        }
-//        if (file != null) {
-//            chooser.setSelectedFile(file);
-//            chooser.setCurrentDirectory(file);
-//        }
-//
-//        if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
-//            if (buildText != null) {
-//                File build = FileUtil.normalizeFile(new File(buildText));
-//                File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
-//                if (selected.getAbsolutePath().startsWith(build.getAbsolutePath())) {
-//                    String text = selected.getAbsolutePath().substring(build.getAbsolutePath().length());
-//                    if (text.startsWith(File.separator) && !text.startsWith("//")) { // NOI18N
-//                        text = text.substring(1);
-//                    }
-//                    dockerfileTextField.setText(text);
-//                } else {
-//                    dockerfileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
-//                }
-//            } else {
-//                dockerfileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
-//            }
-//        }
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        String dockerText = UiUtils.getValue(dockerfileTextField);
+        if (dockerText != null) {
+            File file = new File(dockerText);
+            if (!file.isAbsolute()) {
+                file = new File(buildContext, dockerText);
+            }
+            chooser.setSelectedFile(file);
+        }
+        if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
+            // FIXME get relative path if it exists
+            dockerfileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
+        }
     }//GEN-LAST:event_dockerfileButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

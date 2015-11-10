@@ -135,9 +135,16 @@ public class BuildImageWizard {
                 try {
                     io.getOut().reset();
                     io.select();
+
+                    File file = null;
+                    if (dockerfile != null) {
+                        file = new File(dockerfile);
+                        if (!file.isAbsolute()) {
+                            file = new File(buildContext, dockerfile);
+                        }
+                    }
                     DockerRemote facade = new DockerRemote(instance);
-                    facade.build(new File(buildContext), dockerfile != null ? new File(buildContext, dockerfile) : null,
-                            repository, tag, new BuildEvent.Listener() {
+                    facade.build(new File(buildContext), file, repository, tag, new BuildEvent.Listener() {
                         @Override
                         public void onEvent(BuildEvent event) {
                             if (event.isError()) {

@@ -136,6 +136,7 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
             wizard = wiz;
         }
 
+        component.setBuildContext((String) wiz.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY));
         String dockerfile = (String) wiz.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY);
         if (dockerfile == null) {
             dockerfile = DockerUtils.DOCKER_FILE;
