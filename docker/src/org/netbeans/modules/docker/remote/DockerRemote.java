@@ -247,16 +247,17 @@ public class DockerRemote {
 
             String id = (String) value.get("Id");
 
+            long time = System.currentTimeMillis() / 1000;
             // XXX we send it as older API does not have the commit event
             if (emitEvents) {
                 instance.getEventBus().sendEvent(
                         new DockerEvent(instance, DockerEvent.Status.COMMIT,
-                                id, container.getId(), System.currentTimeMillis() / 1000));
+                                id, container.getId(), time));
             }
 
             // FIXME image size and time parameters
-            return new DockerImage(instance, Collections.singletonList(tag), (String) value.get("Id"),
-                    System.currentTimeMillis() / 1000, 0, 0);
+            return new DockerImage(instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
+                    (String) value.get("Id"), time, 0, 0);
 
         } catch (UnsupportedEncodingException ex) {
             throw new DockerException(ex);
@@ -319,7 +320,7 @@ public class DockerRemote {
     }
 
     public void remove(DockerTag tag) throws DockerException {
-        String id = DockerUtils.getTag(tag);
+        String id = DockerUtils.getImage(tag);
         JSONArray value = (JSONArray) doDeleteRequest(instance.getUrl(), "/images/" + id, true,
                 REMOVE_IMAGE_CODES);
 
@@ -593,15 +594,21 @@ public class DockerRemote {
                     parser.reset();
                 }
 
-                // the docker itself does not emit any event for built image
-                // we assume the last stream contains the built image id
-                if (stream != null && emitEvents) {
+                if (stream != null) {
                     Matcher m = ID_PATTERN.matcher(stream.trim());
                     if (m.matches()) {
+                        // the docker itself does not emit any event for built image
+                        // we assume the last stream contains the built image id
                         // FIXME as there is no BUILD event we use PULL event
-                        instance.getEventBus().sendEvent(
-                                new DockerEvent(instance, DockerEvent.Status.PULL,
-                                        m.group(1), null, System.currentTimeMillis() / 1000));
+                        long time = System.currentTimeMillis() / 1000;
+                        if (emitEvents) {
+                            instance.getEventBus().sendEvent(
+                                    new DockerEvent(instance, DockerEvent.Status.PULL,
+                                            m.group(1), null, time));
+                        }
+                        // FIXME image size and time parameters
+                        return new DockerImage(instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
+                                m.group(1), time, 0, 0);
                     }
                 }
             } catch (ParseException ex) {

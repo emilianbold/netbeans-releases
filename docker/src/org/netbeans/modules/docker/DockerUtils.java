@@ -93,12 +93,22 @@ public final class DockerUtils {
         return repository;
     }
 
-    public static String getTag(DockerTag tag) {
+    public static String getImage(DockerTag tag) {
         String id = tag.getTag();
         if (id.equals("<none>:<none>")) { // NOI18N
             id = tag.getImage().getId();
         }
         return id;
+    }
+
+    public static String getTag(String repository, String tag) {
+        if (repository == null) {
+            return "<none>:<none>";
+        }
+        if (tag == null) {
+            return repository + ":latest";
+        }
+        return repository + ":" + tag;
     }
 
     // this is based on 1.6.2/remote 1.18

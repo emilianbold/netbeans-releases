@@ -126,7 +126,7 @@ public class RunTagWizard {
                     }
 
                     String[] parsed = command == null ? new String[]{} : Utilities.parseParameters(command);
-                    config.put("Image", DockerUtils.getTag(tag));
+                    config.put("Image", DockerUtils.getImage(tag));
                     JSONArray cmdArray = new JSONArray();
                     cmdArray.addAll(Arrays.asList(parsed));
                     config.put("Cmd", cmdArray);
