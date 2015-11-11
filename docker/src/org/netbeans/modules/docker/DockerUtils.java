@@ -126,8 +126,8 @@ public final class DockerUtils {
         String repo = null;
         if (parts.length == 2) {
             String namespace = parts[0];
-            if (namespace.contains(".") || namespace.contains(":")) {
-                // registry host
+            // registry host
+            if (namespace.contains(".") || namespace.contains(":") || "localhost".equals(namespace)) {
                 registry = namespace;
             } else {
                 ns = namespace;

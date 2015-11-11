@@ -62,6 +62,7 @@ public class DockerUtilsTest extends NbTestCase {
             "127.0.0.1:5000/docker/docker",
             "127.0.0.1:5000/library/debian",
             "127.0.0.1:5000/debian",
+            "localhost/ubuntu",
             "435e1a9906695a3e2c3a419b6b6a22c6dd874df4c5bfe45433fd70633f325838a",
             "thisisverylongstringthisisverylongstringthisisverylongstringthis",
     };
