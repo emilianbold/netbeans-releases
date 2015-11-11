@@ -3378,7 +3378,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (ppHandler != null) {
                     ppHandler.setState(state);
                     return ppHandler;
-                } else {
+            } else {
                     return this.createDefaultPreprocHandler(interestedFile);
                 }
             } else {
@@ -3420,7 +3420,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out;
     }
 
-    final GraphContainer getGraph() {
+    public final GraphContainer getGraph() {
         return getGraphStorage();
     }
 

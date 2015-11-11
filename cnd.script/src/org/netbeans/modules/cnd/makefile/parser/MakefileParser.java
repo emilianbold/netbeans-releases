@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.cnd.api.makefile.MakefileElement;
 import org.netbeans.modules.cnd.api.makefile.MakefileInclude;
@@ -107,8 +108,11 @@ public class MakefileParser extends Parser {
 
 
     private static MakefileParseResult parse(Snapshot snapshot, AtomicBoolean cancelled) {
-        TokenSequence<MakefileTokenId> tokenSequence =
-                snapshot.getTokenHierarchy().tokenSequence(MakefileTokenId.language());
+        TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();
+        if (tokenHierarchy == null) {
+            return null;
+        }
+        TokenSequence<MakefileTokenId> tokenSequence = tokenHierarchy.tokenSequence(MakefileTokenId.language());
 
         if (tokenSequence == null) {
             return null;

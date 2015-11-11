@@ -622,6 +622,7 @@ property
     //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
     //(the IE allows also just ident as its content)
     {isScssSource()}? sass_selector_interpolation_exp
+    | {isLessSource()}? less_selector_interpolation_exp
     | IDENT
     | GEN
     | {isCssPreprocessorSource()}? cp_variable
@@ -725,7 +726,8 @@ combinator
 
 simpleSelectorSequence
 	:
-        (elementSubsequent | {isScssSource()}? sass_selector_interpolation_exp ) ((ws? esPred)=>((ws? elementSubsequent) |(ws {isScssSource()}? sass_selector_interpolation_exp | {isLessSource()}? less_selector_interpolation_exp)))*
+        (elementSubsequent | {isScssSource()}? sass_selector_interpolation_exp
+        | {isLessSource()}? less_selector_interpolation_exp  ) ((ws? esPred)=>((ws? elementSubsequent) |(ws ({isScssSource()}? sass_selector_interpolation_exp | {isLessSource()}? less_selector_interpolation_exp))))*
 	| (typeSelector)=>typeSelector ((ws? esPred)=>((ws? elementSubsequent) | {isScssSource()}? ws sass_selector_interpolation_exp))* 
 	;
 	catch[ RecognitionException rce] {
@@ -752,7 +754,6 @@ elementSubsequent
     :
     (
         {isScssSource()}? sass_extend_only_selector
-        | {isLessSource()}? less_selector_interpolation_exp
         | {isCssPreprocessorSource()}? LESS_AND (IDENT | NUMBER)*
     	| cssId
     	| cssClass
@@ -780,10 +781,10 @@ cssClass
     : DOT
         (
              {isScssSource()}?  sass_selector_interpolation_exp
+            | {isLessSource()}? less_selector_interpolation_exp
             | IDENT
             | NOT
             | GEN
-            | {isLessSource()}? less_selector_interpolation_exp
         )
     ;
     catch[ RecognitionException rce] {
@@ -1224,7 +1225,7 @@ less_condition_operator
     ;
 
 less_selector_interpolation_exp :
-    less_selector_interpolation (less_selector_interpolation_exp | ( IDENT | MINUS | DIMENSION | LENGTH)+)?
+    (IDENT | MINUS)? less_selector_interpolation (less_selector_interpolation_exp | ( IDENT | MINUS | DIMENSION | LENGTH)+)?
     ;
 
 less_selector_interpolation

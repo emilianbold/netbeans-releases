@@ -265,10 +265,11 @@ public class FormatStringAudit extends AbstractCodeAudit {
                                                              && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
                                 // skip checking for complicated expressions
                                 return; 
-                            } else if (state == State.VAR_ARGS && !tokenId.equals(CppTokenId.LPAREN)
-                                                              && !tokenId.equals(CppTokenId.RPAREN)
-                                                              && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
-                                                              && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                            } else if ((state == State.VAR_ARGS || state == State.VAR_ARGS_IN_BRACKETS) 
+                                                                && !tokenId.equals(CppTokenId.LPAREN)
+                                                                && !tokenId.equals(CppTokenId.RPAREN)
+                                                                && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
+                                                                && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
                                 parameterBuffer.append(token.text());
                                 if (parameterOffset == -1) {
                                     parameterOffset = docTokenSequence.offset();
