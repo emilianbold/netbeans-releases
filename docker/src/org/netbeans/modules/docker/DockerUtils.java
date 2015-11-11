@@ -104,8 +104,6 @@ public final class DockerUtils {
     // this is based on 1.6.2/remote 1.18
     // FIXME should we version it
     public static boolean isValidRepository(String repository) {
-        // FIXME certain docker revisions disallow different things
-        // especially consecutive _.-
         if (repository == null) {
             return false;
         }
@@ -118,7 +116,7 @@ public final class DockerUtils {
         if (parts.length > 3) {
             return false;
         }
-        
+
         String registry = null;
         String ns = null;
         String repo = null;
