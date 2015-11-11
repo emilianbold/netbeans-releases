@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.docker.remote;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import org.netbeans.modules.docker.DockerImage;
 import org.netbeans.modules.docker.DockerContainer;
@@ -67,23 +66,19 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPOutputStream;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.swing.SwingUtilities;
-import org.apache.commons.compress.archivers.ArchiveException;
-import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.apache.commons.compress.archivers.ArchiveStreamFactory;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -95,7 +90,6 @@ import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.DockerHubImage;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
@@ -519,56 +513,43 @@ public class DockerRemote {
             os.write(request.toString().getBytes("ISO-8859-1"));
             os.flush();
 
-            ChunkedOutputStream cos = new ChunkedOutputStream(new BufferedOutputStream(os));
-            try {
-                GZIPOutputStream gzos = new GZIPOutputStream(cos);
-                try {
-                    ArchiveOutputStream aos = new ArchiveStreamFactory().createArchiveOutputStream(
-                            ArchiveStreamFactory.TAR, gzos);
-                    try {
-                        // FIXME exclude dockerignored files
-                        FileObject context = FileUtil.toFileObject(FileUtil.normalizeFile(buildContext));
-                        for (Enumeration<? extends FileObject> e = context.getChildren(true); e.hasMoreElements();) {
-                            FileObject child = e.nextElement();
-                            if (child.isFolder()) {
-                                continue;
-                            }
-                            TarArchiveEntry entry = new TarArchiveEntry(FileUtil.toFile(child),
-                                    FileUtil.getRelativePath(context, child));
-                            aos.putArchiveEntry(entry);
-                            try (InputStream is = new BufferedInputStream(child.getInputStream())) {
-                                FileUtil.copy(is, aos);
-                            }
-                            aos.closeArchiveEntry();
-                        }
-                    } finally {
-                        aos.finish();
-                        aos.flush();
-                    }
-                } finally {
-                    gzos.finish();
-                    gzos.flush();
-                }
-            } finally {
-                cos.finish();
-                cos.flush();
-            }
+            Future<Void> task = new FolderUploader(os).upload(buildContext);
 
             InputStream is = s.getInputStream();
             Pair<Integer, String> response = HttpUtils.readResponse(is);
+            Map<String, String> headers = HttpUtils.parseHeaders(is);
             int responseCode = response.first();
             if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw new DockerRemoteException(responseCode, response.second());
+                task.cancel(true);
+                Integer length = HttpUtils.getLength(headers);
+                String error = response.second();
+                if (length != null && length > 0) {
+                    error = HttpUtils.readContent(is, length, "UTF-8");
+                }
+                throw new DockerRemoteException(responseCode, error);
             }
 
-            boolean chunked = HttpUtils.isChunked(HttpUtils.parseHeaders(is));
+            try {
+                if (task.isDone()) {
+                    task.get();
+                } else {
+                    LOGGER.log(Level.INFO, "Server responded OK yet upload has not finished");
+                    task.cancel(true);
+                }
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException ex) {
+                throw new DockerException(ex.getCause());
+            }
+
+            boolean chunked = HttpUtils.isChunked(headers);
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
 
             JSONParser parser = new JSONParser();
-            try (InputStreamReader r = new InputStreamReader(
-                    is, "UTF-8")) { // NOI18N
+            try (InputStreamReader r = new InputStreamReader(is, "UTF-8")) { // NOI18N
                 String line;
                 String stream = null;
                 while ((line = readEventObject(r)) != null) {
@@ -616,9 +597,6 @@ public class DockerRemote {
             }
             return null;
         } catch (MalformedURLException e) {
-            closeSocket(s);
-            throw new DockerException(e);
-        } catch (ArchiveException e) {
             closeSocket(s);
             throw new DockerException(e);
         } catch (IOException e) {
