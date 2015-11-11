@@ -36,3 +36,4 @@ ERROR src/general_negative_test.cpp [872-874]: Using a length modifier "z" that 
 ERROR src/general_negative_test.cpp [899-902]: Using a flag character "#" that is incompatible with the conversion specifier "d"
 ERROR src/general_negative_test.cpp [923-925]: Mismatching the argument type "float" and conversion specifier "to"
 ERROR src/general_negative_test.cpp [945-947]: Using a length modifier "t" that is incompatible with the conversion specifier "c"
+ERROR src/general_negative_test.cpp [972-973]: Mismatching the argument type "long" and conversion specifier "d"

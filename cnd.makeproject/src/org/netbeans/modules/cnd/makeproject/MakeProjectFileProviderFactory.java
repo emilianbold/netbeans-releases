@@ -103,7 +103,7 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.file.FileProviderFactory.class, position=1000)
 public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
-    private static final ConcurrentMap<Lookup.Provider, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Lookup.Provider, ConcurrentMap<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<>();
     private static final ConcurrentMap<Lookup.Provider, ConcurrentMap<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<>();
     private static final Collection<? extends UserOptionsProvider> packageSearch = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
     private static final Logger LOG = Logger.getLogger(MakeProjectFileProviderFactory.class.getName());
@@ -116,10 +116,10 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
      * @param list
      */
     public static void updateSearchBase(Project project, Folder folder, List<CharSequence> list){
-        Map<Folder, List<CharSequence>> projectSearchBase = searchBase.get(project);
+        ConcurrentMap<Folder, List<CharSequence>> projectSearchBase = searchBase.get(project);
         if (projectSearchBase == null) {
             projectSearchBase = new ConcurrentHashMap<>();
-            Map<Folder, List<CharSequence>> old = searchBase.putIfAbsent(project, projectSearchBase);
+            ConcurrentMap<Folder, List<CharSequence>> old = searchBase.putIfAbsent(project, projectSearchBase);
             if (old != null) {
                 projectSearchBase = old;
             }
@@ -157,15 +157,17 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
     }
 
     private static void updateSearchBaseImpl(Project project, Folder folder, CharSequence item, boolean remove) {
-        Map<Folder, List<CharSequence>> projectSearchBase = searchBase.get(project);
+        ConcurrentMap<Folder, List<CharSequence>> projectSearchBase = searchBase.get(project);
         if (projectSearchBase != null) {
             synchronized (projectSearchBase) {
                 List<CharSequence> folderItems = projectSearchBase.get(folder);
                 if (folderItems != null) {
-                    if (remove) {
-                        folderItems.remove(item);
-                    } else {
-                        folderItems.add(item);
+                    synchronized(folderItems) {
+                        if (remove) {
+                            folderItems.remove(item);
+                        } else {
+                            folderItems.add(item);
+                        }
                     }
                 }
             }
@@ -276,18 +278,22 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             }
                             MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration((Project)p);
                             List<CharSequence> list = projectSearchBase.get(CharSequences.create(name));
-                            if (list != null && list.size() > 0) {
-                                FileSystem fileSystem;
-                                if (conf != null) {
-                                    fileSystem = conf.getFileSystem();
-                                } else {
-                                    fileSystem = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal());
+                            if (list != null) {
+                                synchronized(list) {
+                                    if (list.size() > 0) {
+                                        FileSystem fileSystem;
+                                        if (conf != null) {
+                                            fileSystem = conf.getFileSystem();
+                                        } else {
+                                            fileSystem = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal());
+                                        }
+                                        res = new ArrayList<>(list.size());
+                                        for(CharSequence absPath : list) {
+                                            res.add(new FSPath(fileSystem, absPath.toString()));
+                                        }
+                                        return res;
+                                    }
                                 }
-                                res = new ArrayList<>(list.size());
-                                for(CharSequence absPath : list) {
-                                    res.add(new FSPath(fileSystem, absPath.toString()));
-                                }
-                                return res;
                             }
                             ExecutionEnvironment env;
                             if (conf != null){
@@ -360,7 +366,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     list.add(CharSequences.create(item.getAbsPath()));
                 }
                 if (!MakeOptions.getInstance().isFullFileIndexer()) {
-                    final Map<Folder,List<CharSequence>> projectSearchBase = searchBase.get(project);
+                    final ConcurrentMap<Folder,List<CharSequence>> projectSearchBase = searchBase.get(project);
                     if (projectSearchBase != null) {
                         // create copy of data
                         Map<Folder,List<CharSequence>> copy;
@@ -369,22 +375,24 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                         }
                         for (List<CharSequence> files : copy.values()) {
                             if (files != null) {
-                                for(CharSequence path : files) {
-                                    String absPath = path.toString();
-                                    int i = absPath.lastIndexOf('/');
-                                    if (i < 0) {
-                                        i = absPath.lastIndexOf('\\');
-                                    }
-                                    if (i >= 0) {
-                                        CharSequence name = CharSequences.create(absPath.substring(i+1));
-                                        List<CharSequence> list = result.get(name);
-                                        if (list == null) {
-                                            List<CharSequence> prev = result.putIfAbsent(name, list = new ArrayList<>(1));
-                                            if (prev != null) {
-                                                list = prev;
-                                            }
+                                synchronized(files) {
+                                    for(CharSequence path : files) {
+                                        String absPath = path.toString();
+                                        int i = absPath.lastIndexOf('/');
+                                        if (i < 0) {
+                                            i = absPath.lastIndexOf('\\');
                                         }
-                                        list.add(path);
+                                        if (i >= 0) {
+                                            CharSequence name = CharSequences.create(absPath.substring(i+1));
+                                            List<CharSequence> list = result.get(name);
+                                            if (list == null) {
+                                                List<CharSequence> prev = result.putIfAbsent(name, list = new ArrayList<>(1));
+                                                if (prev != null) {
+                                                    list = prev;
+                                                }
+                                            }
+                                            list.add(path);
+                                        }
                                     }
                                 }
                             }
@@ -436,12 +444,14 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     Folder folder = entry.getKey();
                     List<CharSequence> files = entry.getValue();
                     if (files != null) {
-                        for(CharSequence name : files) {
-                            if (cancel.get()) {
-                                return;
-                            }
-                            if (matcher.accept(name.toString())) {
-                                result.addFileDescriptor(new OtherFD(name.toString(), project, baseDir, folder));
+                        synchronized(files) {
+                            for(CharSequence name : files) {
+                                if (cancel.get()) {
+                                    return;
+                                }
+                                if (matcher.accept(name.toString())) {
+                                    result.addFileDescriptor(new OtherFD(name.toString(), project, baseDir, folder));
+                                }
                             }
                         }
                     }

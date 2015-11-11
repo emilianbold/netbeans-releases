@@ -65,13 +65,13 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public final class LazyTryCatchStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
 
-    public LazyTryCatchStatementImpl(CsmFile file, int start, int end, CsmFunction scope) {
-        super(file, start, end, scope);
+    private LazyTryCatchStatementImpl(CsmFile file, int start, int end, int macroStartMarker, CsmFunction scope) {
+        super(file, start, end, macroStartMarker, scope);
     }
 
     public static LazyTryCatchStatementImpl create(AST ast, CsmFile file, CsmFunction scope) {
         assert (ast.getType() == CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY);
-        return new LazyTryCatchStatementImpl(file, getStartOffset(ast), getEndOffset(ast), scope);
+        return new LazyTryCatchStatementImpl(file, getStartOffset(ast), getEndOffset(ast), getMacroStartMarker(ast), scope);
     }
 
     @Override

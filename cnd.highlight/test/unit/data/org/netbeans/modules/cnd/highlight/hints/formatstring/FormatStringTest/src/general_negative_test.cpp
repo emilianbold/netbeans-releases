@@ -48,5 +48,7 @@ int main(int argc, char** argv) {
     printf("%to", f);
     printf("%tc", i);
     
+    printf("%d", (long)i);
+    
     return 0;
 }

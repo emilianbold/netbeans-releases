@@ -394,6 +394,17 @@ public class AstUtil {
         }
         return null;
     }
+    
+    public static TokenBasedAST getFirstTokenBasedAST(AST node) {
+        if (node != null) {
+            if (node instanceof TokenBasedAST) {
+                return (TokenBasedAST) node;
+            } else {
+                return getFirstTokenBasedAST(node.getFirstChild());
+            }
+        }
+        return null;
+    }
 
     public static String toString(AST ast) {
         final StringBuilder out = new StringBuilder();
