@@ -194,7 +194,7 @@ public final class DockerUtils {
     }
 
     @NonNull
-    public static String appendTag(String image) {
+    public static String appendLatestTag(String image) {
         String ret = image;
         if (!image.contains(":") && !image.contains("@")) { // NOI18N
             ret += ":latest"; // NOI18N

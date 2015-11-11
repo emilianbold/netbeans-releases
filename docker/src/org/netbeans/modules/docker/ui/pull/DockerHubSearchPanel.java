@@ -150,7 +150,7 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         } else {
             toPull = searchTextField.getText().trim();
         }
-        toPull = DockerUtils.appendTag(toPull);
+        toPull = DockerUtils.appendLatestTag(toPull);
         return toPull;
     }
 
