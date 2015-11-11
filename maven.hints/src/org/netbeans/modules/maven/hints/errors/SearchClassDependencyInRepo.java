@@ -52,6 +52,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -500,35 +501,44 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
         @Override
         @Messages("LBL_Search_Repo=Search In Maven Repositories ")
         public ChangeInfo implement() throws Exception {
-            NBVersionInfo nbvi = null;
-            SearchDependencyUI dependencyUI = new SearchDependencyUI(clazz, mavProj);
-
-            DialogDescriptor dd = new DialogDescriptor(dependencyUI,
-                    LBL_Search_Repo());
-            dd.setClosingOptions(new Object[]{
+            Runnable r = new Runnable() {
+                public void run() {
+                    NBVersionInfo nbvi = null;
+                    SearchDependencyUI dependencyUI = new SearchDependencyUI(clazz, mavProj);
+                    
+                    DialogDescriptor dd = new DialogDescriptor(dependencyUI,
+                            LBL_Search_Repo());
+                    dd.setClosingOptions(new Object[]{
                         dependencyUI.getAddButton(),
                         DialogDescriptor.CANCEL_OPTION
                     });
-            dd.setOptions(new Object[]{
+                    dd.setOptions(new Object[]{
                         dependencyUI.getAddButton(),
                         DialogDescriptor.CANCEL_OPTION
                     });
-            Object ret = DialogDisplayer.getDefault().notify(dd);
-            if (dependencyUI.getAddButton() == ret) {
-                nbvi = dependencyUI.getSelectedVersion();
-            }
-
-            if (nbvi != null) {
-                ModelUtils.addDependency(mavProj.getProjectDirectory().getFileObject("pom.xml"), nbvi.getGroupId(), nbvi.getArtifactId(),
-                        nbvi.getVersion(), nbvi.getType(), test ? "test" : null, null, true);//NOI18N
-
-                RequestProcessor.getDefault().post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        mavProj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+                    Object ret = DialogDisplayer.getDefault().notify(dd);
+                    if (dependencyUI.getAddButton() == ret) {
+                        nbvi = dependencyUI.getSelectedVersion();
                     }
-                });
+                    
+                    if (nbvi != null) {
+                        ModelUtils.addDependency(mavProj.getProjectDirectory().getFileObject("pom.xml"), nbvi.getGroupId(), nbvi.getArtifactId(),
+                                nbvi.getVersion(), nbvi.getType(), test ? "test" : null, null, true);//NOI18N
+
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            
+                            @Override
+                            public void run() {
+                                mavProj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+                            }
+                        });
+                    }
+                }
+            };
+            if(EventQueue.isDispatchThread()) {
+                r.run();
+            } else {
+                EventQueue.invokeLater(r);
             }
             return null;
         }
