@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -96,6 +97,11 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import static org.openide.nodes.Node.PROP_DISPLAY_NAME;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -273,25 +279,24 @@ public class ProjectsRootNode extends AbstractNode {
     }
        
     
-    // XXX Needs to listen to project rename
     // However project rename is currently disabled so it is not a big deal
-    static class ProjectChildren extends Children.Keys<ProjectChildren.Pair> implements ChangeListener, PropertyChangeListener {
+    static class ProjectChildren extends Children.Keys<ProjectChildren.Pair> implements ChangeListener, PropertyChangeListener, NodeListener {
 
         static final RequestProcessor RP = new RequestProcessor(ProjectChildren.class);
-        
+
         private final java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
         
         int type;
         
         public ProjectChildren( int type ) {
-            this.type = type;
+            this.type = type;            
         }
         
         // Children.Keys impl --------------------------------------------------
         
         @Override
-        public void addNotify() {         
-            OpenProjectList.getDefault().addPropertyChangeListener(this);
+        public void addNotify() {   
+            OpenProjectList.getDefault().addPropertyChangeListener(this);              
             if (Boolean.getBoolean("test.projectnode.sync")) {
                 setKeys( getKeys());
             } else {
@@ -299,11 +304,11 @@ public class ProjectsRootNode extends AbstractNode {
                     @Override
                     public void run() {
                         setKeys( getKeys() );
-                    }                
+                    }
                 });
             }
         }
-        
+
         @Override
         public void removeNotify() {
             OpenProjectList.getDefault().removePropertyChangeListener(this);
@@ -388,11 +393,19 @@ public class ProjectsRootNode extends AbstractNode {
                     }
                 }
             }
-            
+                        
+            node.addNodeListener(WeakListeners.create(NodeListener.class, this, node));
             return node;
         }
         
-        // PropertyChangeListener impl -----------------------------------------
+        // NodeListener impl -----------------------------------------
+        
+        @Override public void childrenAdded(NodeMemberEvent ev) { }
+        @Override public void childrenRemoved(NodeMemberEvent ev) { }
+        @Override public void childrenReordered(NodeReorderEvent ev) { }
+        @Override public void nodeDestroyed(NodeEvent ev) { }        
+        
+        // PropertyChangeListener & NodeListener impl -----------------------------------------
         
         @Override
         public void propertyChange( PropertyChangeEvent e ) {
@@ -402,6 +415,12 @@ public class ProjectsRootNode extends AbstractNode {
                         setKeys(getKeys());
                     }
                 });
+            } else if( PROP_DISPLAY_NAME.equals(e.getPropertyName()) ) {
+                RP.schedule(new Runnable() {
+                    public @Override void run() {
+                        setKeys( getKeys() );
+                    }
+                }, 500, TimeUnit.MILLISECONDS);
             }
         }
         
