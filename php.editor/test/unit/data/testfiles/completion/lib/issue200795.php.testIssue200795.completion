@@ -188,6 +188,9 @@ CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144830.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ClsOmg                          [PUBLIC]   Blah
+CLASS      Comment                         [PUBLIC]   returnTypesTyping09.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping10.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping11.php
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Control                         [PUBLIC]   Nette\Application\UI
 CLASS      Controller                      [PUBLIC]   Brite\Controller

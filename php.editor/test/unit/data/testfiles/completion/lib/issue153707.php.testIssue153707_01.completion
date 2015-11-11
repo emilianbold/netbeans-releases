@@ -200,6 +200,14 @@ CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ClsOmg                          [PUBLIC]   Blah
 CLASS      Collection                      [PUBLIC]   byReferences.php
 CLASS      Comment                         [PUBLIC]   My\Firm
+CLASS      Comment                         [PUBLIC]   returnTypesTyping05.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping06.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping07.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping08.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping09.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping10.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping11.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping12.php
 CLASS      CommentsIterator                [PUBLIC]   My\Firm
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Control                         [PUBLIC]   Nette\Application\UI
@@ -533,6 +541,8 @@ METHOD     my_sort6(&$data)                [PUBLIC]   byReferences.php
 METHOD     my_sort7(array &$data1, Collec  [PUBLIC]   byReferences.php
 METHOD     my_sort8(array &$data1, Collec  [PUBLIC]   byReferences.php
 METHOD     my_sort9(array $data1, Collect  [PUBLIC]   byReferences.php
+METHOD     mytest()                        [PUBLIC]   returnTypesTyping03.php
+METHOD     mytest()                        [PUBLIC]   returnTypesTyping04.php
 METHOD     mytest()                        [PUBLIC]   varAssignment.php
 METHOD     paramsfnc($a, $b, $c, $d)       [PUBLIC]   paramdecltypes.php
 METHOD     parseArticles_01($articles)     [PUBLIC]   issue225687.php
