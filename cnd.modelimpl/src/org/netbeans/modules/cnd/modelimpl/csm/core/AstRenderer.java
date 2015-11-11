@@ -542,7 +542,8 @@ public class AstRenderer {
                     CsmDeclaration.Kind.FUNCTION,
                     CsmDeclaration.Kind.FUNCTION_FRIEND,
                     CsmDeclaration.Kind.VARIABLE,
-                    CsmDeclaration.Kind.VARIABLE_DEFINITION
+                    CsmDeclaration.Kind.VARIABLE_DEFINITION,
+                    CsmDeclaration.Kind.ENUMERATOR
                 );
             }
             return false;
