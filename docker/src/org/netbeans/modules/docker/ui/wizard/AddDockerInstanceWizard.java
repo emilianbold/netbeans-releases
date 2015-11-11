@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.docker.ui.wizard;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -90,10 +89,22 @@ public class AddDockerInstanceWizard {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.LBL_AddDockerInstance());
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            File certPath = new File((String) wiz.getProperty(CERTIFICATE_PATH_PROPERTY));
+
+            File caFile = null;
+            File certFile = null;
+            File keyFile = null;
+
+            String strCertPath = (String) wiz.getProperty(CERTIFICATE_PATH_PROPERTY);
+            if (strCertPath != null) {
+                File file = new File(strCertPath);
+                caFile = new File(file, DEFAULT_CA_FILE);
+                certFile = new File(file, DEFAULT_CERT_FILE);
+                keyFile = new File(file, DEFAULT_KEY_FILE);
+            }
+
             DockerRegistry.getInstance().createInstance((String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
-                    (String) wiz.getProperty(URL_PROPERTY), new File(certPath, DEFAULT_CA_FILE),
-                    new File(certPath, DEFAULT_CERT_FILE), new File(certPath, DEFAULT_KEY_FILE));
+                    (String) wiz.getProperty(URL_PROPERTY), caFile, certFile, keyFile);
+
         }
     }
 }
