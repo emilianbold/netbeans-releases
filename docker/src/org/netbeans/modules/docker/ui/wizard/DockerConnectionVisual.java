@@ -67,7 +67,7 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
         initComponents();
 
         // do not show the port binding explanation on mac and windows
-        if (!Utilities.isMac() && !Utilities.isMac()) {
+        if (Utilities.isMac() || Utilities.isWindows()) {
             explanationLabel.setVisible(false);
         }
 
@@ -210,6 +210,7 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileHidingEnabled(false);
         String text = certTextField.getText();
         if (text != null && !text.trim().isEmpty()) {
             chooser.setSelectedFile(new File(text));
