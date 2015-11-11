@@ -101,6 +101,8 @@ public final class DockerUtils {
         return id;
     }
 
+    // this is based on 1.6.2/remote 1.18
+    // FIXME should we version it
     public static boolean isValidRepository(String repository) {
         // FIXME certain docker revisions disallow different things
         // especially consecutive _.-
@@ -116,15 +118,13 @@ public final class DockerUtils {
         if (parts.length > 3) {
             return false;
         }
-        if (parts.length == 1) {
-            return REPOSITORY_PATTERN.matcher(parts[0]).matches()
-                    && !FORBIDDEN_REPOSITORY_PATTERN.matcher(parts[0]).matches();
-        }
-
+        
         String registry = null;
         String ns = null;
         String repo = null;
-        if (parts.length == 2) {
+        if (parts.length == 1) {
+            repo = parts[0];
+        } else if (parts.length == 2) {
             String namespace = parts[0];
             // registry host
             if (namespace.contains(".") || namespace.contains(":") || "localhost".equals(namespace)) {
@@ -138,12 +138,15 @@ public final class DockerUtils {
             ns = parts[1];
             repo = parts[2];
         }
+        if (registry != null && (registry.startsWith("-") || registry.endsWith("-"))) {
+            return false;
+        }
         if (ns != null && (!NAMESPACE_PATTERN.matcher(ns).matches() || ns.length() < 2 || ns.length() > 255
-                || ns.startsWith("-") || ns.endsWith("-"))) {
+                || ns.startsWith("-") || ns.endsWith("-") || ns.contains("--"))) {
             return false;
         }
         if (repo != null && (!REPOSITORY_PATTERN.matcher(repo).matches()
-                || FORBIDDEN_REPOSITORY_PATTERN.matcher(repo).matches())) {
+                || (ns == null && FORBIDDEN_REPOSITORY_PATTERN.matcher(repo).matches()))) {
             return false;
         }
         return true;

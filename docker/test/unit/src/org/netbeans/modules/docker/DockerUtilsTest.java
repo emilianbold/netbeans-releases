@@ -49,6 +49,7 @@ import org.netbeans.junit.NbTestCase;
  */
 public class DockerUtilsTest extends NbTestCase {
 
+    // this is based on 1.6.2/remote 1.18
     private static final String[] VALID_REPOSITORY_NAMES = new String[] {
             "docker/docker",
             "library/ubuntu",
@@ -63,10 +64,12 @@ public class DockerUtilsTest extends NbTestCase {
             "127.0.0.1:5000/library/debian",
             "127.0.0.1:5000/debian",
             "localhost/ubuntu",
+            "xx/72d7972d2e4e3e67ad5d0cd3879e8ace38f2035fab00a0150a6122d5695d206c",
             "435e1a9906695a3e2c3a419b6b6a22c6dd874df4c5bfe45433fd70633f325838a",
             "thisisverylongstringthisisverylongstringthisisverylongstringthis",
     };
 
+    // this is based on 1.6.2/remote 1.18
     private static final String[] INVALID_REPOSITORY_NAMES = new String[] {
             "https://github.com/docker/docker",
             "docker/Docker",
@@ -75,7 +78,7 @@ public class DockerUtilsTest extends NbTestCase {
             "_docker/a/a",
 //            "-docker",
             "-docker/docker",
-//            "-docker.io/docker/docker",
+            "-docker.io/docker/docker",
             "docker///docker",
             "docker.io/docker/Docker",
             "docker.io/docker///docker",
