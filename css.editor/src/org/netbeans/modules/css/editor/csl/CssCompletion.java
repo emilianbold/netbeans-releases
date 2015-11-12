@@ -1177,8 +1177,8 @@ public class CssCompletion implements CodeCompletionHandler {
                     completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
             }
                 break;
-            case elementSubsequent:
-                //@| -- parsed as elementSubsequent due to the possible less_selector_interpolation -- @{...} in selectorsGroup
+            case simpleSelectorSequence:
+                //@| -- parsed as simpleSelectorSequence due to the possible less_selector_interpolation -- @{...} in selectorsGroup
                 switch (completionContext.getTokenSequence().token().id()) {
                 case AT_SIGN:
                     Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
