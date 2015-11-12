@@ -150,23 +150,23 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
     }
 
     private Action createAction(Project contextProject) {
+        return createAction(contextProject, null);
+    }
+
+    private Action createAction(Project contextProject, @NullAllowed FileObject gulpfile) {
         assert contextProject != null;
         GulpBuildTool gulpBuildTool = GulpBuildTool.inProject(contextProject);
         if (gulpBuildTool == null) {
             return this;
+        }
+        if (gulpfile != null) {
+            return new RunGulpTaskAction(contextProject, gulpfile);
         }
         if (!gulpBuildTool.getProjectGulpfile().exists()) {
             return this;
         }
         return new RunGulpTaskAction(contextProject);
     }
-
-    private Action createAction(Project contextProject, FileObject gulpfile) {
-        assert contextProject != null;
-        assert gulpfile != null;
-        return new RunGulpTaskAction(contextProject, gulpfile);
-    }
-
 
     @Override
     public JMenuItem getPopupPresenter() {
