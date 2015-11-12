@@ -58,7 +58,7 @@ public final class GulpCustomizerProvider implements ProjectCustomizer.Composite
     @NbBundle.Messages("GulpCustomizerProvider.name=Gulp")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
-        if (!GulpBuildTool.forProject(context.lookup(Project.class)).getGulpfile().exists()) {
+        if (!GulpBuildTool.forProject(context.lookup(Project.class)).getProjectGulpfile().exists()) {
             return null;
         }
         return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,

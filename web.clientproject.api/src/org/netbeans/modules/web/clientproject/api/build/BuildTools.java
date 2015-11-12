@@ -233,6 +233,15 @@ public final class BuildTools {
         String getTitle(@NonNull Title title);
 
         /**
+         * Gets namespace for advanced tasks. This namespace is used for storing/loading
+         * advanced tasks.
+         * @return namespace for advanced tasks; can be {@code null} for no namespace
+         * @since 1.100
+         */
+        @CheckForNull
+        String getAdvancedTasksNamespace();
+
+        /**
          * Gets default task name (typically "default"); can be {@code null} if not supported.
          * @return default task name (typically "default"); can be {@code null} if not supported
          */

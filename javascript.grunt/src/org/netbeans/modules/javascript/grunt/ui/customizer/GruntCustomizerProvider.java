@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.grunt.ui.customizer;
 
@@ -58,7 +58,7 @@ public final class GruntCustomizerProvider implements ProjectCustomizer.Composit
     @NbBundle.Messages("GruntCustomizerProvider.name=Grunt")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
-        if (!GruntBuildTool.forProject(context.lookup(Project.class)).getGruntfile().exists()) {
+        if (!GruntBuildTool.forProject(context.lookup(Project.class)).getProjectGruntfile().exists()) {
             return null;
         }
         return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,
