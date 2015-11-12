@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,12 +37,11 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phing.file;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -57,11 +56,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.phing.exec.PhingExecutable;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 public final class PhingTargets implements ChangeListener {
@@ -73,23 +67,24 @@ public final class PhingTargets implements ChangeListener {
     private static final RequestProcessor RP = new RequestProcessor(PhingTargets.class);
 
     private final Project project;
-    final FileChangeListener nodeModulesListener = new NodeModulesListener();
+    private final BuildXml buildXml;
 
     private volatile List<String> targets;
 
 
-    private PhingTargets(Project project) {
+    private PhingTargets(Project project, BuildXml buildXml) {
         assert project != null;
+        assert buildXml != null;
         this.project = project;
+        this.buildXml = buildXml;
     }
 
     public static PhingTargets create(Project project, BuildXml buildXml) {
         assert project != null;
         assert buildXml != null;
-        PhingTargets phingTargets = new PhingTargets(project);
+        PhingTargets phingTargets = new PhingTargets(project, buildXml);
         // listeners
         buildXml.addChangeListener(phingTargets);
-        FileUtil.addFileChangeListener(phingTargets.nodeModulesListener, new File(buildXml.getFile().getParent(), "node_modules")); // NOI18N
         return phingTargets;
     }
 
@@ -127,7 +122,7 @@ public final class PhingTargets implements ChangeListener {
 
     @CheckForNull
     private Future<List<String>> getTargetsJob() {
-        PhingExecutable phing = PhingExecutable.getDefault(project, false);
+        PhingExecutable phing = PhingExecutable.getDefault(project, buildXml.getFile().getParentFile(), false);
         if (phing == null) {
             return null;
         }
@@ -141,27 +136,6 @@ public final class PhingTargets implements ChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         reset();
-    }
-
-    //~ Inner classes
-
-    private final class NodeModulesListener extends FileChangeAdapter {
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            reset();
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            reset();
-        }
-
-        @Override
-        public void fileFolderCreated(FileEvent fe) {
-            reset();
-        }
-
     }
 
 }
