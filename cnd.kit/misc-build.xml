@@ -113,13 +113,13 @@ made subject to such option by the copyright holder.
              </fileset>
         </delete>
         <subant buildpath="${nbroot}" target="clean">
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
         </subant>
     </target>
 
     <target name="build">
         <subant buildpath="${nbroot}" target="build">
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
             <property name="buildnum" value="dev"/>
         </subant>
         <antcall target="-replace-jsch-in-build"/>
@@ -134,7 +134,7 @@ made subject to such option by the copyright holder.
 
     <target name="build-test-dist">
         <subant buildpath="${nbroot}" target="build-test-dist">
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
             <property name="test.fail.on.error" value="true"/>
         </subant>
         <antcall target="-replace-jsch-in-testdist"/>
@@ -149,34 +149,34 @@ made subject to such option by the copyright holder.
 
     <target name="test-build" depends="-init-modules">
         <subant buildpath="${cnd.modules.sorted}" target="test-build">
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
         </subant>
     </target>
 
     <target name="test" depends="-init-modules" description="run tests">
         <subant buildpath="${cnd.modules.sorted}" target="test">
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
             <property name="continue.after.failing.tests" value="true"/>
         </subant>
     </target>
 
     <target name="test-xref" depends="-init-modules" description="run xRef tests only">
         <subant buildpath="${cnd.modules.xref.fullpath}" target="test">
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
             <property name="continue.after.failing.tests" value="true"/>
         </subant>
     </target>
 
     <target name="test-model" depends="-init-modules" description="run Model sensitive tests only">
         <subant buildpath="${cnd.modules.model.fullpath}" target="test">
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
             <property name="continue.after.failing.tests" value="true"/>
         </subant>
     </target>
 
     <target name="coverage-report" depends="-init-modules">
         <subant buildpath="${cnd.modules.sorted}" target="coverage-report">
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
             <property name="coverage.report.format" value="xml"/>
         </subant>
     </target>
@@ -191,6 +191,13 @@ made subject to such option by the copyright holder.
     <target name="rebuild-cnd" description="rebuild cnd cluster">
         <exec executable="bash">
             <arg value="../cnd.modelimpl/build.sh"/>
+        </exec>
+    </target>
+    
+    <target name="rebuild-cndext" description="rebuild cndext cluster">
+        <exec executable="bash">
+            <arg value="../cnd.modelimpl/build.sh"/>
+            <arg value="cndext"/>
         </exec>
     </target>
 
@@ -217,7 +224,7 @@ made subject to such option by the copyright holder.
             <property name="sigtest.fail.on.error" value="true"/>
             <property name="sigtest.skip.check" value="false"/>
             <property name="validation.nb.cluster.cnd" value=""/>
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
         </subant>
     </target>
     
