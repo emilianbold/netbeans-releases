@@ -107,9 +107,9 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         this(project, null);
     }
 
-    private RunGulpTaskAction(Project project, FileObject gruntfile) {
+    private RunGulpTaskAction(Project project, FileObject gulpfile) {
         this.project = project;
-        this.gulpfile = gruntfile;
+        this.gulpfile = gulpfile;
         setEnabled(project != null);
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         // hide this action in IDE Options > Keymap
@@ -161,10 +161,10 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         return new RunGulpTaskAction(contextProject);
     }
 
-    private Action createAction(Project contextProject, FileObject gruntfile) {
+    private Action createAction(Project contextProject, FileObject gulpfile) {
         assert contextProject != null;
-        assert gruntfile != null;
-        return new RunGulpTaskAction(contextProject, gruntfile);
+        assert gulpfile != null;
+        return new RunGulpTaskAction(contextProject, gulpfile);
     }
 
 
