@@ -85,6 +85,7 @@ public class CommitContainerAction extends NodeAction {
                             true, new Object[] {commitButton, DialogDescriptor.CANCEL_OPTION}, commitButton,
                             DialogDescriptor.DEFAULT_ALIGN, null, null);
             descriptor.setClosingOptions(new Object[] {commitButton, DialogDescriptor.CANCEL_OPTION});
+            panel.setMessageLine(descriptor.createNotificationLineSupport());
             Dialog dlg = null;
 
             try {

@@ -41,7 +41,13 @@
  */
 package org.netbeans.modules.docker.ui.commit;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.docker.ui.UiUtils;
+import org.netbeans.modules.docker.ui.Validations;
+import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -49,13 +55,71 @@ import org.netbeans.modules.docker.ui.UiUtils;
  */
 public class CommitPanel extends javax.swing.JPanel {
 
+    private NotificationLineSupport messageLine;
+
     /**
      * Creates new form CommitPanel
      */
     public CommitPanel() {
         initComponents();
 
+        DefaultDocumentListener listener = new DefaultDocumentListener();
+        ((JTextComponent) repositoryComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(listener);
+        tagTextField.getDocument().addDocumentListener(listener);
         authorTextField.setText(System.getProperty("user.name"));
+    }
+
+    public void setMessageLine(NotificationLineSupport messageLine) {
+        this.messageLine = messageLine;
+    }
+
+    @NbBundle.Messages({
+        "MSG_EmptyRepository=The repository must not be empty when using tag."
+    })
+    private void validateInput() {
+        if (messageLine == null) {
+            return;
+        }
+
+        messageLine.clearMessages();
+        if (getRepository() == null && getTag() != null) {
+            messageLine.setErrorMessage(Bundle.MSG_EmptyRepository());
+            return;
+        }
+        String repository = getRepository();
+        if (repository != null) {
+            String message = Validations.validateRepository(repository);
+            if (message != null) {
+                messageLine.setErrorMessage(message);
+                return;
+            }
+        }
+        String tag = getTag();
+        if (tag != null) {
+            String message = Validations.validateTag(tag);
+            if (message != null) {
+                messageLine.setErrorMessage(message);
+                return;
+            }
+        }
+    }
+
+    private class DefaultDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            validateInput();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            validateInput();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            validateInput();
+        }
     }
 
     /**
