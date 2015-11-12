@@ -134,7 +134,7 @@ made subject to such option by the copyright holder.
 
     <target name="build-test-dist">
         <subant buildpath="${nbroot}" target="build-test-dist">
-            <property name="cluster.config" value="cndext"/>
+            <property name="cluster.config" value="cnd"/>
             <property name="test.fail.on.error" value="true"/>
         </subant>
         <antcall target="-replace-jsch-in-testdist"/>
@@ -149,34 +149,34 @@ made subject to such option by the copyright holder.
 
     <target name="test-build" depends="-init-modules">
         <subant buildpath="${cnd.modules.sorted}" target="test-build">
-            <property name="cluster.config" value="cndext"/>
+            <property name="cluster.config" value="cnd"/>
         </subant>
     </target>
 
     <target name="test" depends="-init-modules" description="run tests">
         <subant buildpath="${cnd.modules.sorted}" target="test">
-            <property name="cluster.config" value="cndext"/>
+            <property name="cluster.config" value="cnd"/>
             <property name="continue.after.failing.tests" value="true"/>
         </subant>
     </target>
 
     <target name="test-xref" depends="-init-modules" description="run xRef tests only">
         <subant buildpath="${cnd.modules.xref.fullpath}" target="test">
-            <property name="cluster.config" value="cndext"/>
+            <property name="cluster.config" value="cnd"/>
             <property name="continue.after.failing.tests" value="true"/>
         </subant>
     </target>
 
     <target name="test-model" depends="-init-modules" description="run Model sensitive tests only">
         <subant buildpath="${cnd.modules.model.fullpath}" target="test">
-            <property name="cluster.config" value="cndext"/>
+            <property name="cluster.config" value="cnd"/>
             <property name="continue.after.failing.tests" value="true"/>
         </subant>
     </target>
 
     <target name="coverage-report" depends="-init-modules">
         <subant buildpath="${cnd.modules.sorted}" target="coverage-report">
-            <property name="cluster.config" value="cndext"/>
+            <property name="cluster.config" value="cnd"/>
             <property name="coverage.report.format" value="xml"/>
         </subant>
     </target>
