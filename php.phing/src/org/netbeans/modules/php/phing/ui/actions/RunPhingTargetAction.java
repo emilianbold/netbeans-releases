@@ -211,6 +211,11 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         }
 
         @Override
+        public String getAdvancedTasksNamespace() {
+            return null;
+        }
+
+        @Override
         public String getDefaultTaskName() {
             return PhingTargets.DEFAULT_TARGET;
         }

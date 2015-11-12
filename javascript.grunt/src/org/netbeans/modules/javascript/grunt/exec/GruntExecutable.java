@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.grunt.exec;
 
@@ -64,12 +64,9 @@ import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.grunt.GruntBuildTool;
-import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.options.GruntOptions;
 import org.netbeans.modules.javascript.grunt.options.GruntOptionsValidator;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
-import org.netbeans.modules.javascript.grunt.util.FileUtils;
 import org.netbeans.modules.javascript.grunt.util.GruntUtils;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
@@ -91,6 +88,9 @@ public class GruntExecutable {
     protected final Project project;
     protected final String gruntPath;
 
+    @NullAllowed
+    private final File workDir;
+
 
     static {
         if (Utilities.isWindows()) {
@@ -101,14 +101,29 @@ public class GruntExecutable {
     }
 
 
-    GruntExecutable(String gruntPath, @NullAllowed Project project) {
+    GruntExecutable(String gruntPath, Project project, @NullAllowed File workDir) {
         assert gruntPath != null;
+        assert project != null;
         this.gruntPath = gruntPath;
         this.project = project;
+        this.workDir = workDir;
     }
 
     @CheckForNull
-    public static GruntExecutable getDefault(@NullAllowed Project project, boolean showOptions) {
+    public static GruntExecutable getDefault(Project project, boolean showOptions) {
+        return createExecutable(project, null, showOptions);
+    }
+
+    @CheckForNull
+    public static GruntExecutable getDefault(Project project, File workDir, boolean showOptions) {
+        assert workDir != null;
+        assert workDir.exists() : workDir;
+        return createExecutable(project, workDir, showOptions);
+    }
+
+    @CheckForNull
+    private static GruntExecutable createExecutable(Project project, @NullAllowed File workDir, boolean showOptions) {
+        assert project != null;
         ValidationResult result = new GruntOptionsValidator()
                 .validateGrunt()
                 .getResult();
@@ -118,14 +133,11 @@ public class GruntExecutable {
             }
             return null;
         }
-        return createExecutable(GruntOptions.getInstance().getGrunt(), project);
-    }
-
-    private static GruntExecutable createExecutable(String grunt, Project project) {
+        String grunt = GruntOptions.getInstance().getGrunt();
         if (Utilities.isMac()) {
-            return new MacGruntExecutable(grunt, project);
+            return new MacGruntExecutable(grunt, project, workDir);
         }
-        return new GruntExecutable(grunt, project);
+        return new GruntExecutable(grunt, project, workDir);
     }
 
     String getCommand() {
@@ -199,16 +211,13 @@ public class GruntExecutable {
     }
 
     private File getWorkDir() {
-        if (project == null) {
-            return FileUtils.TMP_DIR;
+        if (workDir != null
+                && workDir.exists()) {
+            return workDir;
         }
-        Gruntfile gruntfile = GruntBuildTool.forProject(project).getGruntfile();
-        if (gruntfile.exists()) {
-            return gruntfile.getFile().getParentFile();
-        }
-        File workDir = FileUtil.toFile(project.getProjectDirectory());
-        assert workDir != null : project.getProjectDirectory();
-        return workDir;
+        File dir = FileUtil.toFile(project.getProjectDirectory());
+        assert dir != null : project.getProjectDirectory();
+        return dir;
     }
 
     private List<String> getRunParams(String... args) {
@@ -238,8 +247,8 @@ public class GruntExecutable {
         private static final String BASH_COMMAND = "/bin/bash -lc"; // NOI18N
 
 
-        MacGruntExecutable(String gruntPath, Project project) {
-            super(gruntPath, project);
+        MacGruntExecutable(String gruntPath, Project project, File workDir) {
+            super(gruntPath, project, workDir);
         }
 
         @Override

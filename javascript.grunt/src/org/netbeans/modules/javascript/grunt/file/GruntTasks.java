@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.grunt.file;
 
@@ -67,20 +67,23 @@ public final class GruntTasks implements ChangeListener {
     public static final String DEFAULT_TASK = "default"; // NOI18N
 
     private final Project project;
+    private final Gruntfile gruntfile;
     final FileChangeListener nodeModulesListener = new NodeModulesListener();
 
     private volatile List<String> tasks;
 
 
-    private GruntTasks(Project project) {
+    private GruntTasks(Project project, Gruntfile gruntfile) {
         assert project != null;
+        assert gruntfile != null;
         this.project = project;
+        this.gruntfile = gruntfile;
     }
 
     public static GruntTasks create(Project project, Gruntfile gruntfile) {
         assert project != null;
-        assert gruntfile != null;
-        GruntTasks gruntTasks = new GruntTasks(project);
+        assert gruntfile != null : project.getProjectDirectory();
+        GruntTasks gruntTasks = new GruntTasks(project, gruntfile);
         // listeners
         gruntfile.addChangeListener(gruntTasks);
         FileUtil.addFileChangeListener(gruntTasks.nodeModulesListener, new File(gruntfile.getFile().getParent(), "node_modules")); // NOI18N
@@ -121,7 +124,7 @@ public final class GruntTasks implements ChangeListener {
 
     @CheckForNull
     private Future<List<String>> getTasksJob() {
-        GruntExecutable grunt = GruntExecutable.getDefault(project, false);
+        GruntExecutable grunt = GruntExecutable.getDefault(project, gruntfile.getFile().getParentFile(), false);
         if (grunt == null) {
             return null;
         }

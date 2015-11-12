@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,13 +37,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.gulp.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -54,6 +53,8 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -70,6 +71,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -91,15 +93,23 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
 
     static final Logger LOGGER = Logger.getLogger(RunGulpTaskAction.class.getName());
 
+    @NullAllowed
     private final Project project;
+    @NullAllowed
+    private final FileObject gulpfile;
 
 
     public RunGulpTaskAction() {
         this(null);
     }
 
-    public RunGulpTaskAction(Project project) {
+    private RunGulpTaskAction(Project project) {
+        this(project, null);
+    }
+
+    private RunGulpTaskAction(Project project, FileObject gruntfile) {
         this.project = project;
+        this.gulpfile = gruntfile;
         setEnabled(project != null);
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         // hide this action in IDE Options > Keymap
@@ -131,13 +141,12 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         }
         contextProject = FileOwnerQuery.getOwner(file);
         if (contextProject == null) {
-            return null;
-        }
-        if (!contextProject.getProjectDirectory().equals(file.getParent())) {
-            // not a main project gulpfile
             return this;
         }
-        return createAction(contextProject);
+        if (file.getParent().equals(contextProject.getProjectDirectory())) {
+            return createAction(contextProject);
+        }
+        return createAction(contextProject, file);
     }
 
     private Action createAction(Project contextProject) {
@@ -146,18 +155,25 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         if (gulpBuildTool == null) {
             return this;
         }
-        if (!gulpBuildTool.getGulpfile().exists()) {
+        if (!gulpBuildTool.getProjectGulpfile().exists()) {
             return this;
         }
         return new RunGulpTaskAction(contextProject);
     }
+
+    private Action createAction(Project contextProject, FileObject gruntfile) {
+        assert contextProject != null;
+        assert gruntfile != null;
+        return new RunGulpTaskAction(contextProject, gruntfile);
+    }
+
 
     @Override
     public JMenuItem getPopupPresenter() {
         if (project == null) {
             return new Actions.MenuItem(this, false);
         }
-        return BuildTools.getDefault().createTasksMenu(new TasksMenuSupportImpl(project));
+        return BuildTools.getDefault().createTasksMenu(new TasksMenuSupportImpl(project, gulpfile));
     }
 
     //~ Inner classes
@@ -165,13 +181,16 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
     private static final class TasksMenuSupportImpl implements BuildTools.TasksMenuSupport {
 
         private final Project project;
+        @NullAllowed
+        private final FileObject gulpfile;
         private final GulpTasks gulpTasks;
 
 
-        public TasksMenuSupportImpl(Project project) {
+        public TasksMenuSupportImpl(Project project, @NullAllowed FileObject gulpfile) {
             assert project != null;
             this.project = project;
-            gulpTasks = GulpBuildTool.forProject(project).getGulpTasks();
+            this.gulpfile = gulpfile;
+            gulpTasks = GulpBuildTool.forProject(project).getGulpTasks(gulpfile);
         }
 
         @Override
@@ -215,6 +234,18 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         }
 
         @Override
+        public String getAdvancedTasksNamespace() {
+            if (gulpfile == null) {
+                return null;
+            }
+            String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), gulpfile);
+            if (relativePath != null) {
+                return relativePath;
+            }
+            return FileUtil.toFile(gulpfile).getAbsolutePath();
+        }
+
+        @Override
         public String getDefaultTaskName() {
             return GulpTasks.DEFAULT_TASK;
         }
@@ -227,7 +258,7 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         @Override
         public void runTask(String... args) {
             assert !EventQueue.isDispatchThread();
-            GulpExecutable gulp = GulpExecutable.getDefault(project, true);
+            GulpExecutable gulp = getGulpExecutable();
             if (gulp != null) {
                 GulpUtils.logUsageGulpBuild();
                 gulp.run(args);
@@ -248,6 +279,14 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         @Override
         public void configure() {
             OptionsDisplayer.getDefault().open(GulpOptionsPanelController.OPTIONS_PATH);
+        }
+
+        @CheckForNull
+        private GulpExecutable getGulpExecutable() {
+            if (gulpfile == null) {
+                return GulpExecutable.getDefault(project, true);
+            }
+            return GulpExecutable.getDefault(project, FileUtil.toFile(gulpfile).getParentFile(), true);
         }
 
     }
