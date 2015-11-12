@@ -67,14 +67,16 @@ public final class Validations {
     // FIXME should we version it
     @NbBundle.Messages({
         "MSG_ErrorSchema=Repository must not contain schema definition.",
+        "MSG_ErrorRepositoryEmpty=Repository name can't be empty.",
         "# {0} - error token",
         "MSG_ErrorRepositoryCharacter=Only [a-z0-9_.-] allowed in repository ({0}).",
-        "MSG_ErrorRepository64HexBytes=Repository name can''t be 64 hex characters.",
+        "MSG_ErrorRepository64HexBytes=Repository name can't be 64 hex characters.",
         "# {0} - error token",
         "MSG_ErrorRegistryStartEndHyphen=Registry can''t start or end with hyphen ({0}).",
         "# {0} - error token",
         "MSG_ErrorNamespaceCharacter=Only [a-z0-9_-] allowed in namespace ({0}).",
-        "MSG_ErrorNamespaceLimits=<html>Namespace length must be between 2 and 255 characters.</html>",
+        "MSG_ErrorNamespaceShort=Namespace length must at least 2 characters.",
+        "MSG_ErrorNamespaceLong=Namespace length must be at most 255 characters.",
         "# {0} - error token",
         "MSG_ErrorNamespaceStartEndHyphen=Namespace can''t start or end with hyphen ({0}).",
         "MSG_ErrorNamespaceConsecutiveHyphens=Namespace can''t contain consecutive hyphens."
@@ -82,15 +84,16 @@ public final class Validations {
     public static String validateRepository(String repository) {
         Parameters.notNull("repository", repository);
 
+        if (repository.isEmpty()) {
+            return null;
+        }
+
         // must not contain schema
         if (repository.contains("://")) { // NOI18N
             return Bundle.MSG_ErrorSchema();
         }
 
         String[] parts = repository.split("/", 3); // NOI18N
-        if (parts.length > 3) {
-            return Bundle.MSG_ErrorRepositoryCharacter(repository.substring(parts[0].length() + parts[1].length() + 2));
-        }
 
         String registry = null;
         String ns = null;
@@ -115,11 +118,11 @@ public final class Validations {
             return Bundle.MSG_ErrorRegistryStartEndHyphen(registry);
         }
         if (ns != null) {
-            if (!NAMESPACE_PATTERN.matcher(ns).matches()) {
-                return Bundle.MSG_ErrorNamespaceCharacter(ns);
+            if (ns.length() < 2) {
+                return Bundle.MSG_ErrorNamespaceShort();
             }
-            if (ns.length() < 2 || ns.length() > 255) {
-                return Bundle.MSG_ErrorNamespaceLimits();
+            if (ns.length() > 255) {
+                return Bundle.MSG_ErrorNamespaceLong();
             }
             if (ns.startsWith("-") || ns.endsWith("-")) { // NOI18N
                 return Bundle.MSG_ErrorNamespaceStartEndHyphen(ns);
@@ -127,30 +130,39 @@ public final class Validations {
             if (ns.contains("--")) { // NOI18N
                 return Bundle.MSG_ErrorNamespaceConsecutiveHyphens();
             }
+            if (!NAMESPACE_PATTERN.matcher(ns).matches()) {
+                return Bundle.MSG_ErrorNamespaceCharacter(ns);
+            }
         }
 
         assert repo != null;
-        if (!REPOSITORY_PATTERN.matcher(repo).matches()) {
-            return Bundle.MSG_ErrorRepositoryCharacter(repo);
+        if (parts.length > 1 && repo.isEmpty()) {
+            return Bundle.MSG_ErrorRepositoryEmpty();
         }
         if (ns == null && FORBIDDEN_REPOSITORY_PATTERN.matcher(repo).matches()) {
             return Bundle.MSG_ErrorRepository64HexBytes();
+        }
+        if (!REPOSITORY_PATTERN.matcher(repo).matches()) {
+            return Bundle.MSG_ErrorRepositoryCharacter(repo);
         }
         return null;
     }
 
     @NbBundle.Messages({
         "MSG_ErrorTagCharacter=Only [A-Za-z0-9_.-] allowed in tag ({0}).",
-        "MSG_ErrorTagLimits=Namespace length must be between 1 and 128 characters."
+        "MSG_ErrorTagLong=Tag length must be at most 128 characters."
     })
     public static String validateTag(String tag) {
         Parameters.notNull("tag", tag);
 
+        if (tag.isEmpty()) {
+            return null;
+        }
         if (!TAG_PATTERN.matcher(tag).matches()) {
             return Bundle.MSG_ErrorTagCharacter(tag);
         }
-        if (tag.length() < 1 || tag.length() > 128) {
-            return Bundle.MSG_ErrorTagLimits();
+        if (tag.length() > 128) {
+            return Bundle.MSG_ErrorTagLong();
         }
         return null;
     }
