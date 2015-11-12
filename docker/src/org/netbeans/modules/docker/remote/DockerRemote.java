@@ -257,6 +257,38 @@ public class DockerRemote {
             throw new DockerException(ex);
         }
     }
+    
+    public DockerTag tag(DockerTag source, String repository, String tag, boolean force) throws DockerException {
+        if (repository == null) {
+            throw new IllegalArgumentException("Repository can't be empty");
+        }
+
+        StringBuilder action = new StringBuilder("/images/");
+        action.append(source.getId());
+        action.append("/tag");
+        action.append("?");
+        action.append("repo=").append(repository);
+        if (force) {
+            action.append("&force=1");
+        }
+        if (tag != null) {
+            action.append("&tag=").append(tag);
+        }
+
+        doPostRequest(instance.getUrl(), action.toString(), null,
+                false, Collections.singleton(HttpURLConnection.HTTP_CREATED));
+
+        String tagResult = repository + ":" + (tag != null ? tag : "latest");
+        long time = System.currentTimeMillis() / 1000;
+        // XXX we send it as older API does not have the commit event
+        if (emitEvents) {
+            instance.getEventBus().sendEvent(
+                    new DockerEvent(instance, DockerEvent.Status.TAG,
+                            source.getId(), tagResult, time));
+        }
+
+        return new DockerTag(source.getImage(), tagResult);
+    }
 
     public ContainerInfo getInfo(DockerContainer container) throws DockerException {
         JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),

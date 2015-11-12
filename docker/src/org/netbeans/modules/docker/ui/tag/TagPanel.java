@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.commit;
+package org.netbeans.modules.docker.ui.tag;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -53,20 +53,19 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class CommitPanel extends javax.swing.JPanel {
+public class TagPanel extends javax.swing.JPanel {
 
     private NotificationLineSupport messageLine;
 
     /**
-     * Creates new form CommitPanel
+     * Creates new form TagPanel
      */
-    public CommitPanel() {
+    public TagPanel() {
         initComponents();
 
         DefaultDocumentListener listener = new DefaultDocumentListener();
         ((JTextComponent) repositoryComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(listener);
         tagTextField.getDocument().addDocumentListener(listener);
-        authorTextField.setText(System.getProperty("user.name"));
     }
 
     public void setMessageLine(NotificationLineSupport messageLine) {
@@ -75,7 +74,7 @@ public class CommitPanel extends javax.swing.JPanel {
     }
 
     @NbBundle.Messages({
-        "MSG_EmptyRepository=The repository must not be empty when using tag."
+        "MSG_EmptyRepository=The repository must not be empty."
     })
     private void validateInput() {
         if (messageLine == null) {
@@ -83,7 +82,7 @@ public class CommitPanel extends javax.swing.JPanel {
         }
 
         messageLine.clearMessages();
-        if (getRepository() == null && getTag() != null) {
+        if (getRepository() == null) {
             messageLine.setErrorMessage(Bundle.MSG_EmptyRepository());
             return;
         }
@@ -132,60 +131,38 @@ public class CommitPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        messageLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        messageTextArea = new javax.swing.JTextArea();
-        pauseCheckBox = new javax.swing.JCheckBox();
         repositoryLabel = new javax.swing.JLabel();
         repositoryComboBox = new javax.swing.JComboBox<>();
         tagLabel = new javax.swing.JLabel();
         tagTextField = new javax.swing.JTextField();
-        authorLabel = new javax.swing.JLabel();
-        authorTextField = new javax.swing.JTextField();
-
-        messageLabel.setLabelFor(messageTextArea);
-        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.messageLabel.text")); // NOI18N
-
-        messageTextArea.setColumns(20);
-        messageTextArea.setRows(5);
-        jScrollPane1.setViewportView(messageTextArea);
-
-        pauseCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(pauseCheckBox, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.pauseCheckBox.text")); // NOI18N
+        forceCheckBox = new javax.swing.JCheckBox();
 
         repositoryLabel.setLabelFor(repositoryComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(repositoryLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.repositoryLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(repositoryLabel, org.openide.util.NbBundle.getMessage(TagPanel.class, "TagPanel.repositoryLabel.text")); // NOI18N
 
         repositoryComboBox.setEditable(true);
 
         tagLabel.setLabelFor(tagTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(tagLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.tagLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tagLabel, org.openide.util.NbBundle.getMessage(TagPanel.class, "TagPanel.tagLabel.text")); // NOI18N
 
-        authorLabel.setLabelFor(authorTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(authorLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.authorLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(forceCheckBox, org.openide.util.NbBundle.getMessage(TagPanel.class, "TagPanel.forceCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(forceCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(repositoryLabel)
-                            .addComponent(tagLabel)
-                            .addComponent(authorLabel))
+                            .addComponent(tagLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(repositoryComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(tagTextField)
-                            .addComponent(authorTextField)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(messageLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(pauseCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(tagTextField))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -199,16 +176,8 @@ public class CommitPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tagLabel)
                     .addComponent(tagTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(authorLabel)
-                    .addComponent(authorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(messageLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(pauseCheckBox)
+                .addComponent(forceCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -221,25 +190,12 @@ public class CommitPanel extends javax.swing.JPanel {
         return UiUtils.getValue(tagTextField);
     }
 
-    public String getAuthor() {
-        return UiUtils.getValue(authorTextField);
-    }
-
-    public String getMessage() {
-        return UiUtils.getValue(messageTextArea);
-    }
-
-    public boolean isPause() {
-        return pauseCheckBox.isSelected();
+    public boolean isForce() {
+        return forceCheckBox.isSelected();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel authorLabel;
-    private javax.swing.JTextField authorTextField;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel messageLabel;
-    private javax.swing.JTextArea messageTextArea;
-    private javax.swing.JCheckBox pauseCheckBox;
+    private javax.swing.JCheckBox forceCheckBox;
     private javax.swing.JComboBox<String> repositoryComboBox;
     private javax.swing.JLabel repositoryLabel;
     private javax.swing.JLabel tagLabel;

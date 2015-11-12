@@ -45,6 +45,7 @@ import org.netbeans.modules.docker.ui.run.RunTagAction;
 import javax.swing.Action;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.DockerTag;
+import org.netbeans.modules.docker.ui.tag.TagTagAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.actions.SystemAction;
@@ -76,6 +77,8 @@ public class DockerTagNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get(RunTagAction.class),
+            null,
+            SystemAction.get(TagTagAction.class),
             null,
             SystemAction.get(CopyIdAction.class),
             null,
