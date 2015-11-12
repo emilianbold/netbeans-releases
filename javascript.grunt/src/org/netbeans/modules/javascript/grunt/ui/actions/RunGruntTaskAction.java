@@ -150,21 +150,22 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
     }
 
     private Action createAction(Project contextProject) {
+        return createAction(contextProject, null);
+    }
+
+    private Action createAction(Project contextProject, @NullAllowed FileObject gruntfile) {
         assert contextProject != null;
         GruntBuildTool gruntBuildTool = GruntBuildTool.inProject(contextProject);
         if (gruntBuildTool == null) {
             return this;
         }
+        if (gruntfile != null) {
+            return new RunGruntTaskAction(contextProject, gruntfile);
+        }
         if (!gruntBuildTool.getProjectGruntfile().exists()) {
             return this;
         }
         return new RunGruntTaskAction(contextProject);
-    }
-
-    private Action createAction(Project contextProject, FileObject gruntfile) {
-        assert contextProject != null;
-        assert gruntfile != null;
-        return new RunGruntTaskAction(contextProject, gruntfile);
     }
 
     @Override

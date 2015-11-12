@@ -124,6 +124,7 @@ public class PagedMediaModule extends ExtCssEditorModule implements CssModule {
         CssTokenId tokenId = token.id();
         switch (activeNode.type()) {
             case page:
+            case propertyDeclaration:
                 switch (tokenId) {
                     case IDENT:
                         if (context.getActiveTokenDiff() == 0 && LexerUtils.followsToken(context.getTokenSequence(),

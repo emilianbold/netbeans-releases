@@ -55,27 +55,27 @@ public final class Gulpfile implements ChangeListener {
 
     public static final String FILE_NAME = "gulpfile.js"; // NOI18N
 
-    final WatchedFile gruntfile;
+    final WatchedFile gulpfile;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
     private Gulpfile(FileObject directory) {
         assert directory != null;
-        gruntfile = WatchedFile.create(FILE_NAME, directory);
+        gulpfile = WatchedFile.create(FILE_NAME, directory);
     }
 
     public static Gulpfile create(FileObject directory) {
-        Gulpfile gruntfile = new Gulpfile(directory);
-        gruntfile.gruntfile.addChangeListener(WeakListeners.change(gruntfile, gruntfile.gruntfile));
-        return gruntfile;
+        Gulpfile gulpfile = new Gulpfile(directory);
+        gulpfile.gulpfile.addChangeListener(WeakListeners.change(gulpfile, gulpfile.gulpfile));
+        return gulpfile;
     }
 
     public boolean exists() {
-        return gruntfile.exists();
+        return gulpfile.exists();
     }
 
     public File getFile() {
-        return gruntfile.getFile();
+        return gulpfile.getFile();
     }
 
     public void addChangeListener(ChangeListener listener) {

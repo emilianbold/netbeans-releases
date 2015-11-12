@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phing.exec;
 
@@ -65,8 +65,6 @@ import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.phing.PhingBuildTool;
-import org.netbeans.modules.php.phing.file.BuildXml;
 import org.netbeans.modules.php.phing.options.PhingOptions;
 import org.netbeans.modules.php.phing.options.PhingOptionsValidator;
 import org.netbeans.modules.php.phing.ui.options.PhingOptionsPanelController;
@@ -91,10 +89,11 @@ public class PhingExecutable {
     private static final String LIST_PARAM = "-list"; // NOI18N
     private static final String QUIET_PARAM = "-quiet"; // NOI18N
 
-    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
-
     private final Project project;
     private final String phingPath;
+
+    @NullAllowed
+    private final File workDir;
 
 
     static {
@@ -106,14 +105,29 @@ public class PhingExecutable {
     }
 
 
-    PhingExecutable(String phingPath, @NullAllowed Project project) {
+    PhingExecutable(String phingPath, Project project, @NullAllowed File workDir) {
         assert phingPath != null;
+        assert project != null;
         this.phingPath = phingPath;
         this.project = project;
+        this.workDir = workDir;
     }
 
     @CheckForNull
-    public static PhingExecutable getDefault(@NullAllowed Project project, boolean showOptions) {
+    public static PhingExecutable getDefault(Project project, boolean showOptions) {
+        return createExecutable(project, null, showOptions);
+    }
+
+    @CheckForNull
+    public static PhingExecutable getDefault(Project project, File workDir, boolean showOptions) {
+        assert workDir != null;
+        assert workDir.exists() : workDir;
+        return createExecutable(project, workDir, showOptions);
+    }
+
+    @CheckForNull
+    private static PhingExecutable createExecutable(Project project, @NullAllowed File workDir, boolean showOptions) {
+        assert project != null;
         ValidationResult result = new PhingOptionsValidator()
                 .validatePhing()
                 .getResult();
@@ -123,7 +137,7 @@ public class PhingExecutable {
             }
             return null;
         }
-        return new PhingExecutable(PhingOptions.getInstance().getPhing(), project);
+        return new PhingExecutable(PhingOptions.getInstance().getPhing(), project, workDir);
     }
 
     private String getCommand() {
@@ -204,16 +218,13 @@ public class PhingExecutable {
     }
 
     private File getWorkDir() {
-        if (project == null) {
-            return TMP_DIR;
+        if (workDir != null
+                && workDir.exists()) {
+            return workDir;
         }
-        BuildXml buildXml = PhingBuildTool.forProject(project).getBuildXml();
-        if (buildXml.exists()) {
-            return buildXml.getFile().getParentFile();
-        }
-        File workDir = FileUtil.toFile(project.getProjectDirectory());
-        assert workDir != null : project.getProjectDirectory();
-        return workDir;
+        File dir = FileUtil.toFile(project.getProjectDirectory());
+        assert dir != null : project.getProjectDirectory();
+        return dir;
     }
 
     @CheckForNull

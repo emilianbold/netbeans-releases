@@ -107,9 +107,9 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         this(project, null);
     }
 
-    private RunGulpTaskAction(Project project, FileObject gruntfile) {
+    private RunGulpTaskAction(Project project, FileObject gulpfile) {
         this.project = project;
-        this.gulpfile = gruntfile;
+        this.gulpfile = gulpfile;
         setEnabled(project != null);
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         // hide this action in IDE Options > Keymap
@@ -150,23 +150,23 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
     }
 
     private Action createAction(Project contextProject) {
+        return createAction(contextProject, null);
+    }
+
+    private Action createAction(Project contextProject, @NullAllowed FileObject gulpfile) {
         assert contextProject != null;
         GulpBuildTool gulpBuildTool = GulpBuildTool.inProject(contextProject);
         if (gulpBuildTool == null) {
             return this;
+        }
+        if (gulpfile != null) {
+            return new RunGulpTaskAction(contextProject, gulpfile);
         }
         if (!gulpBuildTool.getProjectGulpfile().exists()) {
             return this;
         }
         return new RunGulpTaskAction(contextProject);
     }
-
-    private Action createAction(Project contextProject, FileObject gruntfile) {
-        assert contextProject != null;
-        assert gruntfile != null;
-        return new RunGulpTaskAction(contextProject, gruntfile);
-    }
-
 
     @Override
     public JMenuItem getPopupPresenter() {
