@@ -278,7 +278,7 @@ public class DockerRemote {
         doPostRequest(instance.getUrl(), action.toString(), null,
                 false, Collections.singleton(HttpURLConnection.HTTP_CREATED));
 
-        String tagResult = repository + ":" + (tag != null ? tag : "latest");
+        String tagResult = DockerUtils.getTag(repository, tag);
         long time = System.currentTimeMillis() / 1000;
         // XXX we send it as older API does not have the commit event
         if (emitEvents) {
