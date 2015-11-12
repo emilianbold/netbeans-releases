@@ -47,6 +47,7 @@ import java.nio.file.Paths;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.DockerUtils;
+import org.netbeans.modules.docker.ui.Validations;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -116,8 +117,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @NbBundle.Messages({
         "MSG_NonExistingBuildContext=The build context does not exist.",
-        "MSG_EmptyRepository=The repository must not be empty when using tag.",
-        "MSG_TagInvalid=Tag is not valid; only [A-Za-z0-9_.-] chars allowed."
+        "MSG_EmptyRepository=The repository must not be empty when using tag."
     })
     @Override
     public boolean isValid() {
@@ -135,10 +135,21 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyRepository());
             return false;
         }
+        String repository = component.getRepository();
+        if (repository != null) {
+            String message = Validations.validateRepository(repository);
+            if (message != null) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+                return false;
+            }
+        }
         String tag = component.getTag();
-        if (tag != null && !DockerUtils.isValidTag(tag)) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_TagInvalid());
-            return false;
+        if (tag != null) {
+            String message = Validations.validateTag(tag);
+            if (message != null) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+                return false;
+            }
         }
         return true;
     }

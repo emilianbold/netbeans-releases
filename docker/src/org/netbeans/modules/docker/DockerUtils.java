@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.docker;
 
-import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.docker.remote.DockerEvent;
@@ -53,14 +52,6 @@ import org.netbeans.modules.docker.remote.DockerEvent;
 public final class DockerUtils {
 
     public static final String DOCKER_FILE = "Dockerfile"; // NOI18N
-
-    private static final Pattern REPOSITORY_PATTERN = Pattern.compile("^[a-z0-9_\\.-]+$");
-
-    private static final Pattern NAMESPACE_PATTERN = Pattern.compile("^[a-z0-9_-]+$");
-
-    private static final Pattern FORBIDDEN_REPOSITORY_PATTERN = Pattern.compile("^[a-f0-9]{64}$");
-
-    private static final Pattern TAG_PATTERN = Pattern.compile("^[A-Za-z0-9_\\.-]+$");
 
     private DockerUtils() {
         super();
@@ -109,62 +100,6 @@ public final class DockerUtils {
             return repository + ":latest";
         }
         return repository + ":" + tag;
-    }
-
-    // this is based on 1.6.2/remote 1.18
-    // FIXME should we version it
-    public static boolean isValidRepository(String repository) {
-        if (repository == null) {
-            return false;
-        }
-        // must not contain schema
-        if (repository.contains("://")) { // NOI18N
-            return false;
-        }
-
-        String[] parts = repository.split("/");
-        if (parts.length > 3) {
-            return false;
-        }
-
-        String registry = null;
-        String ns = null;
-        String repo = null;
-        if (parts.length == 1) {
-            repo = parts[0];
-        } else if (parts.length == 2) {
-            String namespace = parts[0];
-            // registry host
-            if (namespace.contains(".") || namespace.contains(":") || "localhost".equals(namespace)) {
-                registry = namespace;
-            } else {
-                ns = namespace;
-            }
-            repo = parts[1];
-        } else if (parts.length == 3) {
-            registry = parts[0];
-            ns = parts[1];
-            repo = parts[2];
-        }
-        if (registry != null && (registry.startsWith("-") || registry.endsWith("-"))) {
-            return false;
-        }
-        if (ns != null && (!NAMESPACE_PATTERN.matcher(ns).matches() || ns.length() < 2 || ns.length() > 255
-                || ns.startsWith("-") || ns.endsWith("-") || ns.contains("--"))) {
-            return false;
-        }
-        if (repo != null && (!REPOSITORY_PATTERN.matcher(repo).matches()
-                || (ns == null && FORBIDDEN_REPOSITORY_PATTERN.matcher(repo).matches()))) {
-            return false;
-        }
-        return true;
-    }
-
-    public static boolean isValidTag(String tag) {
-        if (tag == null || tag.length() < 1 || tag.length() > 128) {
-            return false;
-        }
-        return TAG_PATTERN.matcher(tag).matches();
     }
 
     public static ContainerStatus getContainerStatus(String status) {
