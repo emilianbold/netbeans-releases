@@ -44,12 +44,16 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Set;
 import javax.swing.JComponent;
+import org.netbeans.api.project.ProjectManager;
 
 import org.openide.WizardDescriptor;
 //import org.netbeans.spi.project.ui.templates.support.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
@@ -65,7 +69,16 @@ public final class NewProjectWizard extends TemplateWizard {
         format = new MessageFormat (NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewProjectWizard_MessageFormat"));
         //setTitleFormat( new MessageFormat( "{0}") );
     }
-        
+
+    @Override
+    protected Set<DataObject> handleInstantiate() throws IOException {
+        try {
+            return super.handleInstantiate(); 
+        } finally {
+            ProjectManager.getDefault().clearNonProjectCache();
+        }
+    }
+    
     @Override
     public void updateState () {
         super.updateState ();
