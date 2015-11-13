@@ -101,6 +101,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -1145,6 +1146,20 @@ abstract public class CsmCompletionQuery {
             }
         }
         return opType;
+    }
+    
+    private static boolean isOverloadableOperator(CppTokenId opId) {
+        // TODO: must depend on language and flavor!
+        switch (opId) {
+            case QUESTION:
+            case DOT:
+            case DOTMBR:
+            case SCOPE:
+            case SIZEOF:
+            case TYPEID:
+                return false;
+        }
+        return true;
     }
 
     private boolean isInIncludeDirective(BaseDocument doc, int offset) {
@@ -2301,6 +2316,7 @@ abstract public class CsmCompletionQuery {
                 {
                     boolean boolOperator = false;
                     CompletionResolver.Result res = null;
+                    List<CsmType> typeList = null;
 //                    CsmClassifier cls = null;
 //                    if (findType) {
 //                        lastType = resolveType(item.getParameter(0));
@@ -2314,6 +2330,13 @@ abstract public class CsmCompletionQuery {
                     }
                     if (res != null) {
                         res.addResulItemsToCol(mtdList);
+                    }
+                    if (shouldDoADLLookup(first, methodOpen) && isOverloadableOperator(item.getTokenID(0))) {
+                        // FIXME: To decrease impact on performance, perform it only if mtdList is empty!
+                        if (mtdList.isEmpty()) {
+                            typeList = getTypeList(item, 0);
+                            adlLookup(operatorPrefix, mtdList, typeList);
+                        }
                     }
                     result = new CsmCompletionResult(component, getBaseDocument(), res, operatorPrefix, item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                     lastType = null;
@@ -2368,7 +2391,9 @@ abstract public class CsmCompletionQuery {
                         case PERCENT:
                             if (findType && lastType == null) {
                                 if (!mtdList.isEmpty()) {
-                                    List<CsmType> typeList = getTypeList(item, 0);
+                                    if (typeList == null) {
+                                        typeList = getTypeList(item, 0);
+                                    }
                                     // check exact overloaded operator
                                     mtdList = instantiateFunctions(mtdList, null, typeList, new CsmFunctionsAcceptor());
                                     Collection<CsmFunction> filtered = CompletionSupport.filterMethods(this, mtdList, null, typeList, false, false);
@@ -2988,7 +3013,15 @@ abstract public class CsmCompletionQuery {
                                     }
                                 }
                             }
-                            if (mtdList == null || mtdList.isEmpty()) {
+                            List<CsmType> typeList = null;
+                            if (shouldDoADLLookup(first, methodOpen)) {
+                                // FIXME: To decrease impact on performance, perform it only if mtdList is empty!
+                                if (mtdList.isEmpty()) {
+                                    typeList = getTypeList(item, 1);
+                                    adlLookup(mtdName, mtdList, typeList);
+                                }
+                            }
+                            if (mtdList.isEmpty()) {
                                 // If we have not found method and (lastType != null) it could be default constructor.
                                 if (!isConstructor) {
                                     if (first || staticOnly || kind == ExprKind.SCOPE) {
@@ -3011,7 +3044,9 @@ abstract public class CsmCompletionQuery {
                                 return lastType != null;
                             }
                             String parmStr = "*"; // NOI18N
-                            List<CsmType> typeList = getTypeList(item, 1);
+                            if (typeList == null) {
+                                typeList = getTypeList(item, 1);
+                            }
                             mtdList = instantiateFunctions(mtdList, genericNameExp, typeList, new ConstantPredicate<CsmFunctional>(true));
                             Collection<CsmFunctional> filtered = CompletionSupport.filterMethods(this, mtdList, genericNameExp, typeList, methodOpen, true);
                             if (filtered.size() > 0) {
@@ -3194,6 +3229,153 @@ abstract public class CsmCompletionQuery {
                 }
             }
             return func;
+        }
+        
+        private boolean shouldDoADLLookup(boolean first, boolean methodOpen) {
+            return first && !methodOpen 
+                && lastType == null && lastNamespace == null
+                && CsmFileInfoQuery.getDefault().isCpp98OrLater(contextFile);
+        }
+        
+        /**
+         * Performs argument-dependent lookup.
+         * 
+         * It works as a fallback for now, i.e. not according to the standard.
+         * 
+         * @param <T>
+         * @param name of the function/operator
+         * @param mtdList list of elements found with unqualified name lookup
+         * @param typeList list of function call parameters
+         * 
+         * @return true if lookup found something, false otherwise
+         */
+        private <T extends CsmFunctional> boolean adlLookup(String name, Collection<T> mtdList, List<CsmType> typeList) {
+            if (name == null || name.isEmpty()) {
+                return false;
+            }
+            // First of all, see if we can perform ADL
+            for (CsmFunctional fun : mtdList) {
+                if (CsmKindUtilities.isClassMember(fun)) {
+                    return false;
+                }
+                if (CsmKindUtilities.isFunctionPointerClassifier(fun)) {
+                    return false;
+                }
+                // TODO: block-scope function declaration that is not a using-declaration must prevent ADL.
+                // But now we do not look for such functions.
+            }
+            Set<CsmNamespace> handledNamespaces = new HashSet<CsmNamespace>();
+            ClassifiersAntiLoop handledClasses = new ClassifiersAntiLoop();
+            for (CsmType type : typeList) {
+                if (adlLookupType(type, name, mtdList, handledClasses, handledNamespaces)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private <T extends CsmFunctional> boolean adlLookupType(CsmType type, String name, Collection<T> mtdList, ClassifiersAntiLoop handledClasses, Set<CsmNamespace> handledNamespaces) {
+            if (type != null) {
+                CsmClassifier typeCls = getClassifier(type, contextFile, endOffset);
+                if (CsmKindUtilities.isClass(typeCls)) {
+                    if (adlLookupClass((CsmClass) typeCls, name, mtdList, handledClasses, handledNamespaces)) {
+                        return true;
+                    }
+                } else if (CsmKindUtilities.isUnion(typeCls)) {
+                    if (adlLookupDirectly(typeCls, name, mtdList, handledNamespaces)) {
+                        return true;
+                    }
+                } else if (CsmKindUtilities.isEnum(typeCls)) {
+                    if (adlLookupDirectly(typeCls, name, mtdList, handledNamespaces)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        private <T extends CsmFunctional> boolean adlLookupClass(CsmClass cls, String name, Collection<T> mtdList, ClassifiersAntiLoop handledClasses, Set<CsmNamespace> handledNamespaces) {
+            if (!handledClasses.add(cls)) {
+                return false;
+            }
+            if (adlLookupDirectly(cls, name, mtdList, handledNamespaces)) {
+                return true;
+            }
+            Collection<CsmInheritance> baseClasses = cls.getBaseClasses();
+            for (CsmInheritance inh : baseClasses) {
+                CsmClass baseCls = CsmInheritanceUtilities.getCsmClass(inh);
+                if (baseCls != null) {
+                    if (adlLookupClass(baseCls, name, mtdList, handledClasses, handledNamespaces)) {
+                        return true;
+                    }
+                }
+            }
+            if (CsmKindUtilities.isTemplate(cls) && CsmKindUtilities.isInstantiation(cls)) {
+                // FIXME: this is not right. The correct way to get types of parameters
+                // is via InstantiationProviderImpl.InstantiationParametersInfo.
+                // See InstantiationParametersInfoImpl.
+                CsmTemplate asTemplate = (CsmTemplate) cls;
+                CsmInstantiation asInstantiation = (CsmInstantiation) cls;
+                Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = asInstantiation.getMapping();
+                for (CsmTemplateParameter param : asTemplate.getTemplateParameters()) {
+                    CsmSpecializationParameter specParam = mapping.get(param);
+                    if (CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
+                        CsmType type = ((CsmTypeBasedSpecializationParameter) specParam).getType();
+                        if (adlLookupType(type, name, mtdList, handledClasses, handledNamespaces)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        
+        private <T extends CsmFunctional> boolean adlLookupDirectly(CsmObject obj, String name, Collection<T> mtdList, Set<CsmNamespace> handledNamespaces) {
+            List<CsmNamespace> associatedNamespaces = adlGetAssociatedNamespaces(obj, handledNamespaces);
+            if (associatedNamespaces != null) {
+                for (CsmNamespace namespace : associatedNamespaces) {
+                    if (adlAddFunctions(mtdList, finder.findNamespaceElements(namespace, name, true, false, false))) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        private List<CsmNamespace> adlGetAssociatedNamespaces(CsmObject elem, Set<CsmNamespace> handledNamespaces) {
+            while (!CsmKindUtilities.isNamespace(elem) && CsmKindUtilities.isScopeElement(elem)) {
+                elem = ((CsmScopeElement) elem).getScope();
+            }
+            if (CsmKindUtilities.isNamespace(elem)) {
+                CsmNamespace candidate = (CsmNamespace) elem;
+                if (!candidate.isGlobal() && handledNamespaces.add(candidate)) {
+                    if (candidate.isInline()) {
+                        CsmNamespace parentNs = candidate.getParent();
+                        if (parentNs != null && !parentNs.isGlobal() && handledNamespaces.add(parentNs)) {
+                            List<CsmNamespace> candidates = new ArrayList<CsmNamespace>(2);
+                            candidates.add(candidate);
+                            candidates.add(parentNs);
+                            return candidates;
+                        }
+                    }
+                    return Collections.singletonList(candidate);
+                }
+            }
+            return null;
+        }
+        
+        private <T extends CsmFunctional> boolean adlAddFunctions(Collection<T> mtdList, List<CsmObject> elements) {
+            if (elements != null && !elements.isEmpty()) {
+                boolean hasAddedElems = false;
+                for (CsmObject elem : elements) {
+                    if (CsmKindUtilities.isFunction(elem)) { // is this safe?
+                        mtdList.add((T) elem);
+                        hasAddedElems = true;
+                    }
+                }
+                return hasAddedElems;
+            }
+            return false;
         }
 
         private CsmClassifier resolveClassifier(String var, int varPos)  {
