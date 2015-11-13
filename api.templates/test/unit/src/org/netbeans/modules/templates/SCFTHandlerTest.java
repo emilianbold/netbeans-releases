@@ -110,7 +110,7 @@ public class SCFTHandlerTest extends NbTestCase {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
-        String txt = "print('<html><h1>'); print(title); print('</h1></html>');";
+        String txt = "print('<html><h1>', title, '</h1></html>');";
         os.write(txt.getBytes());
         os.close();
         fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
@@ -126,7 +126,7 @@ public class SCFTHandlerTest extends NbTestCase {
         assertEquals("Created in right place", folder, n.getFolder());
         assertEquals("Created with right name", "complex.txt", n.getName());
         
-        String exp = "<html><h1>Nazdar</h1></html>";
+        String exp = "<html><h1> Nazdar </h1></html>\n";
         assertEquals(exp, readFile(n.getPrimaryFile()));
         
     }
@@ -135,7 +135,7 @@ public class SCFTHandlerTest extends NbTestCase {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
-        String txt = "print('<html><h1>'); print(nameAndExt); print('</h1></html>')";
+        String txt = "print('<html><h1>', nameAndExt, '</h1></html>')";
         os.write(txt.getBytes());
         os.close();
         fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
@@ -151,7 +151,7 @@ public class SCFTHandlerTest extends NbTestCase {
         assertEquals("Created in right place", folder, n.getFolder());
         assertEquals("Created with right name", "complex.txt", n.getName());
         
-        String exp = "<html><h1>complex.txt</h1></html>";
+        String exp = "<html><h1> complex.txt </h1></html>\n";
         assertEquals(exp, readFile(n.getPrimaryFile()));
         
     }
@@ -162,14 +162,14 @@ public class SCFTHandlerTest extends NbTestCase {
         FileObject root = lfs.getRoot();
         FileObject fo = FileUtil.createData(root, "j.java");
         OutputStream os = fo.getOutputStream();
-        String txt = "print('<html><h1>'); print(nameAndExt); print('</h1></html>')";
+        String txt = "print('<html><h1>', nameAndExt, '</h1></html>')";
         os.write(txt.getBytes());
         os.close();
         fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
         
         FileObject fo2 = FileUtil.createData(root, "j.form");
         OutputStream os2 = fo2.getOutputStream();
-        String txt2 = "print('<html><h2>'); print(nameAndExt); print('</h2></html>')";
+        String txt2 = "print('<html><h2>', nameAndExt, '</h2></html>')";
         os2.write(txt2.getBytes());
         os2.close();
         fo2.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
@@ -196,10 +196,10 @@ public class SCFTHandlerTest extends NbTestCase {
         assertEquals("Created in right place", folder, n.getFolder());
         assertEquals("Created with right name", "complex", n.getName());
         
-        String exp = "<html><h1>complex.java</h1></html>";
+        String exp = "<html><h1> complex.java </h1></html>\n";
         assertEquals("Primary file" + n.getPrimaryFile(), exp, readFile(n.getPrimaryFile()));
         
-        String exp2 = "<html><h2>complex.form</h2></html>";
+        String exp2 = "<html><h2> complex.form </h2></html>\n";
         assertEquals(exp2, readFile(newForm));
     }
     
@@ -285,8 +285,8 @@ public class SCFTHandlerTest extends NbTestCase {
          assertEquals("Created with right name", "complex.txt", n.getName());
          
          
-         String read = readChars(n.getPrimaryFile(), set).replaceAll("println\\('", "").replaceAll("'\\);", "");
-         String exp = readChars(xml, Charset.forName("utf-8")).replaceAll("println\\('", "").replaceAll("'\\);", "");
+         String read = readChars(n.getPrimaryFile(), set).replaceAll("print\\('", "").replaceAll("'\\);", "");
+         String exp = readChars(xml, Charset.forName("utf-8")).replaceAll("print\\('", "").replaceAll("'\\);", "");
          assertEquals(exp, read);
          
      }
@@ -344,7 +344,7 @@ public class SCFTHandlerTest extends NbTestCase {
             fail("no input stream for " + snd);
         }
         String read = new String(cbuf, 0, len);
-        txt = txt.replaceAll("print\\('", "").replaceAll("'\\)", "");
+        txt = txt.replaceAll("print\\('", "").replaceAll("'\\)", "") +'\n';
         
         assertEquals(txt, read);
     }
