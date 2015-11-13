@@ -46,12 +46,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.openide.util.Pair;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
  *
@@ -102,7 +104,31 @@ public final class HttpUtils {
         return new Response(responseCode, message, headers);
     }
 
-    public static String readContent(InputStream is, int length, String encoding) throws IOException {
+    @CheckForNull
+    public static String readContent(InputStream is, Response response) throws IOException {
+        Integer length = getLength(response.getHeaders());
+        if (length == null || length == 0) {
+            return null;
+        }
+        Charset encoding = Charset.forName("UTF-8"); // NOI18N
+        String type = response.getHeaders().get("CONTENT-TYPE"); // NOI18N
+        if (type != null) {
+            String[] parts = type.trim().split(";"); // NOI18N
+            for (String p : parts) {
+                String upper = p.toUpperCase(Locale.ENGLISH);
+                if (upper.startsWith("CHARSET")) { // NOI18N
+                    int index = upper.indexOf("=", 7); // NOI18N
+                    if (index > 0 && index < upper.length() -1) {
+                        try {
+                            encoding = Charset.forName(upper.substring(index + 1).trim());
+                        } catch (UnsupportedCharsetException ex) {
+                            // noop using the UTF-8
+                        }
+                    }
+                }
+            }
+        }
+
         byte[] content = new byte[length];
         int count = 0;
         do {

@@ -551,12 +551,9 @@ public class DockerRemote {
             int responseCode = response.getCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 task.cancel(true);
-                Integer length = HttpUtils.getLength(response.getHeaders());
-                String error = response.getMessage();
-                if (length != null && length > 0) {
-                    error = HttpUtils.readContent(is, length, "UTF-8");
-                }
-                throw new DockerRemoteException(responseCode, error);
+                String content = HttpUtils.readContent(is, response);
+                throw new DockerRemoteException(responseCode,
+                        content != null ? content : response.getMessage());
             }
 
             try {
@@ -767,9 +764,6 @@ public class DockerRemote {
                 throw new DockerRemoteException(response.getCode(), response.getMessage());
             }
 
-            Integer length = HttpUtils.getLength(response.getHeaders());
-            assert length != null;
-
             boolean chunked = HttpUtils.isChunked(response.getHeaders());
             if (chunked) {
                 is = new ChunkedInputStream(is);
@@ -778,7 +772,7 @@ public class DockerRemote {
             JSONObject value;
             try {
                 JSONParser parser = new JSONParser();
-                value = (JSONObject) parser.parse(HttpUtils.readContent(is, length, "UTF-8"));
+                value = (JSONObject) parser.parse(HttpUtils.readContent(is, response));
             } catch (ParseException ex) {
                 throw new DockerException(ex);
             }
