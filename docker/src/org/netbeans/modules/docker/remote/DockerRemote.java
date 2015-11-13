@@ -68,6 +68,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -186,9 +187,9 @@ public class DockerRemote {
                 JSONObject json = (JSONObject) o;
                 String name = (String) json.get("name");
                 String description = (String) json.get("description");
-                long stars = (long) json.getOrDefault("star_count", 0);
-                boolean official = (boolean) json.getOrDefault("is_official", false);
-                boolean automated = (boolean) json.getOrDefault("is_automated", false);
+                long stars = ((Number) getOrDefault(json, "star_count", 0)).longValue();
+                boolean official = (boolean) getOrDefault(json, "is_official", false);
+                boolean automated = (boolean) getOrDefault(json, "is_automated", false);
                 ret.add(new DockerHubImage(name, description, stars, official, automated));
             }
             return ret;
@@ -298,8 +299,8 @@ public class DockerRemote {
         boolean openStdin = false;
         JSONObject config = (JSONObject) value.get("Config");
         if (config != null) {
-            tty = (boolean) config.getOrDefault("Tty", false);
-            openStdin = (boolean) config.getOrDefault("OpenStdin", false);
+            tty = (boolean) getOrDefault(config, "Tty", false);
+            openStdin = (boolean) getOrDefault(config, "OpenStdin", false);
         }
         return new ContainerInfo(openStdin, tty);
     }
@@ -477,8 +478,8 @@ public class DockerRemote {
                         StatusEvent.Progress detail = null;
                         JSONObject detailObj = (JSONObject) o.get("progressDetail");
                         if (detailObj != null) {
-                            long current = ((Number) detailObj.getOrDefault("current", 1)).longValue();
-                            long total = ((Number) detailObj.getOrDefault("total", 1)).longValue();
+                            long current = ((Number) getOrDefault(detailObj, "current", 1)).longValue();
+                            long total = ((Number) getOrDefault(detailObj, "total", 1)).longValue();
                             detail = new StatusEvent.Progress(current, total);
                         }
                         listener.onEvent(new StatusEvent(instance, id, status, progress, error, detail));
@@ -600,7 +601,7 @@ public class DockerRemote {
                             BuildEvent.Error detail = null;
                             JSONObject detailObj = (JSONObject) o.get("errorDetail");
                             if (detailObj != null) {
-                                long code = ((Number) detailObj.getOrDefault("code", 0)).longValue();
+                                long code = ((Number) getOrDefault(detailObj, "code", 0)).longValue();
                                 String mesage = (String) detailObj.get("message");
                                 detail = new BuildEvent.Error(code, mesage);
                             }
@@ -1021,6 +1022,14 @@ public class DockerRemote {
                 LOGGER.log(Level.INFO, null, ex);
             }
         }
+    }
+
+    private static Object getOrDefault(Map map, Object key, Object def) {
+        Object ret = map.get(key);
+        if (ret == null) {
+            ret = def;
+        }
+        return ret;
     }
 
     public static class LogResult implements Closeable {
