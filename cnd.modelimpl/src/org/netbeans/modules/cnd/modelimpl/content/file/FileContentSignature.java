@@ -59,9 +59,6 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.trace.LineDiff;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -76,25 +73,16 @@ public final class FileContentSignature {
     private final List<KindAndSignature> signature;
     private final CsmUID<CsmFile> file;
     private final int hashCode;
-    private final GraphContainer.CoherenceFiles coherence;
 
-    private FileContentSignature(List<KindAndSignature> signature, CsmUID<CsmFile> file,
-            GraphContainer.CoherenceFiles coherence) {
+    private FileContentSignature(List<KindAndSignature> signature, CsmUID<CsmFile> file) {
         this.signature = signature;
         this.file = file;
         this.hashCode = hash(signature);
-        this.coherence = coherence;
     }
 
     public static FileContentSignature create(CsmFile file) {
         List<KindAndSignature> signature = createFileSignature(file);
-        ProjectBase fileProject = ((FileImpl)file).getProjectImpl(true);
-        return new FileContentSignature(signature, UIDCsmConverter.fileToUID(file),
-                fileProject.getGraph().getCoherenceFiles(file));
-    }
-
-    public GraphContainer.CoherenceFiles getCoherenceFiles() {
-        return coherence;
+        return new FileContentSignature(signature, UIDCsmConverter.fileToUID(file));
     }
 
     private static List<KindAndSignature> createFileSignature(CsmFile csmFile) {
