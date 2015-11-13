@@ -94,7 +94,7 @@ public abstract class AbstractContainerAction extends NodeAction {
                         }
                         return null;
                     }
-                }, null);
+                });
             }
         }
     }

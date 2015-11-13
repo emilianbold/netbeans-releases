@@ -119,7 +119,7 @@ public final class UiUtils {
         return value;
     }
 
-    public static void performRemoteAction(final String displayName, final Callable<Void> action, final Runnable eventFinish) {
+    public static void performRemoteAction(final String displayName, final Callable<Void> action) {
         final ProgressHandle handle = ProgressHandle.createHandle(displayName);
         handle.start();
         Runnable wrapped = new Runnable() {
@@ -138,9 +138,6 @@ public final class UiUtils {
                     });
                 } finally {
                     handle.finish();
-                    if (eventFinish != null) {
-                        SwingUtilities.invokeLater(eventFinish);
-                    }
                 }
             }
         };

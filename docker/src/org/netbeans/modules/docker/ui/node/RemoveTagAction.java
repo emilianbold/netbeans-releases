@@ -76,7 +76,7 @@ public class RemoveTagAction extends NodeAction {
                         facade.remove(tag);
                         return null;
                     }
-                }, null);
+                });
             }
         }
     }
