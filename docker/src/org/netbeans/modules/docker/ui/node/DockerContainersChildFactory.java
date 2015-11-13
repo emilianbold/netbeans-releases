@@ -55,6 +55,7 @@ import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -78,26 +79,26 @@ public class DockerContainersChildFactory extends ChildFactory<DockerContainer> 
         Collections.addAll(CHANGE_EVENTS, DockerEvent.Status.COPY, DockerEvent.Status.CREATE, DockerEvent.Status.DESTROY);
     }
 
+    private final RequestProcessor requestProcessor = new RequestProcessor(DockerContainersChildFactory.class);
+
     private final DockerInstance instance;
 
-    private DockerEvent lastEvent;
+    private final RequestProcessor.Task refreshTask;
 
     public DockerContainersChildFactory(DockerInstance instance) {
         this.instance = instance;
+        this.refreshTask = requestProcessor.create(new Runnable() {
+            @Override
+            public void run() {
+                LOGGER.log(Level.FINE, "Refreshing containers");
+                refresh();
+            }
+        });
         instance.getEventBus().addContainerListener(new DockerEvent.Listener() {
             @Override
             public void onEvent(DockerEvent event) {
                 if (CHANGE_EVENTS.contains(event.getStatus())) {
-                    DockerEvent previous;
-                    synchronized (DockerContainersChildFactory.this) {
-                        previous = lastEvent;
-                        lastEvent = event;
-                    }
-                    // FIXME sometimes from is different tag (yet same image)
-                    if (!event.equalsIgnoringTime(previous)) {
-                        LOGGER.log(Level.FINE, "Refreshing containers");
-                        refresh();
-                    }
+                    refreshTask.schedule(200);
                 }
             }
         });

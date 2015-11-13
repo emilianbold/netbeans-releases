@@ -54,6 +54,7 @@ import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.remote.DockerEvent;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -71,25 +72,28 @@ public class DockerImagesChildFactory extends ChildFactory<DockerTag> implements
         }
     };
 
+    private final RequestProcessor requestProcessor = new RequestProcessor(DockerImagesChildFactory.class);
+
     private final DockerInstance instance;
+
+    private final RequestProcessor.Task refreshTask;
 
     private DockerEvent lastEvent;
 
     public DockerImagesChildFactory(DockerInstance instance) {
         this.instance = instance;
+        this.refreshTask = requestProcessor.create(new Runnable() {
+            @Override
+            public void run() {
+                LOGGER.log(Level.FINE, "Refreshing images");
+                refresh();
+            }
+        });
         instance.getEventBus().addImageListener(new DockerEvent.Listener() {
             @Override
             public void onEvent(DockerEvent event) {
                 if (DockerEvent.Status.PUSH != event.getStatus()) {
-                    DockerEvent previous;
-                    synchronized (DockerImagesChildFactory.this) {
-                        previous = lastEvent;
-                        lastEvent = event;
-                    }
-                    if (!event.equalsIgnoringTime(previous)) {
-                        LOGGER.log(Level.FINE, "Refreshing images");
-                        refresh();
-                    }
+                    refreshTask.schedule(200);
                 }
             }
         });
