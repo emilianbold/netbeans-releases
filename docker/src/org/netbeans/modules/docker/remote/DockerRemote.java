@@ -92,6 +92,8 @@ import org.netbeans.modules.docker.DockerHubImage;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
+import org.openide.util.io.NullInputStream;
+import org.openide.util.io.NullOutputStream;
 
 /**
  *
@@ -405,6 +407,11 @@ public class DockerRemote {
                                 container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
             }
 
+            Integer length = HttpUtils.getLength(response.getHeaders());
+            if (length != null && length <= 0) {
+                closeSocket(s);
+                return new EmptyStreamResult(info.isTty());
+            }
             boolean chunked = HttpUtils.isChunked(response.getHeaders());
             if (chunked) {
                 is = new ChunkedInputStream(is);
@@ -1053,6 +1060,45 @@ public class DockerRemote {
         }
 
     }
+
+    private static class EmptyStreamResult implements StreamResult {
+
+        private final OutputStream os = new NullOutputStream();
+
+        private final InputStream is = new NullInputStream();
+
+        private final boolean tty;
+
+        public EmptyStreamResult(boolean tty) {
+            this.tty = tty;
+        }
+
+        @Override
+        public OutputStream getStdIn() {
+            return os;
+        }
+
+        @Override
+        public InputStream getStdOut() {
+            return is;
+        }
+
+        @Override
+        public InputStream getStdErr() {
+            return null;
+        }
+
+        @Override
+        public boolean hasTty() {
+            return tty;
+        }
+
+        @Override
+        public void close() throws IOException {
+            // noop
+        }
+    }
+
     public static interface ConnectionListener {
 
         void onConnect(HttpURLConnection connection);
