@@ -86,8 +86,6 @@ public final class UiUtils {
 
     private static final Logger LOGGER = Logger.getLogger(UiUtils.class.getName());
 
-    private static final RequestProcessor RP = new RequestProcessor("Docker Remote Action", 5);
-
     private static final int RESIZE_DELAY = 500;
 
     private static final Map<DockerContainer, LogConnect> LOGS = new WeakHashMap<>();
@@ -118,29 +116,6 @@ public final class UiUtils {
             }
         }
         return value;
-    }
-
-    public static void performRemoteAction(final String displayName, final Callable<Void> action) {
-        assert SwingUtilities.isEventDispatchThread();
-
-        final ProgressHandle handle = ProgressHandle.createHandle(displayName);
-        handle.start();
-        Runnable wrapped = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    action.call();
-                } catch (final Exception ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                    String msg = ex.getLocalizedMessage();
-                    NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(desc);
-                } finally {
-                    handle.finish();
-                }
-            }
-        };
-        RP.post(wrapped);
     }
 
     public static void openLog(DockerContainer container) throws DockerException {

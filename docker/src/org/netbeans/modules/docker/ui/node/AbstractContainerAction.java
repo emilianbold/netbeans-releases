@@ -89,7 +89,7 @@ public abstract class AbstractContainerAction extends NodeAction {
                     public void run() {
                         try {
                             performAction(container);
-                        } catch (final Exception ex) {
+                        } catch (Exception ex) {
                             LOGGER.log(Level.INFO, null, ex);
                             String msg = ex.getLocalizedMessage();
                             NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);

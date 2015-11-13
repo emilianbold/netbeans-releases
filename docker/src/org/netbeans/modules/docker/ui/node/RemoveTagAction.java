@@ -42,15 +42,20 @@
 package org.netbeans.modules.docker.ui.node;
 
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.ui.UiUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -58,6 +63,10 @@ import org.openide.util.actions.NodeAction;
  * @author Petr Hejl
  */
 public class RemoveTagAction extends NodeAction {
+
+    private static final Logger LOGGER = Logger.getLogger(RemoveTagAction.class.getName());
+
+    private final RequestProcessor requestProcessor = new RequestProcessor(RemoveTagAction.class);
 
     @NbBundle.Messages({
         "# {0} - image id",
@@ -68,15 +77,27 @@ public class RemoveTagAction extends NodeAction {
         for (final Node node : activatedNodes) {
             final DockerTag tag = node.getLookup().lookup(DockerTag.class);
             if (tag != null) {
-                UiUtils.performRemoteAction(Bundle.MSG_RemovingTag(DockerUtils.getShortId(tag.getId())), new Callable<Void>() {
+                final ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_RemovingTag(DockerUtils.getShortId(tag)));
+                handle.start();
+                Runnable task = new Runnable() {
                     @Override
-                    public Void call() throws Exception {
-                        DockerInstance instance = tag.getImage().getInstance();
-                        DockerRemote facade = new DockerRemote(instance);
-                        facade.remove(tag);
-                        return null;
+                    public void run() {
+                        try {
+                            DockerInstance instance = tag.getImage().getInstance();
+                            DockerRemote facade = new DockerRemote(instance);
+                            facade.remove(tag);
+                        } catch (Exception ex) {
+                            // FIXME offer force remove ?
+                            LOGGER.log(Level.INFO, null, ex);
+                            String msg = ex.getLocalizedMessage();
+                            NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(desc);
+                        } finally {
+                            handle.finish();
+                        }
                     }
-                });
+                };
+                requestProcessor.post(task);
             }
         }
     }
