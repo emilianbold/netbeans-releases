@@ -292,6 +292,7 @@ public class AnnotateAction extends ContextAction {
                     annotation.setDate(log.getDate());
                     annotation.setId(log.getCSetShortID());
                     annotation.setCommitMessage(log.getMessage());
+                    annotation.setAuthor(log.getAuthor());
                 }
             }
         }
