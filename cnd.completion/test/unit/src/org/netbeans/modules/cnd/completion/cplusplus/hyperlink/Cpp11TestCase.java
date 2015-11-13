@@ -413,4 +413,18 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         // Bug 244177 - Unresolved decltype inside decltype
         performTest("bug244177_2.cpp", 4, 30, "bug244177_2.h", 3, 9);
     }
+    
+    public void testBug256058() throws Exception {
+        // Bug 256058 - Unresolved items in editor of C++ Project With Existing Sources
+        performTest("bug256058.cpp", 84, 12, "bug256058.cpp", 15, 9);
+        performTest("bug256058.cpp", 85, 22, "bug256058.cpp", 22, 13);
+        performTest("bug256058.cpp", 88, 12, "bug256058.cpp", 75, 9);
+        performTest("bug256058.cpp", 91, 12, "bug256058.cpp", 71, 9);
+        performTest("bug256058.cpp", 94, 12, "bug256058.cpp", 38, 13);
+        performTest("bug256058.cpp", 97, 12, "bug256058.cpp", 52, 9);
+        performTest("bug256058.cpp", 98, 12, "bug256058.cpp", 30, 13);
+        performTest("bug256058.cpp", 101, 12, "bug256058.cpp", 38, 13);
+        performTest("bug256058.cpp", 104, 12, "bug256058.cpp", 60, 9);
+        performTest("bug256058.cpp", 107, 12, "bug256058.cpp", 47, 13);
+    }
 }
