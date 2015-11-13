@@ -165,7 +165,7 @@ public class GulpExecutable {
         final GulpTasksLineProcessor gulpTasksLineProcessor = new GulpTasksLineProcessor();
         Future<Integer> task = getExecutable("list gulp tasks") // NOI18N
                 .noInfo(true)
-                .additionalParameters(Arrays.asList(NO_COLOR_PARAM, SILENT_PARAM, TASKS_PARAM))
+                .additionalParameters(getParams(Arrays.asList(NO_COLOR_PARAM, SILENT_PARAM, TASKS_PARAM)))
                 .redirectErrorStream(false)
                 .run(getSilentDescriptor(), new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override

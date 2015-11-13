@@ -163,7 +163,7 @@ public class GruntExecutable {
         final GruntTasksLineProcessor gruntTasksLineProcessor = new GruntTasksLineProcessor();
         Future<Integer> task = getExecutable("list grunt tasks") // NOI18N
                 .noInfo(true)
-                .additionalParameters(Arrays.asList(NO_COLOR_PARAM, HELP_PARAM))
+                .additionalParameters(getParams(Arrays.asList(NO_COLOR_PARAM, HELP_PARAM)))
                 .redirectErrorStream(false)
                 .run(getSilentDescriptor(), new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override
