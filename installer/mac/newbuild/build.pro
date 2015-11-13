@@ -45,10 +45,10 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="Dev JDK9 branch"/>
-    <property name="baseide.id" value="Dev_JDK9_branch"/>
-    <property name="appname" value="NetBeans Dev JDK9 branch ${buildnumber}"/> 
-    <property name="mpkg.name_nb" value="NetBeans Dev JDK9 branch ${buildnumber}"/> 
+    <property name="baseide.version" value="Dev"/>
+    <property name="baseide.id" value="Dev"/>
+    <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
+    <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
@@ -58,9 +58,9 @@
     <!-- Unique ID in db/receipts for release build -->
     <!--<property name="nb.id" value="${baseide.id}"/>-->
 
-    <property name="appversion" value="Dev JDK9 branch"/>
-    <property name="nb.display.version.long"  value="Dev JDK9 branch ${buildnumber}"/>
-    <property name="nb.display.version.short" value="Dev JDK9 branch"/>
+    <property name="appversion" value="Development Version"/>
+    <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
+    <property name="nb.display.version.short" value="Dev"/>
 
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="8.0.27"/>
