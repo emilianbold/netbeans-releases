@@ -70,7 +70,8 @@ import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.openide.awt.StatusDisplayer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
@@ -120,6 +121,8 @@ public final class UiUtils {
     }
 
     public static void performRemoteAction(final String displayName, final Callable<Void> action) {
+        assert SwingUtilities.isEventDispatchThread();
+
         final ProgressHandle handle = ProgressHandle.createHandle(displayName);
         handle.start();
         Runnable wrapped = new Runnable() {
@@ -128,24 +131,16 @@ public final class UiUtils {
                 try {
                     action.call();
                 } catch (final Exception ex) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            // FIXME dialog ?
-                            LOGGER.log(Level.WARNING, null, ex);
-                            StatusDisplayer.getDefault().setStatusText(ex.getMessage());
-                        }
-                    });
+                    LOGGER.log(Level.INFO, null, ex);
+                    String msg = ex.getLocalizedMessage();
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
                 } finally {
                     handle.finish();
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            RP.post(wrapped);
-        } else {
-            wrapped.run();
-        }
+        RP.post(wrapped);
     }
 
     public static void openLog(DockerContainer container) throws DockerException {

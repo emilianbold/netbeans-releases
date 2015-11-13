@@ -55,7 +55,7 @@ public class ShowLogAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_ShowLogAction=Show Log")
     public ShowLogAction() {
-        super(Bundle.LBL_ShowLogAction(), null);
+        super(Bundle.LBL_ShowLogAction());
     }
 
     @NbBundle.Messages({

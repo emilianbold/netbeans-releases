@@ -41,16 +41,16 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
-import java.util.concurrent.Callable;
-import org.netbeans.modules.docker.ContainerStatus;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.DockerContainer;
-import org.netbeans.modules.docker.DockerInstance;
-import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerException;
-import org.netbeans.modules.docker.ui.UiUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -59,18 +59,19 @@ import org.openide.util.actions.NodeAction;
  */
 public abstract class AbstractContainerAction extends NodeAction {
 
+    private static final Logger LOGGER = Logger.getLogger(AbstractContainerAction.class.getName());
+
+    private final RequestProcessor requestProcessor = new RequestProcessor(AbstractContainerAction.class);
+
     private final String name;
 
-    private final DockerEvent.Status status;
-
-    public AbstractContainerAction(String name, DockerEvent.Status status) {
+    public AbstractContainerAction(String name) {
         this.name = name;
-        this.status = status;
     }
 
-    protected abstract String getProgressMessage(DockerContainer container);
-
     protected abstract void performAction(DockerContainer container) throws DockerException;
+
+    protected abstract String getProgressMessage(DockerContainer container);
 
     protected boolean isEnabled(DockerContainer container) {
         return true;
@@ -81,20 +82,24 @@ public abstract class AbstractContainerAction extends NodeAction {
         for (final Node node : activatedNodes) {
             final DockerContainer container = node.getLookup().lookup(DockerContainer.class);
             if (container != null) {
-                UiUtils.performRemoteAction(name, new Callable<Void>() {
+                final ProgressHandle handle = ProgressHandle.createHandle(getProgressMessage(container));
+                handle.start();
+                Runnable task = new Runnable() {
                     @Override
-                    public Void call() throws Exception {
-                        performAction(container);
-                        if (status != null) {
-                            // just to be sure we do not miss the update
-                            ContainerStatus containerStatus = DockerUtils.getContainerStatus(status);
-                            if (containerStatus != null) {
-                                container.setStatus(containerStatus);
-                            }
+                    public void run() {
+                        try {
+                            performAction(container);
+                        } catch (final Exception ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                            String msg = ex.getLocalizedMessage();
+                            NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(desc);
+                        } finally {
+                            handle.finish();
                         }
-                        return null;
                     }
-                });
+                };
+                requestProcessor.post(task);
             }
         }
     }
@@ -103,17 +108,14 @@ public abstract class AbstractContainerAction extends NodeAction {
     protected final boolean enable(Node[] activatedNodes) {
         for (Node node : activatedNodes) {
             DockerContainer container = node.getLookup().lookup(DockerContainer.class);
-            if (container == null) {
+            if (container == null || !isEnabled(container)) {
                 return false;
-            } else {
-                if (!isEnabled(container)) {
-                    return false;
-                }
             }
         }
         return true;
     }
 
+    @Override
     public final String getName() {
         return name;
     }
@@ -124,7 +126,7 @@ public abstract class AbstractContainerAction extends NodeAction {
     }
 
     @Override
-    protected boolean asynchronous() {
+    protected final boolean asynchronous() {
         return false;
     }
 }

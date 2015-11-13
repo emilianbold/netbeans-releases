@@ -46,7 +46,6 @@ import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.remote.DockerEvent;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.openide.util.NbBundle;
@@ -59,7 +58,7 @@ public class AttachContainerAction extends AbstractContainerAction {
 
     @NbBundle.Messages("LBL_AttachContainerAction=Attach")
     public AttachContainerAction() {
-        super(Bundle.LBL_AttachContainerAction(), DockerEvent.Status.ATTACH);
+        super(Bundle.LBL_AttachContainerAction());
     }
 
     @NbBundle.Messages({
