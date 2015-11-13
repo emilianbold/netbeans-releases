@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
@@ -49,7 +48,6 @@ import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
