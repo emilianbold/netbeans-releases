@@ -68,7 +68,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -257,7 +256,7 @@ public class DockerRemote {
             throw new DockerException(ex);
         }
     }
-    
+
     public DockerTag tag(DockerTag source, String repository, String tag, boolean force) throws DockerException {
         if (repository == null) {
             throw new IllegalArgumentException("Repository can't be empty");
@@ -393,10 +392,10 @@ public class DockerRemote {
             os.flush();
 
             InputStream is = s.getInputStream();
-            Pair<Integer, String> response = HttpUtils.readResponse(is);
-            int responseCode = response.first();
+            HttpUtils.Response response = HttpUtils.readResponse(is);
+            int responseCode = response.getCode();
             if (responseCode != 101 && responseCode != HttpURLConnection.HTTP_OK) {
-                throw new DockerRemoteException(responseCode, response.second());
+                throw new DockerRemoteException(responseCode, response.getMessage());
             }
 
             if (emitEvents) {
@@ -405,7 +404,7 @@ public class DockerRemote {
                                 container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
             }
 
-            boolean chunked = HttpUtils.isChunked(HttpUtils.parseHeaders(is));
+            boolean chunked = HttpUtils.isChunked(response.getHeaders());
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
@@ -548,13 +547,12 @@ public class DockerRemote {
             Future<Void> task = new FolderUploader(os).upload(buildContext);
 
             InputStream is = s.getInputStream();
-            Pair<Integer, String> response = HttpUtils.readResponse(is);
-            Map<String, String> headers = HttpUtils.parseHeaders(is);
-            int responseCode = response.first();
+            HttpUtils.Response response = HttpUtils.readResponse(is);
+            int responseCode = response.getCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 task.cancel(true);
-                Integer length = HttpUtils.getLength(headers);
-                String error = response.second();
+                Integer length = HttpUtils.getLength(response.getHeaders());
+                String error = response.getMessage();
                 if (length != null && length > 0) {
                     error = HttpUtils.readContent(is, length, "UTF-8");
                 }
@@ -575,7 +573,7 @@ public class DockerRemote {
                 throw new DockerException(ex.getCause());
             }
 
-            boolean chunked = HttpUtils.isChunked(headers);
+            boolean chunked = HttpUtils.isChunked(response.getHeaders());
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
@@ -707,20 +705,19 @@ public class DockerRemote {
             os.flush();
 
             InputStream is = s.getInputStream();
-            Pair<Integer, String> response = HttpUtils.readResponse(is);
-            int responseCode = response.first();
+            HttpUtils.Response response = HttpUtils.readResponse(is);
+            int responseCode = response.getCode();
             if (responseCode != 101 && responseCode != HttpURLConnection.HTTP_OK) {
-                throw new DockerRemoteException(responseCode, response.second());
+                throw new DockerRemoteException(responseCode, response.getMessage());
             }
 
-            Map<String, String> headers = HttpUtils.parseHeaders(is);
-            boolean chunked = HttpUtils.isChunked(headers);
+            boolean chunked = HttpUtils.isChunked(response.getHeaders());
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
 
             StreamItem.Fetcher fetcher;
-            Integer length = HttpUtils.getLength(headers);
+            Integer length = HttpUtils.getLength(response.getHeaders());
             // if there was no log it may return just standard reply with content length 0
             if (length != null && length == 0) {
                 assert !chunked;
@@ -765,16 +762,15 @@ public class DockerRemote {
             os.flush();
 
             InputStream is = s.getInputStream();
-            Pair<Integer, String> response = HttpUtils.readResponse(is);
-            if (response.first() != HttpURLConnection.HTTP_CREATED) {
-                throw new DockerRemoteException(response.first(), response.second());
+            HttpUtils.Response response = HttpUtils.readResponse(is);
+            if (response.getCode() != HttpURLConnection.HTTP_CREATED) {
+                throw new DockerRemoteException(response.getCode(), response.getMessage());
             }
 
-            Map<String, String> headers = HttpUtils.parseHeaders(is);
-            Integer length = HttpUtils.getLength(headers);
+            Integer length = HttpUtils.getLength(response.getHeaders());
             assert length != null;
 
-            boolean chunked = HttpUtils.isChunked(headers);
+            boolean chunked = HttpUtils.isChunked(response.getHeaders());
             if (chunked) {
                 is = new ChunkedInputStream(is);
             }
@@ -796,8 +792,8 @@ public class DockerRemote {
             os.flush();
 
             response = HttpUtils.readResponse(is);
-            if (response.first() != HttpURLConnection.HTTP_NO_CONTENT) {
-                throw new DockerRemoteException(response.first(), response.second());
+            if (response.getCode() != HttpURLConnection.HTTP_NO_CONTENT) {
+                throw new DockerRemoteException(response.getCode(), response.getMessage());
             }
 
             return Pair.of(container, r);

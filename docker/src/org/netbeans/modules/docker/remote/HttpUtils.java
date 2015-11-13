@@ -86,7 +86,7 @@ public final class HttpUtils {
         return null;
     }
 
-    public static Pair<Integer, String> readResponse(InputStream is) throws IOException {
+    public static Response readResponse(InputStream is) throws IOException {
         String response = HttpUtils.readResponseLine(is);
         if (response == null) {
             throw new IOException("No response from server");
@@ -97,29 +97,9 @@ public final class HttpUtils {
         }
 
         int responseCode = Integer.parseInt(m.group(1));
-        return Pair.of(responseCode, m.group(2));
-    }
-
-    public static Map<String, String> parseHeaders(InputStream is) throws IOException {
-        Map<String, String> result = new HashMap<>();
-        String line;
-        for (;;) {
-            line = HttpUtils.readResponseLine(is).trim();
-            if (line != null && !"".equals(line)) {
-                int index = line.indexOf(':'); // NOI18N
-                if (index <= 0) {
-                    throw new IOException("Invalid header: " + line);
-                }
-                if (index == line.length() - 1) {
-                    // XXX empty header ?
-                    continue;
-                }
-                result.put(line.substring(0, index).toUpperCase(Locale.ENGLISH).trim(), line.substring(index + 1).trim());
-            } else {
-                break;
-            }
-        }
-        return result;
+        String message = m.group(2);
+        Map<String, String> headers = parseHeaders(is);
+        return new Response(responseCode, message, headers);
     }
 
     public static String readContent(InputStream is, int length, String encoding) throws IOException {
@@ -154,5 +134,54 @@ public final class HttpUtils {
 
     public static String encodeParameter(String value) throws UnsupportedEncodingException {
         return URLEncoder.encode(value, "UTF-8");
+    }
+
+    private static Map<String, String> parseHeaders(InputStream is) throws IOException {
+        Map<String, String> result = new HashMap<>();
+        String line;
+        for (;;) {
+            line = HttpUtils.readResponseLine(is).trim();
+            if (line != null && !"".equals(line)) {
+                int index = line.indexOf(':'); // NOI18N
+                if (index <= 0) {
+                    throw new IOException("Invalid header: " + line);
+                }
+                if (index == line.length() - 1) {
+                    // XXX empty header ?
+                    continue;
+                }
+                result.put(line.substring(0, index).toUpperCase(Locale.ENGLISH).trim(), line.substring(index + 1).trim());
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    public static class Response {
+
+        private final int code;
+
+        private final String message;
+
+        private final Map<String, String> headers;
+
+        Response(int code, String message, Map<String, String> headers) {
+            this.code = code;
+            this.message = message;
+            this.headers = headers;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Map<String, String> getHeaders() {
+            return headers;
+        }
     }
 }
