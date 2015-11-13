@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
-import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -150,15 +149,15 @@ public final class DeepReparsingUtils {
                     );
         }
         // signature have changed => full reparse is needed
-        DeepReparsingUtils.reparseOnChangedFileImpl(fileImpl.getProjectImpl(true), fileImpl, false, lastFileBasedSignature);
+        DeepReparsingUtils.fullReparseOnChangedFile(fileImpl.getProjectImpl(true), fileImpl);
         return false;
     }
 
     static void fullReparseOnChangedFile(final ProjectBase changedFileProject, final FileImpl fileImpl) {
-        reparseOnChangedFileImpl(changedFileProject, fileImpl, false, null);
+        reparseOnChangedFileImpl(changedFileProject, fileImpl, false);
     }
 
-    private static void reparseOnChangedFileImpl(final ProjectBase changedFileProject, final FileImpl changedFile, boolean contentChanged, FileContentSignature lastFileBasedSignature) {
+    private static void reparseOnChangedFileImpl(final ProjectBase changedFileProject, final FileImpl changedFile, boolean contentChanged) {
         if (TRACE) {
             LOG.log(Level.INFO, "full reparseOnChangedFile {0}", changedFile.getAbsolutePath());
         }
@@ -172,37 +171,9 @@ public final class DeepReparsingUtils {
         Set<CsmFile> parents = top.getParentFiles();
         if (cuStartFiles.size() > 0) {
             changedFile.clearStateCache();
-            GraphContainer.CoherenceFiles coherence = changedFileProject.getGraph().getCoherenceFiles(changedFile);
-            Set<CsmFile> coherenceFiles = coherence.getCoherenceFiles();
-            Set<CsmFile> affectedFiles = coherenceFiles;
-            if (lastFileBasedSignature != null) {
-                GraphContainer.CoherenceFiles oldCoherence = lastFileBasedSignature.getCoherenceFiles();
-                Set<CsmFile> oldCoherenceFiles = oldCoherence.getCoherenceFiles();
-                oldCoherenceFiles.removeAll(coherenceFiles);
-                for (CsmFile file : oldCoherenceFiles) {
-                    FileImpl impl = (FileImpl)file;
-                    ParentFiles orphanCandidateTop = changedFileProject.getGraph().getTopParentFiles(impl);
-                    Set<CsmFile> parentOrphanFiles = orphanCandidateTop.getParentFiles();
-                    if (parentOrphanFiles.size() == 1 && parentOrphanFiles.contains(impl)) {
-                        // header is orphan now
-                        invalidateFileAndPreprocState(changedFileProject, impl);
-                        changedFileProject.markAsParsingPreprocStates(impl);
-                        if (scheduleParsing) {
-                            ParserQueue.instance().add(impl, changedFileProject.getPreprocHandlersForParse(impl, Interrupter.DUMMY), ParserQueue.Position.HEAD);
-                        }
-                    } else {
-                        // header probably changed context add them to affected files collection
-                        Set<CsmFile> startFilesForRemainingDetached = orphanCandidateTop.getCompilationUnits();
-                        GraphContainer.CoherenceFiles coherenceOfDetached = changedFileProject.getGraph().getCoherenceFiles(impl);
-                        Set<CsmFile> coherenceOfDetachedFiles = coherenceOfDetached.getCoherenceFiles();
-                        cuStartFiles.addAll(startFilesForRemainingDetached);
-                        affectedFiles.addAll(coherenceOfDetachedFiles);
-                    }
-                }
-            }
-            // update affected files
-            updateStartFilesWithBestStartFiles(affectedFiles, cuStartFiles);
-            for (CsmFile file : affectedFiles) {
+            Set<CsmFile> coherence = changedFileProject.getGraph().getCoherenceFiles(changedFile).getCoherenceFiles();
+            updateStartFilesWithBestStartFiles(coherence, cuStartFiles);
+            for (CsmFile file : coherence) {
                 if (cuStartFiles.contains(file)) {
                     ((FileImpl)file).clearStateCache();
                 } else if (parents.contains(file)) {
