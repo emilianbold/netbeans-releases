@@ -446,7 +446,9 @@ public class DockerRemote {
                 conn.setRequestProperty("Accept", "application/json");
 
                 if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
+                    String error = HttpUtils.readError(conn);
+                    throw new DockerRemoteException(conn.getResponseCode(),
+                            error != null ? error : conn.getResponseMessage());
                 }
 
                 if (connectionListener != null) {
@@ -655,7 +657,9 @@ public class DockerRemote {
                 conn.setRequestProperty("Accept", "application/json");
 
                 if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
+                    String error = HttpUtils.readError(conn);
+                    throw new DockerRemoteException(conn.getResponseCode(),
+                            error != null ? error : conn.getResponseMessage());
                 }
 
                 if (connectionListener != null) {
@@ -828,7 +832,9 @@ public class DockerRemote {
                 conn.setRequestProperty("Accept", "application/json");
 
                 if (!okCodes.contains(conn.getResponseCode())) {
-                    throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
+                    String error = HttpUtils.readError(conn);
+                    throw new DockerRemoteException(conn.getResponseCode(),
+                            error != null ? error : conn.getResponseMessage());
                 }
 
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -868,7 +874,9 @@ public class DockerRemote {
                 }
 
                 if (!okCodes.contains(conn.getResponseCode())) {
-                    throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
+                    String error = HttpUtils.readError(conn);
+                    throw new DockerRemoteException(conn.getResponseCode(),
+                            error != null ? error : conn.getResponseMessage());
                 }
 
                 if (output) {
@@ -902,12 +910,13 @@ public class DockerRemote {
             try {
                 conn.setRequestMethod("DELETE");
                 conn.setRequestProperty("Accept", "application/json");
-                conn.setDoOutput(true);
                 conn.setRequestProperty("Content-Type",
                         "application/x-www-form-urlencoded" );
 
                 if (!okCodes.contains(conn.getResponseCode())) {
-                    throw new DockerRemoteException(conn.getResponseCode(), conn.getResponseMessage());
+                    String error = HttpUtils.readError(conn);
+                    throw new DockerRemoteException(conn.getResponseCode(),
+                            error != null ? error : conn.getResponseMessage());
                 }
 
                 if (output) {

@@ -45,6 +45,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -110,25 +111,7 @@ public final class HttpUtils {
         if (length == null || length == 0) {
             return null;
         }
-        Charset encoding = Charset.forName("UTF-8"); // NOI18N
-        String type = response.getHeaders().get("CONTENT-TYPE"); // NOI18N
-        if (type != null) {
-            String[] parts = type.trim().split(";"); // NOI18N
-            for (String p : parts) {
-                String upper = p.toUpperCase(Locale.ENGLISH);
-                if (upper.startsWith("CHARSET")) { // NOI18N
-                    int index = upper.indexOf("=", 7); // NOI18N
-                    if (index > 0 && index < upper.length() -1) {
-                        try {
-                            encoding = Charset.forName(upper.substring(index + 1).trim());
-                        } catch (UnsupportedCharsetException ex) {
-                            // noop using the UTF-8
-                        }
-                    }
-                }
-            }
-        }
-
+        Charset encoding = getCharset(response.getHeaders().get("CONTENT-TYPE")); // NOI18N
         byte[] content = new byte[length];
         int count = 0;
         do {
@@ -139,6 +122,21 @@ public final class HttpUtils {
              count += current;
         } while (count < length);
         return new String(content, encoding);
+    }
+
+    public static String readError(HttpURLConnection conn) throws IOException {
+        InputStream err = conn.getErrorStream();
+        if (err == null || err.available() <= 0) {
+            return null;
+        }
+        Charset encoding = getCharset(conn.getContentType());
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(200);
+        byte[] content = new byte[200];
+        int length;
+        while((length = err.read(content)) != -1) {
+            bos.write(content, 0, length);
+        }
+        return bos.toString(encoding.name());
     }
 
     public static boolean isChunked(Map<String, String> headers) {
@@ -182,6 +180,28 @@ public final class HttpUtils {
             }
         }
         return result;
+    }
+
+    private static Charset getCharset(String contentType) {
+        Charset encoding = Charset.forName("UTF-8"); // NOI18N
+        if (contentType != null) {
+            String[] parts = contentType.trim().split(";"); // NOI18N
+            for (String p : parts) {
+                String upper = p.toUpperCase(Locale.ENGLISH);
+                if (upper.startsWith("CHARSET")) { // NOI18N
+                    int index = upper.indexOf("=", 7); // NOI18N
+                    if (index > 0 && index < upper.length() -1) {
+                        try {
+                            encoding = Charset.forName(upper.substring(index + 1).trim());
+                        } catch (UnsupportedCharsetException ex) {
+                            // noop using the UTF-8
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return encoding;
     }
 
     public static class Response {
