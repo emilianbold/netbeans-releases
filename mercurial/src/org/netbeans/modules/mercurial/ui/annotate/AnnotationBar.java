@@ -1031,7 +1031,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     private String getDisplayName(AnnotateLine line) {
-        return line.getRevision() + "  " + line.getAuthor(); // NOI18N
+        return line.getRevision() + "  " + line.getUsername(); // NOI18N
     }
 
     /**
