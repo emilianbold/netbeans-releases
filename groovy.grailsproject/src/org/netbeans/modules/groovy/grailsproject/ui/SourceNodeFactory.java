@@ -67,7 +67,8 @@ import org.openide.util.ChangeSupport;
  *
  * @author Martin Adamek, Martin Janicek
  */
-@NodeFactory.Registration(projectType = "org-netbeans-modules-groovy-grailsproject")
+@NodeFactory.Registration(projectType = "org-netbeans-modules-groovy-grailsproject",
+                          position=100)
 public class SourceNodeFactory implements NodeFactory {
 
     public SourceNodeFactory() {

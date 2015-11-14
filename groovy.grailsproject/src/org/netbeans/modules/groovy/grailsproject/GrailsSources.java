@@ -105,6 +105,12 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             "integration", // NOI18N
             "reports" // NOI18N
             );
+    
+    // these are working folders that we should hide from the project tree:
+    public static final List IGNORED_FOLDERS_IN_GRAILS_APP = Arrays.asList(
+            "target", // NOI18N
+            "gradle" // NOI18N
+            );
 
     private final FileObject projectDir;
 
@@ -168,6 +174,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
                 if (child.isFolder()
                         && VisibilityQuery.getDefault().isVisible(child)
                         && !KNOWN_FOLDERS.contains(child.getName())
+                        && !IGNORED_FOLDERS_IN_GRAILS_APP.contains(child.getName())
                         && child != pluginsDir
                         && child != globalPluginsDir) {
                     String name = child.getName();
