@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import static org.netbeans.modules.cnd.apt.utils.APTUtils.SCOPE;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
@@ -411,6 +412,17 @@ public final class Resolver3 implements Resolver {
                 result = findClassifierUsedInFile(fqn, outVisibility);
                 if (result != null && outVisibility.get()) {
                     break;
+                } else {
+                    CsmNamespace refNs = udir.getReferencedNamespace();
+                    if (refNs != null) {
+                        fqn = new StringBuilder(refNs.getQualifiedName())
+                            .append(SCOPE)
+                            .append(nameToken).toString();
+                        result = findClassifierUsedInFile(fqn, outVisibility);
+                        if (result != null && outVisibility.get()) {
+                            break;
+                        }
+                    }
                 }
             }
         }
