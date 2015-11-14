@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Objects;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -82,6 +83,8 @@ import org.openide.util.lookup.ServiceProvider;
     "SnapshotsOptionsPanel_ItemSaveToTemp=Save to temporary directory",
     "SnapshotsOptionsPanel_ItemSaveToCustom=Save to custom directory:",
     "SnapshotsOptionsPanel_ChooseCustomDir=...",
+    "SnapshotsOptionsPanel_RestoreSnapshots=&Restore open snapshots on new IDE session",
+    "SnapshotsOptionsPanel_RestoreHeapDumps=Re&store open heap dumps on new IDE session",
     "SnapshotsOptionsPanel_CatSnapshotsWindow=Snapshots Window",
     "SnapshotsOptionsPanel_OpenAutomaticallyLabel=O&pen automatically:",
     "SnapshotsOptionsPanel_ItemNever=Never",
@@ -102,6 +105,8 @@ public final class SnapshotsOptionsPanel extends ProfilerOptionsPanel {
     private JComboBox onOOMEHeapDumpCombo;
     private JTextField customOOMEField;
     private JButton customOOMEButton;
+    private JCheckBox restoreSnapshotChoice;
+    private JCheckBox restoreHeapDumpsChoice;
     private JComboBox openSnapshotsWindowCombo;
     private JComboBox closeSnapshotsWindowCombo;
     
@@ -134,6 +139,8 @@ public final class SnapshotsOptionsPanel extends ProfilerOptionsPanel {
         
         settings.setOOMDetectionMode(onOOMEHeapDumpCombo.getSelectedIndex());
         settings.setCustomHeapdumpPath(customDir);
+        settings.setReopenSnapshots(restoreSnapshotChoice.isSelected());
+        settings.setReopenHeapDumps(restoreHeapDumpsChoice.isSelected());
         
         settings.setSnapshotWindowOpenPolicy(openSnapshotsWindowCombo.getSelectedIndex());
         settings.setSnapshotWindowClosePolicy(closeSnapshotsWindowCombo.getSelectedIndex());
@@ -157,6 +164,8 @@ public final class SnapshotsOptionsPanel extends ProfilerOptionsPanel {
         }
         onOOMEHeapDumpCombo.setSelectedIndex(oomeMode);
         customOOMEField.setText(customDir);
+        restoreSnapshotChoice.setSelected(settings.getReopenSnapshots());
+        restoreHeapDumpsChoice.setSelected(settings.getReopenHeapDumps());
         
         openSnapshotsWindowCombo.setSelectedIndex(settings.getSnapshotWindowOpenPolicy());
         closeSnapshotsWindowCombo.setSelectedIndex(settings.getSnapshotWindowClosePolicy());
@@ -174,6 +183,8 @@ public final class SnapshotsOptionsPanel extends ProfilerOptionsPanel {
         
         if (settings.getOOMDetectionMode() != onOOMEHeapDumpCombo.getSelectedIndex()) return false;
         if (!Objects.equals(settings.getCustomHeapdumpPath(), customOOMEField.getText().trim())) return false;
+        if (settings.getReopenSnapshots() != restoreSnapshotChoice.isSelected()) return false;
+        if (settings.getReopenHeapDumps() != restoreHeapDumpsChoice.isSelected()) return false;
         
         if (settings.getSnapshotWindowOpenPolicy() != openSnapshotsWindowCombo.getSelectedIndex()) return false;
         if (settings.getSnapshotWindowClosePolicy() != closeSnapshotsWindowCombo.getSelectedIndex()) return false;
@@ -360,6 +371,26 @@ public final class SnapshotsOptionsPanel extends ProfilerOptionsPanel {
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.fill = GridBagConstraints.HORIZONTAL;
         add(filler5, c);
+        
+        restoreSnapshotChoice = new JCheckBox();
+        Mnemonics.setLocalizedText(restoreSnapshotChoice, Bundle.SnapshotsOptionsPanel_RestoreSnapshots());
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(vgap * 3, htab, vgap, 0);
+        add(restoreSnapshotChoice, c);
+        
+        restoreHeapDumpsChoice = new JCheckBox();
+        Mnemonics.setLocalizedText(restoreHeapDumpsChoice, Bundle.SnapshotsOptionsPanel_RestoreHeapDumps());
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(restoreHeapDumpsChoice, c);
         
         Separator snapshotsWindowSeparator = new Separator(Bundle.SnapshotsOptionsPanel_CatSnapshotsWindow());
         c = new GridBagConstraints();
