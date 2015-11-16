@@ -150,11 +150,15 @@ public final class UiUtils {
                 if (!result.hasTty() && IOEmulation.isSupported(io)) {
                     IOEmulation.setDisciplined(io);
                 }
-                IOTerm.connect(io, stdin ? result.getStdIn() : null,
-                        new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr(), "UTF-8");
+
+                TerminalResizeListener l = null;
                 if (result.hasTty() && IOResizable.isSupported(io)) {
-                    IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
+                    l = new TerminalResizeListener(io, container);
+                    IONotifier.addPropertyChangeListener(io, l);
                 }
+
+                IOTerm.connect(io, stdin ? result.getStdIn() : null,
+                        new TerminalInputStream(io, result.getStdOut(), result, l), result.getStdErr(), "UTF-8");
                 focusTerminal(io);
             }
         } else {
@@ -210,6 +214,8 @@ public final class UiUtils {
 
         private static final RequestProcessor RP = new RequestProcessor(TerminalResizeListener.class);
 
+        private final InputOutput io;
+
         private final DockerContainer container;
 
         private final RequestProcessor.Task task;
@@ -219,7 +225,8 @@ public final class UiUtils {
 
         private boolean initial = true;
 
-        public TerminalResizeListener(DockerContainer container) {
+        public TerminalResizeListener(InputOutput io, DockerContainer container) {
+            this.io = io;
             this.container = container;
             this.task = RP.create(new Runnable() {
                 @Override
@@ -257,6 +264,9 @@ public final class UiUtils {
         @Override
         public void close() throws IOException {
             task.cancel();
+            if (IONotifier.isSupported(io)) {
+                IONotifier.removePropertyChangeListener(io, this);
+            }
         }
     }
 
@@ -303,7 +313,9 @@ public final class UiUtils {
         private void closeTerminal() {
             for (Closeable c : close) {
                 try {
-                    c.close();
+                    if (c != null) {
+                        c.close();
+                    }
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, null, ex);
                 }
