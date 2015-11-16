@@ -44,6 +44,7 @@ package org.netbeans.modules.docker.ui.tag;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.ui.Validations;
 import org.openide.NotificationLineSupport;
@@ -60,12 +61,14 @@ public class TagPanel extends javax.swing.JPanel {
     /**
      * Creates new form TagPanel
      */
-    public TagPanel() {
+    public TagPanel(DockerInstance instance) {
         initComponents();
 
         DefaultDocumentListener listener = new DefaultDocumentListener();
         ((JTextComponent) repositoryComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(listener);
         tagTextField.getDocument().addDocumentListener(listener);
+
+        UiUtils.loadRepositories(instance, repositoryComboBox);
     }
 
     public void setMessageLine(NotificationLineSupport messageLine) {
