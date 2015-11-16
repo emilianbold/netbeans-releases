@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.docker.ui.run;
 
-import java.awt.Component;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;

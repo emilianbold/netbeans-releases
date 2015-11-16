@@ -72,11 +72,19 @@ public class BuildImageWizard {
 
     public static final String BUILD_CONTEXT_PROPERTY = "buildContext";
 
-    public static final String DOCKERFILE_PROPERTY = "dockerfile";
-
     public static final String REPOSITORY_PROPERTY = "repository";
 
     public static final String TAG_PROPERTY = "tag";
+
+    public static final String DOCKERFILE_PROPERTY = "dockerfile";
+
+    public static final String PULL_PROPERTY = "pull";
+
+    public static final String NO_CACHE_PROPERTY = "noCache";
+
+    public static final boolean PULL_DEFAULT = false;
+
+    public static final boolean NO_CACHE_DEFAULT = false;
 
     private static final Logger LOGGER = Logger.getLogger(BuildImageAction.class.getName());
 
@@ -107,10 +115,14 @@ public class BuildImageWizard {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.LBL_BuildImage());
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
+            Boolean pull = (Boolean) wiz.getProperty(PULL_PROPERTY);
+            Boolean noCache = (Boolean) wiz.getProperty(NO_CACHE_PROPERTY);
             build(instance, (String) wiz.getProperty(BUILD_CONTEXT_PROPERTY),
                     (String) wiz.getProperty(DOCKERFILE_PROPERTY),
                     (String) wiz.getProperty(REPOSITORY_PROPERTY),
-                    (String) wiz.getProperty(TAG_PROPERTY));
+                    (String) wiz.getProperty(TAG_PROPERTY),
+                    pull != null ? pull : PULL_DEFAULT,
+                    noCache != null ? noCache : NO_CACHE_DEFAULT);
         }
     }
 
@@ -119,7 +131,8 @@ public class BuildImageWizard {
         "MSG_Building=Building {0}"
     })
     private void build(final DockerInstance instance, final String buildContext,
-            final String dockerfile, final String repository, final String tag) {
+            final String dockerfile, final String repository, final String tag,
+            final boolean pull, final boolean noCache) {
 
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
@@ -144,7 +157,8 @@ public class BuildImageWizard {
                         }
                     }
                     DockerRemote facade = new DockerRemote(instance);
-                    facade.build(new File(buildContext), file, repository, tag, new BuildEvent.Listener() {
+                    facade.build(new File(buildContext), file, repository, tag, pull, noCache,
+                            new BuildEvent.Listener() {
                         @Override
                         public void onEvent(BuildEvent event) {
                             if (event.isError()) {
