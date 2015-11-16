@@ -41,6 +41,7 @@ package org.netbeans.api.project.libraries;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -61,6 +62,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -420,23 +422,44 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
         }
     }
     
+    @NbBundle.Messages({"LBL_Importing=Importing..."})
     private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
-        Set<Library> libs = showChooser(LibraryManager.getDefault(), 
+        final Set<Library> libs = showChooser(LibraryManager.getDefault(), 
                 new IgnoreAlreadyImportedLibrariesFilter(), null, false);
-        if (libs != null) {
-            Set<Library> importedLibs = new HashSet<Library>();
-            try {
-                for (Library lib : libs) {
-                    importedLibs.add(importHandler.importLibrary(lib));
+        if (libs != null) {            
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        final Set<Library> importedLibs = new HashSet<Library>();
+                        for (Library lib : libs) {
+                            importedLibs.add(importHandler.importLibrary(lib));
+                        }
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                setRootNode();                                
+                                selectLibrary(importedLibs);
+                            }
+                        });
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        enableButtons(true);
+                    }
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            setRootNode();        
-            selectLibrary(importedLibs);
+            };
+            enableButtons(false);
+            BaseProgressUtils.showProgressDialogAndRun(r, Bundle.LBL_Importing());
         }
     }//GEN-LAST:event_importButtonActionPerformed
 
+    private void enableButtons(boolean enable) {
+        importButton.setEnabled(enable);
+        createButton.setEnabled(enable);
+        manageLibrariesButton.setEnabled(enable);
+    }
+    
     private class IgnoreAlreadyImportedLibrariesFilter implements LibraryChooser.Filter {
         public boolean accept(Library library) {
             return manager.getLibrary(library.getName()) == null;
