@@ -96,6 +96,12 @@ public class ChunkedInputStream extends FilterInputStream {
         return count;
     }
 
+    @Override
+    public int available() throws IOException {
+        // FIXME this is not really true as theoretically it might block anyway
+        return remaining;
+    }
+
     private int fetchData() throws IOException {
         if (finished) {
             return -1;

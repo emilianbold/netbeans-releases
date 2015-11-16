@@ -68,22 +68,6 @@ public final class DockerUtils {
         return id;
     }
 
-    public static String normalizeRepository(String repository) {
-        // XXX check validity ?
-        int index = repository.indexOf('/');
-        if (index <= 0) {
-            return repository;
-        }
-        String registry = repository.substring(0, index);
-        if ("index.docker.io".equals(registry) || "docker.io".equals(registry)) { // NOI18N
-            if (index + 1 == repository.length()) {
-                return "";
-            }
-            return repository.substring(index + 1);
-        }
-        return repository;
-    }
-
     public static String getImage(DockerTag tag) {
         String id = tag.getTag();
         if (id.equals("<none>:<none>")) { // NOI18N

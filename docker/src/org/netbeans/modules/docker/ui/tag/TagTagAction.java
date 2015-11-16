@@ -77,7 +77,7 @@ public class TagTagAction extends NodeAction {
         if (tag != null) {
             JButton tagButton = new JButton();
             Mnemonics.setLocalizedText(tagButton, Bundle.LBL_Tag());
-            TagPanel panel = new TagPanel();
+            TagPanel panel = new TagPanel(tag.getImage().getInstance());
 
             DialogDescriptor descriptor
                     = new DialogDescriptor(panel, Bundle.LBL_TagTag(tag.getTag()),

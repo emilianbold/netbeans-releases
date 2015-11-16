@@ -48,7 +48,10 @@ import java.io.Closeable;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -59,6 +62,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.DockerImage;
+import org.netbeans.modules.docker.DockerInstance;
+import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
@@ -113,6 +119,44 @@ public final class UiUtils {
         }
         return value;
     }
+    
+    public static void loadRepositories(final DockerInstance instance, final JComboBox<String> combo) {
+        assert SwingUtilities.isEventDispatchThread();
+
+        if (!(combo.getEditor().getEditorComponent() instanceof JTextComponent)) {
+            return;
+        }
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                DockerRemote facade = new DockerRemote(instance);
+                List<DockerImage> images = facade.getImages();
+                final Set<String> repositories = new TreeSet<>();
+                for (DockerImage image : images) {
+                    for (DockerTag tag : image.getTags()) {
+                        int index = tag.getTag().lastIndexOf(':'); // NOI18N
+                        if (index > 0) {
+                            repositories.add(tag.getTag().substring(0, index));
+                        }
+                    }
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        // FIXME can we load items without clearing editor
+                        if (UiUtils.getValue(combo) == null) {
+                            int i = 0;
+                            for (String repo : repositories) {
+                                combo.insertItemAt(repo, i++);
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+    }
 
     public static void openLog(DockerContainer container) throws DockerException {
         LogConnect logIO = getLogInputOutput(container);
@@ -150,11 +194,15 @@ public final class UiUtils {
                 if (!result.hasTty() && IOEmulation.isSupported(io)) {
                     IOEmulation.setDisciplined(io);
                 }
-                IOTerm.connect(io, stdin ? result.getStdIn() : null,
-                        new TerminalInputStream(io, result.getStdOut(), result), result.getStdErr(), "UTF-8");
+
+                TerminalResizeListener l = null;
                 if (result.hasTty() && IOResizable.isSupported(io)) {
-                    IONotifier.addPropertyChangeListener(io, new TerminalResizeListener(container));
+                    l = new TerminalResizeListener(io, container);
+                    IONotifier.addPropertyChangeListener(io, l);
                 }
+
+                IOTerm.connect(io, stdin ? result.getStdIn() : null,
+                        new TerminalInputStream(io, result.getStdOut(), result, l), result.getStdErr(), "UTF-8");
                 focusTerminal(io);
             }
         } else {
@@ -210,6 +258,8 @@ public final class UiUtils {
 
         private static final RequestProcessor RP = new RequestProcessor(TerminalResizeListener.class);
 
+        private final InputOutput io;
+
         private final DockerContainer container;
 
         private final RequestProcessor.Task task;
@@ -219,7 +269,8 @@ public final class UiUtils {
 
         private boolean initial = true;
 
-        public TerminalResizeListener(DockerContainer container) {
+        public TerminalResizeListener(InputOutput io, DockerContainer container) {
+            this.io = io;
             this.container = container;
             this.task = RP.create(new Runnable() {
                 @Override
@@ -257,6 +308,9 @@ public final class UiUtils {
         @Override
         public void close() throws IOException {
             task.cancel();
+            if (IONotifier.isSupported(io)) {
+                IONotifier.removePropertyChangeListener(io, this);
+            }
         }
     }
 
@@ -303,7 +357,9 @@ public final class UiUtils {
         private void closeTerminal() {
             for (Closeable c : close) {
                 try {
-                    c.close();
+                    if (c != null) {
+                        c.close();
+                    }
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, null, ex);
                 }

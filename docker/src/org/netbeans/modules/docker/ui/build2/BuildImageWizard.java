@@ -89,8 +89,8 @@ public class BuildImageWizard {
     @NbBundle.Messages("LBL_BuildImage=Build Image")
     public void show() {
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
-        panels.add(new BuildContextPanel());
-        panels.add(new BuildOptionsPanel());
+        panels.add(new BuildContextPanel(instance));
+        panels.add(new BuildOptionsPanel(instance));
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
             JComponent c = (JComponent) panels.get(i).getComponent();

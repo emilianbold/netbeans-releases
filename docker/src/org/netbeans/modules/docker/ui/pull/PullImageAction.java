@@ -126,7 +126,7 @@ public class PullImageAction extends NodeAction {
                     io.getOut().reset();
                     io.select();
                     DockerRemote facade = new DockerRemote(instance);
-                    facade.pull(image, new PullOutputListener(io), null);
+                    facade.pull(image, new PullOutputListener(io));
                 } catch (DockerException ex) {
                     io.getErr().println(ex.getMessage());
                 } catch (IOException ex) {
