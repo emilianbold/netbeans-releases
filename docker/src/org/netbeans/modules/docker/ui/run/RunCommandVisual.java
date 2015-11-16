@@ -72,6 +72,14 @@ public class RunCommandVisual extends javax.swing.JPanel {
         commandTextField.setText(command);
     }
 
+    public String getContainerName() {
+        return UiUtils.getValue(nameTextField);
+    }
+
+    public void setContainerName(String name) {
+        nameTextField.setText(name);
+    }
+
     public boolean isInteractive() {
         return interactiveCheckBox.isSelected();
     }
