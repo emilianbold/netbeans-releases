@@ -48,7 +48,10 @@ import java.io.Closeable;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -59,6 +62,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.DockerImage;
+import org.netbeans.modules.docker.DockerInstance;
+import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
@@ -112,6 +118,44 @@ public final class UiUtils {
             }
         }
         return value;
+    }
+    
+    public static void loadRepositories(final DockerInstance instance, final JComboBox<String> combo) {
+        assert SwingUtilities.isEventDispatchThread();
+
+        if (!(combo.getEditor().getEditorComponent() instanceof JTextComponent)) {
+            return;
+        }
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                DockerRemote facade = new DockerRemote(instance);
+                List<DockerImage> images = facade.getImages();
+                final Set<String> repositories = new TreeSet<>();
+                for (DockerImage image : images) {
+                    for (DockerTag tag : image.getTags()) {
+                        int index = tag.getTag().lastIndexOf(':'); // NOI18N
+                        if (index > 0) {
+                            repositories.add(tag.getTag().substring(0, index));
+                        }
+                    }
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        // FIXME can we load items without clearing editor
+                        if (UiUtils.getValue(combo) == null) {
+                            int i = 0;
+                            for (String repo : repositories) {
+                                combo.insertItemAt(repo, i++);
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
     }
 
     public static void openLog(DockerContainer container) throws DockerException {
