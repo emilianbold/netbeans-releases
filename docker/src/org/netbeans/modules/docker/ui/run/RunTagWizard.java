@@ -71,6 +71,8 @@ public class RunTagWizard {
 
     public static final String COMMAND_PROPERTY = "command";
 
+    public static final String NAME_PROPERTY = "name";
+
     public static final String INTERACTIVE_PROPERTY = "interactive";
 
     public static final String TTY_PROPERTY = "tty";
@@ -102,12 +104,13 @@ public class RunTagWizard {
         wiz.setTitle(Bundle.LBL_Run());
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
             run(tag, (String) wiz.getProperty(COMMAND_PROPERTY),
+                    (String) wiz.getProperty(NAME_PROPERTY),
                     (Boolean) wiz.getProperty(INTERACTIVE_PROPERTY),
                     (Boolean) wiz.getProperty(TTY_PROPERTY));
         }
     }
 
-    private void run(final DockerTag tag, final String command,
+    private void run(final DockerTag tag, final String command, final String name,
             final boolean interactive, final boolean tty) {
 
         RequestProcessor.getDefault().post(new Runnable() {
@@ -132,7 +135,7 @@ public class RunTagWizard {
                     config.put("Cmd", cmdArray);
                     config.put("AttachStdout", true);
                     config.put("AttachStderr", true);
-                    Pair<DockerContainer, StreamResult> result = remote.run(config);
+                    Pair<DockerContainer, StreamResult> result = remote.run(name, config);
 
                     UiUtils.openTerminal(result.first(), result.second(), interactive, true);
                 } catch (Exception ex) {

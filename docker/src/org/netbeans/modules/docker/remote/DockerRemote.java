@@ -199,18 +199,6 @@ public class DockerRemote {
         return Collections.emptyList();
     }
 
-    public DockerContainer createContainer(JSONObject configuration) throws DockerException {
-        try {
-            JSONObject value = (JSONObject) doPostRequest(instance.getUrl(), "/containers/create", new ByteArrayInputStream(configuration.toJSONString().getBytes("UTF-8")),
-                    true, Collections.singleton(HttpURLConnection.HTTP_CREATED));
-            // FIXME image id
-            return instance.getContainerFactory().create((String) value.get("Id"),
-                    (String) configuration.get("Image"), ContainerStatus.STOPPED);
-        } catch (UnsupportedEncodingException ex) {
-            throw new DockerException(ex);
-        }
-    }
-
     public DockerImage commit(DockerContainer container, String repository, String tag,
             String author, String message, boolean pause) throws DockerException {
 
@@ -748,7 +736,7 @@ public class DockerRemote {
         }
     }
 
-    public Pair<DockerContainer, StreamResult> run(JSONObject configuration) throws DockerException {
+    public Pair<DockerContainer, StreamResult> run(String name, JSONObject configuration) throws DockerException {
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -757,7 +745,7 @@ public class DockerRemote {
             byte[] data = configuration.toJSONString().getBytes("UTF-8");
 
             OutputStream os = s.getOutputStream();
-            os.write(("POST /containers/create HTTP/1.1\r\n"
+            os.write(("POST " + (name != null ? "/containers/create?name=" + HttpUtils.encodeParameter(name) : "/containers/create") + " HTTP/1.1\r\n"
                     + "Content-Type: application/json\r\n"
                     + "Content-Length: " + data.length + "\r\n\r\n").getBytes("ISO-8859-1"));
             os.write(data);
