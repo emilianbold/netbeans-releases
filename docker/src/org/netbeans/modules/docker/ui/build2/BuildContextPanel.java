@@ -46,6 +46,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.ui.Validations;
 import org.openide.WizardDescriptor;
@@ -59,6 +60,8 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    private final DockerInstance instance;
+
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -67,6 +70,10 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     private WizardDescriptor wizard;
 
+    public BuildContextPanel(DockerInstance instance) {
+        this.instance = instance;
+    }
+
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
@@ -74,7 +81,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
     @Override
     public BuildContextVisual getComponent() {
         if (component == null) {
-            component = new BuildContextVisual();
+            component = new BuildContextVisual(instance);
             component.addChangeListener(this);
         }
         return component;

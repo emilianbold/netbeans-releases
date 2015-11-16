@@ -44,6 +44,7 @@ package org.netbeans.modules.docker.ui.commit;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.ui.Validations;
 import org.openide.NotificationLineSupport;
@@ -60,13 +61,15 @@ public class CommitPanel extends javax.swing.JPanel {
     /**
      * Creates new form CommitPanel
      */
-    public CommitPanel() {
+    public CommitPanel(DockerInstance instance) {
         initComponents();
 
         DefaultDocumentListener listener = new DefaultDocumentListener();
         ((JTextComponent) repositoryComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(listener);
         tagTextField.getDocument().addDocumentListener(listener);
         authorTextField.setText(System.getProperty("user.name"));
+        
+        UiUtils.loadRepositories(instance, repositoryComboBox);
     }
 
     public void setMessageLine(NotificationLineSupport messageLine) {

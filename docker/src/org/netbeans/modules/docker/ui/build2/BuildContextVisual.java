@@ -51,6 +51,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -62,7 +63,7 @@ public final class BuildContextVisual extends JPanel {
     /**
      * Creates new form BuildVisualPanel1
      */
-    public BuildContextVisual() {
+    public BuildContextVisual(DockerInstance instance) {
         initComponents();
 
         DefaultDocumentListener listener = new DefaultDocumentListener();
@@ -76,6 +77,8 @@ public final class BuildContextVisual extends JPanel {
                 changeSupport.fireChange();
             }
         });
+        
+        UiUtils.loadRepositories(instance, repositoryComboBox);
     }
 
     public void addChangeListener(ChangeListener l) {

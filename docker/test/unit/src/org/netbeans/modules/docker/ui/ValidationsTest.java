@@ -101,14 +101,4 @@ public class ValidationsTest extends NbTestCase {
             assertNotNull(repo, Validations.validateRepository(repo));
         }
     }
-
-    public void testNormalizeRepository() {
-        assertEquals("a", DockerUtils.normalizeRepository("index.docker.io/a"));
-        assertEquals("a", DockerUtils.normalizeRepository("docker.io/a"));
-        assertEquals("", DockerUtils.normalizeRepository("docker.io/"));
-        assertEquals("test", DockerUtils.normalizeRepository("docker.io/test"));
-        assertEquals("docker.io:5000/", DockerUtils.normalizeRepository("docker.io:5000/"));
-        assertEquals("x/y", DockerUtils.normalizeRepository("x/y"));
-        assertEquals("my.host/x/y", DockerUtils.normalizeRepository("my.host/x/y"));
-    }
 }
