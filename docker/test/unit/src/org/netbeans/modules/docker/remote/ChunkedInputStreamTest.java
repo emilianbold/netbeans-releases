@@ -113,8 +113,8 @@ public class ChunkedInputStreamTest extends NbTestCase {
         }
         assertEquals(data, sb.toString());
     }
-    
-    public void testUnfinished2() throws Exception {
+
+    public void testBlocking() throws Exception {
         Charset charset = Charset.forName("UTF-8");
         String data = "{\"status\":\"die\",\"id\":\"7ec0c471084729a05270be99fd8450d3e515587d9755f97e15e74a227b4e12a6\",\"from\":\"ubuntu:latest\",\"time\":1447666993}";
 
@@ -145,7 +145,6 @@ public class ChunkedInputStreamTest extends NbTestCase {
                 }
                 return ret;
             }
-            
         };
         ChunkedInputStream is = new ChunkedInputStream(fis);
         InputStreamReader r = new InputStreamReader(is, "UTF-8");

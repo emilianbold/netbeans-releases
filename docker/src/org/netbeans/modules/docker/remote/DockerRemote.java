@@ -413,10 +413,7 @@ public class DockerRemote {
                 closeSocket(s);
                 return new EmptyStreamResult(info.isTty());
             }
-            boolean chunked = HttpUtils.isChunked(response.getHeaders());
-            if (chunked) {
-                is = new ChunkedInputStream(is);
-            }
+            is = HttpUtils.getResponseStream(is, response);
 
             if (info.isTty()) {
                 return new DirectStreamResult(s, is);
@@ -436,7 +433,7 @@ public class DockerRemote {
     }
 
     // this call is BLOCKING
-    public void pull(String imageName, StatusEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
+    public void pull(String imageName, StatusEvent.Listener listener) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
@@ -452,13 +449,8 @@ public class DockerRemote {
                             error != null ? error : conn.getResponseMessage());
                 }
 
-                if (connectionListener != null) {
-                    connectionListener.onConnect(conn);
-                }
-
                 JSONParser parser = new JSONParser();
-                try (InputStreamReader r = new InputStreamReader(
-                        conn.getInputStream(), "UTF-8")) { // NOI18N
+                try (InputStreamReader r = new InputStreamReader(conn.getInputStream(), HttpUtils.getCharset(conn))) {
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
@@ -490,9 +482,6 @@ public class DockerRemote {
                 }
             } finally {
                 conn.disconnect();
-                if (connectionListener != null) {
-                    connectionListener.onDisconnect();
-                }
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -581,13 +570,10 @@ public class DockerRemote {
                 throw new DockerException(ex.getCause());
             }
 
-            boolean chunked = HttpUtils.isChunked(response.getHeaders());
-            if (chunked) {
-                is = new ChunkedInputStream(is);
-            }
+            is = HttpUtils.getResponseStream(is, response);
 
             JSONParser parser = new JSONParser();
-            try (InputStreamReader r = new InputStreamReader(is, "UTF-8")) { // NOI18N
+            try (InputStreamReader r = new InputStreamReader(is, HttpUtils.getCharset(response))) {
                 String line;
                 String stream = null;
                 while ((line = readEventObject(r)) != null) {
@@ -651,25 +637,32 @@ public class DockerRemote {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL httpUrl = createURL(instance.getUrl(), since != null ? "/events?since=" + since : "/events");
-            HttpURLConnection conn = createConnection(httpUrl);
+            URL url = createURL(instance.getUrl(), null);
+            Socket s = createSocket(url);
             try {
-                conn.setRequestMethod("GET");
-                conn.setRequestProperty("Accept", "application/json");
+                OutputStream os = s.getOutputStream();
+                os.write(("GET " + (since != null ? "/events?since=" + since : "/events") + " HTTP/1.1\r\n"
+                        + "Accept: application/json\r\n\r\n").getBytes("ISO-8859-1"));
+                os.flush();
 
-                if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    String error = HttpUtils.readError(conn);
-                    throw new DockerRemoteException(conn.getResponseCode(),
-                            error != null ? error : conn.getResponseMessage());
+                InputStream is = s.getInputStream();
+                HttpUtils.Response response = HttpUtils.readResponse(is);
+                int responseCode = response.getCode();
+
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    String error = HttpUtils.readContent(is, response);
+                    throw new DockerRemoteException(responseCode,
+                            error != null ? error : response.getMessage());
                 }
 
+                is = HttpUtils.getResponseStream(is, response);
+
                 if (connectionListener != null) {
-                    connectionListener.onConnect(conn);
+                    connectionListener.onConnect(s);
                 }
 
                 JSONParser parser = new JSONParser();
-                try (InputStreamReader r = new InputStreamReader(
-                        conn.getInputStream(), "UTF-8")) { // NOI18N
+                try (InputStreamReader r = new InputStreamReader(is, HttpUtils.getCharset(response))) {
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
@@ -688,7 +681,7 @@ public class DockerRemote {
                     throw new DockerException(ex);
                 }
             } finally {
-                conn.disconnect();
+                closeSocket(s);
                 if (connectionListener != null) {
                     connectionListener.onDisconnect();
                 }
@@ -723,16 +716,13 @@ public class DockerRemote {
                         error != null ? error : response.getMessage());
             }
 
-            boolean chunked = HttpUtils.isChunked(response.getHeaders());
-            if (chunked) {
-                is = new ChunkedInputStream(is);
-            }
+            is = HttpUtils.getResponseStream(is, response);
 
             StreamItem.Fetcher fetcher;
             Integer length = HttpUtils.getLength(response.getHeaders());
             // if there was no log it may return just standard reply with content length 0
             if (length != null && length == 0) {
-                assert !chunked;
+                assert !(is instanceof ChunkedInputStream);
                 LOGGER.log(Level.INFO, "Empty logs");
                 fetcher = new StreamItem.Fetcher() {
                     @Override
@@ -781,10 +771,7 @@ public class DockerRemote {
                         error != null ? error : response.getMessage());
             }
 
-            boolean chunked = HttpUtils.isChunked(response.getHeaders());
-            if (chunked) {
-                is = new ChunkedInputStream(is);
-            }
+            is = HttpUtils.getResponseStream(is, response);
 
             JSONObject value;
             try {
@@ -1119,7 +1106,7 @@ public class DockerRemote {
 
     public static interface ConnectionListener {
 
-        void onConnect(HttpURLConnection connection);
+        void onConnect(Socket s);
 
         void onDisconnect();
 
