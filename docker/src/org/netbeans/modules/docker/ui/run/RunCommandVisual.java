@@ -101,6 +101,8 @@ public class RunCommandVisual extends javax.swing.JPanel {
         commandTextField = new javax.swing.JTextField();
         interactiveCheckBox = new javax.swing.JCheckBox();
         ttyCheckBox = new javax.swing.JCheckBox();
+        nameLabel = new javax.swing.JLabel();
+        nameTextField = new javax.swing.JTextField();
 
         commandLabel.setLabelFor(commandTextField);
         org.openide.awt.Mnemonics.setLocalizedText(commandLabel, org.openide.util.NbBundle.getMessage(RunCommandVisual.class, "RunCommandVisual.commandLabel.text")); // NOI18N
@@ -109,19 +111,26 @@ public class RunCommandVisual extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(ttyCheckBox, org.openide.util.NbBundle.getMessage(RunCommandVisual.class, "RunCommandVisual.ttyCheckBox.text")); // NOI18N
 
+        nameLabel.setLabelFor(nameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(RunCommandVisual.class, "RunCommandVisual.nameLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(commandLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(commandTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ttyCheckBox)
+                    .addComponent(interactiveCheckBox))
+                .addGap(0, 147, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(interactiveCheckBox)
-                    .addComponent(ttyCheckBox))
-                .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(commandLabel)
+                    .addComponent(nameLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(nameTextField)
+                    .addComponent(commandTextField)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -129,6 +138,10 @@ public class RunCommandVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(commandLabel)
                     .addComponent(commandTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(nameLabel)
+                    .addComponent(nameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(interactiveCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -141,6 +154,8 @@ public class RunCommandVisual extends javax.swing.JPanel {
     private javax.swing.JLabel commandLabel;
     private javax.swing.JTextField commandTextField;
     private javax.swing.JCheckBox interactiveCheckBox;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JTextField nameTextField;
     private javax.swing.JCheckBox ttyCheckBox;
     // End of variables declaration//GEN-END:variables
 }
