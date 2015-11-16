@@ -42,12 +42,15 @@
 package org.netbeans.modules.docker.remote;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.DockerInstance;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -70,7 +73,7 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
 
     private final List<DockerEvent.Listener> containerListeners = new ArrayList<>();
 
-    private HttpURLConnection connection;
+    private Socket socket;
 
     private DockerEvent lastEvent;
 
@@ -161,9 +164,9 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
     }
 
     @Override
-    public void onConnect(HttpURLConnection connection) {
+    public void onConnect(Socket s) {
         synchronized (this) {
-            this.connection = connection;
+            this.socket = s;
         }
     }
 
@@ -223,12 +226,16 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
 
     private void stop() {
         // FIXME close the socket to stop waiting for events
-        HttpURLConnection current;
+        Socket current;
         synchronized (this) {
             stop = true;
-            current = connection;
-            connection = null;
+            current = socket;
+            socket = null;
         }
-        //current.disconnect();
+        try {
+            current.close();
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
     }
 }

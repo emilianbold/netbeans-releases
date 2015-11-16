@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.remote;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,27 +67,6 @@ public final class HttpUtils {
 
     private HttpUtils() {
         super();
-    }
-
-    public static String readResponseLine(InputStream is) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        int b;
-        while ((b = is.read()) != -1) {
-            if (b == '\r') {
-                int next = is.read();
-                if (next == '\n') {
-                    return bos.toString("ISO-8859-1"); // NOI18N
-                } else if (next == -1) {
-                    return null;
-                } else {
-                    bos.write(b);
-                    bos.write(next);
-                }
-            } else {
-                bos.write(b);
-            }
-        }
-        return null;
     }
 
     public static Response readResponse(InputStream is) throws IOException {
@@ -139,9 +119,12 @@ public final class HttpUtils {
         return bos.toString(encoding.name());
     }
 
-    public static boolean isChunked(Map<String, String> headers) {
-        String value = headers.get("TRANSFER-ENCODING"); // NOI18N
-        return value != null && value.contains("chunked"); // NOI18N
+    public static InputStream getResponseStream(InputStream is, Response response) {
+        if (isChunked(response.getHeaders())) {
+            return new ChunkedInputStream(new BufferedInputStream(is));
+        } else {
+            return new BufferedInputStream(is);
+        }
     }
 
     public static Integer getLength(Map<String, String> headers)  throws IOException {
@@ -156,8 +139,37 @@ public final class HttpUtils {
         }
     }
 
+    public static Charset getCharset(Response response) {
+        return getCharset(response.getHeaders().get("CONTENT-TYPE")); // NOI18N
+    }
+
+    public static Charset getCharset(HttpURLConnection connection) {
+        return getCharset(connection.getContentType());
+    }
+
     public static String encodeParameter(String value) throws UnsupportedEncodingException {
         return URLEncoder.encode(value, "UTF-8");
+    }
+
+    static String readResponseLine(InputStream is) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        int b;
+        while ((b = is.read()) != -1) {
+            if (b == '\r') {
+                int next = is.read();
+                if (next == '\n') {
+                    return bos.toString("ISO-8859-1"); // NOI18N
+                } else if (next == -1) {
+                    return null;
+                } else {
+                    bos.write(b);
+                    bos.write(next);
+                }
+            } else {
+                bos.write(b);
+            }
+        }
+        return null;
     }
 
     private static Map<String, String> parseHeaders(InputStream is) throws IOException {
@@ -183,6 +195,7 @@ public final class HttpUtils {
     }
 
     private static Charset getCharset(String contentType) {
+        // FIXME the spec default is ISO-8859-1
         Charset encoding = Charset.forName("UTF-8"); // NOI18N
         if (contentType != null) {
             String[] parts = contentType.trim().split(";"); // NOI18N
@@ -202,6 +215,11 @@ public final class HttpUtils {
             }
         }
         return encoding;
+    }
+
+    private static boolean isChunked(Map<String, String> headers) {
+        String value = headers.get("TRANSFER-ENCODING"); // NOI18N
+        return value != null && value.contains("chunked"); // NOI18N
     }
 
     public static class Response {
