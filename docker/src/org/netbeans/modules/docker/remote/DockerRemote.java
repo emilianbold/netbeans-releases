@@ -46,7 +46,6 @@ import org.netbeans.modules.docker.DockerImage;
 import org.netbeans.modules.docker.DockerContainer;
 import org.netbeans.modules.docker.DockerTag;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -480,7 +479,7 @@ public class DockerRemote {
 
     // this call is BLOCKING
     public DockerImage build(@NonNull File buildContext, @NullAllowed File dockerfile,
-            String repository, String tag, BuildEvent.Listener listener) throws DockerException {
+            String repository, String tag, boolean pull, boolean noCache, BuildEvent.Listener listener) throws DockerException {
 
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
@@ -505,20 +504,14 @@ public class DockerRemote {
             s = createSocket(url);
 
             StringBuilder request = new StringBuilder();
-            request.append("POST /build");
-            boolean parameter = false;
+            request.append("POST /build?");
+            request.append("pull=").append(pull ? 1 : 0);
+            request.append("&nocache=").append(noCache ? 1 : 0);
             if (dockerfileName != null) {
-                request.append("?");
-                parameter = true;
-                request.append("dockerfile=").append(HttpUtils.encodeParameter(dockerfileName));
+                request.append("&dockerfile=").append(HttpUtils.encodeParameter(dockerfileName));
             }
             if (repository != null) {
-                if (!parameter) {
-                    request.append("?");
-                } else {
-                    request.append("&");
-                }
-                request.append("t=").append(HttpUtils.encodeParameter(repository));
+                request.append("&t=").append(HttpUtils.encodeParameter(repository));
                 if (tag != null) {
                     request.append(":").append(tag);
                 }

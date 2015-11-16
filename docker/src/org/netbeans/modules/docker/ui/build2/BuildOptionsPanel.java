@@ -149,6 +149,10 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
             dockerfile = DockerUtils.DOCKER_FILE;
         }
         component.setDockerfile(dockerfile);
+        Boolean pull = (Boolean) wiz.getProperty(BuildImageWizard.PULL_PROPERTY);
+        component.setPull(pull != null ? pull : BuildImageWizard.PULL_DEFAULT);
+        Boolean noCache = (Boolean) wiz.getProperty(BuildImageWizard.NO_CACHE_PROPERTY);
+        component.setPull(noCache != null ? noCache : BuildImageWizard.NO_CACHE_DEFAULT);
 
         // XXX revalidate; is this bug?
         changeSupport.fireChange();
@@ -157,6 +161,8 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
     @Override
     public void storeSettings(WizardDescriptor wiz) {
         wiz.putProperty(BuildImageWizard.DOCKERFILE_PROPERTY, component.getDockerfile());
+        wiz.putProperty(BuildImageWizard.PULL_PROPERTY, component.isPull());
+        wiz.putProperty(BuildImageWizard.NO_CACHE_PROPERTY, component.isNoCache());
     }
 
     @Override
