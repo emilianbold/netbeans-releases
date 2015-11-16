@@ -42,8 +42,12 @@
 package org.netbeans.api.editor;
 
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Position;
-import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
  * Info about a single caret - see {@link EditorCaret}.
@@ -53,13 +57,36 @@ import org.netbeans.api.annotations.common.NonNull;
  */
 public final class CaretInfo {
     
-    private Position dotPos;
+    // -J-Dorg.netbeans.api.editor.CaretInfo.level=FINEST
+    private static final Logger LOG = Logger.getLogger(CaretInfo.class.getName());
+    
+    // -J-Dorg.netbeans.api.editor.CaretInfo.EDT.level=FINE - check that setDot() and other operations in EDT only
+    private static final Logger LOG_EDT = Logger.getLogger(CaretInfo.class.getName() + ".EDT");
 
-    private Position markPos;
+    static {
+        // Compatibility debugging flags mapping to logger levels
+        if (Boolean.getBoolean("netbeans.debug.editor.caret.focus") && LOG.getLevel().intValue() < Level.FINE.intValue())
+            LOG.setLevel(Level.FINE);
+        if (Boolean.getBoolean("netbeans.debug.editor.caret.focus.extra") && LOG.getLevel().intValue() < Level.FINER.intValue())
+            LOG.setLevel(Level.FINER);
+    }
+    
+    private final EditorCaret parent;
+    
+    Position dotPos;
+
+    Position markPos;
     
     private Point magicCaretPosition;
 
-    CaretInfo() {
+    public CaretInfo(EditorCaret parent) {
+        this.parent = parent;
+    }
+
+    public CaretInfo(EditorCaret parent, Position dotPos, Position markPos) {
+        this(parent);
+        this.dotPos = dotPos;
+        this.markPos = markPos;
     }
 
     /**
@@ -67,7 +94,7 @@ public final class CaretInfo {
      * @return non-null position of the caret placement. The position may be virtual
      *  so methods in {@link VirtualPositions} may be used if necessary.
      */
-    @NonNull
+    @CheckForNull
     public Position getDotPosition() {
         return dotPos;
     }
@@ -79,9 +106,48 @@ public final class CaretInfo {
      * @return non-null position of the caret placement. The position may be virtual
      *  so methods in {@link VirtualPositions} may be used if necessary.
      */
-    @NonNull
+    @CheckForNull
     public Position getMarkPosition() {
         return markPos;
+    }
+    
+    public int getDot() {
+        return (dotPos != null) ? dotPos.getOffset() : 0;
+    }
+
+    public int getMark() {
+        return (markPos != null) ? markPos.getOffset() : 0;
+    }
+    
+    public void setDot(int offset) {
+        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+            if (!SwingUtilities.isEventDispatchThread()) {
+                throw new IllegalStateException("CaretInfo.setDot() not in EDT: offset=" + offset); // NOI18N
+            }
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("setDot: offset=" + offset); //NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.INFO, "setDot call stack", new Exception());
+            }
+        }
+
+        parent.setDotCaret(offset, this, true);
+    }
+
+    public void moveDot(int offset) {
+        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+            if (!SwingUtilities.isEventDispatchThread()) {
+                throw new IllegalStateException("CaretInfo.moveDot() not in EDT: offset=" + offset); // NOI18N
+            }
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("moveDot: offset=" + offset); //NOI18N
+        }
+
+        parent.moveDotCaret(offset, this);
     }
 
     /**
@@ -98,9 +164,32 @@ public final class CaretInfo {
     public Position getSelectionEnd() {
         return dotPos; // TBD - possibly inspect virtual columns etc.
     }
+    
+    public void setMagicCaretPosition(Point newMagicCaretPosition) {
+        this.magicCaretPosition = newMagicCaretPosition;
+    }
 
     public Point getMagicCaretPosition() {
         return magicCaretPosition;
     }
     
+    /* Remove from CaretInfo ? */
+    public void setDotPos(Position dotPos) { this.dotPos = dotPos; }
+    public void setMarkPos(Position markPos) { this.markPos = markPos; }
+    
+    private char dotChar;
+    public void setDotChar(char dotChar) {
+        this.dotChar = dotChar;
+    }
+    public char getDotChar() {
+        return this.dotChar;
+    }
+
+    private Rectangle caretBounds;
+    public void setCaretBounds(Rectangle newCaretBounds) {
+        this.caretBounds = newCaretBounds;
+    }
+    public Rectangle getCaretBounds() {
+        return this.caretBounds;
+    }
 }

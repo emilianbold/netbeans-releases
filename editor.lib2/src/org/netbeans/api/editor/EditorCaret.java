@@ -41,11 +41,18 @@
  */
 package org.netbeans.api.editor;
 
+import java.awt.Rectangle;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.text.DefaultCaret;
+import java.util.concurrent.Callable;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Exceptions;
 
 /**
  * Extension to standard Swing caret used by all NetBeans editors.
@@ -57,24 +64,33 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author Miloslav Metelka
  * @author Ralph Ruijs
  */
-public final class EditorCaret extends DefaultCaret {
+public abstract class EditorCaret implements Caret {
     
-    private LinkedList<CaretInfo> carets;
+    /** Component this caret is bound to */
+    protected JTextComponent component;
+    
+    protected LinkedList<CaretInfo> carets;
+
+    public EditorCaret() {
+        carets = new LinkedList<>();
+    }
 
     @Override
     public int getDot() {
-        return getLastCaret().getDotPosition().getOffset();
+        final Position caretPos = getLastCaret().getDotPosition();
+        return (caretPos != null) ? caretPos.getOffset() : 0;
     }
     
     @Override
     public int getMark() {
-        return getLastCaret().getMarkPosition().getOffset();
+        final Position markPos = getLastCaret().getMarkPosition();
+        return (markPos != null) ? markPos.getOffset() : 0;
     }
     
-    private CaretInfo getLastCaret() {
+    protected CaretInfo getLastCaret() {
         CaretInfo caret;
         if(carets.isEmpty()) {
-            caret = new CaretInfo();
+            caret = new CaretInfo(this);
             carets.add(caret);
         } else {
             caret = carets.getLast();
@@ -104,4 +120,55 @@ public final class EditorCaret extends DefaultCaret {
     public @CheckForNull CaretInfo getCaretAt(int offset) {
         return null;
     }
+    
+    protected void setDotCaret(int offset, CaretInfo caret, boolean expandFold) throws IllegalStateException {
+        JTextComponent c = component;
+        if (c != null) {
+            AbstractDocument doc = (AbstractDocument)c.getDocument();
+            boolean dotChanged = false;
+            doc.readLock();
+            try {
+                if (offset >= 0 && offset <= doc.getLength()) {
+                    dotChanged = true;
+                    try {
+                        caret.dotPos = doc.createPosition(offset);
+                        caret.markPos = doc.createPosition(offset);
+
+                        Callable<Boolean> cc = (Callable<Boolean>)c.getClientProperty("org.netbeans.api.fold.expander");
+                        if (cc != null && expandFold) {
+                            // the caretPos/markPos were already called.
+                            // nothing except the document is locked at this moment.
+                            try {
+                                cc.call();
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+//                        if (rectangularSelection) {
+//                            setRectangularSelectionToDotAndMark();
+//                        }
+                        
+                    } catch (BadLocationException e) {
+                        throw new IllegalStateException(e.toString());
+                        // setting the caret to wrong position leaves it at current position
+                    }
+                }
+            } finally {
+                doc.readUnlock();
+            }
+            
+            if (dotChanged) {
+                fireStateChanged();
+                dispatchUpdate(true);
+            }
+        }
+    }
+    
+    protected abstract void moveDotCaret(int offset, CaretInfo caret) throws IllegalStateException;
+    
+    /* Move to EditorCaret, or remove? */
+    protected abstract void fireStateChanged();
+    protected abstract void dispatchUpdate(final boolean scrollViewToCaret);
+    
+    /* Rectangular Selection stuff, rewrite? */
 }

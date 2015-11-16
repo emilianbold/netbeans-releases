@@ -97,6 +97,7 @@ import static javax.swing.text.DefaultEditorKit.selectionUpAction;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import javax.swing.text.View;
+import org.netbeans.api.editor.CaretInfo;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -114,7 +115,6 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.api.editor.NavigationHistory;
-import org.netbeans.editor.BaseCaret.EditorCaretData;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
@@ -1127,10 +1127,10 @@ public class BaseKit extends DefaultEditorKit {
                     }
 
                     try {
-                        for (final BaseCaret.EditorCaretData caret : ((BaseCaret)target.getCaret()).getAllCarets()) {
+                        for (final CaretInfo caret : ((BaseCaret)target.getCaret()).getAllCarets()) {
                     final Position insertionOffset = doc.createPosition(computeInsertionOffset(caret), Position.Bias.Backward);
                     String replacedText = "";
-                    if (target.getCaret().isSelectionVisible() && caret.getDot() != caret.getMark()) {
+                    if (target.getCaret().isSelectionVisible() && caret.getDotPosition() != caret.getMarkPosition()) {
                         int p0 = Math.min(caret.getDot(), caret.getMark());
                         int p1 = Math.max(caret.getDot(), caret.getMark());
                         replacedText = doc.getText(p0, p1 - p0);
@@ -1311,7 +1311,7 @@ public class BaseKit extends DefaultEditorKit {
             }
         }
 
-        private int computeInsertionOffset(EditorCaretData caret) {
+        private int computeInsertionOffset(CaretInfo caret) {
 //            if (Utilities.isSelectionShowing(caret)) {
 //                return Math.min(caret.getMark(), caret.getDot());
 //            } else {
@@ -1559,7 +1559,7 @@ public class BaseKit extends DefaultEditorKit {
                             try {
                                 if(caret instanceof BaseCaret) {
                                     BaseCaret baseCaret = (BaseCaret) caret;
-                                    for (EditorCaretData editorCaret : baseCaret.getAllCarets()) {
+                                    for (CaretInfo editorCaret : baseCaret.getAllCarets()) {
                                     if (caret.isSelectionVisible() && editorCaret.getDot() != editorCaret.getMark()) { // block selected
                                         try {
                                             int start = Math.min(caret.getDot(), caret.getMark());
@@ -1880,7 +1880,7 @@ public class BaseKit extends DefaultEditorKit {
 		final Caret caret = target.getCaret();
                 if(caret instanceof BaseCaret) {
                     BaseCaret baseCaret = (BaseCaret) caret;
-                    for (EditorCaretData caretData : baseCaret.getAllCarets()) {
+                    for (CaretInfo caretData : baseCaret.getAllCarets()) {
                         final int dot = caretData.getDot();
                         final int mark = caretData.getMark();
 
@@ -2380,7 +2380,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 if(caret instanceof BaseCaret) {
                     BaseCaret baseCaret = (BaseCaret) caret;
-                    for (EditorCaretData editorCaret : baseCaret.getAllCarets()) {
+                    for (CaretInfo editorCaret : baseCaret.getAllCarets()) {
                         try {
                             int dot = editorCaret.getDot();
                             Point p = editorCaret.getMagicCaretPosition();
@@ -2465,7 +2465,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 if (caret instanceof BaseCaret) {
                     BaseCaret baseCaret = (BaseCaret) caret;
-                    for (EditorCaretData editorCaret : baseCaret.getAllCarets()) {
+                    for (CaretInfo editorCaret : baseCaret.getAllCarets()) {
                     try {
                         int dot = editorCaret.getDot();
                         Point p = editorCaret.getMagicCaretPosition();
@@ -2552,7 +2552,7 @@ public class BaseKit extends DefaultEditorKit {
                     Caret caret = target.getCaret();
                     if(caret instanceof BaseCaret) {
                         BaseCaret baseCaret = (BaseCaret) caret;
-                        for (EditorCaretData editorCaret : baseCaret.getAllCarets()) {
+                        for (CaretInfo editorCaret : baseCaret.getAllCarets()) {
                             int caretOffset = editorCaret.getDot();
                             Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
                             if (caretBounds == null) {
@@ -2741,7 +2741,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 if (caret instanceof BaseCaret) {
                     BaseCaret baseCaret = (BaseCaret) caret;
-                    for (EditorCaretData editorCaret : baseCaret.getAllCarets()) {
+                    for (CaretInfo editorCaret : baseCaret.getAllCarets()) {
                         try {
                             int pos;
                             boolean select = selectionForwardAction.equals(getValue(Action.NAME));
@@ -2828,7 +2828,7 @@ public class BaseKit extends DefaultEditorKit {
                     Caret caret = target.getCaret();
                     if(caret instanceof BaseCaret) {
                         BaseCaret baseCaret = (BaseCaret) caret;
-                        for (EditorCaretData editorCaret : baseCaret.getAllCarets()) {
+                        for (CaretInfo editorCaret : baseCaret.getAllCarets()) {
                             int caretOffset = editorCaret.getDot();
                             Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
                             if (caretBounds == null) {
@@ -3006,7 +3006,7 @@ public class BaseKit extends DefaultEditorKit {
             if (target != null) {
                 Caret caret = target.getCaret();
                 if(caret instanceof BaseCaret) {
-                    for (EditorCaretData editorCaret : ((BaseCaret) caret).getAllCarets()) {
+                    for (CaretInfo editorCaret : ((BaseCaret) caret).getAllCarets()) {
                         try {
                             int pos;
                             boolean select = selectionBackwardAction.equals(getValue(Action.NAME));
@@ -3102,7 +3102,7 @@ public class BaseKit extends DefaultEditorKit {
             if (target != null) {
                 Caret caret = target.getCaret();
                 if(caret instanceof BaseCaret) {
-                    for (EditorCaretData editorCaret : ((BaseCaret) caret).getAllCarets()) {
+                    for (CaretInfo editorCaret : ((BaseCaret) caret).getAllCarets()) {
                         try {
                             int dot = editorCaret.getDot();
                             // #232675: if bounds are defined, use them rather than line start/end
@@ -3245,7 +3245,7 @@ public class BaseKit extends DefaultEditorKit {
             if (target != null) {
                 Caret caret = target.getCaret();
                 if(caret instanceof BaseCaret) {
-                    for (EditorCaretData editorCaret : ((BaseCaret) caret).getAllCarets()) {
+                    for (CaretInfo editorCaret : ((BaseCaret) caret).getAllCarets()) {
                         try {
                             // #232675: if bounds are defined, use them rather than line start/end
                             Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
