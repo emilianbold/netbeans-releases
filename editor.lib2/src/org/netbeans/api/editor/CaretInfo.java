@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.editor;
 
+import java.awt.Point;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
 
@@ -48,12 +49,15 @@ import org.netbeans.api.annotations.common.NonNull;
  * Info about a single caret - see {@link EditorCaret}.
  *
  * @author Miloslav Metelka
+ * @author Ralph Ruijs
  */
 public final class CaretInfo {
     
     private Position dotPos;
 
     private Position markPos;
+    
+    private Point magicCaretPosition;
 
     CaretInfo() {
     }
@@ -93,6 +97,10 @@ public final class CaretInfo {
 
     public Position getSelectionEnd() {
         return dotPos; // TBD - possibly inspect virtual columns etc.
+    }
+
+    public Point getMagicCaretPosition() {
+        return magicCaretPosition;
     }
     
 }

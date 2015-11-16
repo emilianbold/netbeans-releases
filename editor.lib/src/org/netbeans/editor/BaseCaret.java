@@ -77,7 +77,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -106,6 +108,8 @@ import javax.swing.event.EventListenerList;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.CaretInfo;
+import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -325,15 +329,15 @@ AtomicLockListener, FoldHierarchyListener {
      */
     private boolean showingTextCursor = true;
     
-    private LinkedHashSet<EditorCaretData> carets;
+    private LinkedList<EditorCaretData> carets;
     
     public BaseCaret() {
         listenerImpl = new ListenerImpl();
-        carets = new LinkedHashSet<>();
+        carets = new LinkedList<>();
     }
 
-    public LinkedHashSet<EditorCaretData> getCarets() {
-        return carets;
+    public List<EditorCaretData> getAllCarets() {
+        return Collections.unmodifiableList(carets);
     }
 
     void updateType() {
@@ -1125,13 +1129,16 @@ AtomicLockListener, FoldHierarchyListener {
     * @param p  the Point to use for the saved position
     */
     public @Override void setMagicCaretPosition(Point p) {
-//        magicCaretPosition = p;
+        if(carets.isEmpty()) {
+            // There needs be at least one caret in the document.
+            carets.add(new EditorCaretData());
+        }
+        carets.iterator().next().setMagicCaretPosition(p);
     }
 
     /** Get position used to mark begining of the selected block */
     public @Override final Point getMagicCaretPosition() {
-//        return magicCaretPosition;
-        return null;
+        return carets.isEmpty() && carets.size() > 0 ? carets.iterator().next().getMagicCaretPosition() : null;
     }
 
     /** Sets the caret blink rate.
@@ -1248,7 +1255,19 @@ AtomicLockListener, FoldHierarchyListener {
                 LOG.log(Level.INFO, "setDot call stack", new Exception());
             }
         }
+        EditorCaretData caret;
+        if(carets.isEmpty()) {
+            caret = new EditorCaretData();
+        } else {
+            caret = carets.iterator().next();
+            carets.clear();
+        }
+        carets.add(caret);
         
+        setDotReal(offset, caret, expandFold);
+    }
+
+    private void setDotReal(int offset, EditorCaretData caret, boolean expandFold) throws IllegalStateException {
         JTextComponent c = component;
         if (c != null) {
             BaseDocument doc = (BaseDocument)c.getDocument();
@@ -1258,14 +1277,6 @@ AtomicLockListener, FoldHierarchyListener {
                 if (doc != null && offset >= 0 && offset <= doc.getLength()) {
                     dotChanged = true;
                     try {
-                        EditorCaretData caret;
-                        if(carets.isEmpty()) {
-                            caret = new EditorCaretData();
-                        } else {
-                            caret = carets.iterator().next();
-                            carets.clear();
-                        }
-                        carets.add(caret);
                         caret.caretPos = doc.createPosition(offset);
                         caret.markPos = doc.createPosition(offset);
 
@@ -1371,21 +1382,26 @@ AtomicLockListener, FoldHierarchyListener {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("moveDot: offset=" + offset); //NOI18N
         }
+        
+        EditorCaretData caret;
+        if(carets.isEmpty()) {
+            caret = new EditorCaretData();
+        } else {
+            caret = carets.iterator().next();
+            carets.clear();
+        }
+        carets.add(caret);
 
+        moveCaret(offset, caret);
+    }
+
+    private void moveCaret(int offset, EditorCaretData caret) throws IllegalStateException {
         JTextComponent c = component;
         if (c != null) {
             BaseDocument doc = (BaseDocument)c.getDocument();
             if (doc != null && offset >= 0 && offset <= doc.getLength()) {
                 doc.readLock();
                 try {
-                    EditorCaretData caret;
-                    if(carets.isEmpty()) {
-                        caret = new EditorCaretData();
-                    } else {
-                        caret = carets.iterator().next();
-                        carets.clear();
-                    }
-                    carets.add(caret);
                     int oldCaretPos = caret.getDot();
                     if (offset == oldCaretPos) { // no change
                         return;
@@ -1559,7 +1575,8 @@ AtomicLockListener, FoldHierarchyListener {
                     }
                     c.setDragEnabled(true);
                     if (evt.isAltDown() && evt.isShiftDown()) {
-                        
+                        mouseState = MouseState.CHAR_SELECTION;
+                        addCaret(offset);
                     } else if (evt.isShiftDown()) { // Select till offset
                         moveDot(offset);
                         adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
@@ -1637,14 +1654,13 @@ AtomicLockListener, FoldHierarchyListener {
                 break;
 
             case CHAR_SELECTION:
-                moveDot(offset); // Will do setDot() if no selection
-                adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
-                break;
-                
-            case DEFAULT:
                 if(evt.isAltDown() && evt.isShiftDown()) {
-                    addCaret(offset);
+                    moveCaret(offset, getLastCaret());
+                } else {
+                    moveDot(offset); // Will do setDot() if no selection
+                    adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
                 }
+                break;
         }
         // Set DEFAULT state; after next mouse press the state may change
         // to another state according to particular click count
@@ -1797,8 +1813,12 @@ AtomicLockListener, FoldHierarchyListener {
                         break;
                     
                     case CHAR_SELECTION:
-                        moveDot(offset);
-                        adjustRectangularSelectionMouseX(evt.getX(), evt.getY());
+                        if(evt.isAltDown() && evt.isShiftDown()) {
+                            moveCaret(offset, getLastCaret());
+                        } else {
+                            moveDot(offset);
+                            adjustRectangularSelectionMouseX(evt.getX(), evt.getY());
+                        }
                         break; // Use the offset under mouse pointer
 
                     
@@ -2028,7 +2048,7 @@ AtomicLockListener, FoldHierarchyListener {
     private boolean isLeftMouseButtonExt(MouseEvent evt) {
         return (SwingUtilities.isLeftMouseButton(evt)
                 && !(evt.isPopupTrigger())
-                && (evt.getModifiers() & (InputEvent.META_MASK | InputEvent.ALT_MASK)) == 0);
+                && (evt.getModifiers() & (InputEvent.META_MASK/* | InputEvent.ALT_MASK*/)) == 0);
     }
     
     private boolean isMiddleMouseButtonExt(MouseEvent evt) {
@@ -2210,6 +2230,17 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
 
+    private EditorCaretData getLastCaret() {
+        EditorCaretData caret;
+        if(carets.isEmpty()) {
+            caret = new EditorCaretData();
+            carets.add(caret);
+        } else {
+            caret = carets.getLast();
+        }
+        return caret;
+    }
+
     public class EditorCaretData {
 
         public EditorCaretData() {
@@ -2267,46 +2298,7 @@ AtomicLockListener, FoldHierarchyListener {
                 }
             }
 
-            JTextComponent c = component;
-            if (c != null) {
-                BaseDocument doc = (BaseDocument) c.getDocument();
-                boolean dotChanged = false;
-                doc.readLock();
-                try {
-                    if (doc != null && offset >= 0 && offset <= doc.getLength()) {
-                        dotChanged = true;
-                        try {
-                            caretPos = doc.createPosition(offset);
-                            markPos = doc.createPosition(offset);
-
-                            Callable<Boolean> cc = (Callable<Boolean>) c.getClientProperty("org.netbeans.api.fold.expander");
-                            if (cc != null) {
-                                // the caretPos/markPos were already called.
-                                // nothing except the document is locked at this moment.
-                                try {
-                                    cc.call();
-                                } catch (Exception ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                            if (rectangularSelection) {
-                                setRectangularSelectionToDotAndMark();
-                            }
-
-                        } catch (BadLocationException e) {
-                            throw new IllegalStateException(e.toString());
-                            // setting the caret to wrong position leaves it at current position
-                        }
-                    }
-                } finally {
-                    doc.readUnlock();
-                }
-
-                if (dotChanged) {
-                    fireStateChanged();
-                    dispatchUpdate(true);
-                }
-            }
+            setDotReal(offset, this, true);
         }
         
         public void moveDot(int offset) {
@@ -2320,40 +2312,24 @@ AtomicLockListener, FoldHierarchyListener {
                 LOG.fine("moveDot: offset=" + offset); //NOI18N
             }
 
-            JTextComponent c = component;
-            if (c != null) {
-                BaseDocument doc = (BaseDocument) c.getDocument();
-                if (doc != null && offset >= 0 && offset <= doc.getLength()) {
-                    doc.readLock();
-                    try {
-                        int oldCaretPos = getDot();
-                        if (offset == oldCaretPos) { // no change
-                            return;
-                        }
-                        caretPos = doc.createPosition(offset);
-                        if (selectionVisible) { // selection already visible
-                            Utilities.getEditorUI(c).repaintBlock(oldCaretPos, offset);
-                        }
-                        if (rectangularSelection) {
-                            Rectangle r = c.modelToView(offset);
-                            if (rsDotRect != null) {
-                                rsDotRect.y = r.y;
-                                rsDotRect.height = r.height;
-                            } else {
-                                rsDotRect = r;
-                            }
-                            updateRectangularSelectionPaintRect();
-                        }
-                    } catch (BadLocationException e) {
-                        throw new IllegalStateException(e.toString());
-                        // position is incorrect
-                    } finally {
-                        doc.readUnlock();
-                    }
-                }
-                fireStateChanged();
-                dispatchUpdate(true);
-            }
+            moveCaret(offset, this);
+        }
+        
+        /**
+         * Saves the current caret position. This is used when caret up or down
+         * actions occur, moving between lines that have uneven end positions.
+         *
+         * @param p the Point to use for the saved position
+         */
+        public void setMagicCaretPosition(Point p) {
+            magicCaretPosition = p;
+        }
+
+        /**
+         * Get position used to mark begining of the selected block
+         */
+        public final Point getMagicCaretPosition() {
+            return magicCaretPosition;
         }
     }
     

@@ -41,30 +41,45 @@
  */
 package org.netbeans.api.editor;
 
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.DefaultCaret;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Extension to standard Swing caret used by all NetBeans editors.
- * <br/>
+ * <br>
  * It supports multi-caret editing mode where an arbitrary number of carets
  * is placed at arbitrary positions throughout a document.
- * In this mode each caret is described by its <code>CaretInfo</code> object
- * and one of the infos belongs to a "main" caret.
+ * In this mode each caret is described by its <code>CaretInfo</code> object.
  *
  * @author Miloslav Metelka
+ * @author Ralph Ruijs
  */
 public final class EditorCaret extends DefaultCaret {
+    
+    private LinkedList<CaretInfo> carets;
 
     @Override
     public int getDot() {
-        return getMainCaretInfo().getDotPosition().getOffset();
+        return getLastCaret().getDotPosition().getOffset();
     }
     
     @Override
     public int getMark() {
-        return getMainCaretInfo().getMarkPosition().getOffset();
+        return getLastCaret().getMarkPosition().getOffset();
+    }
+    
+    private CaretInfo getLastCaret() {
+        CaretInfo caret;
+        if(carets.isEmpty()) {
+            caret = new CaretInfo();
+            carets.add(caret);
+        } else {
+            caret = carets.getLast();
+        }
+        return caret;
     }
     
     /**
@@ -77,17 +92,16 @@ public final class EditorCaret extends DefaultCaret {
      * @return unmodifiable list with size &gt;= 1 infos about all carets.
      */
     public @NonNull List<CaretInfo> getAllCarets() {
-        return java.util.Collections.<CaretInfo>emptyList(); // TBD
+        return java.util.Collections.unmodifiableList(carets); // TBD
     }
     
     /**
-     * Get info about the main caret.
-     * <br/>
-     * This info is always present in @link {#getAllCarets()} and it's persistent
-     * for the whole lifetime of this EditorCaret instance.
+     * Get information about the caret at the specified offset.
+     * 
+     * @param offset the offset of the caret
+     * @return CaretInfo for the caret at offset, null if there is no caret or the offset is invalid
      */
-    public @NonNull CaretInfo getMainCaretInfo() {
-        return new CaretInfo(); // TBD
+    public @CheckForNull CaretInfo getCaretAt(int offset) {
+        return null;
     }
-    
 }
