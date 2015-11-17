@@ -133,7 +133,12 @@ public class AnnotationProcessorTestUtils {
         destG.mkdirs();
         scan(args, src, srcIncludes);
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        Assert.assertNotNull("no JSR 199 compiler impl found; perhaps tools.jar missing from CP?", compiler);
+        Assert.assertNotNull(String.format(
+                "No JSR 199 compiler impl found; perhaps tools.jar missing from CP? BootClassPath: %s. ClassPath: %s",
+                System.getProperty("sun.boot.class.path"),  //NOI18N
+                System.getProperty("java.class.path")       //NOI18N
+                ),
+            compiler);
         //System.err.println("running javac with args: " + args);
         return compiler.run(null, null, stderr, args.toArray(new String[args.size()])) == 0;
     }
