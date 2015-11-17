@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariadicSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpandedExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
@@ -116,10 +117,11 @@ public class PersistentUtils {
         //PersistentUtils.writeUTF(rootUrl, output);        
     }
 
-    public static void readErrorDirectives(Set<ErrorDirectiveImpl> errors, RepositoryDataInput input) throws IOException {
+    public static void readErrorDirectives(Set<ErrorDirectiveImpl> errors, FileImpl containingFile, RepositoryDataInput input) throws IOException {
         int size = input.readInt();
         for (int i = 0; i < size; i++) {
-            ErrorDirectiveImpl offs = new ErrorDirectiveImpl(input);
+            // ErrorDirectiveImpl does not have UID, so deserialize using containingFile directly
+            ErrorDirectiveImpl offs = new ErrorDirectiveImpl(containingFile, input);
             errors.add(offs);
         }
     }
