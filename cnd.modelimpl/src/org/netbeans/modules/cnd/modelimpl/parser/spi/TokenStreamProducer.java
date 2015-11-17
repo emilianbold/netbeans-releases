@@ -82,6 +82,7 @@ import org.openide.filesystems.FileSystem;
 public abstract class TokenStreamProducer {
     
     private PreprocHandler curPreprocHandler;
+    private PreprocHandler.State curPreprocHandlerStartState;
     private FileImpl startFile;
     private String language = APTLanguageSupport.GNU_CPP;
     private String languageFlavor = APTLanguageSupport.FLAVOR_UNKNOWN;
@@ -125,6 +126,7 @@ public abstract class TokenStreamProducer {
     public void prepare(PreprocHandler handler, String language, String languageFlavor, boolean allowToCacheOnRelease) {
         assert handler != null : "null preprocHandler is not allowed";
         curPreprocHandler = handler;
+        curPreprocHandlerStartState = handler.getState();
         startFile = Utils.getStartFile(handler.getState());
         assert language != null : "null language is not allowed";
         this.language = language;
@@ -136,7 +138,11 @@ public abstract class TokenStreamProducer {
     public PreprocHandler getCurrentPreprocHandler() {
         return curPreprocHandler;
     }
-    
+
+    public PreprocHandler.State getPreprocHandlerStartState() {
+        return curPreprocHandlerStartState;
+    }
+        
     public String getLanguage() {
         return language;
     }        
@@ -175,6 +181,7 @@ public abstract class TokenStreamProducer {
 
     protected void resetHandler(PreprocHandler ppHandler) {
         this.curPreprocHandler = ppHandler;
+        this.curPreprocHandlerStartState = ppHandler.getState();
     }
 
     public void setCodePatch(CodePatch codePatch) {

@@ -126,6 +126,7 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         PreprocHandler preprocHandler = projectImpl.createEmptyPreprocHandler(ownerAbsPath);
         PreprocHandler restorePreprocHandlerFromIncludeStack = restorePreprocHandlerFromIncludeStack(projectImpl, reverseInclStack, ownerAbsPath, preprocHandler, includeOwnerState, Interrupter.DUMMY);
         // using restored preprocessor handler, ask included file for parsing token stream filtered by language
+        resetHandler(restorePreprocHandlerFromIncludeStack);
         TokenStream includedFileTS = createParsingTokenStreamForHandler(includedFile, restorePreprocHandlerFromIncludeStack, true);
         return includedFileTS;
     }
