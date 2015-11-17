@@ -113,8 +113,8 @@ public final class ErrorDirectiveImpl extends OffsetableBase implements CsmError
     // serialization
     
     @SuppressWarnings("unchecked")
-    public ErrorDirectiveImpl(RepositoryDataInput input) throws IOException {
-        super(input);
+    public ErrorDirectiveImpl(FileImpl containingFile, RepositoryDataInput input) throws IOException {
+        super(containingFile, input); // ErrorDirectiveImpl does not have UID, so deserialize using containingFile directly
         this.msg = PersistentUtils.readUTF(input, DefaultCache.getManager());
         if (input.readBoolean()) {
             this.ppState = PersistentUtils.readPreprocState(input);

@@ -70,8 +70,8 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Vladimir Kvashin
  */
 public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmValidable {
-    private /*final*/ CsmFile fileRef; // set in onDispose, used as marker of invalid object
-    private final CsmUID<CsmFile> fileUID;
+    private final CsmFile fileRef;// we keep ref to file, because it owns disposing flag from project
+    private boolean isValid = true;
     
     private final int startPosition;
     private final int endPosition;
@@ -84,36 +84,36 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
 
     protected OffsetableBase(CsmFile file, int start, int end) {
         // Parameters.notNull("file can not be null", file); // NOI18N
-        this.fileUID = UIDCsmConverter.fileToUID(file);
-        this.fileRef = null;// to prevent error with "final"
+        this.fileRef = file;
         if(end < start) {
             if(CndUtils.isDebugMode()) {            
                 CndUtils.assertTrueInConsole(false, "end < start for " + ((file != null)?file.getAbsolutePath():"null file") + ":[" + start + "-" + end + "]"); // NOI18N
             }
             end = start;
         }
+        CsmUID<CsmFile> fileUID = UIDCsmConverter.fileToUID(file);
         this.startPosition = PositionManager.createPositionID(fileUID, start, PositionManager.Position.Bias.FOWARD);
         this.endPosition = PositionManager.createPositionID(fileUID, end, PositionManager.Position.Bias.BACKWARD);
     }
 
     @Override
     final public int getStartOffset() {
-        return PositionManager.getOffset(fileUID, startPosition);
+        return PositionManager.getOffset(fileRef, startPosition);
     }
     
     @Override
     final public int getEndOffset() {
-        return endPosition != 0 ? PositionManager.getOffset(fileUID, endPosition) : PositionManager.getOffset(fileUID, startPosition);
+        return endPosition != 0 ? PositionManager.getOffset(fileRef, endPosition) : PositionManager.getOffset(fileRef, startPosition);
     }
 
     @Override
     public final Position getStartPosition() {
-        return PositionManager.getPosition(fileUID, startPosition);
+        return PositionManager.getPosition(fileRef, startPosition);
     }
     
     @Override
     public final Position getEndPosition() {
-        return PositionManager.getPosition(fileUID, endPosition);
+        return PositionManager.getPosition(fileRef, endPosition);
     }
     
     public static int getStartOffset(AST node) {
@@ -155,12 +155,12 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     
     @Override
     public CsmFile getContainingFile() {
-        return _getFile(true);
+        return this.fileRef;
     }
 
     @Override
     public boolean isValid() {
-        return CsmBaseUtilities.isValid(_getFile(false)) && this.fileRef == null;
+        return isValid && CsmBaseUtilities.isValid(this.fileRef);
     }
     
     @Override
@@ -179,38 +179,39 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     }
     
     private synchronized void onDispose() {
-        if (fileRef == null) {
-            // restore container from it's UID
-            this.fileRef = UIDCsmConverter.UIDtoFile(fileUID);
-            assert this.fileRef != null : "no object for UID " + fileUID;
-        }
-    }
-    
-    private synchronized CsmFile _getFile(boolean checkNull) {
-        CsmFile file = this.fileRef;
-        if (file == null) {
-            file = UIDCsmConverter.UIDtoFile(fileUID);
-            assert file != null || !checkNull: "no object for UID " + fileUID + " in object " + getClass() + ":" + getOffsetString();
-        }
-        return file;
-    }
+        this.isValid = false;
+    }    
 
     public void write(RepositoryDataOutput output) throws IOException {
         output.writeInt(startPosition);
         output.writeInt(endPosition);
+        CsmUID<CsmFile> fileUID = UIDCsmConverter.fileToUID(fileRef);
         // not null UID
-        assert this.fileUID != null;
-        UIDObjectFactory.getDefaultFactory().writeUID(this.fileUID, output);
+        assert fileUID != null;
+        UIDObjectFactory.getDefaultFactory().writeUID(fileUID, output);
     }
     
     protected OffsetableBase(RepositoryDataInput input) throws IOException {
         startPosition = input.readInt();
         endPosition = input.readInt();
 
-        this.fileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        CsmUID<CsmFile> fileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // not null UID
-        assert this.fileUID != null;          
-        this.fileRef = null;
+        assert fileUID != null;
+        this.fileRef = UIDCsmConverter.UIDtoFile(fileUID);
+        this.isValid = (this.fileRef != null);
+    }
+
+    protected OffsetableBase(CsmFile containingFile, RepositoryDataInput input) throws IOException {
+        // must be in sync with the above constructor
+        startPosition = input.readInt();
+        endPosition = input.readInt();
+
+        CsmUID<CsmFile> fileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        // not null UID
+        assert fileUID != null;
+        this.fileRef = containingFile;
+        this.isValid = (this.fileRef != null);
     }
     
     // test trace method
@@ -221,9 +222,9 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     protected CharSequence getPositionString() {
         StringBuilder sb = new StringBuilder(); 
         sb.append('[');
-        CsmFile containingFile = _getFile(false);
+        CsmFile containingFile = this.fileRef;
         if (containingFile == null) {
-            sb.append(" NO CONTAINER ").append(fileUID);// NOI18N
+            sb.append(" NO CONTAINER ");// NOI18N
         } else {
             sb.append(containingFile.getName());
         }
@@ -256,7 +257,7 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
             return false;
         }
         final OffsetableBase other = (OffsetableBase) obj;
-        if (this.fileUID != other.fileUID && (this.fileUID == null || !this.fileUID.equals(other.fileUID))) {
+        if ((this.fileRef == null || !this.fileRef.equals(other.fileRef))) {
             return false;
         }
         if (this.startPosition != other.startPosition) {
@@ -271,7 +272,7 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 47 * hash + (this.fileUID != null ? this.fileUID.hashCode() : 0);
+        hash = 47 * hash + (this.fileRef != null ? this.fileRef.hashCode() : 0);
         hash = 47 * hash + this.startPosition;
         hash = 47 * hash + this.endPosition;
         return hash;
