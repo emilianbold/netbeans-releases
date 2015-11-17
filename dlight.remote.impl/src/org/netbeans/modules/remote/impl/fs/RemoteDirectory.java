@@ -1214,6 +1214,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         if (!newEntry.isDirectory() && (newEntry.getSize() != oldEntry.getSize())) {
                             changed = fire = true;// TODO: shouldn't it be the same as time stamp change?
                         }
+                        // It is unlikely that inode changed. But it can happen. Since we cache it, we need to check
+                        if (newEntry.hasINode() && !newEntry.isSameINode(oldEntry)) {
+                            entriesToFireChanged.add(newEntry);
+                            changed = fire = true;
+                        }
                         if (fire) {
                             entriesToFireChanged.add(newEntry);
                         }

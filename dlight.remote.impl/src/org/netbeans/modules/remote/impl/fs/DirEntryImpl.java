@@ -281,9 +281,10 @@ public class DirEntryImpl extends DirEntry {
     
     @Override
     public String toString() {
-        return name + ' ' + accessAsString() + ' ' + isDirectory() + ' ' + lastModified + ' ' 
+        return name + ' ' + accessAsString() + " dir=" + isDirectory() + " date=" + lastModified + ' ' 
                 + (isLink() ? " -> " + linkTarget : size) + // NOI18N
-                " (" + getCache() + ')' + // NOI18N
+                " dev=" + device + " inode=" + inode + // NOI18N
+                " (" + getCache() + ") " + // NOI18N
                 (isValid() ? "[valid]" : "[invalid]"); // NOI18N
     }
 

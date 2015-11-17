@@ -82,6 +82,14 @@ public abstract class DirEntry {
     public boolean isSameLastModified(DirEntry other) {
         return getLastModified().equals(other.getLastModified());
     }
+    
+    public boolean hasINode() {
+        return getINode() != 0;
+    }
+
+    public boolean isSameINode(DirEntry other) {
+        return other.getDevice() == getDevice() && other.getINode() == this.getINode();
+    }
 
     public boolean isSameType(DirEntry other) {
         return isLink() == other.isLink() && isDirectory() == other.isDirectory() && isPlainFile() == other.isPlainFile();
