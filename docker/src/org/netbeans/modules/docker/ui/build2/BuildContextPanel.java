@@ -42,8 +42,6 @@
 package org.netbeans.modules.docker.ui.build2;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.DockerInstance;

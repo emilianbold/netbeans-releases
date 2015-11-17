@@ -99,6 +99,22 @@ public final class BuildOptionsVisual extends JPanel {
         dockerfileTextField.setText(dockerfile);
     }
 
+    public boolean isPull() {
+        return pullCheckBox.isSelected();
+    }
+
+    public void setPull(boolean pull) {
+        pullCheckBox.setSelected(pull);
+    }
+
+    public boolean isNoCache() {
+        return noCacheCheckBox.isSelected();
+    }
+
+    public void setNoCache(boolean noCache) {
+        noCacheCheckBox.setSelected(noCache);
+    }
+
     @NbBundle.Messages("LBL_BuildOptions=Build Options")
     @Override
     public String getName() {
@@ -116,6 +132,8 @@ public final class BuildOptionsVisual extends JPanel {
         dockerfileLabel = new javax.swing.JLabel();
         dockerfileTextField = new javax.swing.JTextField();
         dockerfileButton = new javax.swing.JButton();
+        pullCheckBox = new javax.swing.JCheckBox();
+        noCacheCheckBox = new javax.swing.JCheckBox();
 
         dockerfileLabel.setLabelFor(dockerfileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(dockerfileLabel, org.openide.util.NbBundle.getMessage(BuildOptionsVisual.class, "BuildOptionsVisual.dockerfileLabel.text")); // NOI18N
@@ -127,6 +145,10 @@ public final class BuildOptionsVisual extends JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(pullCheckBox, org.openide.util.NbBundle.getMessage(BuildOptionsVisual.class, "BuildOptionsVisual.pullCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(noCacheCheckBox, org.openide.util.NbBundle.getMessage(BuildOptionsVisual.class, "BuildOptionsVisual.noCacheCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -137,13 +159,20 @@ public final class BuildOptionsVisual extends JPanel {
                 .addComponent(dockerfileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(dockerfileButton))
+            .addComponent(pullCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(noCacheCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(dockerfileLabel)
-                .addComponent(dockerfileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(dockerfileButton))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dockerfileLabel)
+                    .addComponent(dockerfileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dockerfileButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(pullCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(noCacheCheckBox))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -168,5 +197,7 @@ public final class BuildOptionsVisual extends JPanel {
     private javax.swing.JButton dockerfileButton;
     private javax.swing.JLabel dockerfileLabel;
     private javax.swing.JTextField dockerfileTextField;
+    private javax.swing.JCheckBox noCacheCheckBox;
+    private javax.swing.JCheckBox pullCheckBox;
     // End of variables declaration//GEN-END:variables
 }
