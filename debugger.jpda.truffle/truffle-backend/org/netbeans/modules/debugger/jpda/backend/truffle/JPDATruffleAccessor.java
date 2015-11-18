@@ -236,11 +236,9 @@ public class JPDATruffleAccessor extends Object {
                 return null;
             }
             
-            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguageImpl", Object.class, Class.class);
+            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguageImpl", Object.class, Class.class, String.class);
             findLanguageMethod.setAccessible(true);
-            Object tl = findLanguageMethod.invoke(spi, debugManager.getPolyglotEngine(), languageClass);
-            
-            // TODO: What to do with Env?
+            Object tl = findLanguageMethod.invoke(spi, debugManager.getPolyglotEngine(), languageClass, null);
             
             if (tl instanceof TruffleLanguage) {
                 return (TruffleLanguage) tl;
