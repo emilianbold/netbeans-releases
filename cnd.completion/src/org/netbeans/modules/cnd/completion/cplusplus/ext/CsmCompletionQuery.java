@@ -126,6 +126,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmResolveContext;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
+import org.netbeans.modules.cnd.api.model.services.CsmTypes;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -154,6 +155,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.Predicate;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.ConstantPredicate;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities.TypeInfoCollector;
+import static org.netbeans.modules.cnd.modelutil.CsmUtilities.howMany;
 
 /**
  *
@@ -2200,6 +2203,13 @@ abstract public class CsmCompletionQuery {
                                 int ptrDepth = lastType.getPointerDepth();
                                 int arrDepth = lastType.getArrayDepth();
                                 int ref = getReferenceValue(lastType);
+                                if (arrDepth == 0 && ptrDepth == 0) {
+                                    // Note: in case of performance issues merge iterateTypeChain() and getClassifier() calls into one
+                                    TypeInfoCollector typeInfo = new TypeInfoCollector();
+                                    CsmUtilities.iterateTypeChain(lastType, typeInfo);
+                                    ptrDepth = howMany(typeInfo, CsmUtilities.Qualificator.POINTER);
+                                    arrDepth = howMany(typeInfo, CsmUtilities.Qualificator.ARRAY);
+                                }
                                 // first try to decrease depth of array, then handle pointer as arrays as well
                                 if (arrDepth > 0) {
                                     arrDepth--;
