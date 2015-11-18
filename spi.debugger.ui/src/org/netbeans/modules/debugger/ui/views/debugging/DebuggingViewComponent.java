@@ -452,8 +452,8 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
                         }
                         theTreeView = treeView;
                     }
-                    root = Models.createNodes(model, treeView);
-                    treeView.setExpansionModel(model);
+                    root = Models.createNodes(model, theTreeView);
+                    theTreeView.setExpansionModel(model);
                 }
                 manager.setRootContext(root);
                 refreshView();
