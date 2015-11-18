@@ -207,15 +207,9 @@ If you are sure you want to build with JDK 9+ anyway, use: -Dpermit.jdk9.builds=
                 <include name="*.jar"/>
             </fileset>
         </pathconvert>
-        <!-- When requires.nb.javac property is true, prepend javac-api on bootclasspath to allow override the default annotation
-             processing API located in rt.jar. On Mac, prepend also javac-impl, so that tests are built against correct version of javac. -->
+        <!-- When requires.nb.javac property is true, prepend javac-api and javac-impl on bootclasspath to allow override the default annotation
+             processing API located in rt.jar. -->
         <condition property="bootclasspath.prepend" value="${retouche.javac.api}:${retouche.javac.impl}">
-            <and>
-                <os family="mac"/>
-                <istrue value="${requires.nb.javac}"/>
-            </and>
-        </condition>
-        <condition property="bootclasspath.prepend" value="${retouche.javac.api}">
             <istrue value="${requires.nb.javac}"/>
         </condition>
         <fail message="Delete standalone/suite-related metadata from netbeans.org modules">
