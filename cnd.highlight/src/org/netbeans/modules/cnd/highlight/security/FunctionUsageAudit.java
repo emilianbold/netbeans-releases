@@ -41,10 +41,18 @@
  */
 package org.netbeans.modules.cnd.highlight.security;
 
+import java.util.Collection;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
@@ -54,6 +62,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,24 +91,84 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
     public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmFile file = request.getFile();
         if (file != null) {
-            for (CsmReference ref : CsmReferenceResolver.getDefault().getReferences(file)) {
-                if (request.isCancelled()) {
-                    return;
-                }
-                if (CsmKindUtilities.isFunction(ref.getReferencedObject())) {
-                    CsmFunction function = (CsmFunction) ref.getReferencedObject();
-                    String altText = getAlternativesIfUnsafe(function);
-                    if (altText != null) {
-                        CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
-                        String id = level.getLevel() + category.getName(); // NOI18N
-                        String name = "(" + level + ") " + function.getName().toString(); // NOI18N
-                        String description = (altText.isEmpty())?getDescription():(getDescription()+NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.alternative", altText)); // NOI18N
-                        if (response instanceof AnalyzerResponse) {
-                            ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), id+"\n"+name+"\n"+description, severity, customType, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
-                        } else {
-                            response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), description, severity, customType, ref.getStartOffset(), ref.getEndOffset()));
-                        }
+            if (request.isCancelled()) {
+                return;
+            }
+            Document doc_ = request.getDocument();
+            if (doc_ == null) {
+                CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
+                doc_ = CsmUtilities.openDocument(ces);
+            }
+            final Document doc = doc_;
+            
+            visit(file.getDeclarations(), file, doc, request, response);
+        }
+    }
+    
+    private void visit(Collection<? extends CsmOffsetableDeclaration> decls, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        for (CsmOffsetableDeclaration decl : decls) {
+            if (request.isCancelled()) {
+                return;
+            }
+            if (CsmKindUtilities.isClass(decl)) {
+                visit(((CsmClass) decl).getMembers(), file, doc, request, response);
+            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                visit(((CsmNamespaceDefinition) decl).getDeclarations(), file, doc, request, response);
+            } else if (CsmKindUtilities.isFunctionDeclaration(decl)) {
+                visit(((CsmFunction) decl).getDefinition(), file, doc, request, response);
+            } else if (CsmKindUtilities.isFunctionDefinition(decl)) {
+                visit((CsmFunctionDefinition) decl, file, doc, request, response);
+            }
+        }
+    }
+    
+    private void visit(CsmFunctionDefinition function, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        if (function == null) {
+            return;
+        }
+        if (!file.equals(function.getContainingFile())) {
+            return;
+        }
+        
+        for (CsmStatement statement : function.getBody().getStatements()) {
+            if (request.isCancelled()) {
+                return;
+            }
+            
+            if (CsmKindUtilities.isCompoundStatement(statement)) {
+                visit((CsmCompoundStatement) statement, file, doc, request, response);
+            } else {
+                visit(statement, file, doc, request, response);
+            }
+        }
+    }
+    
+    private void visit(CsmCompoundStatement compoundStatement, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        for (CsmStatement statement : compoundStatement.getStatements()) {
+            if (request.isCancelled()) {
+                return;
+            }
+            
+            visit(statement, file, doc, request, response);
+        }
+    }
+    
+    private void visit(CsmStatement statement, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        CsmReference reference = CsmReferenceResolver.getDefault().findReference(file, doc, statement.getStartOffset());
+        if (reference != null) {
+            if (CsmKindUtilities.isFunction(reference.getReferencedObject())) {
+                CsmFunction function = (CsmFunction) reference.getReferencedObject();
+                String altText = getAlternativesIfUnsafe(function);
+                if (altText != null) {
+                    CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
+                    String id = level.getLevel() + category.getName(); // NOI18N
+                    String name = "(" + level + ") " + function.getName().toString(); // NOI18N
+                    String description = (altText.isEmpty())?getDescription():(getDescription()+NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.alternative", altText)); // NOI18N
+                    if (response instanceof AnalyzerResponse) {
+                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
+                            new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), id+"\n"+name+"\n"+description, severity, customType, reference.getStartOffset(), reference.getEndOffset())); // NOI18N
+                    } else {
+                        response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), description, severity, customType, reference.getStartOffset(), reference.getEndOffset()));
                     }
                 }
             }
