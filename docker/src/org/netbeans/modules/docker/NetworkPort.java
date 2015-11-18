@@ -39,46 +39,70 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker;
 
-import org.netbeans.modules.docker.DockerContainerInfo;
-import org.netbeans.modules.docker.ui.UiUtils;
-import org.netbeans.modules.docker.ContainerStatus;
-import org.netbeans.modules.docker.DockerContainer;
-import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.remote.DockerException;
-import org.netbeans.modules.docker.remote.DockerRemote;
-import org.openide.util.NbBundle;
+import java.util.Objects;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Petr Hejl
  */
-public class AttachContainerAction extends AbstractContainerAction {
+public class NetworkPort {
 
-    @NbBundle.Messages("LBL_AttachContainerAction=Attach")
-    public AttachContainerAction() {
-        super(Bundle.LBL_AttachContainerAction());
+    public enum Type {
+        TCP,
+        UDP
     }
 
-    @NbBundle.Messages({
-        "# {0} - container id",
-        "MSG_AttachingContainer=Attaching to container {0}"
-    })
-    @Override
-    protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_AttachingContainer(DockerUtils.getShortId(container));
+    private final int port;
+
+    private final Type type;
+
+    public NetworkPort(int port, Type type) {
+        if (port < 1 || port > 65535) {
+            throw new IllegalArgumentException("Port number must be between 1 and 65535");
+        }
+        Parameters.notNull("type", type);
+
+        this.port = port;
+        this.type = type;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     @Override
-    protected void performAction(DockerContainer container) throws DockerException {
-        DockerRemote facade = new DockerRemote(container.getInstance());
-        DockerContainerInfo info = facade.getInfo(container);
-        UiUtils.openTerminal(container, null, info.isOpenStdin(), false);
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + this.port;
+        hash = 23 * hash + Objects.hashCode(this.type);
+        return hash;
     }
 
     @Override
-    protected boolean isEnabled(DockerContainer container) {
-        return container.getStatus() == ContainerStatus.RUNNING;
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final NetworkPort other = (NetworkPort) obj;
+        if (this.port != other.port) {
+            return false;
+        }
+        if (this.type != other.type) {
+            return false;
+        }
+        return true;
     }
 }
