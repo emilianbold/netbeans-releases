@@ -248,7 +248,10 @@ public class JPDATruffleAccessor extends Object {
         } catch (IllegalAccessException | IllegalArgumentException |
                  NoSuchFieldException | NoSuchMethodException |
                  SecurityException | InvocationTargetException ex) {
-            throw new RuntimeException(ex);
+            //throw new RuntimeException(ex);
+            // Do not break debugging:
+            ex.printStackTrace();
+            return null;
         } catch (StackOverflowError soe) {
             throw new IllegalStateException(node.toString(), soe);
         }
