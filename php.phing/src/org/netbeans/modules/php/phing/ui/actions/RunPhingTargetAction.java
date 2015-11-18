@@ -56,7 +56,6 @@ import javax.swing.JMenuItem;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.phing.PhingBuildTool;
 import org.netbeans.modules.php.phing.exec.PhingExecutable;
@@ -64,6 +63,7 @@ import org.netbeans.modules.php.phing.file.PhingTargets;
 import org.netbeans.modules.php.phing.ui.options.PhingOptionsPanelController;
 import org.netbeans.modules.php.phing.util.PhingUtils;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -137,7 +137,7 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         if (file == null) {
             return this;
         }
-        contextProject = FileOwnerQuery.getOwner(file);
+        contextProject = ProjectConvertors.getNonConvertorOwner(file);
         if (contextProject == null) {
             return this;
         }
