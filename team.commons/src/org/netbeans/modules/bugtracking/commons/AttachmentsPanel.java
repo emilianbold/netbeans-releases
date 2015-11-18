@@ -42,11 +42,11 @@
 
 package org.netbeans.modules.bugtracking.commons;
 
-import org.netbeans.modules.bugtracking.commons.LinkButton;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
+import java.awt.font.TextAttribute;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -63,6 +63,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,6 +73,7 @@ import static javax.swing.Action.NAME;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -88,7 +90,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.NotificationDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChooserBuilder;
@@ -241,6 +242,7 @@ public class AttachmentsPanel extends JPanel {
                     .addComponent(authorLabel)));
             for (Attachment attachment : attachments) {
                 boolean isPatch = attachment.isPatch() && hasPatchUtils(); 
+                boolean isDeprecated = attachment.isDeprecated(); 
                 String description = attachment.getDesc();
                 String filename = attachment.getFilename();
                 Date date = attachment.getDate();
@@ -254,7 +256,7 @@ public class AttachmentsPanel extends JPanel {
                 JLabel rBrace = null;
                 GroupLayout.SequentialGroup hPatchGroup = null;
                 if (isPatch) {
-                    patchButton = new LinkButton();
+                    patchButton = new LinkButton();     
                     lBrace = new JLabel("("); // NOI18N
                     rBrace = new JLabel(")"); // NOI18N
                     hPatchGroup = layout.createSequentialGroup()
@@ -267,6 +269,9 @@ public class AttachmentsPanel extends JPanel {
                 JPopupMenu menu = menuFor(attachment, patchButton);
                 filenameButton.setAction(attachment.getOpenAction());
                 filenameButton.setText(filename);
+                if(isDeprecated) {
+                    strikeThrough(filenameButton);
+                }  
                 filenameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanels.filenameButton.AccessibleContext.accessibleDescription")); // NOI18N
                 dateLabel = new JLabel(date != null ? DateFormat.getDateInstance().format(date) : ""); // NOI18N
                 
@@ -277,6 +282,9 @@ public class AttachmentsPanel extends JPanel {
                     authorComponent = new JLabel(authorName);
                 }
                 descriptionLabel.setComponentPopupMenu(menu);
+                if(isDeprecated) {
+                    strikeThrough(descriptionLabel);
+                }  
                 filenameButton.setComponentPopupMenu(menu);
                 dateLabel.setComponentPopupMenu(menu);
                 authorComponent.setComponentPopupMenu(menu);
@@ -362,6 +370,12 @@ public class AttachmentsPanel extends JPanel {
         for (AttachmentInfo newAttachment : unsubmittedAttachments) {
             ((CreateNewAction)createNewButton.getAction()).createAttachment(newAttachment);
         }
+    }
+
+    protected void strikeThrough(JComponent cmp) {
+        Map attributes = cmp.getFont().getAttributes();
+        attributes.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
+        cmp.setFont(cmp.getFont().deriveFont(attributes));
     }
 
     @Override
@@ -631,6 +645,8 @@ public class AttachmentsPanel extends JPanel {
     public static interface Attachment {
 
         public boolean isPatch ();
+        
+        public boolean isDeprecated ();
 
         public Action getOpenAction ();
 
@@ -715,6 +731,11 @@ public class AttachmentsPanel extends JPanel {
             return false;
         }
 
+        @Override
+        public boolean isDeprecated() {
+            return false;
+        }
+        
         public void open() {
             // XXX
             String progressFormat = NbBundle.getMessage(OpenAttachmentAction.class, "Attachment.open.progress");    //NOI18N

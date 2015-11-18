@@ -1650,8 +1650,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             return id;
         }
 
-        public String getIsDeprected() {
-            return isDeprected;
+        @Override
+        public boolean isDeprecated() {
+            return "1".equals(isDeprected);
         }
 
         public String getSize() {
