@@ -64,6 +64,7 @@ import org.netbeans.modules.javascript.grunt.file.GruntTasks;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
 import org.netbeans.modules.javascript.grunt.util.GruntUtils;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -139,7 +140,7 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         if (file == null) {
             return this;
         }
-        contextProject = FileOwnerQuery.getOwner(file);
+        contextProject = ProjectConvertors.getNonConvertorOwner(file);
         if (contextProject == null) {
             return this;
         }
