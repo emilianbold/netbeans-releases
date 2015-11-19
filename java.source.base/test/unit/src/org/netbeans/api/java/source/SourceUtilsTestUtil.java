@@ -99,6 +99,8 @@ import org.xml.sax.SAXException;
 public final class SourceUtilsTestUtil extends ProxyLookup {
     
     private static SourceUtilsTestUtil DEFAULT_LOOKUP = null;
+    private static final Set<String> NB_JAVAC = Collections.unmodifiableSet(new HashSet<String>(
+        Arrays.asList("nb-javac-api.jar","nb-javac-impl.jar")));    //NOI18N
     
     public SourceUtilsTestUtil() {
 //        Assert.assertNull(DEFAULT_LOOKUP);
@@ -243,14 +245,15 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
             try {
                 String cp = System.getProperty("sun.boot.class.path");
                 List<URL> urls = new ArrayList<URL>();
-                String[] paths = cp.split(Pattern.quote(System.getProperty("path.separator")));
-                
-                for (String path : paths) {
-                    File f = new File(path);
-                    
+                for (String path : cp.split(Pattern.quote(System.getProperty("path.separator")))) {
+                    final File f = new File(path);
                     if (!f.canRead())
                         continue;
-                    
+                    //Remove nb-javac-impl.jar & nb-javac-api.jar added to test as boot prepend
+                    if (NB_JAVAC.contains(f.getName())) {
+                        continue;
+                    }
+
                     FileObject fo = FileUtil.toFileObject(f);
                     
                     if (FileUtil.isArchiveFile(fo)) {
