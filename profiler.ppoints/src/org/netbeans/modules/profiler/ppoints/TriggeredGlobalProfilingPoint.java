@@ -65,6 +65,9 @@ public abstract class TriggeredGlobalProfilingPoint extends GlobalProfilingPoint
         public static final int METRIC_HEAPSIZ = 2;
         public static final int METRIC_SURVGEN = 3;
         public static final int METRIC_LDCLASS = 4;
+        public static final int METRIC_THREADS = 5;
+        public static final int METRIC_CPUUSG  = 6;
+        public static final int METRIC_GCUSG   = 7;
 
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 

@@ -110,6 +110,9 @@ import org.openide.ErrorManager;
     "TriggeredTakeSnapshotProfilingPoint_HeapUsageResultString=(hit for {0}% heap usage)",
     "TriggeredTakeSnapshotProfilingPoint_SurvGenResultString=(hit for {0} surviving generations)",
     "TriggeredTakeSnapshotProfilingPoint_LoadedClassesResultString=(hit for {0} loaded classes)",
+    "TriggeredTakeSnapshotProfilingPoint_CpuTimeResultString=(hit for {0}% CPU time)",
+    "TriggeredTakeSnapshotProfilingPoint_GcTimeResultString=(hit for {0}% GC time)",
+    "TriggeredTakeSnapshotProfilingPoint_ThreadsResultString=(hit for {0} threads)",
     "TriggeredTakeSnapshotProfilingPoint_HitString=<b>{0}.</b> hit at <b>{1}</b>, {2} {3}",
     "TriggeredTakeSnapshotProfilingPoint_SnapshotNotAvailableMsg=Saved snapshot is no longer available.",
     "TriggeredTakeSnapshotProfilingPoint_DataString=Data:"
@@ -204,6 +207,12 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
                     hitValueInformation = Bundle.TriggeredTakeSnapshotProfilingPoint_SurvGenResultString(result.getHitValue());
                 } else if (getCondition().getMetric() == TriggeredTakeSnapshotProfilingPoint.TriggerCondition.METRIC_LDCLASS) {
                     hitValueInformation = Bundle.TriggeredTakeSnapshotProfilingPoint_LoadedClassesResultString(result.getHitValue());
+                } else if (getCondition().getMetric() == TriggeredTakeSnapshotProfilingPoint.TriggerCondition.METRIC_CPUUSG) {
+                    hitValueInformation = Bundle.TriggeredTakeSnapshotProfilingPoint_CpuTimeResultString(result.getHitValue());
+                } else if (getCondition().getMetric() == TriggeredTakeSnapshotProfilingPoint.TriggerCondition.METRIC_GCUSG) {
+                    hitValueInformation = Bundle.TriggeredTakeSnapshotProfilingPoint_GcTimeResultString(result.getHitValue());
+                } else if (getCondition().getMetric() == TriggeredTakeSnapshotProfilingPoint.TriggerCondition.METRIC_THREADS) {
+                    hitValueInformation = Bundle.TriggeredTakeSnapshotProfilingPoint_ThreadsResultString(result.getHitValue());
                 }
 
                 return Bundle.TriggeredTakeSnapshotProfilingPoint_HitString(
