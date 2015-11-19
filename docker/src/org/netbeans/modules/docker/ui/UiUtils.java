@@ -48,6 +48,15 @@ import java.io.Closeable;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,6 +83,7 @@ import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
@@ -119,7 +129,45 @@ public final class UiUtils {
         }
         return value;
     }
-    
+
+    public static Collection<String> getAddresses(boolean includeIpv6, boolean includeDocker) {
+        Set<InetAddress> addresses = new HashSet<>();
+        try {
+            for (Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();) {
+                NetworkInterface iface = e.nextElement();
+                if (includeDocker || !iface.getName().contains("docker")) { // NOI18N
+                    for (Enumeration<InetAddress> ei = iface.getInetAddresses(); ei.hasMoreElements();) {
+                        InetAddress addr = ei.nextElement();
+                        if (!addr.isLinkLocalAddress() && (includeIpv6 || !(addr instanceof Inet6Address))) {
+                            addresses.add(addr);
+                        }
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+        try {
+            addresses.add(InetAddress.getLocalHost());
+        } catch (UnknownHostException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+        Set<String> ret = new TreeSet<>();
+        for (InetAddress addr : addresses) {
+            String host = addr.getHostAddress();
+            if (addr instanceof Inet6Address) {
+                int index = host.indexOf('%'); // NOI18N
+                if (index > 0) {
+                    host = host.substring(0, index);
+                }
+                // compress IPv6 address
+                host = host.replaceFirst("(^|:)(0+(:|$)){2,8}", "::").replaceAll("(:|^)0+([0-9A-Fa-f])", "$1$2"); // NOI18N
+            }
+            ret.add(host);
+        }
+        return ret;
+    }
+
     public static void loadRepositories(final DockerInstance instance, final JComboBox<String> combo) {
         assert SwingUtilities.isEventDispatchThread();
 
