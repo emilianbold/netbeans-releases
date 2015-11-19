@@ -71,8 +71,10 @@ import org.netbeans.modules.javascript.gulp.util.GulpUtils;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -165,7 +167,7 @@ public class GulpExecutable {
         final GulpTasksLineProcessor gulpTasksLineProcessor = new GulpTasksLineProcessor();
         Future<Integer> task = getExecutable("list gulp tasks") // NOI18N
                 .noInfo(true)
-                .additionalParameters(getParams(Arrays.asList(NO_COLOR_PARAM, SILENT_PARAM, TASKS_PARAM)))
+                .additionalParameters(getParams(getListTasksParams()))
                 .redirectErrorStream(false)
                 .run(getSilentDescriptor(), new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override
@@ -174,7 +176,7 @@ public class GulpExecutable {
                     }
                 });
         assert task != null : gulpPath;
-        return new TaskList(task, gulpTasksLineProcessor);
+        return new TaskList(this, task, gulpTasksLineProcessor);
     }
 
     private ExternalExecutable getExecutable(String title) {
@@ -245,6 +247,10 @@ public class GulpExecutable {
         return result.getFirstWarningMessage();
     }
 
+    static List<String> getListTasksParams() {
+        return Arrays.asList(NO_COLOR_PARAM, SILENT_PARAM, TASKS_PARAM);
+    }
+
     //~ Inner classes
 
     private static final class MacGulpExecutable extends GulpExecutable {
@@ -276,13 +282,16 @@ public class GulpExecutable {
 
     private static final class GulpTasksLineProcessor implements LineProcessor {
 
+        // @GuardedBy("tasks")
         final List<String> tasks = new ArrayList<>();
 
 
         @Override
         public void processLine(String line) {
             if (StringUtilities.hasText(line)) {
-                tasks.add(line);
+                synchronized (tasks) {
+                    tasks.add(line);
+                }
             }
         }
 
@@ -297,23 +306,31 @@ public class GulpExecutable {
         }
 
         public List<String> getTasks() {
-            return Collections.unmodifiableList(tasks);
+            synchronized (tasks) {
+                return new ArrayList<>(tasks);
+            }
         }
 
     }
 
     private static final class TaskList implements Future<List<String>> {
 
+        private static final RequestProcessor RP = new RequestProcessor(TaskList.class);
+
+        final GulpExecutable gulp;
         private final Future<Integer> task;
         private final GulpTasksLineProcessor processor;
 
+        private volatile Integer result;
         // @GuardedBy("this")
         private List<String> gulpTasks = null;
 
 
-        TaskList(Future<Integer> task, GulpTasksLineProcessor processor) {
+        TaskList(GulpExecutable gulp, Future<Integer> task, GulpTasksLineProcessor processor) {
+            assert gulp != null;
             assert task != null;
             assert processor != null;
+            this.gulp = gulp;
             this.task = task;
             this.processor = processor;
         }
@@ -336,7 +353,7 @@ public class GulpExecutable {
         @Override
         public List<String> get() throws InterruptedException, ExecutionException {
             try {
-                task.get();
+                result = task.get();
             } catch (CancellationException ex) {
                 // cancelled by user
                 LOGGER.log(Level.FINE, null, ex);
@@ -347,7 +364,7 @@ public class GulpExecutable {
         @Override
         public List<String> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             try {
-                task.get(timeout, unit);
+                result = task.get(timeout, unit);
             } catch (CancellationException ex) {
                 // cancelled by user
                 LOGGER.log(Level.FINE, null, ex);
@@ -355,8 +372,21 @@ public class GulpExecutable {
             return getGulpTasks();
         }
 
+        @NbBundle.Messages("TaskList.error=Cannot get Gulp tasks.")
         private synchronized List<String> getGulpTasks() {
             if (gulpTasks != null) {
+                return Collections.unmodifiableList(gulpTasks);
+            }
+            if (result == null
+                    || result == 1) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        gulp.run(getListTasksParams().toArray(new String[0]));
+                    }
+                });
+                StatusDisplayer.getDefault().setStatusText(Bundle.TaskList_error());
+                gulpTasks = Collections.emptyList();
                 return Collections.unmodifiableList(gulpTasks);
             }
             List<String> tasks = new ArrayList<>(processor.getTasks());

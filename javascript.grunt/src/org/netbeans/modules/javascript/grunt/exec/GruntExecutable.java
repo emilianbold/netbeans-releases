@@ -71,8 +71,10 @@ import org.netbeans.modules.javascript.grunt.util.GruntUtils;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -163,7 +165,7 @@ public class GruntExecutable {
         final GruntTasksLineProcessor gruntTasksLineProcessor = new GruntTasksLineProcessor();
         Future<Integer> task = getExecutable("list grunt tasks") // NOI18N
                 .noInfo(true)
-                .additionalParameters(getParams(Arrays.asList(NO_COLOR_PARAM, HELP_PARAM)))
+                .additionalParameters(getParams(getListTasksParams()))
                 .redirectErrorStream(false)
                 .run(getSilentDescriptor(), new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override
@@ -172,7 +174,7 @@ public class GruntExecutable {
                     }
                 });
         assert task != null : gruntPath;
-        return new TaskList(task, gruntTasksLineProcessor);
+        return new TaskList(this, task, gruntTasksLineProcessor);
     }
 
     private ExternalExecutable getExecutable(String title) {
@@ -240,6 +242,10 @@ public class GruntExecutable {
         return result.getFirstWarningMessage();
     }
 
+    static List<String> getListTasksParams() {
+        return Arrays.asList(NO_COLOR_PARAM, HELP_PARAM);
+    }
+
     //~ Inner classes
 
     private static final class MacGruntExecutable extends GruntExecutable {
@@ -274,9 +280,10 @@ public class GruntExecutable {
         private static final String AVAILABLE_TASKS = "Available tasks"; // NOI18N
         private static final String NO_TASKS = "(no tasks found)"; // NOI18N
 
+        // @GuardedBy("tasks")
         final List<String> tasks = new ArrayList<>();
 
-        private int state = 0;
+        private volatile int state = 0;
         private int spaceIndex = -1;
 
 
@@ -302,7 +309,9 @@ public class GruntExecutable {
                         }
                         String task = line.substring(0, spaceIndex).trim();
                         if (StringUtilities.hasText(task)) {
-                            tasks.add(task);
+                            synchronized (tasks) {
+                                tasks.add(task);
+                            }
                         }
                     }
                     break;
@@ -321,14 +330,23 @@ public class GruntExecutable {
             // noop
         }
 
+        public boolean errorOccurred() {
+            return state == 0;
+        }
+
         public List<String> getTasks() {
-            return Collections.unmodifiableList(tasks);
+            synchronized (tasks) {
+                return new ArrayList<>(tasks);
+            }
         }
 
     }
 
     private static final class TaskList implements Future<List<String>> {
 
+        private static final RequestProcessor RP = new RequestProcessor(TaskList.class);
+
+        final GruntExecutable grunt;
         private final Future<Integer> task;
         private final GruntTasksLineProcessor convertor;
 
@@ -336,9 +354,11 @@ public class GruntExecutable {
         private List<String> gruntTasks = null;
 
 
-        TaskList(Future<Integer> task, GruntTasksLineProcessor convertor) {
+        TaskList(GruntExecutable grunt, Future<Integer> task, GruntTasksLineProcessor convertor) {
+            assert grunt != null;
             assert task != null;
             assert convertor != null;
+            this.grunt = grunt;
             this.task = task;
             this.convertor = convertor;
         }
@@ -380,8 +400,20 @@ public class GruntExecutable {
             return getGruntTasks();
         }
 
+        @NbBundle.Messages("TaskList.error=Cannot get Grunt tasks.")
         private synchronized List<String> getGruntTasks() {
             if (gruntTasks != null) {
+                return Collections.unmodifiableList(gruntTasks);
+            }
+            if (convertor.errorOccurred()) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        grunt.run(getListTasksParams().toArray(new String[0]));
+                    }
+                });
+                StatusDisplayer.getDefault().setStatusText(Bundle.TaskList_error());
+                gruntTasks = Collections.emptyList();
                 return Collections.unmodifiableList(gruntTasks);
             }
             List<String> tasks = new ArrayList<>(convertor.getTasks());
