@@ -1334,6 +1334,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
             fireReadOnlyChangedEventsIfNeed(entriesToFireChangedRO);
+            if (interceptor != null && !Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.disable")) {
+                try {
+                    getFileSystem().setInsideVCS(true);
+                    interceptor.listFiles(FilesystemInterceptorProvider.toFileProxy(getOwnerFileObject()), lastModified().getTime(), Collections.emptyList());
+                } finally {
+                    getFileSystem().setInsideVCS(false);
+                }
+            }
             //fireFileChangedEvent(getListeners(), new FileEvent(this));
         }
         return storage;

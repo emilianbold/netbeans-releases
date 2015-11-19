@@ -57,8 +57,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestSuite;
 import junit.framework.Test;
 import org.netbeans.junit.MockServices;
@@ -172,6 +170,8 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("versioning.git.handleExternalEvents", "false");
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
         final String gitPath = "/usr/bin/git";
         FileObject git = rootFO.getFileObject(gitPath);
         if (git == null || !git.isValid()) {
@@ -200,8 +200,6 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
         assertTrue(repositoryMetadata.exists());
         initUser();
         MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, GitVCS.class, FilesystemInterceptorProviderImpl.class});
-        System.setProperty("versioning.git.handleExternalEvents", "false");
-        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
         Git.STATUS_LOG.setLevel(Level.ALL);
         refreshHandler = new StatusRefreshLogHandler(repositoryLocation);
         Git.STATUS_LOG.addHandler(refreshHandler);
