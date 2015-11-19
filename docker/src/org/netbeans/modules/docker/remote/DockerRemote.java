@@ -66,7 +66,9 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -84,11 +86,13 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.docker.ContainerInfo;
+import org.netbeans.modules.docker.DockerContainerInfo;
 import org.netbeans.modules.docker.ContainerStatus;
 import org.netbeans.modules.docker.DockerInstance;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.DockerHubImage;
+import org.netbeans.modules.docker.DockerImageInfo;
+import org.netbeans.modules.docker.NetworkPort;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
@@ -104,6 +108,8 @@ public class DockerRemote {
     private static final Logger LOGGER = Logger.getLogger(DockerRemote.class.getName());
 
     private static final Pattern ID_PATTERN = Pattern.compile(".*([0-9a-f]{12}([0-9a-f]{52})?).*");
+
+    private static final Pattern PORT_PATTERN = Pattern.compile("^(\\d+)/(tcp|udp)$");
 
     private static final Set<Integer> START_STOP_CONTAINER_CODES = new HashSet<>();
 
@@ -279,7 +285,7 @@ public class DockerRemote {
         return new DockerTag(source.getImage(), tagResult);
     }
 
-    public ContainerInfo getInfo(DockerContainer container) throws DockerException {
+    public DockerContainerInfo getInfo(DockerContainer container) throws DockerException {
         JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
                 "/containers/" + container.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
         boolean tty = false;
@@ -289,7 +295,31 @@ public class DockerRemote {
             tty = (boolean) getOrDefault(config, "Tty", false);
             openStdin = (boolean) getOrDefault(config, "OpenStdin", false);
         }
-        return new ContainerInfo(openStdin, tty);
+        return new DockerContainerInfo(openStdin, tty);
+    }
+
+    public DockerImageInfo getInfo(DockerImage image) throws DockerException {
+        JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
+                "/images/" + image.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
+        List<NetworkPort> ports = new LinkedList<>();
+        JSONObject config = (JSONObject) value.get("Config");
+        if (config != null) {
+            JSONObject portsObject = (JSONObject) config.get("ExposedPorts");
+            if (portsObject != null) {
+                for (Object k : portsObject.keySet()) {
+                    String portStr = (String) k;
+                    Matcher m = PORT_PATTERN.matcher(portStr);
+                    if (m.matches()) {
+                        int port = Integer.parseInt(m.group(1));
+                        NetworkPort.Type type = NetworkPort.Type.valueOf(m.group(2).toUpperCase(Locale.ENGLISH));
+                        ports.add(new NetworkPort(port, type));
+                    } else {
+                        LOGGER.log(Level.FINE, "Unparsable port: {0}", portStr);
+                    }
+                }
+            }
+        }
+        return new DockerImageInfo(ports);
     }
 
     public void start(DockerContainer container) throws DockerException {
@@ -368,7 +398,7 @@ public class DockerRemote {
     public StreamResult attach(DockerContainer container, boolean stdin, boolean logs) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
-        ContainerInfo info = getInfo(container);
+        DockerContainerInfo info = getInfo(container);
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -677,7 +707,7 @@ public class DockerRemote {
     public LogResult logs(DockerContainer container) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
-        ContainerInfo info = getInfo(container);
+        DockerContainerInfo info = getInfo(container);
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);

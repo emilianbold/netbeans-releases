@@ -39,46 +39,24 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker;
 
-import org.netbeans.modules.docker.DockerContainerInfo;
-import org.netbeans.modules.docker.ui.UiUtils;
-import org.netbeans.modules.docker.ContainerStatus;
-import org.netbeans.modules.docker.DockerContainer;
-import org.netbeans.modules.docker.DockerUtils;
-import org.netbeans.modules.docker.remote.DockerException;
-import org.netbeans.modules.docker.remote.DockerRemote;
-import org.openide.util.NbBundle;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
  * @author Petr Hejl
  */
-public class AttachContainerAction extends AbstractContainerAction {
+public class DockerImageInfo {
 
-    @NbBundle.Messages("LBL_AttachContainerAction=Attach")
-    public AttachContainerAction() {
-        super(Bundle.LBL_AttachContainerAction());
+    private final List<NetworkPort> exposedPorts;
+
+    public DockerImageInfo(List<NetworkPort> exposedPorts) {
+        this.exposedPorts = exposedPorts;
     }
 
-    @NbBundle.Messages({
-        "# {0} - container id",
-        "MSG_AttachingContainer=Attaching to container {0}"
-    })
-    @Override
-    protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_AttachingContainer(DockerUtils.getShortId(container));
-    }
-
-    @Override
-    protected void performAction(DockerContainer container) throws DockerException {
-        DockerRemote facade = new DockerRemote(container.getInstance());
-        DockerContainerInfo info = facade.getInfo(container);
-        UiUtils.openTerminal(container, null, info.isOpenStdin(), false);
-    }
-
-    @Override
-    protected boolean isEnabled(DockerContainer container) {
-        return container.getStatus() == ContainerStatus.RUNNING;
+    public List<NetworkPort> getExposedPorts() {
+        return Collections.unmodifiableList(exposedPorts);
     }
 }
