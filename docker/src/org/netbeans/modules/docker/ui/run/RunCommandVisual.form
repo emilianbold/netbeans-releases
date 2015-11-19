@@ -16,13 +16,6 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="ttyCheckBox" min="-2" max="-2" attributes="0"/>
-                  <Component id="interactiveCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="0" pref="147" max="32767" attributes="0"/>
-          </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="commandLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -34,6 +27,8 @@
                   <Component id="commandTextField" max="32767" attributes="0"/>
               </Group>
           </Group>
+          <Component id="interactiveCheckBox" pref="600" max="32767" attributes="0"/>
+          <Component id="ttyCheckBox" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
