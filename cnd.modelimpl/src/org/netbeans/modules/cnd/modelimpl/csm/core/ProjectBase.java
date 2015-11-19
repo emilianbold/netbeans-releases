@@ -1787,8 +1787,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         synchronized (entry.getLock()) {
             for (PreprocessorStatePair keptPair : entry.getStatePairs()) {
-                if (keptPair.pcState.isAllIncluded()
-                        && keptPair.state.isCompileContext() && keptPair.state.isCompileContext()) {
+                if (keptPair.pcState.isAllIncluded() && keptPair.state.isCompileContext()) {
                     // can not contribute any new content, because all was already included before
                     return true;
                 }
