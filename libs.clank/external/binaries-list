@@ -1,6 +1,6 @@
-#changeset:   15905:1ad3d8dd8542
+#changeset:   15931:45ed0d72f72e
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Nov 02 22:42:35 2015 +0300
-#summary:     fixed #256326 - [newcodemodel] regression in vlc
-A5E4E9FC81C8B8BA32F7E9310D4EF64E14E1647E clank_0.3.6.zip
+#user:        Alexander Simon <alexvsimon@netbeans.org>
+#date:        Tue Nov 17 14:08:02 2015 +0300
+#summary:     fixed Bug 22187443 "The file is not a binary" dialog window in valid case
+9A133B99ABDA40B3A17B23DFA79A91AF5FC429B1 clank_0.3.6.zip

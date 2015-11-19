@@ -185,6 +185,16 @@ public class CompletionUtilities {
                         }
                     }
                     break;
+                } else if (searchFunctionsOnly && (ind == idBlk.length - 1)) {
+                    // This is for argument-dependent lookup
+                    int endOfMethod = findEndOfMethod(baseDoc, idBlk[ind] - 1);
+                    if (endOfMethod > -1) {
+                        CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false, false);
+                        if (resultx != null && !resultx.getItems().isEmpty()) {
+                            out = getAssociatedObjects(resultx.getItems(), false, currentFile, dotPos);
+                            break;
+                        }
+                    }
                 }
             }
         } catch (BadLocationException e) {

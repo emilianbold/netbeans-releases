@@ -51,6 +51,7 @@ import java.util.Set;
 import org.netbeans.modules.git.remote.cli.GitRepository.FastForwardOption;
 import org.netbeans.modules.git.remote.cli.GitRevisionInfo.GitFileInfo;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
+import org.netbeans.modules.git.remote.cli.jgit.JGitConfig;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.jgit.commands.AddCommand;
 import org.netbeans.modules.git.remote.cli.jgit.commands.BlameCommand;
@@ -108,6 +109,7 @@ import org.netbeans.modules.git.remote.cli.progress.NotificationListener;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.git.remote.cli.progress.RevisionInfoListener;
 import org.netbeans.modules.git.remote.cli.progress.StatusListener;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -816,11 +818,26 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException {
-        //TODO
-        //Repository repository = gitRepository.getRepository();
-        //RepositoryState state = repository.getRepositoryState();
-        //return GitRepositoryState.getStateFor(state);
-        return GitRepositoryState.BARE;
+        JGitConfig config = gitRepository.getConfig();
+        boolean bare = config.getBoolean(JGitConfig.CONFIG_CORE_SECTION, null, JGitConfig.CONFIG_KEY_BARE, false);
+        if (bare) {
+            return GitRepositoryState.BARE;
+        }
+        if (VCSFileProxy.createFileProxy(gitRepository.getLocation(), GitConstants.DOT_GIT+"/"+GitConstants.REBASE_APPLY).exists()) {
+            return GitRepositoryState.REBASING;
+        }
+        if (VCSFileProxy.createFileProxy(gitRepository.getLocation(), GitConstants.DOT_GIT+"/"+GitConstants.REBASE_MERGE).exists()) {
+            return GitRepositoryState.REBASING;
+        }
+        if (VCSFileProxy.createFileProxy(gitRepository.getLocation(), GitConstants.DOT_GIT+"/"+GitConstants.MERGE_HEAD).exists()) {
+            // TODO: GitRepositoryState.MERGING_RESOLVED
+            return GitRepositoryState.MERGING;
+        }
+        if (VCSFileProxy.createFileProxy(gitRepository.getLocation(), GitConstants.DOT_GIT+"/"+GitConstants.CHERRY_PICK_HEAD).exists()) {
+            // TODO: GitRepositoryState.CHERRY_PICKING_RESOLVED
+            return GitRepositoryState.CHERRY_PICKING;
+        }
+        return GitRepositoryState.SAFE;
     }
 
     /**

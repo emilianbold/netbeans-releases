@@ -71,9 +71,12 @@ public class PositionManager {
     }
     
     public static CsmOffsetable.Position getPosition(CsmUID<CsmFile> uid, int posID) {
-        CsmFile file = UIDCsmConverter.UIDtoFile(uid);
+        return getPosition(UIDCsmConverter.UIDtoFile(uid), posID);
+    }
+
+    public static CsmOffsetable.Position getPosition(CsmFile file, int posID) {
         if (file instanceof FileImpl) {
-            return new LazyOffsPositionImpl((FileImpl) file, getOffset(uid, posID));
+            return new LazyOffsPositionImpl((FileImpl) file, getOffset(file, posID));
         } else {
             return new PositionImpl(posID);
         }
@@ -101,6 +104,20 @@ public class PositionManager {
 //        }
     }
 
+    public static int getOffset(CsmFile file, int posID) {
+        if (IMPL == Impl.trivial) {
+            return posID;
+        }
+        throw new UnsupportedOperationException("Not yet implemented "); // NOI18N
+    }
+    
+    public static int createPositionID(CsmFile file, int offset, Position.Bias bias) {
+        if (IMPL == Impl.trivial) {
+            return offset;
+        }
+        throw new UnsupportedOperationException("Not yet implemented "); // NOI18N
+    }
+    
     public static int createPositionID(CsmUID<CsmFile> uid, int offset, Position.Bias bias) {
         if (IMPL == Impl.trivial) {
             return offset;
