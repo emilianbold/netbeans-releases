@@ -78,6 +78,12 @@ import javax.swing.UIManager;
     "TriggerCustomizer_SurvgenCountUnit=generations",
     "TriggerCustomizer_LdClassCountKey=loaded classes",
     "TriggerCustomizer_LdClassCountUnit=classes",
+    "TriggerCustomizer_ThreadsCountKey=threads",
+    "TriggerCustomizer_ThreadsCountUnit=threads",
+    "TriggerCustomizer_CpuTimeKey=cpu time",
+    "TriggerCustomizer_CpuTimeUnit=%",
+    "TriggerCustomizer_GcTimeKey=gc time",
+    "TriggerCustomizer_GcTimeUnit=%",
     "TriggerCustomizer_TakeWhenLabelText=Take &when",
     "TriggerCustomizer_ExceedsLabelText=e&xceeds",
     "TriggerCustomizer_TakeOnceRadioText=Take &once",
@@ -136,6 +142,21 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
                 triggerValueSpinner.setValue((int) condition.getValue());
 
                 break;
+            case TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_CPUUSG:
+                triggerWhenCombo.setSelectedItem(Bundle.TriggerCustomizer_CpuTimeKey());
+                triggerValueSpinner.setValue((int) condition.getValue());
+
+                break;
+            case TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_GCUSG:
+                triggerWhenCombo.setSelectedItem(Bundle.TriggerCustomizer_GcTimeKey());
+                triggerValueSpinner.setValue((int) condition.getValue());
+
+                break;
+            case TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_THREADS:
+                triggerWhenCombo.setSelectedItem(Bundle.TriggerCustomizer_ThreadsCountKey());
+                triggerValueSpinner.setValue((int) condition.getValue());
+
+                break;
             default:
                 break;
         }
@@ -161,6 +182,15 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
         } else if (Bundle.TriggerCustomizer_LdClassCountKey().equals(key)) {
             condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_LDCLASS);
             condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue());
+        } else if (Bundle.TriggerCustomizer_CpuTimeKey().equals(key)) {
+            condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_CPUUSG);
+            condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue());
+        } else if (Bundle.TriggerCustomizer_GcTimeKey().equals(key)) {
+            condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_GCUSG);
+            condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue());
+        } else if (Bundle.TriggerCustomizer_ThreadsCountKey().equals(key)) {
+            condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_THREADS);
+            condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue());
         }
 
         condition.setOnetime(triggerOnceRadio.isSelected());
@@ -183,6 +213,15 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
                 triggerValueSpinner.setModel(unitsModel);
             } else if (Bundle.TriggerCustomizer_LdClassCountKey().equals(key)) {
                 triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_LdClassCountUnit());
+                triggerValueSpinner.setModel(unitsModel);
+            } else if (Bundle.TriggerCustomizer_CpuTimeKey().equals(key)) {
+                triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_CpuTimeUnit());
+                triggerValueSpinner.setModel(percentsModel);
+            } else if (Bundle.TriggerCustomizer_GcTimeKey().equals(key)) {
+                triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_GcTimeUnit());
+                triggerValueSpinner.setModel(percentsModel);
+            } else if (Bundle.TriggerCustomizer_ThreadsCountKey().equals(key)) {
+                triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_ThreadsCountUnit());
                 triggerValueSpinner.setModel(unitsModel);
             }
         }
@@ -241,11 +280,14 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
         triggerSettingsContainer.add(triggerWhenLabel, constraints);
 
         // triggerWhenCombo
-        triggerWhenCombo = new JComboBox(new Object[] { 
+        triggerWhenCombo = new JComboBox(new Object[] {
+            Bundle.TriggerCustomizer_CpuTimeKey(),
+            Bundle.TriggerCustomizer_GcTimeKey(),
             Bundle.TriggerCustomizer_HeapUsgRelKey(), 
             Bundle.TriggerCustomizer_HeapSizeAbsKey(), 
             Bundle.TriggerCustomizer_SurvgenCountKey(), 
-            Bundle.TriggerCustomizer_LdClassCountKey() }) {
+            Bundle.TriggerCustomizer_ThreadsCountKey(),
+            Bundle.TriggerCustomizer_LdClassCountKey()}) {
                 public Dimension getPreferredSize() {
                     return new Dimension(Math.min(super.getPreferredSize().width, 200), super.getPreferredSize().height);
                 }

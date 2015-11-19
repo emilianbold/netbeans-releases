@@ -49,6 +49,7 @@ import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.results.DataManagerListener;
 import org.netbeans.lib.profiler.client.MonitoredData;
 import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.lib.profiler.results.monitor.VMTelemetryDataManager;
 import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.openide.util.Lookup;
 
@@ -74,6 +75,9 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
     private long currentHeapUsage;
     private long currentLoadedClasses;
     private long currentSurvGen;
+    private long currentCpuTime;
+    private long currentGcTime;
+    private long currentThreads;
     private long currentTime = System.currentTimeMillis(); // local time of one iteration
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
@@ -148,7 +152,8 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
     }
 
     private void processTelemetryEvent() {
-        MonitoredData data = Profiler.getDefault().getVMTelemetryManager().getLastData();
+        VMTelemetryDataManager dataManager = Profiler.getDefault().getVMTelemetryManager();
+        MonitoredData data = dataManager.getLastData();
 
         if (data != null) {
             // ----------------------
@@ -157,13 +162,16 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
             processTimeEvent();
 
             // ----------------------
-            long currentMaxHeap = Profiler.getDefault().getVMTelemetryManager().maxHeapSize;
+            long currentMaxHeap = dataManager.maxHeapSize;
             currentHeapSize = data.getTotalMemory();
 
             long currentUsedHeap = currentHeapSize - data.getFreeMemory();
             currentHeapUsage = (long) Math.round(((double) currentUsedHeap / (double) currentMaxHeap) * 100);
             currentSurvGen = data.getNSurvivingGenerations();
             currentLoadedClasses = data.getLoadedClassesCount();
+            currentCpuTime = dataManager.processCPUTimeInPromile[dataManager.getItemCount() - 1] / 10;
+            currentGcTime = data.getRelativeGCTimeInPerMil() / 10;
+            currentThreads = data.getNThreads();
 
             processTriggeredProfilingPoints();
         } else {
@@ -220,6 +228,12 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
                 hitValue = currentSurvGen;
             } else if (condition.getMetric() == TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_LDCLASS) {
                 hitValue = currentLoadedClasses;
+            } else if (condition.getMetric() == TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_CPUUSG) {
+                hitValue = currentCpuTime;
+            } else if (condition.getMetric() == TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_GCUSG) {
+                hitValue = currentGcTime;
+            } else if (condition.getMetric() == TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_THREADS) {
+                hitValue = currentThreads;
             }
 
             tgpp.hit(hitValue);
@@ -349,6 +363,12 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
         } else if (condition.getMetric() == TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_LDCLASS) {
             return condition.isTriggered() ? (condition.getValue() >= currentLoadedClasses)
                                            : (condition.getValue() < currentLoadedClasses);
+        } else if (condition.getMetric() == TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_CPUUSG) {
+            return condition.isTriggered() ? (condition.getValue() >= currentCpuTime) : (condition.getValue() < currentCpuTime);
+        } else if (condition.getMetric() == TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_GCUSG) {
+            return condition.isTriggered() ? (condition.getValue() >= currentGcTime) : (condition.getValue() < currentGcTime);
+        } else if (condition.getMetric() == TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_THREADS) {
+            return condition.isTriggered() ? (condition.getValue() >= currentThreads) : (condition.getValue() < currentThreads);
         } else {
             return false;
         }
