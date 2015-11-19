@@ -99,6 +99,7 @@ public class RunNetworkPanel implements WizardDescriptor.Panel<WizardDescriptor>
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
+        wiz.putProperty(RunTagWizard.PORT_MAPPING_PROPERTY, component.getPortMapping());
     }
 
 }

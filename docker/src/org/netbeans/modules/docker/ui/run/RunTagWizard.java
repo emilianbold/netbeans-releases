@@ -44,7 +44,11 @@ package org.netbeans.modules.docker.ui.run;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import javax.swing.JComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -75,6 +79,8 @@ public class RunTagWizard {
     public static final String INTERACTIVE_PROPERTY = "interactive";
 
     public static final String TTY_PROPERTY = "tty";
+    
+    public static final String PORT_MAPPING_PROPERTY = "portMapping";
 
     private final DockerTag tag;
 
@@ -103,15 +109,20 @@ public class RunTagWizard {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.LBL_Run());
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
+            List<PortMapping> mapping = (List<PortMapping>) wiz.getProperty(PORT_MAPPING_PROPERTY);
+            if (mapping == null) {
+                mapping = Collections.emptyList();
+            }
             run(tag, (String) wiz.getProperty(COMMAND_PROPERTY),
                     (String) wiz.getProperty(NAME_PROPERTY),
                     (Boolean) wiz.getProperty(INTERACTIVE_PROPERTY),
-                    (Boolean) wiz.getProperty(TTY_PROPERTY));
+                    (Boolean) wiz.getProperty(TTY_PROPERTY),
+                    mapping);
         }
     }
 
     private void run(final DockerTag tag, final String command, final String name,
-            final boolean interactive, final boolean tty) {
+            final boolean interactive, final boolean tty, final List<PortMapping> mapping) {
 
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
@@ -135,6 +146,33 @@ public class RunTagWizard {
                     config.put("Cmd", cmdArray);
                     config.put("AttachStdout", true);
                     config.put("AttachStderr", true);
+                    Map<String, List<PortMapping>> bindings = new HashMap<>();
+                    for (PortMapping m : mapping) {
+                        String str = m.getPort() + "/" + m.getType().name().toLowerCase(Locale.ENGLISH);
+                        List<PortMapping> list = bindings.get(str);
+                        if (list == null) {
+                            list = new ArrayList<>();
+                            bindings.put(str, list);
+                        }
+                        list.add(m);
+                    }
+                    if (!bindings.isEmpty()) {
+                        JSONObject portBindings = new JSONObject();
+                        JSONObject hostConfig = new JSONObject();
+                        hostConfig.put("PortBindings", portBindings);
+                        config.put("HostConfig", hostConfig);
+
+                        for (Map.Entry<String, List<PortMapping>> e : bindings.entrySet()) {
+                            JSONArray arr = new JSONArray();
+                            for (PortMapping m : e.getValue()) {
+                                JSONObject o = new JSONObject();
+                                o.put("HostIp", m.getHostAddress());
+                                o.put("HostPort", m.getHostPort() != null ? m.getHostPort().toString() : "");
+                                arr.add(o);
+                            }
+                            portBindings.put(e.getKey(), arr);
+                        }
+                    }
                     Pair<DockerContainer, StreamResult> result = remote.run(name, config);
 
                     UiUtils.openTerminal(result.first(), result.second(), interactive, true);

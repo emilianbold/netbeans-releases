@@ -93,10 +93,8 @@ public class RunNetworkVisual extends javax.swing.JPanel {
         portMappingTable.setModel(new PortMappingModel(mapping));
         JComboBox typeCombo = new JComboBox(NetworkPort.Type.values());
         portMappingTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(typeCombo));
-        portMappingTable.getColumnModel().getColumn(1).setCellEditor(new SpinnerEditor());
-        portMappingTable.getColumnModel().getColumn(2).setCellEditor(new SpinnerEditor());
         JComboBox adressCombo = new JComboBox();
-        for (String addr : UiUtils.getAddresses(true, false)) {
+        for (String addr : UiUtils.getAddresses(false, false)) {
             adressCombo.addItem(addr);
         }
         try {
@@ -112,6 +110,10 @@ public class RunNetworkVisual extends javax.swing.JPanel {
         portMappingTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
     }
 
+    public List<PortMapping> getPortMapping() {
+        return mapping;
+    }
+    
     @NbBundle.Messages("LBL_RunNetwork=Network")
     @Override
     public String getName() {
@@ -155,6 +157,9 @@ public class RunNetworkVisual extends javax.swing.JPanel {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            if (rowIndex > mappings.size() - 1 || rowIndex < 0) {
+                return;
+            }
             PortMapping single = mappings.get(rowIndex);
             switch (columnIndex) {
                 case 0:
@@ -197,7 +202,7 @@ public class RunNetworkVisual extends javax.swing.JPanel {
                             single.getType(),
                             single.getPort(),
                             single.getHostPort(),
-                            aValue.toString()));
+                            aValue != null ? aValue.toString() : null));
                     break;
                 default:
                     throw new IllegalStateException("Unknown column index: " + columnIndex);
@@ -251,32 +256,6 @@ public class RunNetworkVisual extends javax.swing.JPanel {
             fireTableDataChanged();
         }
 
-    }
-
-    private static class SpinnerEditor extends AbstractCellEditor implements TableCellEditor {
-
-        private final JSpinner spinner = new JSpinner();
-
-        public SpinnerEditor() {
-            spinner.setModel(new SpinnerNumberModel(1, 1, 65535, 1));
-        }
-
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,
-                int row, int column) {
-            spinner.setValue(value);
-            return spinner;
-        }
-
-        public boolean isCellEditable(EventObject evt) {
-            if (evt instanceof MouseEvent) {
-                return ((MouseEvent) evt).getClickCount() >= 2;
-            }
-            return true;
-        }
-
-        public Object getCellEditorValue() {
-            return spinner.getValue();
-        }
     }
 
     /**
