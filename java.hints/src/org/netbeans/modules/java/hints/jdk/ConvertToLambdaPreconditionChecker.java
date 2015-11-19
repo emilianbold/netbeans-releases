@@ -72,6 +72,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
 
 
@@ -110,7 +111,7 @@ public class ConvertToLambdaPreconditionChecker {
         } else {
             createdClass = null;
         }
-        this.lambdaMethodTree = getMethodFromFunctionalInterface(this.newClassTree);
+        this.lambdaMethodTree = getMethodFromFunctionalInterface(this.pathToNewClassTree);
         this.localScope = getScopeFromTree(this.pathToNewClassTree);
         this.ownerClass = findFieldOwner();
     }
@@ -135,10 +136,14 @@ public class ConvertToLambdaPreconditionChecker {
         return null;
     }
     
-    private static MethodTree getMethodFromFunctionalInterface(NewClassTree newClassTree) {
+    private MethodTree getMethodFromFunctionalInterface(TreePath pathToNewClassTree) {
         //ignore first member, which is a synthetic constructor call
-        ClassTree classTree = newClassTree.getClassBody();
-        return (MethodTree) classTree.getMembers().get(1);
+        TreeUtilities tu = info.getTreeUtilities();
+        for (Tree member : ((NewClassTree)pathToNewClassTree.getLeaf()).getClassBody().getMembers()) {
+            if (member.getKind() == Tree.Kind.METHOD && !tu.isSynthetic(new TreePath(pathToNewClassTree, member)))
+                return (MethodTree)member;
+        }
+        return null;
     }
 
     public boolean passesAllPreconditions() {
