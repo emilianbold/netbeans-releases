@@ -71,8 +71,10 @@ import org.netbeans.modules.php.phing.ui.options.PhingOptionsPanelController;
 import org.netbeans.modules.php.phing.util.PhingUtils;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -163,7 +165,7 @@ public class PhingExecutable {
         final PhingTargetsLineProcessor phingTargetsLineProcessor = new PhingTargetsLineProcessor();
         Future<Integer> task = getExecutable("list phing targets") // NOI18N
                 .noInfo(true)
-                .additionalParameters(Arrays.asList(QUIET_PARAM, LIST_PARAM))
+                .additionalParameters(getListTargetsParams())
                 .redirectErrorStream(false)
                 .run(getSilentDescriptor(), new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override
@@ -172,7 +174,7 @@ public class PhingExecutable {
                     }
                 });
         assert task != null : phingPath;
-        return new TargetList(task, phingTargetsLineProcessor);
+        return new TargetList(this, task, phingTargetsLineProcessor);
     }
 
     private PhpExecutable getExecutable(String title) {
@@ -238,6 +240,10 @@ public class PhingExecutable {
         return result.getFirstWarningMessage();
     }
 
+    static List<String> getListTargetsParams() {
+        return Arrays.asList(QUIET_PARAM, LIST_PARAM);
+    }
+
     //~ Inner classes
 
     private static final class PhingTargetsLineProcessor implements LineProcessor {
@@ -245,9 +251,10 @@ public class PhingExecutable {
         private static final String MAIN_TARGETS = "Main targets:"; // NOI18N
         private static final String SUBTARGETS = "Subtargets:"; // NOI18N
 
+        // @GuardedBy("targets")
         final List<String> targets = new ArrayList<>();
 
-        boolean collecting = false;
+        private boolean collecting = false;
 
 
         @Override
@@ -256,7 +263,9 @@ public class PhingExecutable {
             if (collecting) {
                 if (!SUBTARGETS.equals(trimmed)) {
                     if (StringUtilities.hasText(trimmed.replace('-', ' '))) { // NOI18N
-                        targets.add(StringUtilities.explode(trimmed, " ").get(0)); // NOI18N
+                        synchronized (targets) {
+                            targets.add(StringUtilities.explode(trimmed, " ").get(0)); // NOI18N
+                        }
                     }
                 }
             } else {
@@ -276,23 +285,31 @@ public class PhingExecutable {
         }
 
         public List<String> getTargets() {
-            return Collections.unmodifiableList(targets);
+            synchronized (targets) {
+                return new ArrayList<>(targets);
+            }
         }
 
     }
 
     private static final class TargetList implements Future<List<String>> {
 
+        private static final RequestProcessor RP = new RequestProcessor(TargetList.class);
+
+        final PhingExecutable phing;
         private final Future<Integer> task;
         private final PhingTargetsLineProcessor processor;
 
+        private volatile Integer result;
         // @GuardedBy("this")
         private List<String> phingTargets = null;
 
 
-        TargetList(Future<Integer> task, PhingTargetsLineProcessor processor) {
+        TargetList(PhingExecutable phing, Future<Integer> task, PhingTargetsLineProcessor processor) {
+            assert phing != null;
             assert task != null;
             assert processor != null;
+            this.phing = phing;
             this.task = task;
             this.processor = processor;
         }
@@ -315,7 +332,7 @@ public class PhingExecutable {
         @Override
         public List<String> get() throws InterruptedException, ExecutionException {
             try {
-                task.get();
+                result = task.get();
             } catch (CancellationException ex) {
                 // cancelled by user
                 LOGGER.log(Level.FINE, null, ex);
@@ -326,7 +343,7 @@ public class PhingExecutable {
         @Override
         public List<String> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             try {
-                task.get(timeout, unit);
+                result = task.get(timeout, unit);
             } catch (CancellationException ex) {
                 // cancelled by user
                 LOGGER.log(Level.FINE, null, ex);
@@ -334,8 +351,21 @@ public class PhingExecutable {
             return getPhingTargets();
         }
 
+        @NbBundle.Messages("TargetList.error=Cannot get Phing targets.")
         private synchronized List<String> getPhingTargets() {
             if (phingTargets != null) {
+                return Collections.unmodifiableList(phingTargets);
+            }
+            if (result == null
+                    || result == 1) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        phing.run(getListTargetsParams().toArray(new String[0]));
+                    }
+                });
+                StatusDisplayer.getDefault().setStatusText(Bundle.TargetList_error());
+                phingTargets = Collections.emptyList();
                 return Collections.unmodifiableList(phingTargets);
             }
             List<String> targets = new ArrayList<>(processor.getTargets());
