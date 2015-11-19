@@ -49,7 +49,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -406,6 +408,26 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             delegate.warmup(mode, extensions);
+        }
+    }    
+    
+    @Override
+    public Object getAttribute(String attrName) {
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
+        return (delegate == null) ? null : delegate.getAttribute(attrName);
+    }
+
+    @Override
+    public Enumeration<String> getAttributes() {
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
+        return (delegate == null) ? Collections.<String>emptyEnumeration() : delegate.getAttributes();
+    }
+
+    @Override
+    public void setAttribute(String attrName, Object value) throws IOException {
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
+        if (delegate != null) {
+            delegate.setAttribute(attrName, value);
         }
     }    
 }
