@@ -2511,8 +2511,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
         str = str.trim().replaceAll("\n", "\n" + whitespace(col));
 
-        adjustSpans(annotations, str);
-
+        try {
+            adjustSpans(annotations, str);
+        } catch (Exception e) {
+            return false;
+        }
         str = str.substring(0, str.lastIndexOf("class")).trim();
 
         print(str);
