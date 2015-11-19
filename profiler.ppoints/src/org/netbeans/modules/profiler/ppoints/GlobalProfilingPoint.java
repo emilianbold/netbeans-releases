@@ -43,6 +43,7 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
+import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.openide.util.Lookup;
 
 
@@ -56,6 +57,17 @@ public abstract class GlobalProfilingPoint extends ProfilingPoint {
     GlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory) {
         super(name, project, factory);
     }
+    
+    
+    public boolean supportsProfilingSettings(ProfilingSettings profilingSettings) {
+        return super.supportsProfilingSettings(profilingSettings) ||
+        // CPU profiling
+        (profilingSettings.getProfilingType() == ProfilingSettings.PROFILE_CPU_SAMPLING && getFactory().supportsCPU())
+               || 
+        // Memory profiling
+        (profilingSettings.getProfilingType() == ProfilingSettings.PROFILE_MEMORY_SAMPLING && getFactory().supportsMemory());
+    }
+    
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
