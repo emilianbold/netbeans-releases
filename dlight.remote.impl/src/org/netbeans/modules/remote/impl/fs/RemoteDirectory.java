@@ -1216,7 +1216,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         }
                         // It is unlikely that inode changed. But it can happen. Since we cache it, we need to check
                         if (newEntry.hasINode() && !newEntry.isSameINode(oldEntry)) {
-                            entriesToFireChanged.add(newEntry);
                             changed = fire = true;
                         }
                         if (fire) {
