@@ -115,7 +115,8 @@ public class TruffleStackInfo {
             List<TruffleStackFrame> truffleFrames = new ArrayList<>();
             while ((i2 = framesDesc.indexOf("\n\n", i1)) > 0) {
                 StringReference codeRef = (StringReference) ((JDIVariable) codes[depth-1]).getJDIValue();
-                TruffleStackFrame tsf = new TruffleStackFrame(debugger, depth, stackTrace, framesDesc.substring(i1, i2), codeRef, null, (ObjectVariable) thiss[depth-1]);
+                ObjectVariable frameInstance = (ObjectVariable) stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
+                TruffleStackFrame tsf = new TruffleStackFrame(debugger, depth, frameInstance, stackTrace, framesDesc.substring(i1, i2), codeRef, null, (ObjectVariable) thiss[depth-1]);
                 truffleFrames.add(tsf);
                 i1 = i2 + 2;
                 depth++;

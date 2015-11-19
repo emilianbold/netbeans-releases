@@ -92,6 +92,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.RemoteServices;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
+import org.netbeans.modules.debugger.jpda.truffle.actions.StepActionProvider;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
@@ -108,7 +109,7 @@ public class TruffleAccess implements JPDABreakpointListener {
     private static final Logger LOG = Logger.getLogger(TruffleAccess.class.getName());
     
     public static final String BASIC_CLASS_NAME = "org.netbeans.modules.debugger.jpda.backend.truffle.JPDATruffleAccessor";    // NOI18N
-    private static final String HALTED_CLASS_NAME = "com.oracle.truffle.api.vm.TruffleVM";  // NOI18N
+    private static final String HALTED_CLASS_NAME = "com.oracle.truffle.api.vm.PolyglotEngine";  // NOI18N
     
     private static final String METHOD_EXEC_HALTED = "dispatchSuspendedEvent";  // NOI18N
     private static final String METHOD_EXEC_STEP_INTO = "executionStepInto";    // NOI18N
@@ -230,12 +231,14 @@ public class TruffleAccess implements JPDABreakpointListener {
         Object bp = event.getSource();
         if (execHaltedBP == bp) {
             LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), exec halted.", event);
+            StepActionProvider.killJavaStep(event.getDebugger());
             CurrentPCInfo cpci = getCurrentPosition(event.getDebugger(), event.getThread());
             synchronized (currentPCInfos) {
                 currentPCInfos.put(event.getDebugger(), cpci);
             }
         } else if (execStepIntoBP == bp) {
             LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), exec step into.", event);
+            StepActionProvider.killJavaStep(event.getDebugger());
             CurrentPCInfo cpci = getCurrentPosition(event.getDebugger(), event.getThread());
             synchronized (currentPCInfos) {
                 currentPCInfos.put(event.getDebugger(), cpci);
@@ -291,7 +294,7 @@ public class TruffleAccess implements JPDABreakpointListener {
             ObjectVariable stackTrace = (ObjectVariable) frameInfoVar.getField("stackTrace");
             String topFrameDescription = (String) frameInfoVar.getField("topFrame").createMirrorObject();
             ObjectVariable thisObject = (ObjectVariable) frameInfoVar.getField("thisObject");
-            TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, stackTrace, topFrameDescription, null/*code*/, vars, thisObject);
+            TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, frame, stackTrace, topFrameDescription, null/*code*/, vars, thisObject);
             TruffleStackInfo stack = new TruffleStackInfo(debugger, frameSlots, stackTrace);
             return new CurrentPCInfo(suspendedInfo, thread, sp, vars, topFrame, stack);
         } catch (AbsentInformationException | IllegalStateException |

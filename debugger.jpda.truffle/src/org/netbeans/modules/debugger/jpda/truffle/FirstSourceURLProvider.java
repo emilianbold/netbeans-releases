@@ -89,7 +89,7 @@ public class FirstSourceURLProvider extends SourcePathProvider {
 
     @Override
     public String getURL(String relativePath, boolean global) {
-        if ("com/oracle/truffle/api/vm/TruffleVM.java".equals(relativePath)) {
+        if ("com/oracle/truffle/api/vm/PolyglotEngine.java".equals(relativePath)) {
         //if (TRUFFLE_ACCESSOR_PATH.equals(relativePath)) {
             CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
             if (currentPCInfo != null) {
@@ -119,7 +119,7 @@ public class FirstSourceURLProvider extends SourcePathProvider {
     
     public String getURL(JPDAClassType clazz, String stratum) {
         //if (TRUFFLE_ACCESSOR_CLASS_NAME.equals(clazz.getName())) {
-        if ("com.oracle.truffle.api.vm.TruffleVM".equals(clazz.getName())) {
+        if ("com.oracle.truffle.api.vm.PolyglotEngine".equals(clazz.getName())) {
             CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
             if (currentPCInfo != null) {
                 Source source = currentPCInfo.getSourcePosition().getSource();
