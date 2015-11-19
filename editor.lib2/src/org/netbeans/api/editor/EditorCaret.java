@@ -41,8 +41,10 @@
  */
 package org.netbeans.api.editor;
 
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.DefaultCaret;
+import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
@@ -59,34 +61,102 @@ public final class EditorCaret extends DefaultCaret {
 
     @Override
     public int getDot() {
-        return getMainCaretInfo().getDotPosition().getOffset();
+        return getLastCaret().getDotPosition().getOffset();
     }
     
     @Override
     public int getMark() {
-        return getMainCaretInfo().getMarkPosition().getOffset();
+        return getLastCaret().getMarkPosition().getOffset();
     }
     
     /**
-     * Get information about all currently active carets including the "main" caret.
+     * Get information about all existing carets in the order they were created.
      * <br>
-     * Note: {@link #getMainCaretInfo()} can be obtained
-     * to check the position of the main caret info in the returned list.
-     * <br/>
+     * The list always has at least one item. The last caret (last item of the list)
+     * is the most recent caret.
      * 
-     * @return unmodifiable list with size &gt;= 1 infos about all carets.
+     * @return unmodifiable list with size &gt;= 1 containing information about all carets.
      */
-    public @NonNull List<CaretInfo> getAllCarets() {
+    public @NonNull List<CaretInfo> getCarets() {
         return java.util.Collections.<CaretInfo>emptyList(); // TBD
     }
     
     /**
-     * Get info about the main caret.
+     * Get information about all existing carets sorted by dot positions in ascending order.
      * <br/>
-     * This info is always present in @link {#getAllCarets()} and it's persistent
-     * for the whole lifetime of this EditorCaret instance.
+     * This method should only be called with document's read-lock acquired to guarantee
+     * that document modifications (that can come from any thread) will not cause caret merging
+     * which would affect the content of the returned list.
+     * <br/>
+     * The returned content is a copy of a "live" caret list. Subsequent calls to caret API
+     * may invalidate certain {@link CaretInfo} items.
+     * 
+     * @return copy of caret list with size &gt;= 1 sorted by dot positions in ascending order.
      */
-    public @NonNull CaretInfo getMainCaretInfo() {
+    public @NonNull List<CaretInfo> getSortedCarets() {
+        return java.util.Collections.<CaretInfo>emptyList(); // TBD
+    }
+    
+    /**
+     * Get info about the most recently created caret.
+     * <br/>
+     * For normal mode this is the only caret returned by {@link #getCarets() }.
+     * <br/>
+     * For multi-caret mode this is the last item in the list returned by {@link #getCarets() }.
+     * 
+     * @return last caret (the most recently added caret).
+     */
+    public @NonNull CaretInfo getLastCaret() {
+        return new CaretInfo(); // TBD
+    }
+
+    /**
+     * Create a new caret at the given position with a possible selection.
+     * <br/>
+     * The caret will become the last caret of the list returned by {@link #getCarets() }.
+     * 
+     * @param dotPos position of the newly created caret.
+     * @param selectionStartPos beginning of the selection (the other end is dotPos) or <i>null</i> for no selection.
+     *  The selectionStartPos may have higher offset than dotPos to select in a backward direction.
+     * @return information about the newly created caret.
+     */
+    public @NonNull CaretInfo addCaret(@NonNull Position dotPos, @NonNull Position selectionStartPos) {
+        return new CaretInfo(); // TBD
+    }
+    
+    /**
+     * Add multiple carets at once.
+     * <br/>
+     * It is similar to calling {@link #addCaret(javax.swing.text.Position, javax.swing.text.Position) }
+     * multiple times but this method is more efficient (it only fires caret change once).
+     * 
+     * @param dotAndSelectionStartPosPairs list of position pairs consisting of dot position and selection start position (may be null
+     *  if the particular caret has no selection). The list must have even size.
+     * @return list of caret infos. It has a half of the size of the dotAndSelectionStartPosPairs list.
+     */
+    public @NonNull List<CaretInfo> addCarets(@NonNull List<Position> dotAndSelectionStartPosPairs) {
+        return Collections.emptyList(); // TBD
+    }
+
+    /**
+     * Replace all current carets with the new ones.
+     * <br/>
+     * @param dotAndSelectionStartPosPairs list of position pairs consisting of dot position and selection start position (may be null
+     *  if the particular caret has no selection). The list must have even size.
+     * @return list of caret infos. It has a half of the size of the dotAndSelectionStartPosPairs list.
+     */
+    public @NonNull List<CaretInfo> replaceCarets(@NonNull List<Position> dotAndSelectionStartPosPairs) {
+        return Collections.emptyList(); // TBD
+    }
+
+    /**
+     * Remove last added caret (determined by {@link #getLastCaret() }).
+     * <br/>
+     * If there is just one caret the method has no effect.
+     * 
+     * @return the caret instance that was removed or null if there's just one caret.
+     */
+    public @NonNull CaretInfo removeLastCaret() {
         return new CaretInfo(); // TBD
     }
     

@@ -54,6 +54,8 @@ public final class CaretInfo {
     private Position dotPos;
 
     private Position markPos;
+    
+    private boolean invalid;
 
     CaretInfo() {
     }
@@ -78,6 +80,18 @@ public final class CaretInfo {
     @NonNull
     public Position getMarkPosition() {
         return markPos;
+    }
+
+    /**
+     * Determine if this caret is still valid.
+     * <br/>
+     * The caret may become invalid by automatic caret merging by document removals
+     * or as an effect of {@link EditorCaret#removeLastCaret() }
+     * or {@link EditorCaret#replaceCarets(java.util.List) }.
+     * @return true if this caret is valid or false otherwise.
+     */
+    public boolean isValid() {
+        return !invalid;
     }
 
     /**
