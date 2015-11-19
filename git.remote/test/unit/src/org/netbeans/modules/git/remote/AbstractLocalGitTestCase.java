@@ -55,7 +55,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import static junit.framework.Assert.assertNotNull;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.git.remote.cli.GitClient;
@@ -118,6 +117,9 @@ public abstract class AbstractLocalGitTestCase extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("versioning.git.handleExternalEvents", "false");
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
+        System.setProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true");
         VCSFileProxy workDir = VCSFileProxy.createFileProxy(getWorkDir());
         VCSFileProxy userdir = VCSFileProxy.createFileProxy(workDir.getParentFile(), "userdir");
         VCSFileProxySupport.mkdirs(userdir);
@@ -130,9 +132,6 @@ public abstract class AbstractLocalGitTestCase extends NbTestCase {
         VCSFileProxy repositoryMetadata = VCSFileProxy.createFileProxy(repositoryLocation, ".git");
         assertTrue(repositoryMetadata.exists());
         MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, GitVCS.class, FilesystemInterceptorProviderImpl.class});
-        System.setProperty("versioning.git.handleExternalEvents", "false");
-        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
-        System.setProperty("org.netbeans.modules.git.remote.localfilesystem.enable", "true");
         Git.STATUS_LOG.setLevel(Level.ALL);
         refreshHandler = new StatusRefreshLogHandler(repositoryLocation);
         Git.STATUS_LOG.addHandler(refreshHandler);
