@@ -52,9 +52,15 @@ import java.util.Map;
 import javax.swing.JComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.netbeans.api.progress.BaseProgressUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.DockerImage;
+import org.netbeans.modules.docker.DockerImageInfo;
 import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.DockerUtils;
+import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.remote.StreamResult;
 import org.netbeans.modules.docker.ui.UiUtils;
@@ -79,7 +85,7 @@ public class RunTagWizard {
     public static final String INTERACTIVE_PROPERTY = "interactive";
 
     public static final String TTY_PROPERTY = "tty";
-    
+
     public static final String PORT_MAPPING_PROPERTY = "portMapping";
 
     private final DockerTag tag;
@@ -88,11 +94,17 @@ public class RunTagWizard {
         this.tag = tag;
     }
 
-    @NbBundle.Messages("LBL_Run=Run")
+    @NbBundle.Messages({
+        "MSG_ReceivingImageInfo=Receiving Image Details",
+        "LBL_Run=Run {0}"
+    })
     public void show() {
+        DockerImageInfo info = BaseProgressUtils.showProgressDialogAndRun(
+                new DockerImageInfoRunnable(tag.getImage()), Bundle.MSG_ReceivingImageInfo(), false);
+
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
         panels.add(new RunCommandPanel());
-        panels.add(new RunNetworkPanel(tag));
+        panels.add(new RunNetworkPanel(info));
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
             JComponent c = (JComponent) panels.get(i).getComponent();
@@ -107,7 +119,7 @@ public class RunTagWizard {
         final WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<>(panels));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
-        wiz.setTitle(Bundle.LBL_Run());
+        wiz.setTitle(Bundle.LBL_Run(DockerUtils.getImage(tag)));
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
             List<PortMapping> mapping = (List<PortMapping>) wiz.getProperty(PORT_MAPPING_PROPERTY);
             if (mapping == null) {
@@ -182,5 +194,25 @@ public class RunTagWizard {
                 }
             }
         });
+    }
+
+    private static class DockerImageInfoRunnable implements ProgressRunnable<DockerImageInfo> {
+
+        private final DockerImage image;
+
+        public DockerImageInfoRunnable(DockerImage image) {
+            this.image = image;
+        }
+
+        @Override
+        public DockerImageInfo run(ProgressHandle handle) {
+            try {
+                DockerRemote remote = new DockerRemote(image.getInstance());
+                return remote.getInfo(image);
+            } catch (DockerException ex) {
+                return null;
+            }
+        }
+
     }
 }

@@ -42,13 +42,14 @@
 package org.netbeans.modules.docker.ui.run;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.DockerImageInfo;
 import org.netbeans.modules.docker.DockerTag;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 public class RunNetworkPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    private final DockerTag tag;
+    private final DockerImageInfo info;
     
     /**
      * The visual component that displays this panel. If you need to access the
@@ -56,8 +57,8 @@ public class RunNetworkPanel implements WizardDescriptor.Panel<WizardDescriptor>
      */
     private RunNetworkVisual component;
 
-    public RunNetworkPanel(DockerTag tag) {
-        this.tag = tag;
+    public RunNetworkPanel(DockerImageInfo info) {
+        this.info = info;
     }
 
     // Get the visual component for the panel. In this template, the component
@@ -67,7 +68,7 @@ public class RunNetworkPanel implements WizardDescriptor.Panel<WizardDescriptor>
     @Override
     public RunNetworkVisual getComponent() {
         if (component == null) {
-            component = new RunNetworkVisual(tag);
+            component = new RunNetworkVisual(info);
         }
         return component;
     }

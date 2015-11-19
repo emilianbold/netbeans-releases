@@ -58,7 +58,7 @@ public class RunCommandVisual extends javax.swing.JPanel {
     }
 
 
-    @NbBundle.Messages("LBL_RunCommand=Command")
+    @NbBundle.Messages("LBL_RunCommand=Command and Name")
     @Override
     public String getName() {
         return Bundle.LBL_RunCommand();
@@ -134,7 +134,7 @@ public class RunCommandVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(nameTextField)
                     .addComponent(commandTextField)))
-            .addComponent(interactiveCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+            .addComponent(interactiveCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
             .addComponent(ttyCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(

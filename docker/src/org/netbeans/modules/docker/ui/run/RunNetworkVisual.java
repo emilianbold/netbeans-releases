@@ -42,29 +42,20 @@
 package org.netbeans.modules.docker.ui.run;
 
 import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.event.MouseEvent;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.EventObject;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import javax.swing.AbstractCellEditor;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
-import javax.swing.JSpinner;
 import javax.swing.JTable;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellEditor;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.docker.DockerImageInfo;
-import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.NetworkPort;
 import org.netbeans.modules.docker.NetworkPort.Type;
-import org.netbeans.modules.docker.remote.DockerException;
-import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.ui.UiUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,47 +64,44 @@ import org.openide.util.NbBundle;
  */
 public class RunNetworkVisual extends javax.swing.JPanel {
 
-    private final List<NetworkPort> exposed = new ArrayList<>();
+    private final DockerImageInfo info;
 
-    private final List<PortMapping> mapping = new ArrayList<>();
+    private final PortMappingModel model = new PortMappingModel();
+
     /**
      * Creates new form RunNetworkVisual
      */
-    public RunNetworkVisual(DockerTag tag) {
+    public RunNetworkVisual(DockerImageInfo info) {
         initComponents();
-        DockerRemote r = new DockerRemote(tag.getImage().getInstance());
-        DockerImageInfo info;
-        try {
-            info = r.getInfo(tag.getImage());
-            exposed.addAll(info.getExposedPorts());
-        } catch (DockerException ex) {
-        }
+        this.info = info;
 
-        addExposedButton.setEnabled(!exposed.isEmpty());
-        portMappingTable.setModel(new PortMappingModel(mapping));
+        addExposedButton.setEnabled(info != null && !info.getExposedPorts().isEmpty());
+        portMappingTable.setModel(model);
+        UiUtils.configureRowHeight(portMappingTable);
+
         JComboBox typeCombo = new JComboBox(NetworkPort.Type.values());
         portMappingTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(typeCombo));
-        JComboBox adressCombo = new JComboBox();
-        for (String addr : UiUtils.getAddresses(false, false)) {
-            adressCombo.addItem(addr);
-        }
-        try {
-            adressCombo.insertItemAt(InetAddress.getByAddress(new byte[]{(byte) 0, (byte) 0, (byte) 0, (byte) 0}).getHostAddress(), 0);
-        } catch (UnknownHostException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        portMappingTable.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(adressCombo));
-        portMappingTable.getColumnModel().getColumn(0).setPreferredWidth(portMappingTable.getColumnModel().getColumn(0).getPreferredWidth() / 2);
+        Collection<String> addresses = UiUtils.getAddresses(false, false);
+        JComboBox addressCombo = new JComboBox(addresses.toArray());
+        addressCombo.setBorder(null);
+        addressCombo.setEditable(true);
+
+        //portMappingTable.getColumnModel().getColumn(0).setCellRenderer(new ComboCellRenderer(NetworkPort.Type.values()));
+        //portMappingTable.getColumnModel().getColumn(3).setCellRenderer(new ComboCellRenderer(addresses.toArray()));
+        portMappingTable.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(addressCombo));
+//        portMappingTable.getColumnModel().getColumn(0).setPreferredWidth(50);
 //        portMappingTable.getColumnModel().getColumn(1).setPreferredWidth(portMappingTable.getPreferredSize().width / 6);
 //        portMappingTable.getColumnModel().getColumn(2).setPreferredWidth(portMappingTable.getPreferredSize().width / 6);
-        portMappingTable.getColumnModel().getColumn(3).setPreferredWidth(2 * portMappingTable.getPreferredSize().width / 3);
+        portMappingTable.getColumnModel().getColumn(3).setPreferredWidth((int) (portMappingTable.getPreferredSize().width * 0.5));
         portMappingTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        //portMappingTable.setRowHeight(adressCombo.getMinimumSize().height);
     }
 
+
     public List<PortMapping> getPortMapping() {
-        return mapping;
+        return model.getMappings();
     }
-    
+
     @NbBundle.Messages("LBL_RunNetwork=Network")
     @Override
     public String getName() {
@@ -122,10 +110,10 @@ public class RunNetworkVisual extends javax.swing.JPanel {
 
     private static final class PortMappingModel extends AbstractTableModel {
 
-        private final List<PortMapping> mappings;
+        private final List<PortMapping> mappings = new ArrayList<>();
 
-        public PortMappingModel(List<PortMapping> mappings) {
-            this.mappings = mappings;
+        public PortMappingModel() {
+            super();
         }
 
         @Override
@@ -164,7 +152,7 @@ public class RunNetworkVisual extends javax.swing.JPanel {
             switch (columnIndex) {
                 case 0:
                     mappings.set(rowIndex, new PortMapping(
-                            NetworkPort.Type.valueOf(aValue.toString()),
+                            (Type) aValue,
                             single.getPort(),
                             single.getHostPort(),
                             single.getHostAddress()));
@@ -235,7 +223,7 @@ public class RunNetworkVisual extends javax.swing.JPanel {
         public Class<?> getColumnClass(int columnIndex) {
             switch (columnIndex) {
                 case 0:
-                    return String.class;
+                    return Type.class;
                 case 1:
                     return Integer.class;
                 case 2:
@@ -251,11 +239,19 @@ public class RunNetworkVisual extends javax.swing.JPanel {
             return true;
         }
 
-        public void fireMappingsChange() {
-            assert EventQueue.isDispatchThread();
-            fireTableDataChanged();
+        public void addRow(PortMapping mapping) {
+            mappings.add(mapping);
+            fireTableRowsInserted(mappings.size() - 1, mappings.size() - 1);
         }
 
+        public void removeRow(int row) {
+            mappings.remove(row);
+            fireTableRowsDeleted(row, row);
+        }
+
+        public List<PortMapping> getMappings() {
+            return Collections.unmodifiableList(mappings);
+        }
     }
 
     /**
@@ -314,13 +310,13 @@ public class RunNetworkVisual extends javax.swing.JPanel {
                 .addComponent(portMappingLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(addExposedButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(removeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-            .addComponent(randomBindCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(randomBindCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -337,30 +333,37 @@ public class RunNetworkVisual extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(addButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeButton)
-                        .addContainerGap(64, Short.MAX_VALUE))
+                        .addComponent(removeButton))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void addExposedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addExposedButtonActionPerformed
-        for (NetworkPort p : exposed) {
-            mapping.add(new PortMapping(p.getType(), p.getPort(), null, null));
+        List<PortMapping> current = model.getMappings();
+        for (NetworkPort p : info.getExposedPorts()) {
+            boolean present = false;
+            for (PortMapping m : current) {
+                if (p.getType() == m.getType() && p.getPort() == m.getPort()) {
+                    present = true;
+                    break;
+                }
+            }
+            if (!present) {
+                model.addRow(new PortMapping(p.getType(), p.getPort(), p.getPort(), null));
+            }
         }
-        ((PortMappingModel) portMappingTable.getModel()).fireMappingsChange();
     }//GEN-LAST:event_addExposedButtonActionPerformed
 
+    @NbBundle.Messages("LBL_Add=Add")
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        mapping.add(new PortMapping(Type.TCP, null, null, null));
-        ((PortMappingModel) portMappingTable.getModel()).fireMappingsChange();
+        model.addRow(new PortMapping(Type.TCP, null, null, null));
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         int[] selectedRows = portMappingTable.getSelectedRows();
         for (int i = selectedRows.length - 1; i >= 0; --i) {
-            mapping.remove(selectedRows[i]);
+            model.removeRow(selectedRows[i]);
         }
-        ((PortMappingModel) portMappingTable.getModel()).fireMappingsChange();
     }//GEN-LAST:event_removeButtonActionPerformed
 
 

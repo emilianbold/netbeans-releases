@@ -27,7 +27,7 @@
                   <Component id="commandTextField" max="32767" attributes="0"/>
               </Group>
           </Group>
-          <Component id="interactiveCheckBox" pref="600" max="32767" attributes="0"/>
+          <Component id="interactiveCheckBox" pref="520" max="32767" attributes="0"/>
           <Component id="ttyCheckBox" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
