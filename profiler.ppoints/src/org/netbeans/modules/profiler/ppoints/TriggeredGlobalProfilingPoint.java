@@ -210,4 +210,9 @@ public abstract class TriggeredGlobalProfilingPoint extends GlobalProfilingPoint
     public TriggerCondition getCondition() {
         return condition;
     }
+    
+    
+    void reset() {
+        condition.setTriggered(false);
+    }
 }

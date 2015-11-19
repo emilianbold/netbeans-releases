@@ -556,6 +556,8 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
 
     void reset() {
         synchronized(resultsSync) {
+            super.reset();
+            
             boolean change = hasResults();
             results.clear();
 
