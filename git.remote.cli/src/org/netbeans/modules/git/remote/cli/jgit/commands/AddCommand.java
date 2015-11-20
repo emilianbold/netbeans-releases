@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
@@ -87,6 +88,7 @@ public class AddCommand extends GitCommand {
             monitor.setCancelDelegate(canceled);
         }
         try {
+            final AtomicBoolean fail = new AtomicBoolean(false);
             new Runner(canceled, 0){
 
                 @Override
@@ -96,10 +98,23 @@ public class AddCommand extends GitCommand {
 
                 @Override
                 protected void errorParser(String error) throws GitException {
+                    fail.set(true);
                     parseAddError(error);
                 }
                 
             }.runCLI();
+            if (fail.get()) {
+                // GIT change output of error stream.
+                // Was:
+                //
+                //The following paths are ignored by one of your .gitignore files:
+                //folder2
+                //Use -f if you really want to add them.
+                //fatal: no files added
+                //
+                // Now git stops printing "fatal" string.
+                throw new GitException("Unsuccessful command: "+getCommandLine(0));
+            }
         } catch (GitException t) {
             throw t;
         } catch (Throwable t) {
