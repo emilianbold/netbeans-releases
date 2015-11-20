@@ -42,7 +42,11 @@
 package org.netbeans.modules.docker.ui.run;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.DockerImageInfo;
@@ -91,7 +95,9 @@ public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor>, 
     }
 
     @NbBundle.Messages({
-        "MSG_MissingPort=The port to bind can't be empty"
+        "MSG_MissingPort=The port to bind can't be empty.",
+        "# {0} - conflicting port",
+        "MSG_ConflictingPort=There is port conflict on the host ({0}).",
     })
     @Override
     public boolean isValid() {
@@ -105,6 +111,46 @@ public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor>, 
             if (m.getPort() == null) {
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_MissingPort());
                 return false;
+            }
+        }
+
+        Set<Integer> any = new HashSet<>();
+        Set<Integer> all = new HashSet<>();
+        Map<String, Set<Integer>> portMap = new HashMap<>();
+        for (PortMapping m : mapping) {
+            Integer port = m.getHostPort();
+            if (port == null) {
+                continue;
+            }
+
+            if (m.getHostAddress() == null) {
+                if (!any.add(port)) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            Bundle.MSG_ConflictingPort(port));
+                    return false;
+                }
+                if (all.contains(port)) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            Bundle.MSG_ConflictingPort(port));
+                    return false;
+                }
+            } else {
+                all.add(port);
+                if (any.contains(port)) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            Bundle.MSG_ConflictingPort(port));
+                    return false;
+                }
+                Set<Integer> ports = portMap.get(m.getHostAddress());
+                if (ports == null) {
+                    ports = new HashSet<>();
+                    portMap.put(m.getHostAddress(), ports);
+                }
+                if (!ports.add(port)) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            Bundle.MSG_ConflictingPort(port));
+                    return false;
+                }
             }
         }
         return true;
