@@ -428,9 +428,9 @@ public class FormatStringAudit extends AbstractCodeAudit {
             List<String> formats = Utilities.typeToFormat(type);
             String specifier = error.getSpecifier(); 
             if (specifier.startsWith("l")) {         // NOI18N
-                specifier.replace("l", "");          // NOI18N
+                specifier = specifier.replace("l", "");          // NOI18N
             } else if (specifier.startsWith("h")) {  // NOI18N
-                specifier.replace("h", "");          // NOI18N
+                specifier = specifier.replace("h", "");          // NOI18N
             }
             for (String format : formats) {
                 if (format.contains(specifier)) {
