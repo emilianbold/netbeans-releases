@@ -1377,7 +1377,6 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         final Path p = f.toPath();
         try {
             final String fsType = Files.getFileStore(p).type();
-            System.out.println(f.getAbsolutePath() + " " + fsType + " " + new Date());
             return REMOTE_FSTYPES.contains(fsType);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
