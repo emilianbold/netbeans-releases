@@ -631,13 +631,11 @@ public abstract class TreeView extends JScrollPane {
     /** Expands all paths.
     */
     public void expandAll() {
-        TreeUI treeUI = tree.getUI();
         try {
             tree.setUI(null);
             TreeNode root = (TreeNode) tree.getModel().getRoot();
             expandOrCollapseAll(new TreePath(root), true);
         } finally {
-            tree.setUI(treeUI);
             tree.updateUI();
         }
     }
