@@ -259,7 +259,7 @@ public class RunPortBindingsVisual extends javax.swing.JPanel {
         }
 
         public List<PortMapping> getMappings() {
-            return Collections.unmodifiableList(mappings);
+            return new ArrayList<>(mappings);
         }
 
         public void setMappings(List<PortMapping> mappings) {
