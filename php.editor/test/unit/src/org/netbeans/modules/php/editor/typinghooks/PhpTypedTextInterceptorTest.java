@@ -639,6 +639,48 @@ public class PhpTypedTextInterceptorTest extends PhpTypinghooksTestBase {
         insertChar(original, ' ', expected);
     }
 
+    // the first char of the selected text is a specific char '", )]}\n\t:
+    public void testIssue256659_01() throws Exception {
+        insertChar("$foo = 'bar' => $qux^;", '[', "$foo = ['bar' => $qux]^;", "'bar' => $qux");
+    }
+
+    public void testIssue256659_02() throws Exception {
+        insertChar("$foo = \"bar\" => $qux^;", '(', "$foo = (\"bar\" => $qux)^;", "\"bar\" => $qux");
+    }
+
+    public void testIssue256659_03() throws Exception {
+        insertChar("$foo = ,$bar => $qux^;", '[', "$foo = [,$bar => $qux]^;", ",$bar => $qux");
+    }
+
+    public void testIssue256659_04() throws Exception {
+        insertChar("$foo = $bar => $qux^;", '(', "$foo =( $bar => $qux)^;", " $bar => $qux");
+    }
+
+    public void testIssue256659_05() throws Exception {
+        insertChar(")foo^", '(', "()foo)^", ")foo");
+    }
+
+    public void testIssue256659_06() throws Exception {
+        insertChar("]foo^", '(', "(]foo)^", "]foo");
+    }
+
+    public void testIssue256659_07() throws Exception {
+        insertChar("}foo^", '(', "(}foo)^", "}foo");
+    }
+
+    public void testIssue256659_08() throws Exception {
+        insertChar("\nfoo^", '(', "(\nfoo)^", "\nfoo");
+    }
+
+    public void testIssue256659_09() throws Exception {
+        insertChar("\tfoo^", '(', "(\tfoo)^", "\tfoo");
+    }
+
+    public void testIssue256659_10() throws Exception {
+        // replace ' -> [
+        insertChar("'\"(a)\"'^", '[', "[\"(a)\"]^", "'\"(a)\"'");
+    }
+
 //    Uncomment when CslTestBase.insertChar() will support ambiguous selection strings
 //
 //    public void testIssue242358() throws Exception {
