@@ -50,16 +50,16 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.git.ui.history.SearchIncomingAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_SearchIncomingAction_Name", lazy = false)
+@ActionID(id = "org.netbeans.modules.git.ui.history.SearchIncomingWithContextAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_SearchIncomingWithContextAction_Name", lazy = false)
 @NbBundle.Messages({
-    "LBL_SearchIncomingAction_Name=Show &Incoming",
-    "LBL_SearchIncomingAction_PopupName=Show Incoming for Repository"
+    "LBL_SearchIncomingWithContextAction_Name=Show &Incoming for Selection",
+    "LBL_SearchIncomingWithContextAction_PopupName=Show Incoming for Selection"
 })
-public class SearchIncomingAction extends SearchIncoming {
+public class SearchIncomingWithContextAction extends SearchIncoming {
 
-    public SearchIncomingAction () {
-        super(false);
+    public SearchIncomingWithContextAction () {
+        super(true);
     }
 
 }
