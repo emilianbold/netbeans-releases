@@ -52,6 +52,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.docker.DockerImageInfo;
 import org.netbeans.modules.docker.NetworkPort;
@@ -416,6 +417,12 @@ public class RunPortBindingsVisual extends javax.swing.JPanel {
         addExposedButton.setEnabled(!selected);
         addButton.setEnabled(!selected);
         removeButton.setEnabled(!selected);
+
+        TableCellEditor editor = portMappingTable.getCellEditor();
+        if (editor != null) {
+            editor.cancelCellEditing();
+        }
+        portMappingTable.clearSelection();
     }//GEN-LAST:event_randomBindCheckBoxItemStateChanged
 
 
