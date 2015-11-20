@@ -1374,6 +1374,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
         final Path p = f.toPath();
         try {
+            System.out.println(f.getAbsolutePath() + " " + Files.getFileStore(p).type() + " " + new Date());
             return Files.getFileStore(p).type().startsWith("nfs");//nfs, nfs4  //NOI18N
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
