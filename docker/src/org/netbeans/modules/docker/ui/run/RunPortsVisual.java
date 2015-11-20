@@ -49,6 +49,9 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -57,6 +60,7 @@ import org.netbeans.modules.docker.DockerImageInfo;
 import org.netbeans.modules.docker.NetworkPort;
 import org.netbeans.modules.docker.NetworkPort.Type;
 import org.netbeans.modules.docker.ui.UiUtils;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,6 +68,8 @@ import org.openide.util.NbBundle;
  * @author Petr Hejl
  */
 public class RunPortsVisual extends javax.swing.JPanel {
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final DockerImageInfo info;
 
@@ -92,8 +98,22 @@ public class RunPortsVisual extends javax.swing.JPanel {
         addressColumn.setPreferredWidth(addressColumn.getPreferredWidth() * 2);
 
         portMappingTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        model.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+    
     public boolean isRandomBind() {
         return randomBindCheckBox.isSelected();
     }
@@ -110,10 +130,10 @@ public class RunPortsVisual extends javax.swing.JPanel {
         model.setMappings(mapping);
     }
 
-    @NbBundle.Messages("LBL_RunPorts=Ports")
+    @NbBundle.Messages("LBL_RunPortBindings=Port Bindings")
     @Override
     public String getName() {
-        return Bundle.LBL_RunPorts();
+        return Bundle.LBL_RunPortBindings();
     }
 
     private static final class PortMappingModel extends AbstractTableModel {

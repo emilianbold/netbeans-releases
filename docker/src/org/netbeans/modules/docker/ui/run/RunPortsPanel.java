@@ -43,12 +43,17 @@ package org.netbeans.modules.docker.ui.run;
 
 import java.util.Collections;
 import java.util.List;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.DockerImageInfo;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
-public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final DockerImageInfo info;
 
@@ -57,6 +62,8 @@ public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor> {
      * component from this class, just use getComponent().
      */
     private RunPortsVisual component;
+
+    private WizardDescriptor wizard;
 
     public RunPortsPanel(DockerImageInfo info) {
         this.info = info;
@@ -70,6 +77,7 @@ public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor> {
     public RunPortsVisual getComponent() {
         if (component == null) {
             component = new RunPortsVisual(info);
+            component.addChangeListener(this);
         }
         return component;
     }
@@ -82,25 +90,49 @@ public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor> {
         // return new HelpCtx("help.key.here");
     }
 
+    @NbBundle.Messages({
+        "MSG_MissingPort=The port to bind can't be empty"
+    })
     @Override
     public boolean isValid() {
+        // clear the error message
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
+
+        List<PortMapping> mapping = component.getPortMapping();
+        for (PortMapping m : mapping) {
+            if (m.getPort() == null) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_MissingPort());
+                return false;
+            }
+        }
         return true;
     }
 
     @Override
     public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     @Override
     public void readSettings(WizardDescriptor wiz) {
+        if (wizard == null) {
+            wizard = wiz;
+        }
+
         Boolean portRandom = (Boolean) wiz.getProperty(RunTagWizard.RANDOM_BIND_PROPERTY);
         component.setRandomBind(portRandom != null ? portRandom : RunTagWizard.RANDOM_BIND_DEFAULT);
         List<PortMapping> mapping = (List<PortMapping>) wiz.getProperty(RunTagWizard.PORT_MAPPING_PROPERTY);
         component.setPortMapping(mapping != null ? mapping : Collections.<PortMapping>emptyList());
+
+        // XXX revalidate; is this bug?
+        changeSupport.fireChange();
     }
 
     @Override
@@ -109,4 +141,8 @@ public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor> {
         wiz.putProperty(RunTagWizard.PORT_MAPPING_PROPERTY, component.getPortMapping());
     }
 
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
+    }
 }
