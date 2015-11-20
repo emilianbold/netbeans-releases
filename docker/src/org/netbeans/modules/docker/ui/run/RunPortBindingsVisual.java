@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class RunBindingsVisual extends javax.swing.JPanel {
+public class RunPortBindingsVisual extends javax.swing.JPanel {
 
     private final DockerImageInfo info;
 
@@ -72,7 +72,7 @@ public class RunBindingsVisual extends javax.swing.JPanel {
     /**
      * Creates new form RunNetworkVisual
      */
-    public RunBindingsVisual(DockerImageInfo info) {
+    public RunPortBindingsVisual(DockerImageInfo info) {
         initComponents();
         this.info = info;
 
@@ -94,8 +94,20 @@ public class RunBindingsVisual extends javax.swing.JPanel {
         portMappingTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
     }
 
+    public boolean isRandomBind() {
+        return randomBindCheckBox.isSelected();
+    }
+
+    public void setRandomBind(boolean randomBind) {
+        randomBindCheckBox.setSelected(randomBind);
+    }
+
     public List<PortMapping> getPortMapping() {
         return model.getMappings();
+    }
+
+    public void setPortMapping(List<PortMapping> mapping) {
+        model.setMappings(mapping);
     }
 
     @NbBundle.Messages("LBL_RunPortBindings=Port Bindings")
@@ -248,6 +260,12 @@ public class RunBindingsVisual extends javax.swing.JPanel {
         public List<PortMapping> getMappings() {
             return Collections.unmodifiableList(mappings);
         }
+
+        public void setMappings(List<PortMapping> mappings) {
+            this.mappings.clear();
+            this.mappings.addAll(mappings);
+            fireTableDataChanged();
+        }
     }
 
     private static class CellRenderer extends DefaultTableCellRenderer {
@@ -298,32 +316,37 @@ public class RunBindingsVisual extends javax.swing.JPanel {
         addExposedButton = new javax.swing.JButton();
         randomBindCheckBox = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(portMappingLabel, org.openide.util.NbBundle.getMessage(RunBindingsVisual.class, "RunBindingsVisual.portMappingLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(portMappingLabel, org.openide.util.NbBundle.getMessage(RunPortBindingsVisual.class, "RunPortBindingsVisual.portMappingLabel.text")); // NOI18N
 
         jScrollPane1.setViewportView(portMappingTable);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RunBindingsVisual.class, "RunBindingsVisual.addButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RunPortBindingsVisual.class, "RunPortBindingsVisual.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(RunBindingsVisual.class, "RunBindingsVisual.removeButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(RunPortBindingsVisual.class, "RunPortBindingsVisual.removeButton.text")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(addExposedButton, org.openide.util.NbBundle.getMessage(RunBindingsVisual.class, "RunBindingsVisual.addExposedButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addExposedButton, org.openide.util.NbBundle.getMessage(RunPortBindingsVisual.class, "RunPortBindingsVisual.addExposedButton.text")); // NOI18N
         addExposedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addExposedButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(randomBindCheckBox, org.openide.util.NbBundle.getMessage(RunBindingsVisual.class, "RunBindingsVisual.randomBindCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(randomBindCheckBox, org.openide.util.NbBundle.getMessage(RunPortBindingsVisual.class, "RunPortBindingsVisual.randomBindCheckBox.text")); // NOI18N
+        randomBindCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                randomBindCheckBoxItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -386,6 +409,14 @@ public class RunBindingsVisual extends javax.swing.JPanel {
             model.removeRow(selectedRows[i]);
         }
     }//GEN-LAST:event_removeButtonActionPerformed
+
+    private void randomBindCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_randomBindCheckBoxItemStateChanged
+        boolean selected = randomBindCheckBox.isSelected();
+        portMappingTable.setEnabled(!selected);
+        addExposedButton.setEnabled(!selected);
+        addButton.setEnabled(!selected);
+        removeButton.setEnabled(!selected);
+    }//GEN-LAST:event_randomBindCheckBoxItemStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

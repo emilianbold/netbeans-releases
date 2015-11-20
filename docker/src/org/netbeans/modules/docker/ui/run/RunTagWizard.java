@@ -86,7 +86,11 @@ public class RunTagWizard {
 
     public static final String TTY_PROPERTY = "tty";
 
+    public static final String RANDOM_BIND_PROPERTY = "portRandom";
+
     public static final String PORT_MAPPING_PROPERTY = "portMapping";
+
+    public static final boolean RANDOM_BIND_DEFAULT = false;
 
     private final DockerTag tag;
 
@@ -103,8 +107,8 @@ public class RunTagWizard {
                 new DockerImageInfoRunnable(tag.getImage()), Bundle.MSG_ReceivingImageInfo(), false);
 
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
-        panels.add(new RunCommandPanel());
-        panels.add(new RunBindingsPanel(info));
+        panels.add(new RunCommandPanel(info));
+        panels.add(new RunPortBindingsPanel(info));
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
             JComponent c = (JComponent) panels.get(i).getComponent();
@@ -121,6 +125,7 @@ public class RunTagWizard {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.LBL_Run(DockerUtils.getImage(tag)));
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
+            Boolean portRandom = (Boolean) wiz.getProperty(RANDOM_BIND_PROPERTY);
             List<PortMapping> mapping = (List<PortMapping>) wiz.getProperty(PORT_MAPPING_PROPERTY);
             if (mapping == null) {
                 mapping = Collections.emptyList();
@@ -129,12 +134,13 @@ public class RunTagWizard {
                     (String) wiz.getProperty(NAME_PROPERTY),
                     (Boolean) wiz.getProperty(INTERACTIVE_PROPERTY),
                     (Boolean) wiz.getProperty(TTY_PROPERTY),
+                    portRandom != null ? portRandom : RANDOM_BIND_DEFAULT,
                     mapping);
         }
     }
 
     private void run(final DockerTag tag, final String command, final String name,
-            final boolean interactive, final boolean tty, final List<PortMapping> mapping) {
+            final boolean interactive, final boolean tty, final boolean randomBind, final List<PortMapping> mapping) {
 
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
@@ -168,11 +174,13 @@ public class RunTagWizard {
                         }
                         list.add(m);
                     }
-                    if (!bindings.isEmpty()) {
+
+                    JSONObject hostConfig = new JSONObject();
+                    config.put("HostConfig", hostConfig);
+                    hostConfig.put("PublishAllPorts", randomBind);
+                    if (!randomBind && !bindings.isEmpty()) {
                         JSONObject portBindings = new JSONObject();
-                        JSONObject hostConfig = new JSONObject();
                         hostConfig.put("PortBindings", portBindings);
-                        config.put("HostConfig", hostConfig);
 
                         for (Map.Entry<String, List<PortMapping>> e : bindings.entrySet()) {
                             JSONArray arr = new JSONArray();

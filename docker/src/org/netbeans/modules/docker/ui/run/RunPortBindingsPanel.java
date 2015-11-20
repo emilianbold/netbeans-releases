@@ -41,23 +41,24 @@
  */
 package org.netbeans.modules.docker.ui.run;
 
+import java.util.Collections;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.DockerImageInfo;
-import org.netbeans.modules.docker.DockerTag;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class RunBindingsPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+public class RunPortBindingsPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private final DockerImageInfo info;
-    
+
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private RunBindingsVisual component;
+    private RunPortBindingsVisual component;
 
-    public RunBindingsPanel(DockerImageInfo info) {
+    public RunPortBindingsPanel(DockerImageInfo info) {
         this.info = info;
     }
 
@@ -66,9 +67,9 @@ public class RunBindingsPanel implements WizardDescriptor.Panel<WizardDescriptor
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     @Override
-    public RunBindingsVisual getComponent() {
+    public RunPortBindingsVisual getComponent() {
         if (component == null) {
-            component = new RunBindingsVisual(info);
+            component = new RunPortBindingsVisual(info);
         }
         return component;
     }
@@ -96,10 +97,15 @@ public class RunBindingsPanel implements WizardDescriptor.Panel<WizardDescriptor
 
     @Override
     public void readSettings(WizardDescriptor wiz) {
+        Boolean portRandom = (Boolean) wiz.getProperty(RunTagWizard.RANDOM_BIND_PROPERTY);
+        component.setRandomBind(portRandom != null ? portRandom : RunTagWizard.RANDOM_BIND_DEFAULT);
+        List<PortMapping> mapping = (List<PortMapping>) wiz.getProperty(RunTagWizard.PORT_MAPPING_PROPERTY);
+        component.setPortMapping(mapping != null ? mapping : Collections.<PortMapping>emptyList());
     }
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
+        wiz.putProperty(RunTagWizard.RANDOM_BIND_PROPERTY, component.isRandomBind());
         wiz.putProperty(RunTagWizard.PORT_MAPPING_PROPERTY, component.getPortMapping());
     }
 

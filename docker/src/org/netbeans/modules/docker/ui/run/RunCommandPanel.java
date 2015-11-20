@@ -42,16 +42,23 @@
 package org.netbeans.modules.docker.ui.run;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.DockerImageInfo;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 public class RunCommandPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
+    private final DockerImageInfo info;
+    
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private RunCommandVisual component;
+
+    public RunCommandPanel(DockerImageInfo info) {
+        this.info = info;
+    }
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
