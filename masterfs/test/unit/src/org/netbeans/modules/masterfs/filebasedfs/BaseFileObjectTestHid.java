@@ -238,8 +238,6 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         for (FileObject ch : fo.getChildren()) {
             if (!skipChildren.contains(ch.getNameExt()) && !isNFS(ch)) {
                 deep(ch, depth, sb, path, Collections.<String>emptySet());
-            } else {
-                System.out.println("NFS: " + ch.getPath());
             }
         }
     }
@@ -1376,6 +1374,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
         final Path p = f.toPath();
         try {
+            System.out.println(f.getAbsolutePath() + " " + Files.getFileStore(p).type() + " " + new Date());
             return "nfs".equals(Files.getFileStore(p).type());  //NOI18N
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
