@@ -52,3 +52,4 @@ tboudreau@netbeans.org=javacard*/*,properties.based.dataobjects/*,simple.project
 tomcatint-commits@serverplugins.netbeans.org=tomcat*/*
 TheOldToxophilist@netbeans.org=coherence/*
 jungi@netbeans.org=*testng*/*,junit*/*,gsf.testrunner/*,gototest/*,java.j2seproject/*,web.project/*,nbbuild/*,java.testrunner/*
+commits@docker.netbeans.org=docker/*
