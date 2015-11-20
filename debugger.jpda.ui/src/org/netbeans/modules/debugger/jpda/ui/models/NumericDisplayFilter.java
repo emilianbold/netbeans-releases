@@ -266,13 +266,15 @@ NodeActionsProviderFilter, Constants {
                     );
                 else
                 if ("short".equals(type)) {
-                    String rv = Integer.toOctalString(Short.parseShort(var.getValue()));
-                    if (rv.length() > 5) rv = rv.substring(rv.length() - 5, rv.length());
-                    return "0" + (rv.charAt(0) == '0' ? "1" : "") + rv;
+                    short s = Short.parseShort(var.getValue());
+                    int i = s & 0xFFFF;
+                    String rv = Integer.toOctalString(i);
+                    return "0" + rv;
                 } else
                 if ("byte".equals(type)) {
-                    String rv = Integer.toOctalString(Byte.parseByte(var.getValue()));
-                    if (rv.length() > 3) rv = "1" + rv.substring(rv.length() - 2, rv.length());
+                    byte b = Byte.parseByte(var.getValue());
+                    int i = b & 0xFF;
+                    String rv = Integer.toOctalString(i);
                     return "0" + rv;
                 } else if ("char".equals(type)) {
                     int c = getChar(var.getValue());
