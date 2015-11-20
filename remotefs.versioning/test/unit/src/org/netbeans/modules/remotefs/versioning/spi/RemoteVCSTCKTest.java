@@ -75,6 +75,8 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         // Needed for native execution...
         System.setProperty("netbeans.dirs", NbClustersInfoProvider.getClusters()); // NOI18N
         System.setProperty("remote.user.password.keep_in_memory", "true"); // NOI18N
+        // Native file watcher is disabled
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
     }
 
     private ExecutionEnvironment execEnv = null;
