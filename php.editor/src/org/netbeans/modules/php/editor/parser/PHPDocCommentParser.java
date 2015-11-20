@@ -189,10 +189,13 @@ public class PHPDocCommentParser {
                     tags.add(tag);
                 }
             }
-            line = line.substring(tagType.getName().length() + 1).trim();
-            PHPDocTag tag = createTag(startOffset + 3 + index, startOffset + 3 + comment.length(), tagType, line, comment, startOffset + 3);
-            if (tag != null) {
-                tags.add(tag);
+            int endOffsetOfTag = tagType.getName().length() + 1;
+            if (endOffsetOfTag <= line.length()) {
+                line = line.substring(endOffsetOfTag).trim();
+                PHPDocTag tag = createTag(startOffset + 3 + index, startOffset + 3 + comment.length(), tagType, line, comment, startOffset + 3);
+                if (tag != null) {
+                    tags.add(tag);
+                }
             }
         } else {
             if (lastTag == null) {  // thre is not defined a tag before the last line
