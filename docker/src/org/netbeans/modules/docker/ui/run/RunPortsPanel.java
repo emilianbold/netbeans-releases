@@ -126,19 +126,19 @@ public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor>, 
             if (m.getHostAddress() == null) {
                 if (!any.add(port)) {
                     wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            Bundle.MSG_ConflictingPort(port));
+                            Bundle.MSG_ConflictingPort(port.toString()));
                     return false;
                 }
                 if (all.contains(port)) {
                     wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            Bundle.MSG_ConflictingPort(port));
+                            Bundle.MSG_ConflictingPort(port.toString()));
                     return false;
                 }
             } else {
                 all.add(port);
                 if (any.contains(port)) {
                     wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            Bundle.MSG_ConflictingPort(port));
+                            Bundle.MSG_ConflictingPort(port.toString()));
                     return false;
                 }
                 Set<Integer> ports = portMap.get(m.getHostAddress());
@@ -148,7 +148,7 @@ public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor>, 
                 }
                 if (!ports.add(port)) {
                     wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            Bundle.MSG_ConflictingPort(port));
+                            Bundle.MSG_ConflictingPort(port.toString()));
                     return false;
                 }
             }
