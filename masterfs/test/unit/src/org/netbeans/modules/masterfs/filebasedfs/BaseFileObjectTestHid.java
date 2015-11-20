@@ -89,7 +89,9 @@ import org.openide.util.io.NbMarshalledObject;
 
 public class BaseFileObjectTestHid extends TestBaseHid{
     public static final HashSet<String> AUTOMOUNT_SET = new HashSet<String>(Arrays.asList("set", "shared", "net", "java", "share", "home", "ws", "ade_autofs"));
-    private static final boolean CHECK_NFS = true;
+    private static final Set<String> REMOTE_FSTYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+    "nfs", "nfs4","autofs")));  //NOI18N
+    private static final boolean CHECK_REMOTE_FSTYPES = true;
     private FileObject root;
     private Logger LOG;
     
@@ -236,7 +238,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
         sb.append("\n");
         for (FileObject ch : fo.getChildren()) {
-            if (!skipChildren.contains(ch.getNameExt()) && !isNFS(ch)) {
+            if (!skipChildren.contains(ch.getNameExt()) && !isRemoteFS(ch)) {
                 deep(ch, depth, sb, path, Collections.<String>emptySet());
             }
         }
@@ -1361,8 +1363,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertFalse("Leaf is invalid as well", next.isValid());
     }
 
-    private static boolean isNFS (FileObject fo) {
-        if (!CHECK_NFS) {
+    private static boolean isRemoteFS (FileObject fo) {
+        if (!CHECK_REMOTE_FSTYPES) {
             return false;
         }
         if (!fo.isFolder()) {
@@ -1374,8 +1376,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
         final Path p = f.toPath();
         try {
-            System.out.println(f.getAbsolutePath() + " " + Files.getFileStore(p).type() + " " + new Date());
-            return Files.getFileStore(p).type().startsWith("nfs");//nfs, nfs4  //NOI18N
+            final String fsType = Files.getFileStore(p).type();
+            System.out.println(f.getAbsolutePath() + " " + fsType + " " + new Date());
+            return REMOTE_FSTYPES.contains(fsType);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
             return false;
