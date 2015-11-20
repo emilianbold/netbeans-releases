@@ -42,16 +42,17 @@
 package org.netbeans.modules.docker.ui.run;
 
 import java.awt.Component;
+import java.awt.Font;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import org.netbeans.modules.docker.DockerImageInfo;
 import org.netbeans.modules.docker.NetworkPort;
 import org.netbeans.modules.docker.NetworkPort.Type;
@@ -62,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class RunNetworkVisual extends javax.swing.JPanel {
+public class RunBindingsVisual extends javax.swing.JPanel {
 
     private final DockerImageInfo info;
 
@@ -71,7 +72,7 @@ public class RunNetworkVisual extends javax.swing.JPanel {
     /**
      * Creates new form RunNetworkVisual
      */
-    public RunNetworkVisual(DockerImageInfo info) {
+    public RunBindingsVisual(DockerImageInfo info) {
         initComponents();
         this.info = info;
 
@@ -79,33 +80,28 @@ public class RunNetworkVisual extends javax.swing.JPanel {
         portMappingTable.setModel(model);
         UiUtils.configureRowHeight(portMappingTable);
 
+        TableColumn typeColumn = portMappingTable.getColumnModel().getColumn(0);
         JComboBox typeCombo = new JComboBox(NetworkPort.Type.values());
-        portMappingTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(typeCombo));
-        Collection<String> addresses = UiUtils.getAddresses(false, false);
-        JComboBox addressCombo = new JComboBox(addresses.toArray());
-        addressCombo.setBorder(null);
+        typeColumn.setCellEditor(new DefaultCellEditor(typeCombo));
+        typeColumn.setPreferredWidth(typeColumn.getPreferredWidth() / 2);
+
+        TableColumn addressColumn = portMappingTable.getColumnModel().getColumn(3);
+        JComboBox addressCombo = new JComboBox(UiUtils.getAddresses(false, false).toArray());
         addressCombo.setEditable(true);
+        addressColumn.setCellEditor(new DefaultCellEditor(addressCombo));
+        addressColumn.setPreferredWidth(addressColumn.getPreferredWidth() * 2);
 
-        //portMappingTable.getColumnModel().getColumn(0).setCellRenderer(new ComboCellRenderer(NetworkPort.Type.values()));
-        //portMappingTable.getColumnModel().getColumn(3).setCellRenderer(new ComboCellRenderer(addresses.toArray()));
-        portMappingTable.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(addressCombo));
-//        portMappingTable.getColumnModel().getColumn(0).setPreferredWidth(50);
-//        portMappingTable.getColumnModel().getColumn(1).setPreferredWidth(portMappingTable.getPreferredSize().width / 6);
-//        portMappingTable.getColumnModel().getColumn(2).setPreferredWidth(portMappingTable.getPreferredSize().width / 6);
-        portMappingTable.getColumnModel().getColumn(3).setPreferredWidth((int) (portMappingTable.getPreferredSize().width * 0.5));
         portMappingTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-        //portMappingTable.setRowHeight(adressCombo.getMinimumSize().height);
     }
-
 
     public List<PortMapping> getPortMapping() {
         return model.getMappings();
     }
 
-    @NbBundle.Messages("LBL_RunNetwork=Network")
+    @NbBundle.Messages("LBL_RunPortBindings=Port Bindings")
     @Override
     public String getName() {
-        return Bundle.LBL_RunNetwork();
+        return Bundle.LBL_RunPortBindings();
     }
 
     private static final class PortMappingModel extends AbstractTableModel {
@@ -254,6 +250,37 @@ public class RunNetworkVisual extends javax.swing.JPanel {
         }
     }
 
+    private static class CellRenderer extends DefaultTableCellRenderer {
+
+        private final String emptyValue;
+
+        public CellRenderer(String emptyValue) {
+            this.emptyValue = emptyValue;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Object toRender = value;
+            if (emptyValue != null
+                    && (toRender == null || ((toRender instanceof String) && ((String) toRender).trim().isEmpty()))) {
+                toRender = emptyValue;
+            }
+            JLabel label = (JLabel) super.getTableCellRendererComponent(table, toRender, isSelected, hasFocus, row, column);
+            if (toRender != null && Number.class.isAssignableFrom(toRender.getClass())) {
+                label.setHorizontalAlignment(TRAILING);
+            } else {
+                label.setHorizontalAlignment(LEADING);
+            }
+            if (toRender != value) {
+                Font italic = new Font(label.getFont().getName(), Font.ITALIC, label.getFont().getSize());
+                label.setFont(italic);
+            } else {
+                label.setFont(table.getFont());
+            }
+            return label;
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -263,7 +290,6 @@ public class RunNetworkVisual extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        networkDisabledCheckBox = new javax.swing.JCheckBox();
         portMappingLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         portMappingTable = new javax.swing.JTable();
@@ -272,57 +298,52 @@ public class RunNetworkVisual extends javax.swing.JPanel {
         addExposedButton = new javax.swing.JButton();
         randomBindCheckBox = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(networkDisabledCheckBox, org.openide.util.NbBundle.getMessage(RunNetworkVisual.class, "RunNetworkVisual.networkDisabledCheckBox.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(portMappingLabel, org.openide.util.NbBundle.getMessage(RunNetworkVisual.class, "RunNetworkVisual.portMappingLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(portMappingLabel, org.openide.util.NbBundle.getMessage(RunBindingsVisual.class, "RunBindingsVisual.portMappingLabel.text")); // NOI18N
 
         jScrollPane1.setViewportView(portMappingTable);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RunNetworkVisual.class, "RunNetworkVisual.addButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RunBindingsVisual.class, "RunBindingsVisual.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(RunNetworkVisual.class, "RunNetworkVisual.removeButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(RunBindingsVisual.class, "RunBindingsVisual.removeButton.text")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(addExposedButton, org.openide.util.NbBundle.getMessage(RunNetworkVisual.class, "RunNetworkVisual.addExposedButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addExposedButton, org.openide.util.NbBundle.getMessage(RunBindingsVisual.class, "RunBindingsVisual.addExposedButton.text")); // NOI18N
         addExposedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addExposedButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(randomBindCheckBox, org.openide.util.NbBundle.getMessage(RunNetworkVisual.class, "RunNetworkVisual.randomBindCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(randomBindCheckBox, org.openide.util.NbBundle.getMessage(RunBindingsVisual.class, "RunBindingsVisual.randomBindCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(networkDisabledCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(portMappingLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(randomBindCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(addExposedButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(removeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-            .addComponent(randomBindCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                    .addComponent(removeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(networkDisabledCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(randomBindCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(portMappingLabel)
@@ -371,7 +392,6 @@ public class RunNetworkVisual extends javax.swing.JPanel {
     private javax.swing.JButton addButton;
     private javax.swing.JButton addExposedButton;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JCheckBox networkDisabledCheckBox;
     private javax.swing.JLabel portMappingLabel;
     private javax.swing.JTable portMappingTable;
     private javax.swing.JCheckBox randomBindCheckBox;

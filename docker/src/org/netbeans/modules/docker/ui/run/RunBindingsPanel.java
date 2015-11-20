@@ -47,7 +47,7 @@ import org.netbeans.modules.docker.DockerTag;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class RunNetworkPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+public class RunBindingsPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private final DockerImageInfo info;
     
@@ -55,9 +55,9 @@ public class RunNetworkPanel implements WizardDescriptor.Panel<WizardDescriptor>
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private RunNetworkVisual component;
+    private RunBindingsVisual component;
 
-    public RunNetworkPanel(DockerImageInfo info) {
+    public RunBindingsPanel(DockerImageInfo info) {
         this.info = info;
     }
 
@@ -66,9 +66,9 @@ public class RunNetworkPanel implements WizardDescriptor.Panel<WizardDescriptor>
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     @Override
-    public RunNetworkVisual getComponent() {
+    public RunBindingsVisual getComponent() {
         if (component == null) {
-            component = new RunNetworkVisual(info);
+            component = new RunBindingsVisual(info);
         }
         return component;
     }
