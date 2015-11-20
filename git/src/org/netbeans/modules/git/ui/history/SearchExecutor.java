@@ -84,6 +84,7 @@ class SearchExecutor extends GitProgressSupport {
     static final int UNLIMITTED = -1;
     private final SearchCriteria sc;
     private final Mode mode;
+    private final boolean searchInContext;
     private final String branchName;
     private String errMessage;
     private String excludedCommitId;
@@ -113,10 +114,11 @@ class SearchExecutor extends GitProgressSupport {
         showMerges = criteria.isIncludeMerges();
         branchName = criteria.getBranch();
         mode = criteria.getMode();
+        searchInContext = criteria.isSearchInContext();
 
         sc = new SearchCriteria();
         File[] files = master.getRoots();
-        if (mode == Mode.LOCAL && files != null && files.length > 0 && !files[0].equals(getRepositoryRoot())) {
+        if (searchInContext && files != null && files.length > 0 && !files[0].equals(getRepositoryRoot())) {
             sc.setFiles(files);
             if (files.length == 1 && files[0].isFile()) {
                 sc.setFollowRenames(true);
