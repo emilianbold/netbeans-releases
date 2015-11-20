@@ -374,7 +374,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
             }
             String signature = breakpoint.getMethodSignature();
             LOG.log(Level.FINE,
-                    "Breakpoint: {0} got class load: {1}, searching for method name '{2}' with signature: {3}",
+                    "Breakpoint: {0} got class load: {1}, searching for method name ''{2}'' with signature: {3}",
                     new Object[]{ breakpoint, referenceType, methodName, signature });
             while (methods.hasNext ()) {
                 Method method = (Method) methods.next ();

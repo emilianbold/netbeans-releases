@@ -108,7 +108,7 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
                                 if (LOG.isLoggable(Level.FINE)) {
                                     LOG.log(
                                         Level.FINE,
-                                        "'{0}' uses legacyIndenter={1}, legacyFormatter={2}, legacyAutoIndenter={3}",   //NOI18N
+                                        "''{0}'' uses legacyIndenter={1}, legacyFormatter={2}, legacyAutoIndenter={3}",   //NOI18N
                                         new Object[]{
                                             mimePath.getPath(),
                                             legacyIndenter,

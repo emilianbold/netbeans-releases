@@ -1257,7 +1257,7 @@ public final class RemoteClient implements Cancellable {
                     //throw new RemoteException("Cannot change directory '" + dir + "' [" + remoteClient.getReplyString() + "]");
                 }
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Directory '{0}' created and entered", getWorkingDirectory());
+                    LOGGER.log(Level.FINE, "Directory ''{0}'' created and entered", getWorkingDirectory());
                 }
             }
         }

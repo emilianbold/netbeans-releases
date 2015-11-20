@@ -783,7 +783,7 @@ class SQLExecutionHelper {
                         result = rs.getRow();
                     } catch (SQLException ex) {
                         LOGGER.log(Level.INFO,
-                                "Failed to jump to end of SQL Statement '{0}' - cause: {1}",
+                                "Failed to jump to end of SQL Statement ''{0}'' - cause: {1}",
                                 new Object[]{dataView.getSQLString(), ex});
                     }
                 }
