@@ -88,6 +88,7 @@ public class PhpTypedTextInterceptor implements TypedTextInterceptor {
      */
     private int previousAdjustmentIndent;
     private boolean codeTemplateEditing;
+    private boolean bracketCompleted;
 
     @Override
     public boolean beforeInsert(Context context) throws BadLocationException {
@@ -98,6 +99,7 @@ public class PhpTypedTextInterceptor implements TypedTextInterceptor {
     public void insert(MutableContext context) throws BadLocationException {
         isAfter = false;
         codeTemplateEditing = false;
+        bracketCompleted = false;
         Document document = context.getDocument();
         BaseDocument doc = (BaseDocument) document;
         int caretOffset = context.getOffset();
@@ -122,6 +124,7 @@ public class PhpTypedTextInterceptor implements TypedTextInterceptor {
                             String innerText = selection.substring(1, selection.length() - 1);
                             String text = Character.toString(ch) + innerText + Character.toString(matching(ch));
                             context.setText(text, text.length());
+                            bracketCompleted = true;
                         } else if (selection.length() == 1 && (firstChar == '"' || firstChar == '\'')) {
                             if (ts.token().id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) {
                                 String original = ts.token().text().toString();
@@ -136,6 +139,7 @@ public class PhpTypedTextInterceptor implements TypedTextInterceptor {
                         } else {
                             String text = ch + selection + matching(ch);
                             context.setText(text, text.length());
+                            bracketCompleted = true;
                         }
                         return;
                     }
@@ -582,7 +586,7 @@ public class PhpTypedTextInterceptor implements TypedTextInterceptor {
      * @param bracket the bracket that was inserted
      */
     private void completeOpeningBracket(BaseDocument doc, int dotPos, Caret caret, char bracket) throws BadLocationException {
-        if (isCompletablePosition(doc, dotPos + 1)) {
+        if (!bracketCompleted && isCompletablePosition(doc, dotPos + 1)) {
             String matchingBracket = "" + matching(bracket);
             doc.insertString(dotPos + 1, matchingBracket, null);
             caret.setDot(dotPos + 1);
