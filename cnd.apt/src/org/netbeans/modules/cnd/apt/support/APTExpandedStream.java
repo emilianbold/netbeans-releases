@@ -452,7 +452,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                                                     token.getText(), macro.getName());
                                         } else {
                                             APTUtils.LOG.log(Level.WARNING,
-                                                    "parameter '{0}' was empty substituted due to very long output value when expanding macros:\n {1}\n", // NOI18N
+                                                    "parameter ''{0}'' was empty substituted due to very long output value when expanding macros:\n {1}\n", // NOI18N
                                                     new Object[] {token.getText(), macro.getName()});
                                         }
                                         return Collections.<APTToken>emptyList();

@@ -462,7 +462,7 @@ public final class CommandUtils {
             uri = url.toURI();
         } catch (URISyntaxException ex) {
             // fallback:
-            LOGGER.log(Level.FINE, "URL '{0}' cannot be converted to URI.", url);
+            LOGGER.log(Level.FINE, "URL ''{0}'' cannot be converted to URI.", url);
             String res = url.toExternalForm();
             int end = res.lastIndexOf('?'); // NOI18N
             if (end == -1) {
