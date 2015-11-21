@@ -616,15 +616,15 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
         name = name == null ? query.getDisplayName() : name;
         assert name != null;
-        Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
+        Bugzilla.LOG.log(Level.FINE, "saving query ''{0}''", new Object[]{name});
         save(name);
         
         if (!firstTime) {
-            Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+            Bugzilla.LOG.log(Level.FINE, "refreshing query ''{0}'' after save", new Object[]{name});
             onRefresh();
         }
         
-        Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
+        Bugzilla.LOG.log(Level.FINE, "query ''{0}'' saved", new Object[]{name});
         Bugzilla.LOG.fine("on save finnish");
         
         return true;
@@ -1081,10 +1081,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     private void saveQuery() {
         String name = query.getDisplayName();
-        Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name}); // NOI18N
+        Bugzilla.LOG.log(Level.FINE, "saving query ''{0}''", new Object[]{name}); // NOI18N
         repository.saveQuery(query);
         resetParameters();
-        Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});  // NOI18N                 
+        Bugzilla.LOG.log(Level.FINE, "query ''{0}'' saved", new Object[]{name});  // NOI18N                 
     }
 
     @Override

@@ -360,7 +360,7 @@ public class ModuleOptions extends OptionProcessor {
 
     @NbBundle.Messages({
         "# {0} - regexp",
-        "MSG_CantCompileRegex=Cannot understand regular expession '{0}'"
+        "MSG_CantCompileRegex=Cannot understand regular expession ''{0}''"
     })
     private static Pattern[] findMatcher(Env env, String[] pattern) {
         Pattern[] arr = new Pattern[pattern.length];
