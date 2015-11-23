@@ -821,7 +821,7 @@ public class DockerRemote {
     }
 
     private Object doGetRequest(@NonNull String url, @NonNull String action, Set<Integer> okCodes) throws DockerException {
-        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+        //assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
             URL httpUrl = createURL(url, action);
