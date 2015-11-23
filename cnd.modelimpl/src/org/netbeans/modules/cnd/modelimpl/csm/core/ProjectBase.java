@@ -1787,8 +1787,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         synchronized (entry.getLock()) {
             for (PreprocessorStatePair keptPair : entry.getStatePairs()) {
-                if (keptPair.pcState.isAllIncluded()
-                        && keptPair.state.isCompileContext() && keptPair.state.isCompileContext()) {
+                if (keptPair.pcState.isAllIncluded() && keptPair.state.isCompileContext()) {
                     // can not contribute any new content, because all was already included before
                     return true;
                 }
@@ -2156,7 +2155,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    void setParsedPCState(FileImpl csmFile, State ppState, FilePreprocessorConditionState pcState) {
+    void setParsedPCState(FileImpl csmFile, State ppOrigState, State ppUsedState, FilePreprocessorConditionState pcState) {
         CharSequence fileKey = csmFile.getAbsolutePath();
         FileContainer.FileEntry entry = getFileContainer().getEntry(fileKey);
         if (entry == null) {
@@ -2165,17 +2164,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         boolean updateFileContainer;
         Object lock = entry.getLock();
-        StartEntry startEntry = APTHandlersSupport.extractStartEntry(ppState);
+        StartEntry startEntry = APTHandlersSupport.extractStartEntry(ppOrigState);
         boolean updateStartProjectStorage = false;
         ProjectBase startProject = Utils.getStartProject(startEntry);
         // IZ#179861: unstable test RepositoryValidation
         synchronized (lock) {
             // update FileContainer entry if possible
-            updateFileContainer = updateFileEntryBasedOnParsedState(entry, fileKey, ppState, pcState);
+            updateFileContainer = updateFileEntryBasedOnParsedState(entry, fileKey, ppOrigState, ppUsedState, pcState);
             // update include storage of start project
             FileEntry includedEntry = startProject.includedFileContainer.getIncludedFileEntry(lock, this, fileKey);
             if (includedEntry != null) {
-                updateStartProjectStorage = updateFileEntryBasedOnParsedState(includedEntry, fileKey, ppState, pcState);
+                updateStartProjectStorage = updateFileEntryBasedOnParsedState(includedEntry, fileKey, ppOrigState, ppUsedState, pcState);
             }
         }
         if (updateFileContainer) {
@@ -2187,11 +2186,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    private static boolean updateFileEntryBasedOnParsedState(FileEntry entry, CharSequence fileKey, State ppState, FilePreprocessorConditionState pcState) {
+    private static boolean updateFileEntryBasedOnParsedState(FileEntry entry, CharSequence fileKey, State ppOrigState, State ppUsedState, FilePreprocessorConditionState pcState) {
         List<PreprocessorStatePair> statesToKeep = new ArrayList<>(4);
         Collection<PreprocessorStatePair> entryStatePairs = entry.getStatePairs();
         if (TraceFlags.TRACE_182342_BUG) {
-            System.err.printf("setParsedPCState: original states for file: %s %n with new state: %s%n and pcState: %s%n", fileKey, ppState, pcState);
+            System.err.printf("setParsedPCState: original states for file: %s %n with new state: %s%n and pcState: %s%n", fileKey, ppUsedState, pcState);
             if (entryStatePairs.isEmpty()) {
                 System.err.println("NO ORIGINAL STATES");
             } else {
@@ -2209,7 +2208,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             assert pair.state != null : "state can not be null in pair " + pair + " for file " + fileKey;
             if ((pair.pcState == FilePreprocessorConditionState.PARSING)
                     && // there coud be invalidated state which is in parsing phase now
-                    APTHandlersSupport.equalsIgnoreInvalid(pair.state, ppState)) {
+                    APTHandlersSupport.equalsIgnoreInvalid(pair.state, ppOrigState)) {
                 assert !entryFound;
                 entryFound = true;
             } else {
@@ -2233,11 +2232,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             switch (comparisonResult) {
                 case REPLACE_OTHERS:
                     CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 3"); // NOI18N
-                    entry.setStates(statesToKeep, new PreprocessorStatePair(ppState, pcState));
+                    entry.setStates(statesToKeep, new PreprocessorStatePair(ppUsedState, pcState));
                     break;
                 case KEEP_WITH_OTHERS:
                     assert !statesToKeep.isEmpty();
-                    entry.setStates(statesToKeep, new PreprocessorStatePair(ppState, pcState));
+                    entry.setStates(statesToKeep, new PreprocessorStatePair(ppUsedState, pcState));
                     break;
                 case DISCARD:
                     assert !copy.isEmpty();

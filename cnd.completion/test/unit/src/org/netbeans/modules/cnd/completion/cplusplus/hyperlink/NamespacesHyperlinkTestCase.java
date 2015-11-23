@@ -464,6 +464,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug254671.cpp", 16, 8, "bug254671.cpp", 10, 5);
     }
     
+    public void testBug256058_2() throws Exception {
+        // Bug 256058 - Unresolved items in editor of C++ Project With Existing Sources
+        performTest("bug256058_2.cpp", 16, 14, "bug256058_2.cpp", 9, 17);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -448,14 +448,15 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 if (branchLabel == GitBranch.NO_BRANCH) { // do not use equals
                     Map<String, GitTag> tags = info.getTags();
                     StringBuilder tagLabel = new StringBuilder(); //NOI18N
+                    String branchID = branch.getId();
                     for (GitTag tag : tags.values()) {
-                        if (tag.getTaggedObjectId().equals(branch.getId())) {
+                        if (branchID.equals(tag.getTaggedObjectId())) {
                             tagLabel.append(",").append(tag.getTagName());
                         }
                     }
                     if (tagLabel.length() <= 1) {
                         // not on a branch or tag, show at least part of commit id
-                        branchLabel = branch.getId();
+                        branchLabel = branchID;
                         if (branchLabel.length() > 7) {
                             branchLabel = branchLabel.substring(0, 7) + "..."; //NOI18N
                         }

@@ -240,7 +240,11 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
                 if (funSuffix != null) {
                     sb.append(funSuffix);
                 }
-                return sb.toString();
+                String mtdSuffix = sb.toString();
+                if (mtdSuffix.length() > UID_EXTRA_SUFFIX_MAX_LENGTH) {
+                    mtdSuffix = mtdSuffix.substring(0, UID_EXTRA_SUFFIX_MAX_LENGTH) + UID_EXTRA_SUFFIX_TOO_LONG;
+                }
+                return mtdSuffix;
             }
         }
         return funSuffix;

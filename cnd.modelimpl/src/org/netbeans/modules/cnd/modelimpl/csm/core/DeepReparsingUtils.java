@@ -166,7 +166,7 @@ public final class DeepReparsingUtils {
         if (contentChanged) {
             APTDriver.invalidateAPT(changedFile.getBuffer());
         }
-        boolean scheduleParsing = true;
+        boolean scheduleParsing = true; 
         ParentFiles top = changedFileProject.getGraph().getTopParentFiles(changedFile);
         Set<CsmFile> cuStartFiles = top.getCompilationUnits();
         Set<CsmFile> parents = top.getParentFiles();
@@ -185,7 +185,7 @@ public final class DeepReparsingUtils {
                     Set<CsmFile> parentOrphanFiles = orphanCandidateTop.getParentFiles();
                     if (parentOrphanFiles.size() == 1 && parentOrphanFiles.contains(impl)) {
                         // header is orphan now
-                        invalidateFileAndPreprocState(changedFileProject, impl);
+//                        invalidateFileAndPreprocState(changedFileProject, impl);
                         changedFileProject.markAsParsingPreprocStates(impl);
                         if (scheduleParsing) {
                             ParserQueue.instance().add(impl, changedFileProject.getPreprocHandlersForParse(impl, Interrupter.DUMMY), ParserQueue.Position.HEAD);

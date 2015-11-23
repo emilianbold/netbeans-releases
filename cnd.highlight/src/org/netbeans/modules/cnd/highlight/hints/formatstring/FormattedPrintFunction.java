@@ -254,26 +254,12 @@ class FormattedPrintFunction {
                 handlerClassifier = handlerType.getClassifier();
             }
             StringBuilder result = new StringBuilder(handlerClassifier.getName().toString().replace("const", "").replace("&", ""));  // NOI18N
-            for (int i = 0, limit = getReferenceDepth(handlerType); i < limit; i++) {
+            for (int i = 0, limit = Math.max(handlerType.getArrayDepth(), handlerType.getPointerDepth()); i < limit; i++) {
                 result.append("*");  // NOI18N
             }
             return result.toString();
         }
         return null;
-    }
-    
-    private int getReferenceDepth(CsmType type) {
-        if (!type.isPointer() && type.getArrayDepth() == 0) {
-            return 0;
-        }
-        int depth = 0;
-        CharSequence typeText = type.getCanonicalText();
-        for (int i = 0, limit = typeText.length(); i < limit; i++) {
-            if ((typeText.charAt(i) ^ '*') == 0) {  // NOI18N
-                depth++;
-            }
-        }
-        return depth;
     }
 
     private static class DummyResolvedTypeHandler implements CsmExpressionResolver.ResolvedTypeHandler {

@@ -70,6 +70,12 @@ public abstract class GitCommand {
     protected static final String EMPTY_ROOTS = Utils.getBundle(GitCommand.class).getString("MSG_Error_NoFiles"); //NOI18N
     private final GitClassFactory gitFactory;
     private final List<List<CharSequence>> args = new ArrayList<>(2);
+    private static String gitPath = "git"; //NOI18N
+    
+    // for testing
+    public static void setGitCommand(String git) {
+        gitPath = git;
+    }
 
     protected GitCommand (JGitRepository repository, GitClassFactory gitFactory, ProgressMonitor monitor) {
         this.repository = repository;
@@ -164,7 +170,7 @@ public abstract class GitCommand {
     }
     
     public final String getExecutable() {
-        return "git"; //NOI18N
+        return gitPath;
     }
         
     protected Map<String, String> getEnvVar() {

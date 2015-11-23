@@ -242,7 +242,7 @@ public class AddTest extends AbstractGitTestCase {
         Monitor m = new Monitor();
         client.addNotificationListener(m);
         try {
-            client.add(new VCSFileProxy[] { folder1, folder2 }, m);
+            client.add(new VCSFileProxy[] { folder2 }, m);
             fail();
         } catch (GitException ex) {
             // add do not allow ignored files

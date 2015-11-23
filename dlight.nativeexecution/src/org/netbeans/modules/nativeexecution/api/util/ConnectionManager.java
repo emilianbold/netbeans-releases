@@ -320,7 +320,7 @@ public final class ConnectionManager {
                 }
             } else {
                 if (connectionWatcher != null) {
-                    connectionWatcher.scheduleNow();
+                    connectionWatcher.schedule();
                 }
                 return false;
             }
@@ -840,8 +840,8 @@ public final class ConnectionManager {
                             if (cs != null) {
                                 if (!cs.isConnected()) {
                                     if (!brokenConnections.contains(env)) {
-                                        brokenConnections.add(env);
                                         fireDisconnected(env);
+                                        brokenConnections.add(env);
                                     }
                                 }
                             }
@@ -853,8 +853,8 @@ public final class ConnectionManager {
             }
         }
 
-        public void scheduleNow() {
-            myTask.schedule(0);
+        public void schedule() {
+            myTask.schedule(500);
         }
 
         public void scheduleIfNeed() {
@@ -886,7 +886,7 @@ public final class ConnectionManager {
             synchronized (channelsSupportLock) {
                 brokenConnections.remove(env);
             }
-            scheduleNow();
+            schedule();
         }
     }
 }

@@ -555,4 +555,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 256281 - parser error in builtins.h
         performTest("bug256281.cpp");
     }
+    
+    public void testBug248661_2() throws Exception {
+        // Bug 248661 -  Variable with initializer is parsed as function
+        performTest("bug248661_2.cpp");
+    }
 }

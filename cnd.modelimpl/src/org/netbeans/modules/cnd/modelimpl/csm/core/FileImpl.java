@@ -1533,13 +1533,14 @@ public final class FileImpl implements CsmFile,
         parser.init(this, filteredTokenStream, parseParams.callback);
 
         parseResult = parser.parse(parseParams.lazyCompound ? CsmParser.ConstructionKind.TRANSLATION_UNIT : CsmParser.ConstructionKind.TRANSLATION_UNIT_WITH_COMPOUND);
-        
+        PreprocHandler.State ppOrigState = ppState;
+        PreprocHandler.State ppUsedState = parseParams.tsp.getPreprocHandlerStartState();
         if (!cacheTokens) {
             pcState = parseParams.tsp.release();
         }
 
         assert pcState != null;
-        startProject.setParsedPCState(this, ppState, pcState);
+        startProject.setParsedPCState(this, ppOrigState, ppUsedState, pcState);
 
         if (emptyAstStatictics) {
             time = System.currentTimeMillis() - time;
