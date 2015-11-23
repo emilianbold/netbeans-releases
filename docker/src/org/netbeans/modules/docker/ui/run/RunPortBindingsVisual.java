@@ -91,10 +91,14 @@ public class RunPortBindingsVisual extends javax.swing.JPanel {
         typeColumn.setCellEditor(new DefaultCellEditor(typeCombo));
         typeColumn.setPreferredWidth(typeColumn.getPreferredWidth() / 2);
 
+        TableColumn portColumn = portMappingTable.getColumnModel().getColumn(2);
+        portColumn.setCellRenderer(new CellRenderer("<random>", false));
+
         TableColumn addressColumn = portMappingTable.getColumnModel().getColumn(3);
         JComboBox addressCombo = new JComboBox(UiUtils.getAddresses(false, false).toArray());
         addressCombo.setEditable(true);
         addressColumn.setCellEditor(new DefaultCellEditor(addressCombo));
+        addressColumn.setCellRenderer(new CellRenderer("<any>", false));
         addressColumn.setPreferredWidth(addressColumn.getPreferredWidth() * 2);
 
         portMappingTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
@@ -113,7 +117,7 @@ public class RunPortBindingsVisual extends javax.swing.JPanel {
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
-    
+
     public boolean isRandomBind() {
         return randomBindCheckBox.isSelected();
     }
@@ -292,8 +296,11 @@ public class RunPortBindingsVisual extends javax.swing.JPanel {
 
         private final String emptyValue;
 
-        public CellRenderer(String emptyValue) {
+        private final boolean italic;
+
+        public CellRenderer(String emptyValue, boolean italic) {
             this.emptyValue = emptyValue;
+            this.italic = italic;
         }
 
         @Override
@@ -309,11 +316,13 @@ public class RunPortBindingsVisual extends javax.swing.JPanel {
             } else {
                 label.setHorizontalAlignment(LEADING);
             }
-            if (toRender != value) {
-                Font italic = new Font(label.getFont().getName(), Font.ITALIC, label.getFont().getSize());
-                label.setFont(italic);
-            } else {
-                label.setFont(table.getFont());
+            if (italic) {
+                if (toRender != value) {
+                    Font italic = new Font(label.getFont().getName(), Font.ITALIC, label.getFont().getSize());
+                    label.setFont(italic);
+                } else {
+                    label.setFont(table.getFont());
+                }
             }
             return label;
         }
