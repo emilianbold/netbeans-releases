@@ -416,7 +416,8 @@ public class RunPortBindingsVisual extends javax.swing.JPanel {
         for (NetworkPort p : info.getExposedPorts()) {
             boolean present = false;
             for (PortMapping m : current) {
-                if (p.getType() == m.getType() && p.getPort() == m.getPort()) {
+                if (p.getType() == m.getType()
+                        && m.getPort() != null && p.getPort() == m.getPort()) {
                     present = true;
                     break;
                 }
