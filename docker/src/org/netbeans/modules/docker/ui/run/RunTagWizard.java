@@ -108,7 +108,7 @@ public class RunTagWizard {
 
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
         panels.add(new RunCommandPanel(info));
-        panels.add(new RunPortsPanel(info));
+        panels.add(new RunPortBindingsPanel(info));
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
             JComponent c = (JComponent) panels.get(i).getComponent();

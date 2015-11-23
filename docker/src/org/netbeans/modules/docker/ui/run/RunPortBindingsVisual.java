@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class RunPortsVisual extends javax.swing.JPanel {
+public class RunPortBindingsVisual extends javax.swing.JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -78,7 +78,7 @@ public class RunPortsVisual extends javax.swing.JPanel {
     /**
      * Creates new form RunNetworkVisual
      */
-    public RunPortsVisual(DockerImageInfo info) {
+    public RunPortBindingsVisual(DockerImageInfo info) {
         initComponents();
         this.info = info;
 
@@ -336,32 +336,32 @@ public class RunPortsVisual extends javax.swing.JPanel {
         addExposedButton = new javax.swing.JButton();
         randomBindCheckBox = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(portMappingLabel, org.openide.util.NbBundle.getMessage(RunPortsVisual.class, "RunPortsVisual.portMappingLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(portMappingLabel, org.openide.util.NbBundle.getMessage(RunPortBindingsVisual.class, "RunPortBindingsVisual.portMappingLabel.text")); // NOI18N
 
         jScrollPane1.setViewportView(portMappingTable);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RunPortsVisual.class, "RunPortsVisual.addButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RunPortBindingsVisual.class, "RunPortBindingsVisual.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(RunPortsVisual.class, "RunPortsVisual.removeButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(RunPortBindingsVisual.class, "RunPortBindingsVisual.removeButton.text")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(addExposedButton, org.openide.util.NbBundle.getMessage(RunPortsVisual.class, "RunPortsVisual.addExposedButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addExposedButton, org.openide.util.NbBundle.getMessage(RunPortBindingsVisual.class, "RunPortBindingsVisual.addExposedButton.text")); // NOI18N
         addExposedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addExposedButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(randomBindCheckBox, org.openide.util.NbBundle.getMessage(RunPortsVisual.class, "RunPortsVisual.randomBindCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(randomBindCheckBox, org.openide.util.NbBundle.getMessage(RunPortBindingsVisual.class, "RunPortBindingsVisual.randomBindCheckBox.text")); // NOI18N
         randomBindCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 randomBindCheckBoxItemStateChanged(evt);

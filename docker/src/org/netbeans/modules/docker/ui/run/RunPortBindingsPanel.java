@@ -55,7 +55,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+public class RunPortBindingsPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -65,11 +65,11 @@ public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor>, 
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private RunPortsVisual component;
+    private RunPortBindingsVisual component;
 
     private WizardDescriptor wizard;
 
-    public RunPortsPanel(DockerImageInfo info) {
+    public RunPortBindingsPanel(DockerImageInfo info) {
         this.info = info;
     }
 
@@ -78,9 +78,9 @@ public class RunPortsPanel implements WizardDescriptor.Panel<WizardDescriptor>, 
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     @Override
-    public RunPortsVisual getComponent() {
+    public RunPortBindingsVisual getComponent() {
         if (component == null) {
-            component = new RunPortsVisual(info);
+            component = new RunPortBindingsVisual(info);
             component.addChangeListener(this);
         }
         return component;
