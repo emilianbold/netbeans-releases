@@ -46,7 +46,7 @@ import org.netbeans.modules.docker.DockerImageInfo;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class RunCommandPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
+public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
     private final DockerImageInfo info;
     
@@ -54,9 +54,9 @@ public class RunCommandPanel implements WizardDescriptor.Panel<WizardDescriptor>
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private RunCommandVisual component;
+    private RunContainerPropertiesVisual component;
 
-    public RunCommandPanel(DockerImageInfo info) {
+    public RunContainerPropertiesPanel(DockerImageInfo info) {
         this.info = info;
     }
 
@@ -65,9 +65,9 @@ public class RunCommandPanel implements WizardDescriptor.Panel<WizardDescriptor>
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     @Override
-    public RunCommandVisual getComponent() {
+    public RunContainerPropertiesVisual getComponent() {
         if (component == null) {
-            component = new RunCommandVisual();
+            component = new RunContainerPropertiesVisual();
         }
         return component;
     }
