@@ -63,18 +63,22 @@ public class DockerignorePattern {
     public static DockerignorePattern compile(String goPattern, char separator) {
         List<Rule> ret = new ArrayList<>();
         char[] patternChars = goPattern.toCharArray();
+        List<Character> buffer = new ArrayList<>();
         for (int i = 0; i < patternChars.length; i++) {
             char c = patternChars[i];
             switch (c) {
                 case '*':
+                    addCharacterListRule(ret, buffer);
                     if (ret.isEmpty() || !(ret.get(ret.size() - 1) instanceof StarRule)) {
                         ret.add(new StarRule(separator));
                     }
                     break;
                 case '?':
+                    addCharacterListRule(ret, buffer);
                     ret.add(new QuestionRule(separator));
                     break;
                 case '[':
+                    addCharacterListRule(ret, buffer);
                     Pair<? extends Rule, Integer> p = createRange(patternChars, i, separator);
                     ret.add(p.first());
                     if (p.second() < 0) {
@@ -84,22 +88,31 @@ public class DockerignorePattern {
                     break;
                 case '\\':
                     if (separator == '\\') {
-                        ret.add(new CharacterRule(patternChars[i]));
+                        buffer.add(patternChars[i]);
                     } else {
                         if (i < patternChars.length - 1) {
-                            ret.add(new CharacterRule(patternChars[++i]));
+                            buffer.add(patternChars[++i]);
                         } else {
+                            addCharacterListRule(ret, buffer);
                             ret.add(new ErrorRule(goPattern, i));
                             return new DockerignorePattern(ret);
                         }
                     }
                     break;
                 default:
-                    ret.add(new CharacterRule(patternChars[i]));
+                    buffer.add(patternChars[i]);
                     break;
             }
         }
+        addCharacterListRule(ret, buffer);
         return new DockerignorePattern(ret);
+    }
+
+    private static void addCharacterListRule(List<Rule> rules, List<Character> buffer) {
+        if (!buffer.isEmpty()) {
+            rules.add(new CharacterListRule(buffer));
+            buffer.clear();
+        }
     }
 
     public boolean matches(String input) {
@@ -365,12 +378,12 @@ public class DockerignorePattern {
         }
     }
 
-    private static class CharacterRule implements Rule {
+    private static class CharacterListRule implements Rule {
 
-        private final char c;
+        private final List<Character> array;
 
-        public CharacterRule(char c) {
-            this.c = c;
+        public CharacterListRule(List<Character> array) {
+            this.array = new ArrayList<>(array);
         }
 
         @Override
@@ -379,10 +392,12 @@ public class DockerignorePattern {
                 throw new IllegalArgumentException();
             }
 
-            if (chars[offset] != c) {
-                return null;
+            for (int i = 0; i < array.size(); i++) {
+                if (array.get(i) != chars[offset + i]) {
+                    return null;
+                }
             }
-            return new int[]{offset + 1};
+            return new int[]{offset + array.size()};
         }
 
         @Override
