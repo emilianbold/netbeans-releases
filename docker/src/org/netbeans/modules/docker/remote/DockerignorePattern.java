@@ -123,19 +123,18 @@ public class DockerignorePattern {
             Rule r = it.next();
             try {
                 if (inputChars.length == 0) {
-                    if (rules.size() == 1 && r instanceof StarRule) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    // star matches even empty string
+                    return rules.size() == 1 && r.matchesEmpty();
                 }
                 int[] test = r.consume(inputChars, i);
                 if (test.length == 1) {
                     i = test[0];
-                } else if (test[test.length - 1] >= input.length() && listIndex == rules.size() - 1) {
+                } else if (listIndex == rules.size() - 1
+                        && test[test.length - 1] >= input.length()) {
+                    // last rule - take the longest one
                     i = test[test.length - 1];
                 } else {
-                    for (int j = 0; j < test.length; j++) {
+                    for (int j = test.length - 1; j >= 0; j--) {
                         if (matches(rules.subList(listIndex + 1, rules.size()), input.substring(test[j]))) {
                             return true;
                         }
@@ -150,12 +149,7 @@ public class DockerignorePattern {
                 if (!it.hasNext()) {
                     return true;
                 } else {
-                    Rule next = it.next();
-                    if (next instanceof StarRule) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return it.next().matchesEmpty();
                 }
             }
         }
@@ -252,6 +246,8 @@ public class DockerignorePattern {
 
         int[] consume(char[] chars, int offset) throws IllegalStateException;
 
+        boolean matchesEmpty();
+
     }
 
     private static class StarRule implements Rule {
@@ -284,6 +280,11 @@ public class DockerignorePattern {
             }
             return ret;
         }
+
+        @Override
+        public boolean matchesEmpty() {
+            return true;
+        }
     }
 
     private static class QuestionRule implements Rule {
@@ -303,6 +304,11 @@ public class DockerignorePattern {
                 throw new IllegalStateException();
             }
             return new int[]{offset + 1};
+        }
+
+        @Override
+        public boolean matchesEmpty() {
+            return false;
         }
     }
 
@@ -333,6 +339,11 @@ public class DockerignorePattern {
                 throw new IllegalStateException();
             }
             return new int[]{offset + 1};
+        }
+
+        @Override
+        public boolean matchesEmpty() {
+            return false;
         }
 
         private boolean check(char c) {
@@ -369,6 +380,11 @@ public class DockerignorePattern {
             }
             return new int[]{offset + 1};
         }
+
+        @Override
+        public boolean matchesEmpty() {
+            return false;
+        }
     }
 
     private static class ErrorRule implements Rule {
@@ -385,6 +401,11 @@ public class DockerignorePattern {
         @Override
         public int[] consume(char[] chars, int offset) throws IllegalStateException {
             throw new PatternSyntaxException("Malformed pattern", regex, index);
+        }
+
+        @Override
+        public boolean matchesEmpty() {
+            return false;
         }
     }
 }
