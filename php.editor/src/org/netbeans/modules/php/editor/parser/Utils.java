@@ -521,6 +521,12 @@ public final class Utils {
             case ASTPHP5Symbols.T_COALESCE:
                 name = "T_COALESCE"; //NOI18N
                 break;
+            case ASTPHP5Symbols.T_YIELD:
+                name = "T_YIELD"; //NOI18N
+                break;
+            case ASTPHP5Symbols.T_YIELD_FROM:
+                name = "T_YIELD_FROM"; //NOI18N
+                break;
             default:
                 name = "unknown"; //NOI18N
         }
