@@ -127,6 +127,10 @@ public class DockerignorePattern {
                     return rules.size() == 1 && r.matchesEmpty();
                 }
                 int[] test = r.consume(inputChars, i);
+                if (test == null) {
+                    return false;
+                }
+
                 if (test.length == 1) {
                     i = test[0];
                 } else if (listIndex == rules.size() - 1
@@ -141,7 +145,7 @@ public class DockerignorePattern {
                     }
                     return false;
                 }
-            } catch (IllegalStateException ex) {
+            } catch (PatternSyntaxException ex) {
                 return false;
             }
             listIndex++;
@@ -244,7 +248,7 @@ public class DockerignorePattern {
 
     private static interface Rule {
 
-        int[] consume(char[] chars, int offset) throws IllegalStateException;
+        int[] consume(char[] chars, int offset);
 
         boolean matchesEmpty();
 
@@ -259,7 +263,7 @@ public class DockerignorePattern {
         }
 
         @Override
-        public int[] consume(char[] chars, int offset) throws IllegalStateException {
+        public int[] consume(char[] chars, int offset) {
             if (offset >= chars.length) {
                 throw new IllegalArgumentException();
             }
@@ -296,12 +300,12 @@ public class DockerignorePattern {
         }
 
         @Override
-        public int[] consume(char[] chars, int offset) throws IllegalStateException {
+        public int[] consume(char[] chars, int offset) {
             if (offset >= chars.length) {
                 throw new IllegalArgumentException();
             }
             if (chars[offset] == separator) {
-                throw new IllegalStateException();
+                return null;
             }
             return new int[]{offset + 1};
         }
@@ -327,7 +331,7 @@ public class DockerignorePattern {
         }
 
         @Override
-        public int[] consume(char[] chars, int offset) throws IllegalStateException {
+        public int[] consume(char[] chars, int offset) {
             if (offset >= chars.length) {
                 throw new IllegalArgumentException();
             }
@@ -336,7 +340,7 @@ public class DockerignorePattern {
                 ok = !ok;
             }
             if (!ok) {
-                throw new IllegalStateException();
+                return null;
             }
             return new int[]{offset + 1};
         }
@@ -376,7 +380,7 @@ public class DockerignorePattern {
             }
 
             if (chars[offset] != c) {
-                throw new IllegalStateException();
+                return null;
             }
             return new int[]{offset + 1};
         }
@@ -399,7 +403,7 @@ public class DockerignorePattern {
         }
 
         @Override
-        public int[] consume(char[] chars, int offset) throws IllegalStateException {
+        public int[] consume(char[] chars, int offset) {
             throw new PatternSyntaxException("Malformed pattern", regex, index);
         }
 
