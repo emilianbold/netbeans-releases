@@ -4694,11 +4694,11 @@ public class Reformatter implements ReformatTask {
                         }
                     } else if (enableCommentFormatting) {
                         if (firstLine) {
-                            String s = cs.wrapOneLineComments() ? NEWLINE + lineStartString : SPACE;
+                            String s = !noFormat && cs.wrapOneLineComments() ? NEWLINE + lineStartString : SPACE;
                             String sub = currWSPos >= 0 ? text.substring(currWSPos, i) : null;
                             if (!s.equals(sub))
                                 addDiff(new Diff(currWSPos >= 0 ? offset + currWSPos : offset + i, offset + i, s));
-                            if (cs.wrapOneLineComments())
+                            if (!noFormat && cs.wrapOneLineComments())
                                 col = getCol(lineStartString);
                             firstLine = false;
                         } else if (currWSPos >= 0) {
@@ -4723,7 +4723,7 @@ public class Reformatter implements ReformatTask {
                     if (c == '\n') {
                         break;
                     } else if (!Character.isWhitespace(c)) {
-                        String s = cs.wrapOneLineComments() ? NEWLINE + indentString + SPACE : SPACE;
+                        String s = !noFormat && cs.wrapOneLineComments() ? NEWLINE + indentString + SPACE : SPACE;
                         String sub = text.substring(i + 1, text.length() - 2);
                         if (!s.equals(sub))
                             addDiff(new Diff(offset + i + 1, offset + text.length() - 2, s));
