@@ -34,7 +34,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.26.5</specification-version>
+                        <specification-version>1.26.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
