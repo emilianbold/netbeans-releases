@@ -110,7 +110,7 @@ abstract public class FilesystemInterceptorProvider {
 
     public interface MiscOperations {
         void fileLocked(FileProxyI fo) throws IOException;
-        long listFiles(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children);
+        long refreshRecursively(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children);
     }
 
     public interface IOHandler {
