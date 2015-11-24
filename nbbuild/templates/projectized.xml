@@ -212,8 +212,11 @@ If you are sure you want to build with JDK 9+ anyway, use: -Dpermit.jdk9.builds=
         <condition property="bootclasspath.prepend" value="${retouche.javac.api}">
             <istrue value="${requires.nb.javac}"/>
         </condition>
-        <condition property="run.bootclasspath.prepend" value="${bootclasspath.prepend}${path.separator}${retouche.javac.impl}" else="${bootclasspath.prepend}">
+        <condition property="run.bootclasspath.prepend" value="${bootclasspath.prepend}${path.separator}${retouche.javac.impl}">
             <istrue value="${requires.nb.javac}"/>
+        </condition>
+        <condition property="run.bootclasspath.prepend" value="${bootclasspath.prepend}">
+            <isset property="bootclasspath.prepend"/>
         </condition>
         <fail message="Delete standalone/suite-related metadata from netbeans.org modules">
             <condition>
