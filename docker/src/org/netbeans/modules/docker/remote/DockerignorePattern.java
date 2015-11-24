@@ -101,11 +101,11 @@ public class DockerignorePattern {
         }
         return new DockerignorePattern(ret);
     }
-    
+
     public boolean matches(String input) {
         return matches(rules, input);
     }
-    
+
     boolean isError() {
         for (Rule r : rules) {
             if (r instanceof ErrorRule) {
@@ -248,13 +248,13 @@ public class DockerignorePattern {
         //throw new PatternSyntaxException("Malformed range", new String(chars), chars.length - 1);
     }
 
-    public static interface Rule {
+    private static interface Rule {
 
         int[] consume(char[] chars, int offset) throws IllegalStateException;
 
     }
 
-    static class StarRule implements Rule {
+    private static class StarRule implements Rule {
 
         private final char separator;
 
@@ -286,7 +286,7 @@ public class DockerignorePattern {
         }
     }
 
-    static class QuestionRule implements Rule {
+    private static class QuestionRule implements Rule {
 
         private final char separator;
 
@@ -306,7 +306,7 @@ public class DockerignorePattern {
         }
     }
 
-    static class RangeRule implements Rule {
+    private static class RangeRule implements Rule {
 
         private final boolean negated;
 
@@ -350,7 +350,7 @@ public class DockerignorePattern {
         }
     }
 
-    static class CharacterRule implements Rule {
+    private static class CharacterRule implements Rule {
 
         private final char c;
 
@@ -371,7 +371,7 @@ public class DockerignorePattern {
         }
     }
 
-    static class ErrorRule implements Rule {
+    private static class ErrorRule implements Rule {
 
         private final String regex;
 
