@@ -424,6 +424,14 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/elvis_02.php");
     }
 
+    public void testCoalesce01() throws Exception {
+        checkErrors("testfiles/parser/coalesce_01.php");
+    }
+
+    public void testCoalesce02() throws Exception {
+        checkErrors("testfiles/parser/coalesce_02.php");
+    }
+
     public void testReturnTypes01() throws Exception {
         checkErrors("testfiles/parser/returnTypes_01.php");
     }
