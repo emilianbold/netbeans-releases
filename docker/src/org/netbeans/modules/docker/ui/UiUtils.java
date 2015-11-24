@@ -42,6 +42,8 @@
 package org.netbeans.modules.docker.ui;
 
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Closeable;
@@ -53,7 +55,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -67,7 +68,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComboBox;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.docker.DockerContainer;
@@ -83,7 +86,6 @@ import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
@@ -128,6 +130,18 @@ public final class UiUtils {
             }
         }
         return value;
+    }
+
+    public static void configureRowHeight(JTable table) {
+        int height = table.getRowHeight();
+        Font cellFont = UIManager.getFont("TextField.font");
+        if (cellFont != null) {
+            FontMetrics metrics = table.getFontMetrics(cellFont);
+            if (metrics != null) {
+                height = metrics.getHeight() + 2;
+            }
+        }
+        table.setRowHeight(Math.max(table.getRowHeight(), height));
     }
 
     public static Collection<String> getAddresses(boolean includeIpv6, boolean includeDocker) {

@@ -48,20 +48,20 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class RunCommandVisual extends javax.swing.JPanel {
+public class RunContainerPropertiesVisual extends javax.swing.JPanel {
 
     /**
      * Creates new form ContainerImagePanel
      */
-    public RunCommandVisual() {
+    public RunContainerPropertiesVisual() {
         initComponents();
     }
 
 
-    @NbBundle.Messages("LBL_RunCommand=Command")
+    @NbBundle.Messages("LBL_RunContainerProperties=Container Properties")
     @Override
     public String getName() {
-        return Bundle.LBL_RunCommand();
+        return Bundle.LBL_RunContainerProperties();
     }
 
     public String getCommand() {
@@ -113,24 +113,19 @@ public class RunCommandVisual extends javax.swing.JPanel {
         nameTextField = new javax.swing.JTextField();
 
         commandLabel.setLabelFor(commandTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(commandLabel, org.openide.util.NbBundle.getMessage(RunCommandVisual.class, "RunCommandVisual.commandLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(commandLabel, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.commandLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(interactiveCheckBox, org.openide.util.NbBundle.getMessage(RunCommandVisual.class, "RunCommandVisual.interactiveCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(interactiveCheckBox, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.interactiveCheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(ttyCheckBox, org.openide.util.NbBundle.getMessage(RunCommandVisual.class, "RunCommandVisual.ttyCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ttyCheckBox, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.ttyCheckBox.text")); // NOI18N
 
         nameLabel.setLabelFor(nameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(RunCommandVisual.class, "RunCommandVisual.nameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.nameLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ttyCheckBox)
-                    .addComponent(interactiveCheckBox))
-                .addGap(0, 147, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(commandLabel)
@@ -139,6 +134,8 @@ public class RunCommandVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(nameTextField)
                     .addComponent(commandTextField)))
+            .addComponent(interactiveCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+            .addComponent(ttyCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
