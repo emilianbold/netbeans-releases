@@ -1804,7 +1804,7 @@ SASS_WHILE          : '@WHILE';
 SASS_AT_ROOT        : '@AT-ROOT';
 
 AT_SIGN             : '@';
-AT_IDENT	    : AT_SIGN NMCHAR+;
+AT_IDENT	    : (AT_SIGN | (AT_SIGN AT_SIGN)) NMCHAR+;
 
 SASS_VAR            : '$' NMCHAR+;
 SASS_DEFAULT        : '!DEFAULT';
