@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.editor.lexer;
 
-public class Php70FeaturesTest extends PHPLexerTestBase {
+public class PHP70FeaturesTest extends PHPLexerTestBase {
 
-    public Php70FeaturesTest(String testName) {
+    public PHP70FeaturesTest(String testName) {
         super(testName);
     }
 
@@ -85,6 +85,30 @@ public class Php70FeaturesTest extends PHPLexerTestBase {
 
     public void testReturnTypes03() throws Exception {
         performTest("lexer/return_types_03");
+    }
+
+    public void testYieldFrom01() throws Exception {
+        performTest("lexer/yield_from_01");
+    }
+
+    public void testYieldFrom02() throws Exception {
+        performTest("lexer/yield_from_02");
+    }
+
+    public void testYieldFrom03() throws Exception {
+        performTest("lexer/yield_from_03");
+    }
+
+    public void testYieldFrom04() throws Exception {
+        performTest("lexer/yield_from_04");
+    }
+
+    public void testYieldFrom05() throws Exception {
+        performTest("lexer/yield_from_05");
+    }
+
+    public void testYieldFrom06() throws Exception {
+        performTest("lexer/yield_from_06");
     }
 
 }

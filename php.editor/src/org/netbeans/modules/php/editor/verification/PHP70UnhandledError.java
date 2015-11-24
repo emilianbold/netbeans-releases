@@ -58,16 +58,17 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.YieldFromExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class Php70UnhandledError extends UnhandledErrorRule {
+public class PHP70UnhandledError extends UnhandledErrorRule {
 
-    @NbBundle.Messages("Php70UnhandledError.displayName=Language feature not compatible with PHP version indicated in project settings")
+    @NbBundle.Messages("PHP70UnhandledError.displayName=Language feature not compatible with PHP version indicated in project settings")
     @Override
     public String getDisplayName() {
-        return Bundle.Php70UnhandledError_displayName();
+        return Bundle.PHP70UnhandledError_displayName();
     }
 
     @Override
@@ -151,6 +152,13 @@ public class Php70UnhandledError extends UnhandledErrorRule {
             super.visit(node);
         }
 
+        // XXX check yield in assignment
+        @Override
+        public void visit(YieldFromExpression node) {
+            createError(node);
+            super.visit(node);
+        }
+
         private void checkScalarTypes(List<FormalParameter> formalParameters) {
             for (FormalParameter formalParameter : formalParameters) {
                 String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
@@ -168,7 +176,7 @@ public class Php70UnhandledError extends UnhandledErrorRule {
         }
 
         private void createError(int startOffset, int endOffset) {
-            errors.add(new Php70VersionError(fileObject, startOffset, endOffset));
+            errors.add(new PHP70VersionError(fileObject, startOffset, endOffset));
         }
 
         private void createError(ASTNode node) {
@@ -177,25 +185,25 @@ public class Php70UnhandledError extends UnhandledErrorRule {
 
     }
 
-    private static final class Php70VersionError extends VerificationError {
+    private static final class PHP70VersionError extends VerificationError {
 
         private static final String KEY = "Php.Version.70"; // NOI18N
 
 
-        private Php70VersionError(FileObject fileObject, int startOffset, int endOffset) {
+        private PHP70VersionError(FileObject fileObject, int startOffset, int endOffset) {
             super(fileObject, startOffset, endOffset);
         }
 
-        @NbBundle.Messages("Php70VersionError.displayName=Language feature not compatible with PHP version indicated in project settings")
+        @NbBundle.Messages("PHP70VersionError.displayName=Language feature not compatible with PHP version indicated in project settings")
         @Override
         public String getDisplayName() {
-            return Bundle.Php70VersionError_displayName();
+            return Bundle.PHP70VersionError_displayName();
         }
 
-        @NbBundle.Messages("Php70VersionError.description=Detected language features not compatible with PHP version indicated in project settings")
+        @NbBundle.Messages("PHP70VersionError.description=Detected language features not compatible with PHP version indicated in project settings")
         @Override
         public String getDescription() {
-            return Bundle.Php70VersionError_description();
+            return Bundle.PHP70VersionError_description();
         }
 
         @Override

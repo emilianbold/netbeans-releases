@@ -1905,4 +1905,11 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     }
+    
+    public void testPropertyDeclarationWithExpression() {
+        assertParses("@media only screen and (min-width: $media-xs)\n"
+                + "{\n"
+                + "    width: calc(100% - #{$left-column-width});\n"
+                + "}");
+    }
 }

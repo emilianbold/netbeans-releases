@@ -125,6 +125,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.YieldExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.YieldFromExpression;
 
 /**
  *
@@ -706,6 +707,13 @@ public class DefaultTreePathVisitor extends DefaultVisitor {
 
     @Override
     public void visit(YieldExpression node) {
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
+    }
+
+    @Override
+    public void visit(YieldFromExpression node) {
         addToPath(node);
         super.visit(node);
         removeFromPath();

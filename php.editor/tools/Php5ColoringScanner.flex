@@ -347,6 +347,10 @@ PHP_TEXTUAL_OPERATOR="OR"|"AND"|"XOR"
     return PHPTokenId.PHP_RETURN;
 }
 
+<ST_PHP_IN_SCRIPTING>"yield"{WHITESPACE}+"from" {
+    return PHPTokenId.PHP_YIELD_FROM;
+}
+
 <ST_PHP_IN_SCRIPTING>"yield" {
     return PHPTokenId.PHP_YIELD;
 }

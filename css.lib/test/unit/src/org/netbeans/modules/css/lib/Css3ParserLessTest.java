@@ -931,4 +931,12 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "  @{property}: @value;\n"
                 + "}");
     }
+    
+    public void testDefineVariableByVariableName() {
+        assertParses("@fnord:  \"I am fnord.\";\n"
+                + "@var:    \"fnord\";\n"
+                + ".test {\n"
+                + "    content: @@var;\n"
+                + "}");
+    }
 }
