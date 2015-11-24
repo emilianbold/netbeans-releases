@@ -44,13 +44,23 @@ package org.netbeans.modules.docker.ui.run;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import javax.swing.JComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.netbeans.api.progress.BaseProgressUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.modules.docker.DockerContainer;
+import org.netbeans.modules.docker.DockerImage;
+import org.netbeans.modules.docker.DockerImageInfo;
 import org.netbeans.modules.docker.DockerTag;
 import org.netbeans.modules.docker.DockerUtils;
+import org.netbeans.modules.docker.remote.DockerException;
 import org.netbeans.modules.docker.remote.DockerRemote;
 import org.netbeans.modules.docker.remote.StreamResult;
 import org.netbeans.modules.docker.ui.UiUtils;
@@ -76,16 +86,29 @@ public class RunTagWizard {
 
     public static final String TTY_PROPERTY = "tty";
 
+    public static final String RANDOM_BIND_PROPERTY = "portRandom";
+
+    public static final String PORT_MAPPING_PROPERTY = "portMapping";
+
+    public static final boolean RANDOM_BIND_DEFAULT = false;
+
     private final DockerTag tag;
 
     public RunTagWizard(DockerTag tag) {
         this.tag = tag;
     }
 
-    @NbBundle.Messages("LBL_Run=Run")
+    @NbBundle.Messages({
+        "MSG_ReceivingImageInfo=Receiving Image Details",
+        "LBL_Run=Run {0}"
+    })
     public void show() {
+        DockerImageInfo info = BaseProgressUtils.showProgressDialogAndRun(
+                new DockerImageInfoRunnable(tag.getImage()), Bundle.MSG_ReceivingImageInfo(), false);
+
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
-        panels.add(new RunCommandPanel());
+        panels.add(new RunContainerPropertiesPanel(info));
+        panels.add(new RunPortBindingsPanel(info));
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
             JComponent c = (JComponent) panels.get(i).getComponent();
@@ -100,17 +123,24 @@ public class RunTagWizard {
         final WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<>(panels));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
-        wiz.setTitle(Bundle.LBL_Run());
+        wiz.setTitle(Bundle.LBL_Run(DockerUtils.getImage(tag)));
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
+            Boolean portRandom = (Boolean) wiz.getProperty(RANDOM_BIND_PROPERTY);
+            List<PortMapping> mapping = (List<PortMapping>) wiz.getProperty(PORT_MAPPING_PROPERTY);
+            if (mapping == null) {
+                mapping = Collections.emptyList();
+            }
             run(tag, (String) wiz.getProperty(COMMAND_PROPERTY),
                     (String) wiz.getProperty(NAME_PROPERTY),
                     (Boolean) wiz.getProperty(INTERACTIVE_PROPERTY),
-                    (Boolean) wiz.getProperty(TTY_PROPERTY));
+                    (Boolean) wiz.getProperty(TTY_PROPERTY),
+                    portRandom != null ? portRandom : RANDOM_BIND_DEFAULT,
+                    mapping);
         }
     }
 
     private void run(final DockerTag tag, final String command, final String name,
-            final boolean interactive, final boolean tty) {
+            final boolean interactive, final boolean tty, final boolean randomBind, final List<PortMapping> mapping) {
 
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
@@ -134,6 +164,35 @@ public class RunTagWizard {
                     config.put("Cmd", cmdArray);
                     config.put("AttachStdout", true);
                     config.put("AttachStderr", true);
+                    Map<String, List<PortMapping>> bindings = new HashMap<>();
+                    for (PortMapping m : mapping) {
+                        String str = m.getPort() + "/" + m.getType().name().toLowerCase(Locale.ENGLISH);
+                        List<PortMapping> list = bindings.get(str);
+                        if (list == null) {
+                            list = new ArrayList<>();
+                            bindings.put(str, list);
+                        }
+                        list.add(m);
+                    }
+
+                    JSONObject hostConfig = new JSONObject();
+                    config.put("HostConfig", hostConfig);
+                    hostConfig.put("PublishAllPorts", randomBind);
+                    if (!randomBind && !bindings.isEmpty()) {
+                        JSONObject portBindings = new JSONObject();
+                        hostConfig.put("PortBindings", portBindings);
+
+                        for (Map.Entry<String, List<PortMapping>> e : bindings.entrySet()) {
+                            JSONArray arr = new JSONArray();
+                            for (PortMapping m : e.getValue()) {
+                                JSONObject o = new JSONObject();
+                                o.put("HostIp", m.getHostAddress());
+                                o.put("HostPort", m.getHostPort() != null ? m.getHostPort().toString() : "");
+                                arr.add(o);
+                            }
+                            portBindings.put(e.getKey(), arr);
+                        }
+                    }
                     Pair<DockerContainer, StreamResult> result = remote.run(name, config);
 
                     UiUtils.openTerminal(result.first(), result.second(), interactive, true);
@@ -143,5 +202,25 @@ public class RunTagWizard {
                 }
             }
         });
+    }
+
+    private static class DockerImageInfoRunnable implements ProgressRunnable<DockerImageInfo> {
+
+        private final DockerImage image;
+
+        public DockerImageInfoRunnable(DockerImage image) {
+            this.image = image;
+        }
+
+        @Override
+        public DockerImageInfo run(ProgressHandle handle) {
+            try {
+                DockerRemote remote = new DockerRemote(image.getInstance());
+                return remote.getInfo(image);
+            } catch (DockerException ex) {
+                return null;
+            }
+        }
+
     }
 }
