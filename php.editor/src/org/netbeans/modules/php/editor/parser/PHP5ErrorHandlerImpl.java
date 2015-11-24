@@ -411,6 +411,8 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
                 case ASTPHP5Symbols.T_NUM_STRING : text = "NUM_STRING"; break; //NOI18N
                 case ASTPHP5Symbols.T_HALT_COMPILER : text = "__halt_compiler"; break; //NOI18N
                 case ASTPHP5Symbols.T_GOTO : text = "goto"; break; //NOI18N
+                case ASTPHP5Symbols.T_YIELD : text = "yield"; break; //NOI18N
+                case ASTPHP5Symbols.T_YIELD_FROM : text = "yield from"; break; //NOI18N
                 default:
                     //no-op
             }

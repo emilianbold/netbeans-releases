@@ -448,4 +448,29 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/returnTypes_04.php");
     }
 
+    public void testYieldFrom01() throws Exception {
+        checkErrors("testfiles/parser/yieldFrom_01.php");
+    }
+
+    public void testYieldFrom02() throws Exception {
+        checkErrors("testfiles/parser/yieldFrom_02.php");
+    }
+
+    public void testYieldFrom03() throws Exception {
+        checkErrors("testfiles/parser/yieldFrom_03.php");
+    }
+
+    // XXX
+//    public void testYieldFrom04() throws Exception {
+//        checkErrors("testfiles/parser/yieldFrom_04.php");
+//    }
+
+    public void testYieldFrom05() throws Exception {
+        checkErrors("testfiles/parser/yieldFrom_05.php");
+    }
+
+    public void testYieldFrom06() throws Exception {
+        checkErrors("testfiles/parser/yieldFrom_06.php");
+    }
+
 }

@@ -288,6 +288,8 @@ public interface Visitor {
 
     public void visit(YieldExpression node);
 
+    public void visit(YieldFromExpression node);
+
     ////public void endVisit(WhileStatement whileStatement);
     public void visit(ASTNode node);
     ////public void endVisit(ASTNode node);

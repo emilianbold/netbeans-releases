@@ -39,76 +39,25 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.lexer;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
-public class PHP70FeaturesTest extends PHPLexerTestBase {
+public class YieldFromExpression extends Expression {
 
-    public PHP70FeaturesTest(String testName) {
-        super(testName);
+    private final Expression expr;
+
+
+    public YieldFromExpression(int start, int end, Expression expr) {
+        super(start, end);
+        this.expr = expr;
     }
 
-    public void testSpaceship01() throws Exception {
-        performTest("lexer/spaceship_01");
+    public Expression getExpr() {
+        return expr;
     }
 
-    public void testSpaceship02() throws Exception {
-        performTest("lexer/spaceship_02");
-    }
-
-    public void testCoalesce01() throws Exception {
-        performTest("lexer/coalesce_01");
-    }
-
-    public void testCoalesce02() throws Exception {
-        performTest("lexer/coalesce_02");
-    }
-
-    public void testCoalesce03() throws Exception {
-        performTest("lexer/coalesce_03");
-    }
-
-    public void testCoalesce04() throws Exception {
-        performTest("lexer/coalesce_04");
-    }
-
-    public void testCoalesce05() throws Exception {
-        performTest("lexer/coalesce_05");
-    }
-
-    public void testReturnTypes01() throws Exception {
-        performTest("lexer/return_types_01");
-    }
-
-    public void testReturnTypes02() throws Exception {
-        performTest("lexer/return_types_02");
-    }
-
-    public void testReturnTypes03() throws Exception {
-        performTest("lexer/return_types_03");
-    }
-
-    public void testYieldFrom01() throws Exception {
-        performTest("lexer/yield_from_01");
-    }
-
-    public void testYieldFrom02() throws Exception {
-        performTest("lexer/yield_from_02");
-    }
-
-    public void testYieldFrom03() throws Exception {
-        performTest("lexer/yield_from_03");
-    }
-
-    public void testYieldFrom04() throws Exception {
-        performTest("lexer/yield_from_04");
-    }
-
-    public void testYieldFrom05() throws Exception {
-        performTest("lexer/yield_from_05");
-    }
-
-    public void testYieldFrom06() throws Exception {
-        performTest("lexer/yield_from_06");
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
 }
