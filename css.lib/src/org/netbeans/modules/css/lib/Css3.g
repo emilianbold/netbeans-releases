@@ -416,7 +416,7 @@ mediaBodyItem
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
     | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
-    |( ~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI )=>propertyDeclaration
+    |( ~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI)+ SEMI )=>propertyDeclaration
     | {isScssSource()}? sass_debug
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_content
