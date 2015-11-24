@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.editor.lexer;
 
-public class Php70FeaturesTest extends PHPLexerTestBase {
+public class PHP70FeaturesTest extends PHPLexerTestBase {
 
-    public Php70FeaturesTest(String testName) {
+    public PHP70FeaturesTest(String testName) {
         super(testName);
     }
 
