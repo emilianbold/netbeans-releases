@@ -618,6 +618,8 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                 }
             } else if (s.equals("${packageClassName}") || s.matches("[\\w]+[\\.]{0,1}[\\w\\.]*")) { //NOI18N
                 break;
+            } else {
+                jvms =  jvms + " " + s;
             }
             s = ps.nextPair();
         }

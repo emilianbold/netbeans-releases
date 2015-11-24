@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phing.ui.actions;
 
@@ -53,8 +53,9 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.phing.PhingBuildTool;
 import org.netbeans.modules.php.phing.exec.PhingExecutable;
@@ -62,6 +63,7 @@ import org.netbeans.modules.php.phing.file.PhingTargets;
 import org.netbeans.modules.php.phing.ui.options.PhingOptionsPanelController;
 import org.netbeans.modules.php.phing.util.PhingUtils;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -69,6 +71,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -88,15 +91,23 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
 
     static final Logger LOGGER = Logger.getLogger(RunPhingTargetAction.class.getName());
 
+    @NullAllowed
     private final Project project;
+    @NullAllowed
+    private final FileObject buildXml;
 
 
     public RunPhingTargetAction() {
         this(null);
     }
 
-    public RunPhingTargetAction(Project project) {
+    private RunPhingTargetAction(Project project) {
+        this(project, null);
+    }
+
+    private RunPhingTargetAction(Project project, FileObject buildXml) {
         this.project = project;
+        this.buildXml = buildXml;
         setEnabled(project != null);
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         // hide this action in IDE Options > Keymap
@@ -116,33 +127,40 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
             return createAction(contextProject);
         }
         // file action?
-        FileObject fileObject = context.lookup(FileObject.class);
-        if (fileObject == null) {
+        FileObject file = context.lookup(FileObject.class);
+        if (file == null) {
             DataObject dataObject = context.lookup(DataObject.class);
             if (dataObject != null) {
-                fileObject = dataObject.getPrimaryFile();
+                file = dataObject.getPrimaryFile();
             }
         }
-        if (fileObject != null) {
-            contextProject = FileOwnerQuery.getOwner(fileObject);
-            if (contextProject == null) {
-                return this;
-            }
-            if (contextProject.getProjectDirectory().equals(fileObject.getParent())) {
-                // build.xml directly in project dir
-                return createAction(contextProject);
-            }
+        if (file == null) {
+            return this;
         }
-        return this;
+        contextProject = ProjectConvertors.getNonConvertorOwner(file);
+        if (contextProject == null) {
+            return this;
+        }
+        if (file.getParent().equals(contextProject.getProjectDirectory())) {
+            return createAction(contextProject);
+        }
+        return createAction(contextProject, file);
     }
 
     private Action createAction(Project contextProject) {
+        return createAction(contextProject, null);
+    }
+
+    private Action createAction(Project contextProject, @NullAllowed FileObject buildXml) {
         assert contextProject != null;
         PhingBuildTool phingBuildTool = PhingBuildTool.inProject(contextProject);
         if (phingBuildTool == null) {
             return this;
         }
-        if (!phingBuildTool.isEnabled()) {
+        if (buildXml != null) {
+            return new RunPhingTargetAction(contextProject, buildXml);
+        }
+        if (!phingBuildTool.getProjectBuildXml().exists()) {
             return this;
         }
         return new RunPhingTargetAction(contextProject);
@@ -153,7 +171,7 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         if (project == null) {
             return new Actions.MenuItem(this, false);
         }
-        return BuildTools.getDefault().createTasksMenu(new TasksMenuSupportImpl(project));
+        return BuildTools.getDefault().createTasksMenu(new TasksMenuSupportImpl(project, buildXml));
     }
 
     //~ Inner classes
@@ -161,13 +179,16 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
     private static final class TasksMenuSupportImpl implements BuildTools.TasksMenuSupport {
 
         private final Project project;
+        @NullAllowed
+        private final FileObject buildXml;
         private final PhingTargets phingTargets;
 
 
-        public TasksMenuSupportImpl(Project project) {
+        public TasksMenuSupportImpl(Project project, @NullAllowed FileObject buildXml) {
             assert project != null;
             this.project = project;
-            phingTargets = PhingBuildTool.forProject(project).getPhingTargets();
+            this.buildXml = buildXml;
+            phingTargets = PhingBuildTool.forProject(project).getPhingTargets(buildXml);
         }
 
         @Override
@@ -211,6 +232,18 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         }
 
         @Override
+        public String getAdvancedTasksNamespace() {
+            if (buildXml == null) {
+                return null;
+            }
+            String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), buildXml);
+            if (relativePath != null) {
+                return relativePath;
+            }
+            return FileUtil.toFile(buildXml).getAbsolutePath();
+        }
+
+        @Override
         public String getDefaultTaskName() {
             return PhingTargets.DEFAULT_TARGET;
         }
@@ -223,7 +256,7 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         @Override
         public void runTask(String... args) {
             assert !EventQueue.isDispatchThread();
-            PhingExecutable phing = PhingExecutable.getDefault(project, true);
+            PhingExecutable phing = getPhingExecutable();
             if (phing != null) {
                 PhingUtils.logUsagePhingBuild();
                 phing.run(args);
@@ -244,6 +277,14 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         @Override
         public void configure() {
             OptionsDisplayer.getDefault().open(PhingOptionsPanelController.OPTIONS_PATH);
+        }
+
+        @CheckForNull
+        private PhingExecutable getPhingExecutable() {
+            if (buildXml == null) {
+                return PhingExecutable.getDefault(project, true);
+            }
+            return PhingExecutable.getDefault(project, FileUtil.toFile(buildXml).getParentFile(), true);
         }
 
     }

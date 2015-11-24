@@ -54,11 +54,9 @@ import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.GitStatus;
 import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
-import org.netbeans.modules.git.remote.cli.jgit.Utils;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.git.remote.cli.progress.StatusListener;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
-import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -121,6 +119,9 @@ public class StatusCommand extends StatusCommandBase {
             addArgument(2, "--"); //NOI18N
             addFiles(2, roots);
             addArgument(3, "ls-files"); //NOI18N
+            addArgument(3, "--cached"); //NOI18N
+            addArgument(3, "--others"); //NOI18N
+            addArgument(3, "-t"); //NOI18N
             addArgument(3, "--"); //NOI18N
             addFiles(3, roots);
         } else {
@@ -137,6 +138,9 @@ public class StatusCommand extends StatusCommandBase {
             addArgument(1, "--"); //NOI18N
             addFiles(1, roots);
             addArgument(2, "ls-files"); //NOI18N
+            addArgument(2, "--cached"); //NOI18N
+            addArgument(2, "--others"); //NOI18N
+            addArgument(2, "-t"); //NOI18N
             addArgument(2, "--"); //NOI18N
             addFiles(2, roots);
         }
@@ -339,9 +343,25 @@ public class StatusCommand extends StatusCommandBase {
         for (String line : output.split("\n")) { //NOI18N
             if (line.length() > 0) {
                 String file = line.trim();
+                boolean cached = true;
+                if (file.startsWith("H ")) {
+                    file = file.substring(2);
+                    cached = true;
+                } else if (file.startsWith("? ")) {
+                    file = file.substring(2);
+                    cached = false;
+                }
                 StatusLine status = list.get(file);
                 if (status == null) {
-                    status = new StatusLine();
+                    if (cached) {
+                        status = new StatusLine();
+                    } else {
+                        // other (ignored)
+                        status = new StatusLine();
+                        status.first = '!';
+                        status.second = '!';
+                        status.third = '!';
+                    }
                     list.put(file, status);
                 }
             }
@@ -367,7 +387,7 @@ public class StatusCommand extends StatusCommandBase {
             char third = v.third;
             char untracked = v.untracked;
             String renamed = v.to;
-            
+
             boolean tracked = !(first == '?' || first == '!' );
             GitStatus.Status statusHeadIndex = GitStatus.Status.STATUS_IGNORED;
             switch (first) {

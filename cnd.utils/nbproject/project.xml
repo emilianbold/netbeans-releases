@@ -167,6 +167,7 @@
                 <friend>com.sun.tools.ide.analysis.analytics</friend>
                 <friend>com.sun.tools.ide.analysis.common</friend>
                 <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.modernize</friend>
                 <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
@@ -215,6 +216,7 @@
                 <friend>org.netbeans.modules.cnd.lexer</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.makeproject.source.bridge</friend>
+                <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <friend>org.netbeans.modules.cnd.model.jclank.bridge</friend>
                 <friend>org.netbeans.modules.cnd.model.services</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
@@ -241,7 +243,6 @@
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
-                <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <package>org.netbeans.modules.cnd.debug</package>
                 <package>org.netbeans.modules.cnd.spi.editor</package>
                 <package>org.netbeans.modules.cnd.spi.utils</package>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.gulp.file;
 
@@ -70,20 +70,23 @@ public final class GulpTasks implements ChangeListener {
     public static final String DEFAULT_TASK = "default"; // NOI18N
 
     private final Project project;
+    private final Gulpfile gulpfile;
     final FileChangeListener nodeModulesListener = new NodeModulesListener();
 
     private volatile List<String> tasks;
 
 
-    private GulpTasks(Project project) {
+    private GulpTasks(Project project, Gulpfile gulpfile) {
         assert project != null;
+        assert gulpfile != null : project.getProjectDirectory();
         this.project = project;
+        this.gulpfile = gulpfile;
     }
 
     public static GulpTasks create(Project project, Gulpfile gulpfile) {
         assert project != null;
         assert gulpfile != null;
-        GulpTasks gulpTasks = new GulpTasks(project);
+        GulpTasks gulpTasks = new GulpTasks(project, gulpfile);
         // listeners
         gulpfile.addChangeListener(gulpTasks);
         FileUtil.addFileChangeListener(gulpTasks.nodeModulesListener, new File(gulpfile.getFile().getParent(), "node_modules")); // NOI18N
@@ -124,7 +127,7 @@ public final class GulpTasks implements ChangeListener {
 
     @CheckForNull
     private Future<List<String>> getTasksJob() {
-        GulpExecutable gulp = GulpExecutable.getDefault(project, false);
+        GulpExecutable gulp = GulpExecutable.getDefault(project, gulpfile.getFile().getParentFile(), false);
         if (gulp == null) {
             return null;
         }

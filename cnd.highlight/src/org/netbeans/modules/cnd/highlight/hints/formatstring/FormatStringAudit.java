@@ -265,10 +265,11 @@ public class FormatStringAudit extends AbstractCodeAudit {
                                                              && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
                                 // skip checking for complicated expressions
                                 return; 
-                            } else if (state == State.VAR_ARGS && !tokenId.equals(CppTokenId.LPAREN)
-                                                              && !tokenId.equals(CppTokenId.RPAREN)
-                                                              && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
-                                                              && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                            } else if ((state == State.VAR_ARGS || state == State.VAR_ARGS_IN_BRACKETS) 
+                                                                && !tokenId.equals(CppTokenId.LPAREN)
+                                                                && !tokenId.equals(CppTokenId.RPAREN)
+                                                                && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
+                                                                && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
                                 parameterBuffer.append(token.text());
                                 if (parameterOffset == -1) {
                                     parameterOffset = docTokenSequence.offset();
@@ -427,9 +428,9 @@ public class FormatStringAudit extends AbstractCodeAudit {
             List<String> formats = Utilities.typeToFormat(type);
             String specifier = error.getSpecifier(); 
             if (specifier.startsWith("l")) {         // NOI18N
-                specifier.replace("l", "");          // NOI18N
+                specifier = specifier.replace("l", "");          // NOI18N
             } else if (specifier.startsWith("h")) {  // NOI18N
-                specifier.replace("h", "");          // NOI18N
+                specifier = specifier.replace("h", "");          // NOI18N
             }
             for (String format : formats) {
                 if (format.contains(specifier)) {

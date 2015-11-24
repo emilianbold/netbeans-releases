@@ -134,7 +134,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     private final ListParameter changedFieldsParameter;
     private final ListParameter severityParameter;
     private final ListParameter issueTypeParameter;
-    private final ListParameter tmParameter;
+    private ListParameter tmParameter;
 
     private final Map<String, QueryParameter> parameters;
 
@@ -221,15 +221,13 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
         priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
         changedFieldsParameter = createQueryParameter(EmptyValuesListParameter.class, panel.changedList, "chfield");           // NOI18N
+        tmParameter = createQueryParameter(ListParameter.class, panel.tmList, "target_milestone");                  // NOI18N
         if(isNetbeans) {
-            issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, "cf_bug_type");     // NOI18N
-            tmParameter = createQueryParameter(ListParameter.class, panel.tmList, "target_milestone");       // NOI18N
-            severityParameter = null;
-
+            issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, "cf_bug_type");     // NOI18N            
+            severityParameter = null;            
         } else {
             severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");      // NOI18N
             issueTypeParameter = null;
-            tmParameter = null;
         }
 
         createQueryParameter(AllWordsTextFieldParameter.class, panel.summaryTextField, "short_desc");               // NOI18N
@@ -618,15 +616,15 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
         name = name == null ? query.getDisplayName() : name;
         assert name != null;
-        Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
+        Bugzilla.LOG.log(Level.FINE, "saving query ''{0}''", new Object[]{name});
         save(name);
         
         if (!firstTime) {
-            Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+            Bugzilla.LOG.log(Level.FINE, "refreshing query ''{0}'' after save", new Object[]{name});
             onRefresh();
         }
         
-        Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
+        Bugzilla.LOG.log(Level.FINE, "query ''{0}'' saved", new Object[]{name});
         Bugzilla.LOG.fine("on save finnish");
         
         return true;
@@ -900,6 +898,19 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             // XXX nice errro msg?
             return;
         }
+        
+        // have to assure bc was loaded asyn, so do this here
+        List<String> targetMilestones = bc.getTargetMilestones(null);
+        final boolean usingTargetMilestones = !targetMilestones.isEmpty();
+        
+        UIUtils.runInAWT(new Runnable() {
+            public void run() {
+                panel.tmLabel.setVisible(usingTargetMilestones);
+                panel.tmList.setVisible(usingTargetMilestones);
+                panel.tmScrollPane.setVisible(usingTargetMilestones);
+            }
+        });
+                
         if(products == null || products.length == 0) {
             products = new String[] {null};
         }
@@ -919,8 +930,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 if(!newVersions.contains(c)) {
                     newVersions.add(c);
                 }
-            }
-            if(isNetbeans) {
+            }            
+            if(usingTargetMilestones) {
                 List<String> targetMilestone = bc.getTargetMilestones(p);
                 for (String c : targetMilestone) {
                     if(!newTargetMilestone.contains(c)) {
@@ -935,7 +946,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
         componentParameter.setParameterValues(toParameterValues(newComponents));
         versionParameter.setParameterValues(toParameterValues(newVersions));
-        if(isNetbeans) {
+        if(usingTargetMilestones) {
             tmParameter.setParameterValues(toParameterValues(newTargetMilestone));
         }
     }
@@ -1070,10 +1081,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     private void saveQuery() {
         String name = query.getDisplayName();
-        Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name}); // NOI18N
+        Bugzilla.LOG.log(Level.FINE, "saving query ''{0}''", new Object[]{name}); // NOI18N
         repository.saveQuery(query);
         resetParameters();
-        Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});  // NOI18N                 
+        Bugzilla.LOG.log(Level.FINE, "query ''{0}'' saved", new Object[]{name});  // NOI18N                 
     }
 
     @Override

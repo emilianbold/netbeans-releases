@@ -599,7 +599,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
      * @param name
      */
     private void save(String name) {
-        ODCS.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
+        ODCS.LOG.log(Level.FINE, "saving query ''{0}''", new Object[]{name});
         try {
             panel.setRemoteInvocationRunning(true);
             enableFields(false);
@@ -608,14 +608,14 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                 parameters.resetChanged();
                 setChanged();                
                 if (!query.wasRun()) {
-                    ODCS.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+                    ODCS.LOG.log(Level.FINE, "refreshing query ''{0}'' after save", new Object[]{name});
                     onRefresh();
                 }
             }
         } finally {
             panel.setRemoteInvocationRunning(false);
             enableFields(true);
-            ODCS.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
+            ODCS.LOG.log(Level.FINE, "query ''{0}'' saved", new Object[]{name});
         }
     }
 

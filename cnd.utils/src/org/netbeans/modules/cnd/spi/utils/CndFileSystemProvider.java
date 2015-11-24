@@ -468,7 +468,12 @@ public abstract class CndFileSystemProvider {
                 file = new File(FileUtil.normalizePath(path));
             }
             try {
-                return FileUtil.toFileObject(file).getFileSystem();
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo == null) {
+                    CndUtils.getLogger().log(Level.WARNING, "CndFileSystemProvider.urlToFileObjectImpl can not convert {0}", path);
+                    return null;
+                }
+                return fo.getFileSystem();
             } catch (FileStateInvalidException ex) {
                 return null;
             }

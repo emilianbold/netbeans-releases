@@ -100,7 +100,7 @@ public class Php70UnhandledError extends UnhandledErrorRule {
 
 
         static {
-            TYPES_FOR_SOURCES = Collections.synchronizedSet(new HashSet<>(Type.getTypesForEditor()));
+            TYPES_FOR_SOURCES = new HashSet<>(Type.getTypesForEditor());
             TYPES_FOR_SOURCES.remove(Type.ARRAY);
             TYPES_FOR_SOURCES.remove(Type.CALLABLE);
         }

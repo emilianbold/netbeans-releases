@@ -74,9 +74,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
@@ -694,6 +694,9 @@ public class IssuePanel extends javax.swing.JPanel {
         separatorLabelCancel.setVisible(!isNew);
 
         privateNotesField.setText(issue.getPrivateNotes());
+        String privateNotes = issue.getPrivateNotes();                
+        setPrivateSectionLabel(privateNotes);
+        
         privateDueDatePicker.setDate(issue.getDueDate());
         NbDateRange scheduleDate = issue.getScheduleDate();
         scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
@@ -969,6 +972,18 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    private void setPrivateSectionLabel(String privateNotes) {
+        if(privateNotes != null && !privateNotes.isEmpty() ) {
+            privateSection.setLabel("<html>" + // NOI18N
+                    org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateSection.label") + // NOI18N
+                    " (<i><b>" +  // NOI18N
+                    org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateSection.containsNotes") +  // NOI18N
+                    "</b></i>)</html>"); // NOI18N
+        } else {
+            privateSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateSection.label")); // NOI18N
+        }
+    }
+    
     private boolean isSupportedCustomField(NbJiraIssue.CustomField field) {
         return "com.atlassian.jira.plugin.labels:labels".equals(field.getType()) //NOI18N
                 || "com.atlassian.jira.plugin.system.customfieldtypes:textfield".equals(field.getType()); //NOI18N
@@ -3070,7 +3085,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskPrivateNotes(privateNotesField.getText());
+                String txt = privateNotesField.getText();
+                issue.setTaskPrivateNotes(txt);
+                setPrivateSectionLabel(txt);
                 return true;
             }
         });

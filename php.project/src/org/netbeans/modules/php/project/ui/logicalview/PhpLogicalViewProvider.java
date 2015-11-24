@@ -409,7 +409,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                 }
             }
             if (coverageSupported) {
-                int activeConfigActionIndex = actions.size();
+                int activeConfigActionIndex = actions.size() - 1;
                 for (int i = 0; i < actions.size(); i++) {
                     Action action = actions.get(i);
                     if (action != null
@@ -424,7 +424,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         private void addFrameworks(List<Action> actions) {
             // find index
-            int positionIndex = actions.size();
+            int positionIndex = actions.size() - 1;
             for (int i = 0; i < actions.size(); i++) {
                 Action action = actions.get(i);
                 if (action == null) {

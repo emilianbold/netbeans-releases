@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phing.exec;
 
@@ -65,16 +65,16 @@ import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.phing.PhingBuildTool;
-import org.netbeans.modules.php.phing.file.BuildXml;
 import org.netbeans.modules.php.phing.options.PhingOptions;
 import org.netbeans.modules.php.phing.options.PhingOptionsValidator;
 import org.netbeans.modules.php.phing.ui.options.PhingOptionsPanelController;
 import org.netbeans.modules.php.phing.util.PhingUtils;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -91,10 +91,11 @@ public class PhingExecutable {
     private static final String LIST_PARAM = "-list"; // NOI18N
     private static final String QUIET_PARAM = "-quiet"; // NOI18N
 
-    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
-
     private final Project project;
     private final String phingPath;
+
+    @NullAllowed
+    private final File workDir;
 
 
     static {
@@ -106,14 +107,29 @@ public class PhingExecutable {
     }
 
 
-    PhingExecutable(String phingPath, @NullAllowed Project project) {
+    PhingExecutable(String phingPath, Project project, @NullAllowed File workDir) {
         assert phingPath != null;
+        assert project != null;
         this.phingPath = phingPath;
         this.project = project;
+        this.workDir = workDir;
     }
 
     @CheckForNull
-    public static PhingExecutable getDefault(@NullAllowed Project project, boolean showOptions) {
+    public static PhingExecutable getDefault(Project project, boolean showOptions) {
+        return createExecutable(project, null, showOptions);
+    }
+
+    @CheckForNull
+    public static PhingExecutable getDefault(Project project, File workDir, boolean showOptions) {
+        assert workDir != null;
+        assert workDir.exists() : workDir;
+        return createExecutable(project, workDir, showOptions);
+    }
+
+    @CheckForNull
+    private static PhingExecutable createExecutable(Project project, @NullAllowed File workDir, boolean showOptions) {
+        assert project != null;
         ValidationResult result = new PhingOptionsValidator()
                 .validatePhing()
                 .getResult();
@@ -123,7 +139,7 @@ public class PhingExecutable {
             }
             return null;
         }
-        return new PhingExecutable(PhingOptions.getInstance().getPhing(), project);
+        return new PhingExecutable(PhingOptions.getInstance().getPhing(), project, workDir);
     }
 
     private String getCommand() {
@@ -149,7 +165,7 @@ public class PhingExecutable {
         final PhingTargetsLineProcessor phingTargetsLineProcessor = new PhingTargetsLineProcessor();
         Future<Integer> task = getExecutable("list phing targets") // NOI18N
                 .noInfo(true)
-                .additionalParameters(Arrays.asList(QUIET_PARAM, LIST_PARAM))
+                .additionalParameters(getListTargetsParams())
                 .redirectErrorStream(false)
                 .run(getSilentDescriptor(), new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override
@@ -158,7 +174,7 @@ public class PhingExecutable {
                     }
                 });
         assert task != null : phingPath;
-        return new TargetList(task, phingTargetsLineProcessor);
+        return new TargetList(this, task, phingTargetsLineProcessor);
     }
 
     private PhpExecutable getExecutable(String title) {
@@ -204,16 +220,13 @@ public class PhingExecutable {
     }
 
     private File getWorkDir() {
-        if (project == null) {
-            return TMP_DIR;
+        if (workDir != null
+                && workDir.exists()) {
+            return workDir;
         }
-        BuildXml buildXml = PhingBuildTool.forProject(project).getBuildXml();
-        if (buildXml.exists()) {
-            return buildXml.getFile().getParentFile();
-        }
-        File workDir = FileUtil.toFile(project.getProjectDirectory());
-        assert workDir != null : project.getProjectDirectory();
-        return workDir;
+        File dir = FileUtil.toFile(project.getProjectDirectory());
+        assert dir != null : project.getProjectDirectory();
+        return dir;
     }
 
     @CheckForNull
@@ -227,6 +240,10 @@ public class PhingExecutable {
         return result.getFirstWarningMessage();
     }
 
+    static List<String> getListTargetsParams() {
+        return Arrays.asList(QUIET_PARAM, LIST_PARAM);
+    }
+
     //~ Inner classes
 
     private static final class PhingTargetsLineProcessor implements LineProcessor {
@@ -234,9 +251,10 @@ public class PhingExecutable {
         private static final String MAIN_TARGETS = "Main targets:"; // NOI18N
         private static final String SUBTARGETS = "Subtargets:"; // NOI18N
 
+        // @GuardedBy("targets")
         final List<String> targets = new ArrayList<>();
 
-        boolean collecting = false;
+        private boolean collecting = false;
 
 
         @Override
@@ -245,7 +263,9 @@ public class PhingExecutable {
             if (collecting) {
                 if (!SUBTARGETS.equals(trimmed)) {
                     if (StringUtilities.hasText(trimmed.replace('-', ' '))) { // NOI18N
-                        targets.add(StringUtilities.explode(trimmed, " ").get(0)); // NOI18N
+                        synchronized (targets) {
+                            targets.add(StringUtilities.explode(trimmed, " ").get(0)); // NOI18N
+                        }
                     }
                 }
             } else {
@@ -265,23 +285,31 @@ public class PhingExecutable {
         }
 
         public List<String> getTargets() {
-            return Collections.unmodifiableList(targets);
+            synchronized (targets) {
+                return new ArrayList<>(targets);
+            }
         }
 
     }
 
     private static final class TargetList implements Future<List<String>> {
 
+        private static final RequestProcessor RP = new RequestProcessor(TargetList.class);
+
+        final PhingExecutable phing;
         private final Future<Integer> task;
         private final PhingTargetsLineProcessor processor;
 
+        private volatile Integer result;
         // @GuardedBy("this")
         private List<String> phingTargets = null;
 
 
-        TargetList(Future<Integer> task, PhingTargetsLineProcessor processor) {
+        TargetList(PhingExecutable phing, Future<Integer> task, PhingTargetsLineProcessor processor) {
+            assert phing != null;
             assert task != null;
             assert processor != null;
+            this.phing = phing;
             this.task = task;
             this.processor = processor;
         }
@@ -304,7 +332,7 @@ public class PhingExecutable {
         @Override
         public List<String> get() throws InterruptedException, ExecutionException {
             try {
-                task.get();
+                result = task.get();
             } catch (CancellationException ex) {
                 // cancelled by user
                 LOGGER.log(Level.FINE, null, ex);
@@ -315,7 +343,7 @@ public class PhingExecutable {
         @Override
         public List<String> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             try {
-                task.get(timeout, unit);
+                result = task.get(timeout, unit);
             } catch (CancellationException ex) {
                 // cancelled by user
                 LOGGER.log(Level.FINE, null, ex);
@@ -323,8 +351,21 @@ public class PhingExecutable {
             return getPhingTargets();
         }
 
+        @NbBundle.Messages("TargetList.error=Cannot get Phing targets.")
         private synchronized List<String> getPhingTargets() {
             if (phingTargets != null) {
+                return Collections.unmodifiableList(phingTargets);
+            }
+            if (result == null
+                    || result == 1) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        phing.run(getListTargetsParams().toArray(new String[0]));
+                    }
+                });
+                StatusDisplayer.getDefault().setStatusText(Bundle.TargetList_error());
+                phingTargets = Collections.emptyList();
                 return Collections.unmodifiableList(phingTargets);
             }
             List<String> targets = new ArrayList<>(processor.getTargets());

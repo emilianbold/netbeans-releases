@@ -73,6 +73,10 @@ int main(int argc, char** argv) {
     printf("%hhx", uch);
     
     printf("%ld", li);
+    printf("%ld", (long)i);
+    printf("%ld", (long)   i);
+    printf("%ld", (long)   (
+            i  )    );
     printf("%li", l);
     printf("%lo", ul);
     printf("%lu", ul);

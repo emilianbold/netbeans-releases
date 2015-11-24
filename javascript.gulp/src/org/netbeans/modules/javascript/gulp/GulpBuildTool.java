@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.gulp;
 
+import java.util.Iterator;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.gulp.exec.GulpExecutable;
 import org.netbeans.modules.javascript.gulp.file.GulpTasks;
@@ -60,7 +66,9 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 @ProjectServiceProvider(
@@ -81,16 +89,18 @@ public final class GulpBuildTool implements BuildToolImplementation {
     public static final String IDENTIFIER = "Gulp"; // NOI18N
 
     private final Project project;
-    private final Gulpfile gulpfile;
-    private final GulpTasks gulpTasks;
+    private final Gulpfile projectGulpfile;
+    private final GulpTasks projectGulpTasks;
     private final GulpPreferences gulpPreferences;
+    final ConcurrentMap<FileObject, GulpTasks> gulpTasks = new ConcurrentHashMap<>();
+    private final ChangeListener cleanupListener = new CleanupListener();
 
 
     public GulpBuildTool(Project project) {
         assert project != null;
         this.project = project;
-        gulpfile = Gulpfile.create(project.getProjectDirectory());
-        gulpTasks = GulpTasks.create(project, gulpfile);
+        projectGulpfile = Gulpfile.create(project.getProjectDirectory());
+        projectGulpTasks = GulpTasks.create(project, projectGulpfile);
         gulpPreferences = new GulpPreferences(project);
     }
 
@@ -118,12 +128,31 @@ public final class GulpBuildTool implements BuildToolImplementation {
         return Bundle.GulpBuildTool_name();
     }
 
-    public Gulpfile getGulpfile() {
-        return gulpfile;
+    public Gulpfile getProjectGulpfile() {
+        return projectGulpfile;
     }
 
-    public GulpTasks getGulpTasks() {
-        return gulpTasks;
+    public GulpTasks getProjectGulpTasks() {
+        return projectGulpTasks;
+    }
+
+    public GulpTasks getGulpTasks(@NullAllowed FileObject gulpfile) {
+        if (gulpfile == null) {
+            return getProjectGulpTasks();
+        }
+        GulpTasks tasks = gulpTasks.get(gulpfile);
+        if (tasks != null) {
+            return tasks;
+        }
+        Gulpfile file = Gulpfile.create(gulpfile.getParent());
+        tasks = GulpTasks.create(project, file);
+        GulpTasks currentTasks = gulpTasks.putIfAbsent(gulpfile, tasks);
+        if (currentTasks != null) {
+            return currentTasks;
+        }
+        // register listener
+        file.addChangeListener(WeakListeners.change(cleanupListener, file));
+        return tasks;
     }
 
     public GulpPreferences getGulpPreferences() {
@@ -132,14 +161,14 @@ public final class GulpBuildTool implements BuildToolImplementation {
 
     @Override
     public boolean isEnabled() {
-        return gulpfile.exists();
+        return projectGulpfile.exists();
     }
 
     @NbBundle.Messages("GulpBuildTool.configure=Do you want to configure project actions to call Gulp tasks?")
     @Override
     public boolean run(String commandId, boolean waitFinished, boolean warnUser) {
         assert isEnabled() : project.getProjectDirectory().getNameExt();
-        assert gulpfile.exists() : project.getProjectDirectory().getNameExt();
+        assert projectGulpfile.exists() : project.getProjectDirectory().getNameExt();
         String gulpBuild = gulpPreferences.getTask(commandId);
         if (gulpBuild != null) {
             GulpExecutable gulp = GulpExecutable.getDefault(project, warnUser);
@@ -170,6 +199,24 @@ public final class GulpBuildTool implements BuildToolImplementation {
             }
         }
         return true;
+    }
+
+    //~ Inner classes
+
+    private final class CleanupListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            Iterator<FileObject> iterator = gulpTasks.keySet().iterator();
+            while (iterator.hasNext()) {
+                FileObject gulpfile = iterator.next();
+                if (!gulpfile.isValid()) {
+                    LOGGER.log(Level.FINE, "Removing invalid gulp file {0}", gulpfile);
+                    iterator.remove();
+                }
+            }
+        }
+
     }
 
 }

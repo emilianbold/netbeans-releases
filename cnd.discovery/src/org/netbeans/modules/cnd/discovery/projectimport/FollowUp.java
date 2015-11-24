@@ -56,6 +56,7 @@ import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -185,6 +186,7 @@ public final class FollowUp extends JPanel {
                     sourceFilesExcluded, sourceFiles,
                     headerFilesExcluded, headerFiles);
             detailsTextPane.setContentType("text/html"); // NOI18N
+            detailsTextPane.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
             detailsTextPane.setText(text);
             details.setVisible(true);
             detailsPane.setVisible(true);

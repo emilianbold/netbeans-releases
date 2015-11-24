@@ -41,29 +41,40 @@
  */
 package org.netbeans.modules.web.clientproject.api.build.ui;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.util.Parameters;
 
 public final class AdvancedTasks {
 
+    private static final Logger LOGGER = Logger.getLogger(AdvancedTasks.class.getName());
+
     private static final int TASKS_NUMBER = 3;
     private static final String TASK_KEY = "%s.task.%d"; // NOI18N
+    private static final String NAMESPACE_TASK_KEY = "%s.%s.task.%d"; // NOI18N
 
     private final Project project;
     private final String ident;
+    private final String namespace;
 
 
-    AdvancedTasks(Project project, String ident) {
+    AdvancedTasks(Project project, String ident, @NullAllowed String namespace) {
         Parameters.notNull("project", project); // NOI18N
         Parameters.notEmpty("ident", ident); // NOI18N
         this.project = project;
         this.ident = ident;
+        this.namespace = namespace == null ? null : getHash(namespace);
     }
 
     List<String> getTasks() {
@@ -88,14 +99,14 @@ public final class AdvancedTasks {
         }
         // save
         for (int i = 0; i < tasks.size(); i++) {
-            preferences.put(String.format(TASK_KEY, ident, i + 1), tasks.get(i));
+            preferences.put(getKey(i + 1), tasks.get(i));
         }
     }
 
     private List<String> getTasks(Preferences preferences) {
         List<String> tasks = new ArrayList<>(TASKS_NUMBER);
         for (int i = 1; i <= TASKS_NUMBER; ++i) {
-            String task = preferences.get(String.format(TASK_KEY, ident, i), null);
+            String task = preferences.get(getKey(i), null);
             if (task != null) {
                 tasks.add(task);
             }
@@ -105,6 +116,31 @@ public final class AdvancedTasks {
 
     private Preferences getPreferences(boolean shared) {
         return ProjectUtils.getPreferences(project, AdvancedTasks.class, shared);
+    }
+
+    private String getKey(int index) {
+        if (namespace == null) {
+            return String.format(TASK_KEY, ident, index);
+        }
+        return String.format(NAMESPACE_TASK_KEY, ident, namespace, index);
+    }
+
+    private String getHash(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5"); // NOI18N
+            byte[] hash = md.digest(input.getBytes("UTF-8")); // NOI18N
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(Integer.toHexString((int) (b & 0xff)));
+            }
+            String result = sb.toString();
+            LOGGER.log(Level.FINE, "Hashing \"{0}\" to \"{1}\"", new Object[] {input, result});
+            return result;
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        LOGGER.log(Level.FINE, "No hashing for \"{0}\"", input);
+        return input;
     }
 
 }

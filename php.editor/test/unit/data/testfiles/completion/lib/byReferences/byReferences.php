@@ -44,3 +44,6 @@ function my_sort11(array $data1, Collection &$data2) {
 
 function &my_sort12(array $data1, Collection $data2) {
 }
+
+function &my_sort13(array &$data1, Collection &...$data2) {
+}

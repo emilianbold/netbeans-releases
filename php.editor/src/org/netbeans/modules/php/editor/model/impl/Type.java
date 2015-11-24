@@ -100,6 +100,9 @@ public final class Type {
     /**
      * Get valid types for the "editor". It means all the types
      * that are valid to be used in source code (like "int" for PHP 7 etc.).
+     * <p>
+     * This method will be changed in the future (PHP 7.1 will have "void"
+     * as a return type but it will not be a valid scalar type).
      * @return valid types for the "editor"
      */
     public static List<String> getTypesForEditor() {

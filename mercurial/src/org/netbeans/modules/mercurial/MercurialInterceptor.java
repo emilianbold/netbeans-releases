@@ -351,13 +351,8 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
             File root = hg.getRepositoryRoot(file);
-            FileInformation info = null;
-            try {
-                Map<File, FileInformation> statusMap = StatusCommand.create(root, Arrays.asList(file), false).setDetectConflicts(false).call();
-                info = statusMap != null ? statusMap.get(file) : null;
-            } catch (HgException ex) {
-                Mercurial.LOG.log(Level.FINE, "beforeCreate(): getStatus failed for file: {0} {1}", new Object[]{file.getAbsolutePath(), ex.toString()}); // NOI18N
-            }
+            FileStatusCache cache = hg.getFileStatusCache();
+            FileInformation info = cache.getCachedStatus(file);
             if (info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 Mercurial.LOG.log(Level.FINE, "beforeCreate(): LocallyDeleted: {0}", file); // NOI18N
                 if (root == null) return false;

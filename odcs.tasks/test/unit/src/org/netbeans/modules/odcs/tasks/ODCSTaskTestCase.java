@@ -909,8 +909,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
         public int compareTo(IRepositoryElement o) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
-        @Override
+        
         public Object getAdapter(Class type) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -919,7 +918,17 @@ public class ODCSTaskTestCase extends NbTestSuite {
         public Map<String, String> getAttributes() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
+        @Override
+        public String getOwnerId() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void setOwnerId(String string) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
     }
 
 }

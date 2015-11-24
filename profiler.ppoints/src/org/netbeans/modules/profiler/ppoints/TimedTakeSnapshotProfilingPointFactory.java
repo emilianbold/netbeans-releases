@@ -46,7 +46,6 @@ package org.netbeans.modules.profiler.ppoints;
 import org.netbeans.modules.profiler.ppoints.ui.TimedTakeSnapshotCustomizer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import java.text.MessageFormat;
 import java.util.Properties;
 import javax.swing.GrayFilter;
 import javax.swing.Icon;
@@ -124,7 +123,7 @@ public class TimedTakeSnapshotProfilingPointFactory extends CodeProfilingPointFa
     }
 
     public boolean supportsMonitor() {
-        return false;
+        return true;
     }
 
     protected Class getProfilingPointsClass() {

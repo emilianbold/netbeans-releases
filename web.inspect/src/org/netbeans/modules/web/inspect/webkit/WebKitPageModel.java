@@ -637,7 +637,7 @@ public class WebKitPageModel extends PageModel {
         "WebKitPageModel.pageSizeWarningMessage="
                 + "The page is too large to inspect it in NetBeans safely. "
                 + "You may run out of memory if you continue with the inspection. "
-                + "Do you what to close this page and stop its inspection?"
+                + "Do you want to close this page and stop its inspection?"
     })
     private void showPageSizeWarning() {
         if (!pageSizeWarningShown) {

@@ -156,11 +156,12 @@ public class UnbufferSupport {
                                 String remoteLib_32 = remotePath + "/" + unbufferLib; // NOI18N
                                 String remoteLib_64 = remotePath + "_64/" + unbufferLib; // NOI18N
                                 Future<UploadStatus> copyTask;
-                                if (file != null) {
+                                if (file != null && file.exists()) {
                                     String fullLocalPath = file.getParentFile().getAbsolutePath(); // NOI18N                                
                                     copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remoteLib_32, 0755, true); // NOI18N
                                     copyTask.get(); // is it OK not to check upload exit code?
-                                } else {//we have 64 bit version only (sparc-Linux)
+                                }
+                                if (file_64 != null && file_64.exists()) {//we have 64 bit version only (sparc-Linux)
                                     String fullLocalPath_64 = file_64.getParentFile().getAbsolutePath(); // NOI18N                                
                                     copyTask = CommonTasksSupport.uploadFile(fullLocalPath_64 + "/" + unbufferLib, execEnv, remoteLib_64, 0755, true); // NOI18N
                                     copyTask.get(); // is it OK not to check upload exit code?

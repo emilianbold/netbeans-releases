@@ -1954,8 +1954,33 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         CsmCompletionExpression opExp = createTokenExp(UNARY_OPERATOR);
                         pushExp(opExp); // add operator as new exp
                         break;
+                        
+                    case CONVERSION:
+                        if (top.getTokenCount() > 0) {
+                            CppTokenId firstTokId = top.getTokenID(0);
+                            if (CppTokenId.STATIC_CAST == firstTokId ||
+                                CppTokenId.DYNAMIC_CAST == firstTokId ||
+                                CppTokenId.REINTERPRET_CAST == firstTokId)
+                            {
+                                // Postfix operator
+                                opExp = createTokenExp(UNARY_OPERATOR);
+                                popExp();
+                                opExp.addParameter(top);
+                                pushExp(opExp);
+                            } else if (top.getParameterCount() > 0 && top.getParameter(0).getExpID() != TYPE) {
+                                // Postfix operator after PARENTHESIS
+                                opExp = createTokenExp(UNARY_OPERATOR);
+                                popExp();
+                                opExp.addParameter(createTokenExp(PARENTHESIS, top, true));
+                                pushExp(opExp);
+                            } else {
+                                errorState = true;
+                            }
+                        }
+                        break;
 
-                    case VARIABLE: // is it only one permitted?
+                    case PARENTHESIS:
+                    case VARIABLE:
                         // Postfix operator
                         opExp = createTokenExp(UNARY_OPERATOR);
                         popExp(); // pop top

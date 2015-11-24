@@ -55,6 +55,8 @@ import org.netbeans.api.debugger.SessionBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeSession;
+import org.netbeans.modules.cnd.debugger.common2.debugger.State;
+import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
@@ -101,6 +103,7 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
             // local case only
             target.setHostName("localhost"); // NOI18N
             target.getConfig().setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocal()));
+            target.setProjectMode(DebugTarget.ProjectMode.NO_PROJECT);
 
             final CountDownLatch latch = new CountDownLatch(1);
             final NativeDebuggerManager.DebuggerStateListener listener = new NativeDebuggerManager.DebuggerStateListener() {
@@ -131,8 +134,18 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
                 }
             }
         } else {
-            NativeSession.map(ret).getDebugger().pause();
-            NativeSession.map(ret).getDebugger().stepTo(funcName);
+            final NativeDebugger debugger = NativeSession.map(ret).getDebugger();
+            debugger.addStateListener(new StateListener() {
+
+                @Override
+                public void update(State state) {
+                    if (!state.isRunning) {
+                        debugger.stepTo(funcName);
+                        debugger.removeStateListener(this);
+                    }
+                }
+            });
+            debugger.pause();
         }
 
         return ret;

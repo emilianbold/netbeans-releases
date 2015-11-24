@@ -41,13 +41,19 @@
  */
 package org.netbeans.modules.javascript.grunt;
 
+import java.util.Iterator;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
 import org.netbeans.modules.javascript.grunt.file.GruntTasks;
@@ -60,7 +66,9 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 @ProjectServiceProvider(
@@ -81,16 +89,18 @@ public final class GruntBuildTool implements BuildToolImplementation {
     public static final String IDENTIFIER = "Grunt"; // NOI18N
 
     private final Project project;
-    private final Gruntfile gruntfile;
-    private final GruntTasks gruntTasks;
+    private final Gruntfile projectGruntfile;
+    private final GruntTasks projectGruntTasks;
     private final GruntPreferences gruntPreferences;
+    final ConcurrentMap<FileObject, GruntTasks> gruntTasks = new ConcurrentHashMap<>();
+    private final ChangeListener cleanupListener = new CleanupListener();
 
 
     public GruntBuildTool(Project project) {
         assert project != null;
         this.project = project;
-        gruntfile = Gruntfile.create(project.getProjectDirectory());
-        gruntTasks = GruntTasks.create(project, gruntfile);
+        projectGruntfile = Gruntfile.create(project.getProjectDirectory());
+        projectGruntTasks = GruntTasks.create(project, projectGruntfile);
         gruntPreferences = new GruntPreferences(project);
     }
 
@@ -118,12 +128,31 @@ public final class GruntBuildTool implements BuildToolImplementation {
         return Bundle.GruntBuildTool_name();
     }
 
-    public Gruntfile getGruntfile() {
-        return gruntfile;
+    public Gruntfile getProjectGruntfile() {
+        return projectGruntfile;
     }
 
-    public GruntTasks getGruntTasks() {
-        return gruntTasks;
+    public GruntTasks getProjectGruntTasks() {
+        return projectGruntTasks;
+    }
+
+    public GruntTasks getGruntTasks(@NullAllowed FileObject gruntfile) {
+        if (gruntfile == null) {
+            return getProjectGruntTasks();
+        }
+        GruntTasks tasks = gruntTasks.get(gruntfile);
+        if (tasks != null) {
+            return tasks;
+        }
+        Gruntfile file = Gruntfile.create(gruntfile.getParent());
+        tasks = GruntTasks.create(project, file);
+        GruntTasks currentTasks = gruntTasks.putIfAbsent(gruntfile, tasks);
+        if (currentTasks != null) {
+            return currentTasks;
+        }
+        // register listener
+        file.addChangeListener(WeakListeners.change(cleanupListener, file));
+        return tasks;
     }
 
     public GruntPreferences getGruntPreferences() {
@@ -132,14 +161,14 @@ public final class GruntBuildTool implements BuildToolImplementation {
 
     @Override
     public boolean isEnabled() {
-        return gruntfile.exists();
+        return projectGruntfile.exists();
     }
 
     @NbBundle.Messages("GruntBuildTool.configure=Do you want to configure project actions to call Grunt tasks?")
     @Override
     public boolean run(String commandId, boolean waitFinished, boolean warnUser) {
         assert isEnabled() : project.getProjectDirectory().getNameExt();
-        assert gruntfile.exists() : project.getProjectDirectory().getNameExt();
+        assert projectGruntfile.exists() : project.getProjectDirectory().getNameExt();
         String gruntBuild = gruntPreferences.getTask(commandId);
         if (gruntBuild != null) {
             GruntExecutable grunt = GruntExecutable.getDefault(project, warnUser);
@@ -170,6 +199,24 @@ public final class GruntBuildTool implements BuildToolImplementation {
             }
         }
         return true;
+    }
+
+    //~ Inner classes
+
+    private final class CleanupListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            Iterator<FileObject> iterator = gruntTasks.keySet().iterator();
+            while (iterator.hasNext()) {
+                FileObject gruntfile = iterator.next();
+                if (!gruntfile.isValid()) {
+                    LOGGER.log(Level.FINE, "Removing invalid grunt file {0}", gruntfile);
+                    iterator.remove();
+                }
+            }
+        }
+
     }
 
 }

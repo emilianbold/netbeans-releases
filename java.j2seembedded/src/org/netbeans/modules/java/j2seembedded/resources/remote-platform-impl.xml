@@ -207,6 +207,7 @@
     <target name="debug-remote" depends="init, jar, -init-remote-platform-properties, -copy-to-remote-platform, -check-vm-debug, -debug-remote-passwd, -debug-remote-key"/>
     <target name="profile-remote" depends="init, jar, profile-toggle, -init-remote-platform-properties, profile-rp-unzip, -profile-check" if="profiler.configured">
         <startprofiler/>
+        <mkdir dir="${user.home}/.nbprofiler"/>
         <antcall target="-run-remote-passwd"/>
         <antcall target="-run-remote-key"/>        
     </target>

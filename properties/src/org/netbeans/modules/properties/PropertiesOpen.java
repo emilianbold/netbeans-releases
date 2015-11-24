@@ -694,6 +694,8 @@ public class PropertiesOpen extends CloneableOpenSupport
                         }
                         // remove old open cookie
                         if (cookie != null) {
+                            // remove also open cookie factory, new open cookie will be added.
+                            dataObj.getCookieSet0().remove(PropertiesOpen.class, dataObj);
                             dataObj.getCookieSet0().remove(cookie);
                         }
                         //Adds new OpenCookie to this dataObj
@@ -724,6 +726,8 @@ public class PropertiesOpen extends CloneableOpenSupport
                         }
                         // remove old open cookie
                         if (cookie != null) {
+                            // remove also open cookie factory, new open cookie will be added.
+                            dataObj.getCookieSet0().remove(PropertiesOpen.class, dataObj);
                             dataObj.getCookieSet0().remove(cookie);
                         }
                         //Adds new OpenCookie to this dataObj

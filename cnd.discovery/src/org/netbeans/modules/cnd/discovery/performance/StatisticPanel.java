@@ -81,14 +81,20 @@ public class StatisticPanel extends JPanel {
      */
     public StatisticPanel() {
         initComponents();
-        slowFolders.setBackground(getBackground());
         slowFolders.setEditorKit(new HTMLEditorKit());
+        slowFolders.setBackground(getBackground());
+        slowFolders.setForeground(getForeground());
+        slowFolders.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         ((DefaultCaret) slowFolders.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
-        unusedFolders.setBackground(getBackground());
         unusedFolders.setEditorKit(new HTMLEditorKit());
+        unusedFolders.setBackground(getBackground());
+        unusedFolders.setForeground(getForeground());
+        unusedFolders.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         ((DefaultCaret) unusedFolders.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
-        infiniteParsing.setBackground(getBackground());
         infiniteParsing.setEditorKit(new HTMLEditorKit());
+        infiniteParsing.setBackground(getBackground());
+        infiniteParsing.setForeground(getForeground());
+        infiniteParsing.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         ((DefaultCaret) infiniteParsing.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         activeInstance = PerformanceIssueDetector.getActiveInstance();
         update = RP.post(new Runnable() {

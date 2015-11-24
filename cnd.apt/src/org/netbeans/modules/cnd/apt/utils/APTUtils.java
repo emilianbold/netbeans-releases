@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankMacroExpandedToken;
 import org.netbeans.modules.cnd.apt.impl.support.generated.APTExprParser;
 import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
@@ -97,6 +98,7 @@ public class APTUtils {
     
     public static final String SCOPE = "::"; // NOI18N
             
+    public static final int NOT_AN_EXPANDED_TOKEN = -1;
 
     static {
         // command line param has priority for logging
@@ -615,6 +617,8 @@ public class APTUtils {
             return true;
         } else if (token instanceof APTBaseLanguageFilter.FilterToken) {
             return isMacroExpandedToken(((APTBaseLanguageFilter.FilterToken)token).getOriginalToken());
+        } else if (token instanceof ClankMacroExpandedToken) {
+            return true;
         }
         return false;
     }
@@ -626,6 +630,8 @@ public class APTUtils {
             return isMacroParamExpandedToken(((MacroExpandedToken) token).getTo());
         } else if (token instanceof APTBaseLanguageFilter.FilterToken) {
             return isMacroParamExpandedToken(((APTBaseLanguageFilter.FilterToken) token).getOriginalToken());
+        } else if (token instanceof ClankMacroExpandedToken) {
+            return isMacroParamExpandedToken(((ClankMacroExpandedToken) token).getTo());
         }
         return false;
     }
@@ -637,14 +643,29 @@ public class APTUtils {
             return getExpandedToken(((MacroExpandedToken) token).getTo());
         } else if (token instanceof APTBaseLanguageFilter.FilterToken) {
             return getExpandedToken(((APTBaseLanguageFilter.FilterToken) token).getOriginalToken());
+        } else if (token instanceof ClankMacroExpandedToken) {
+            return getExpandedToken(((ClankMacroExpandedToken) token).getTo());
         }
         return token;
     }
+    
+    public static int getExpandedTokenMarker(APTToken token) {
+        if (token instanceof APTBaseLanguageFilter.FilterToken) {
+            return getExpandedTokenMarker(((APTBaseLanguageFilter.FilterToken) token).getOriginalToken());
+        } else if (token instanceof ClankMacroExpandedToken) {
+            return ((ClankMacroExpandedToken) token).getMacroIndex();
+        } else if (isMacroExpandedToken(token)) {
+            APTToken expanded = getExpandedToken(token);
+            return expanded.getOffset();
+        }
+        return NOT_AN_EXPANDED_TOKEN;
+    }
 
     public static boolean areAdjacent(APTToken left, APTToken right) {
-        while (left instanceof MacroExpandedToken && right instanceof MacroExpandedToken) {
-            left = ((MacroExpandedToken) left).getTo();
-            right = ((MacroExpandedToken) right).getTo();
+        while ((left instanceof MacroExpandedToken || left instanceof ClankMacroExpandedToken)
+            && (right instanceof MacroExpandedToken || right instanceof ClankMacroExpandedToken)) {
+            left = (left instanceof MacroExpandedToken) ? ((MacroExpandedToken) left).getTo() : ((ClankMacroExpandedToken) left).getTo();
+            right = (right instanceof MacroExpandedToken) ? ((MacroExpandedToken) right).getTo() : ((ClankMacroExpandedToken) right).getTo();
         }
 //        if (left instanceof APTToken && right instanceof APTToken) {
         return (left).getEndOffset() == (right).getOffset();

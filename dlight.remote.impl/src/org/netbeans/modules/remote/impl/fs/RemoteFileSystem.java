@@ -524,6 +524,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             hasParent = false;
         }
         File attr = getAttrFile(parent);
+        if (attr== null) {
+            return;
+        }
         Properties table = readProperties(attr);
         String translatedAttributeName = translateAttributeName(file, attrName);
         String encodedValue = encodeValue(value);
@@ -639,7 +642,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
 
     private File getAttrFile(RemoteFileObjectBase parent) {
-        File attr = new File(parent.getCache(), ATTRIBUTES_FILE_NAME);
+        File parentCache = parent.getCache();
+        if (parentCache == null) {
+            RemoteLogger.info(new IllegalArgumentException("Parent cache file is null " + parent)); //NOI18N
+            return null;
+        }
+        File attr = new File(parentCache, ATTRIBUTES_FILE_NAME);
         return attr;
     }
 
@@ -679,6 +687,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
         if (ATTR_STATS) { logAttrName(attrName, false); }
         File attr = getAttrFile(parent);
+        if (attr== null) {
+            return null;
+        }        
         Properties table = readProperties(attr);
         return decodeValue(table.getProperty(translateAttributeName(file, attrName)));
     }
@@ -687,6 +698,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         RemoteFileObjectBase parent = file.getParent();
         if (parent != null) {
             File attr = getAttrFile(parent);
+            if (attr == null) {
+                return Collections.emptyEnumeration();
+            }
             Properties table = readProperties(attr);
             List<String> res = new ArrayList<>();
             Enumeration<Object> keys = table.keys();

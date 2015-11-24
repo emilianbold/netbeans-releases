@@ -98,6 +98,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -149,6 +150,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
     private static final Logger LOG = Logger.getLogger(MercurialAnnotator.class.getName());
     
     private final Map<FileSystem, AnnotationFormat> annotationFormat = new HashMap<>();
+    private final RequestProcessor rp = new RequestProcessor("MercurialRemoteRefresh", 1); //NOI18N
 
     public static final class AnnotationFormat {
         private MessageFormat format;
@@ -157,17 +159,18 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
 
     MercurialAnnotator(FileStatusCache cache) {
         this.cache = cache;
-        initDefaults();
-    }
-    
-    private void initDefaults() {
         refresh();
     }
-
+    
     public void refresh() {
-        for(FileSystem fileSystem : VCSFileProxySupport.getConnectedFileSystems()) {
-            initFormat(fileSystem);
-        }
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                for(FileSystem fileSystem : VCSFileProxySupport.getConnectedFileSystems()) {
+                    initFormat(fileSystem);
+                }
+            }
+        });
     }
 
     private AnnotationFormat initFormat(FileSystem fileSystem) {

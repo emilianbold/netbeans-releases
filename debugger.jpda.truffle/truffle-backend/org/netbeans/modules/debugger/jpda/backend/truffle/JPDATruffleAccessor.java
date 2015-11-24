@@ -236,11 +236,9 @@ public class JPDATruffleAccessor extends Object {
                 return null;
             }
             
-            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguageImpl", Object.class, Class.class);
+            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguageImpl", Object.class, Class.class, String.class);
             findLanguageMethod.setAccessible(true);
-            Object tl = findLanguageMethod.invoke(spi, debugManager.getPolyglotEngine(), languageClass);
-            
-            // TODO: What to do with Env?
+            Object tl = findLanguageMethod.invoke(spi, debugManager.getPolyglotEngine(), languageClass, null);
             
             if (tl instanceof TruffleLanguage) {
                 return (TruffleLanguage) tl;
@@ -250,7 +248,10 @@ public class JPDATruffleAccessor extends Object {
         } catch (IllegalAccessException | IllegalArgumentException |
                  NoSuchFieldException | NoSuchMethodException |
                  SecurityException | InvocationTargetException ex) {
-            throw new RuntimeException(ex);
+            //throw new RuntimeException(ex);
+            // Do not break debugging:
+            ex.printStackTrace();
+            return null;
         } catch (StackOverflowError soe) {
             throw new IllegalStateException(node.toString(), soe);
         }

@@ -123,7 +123,7 @@ public final class XmlUtils {
                 return null;
             }
             if (!(result instanceof Node)) {
-                LOGGER.log(Level.FINE, "Node expected for XPath '{0}' but '{1}' returned", new Object[] {xpathExpression, result.getClass().getName()});
+                LOGGER.log(Level.FINE, "Node expected for XPath ''{0}'' but ''{1}'' returned", new Object[] {xpathExpression, result.getClass().getName()});
                 return null;
             }
             return (Node) result;

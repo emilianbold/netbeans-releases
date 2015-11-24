@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.grunt.ui.actions;
 
@@ -53,6 +53,8 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -62,6 +64,7 @@ import org.netbeans.modules.javascript.grunt.file.GruntTasks;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
 import org.netbeans.modules.javascript.grunt.util.GruntUtils;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -69,6 +72,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -90,15 +94,23 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
 
     static final Logger LOGGER = Logger.getLogger(RunGruntTaskAction.class.getName());
 
+    @NullAllowed
     private final Project project;
+    @NullAllowed
+    private final FileObject gruntfile;
 
 
     public RunGruntTaskAction() {
         this(null);
     }
 
-    public RunGruntTaskAction(Project project) {
+    private RunGruntTaskAction(Project project) {
+        this(project, null);
+    }
+
+    private RunGruntTaskAction(Project project, FileObject gruntfile) {
         this.project = project;
+        this.gruntfile = gruntfile;
         setEnabled(project != null);
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         // hide this action in IDE Options > Keymap
@@ -128,24 +140,30 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         if (file == null) {
             return this;
         }
-        contextProject = FileOwnerQuery.getOwner(file);
+        contextProject = ProjectConvertors.getNonConvertorOwner(file);
         if (contextProject == null) {
-            return null;
-        }
-        if (!contextProject.getProjectDirectory().equals(file.getParent())) {
-            // not a main project gruntfile
             return this;
         }
-        return createAction(contextProject);
+        if (file.getParent().equals(contextProject.getProjectDirectory())) {
+            return createAction(contextProject);
+        }
+        return createAction(contextProject, file);
     }
 
     private Action createAction(Project contextProject) {
+        return createAction(contextProject, null);
+    }
+
+    private Action createAction(Project contextProject, @NullAllowed FileObject gruntfile) {
         assert contextProject != null;
         GruntBuildTool gruntBuildTool = GruntBuildTool.inProject(contextProject);
         if (gruntBuildTool == null) {
             return this;
         }
-        if (!gruntBuildTool.getGruntfile().exists()) {
+        if (gruntfile != null) {
+            return new RunGruntTaskAction(contextProject, gruntfile);
+        }
+        if (!gruntBuildTool.getProjectGruntfile().exists()) {
             return this;
         }
         return new RunGruntTaskAction(contextProject);
@@ -156,7 +174,7 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         if (project == null) {
             return new Actions.MenuItem(this, false);
         }
-        return BuildTools.getDefault().createTasksMenu(new TasksMenuSupportImpl(project));
+        return BuildTools.getDefault().createTasksMenu(new TasksMenuSupportImpl(project, gruntfile));
     }
 
     //~ Inner classes
@@ -164,13 +182,16 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
     private static final class TasksMenuSupportImpl implements BuildTools.TasksMenuSupport {
 
         private final Project project;
+        @NullAllowed
+        private final FileObject gruntfile;
         private final GruntTasks gruntTasks;
 
 
-        public TasksMenuSupportImpl(Project project) {
+        public TasksMenuSupportImpl(Project project, @NullAllowed FileObject gruntfile) {
             assert project != null;
             this.project = project;
-            gruntTasks = GruntBuildTool.forProject(project).getGruntTasks();
+            this.gruntfile = gruntfile;
+            gruntTasks = GruntBuildTool.forProject(project).getGruntTasks(gruntfile);
         }
 
         @Override
@@ -214,6 +235,18 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         }
 
         @Override
+        public String getAdvancedTasksNamespace() {
+            if (gruntfile == null) {
+                return null;
+            }
+            String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), gruntfile);
+            if (relativePath != null) {
+                return relativePath;
+            }
+            return FileUtil.toFile(gruntfile).getAbsolutePath();
+        }
+
+        @Override
         public String getDefaultTaskName() {
             return GruntTasks.DEFAULT_TASK;
         }
@@ -226,7 +259,7 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         @Override
         public void runTask(String... args) {
             assert !EventQueue.isDispatchThread();
-            GruntExecutable grunt = GruntExecutable.getDefault(project, true);
+            GruntExecutable grunt = getGruntExecutable();
             if (grunt != null) {
                 GruntUtils.logUsageGruntBuild();
                 grunt.run(args);
@@ -247,6 +280,14 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         @Override
         public void configure() {
             OptionsDisplayer.getDefault().open(GruntOptionsPanelController.OPTIONS_PATH);
+        }
+
+        @CheckForNull
+        private GruntExecutable getGruntExecutable() {
+            if (gruntfile == null) {
+                return GruntExecutable.getDefault(project, true);
+            }
+            return GruntExecutable.getDefault(project, FileUtil.toFile(gruntfile).getParentFile(), true);
         }
 
     }

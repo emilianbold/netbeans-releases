@@ -278,7 +278,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         // is it position attribute?
                         if (line.startsWith("#position=")) {
                             if (currentItem == null) {
-                                LOGGER.log(Level.INFO, "Found line '{0}' in {1} but there is no item to associate it with", new Object[] {line, url});
+                                LOGGER.log(Level.INFO, "Found line ''{0}'' in {1} but there is no item to associate it with", new Object[] {line, url});
                                 continue;
                             }
 

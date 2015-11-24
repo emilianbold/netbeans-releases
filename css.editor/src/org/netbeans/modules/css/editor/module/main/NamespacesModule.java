@@ -138,7 +138,6 @@ public class NamespacesModule extends CssEditorModule {
                 proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
 
-            case elementSubsequent: //after element selector
             case typeSelector: //after class or id selector
                 switch (context.getActiveTokenId()) {
                 case WS:
@@ -166,6 +165,7 @@ public class NamespacesModule extends CssEditorModule {
 
             case simpleSelectorSequence:
                 if (isError) {
+                proposals.add(CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false));
                 Token<CssTokenId> token = context.getTokenSequence().token();
                 switch (token.id()) {
                     case IDENT:

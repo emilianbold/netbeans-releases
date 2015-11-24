@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phing.ui.customizer;
 
@@ -58,7 +58,7 @@ public final class PhingCustomizerProvider implements ProjectCustomizer.Composit
     @NbBundle.Messages("PhingCustomizerProvider.name=Phing")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
-        if (!PhingBuildTool.forProject(context.lookup(Project.class)).getBuildXml().exists()) {
+        if (!PhingBuildTool.forProject(context.lookup(Project.class)).getProjectBuildXml().exists()) {
             return null;
         }
         return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.util.Collections;
+import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
@@ -51,16 +53,23 @@ import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
  */
 public class PHPCodeTemplateFilter implements CodeTemplateFilter {
 
+    private static final String PHP_CODE = "php-code"; // NOI18N
+
     @Override
     public boolean accept(CodeTemplate template) {
         return true;
     }
 
-    public static final class Factory implements CodeTemplateFilter.Factory {
+    public static final class Factory implements CodeTemplateFilter.ContextBasedFactory {
 
         @Override
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
             return new PHPCodeTemplateFilter();
+        }
+
+        @Override
+        public List<String> getSupportedContexts() {
+            return Collections.singletonList(PHP_CODE);
         }
     }
 

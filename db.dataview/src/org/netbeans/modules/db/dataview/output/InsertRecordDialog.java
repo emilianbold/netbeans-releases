@@ -591,25 +591,25 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
 
     private void paste() {
-        String rowstring, value;
         int startRow = (insertRecordTableUI.getSelectedRows())[0];
         int startCol = (insertRecordTableUI.getSelectedColumns())[0];
         try {
             String trstring = (String) (clipBoard.getContents(this).getTransferData(DataFlavor.stringFlavor));
             StringTokenizer st1 = new StringTokenizer(trstring, "\n");
-            if (insertRecordTableUI.getSelectedRows().length < st1.countTokens()) {
-                int rowCnt = st1.countTokens() - insertRecordTableUI.getSelectedRows().length;
-                for (int cnt = 0; cnt < rowCnt; cnt++) {
-                    addBtnActionPerformed(null);
-                }
-            }
             for (int i = 0; st1.hasMoreTokens(); i++) {
-                rowstring = st1.nextToken();
+                int rowIdx = startRow + i;
+                String rowstring = st1.nextToken();
                 StringTokenizer st2 = new StringTokenizer(rowstring, "\t");
                 for (int j = 0; st2.hasMoreTokens(); j++) {
-                    value = st2.nextToken();
-                    if (startRow + i < insertRecordTableUI.getRowCount() && startCol + j < insertRecordTableUI.getColumnCount()) {
-                        insertRecordTableUI.setValueAt(value, startRow + i, startCol + j);
+                    int colIdx = startCol + j;
+                    String value = st2.nextToken();
+                    if (colIdx < insertRecordTableUI.getColumnCount()) {
+                        // If more data is pasted than currently rows exists
+                        // empty rows are added to take the additional data
+                        if (rowIdx >= insertRecordTableUI.getRowCount()) {
+                            insertRecordTableUI.appendEmptyRow();
+                        }
+                        insertRecordTableUI.setValueAt(value, rowIdx, colIdx);
                     }
                 }
             }

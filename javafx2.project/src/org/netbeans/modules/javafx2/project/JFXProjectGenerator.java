@@ -598,7 +598,7 @@ public class JFXProjectGenerator {
                         continue;
                     } else {
                         Logger.getLogger(JFXProjectGenerator.class.getName()).log(Level.WARNING,
-                                "Library '{0}' contains entry ({1}) which does not exist. " // NOI18N
+                                "Library ''{0}'' contains entry ({1}) which does not exist. " // NOI18N
                                 + "This entry is ignored and will not be refernced from sharable " // NOI18N
                                 + "libraries.", new Object[]{lib.getDisplayName(), libEntry}); // NOI18N
                         continue;

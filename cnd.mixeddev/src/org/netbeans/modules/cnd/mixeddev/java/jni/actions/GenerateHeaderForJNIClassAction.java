@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.mixeddev.java.jni.actions;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
@@ -64,7 +63,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -78,6 +76,7 @@ import static org.netbeans.modules.cnd.mixeddev.wizard.Generator.createStub;
 import static org.netbeans.modules.cnd.mixeddev.wizard.Generator.getRootHeader;
 import static org.netbeans.modules.cnd.mixeddev.wizard.Generator.getRootSource;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
 import org.openide.DialogDisplayer;
@@ -129,14 +128,14 @@ public class GenerateHeaderForJNIClassAction extends AbstractJNIAction {
             FileObject toJump = null;
             for (NativeProject nativeProject : nativeProjects) {
                 NativeFileSearch fileSearch = NativeProjectSupport.getNativeFileSearch(nativeProject);
-                Collection<CharSequence> searchResult = fileSearch.searchFile(
+                Collection<FSPath> searchResult = fileSearch.searchFile(
                     nativeProject, 
                     headerFileName
                 );
                 if (searchResult != null && !searchResult.isEmpty()) {
                     if (searchResult.size() == 1) {
-                        CharSequence foundHeaderPath =  searchResult.iterator().next();
-                        toJump = generateHeader(javaFile, foundHeaderPath.toString());
+                        FSPath foundHeaderPath =  searchResult.iterator().next();
+                        toJump = generateHeader(javaFile, foundHeaderPath.getPath());
                     } else {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                             NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.header_files_ambiguity", nativeProject.getProjectDisplayName(), headerFileName), // NOI18N

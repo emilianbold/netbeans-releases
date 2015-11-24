@@ -47,6 +47,10 @@ package org.netbeans.modules.git.remote.cli;
  */
 public class GitConstants {
     public static final String HEAD = "HEAD";
+    public static final String MERGE_HEAD = "MERGE_HEAD";
+    public static final String CHERRY_PICK_HEAD = "CHERRY_PICK_HEAD";
+    public static final String REBASE_APPLY = "rebase-apply";
+    public static final String REBASE_MERGE = "rebase-merge";
     public static final String R_HEADS = "refs/heads/";
     public static final String R_TAGS = "refs/tags/";
     public static final String R_REMOTES = "refs/remotes/";

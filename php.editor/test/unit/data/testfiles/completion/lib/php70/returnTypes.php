@@ -16,3 +16,12 @@ function foo(): Comment {
 
 function &bar(): \My\Firm\Comment {
 }
+
+function baz($data): Comment {
+}
+
+function bazz(...$data): Comment {
+}
+
+function bazz(&...$data): Comment {
+}

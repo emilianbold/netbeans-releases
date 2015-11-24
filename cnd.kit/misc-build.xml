@@ -113,13 +113,13 @@ made subject to such option by the copyright holder.
              </fileset>
         </delete>
         <subant buildpath="${nbroot}" target="clean">
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
         </subant>
     </target>
 
     <target name="build">
         <subant buildpath="${nbroot}" target="build">
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
             <property name="buildnum" value="dev"/>
         </subant>
         <antcall target="-replace-jsch-in-build"/>
@@ -193,6 +193,13 @@ made subject to such option by the copyright holder.
             <arg value="../cnd.modelimpl/build.sh"/>
         </exec>
     </target>
+    
+    <target name="rebuild-cndext" description="rebuild cndext cluster">
+        <exec executable="bash">
+            <arg value="../cnd.modelimpl/build.sh"/>
+            <arg value="cndext"/>
+        </exec>
+    </target>
 
     <target name="i18n-check" description="I18n check for CND modules">
         <exec executable="sh">
@@ -217,7 +224,7 @@ made subject to such option by the copyright holder.
             <property name="sigtest.fail.on.error" value="true"/>
             <property name="sigtest.skip.check" value="false"/>
             <property name="validation.nb.cluster.cnd" value=""/>
-            <property name="cluster.config" value="cnd"/>
+            <property name="cluster.config" value="cndext"/>
         </subant>
     </target>
     

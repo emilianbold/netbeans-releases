@@ -1885,4 +1885,24 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  }\n"
                 + "}");
     }
+    
+    public void testSpacesInSassInterpolation() {
+        assertParses(".test {\n"
+                + "    &.#{ $active_class } > a {\n"
+                + "        background: $active-bg;\n"
+                + "    }\n"
+                + "}");
+    }
+    
+    public void testMathExpressionInPropertyValue() {
+        assertParses("@mixin dropdown-container($content:list, $triangle:true, $max-width:$f-dropdown-max-width) {\n"
+                + "    &:before {\n"
+                + "      @include css-triangle($f-dropdown-triangle-size, $f-dropdown-triangle-color, #{$opposite-direction});\n"
+                + "      position: absolute;\n"
+                + "      top: $f-dropdown-triangle-side-offset;\n"
+                + "      #{$default-float}: -($f-dropdown-triangle-size * 2);\n"
+                + "      z-index: 89;\n"
+                + "    }\n"
+                + "}");
+    }
 }

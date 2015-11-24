@@ -687,12 +687,23 @@ final class CompletionContextFinder {
         boolean testCompletionSeparator = true;
         int orgOffset = tokenSequence.offset();
         tokenSequence.moveNext();
+        boolean first = true;
         while (tokenSequence.movePrevious()) {
             Token<PHPTokenId> cToken = tokenSequence.token();
             PHPTokenId id = cToken.id();
+            if (first) {
+                first = false;
+                if (PHPTokenId.PHP_SEMICOLON.equals(id)
+                        || PHPTokenId.PHP_CURLY_OPEN.equals(id)) {
+                    // return type right before ";" or "{":
+                    continue;
+                }
+            }
             if (CTX_DELIMITERS.contains(id)) {
                 // check reference character (&) [unfortunately, cannot distinguish & as a operator and as a reference mark]
-                if (!isReference(cToken)) {
+                // check "..." (is it really operator?)
+                if (!isReference(cToken)
+                        && !isVariadic(cToken)) {
                     break;
                 }
             }
@@ -752,6 +763,10 @@ final class CompletionContextFinder {
 
     private static boolean isReference(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_OPERATOR) && "&".contentEquals(token.text()); //NOI18N
+    }
+
+    private static boolean isVariadic(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_OPERATOR) && "...".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isLeftBracket(Token<PHPTokenId> token) {
