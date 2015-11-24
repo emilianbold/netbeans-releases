@@ -209,7 +209,10 @@ If you are sure you want to build with JDK 9+ anyway, use: -Dpermit.jdk9.builds=
         </pathconvert>
         <!-- When requires.nb.javac property is true, prepend javac-api and javac-impl on bootclasspath to allow override the default annotation
              processing API located in rt.jar. -->
-        <condition property="bootclasspath.prepend" value="${retouche.javac.api}${path.separator}${retouche.javac.impl}">
+        <condition property="bootclasspath.prepend" value="${retouche.javac.api}">
+            <istrue value="${requires.nb.javac}"/>
+        </condition>
+        <condition property="run.bootclasspath.prepend" value="${bootclasspath.prepend}${path.separator}${retouche.javac.impl}" else="${bootclasspath.prepend}">
             <istrue value="${requires.nb.javac}"/>
         </condition>
         <fail message="Delete standalone/suite-related metadata from netbeans.org modules">

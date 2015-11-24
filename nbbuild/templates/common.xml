@@ -521,8 +521,8 @@ made subject to such option by the copyright holder.
         <property name="test.timeout" value="600000"/> <!-- 10min per test -->
         <property name="test.run.args" value="-ea"/>
         <property name="test.filter.trace" value="true"/>
-        <condition property="test.bootclasspath.prepend.args" value="-Xbootclasspath/p:${bootclasspath.prepend}">
-            <isset property="bootclasspath.prepend"/>
+        <condition property="test.bootclasspath.prepend.args" value="-Xbootclasspath/p:${run.bootclasspath.prepend}">
+            <isset property="run.bootclasspath.prepend"/>
         </condition>
         <property name="test.bootclasspath.prepend.args" value="-Dno.netbeans.bootclasspath.prepend.needed=true"/>
         <macrodef name="test-init">
