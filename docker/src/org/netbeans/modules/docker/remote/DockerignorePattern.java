@@ -56,7 +56,7 @@ public class DockerignorePattern {
 
     private final List<Rule> rules;
 
-    public DockerignorePattern(List<Rule> rules) {
+    private DockerignorePattern(List<Rule> rules) {
         this.rules = rules;
     }
 
