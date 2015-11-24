@@ -191,7 +191,7 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
     
     private TokenStream getStatementTokenStream(FileImpl file) {
         TokenStream ts = file.getTokenStream(getStartOffset(), getEndOffset(), 0, true);
-        if (macroStartMarker >= 0) {
+        if (ts != null && macroStartMarker >= 0) {
             try {
                 Token token = ts.nextToken();
                 while (!isLastToken(token) && APTUtils.isMacroExpandedToken(token)) {
