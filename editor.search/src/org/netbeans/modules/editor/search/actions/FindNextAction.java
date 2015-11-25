@@ -65,7 +65,7 @@ public class FindNextAction  extends AbstractEditorAction {
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
             EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
-            JTextComponent component = null;
+            JTextComponent component;
             if (eui == null) {
                 component = SearchBar.getInstance().getActualTextComponent();
             } else {

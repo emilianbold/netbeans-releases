@@ -555,7 +555,11 @@ public class DockerRemote {
             os.write(request.toString().getBytes("ISO-8859-1"));
             os.flush();
 
-            Future<Void> task = new FolderUploader(os).upload(buildContext);
+            // FIXME should we allow \ as separator as that would be formally
+            // separator on windows without possibility to escape anything
+            // If we would allow that we have to use File comparison
+            Future<Void> task = new FolderUploader(os).upload(buildContext,
+                    new IgnoreFileFilter(buildContext, dockerfile, '/'));
 
             InputStream is = s.getInputStream();
             HttpUtils.Response response = HttpUtils.readResponse(is);

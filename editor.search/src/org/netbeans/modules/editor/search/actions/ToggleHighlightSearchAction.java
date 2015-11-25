@@ -55,7 +55,6 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.editor.search.EditorFindSupport;
 import org.netbeans.spi.editor.AbstractEditorAction;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.Presenter;
 
 // suspending the use of EditorActionRegistration due to #167063
 
