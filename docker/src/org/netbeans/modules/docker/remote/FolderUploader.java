@@ -50,6 +50,8 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
@@ -65,6 +67,8 @@ import org.openide.util.RequestProcessor;
  */
 public class FolderUploader {
 
+    private static final Logger LOGGER = Logger.getLogger(FolderUploader.class.getName());
+
     // XXX only one upload at a time ?
     private static final RequestProcessor RP = new RequestProcessor(FolderUploader.class);
 
@@ -74,7 +78,7 @@ public class FolderUploader {
         this.os = os;
     }
 
-    public Future<Void> upload(final File folder) {
+    public Future<Void> upload(final File folder, final IgnoreFileFilter filter) {
         return RP.submit(new Callable<Void>() {
             @Override
             public Void call() throws IOException, ArchiveException {
@@ -92,13 +96,17 @@ public class FolderUploader {
                                 if (child.isFolder()) {
                                     continue;
                                 }
-                                TarArchiveEntry entry = new TarArchiveEntry(FileUtil.toFile(child),
-                                        FileUtil.getRelativePath(context, child));
-                                aos.putArchiveEntry(entry);
-                                try (InputStream is = new BufferedInputStream(child.getInputStream())) {
-                                    FileUtil.copy(is, aos);
+                                String path = FileUtil.getRelativePath(context, child);
+                                if (filter.accept(path)) {
+                                    LOGGER.log(Level.FINE, "Uploading {0}", path);
+                                    TarArchiveEntry entry = new TarArchiveEntry(FileUtil.toFile(child),
+                                            path);
+                                    aos.putArchiveEntry(entry);
+                                    try (InputStream is = new BufferedInputStream(child.getInputStream())) {
+                                        FileUtil.copy(is, aos);
+                                    }
+                                    aos.closeArchiveEntry();
                                 }
-                                aos.closeArchiveEntry();
                             }
                         } finally {
                             aos.finish();

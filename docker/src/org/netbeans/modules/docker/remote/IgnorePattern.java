@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.remote;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -48,25 +49,46 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.util.Pair;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerignorePattern {
+public class IgnorePattern {
 
     private final List<Rule> rules;
 
-    private DockerignorePattern(List<Rule> rules) {
+    private final boolean negative;
+
+    private IgnorePattern(List<Rule> rules, boolean negative) {
         this.rules = rules;
+        this.negative = negative;
     }
 
-    public static String preprocess(String pattern, char separator) {
+    @CheckForNull
+    public static IgnorePattern compile(String pattern, Character separator, boolean exclusionSupported) {
+        String trimmed = pattern.trim();
+        boolean negative = false;
+        if (exclusionSupported && trimmed.startsWith("!")) {
+            negative = true;
+            trimmed = trimmed.substring(1).trim();
+        }
+        char sep = separator != null ? separator : File.separatorChar;
+        String preprocessed = preprocess(trimmed, sep);
+        // remove the leading / or \ we will match the relative paths
+        if (preprocessed.startsWith(Character.toString(sep))) {
+            preprocessed = preprocessed.substring(1);
+        }
+        return compilePattern(preprocessed, sep, negative);
+    }
+
+    static String preprocess(String pattern, char separator) {
         String sep = Character.toString(separator);
-        String volume = getVolume(pattern);
-        String path = pattern.trim().substring(volume.length());
+        String trimmed = pattern.trim();
+        String volume = getVolume(trimmed, separator);
+        String path = trimmed.substring(volume.length());
         String ret = path.replaceAll("(" + Pattern.quote(sep) + "){2,}", Matcher.quoteReplacement(sep))
                 .replaceAll("(" + Pattern.quote(sep) + "\\.)+(" + Pattern.quote(sep) + "|$)", Matcher.quoteReplacement(sep));
         if (ret.endsWith(sep) && ret.length() > 1) {
@@ -108,17 +130,18 @@ public class DockerignorePattern {
             ret = removed.toString();
         }
 
-        ret = volume + ret.replaceAll("^(" + Pattern.quote(sep) + "\\.\\.)+(" + Pattern.quote(sep) +")?", Matcher.quoteReplacement(sep))
+        ret = ret.replaceAll("^(" + Pattern.quote(sep) + "\\.\\.)+(" + Pattern.quote(sep) +")?", Matcher.quoteReplacement(sep))
                 .replaceAll("/", Matcher.quoteReplacement(sep));
         if (ret.isEmpty()) {
             ret = ".";
         }
-        return ret;
+        return volume + ret;
     }
 
-    public static DockerignorePattern compile(String pattern, char separator) {
+    static IgnorePattern compilePattern(String pattern, char separator, boolean negative) {
+        String trimmed = pattern.trim();
         List<Rule> ret = new ArrayList<>();
-        char[] patternChars = pattern.toCharArray();
+        char[] patternChars = trimmed.toCharArray();
         List<Character> buffer = new ArrayList<>();
         for (int i = 0; i < patternChars.length; i++) {
             char c = patternChars[i];
@@ -138,7 +161,7 @@ public class DockerignorePattern {
                     Pair<? extends Rule, Integer> p = createRange(patternChars, i, separator);
                     ret.add(p.first());
                     if (p.second() < 0) {
-                        return new DockerignorePattern(ret);
+                        return new IgnorePattern(ret, negative);
                     }
                     i = p.second();
                     break;
@@ -150,8 +173,8 @@ public class DockerignorePattern {
                             buffer.add(patternChars[++i]);
                         } else {
                             addCharacterListRule(ret, buffer);
-                            ret.add(new ErrorRule(pattern, i));
-                            return new DockerignorePattern(ret);
+                            ret.add(new ErrorRule(trimmed, i));
+                            return new IgnorePattern(ret, negative);
                         }
                     }
                     break;
@@ -161,7 +184,7 @@ public class DockerignorePattern {
             }
         }
         addCharacterListRule(ret, buffer);
-        return new DockerignorePattern(ret);
+        return new IgnorePattern(ret, negative);
     }
 
     private static void addCharacterListRule(List<Rule> rules, List<Character> buffer) {
@@ -171,8 +194,12 @@ public class DockerignorePattern {
         }
     }
 
-    public boolean matches(String input) {
+    public boolean matches(String input) throws PatternSyntaxException {
         return matches(rules, input);
+    }
+
+    public boolean isNegative() {
+        return negative;
     }
 
     boolean isError() {
@@ -184,13 +211,13 @@ public class DockerignorePattern {
         return false;
     }
 
-    private static boolean matches(List<Rule> rules, String input) {
+    private static boolean matches(List<Rule> rules, String input) throws PatternSyntaxException {
         char[] inputChars = input.toCharArray();
         int i = 0;
         int listIndex = 0;
         for (Iterator<Rule> it = rules.iterator(); it.hasNext();) {
             Rule r = it.next();
-            try {
+            //try {
                 if (inputChars.length == 0) {
                     // star matches even empty string
                     return rules.size() == 1 && r.matchesEmpty();
@@ -214,9 +241,9 @@ public class DockerignorePattern {
                     }
                     return false;
                 }
-            } catch (PatternSyntaxException ex) {
-                return false;
-            }
+//            } catch (PatternSyntaxException ex) {
+//                return false;
+//            }
             listIndex++;
             if (i >= inputChars.length) {
                 if (!it.hasNext()) {
@@ -229,7 +256,7 @@ public class DockerignorePattern {
         return i >= inputChars.length;
     }
 
-    private static Pair<? extends Rule, Integer> createRange(char[] chars, int offset, char separator) throws PatternSyntaxException {
+    private static Pair<? extends Rule, Integer> createRange(char[] chars, int offset, char separator) {
         if (chars[offset] != '[' || offset >= chars.length - 1) {
             return Pair.of(new ErrorRule(new String(chars), offset), -1);
             //throw new PatternSyntaxException("Malformed range", new String(chars), offset);
@@ -315,8 +342,8 @@ public class DockerignorePattern {
         //throw new PatternSyntaxException("Malformed range", new String(chars), chars.length - 1);
     }
 
-    private static String getVolume(String path) {
-        if (!Utilities.isWindows()) {
+    private static String getVolume(String path, char separator) {
+        if (separator != '\\') {
             return "";
         }
         if (path.length() < 2) {
