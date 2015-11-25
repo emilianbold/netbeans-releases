@@ -558,8 +558,8 @@ public class DockerRemote {
             // FIXME should we allow \ as separator as that would be formally
             // separator on windows without possibility to escape anything
             // If we would allow that we have to use File comparison
-            Future<Void> task = new FolderUploader(os).upload(buildContext,
-                    new IgnoreFileFilter(buildContext, dockerfile, '/'));
+            Future<Void> task = new FolderUploader(instance, os).upload(buildContext,
+                    new IgnoreFileFilter(buildContext, dockerfile, '/'), listener);
 
             InputStream is = s.getInputStream();
             HttpUtils.Response response = HttpUtils.readResponse(is);
@@ -595,7 +595,7 @@ public class DockerRemote {
                     JSONObject o = (JSONObject) parser.parse(line);
                     stream = (String) o.get("stream");
                     if (stream != null) {
-                        listener.onEvent(new BuildEvent(instance, stream.trim(), false, null));
+                        listener.onEvent(new BuildEvent(instance, stream.trim(), false, null, false));
                     } else {
                         String error = (String) o.get("error");
                         if (error != null) {
@@ -606,7 +606,7 @@ public class DockerRemote {
                                 String mesage = (String) detailObj.get("message");
                                 detail = new BuildEvent.Error(code, mesage);
                             }
-                            listener.onEvent(new BuildEvent(instance, error, true, detail));
+                            listener.onEvent(new BuildEvent(instance, error, true, detail, false));
                         } else {
                             LOGGER.log(Level.INFO, "Unknown event {0}", o);
                         }

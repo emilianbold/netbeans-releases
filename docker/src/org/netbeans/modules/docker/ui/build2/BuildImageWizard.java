@@ -128,7 +128,9 @@ public class BuildImageWizard {
 
     @NbBundle.Messages({
         "# {0} - context",
-        "MSG_Building=Building {0}"
+        "MSG_Building=Building {0}",
+        "# {0} - file",
+        "MSG_Uploading=Sending file {0}"
     })
     private void build(final DockerInstance instance, final String buildContext,
             final String dockerfile, final String repository, final String tag,
@@ -161,7 +163,9 @@ public class BuildImageWizard {
                             new BuildEvent.Listener() {
                         @Override
                         public void onEvent(BuildEvent event) {
-                            if (event.isError()) {
+                            if (event.isUpload()) {
+                                io.getOut().println(Bundle.MSG_Uploading(event.getMessage()));
+                            } else if (event.isError()) {
                                 // FIXME should we display more details ?
                                 io.getErr().println(event.getMessage());
                             } else {
