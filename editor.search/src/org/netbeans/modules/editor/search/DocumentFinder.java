@@ -45,7 +45,6 @@
 package org.netbeans.modules.editor.search;
 
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -56,8 +55,6 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.DocUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -265,10 +262,11 @@ public class DocumentFinder
             ret[0]  = -1;
             return new FindReplaceResult(ret, replaceText);
         }
-        if (blockSearch)
+        if (blockSearch) {
             ret[0] = blockSearchStartOffset + findRet;
-        else
+        } else {
             ret[0] = findRet;
+        }
         
         if (finder instanceof StringFinder){
             int length = ((StringFinder)finder).getFoundLength();
@@ -396,10 +394,11 @@ public class DocumentFinder
             } else if (Character.isUpperCase(findStr.charAt(0))) {
                         replStr = Character.toUpperCase(replStr.charAt(0)) + replStr.substring(1);
             } else if (Character.isLowerCase(findStr.charAt(0))) {
-                    if (findStr.substring(1).equals(findStr.substring(1).toUpperCase())) 
+                    if (findStr.substring(1).equals(findStr.substring(1).toUpperCase())) { 
                         replStr = Character.toLowerCase(replStr.charAt(0)) + replStr.substring(1).toUpperCase();
-                    else
+                    } else {
                         replStr = Character.toLowerCase(replStr.charAt(0)) + replStr.substring(1);
+                    }
             }
             
             return new FindReplaceResult(findReplaceResult.getFoundPositions(), replStr);
@@ -518,7 +517,7 @@ public class DocumentFinder
         }
 
         public final String debugBlocks() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             int ind = 0;
             while (blocks[ind] != -1) {
                 buf.append(ind/2 + 1).append(": [").append(blocks[ind]).append(", ").append(blocks[ind + 1]).append("]\n"); // NOI18N
@@ -1261,10 +1260,11 @@ public class DocumentFinder
                             chars.charAt(initOffset) == chars.charAt(initOffset-1) 
                             || (matcher.find(initOffset) && matcher.end() - matcher.start() == 0))
                             );
-                    if(initOffset < chars.length() && matcher.find(initOffset) && matcher.end() - matcher.start() > 0)
+                    if(initOffset < chars.length() && matcher.find(initOffset) && matcher.end() - matcher.start() > 0) {
                         return find(initOffset,chars);
-                    else
+                    } else {
                         return -1;
+                    }
                 }
                 return start;
             }else{
@@ -1329,7 +1329,9 @@ public class DocumentFinder
         }
         
         public static Pattern getPattern(String str, boolean matchCase){
-            if (str == null) return null;
+            if (str == null) {
+                return null;
+            }
             if (str.equals(cache_str) && matchCase == cache_matchCase){
                 return cache_pattern;
             }
@@ -1349,7 +1351,8 @@ public class DocumentFinder
         private String errorMsg;
         
         public FindReplaceResult(int[] positions, String replacedString){
-            this.positions = positions;
+            this.positions = new int[positions.length];
+            System.arraycopy(positions, 0, this.positions, 0, positions.length);
             this.replacedString = replacedString;
         }
         

@@ -201,7 +201,7 @@ public final class EditorFindSupport {
         props.put(FIND_SMART_CASE, Boolean.FALSE);
         props.put(FIND_WHOLE_WORDS, Boolean.FALSE);
         props.put(FIND_REG_EXP, Boolean.FALSE);
-        props.put(FIND_HISTORY, new Integer(30));
+        props.put(FIND_HISTORY, Integer.valueOf(30));
         props.put(FIND_PRESERVE_CASE, Boolean.FALSE);
 
         return props;
@@ -367,7 +367,9 @@ public final class EditorFindSupport {
                 try {
                     int start = (blockSearch && blockSearchStartOffset > -1) ? blockSearchStartOffset : 0;
                     int end = (blockSearch && blockSearchEndOffset > 0) ? blockSearchEndOffset : -1;
-                    if (start > 0 && end == -1) return false;
+                    if (start > 0 && end == -1) {
+                        return false;
+                    }
                     int findRet[] = findInBlock(comp, caretPos, 
                         start, 
                         end, 
@@ -494,8 +496,9 @@ public final class EditorFindSupport {
     
     private int[] findMatches = null;
     private synchronized boolean findMatches(final String text, final Map<String, Object> props) {
-        if(text == null)
+        if(text == null) {
             return false;
+        }
         try {
             final PlainDocument plainDocument = new PlainDocument();
             plainDocument.insertString(0, text, null);
@@ -542,14 +545,17 @@ public final class EditorFindSupport {
                 Object dp = props.get(FIND_BACKWARD_SEARCH);
                 boolean direction = (dp != null) ? ((Boolean)dp).booleanValue() : false;
 
-                if (dotPos == (oppositeDir ^ direction ? c.getSelectionEnd() : c.getSelectionStart())) 
+                if (dotPos == (oppositeDir ^ direction ? c.getSelectionEnd() : c.getSelectionStart())) {
                     dotPos += (oppositeDir ^ direction ? -1 : 1);
+                }
                 
-                if (replaceExp != null) 
-                    if (oppositeDir ^ direction)
+                if (replaceExp != null) {
+                    if (oppositeDir ^ direction) {
                         dotPos = c.getSelectionEnd();
-                    else
+                    } else {
                         dotPos = c.getSelectionStart();
+                    }
+                }
             }
             
             Boolean b = (Boolean)props.get(FIND_BLOCK_SEARCH);
@@ -874,7 +880,6 @@ public final class EditorFindSupport {
                 int actualPos = wrapSearch ? 0 : c.getCaret().getDot();
 
                 int pos = (blockSearch && blockSearchStartOffset > -1) ?  blockSearchStartOffset : (backSearch? 0 : actualPos); // actual position
-                blockSearchEndOffset = getBlockEndOffset();
                 while (true) {
                     FindReplaceResult result = findReplaceInBlock(replaceWithOriginal, c, pos,
                             (blockSearch && blockSearchStartOffset > -1) ? blockSearchStartOffset : startPosWholeSearch,
@@ -1029,9 +1034,10 @@ public final class EditorFindSupport {
 
     public void setHistory(List<SPW> spwList){
         this.historyList = new ArrayList<>(spwList);
-        if (!spwList.isEmpty())
+        if (!spwList.isEmpty()) {
             setLastSelected(spwList.get(0));
 //        firePropertyChange(FIND_HISTORY_CHANGED_PROP,null,null);
+        }
     }
     
     public void setReplaceHistory(List<RP> rpList){
@@ -1039,8 +1045,9 @@ public final class EditorFindSupport {
     }
     
     public List<SPW> getHistory(){
-        if (historyList.isEmpty())
+        if (historyList.isEmpty()) {
             firePropertyChange(FIND_HISTORY_CHANGED_PROP,null,null);
+        }
         return historyList;
     }
     
@@ -1054,7 +1061,9 @@ public final class EditorFindSupport {
     public void setLastSelected(SPW spw){
         this.lastSelected = spw;
         Map<String, Object> props = getFindProperties();
-        if (spw == null) return;
+        if (spw == null) {
+            return;
+        }
         props.put(FIND_WHAT, spw.getSearchExpression());
         props.put(FIND_MATCH_CASE, Boolean.valueOf(spw.isMatchCase()));
         props.put(FIND_REG_EXP, Boolean.valueOf(spw.isRegExp()));
@@ -1066,7 +1075,9 @@ public final class EditorFindSupport {
     }
     
     public void addToHistory(SPW spw){
-        if (spw == null) return;
+        if (spw == null) {
+            return;
+        }
         firePropertyChange(FIND_HISTORY_PROP, null, spw);
     }
     
@@ -1152,7 +1163,7 @@ public final class EditorFindSupport {
         }
         
         public @Override String toString(){
-            StringBuffer sb = new StringBuffer("[SearchPatternWrapper:]\nsearchExpression:"+searchExpression);//NOI18N
+            StringBuilder sb = new StringBuilder("[SearchPatternWrapper:]\nsearchExpression:"+searchExpression);//NOI18N
             sb.append('\n');
             sb.append("wholeWords:");//NOI18N
             sb.append(wholeWords);
