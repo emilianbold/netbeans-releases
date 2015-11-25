@@ -47,7 +47,7 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author Petr Hejl
  */
-public class DockerignorePatternTest extends NbTestCase {
+public class IgnorePatternTest extends NbTestCase {
 
     private static final String[] COMPILABLE_PATTERNS = new String[]{
         "abc",
@@ -152,32 +152,86 @@ public class DockerignorePatternTest extends NbTestCase {
         {"[\\-x]", "a"},
         {"a[", "a"}};
 
-//{"[]a]", "]", false, ErrBadPattern},
-//{"[-]", "-", false, ErrBadPattern},
-//{"[x-]", "x", false, ErrBadPattern},
-//{"[x-]", "-", false, ErrBadPattern},
-//{"[x-]", "z", false, ErrBadPattern},
-//{"[-x]", "x", false, ErrBadPattern},
-//{"[-x]", "-", false, ErrBadPattern},
-//{"[-x]", "a", false, ErrBadPattern},
-//{"\\", "a", false, ErrBadPattern},
-//{"[a-b-c]", "a", false, ErrBadPattern},
-//{"[", "a", false, ErrBadPattern},
-//{"[^", "a", false, ErrBadPattern},
-//{"[^bc", "a", false, ErrBadPattern},
-//{"a[", "ab", false, ErrBadPattern},
-    public DockerignorePatternTest(String name) {
+    private static final String[][] PREPROCESS = new String[][]{
+        // Already clean
+        {"abc", "abc"},
+        {"abc/def", "abc/def"},
+        {"a/b/c", "a/b/c"},
+        {".", "."},
+        {"..", ".."},
+        {"../..", "../.."},
+        {"../../abc", "../../abc"},
+        {"/abc", "/abc"},
+        {"/", "/"},
+        // Empty is current dir
+        {"", "."},
+        // Remove trailing slash
+        {"abc/", "abc"},
+        {"abc/def/", "abc/def"},
+        {"a/b/c/", "a/b/c"},
+        {"./", "."},
+        {"../", ".."},
+        {"../../", "../.."},
+        {"/abc/", "/abc"},
+        // Remove doubled slash
+        {"abc//def//ghi", "abc/def/ghi"},
+        {"//abc", "/abc"},
+        {"///abc", "/abc"},
+        {"//abc//", "/abc"},
+        {"abc//", "abc"},
+        // Remove . elements
+        {"abc/./def", "abc/def"},
+        {"/./abc/def", "/abc/def"},
+        {"abc/.", "abc"},
+        // Remove .. elements
+        {"abc/def/ghi/../jkl", "abc/def/jkl"},
+        {"abc/def/../ghi/../jkl", "abc/jkl"},
+        {"abc/def/..", "abc"},
+        {"abc/def/../..", "."},
+        {"/abc/def/../..", "/"},
+        {"abc/def/../../..", ".."},
+        {"/abc/def/../../..", "/"},
+        {"abc/def/../../../ghi/jkl/../../../mno", "../../mno"},
+        {"/../abc", "/abc"},
+        // Combinations
+        {"abc/./../def", "def"},
+        {"abc//./../def", "def"},
+        {"abc/../../././../def", "../../def"}
+    };
+
+    private static final String[][] PREPROCESS_WIN = {
+        {"c:", "c:."},
+        {"c:\\", "c:\\"},
+        {"c:\\abc", "c:\\abc"},
+        {"c:abc\\..\\..\\.\\.\\..\\def", "c:..\\..\\def"},
+        {"c:\\abc\\def\\..\\..", "c:\\"},
+        {"c:\\..\\abc", "c:\\abc"},
+        {"c:..\\abc", "c:..\\abc"},
+        {"\\", "\\"},
+        {"/", "\\"},
+        {"..\\abc", "..\\abc"},
+        {"\\..\\abc", "\\abc"}
+//        {"\\\\i\\..\\c$", "\\c$"},
+//        {"\\\\i\\..\\i\\c$", "\\i\\c$"},
+//        {"\\\\i\\..\\I\\c$", "\\I\\c$"},
+//        {"\\\\host\\share\\foo\\..\\bar", "\\\\host\\share\\bar"},
+//        {"//host/share/foo/../baz", "\\\\host\\share\\baz"},
+//        {"\\\\a\\b\\..\\c", "\\\\a\\b\\c"},
+//        {"\\\\a\\b", "\\\\a\\b"}
+    };
+
+    public IgnorePatternTest(String name) {
         super(name);
     }
 
     public void testCompile() {
         for (String s : COMPILABLE_PATTERNS) {
-            DockerignorePattern pattern = DockerignorePattern.compile(s, '/');
+            IgnorePattern pattern = IgnorePattern.compilePattern(s, '/', false);
             assertFalse(s, pattern.isError());
         }
 
         for (String s : UNCOMPILABLE_PATTERNS) {
-            DockerignorePattern pattern = DockerignorePattern.compile(s, '/');
+            IgnorePattern pattern = IgnorePattern.compilePattern(s, '/', false);
             assertTrue(s, pattern.isError());
         }
     }
@@ -185,7 +239,7 @@ public class DockerignorePatternTest extends NbTestCase {
     public void testMatch() {
         for (String[] item : MATCH_INPUTS) {
             try {
-                DockerignorePattern pattern = DockerignorePattern.compile(item[0], '/');
+                IgnorePattern pattern = IgnorePattern.compilePattern(item[0], '/', false);
                 assertTrue(item[0] + ":" + item[1], pattern.matches(item[1]));
             } catch (IllegalStateException ex) {
                 fail(item[0] + ":" + item[1]);
@@ -194,11 +248,21 @@ public class DockerignorePatternTest extends NbTestCase {
 
         for (String[] item : NO_MATCH_INPUTS) {
             try {
-                DockerignorePattern pattern = DockerignorePattern.compile(item[0], '/');
+                IgnorePattern pattern = IgnorePattern.compilePattern(item[0], '/', false);
                 assertFalse(item[0] + ":" + item[1], pattern.matches(item[1]));
             } catch (IllegalStateException ex) {
                 fail(item[0] + ":" + item[1]);
             }
+        }
+    }
+
+    public void testPreprocess() {
+        for (String[] item : PREPROCESS) {
+            assertEquals(item[1], IgnorePattern.preprocess(item[0], '/'));
+        }
+
+        for (String[] item : PREPROCESS_WIN) {
+            assertEquals(item[1], IgnorePattern.preprocess(item[0], '\\'));
         }
     }
 }
