@@ -57,6 +57,7 @@ import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.netbeans.modules.docker.DockerInstance;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -72,13 +73,16 @@ public class FolderUploader {
     // XXX only one upload at a time ?
     private static final RequestProcessor RP = new RequestProcessor(FolderUploader.class);
 
+    private final DockerInstance instance;
+
     private final OutputStream os;
 
-    public FolderUploader(OutputStream os) {
+    public FolderUploader(DockerInstance instance, OutputStream os) {
+        this.instance = instance;
         this.os = os;
     }
 
-    public Future<Void> upload(final File folder, final IgnoreFileFilter filter) {
+    public Future<Void> upload(final File folder, final IgnoreFileFilter filter, final BuildEvent.Listener listener) {
         return RP.submit(new Callable<Void>() {
             @Override
             public Void call() throws IOException, ArchiveException {
@@ -98,6 +102,7 @@ public class FolderUploader {
                                 }
                                 String path = FileUtil.getRelativePath(context, child);
                                 if (filter.accept(path)) {
+                                    listener.onEvent(new BuildEvent(instance, path, false, null, true));
                                     LOGGER.log(Level.FINE, "Uploading {0}", path);
                                     TarArchiveEntry entry = new TarArchiveEntry(FileUtil.toFile(child),
                                             path);
