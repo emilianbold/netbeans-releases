@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.docker.remote;
 
-import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.docker.remote.DockerignorePattern.Rule;
 
 /**
  *

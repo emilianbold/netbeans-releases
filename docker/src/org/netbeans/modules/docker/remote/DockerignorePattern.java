@@ -56,25 +56,29 @@ public class DockerignorePattern {
 
     private final List<Rule> rules;
 
-    public DockerignorePattern(List<Rule> rules) {
+    private DockerignorePattern(List<Rule> rules) {
         this.rules = rules;
     }
 
     public static DockerignorePattern compile(String goPattern, char separator) {
         List<Rule> ret = new ArrayList<>();
         char[] patternChars = goPattern.toCharArray();
+        List<Character> buffer = new ArrayList<>();
         for (int i = 0; i < patternChars.length; i++) {
             char c = patternChars[i];
             switch (c) {
                 case '*':
+                    addCharacterListRule(ret, buffer);
                     if (ret.isEmpty() || !(ret.get(ret.size() - 1) instanceof StarRule)) {
                         ret.add(new StarRule(separator));
                     }
                     break;
                 case '?':
+                    addCharacterListRule(ret, buffer);
                     ret.add(new QuestionRule(separator));
                     break;
                 case '[':
+                    addCharacterListRule(ret, buffer);
                     Pair<? extends Rule, Integer> p = createRange(patternChars, i, separator);
                     ret.add(p.first());
                     if (p.second() < 0) {
@@ -84,28 +88,37 @@ public class DockerignorePattern {
                     break;
                 case '\\':
                     if (separator == '\\') {
-                        ret.add(new CharacterRule(patternChars[i]));
+                        buffer.add(patternChars[i]);
                     } else {
                         if (i < patternChars.length - 1) {
-                            ret.add(new CharacterRule(patternChars[++i]));
+                            buffer.add(patternChars[++i]);
                         } else {
+                            addCharacterListRule(ret, buffer);
                             ret.add(new ErrorRule(goPattern, i));
                             return new DockerignorePattern(ret);
                         }
                     }
                     break;
                 default:
-                    ret.add(new CharacterRule(patternChars[i]));
+                    buffer.add(patternChars[i]);
                     break;
             }
         }
+        addCharacterListRule(ret, buffer);
         return new DockerignorePattern(ret);
     }
-    
+
+    private static void addCharacterListRule(List<Rule> rules, List<Character> buffer) {
+        if (!buffer.isEmpty()) {
+            rules.add(new CharacterListRule(buffer));
+            buffer.clear();
+        }
+    }
+
     public boolean matches(String input) {
         return matches(rules, input);
     }
-    
+
     boolean isError() {
         for (Rule r : rules) {
             if (r instanceof ErrorRule) {
@@ -123,26 +136,29 @@ public class DockerignorePattern {
             Rule r = it.next();
             try {
                 if (inputChars.length == 0) {
-                    if (rules.size() == 1 && r instanceof StarRule) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    // star matches even empty string
+                    return rules.size() == 1 && r.matchesEmpty();
                 }
                 int[] test = r.consume(inputChars, i);
+                if (test == null) {
+                    return false;
+                }
+
                 if (test.length == 1) {
                     i = test[0];
-                } else if (test[test.length - 1] >= input.length() && listIndex == rules.size() - 1) {
+                } else if (listIndex == rules.size() - 1
+                        && test[test.length - 1] >= input.length()) {
+                    // last rule - take the longest one
                     i = test[test.length - 1];
                 } else {
-                    for (int j = 0; j < test.length; j++) {
+                    for (int j = test.length - 1; j >= 0; j--) {
                         if (matches(rules.subList(listIndex + 1, rules.size()), input.substring(test[j]))) {
                             return true;
                         }
                     }
                     return false;
                 }
-            } catch (IllegalStateException ex) {
+            } catch (PatternSyntaxException ex) {
                 return false;
             }
             listIndex++;
@@ -150,12 +166,7 @@ public class DockerignorePattern {
                 if (!it.hasNext()) {
                     return true;
                 } else {
-                    Rule next = it.next();
-                    if (next instanceof StarRule) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return it.next().matchesEmpty();
                 }
             }
         }
@@ -248,13 +259,15 @@ public class DockerignorePattern {
         //throw new PatternSyntaxException("Malformed range", new String(chars), chars.length - 1);
     }
 
-    public static interface Rule {
+    private static interface Rule {
 
-        int[] consume(char[] chars, int offset) throws IllegalStateException;
+        int[] consume(char[] chars, int offset);
+
+        boolean matchesEmpty();
 
     }
 
-    static class StarRule implements Rule {
+    private static class StarRule implements Rule {
 
         private final char separator;
 
@@ -263,7 +276,7 @@ public class DockerignorePattern {
         }
 
         @Override
-        public int[] consume(char[] chars, int offset) throws IllegalStateException {
+        public int[] consume(char[] chars, int offset) {
             if (offset >= chars.length) {
                 throw new IllegalArgumentException();
             }
@@ -284,9 +297,14 @@ public class DockerignorePattern {
             }
             return ret;
         }
+
+        @Override
+        public boolean matchesEmpty() {
+            return true;
+        }
     }
 
-    static class QuestionRule implements Rule {
+    private static class QuestionRule implements Rule {
 
         private final char separator;
 
@@ -295,18 +313,23 @@ public class DockerignorePattern {
         }
 
         @Override
-        public int[] consume(char[] chars, int offset) throws IllegalStateException {
+        public int[] consume(char[] chars, int offset) {
             if (offset >= chars.length) {
                 throw new IllegalArgumentException();
             }
             if (chars[offset] == separator) {
-                throw new IllegalStateException();
+                return null;
             }
             return new int[]{offset + 1};
         }
+
+        @Override
+        public boolean matchesEmpty() {
+            return false;
+        }
     }
 
-    static class RangeRule implements Rule {
+    private static class RangeRule implements Rule {
 
         private final boolean negated;
 
@@ -321,7 +344,7 @@ public class DockerignorePattern {
         }
 
         @Override
-        public int[] consume(char[] chars, int offset) throws IllegalStateException {
+        public int[] consume(char[] chars, int offset) {
             if (offset >= chars.length) {
                 throw new IllegalArgumentException();
             }
@@ -330,9 +353,14 @@ public class DockerignorePattern {
                 ok = !ok;
             }
             if (!ok) {
-                throw new IllegalStateException();
+                return null;
             }
             return new int[]{offset + 1};
+        }
+
+        @Override
+        public boolean matchesEmpty() {
+            return false;
         }
 
         private boolean check(char c) {
@@ -350,12 +378,12 @@ public class DockerignorePattern {
         }
     }
 
-    static class CharacterRule implements Rule {
+    private static class CharacterListRule implements Rule {
 
-        private final char c;
+        private final List<Character> array;
 
-        public CharacterRule(char c) {
-            this.c = c;
+        public CharacterListRule(List<Character> array) {
+            this.array = new ArrayList<>(array);
         }
 
         @Override
@@ -364,14 +392,21 @@ public class DockerignorePattern {
                 throw new IllegalArgumentException();
             }
 
-            if (chars[offset] != c) {
-                throw new IllegalStateException();
+            for (int i = 0; i < array.size(); i++) {
+                if (array.get(i) != chars[offset + i]) {
+                    return null;
+                }
             }
-            return new int[]{offset + 1};
+            return new int[]{offset + array.size()};
+        }
+
+        @Override
+        public boolean matchesEmpty() {
+            return false;
         }
     }
 
-    static class ErrorRule implements Rule {
+    private static class ErrorRule implements Rule {
 
         private final String regex;
 
@@ -383,8 +418,13 @@ public class DockerignorePattern {
         }
 
         @Override
-        public int[] consume(char[] chars, int offset) throws IllegalStateException {
+        public int[] consume(char[] chars, int offset) {
             throw new PatternSyntaxException("Malformed pattern", regex, index);
+        }
+
+        @Override
+        public boolean matchesEmpty() {
+            return false;
         }
     }
 }
