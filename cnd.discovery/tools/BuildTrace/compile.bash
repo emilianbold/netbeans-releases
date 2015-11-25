@@ -1,2 +1,3 @@
 #!/bin/sh
-gcc --version > /dev/null
+
+gcc --version

@@ -250,7 +250,7 @@
     </conf>
     <conf name="MacOSX-x86_64" type="2" platformSpecific="true">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <platform>4</platform>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
