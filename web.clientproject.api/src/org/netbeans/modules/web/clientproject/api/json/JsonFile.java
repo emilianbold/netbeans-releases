@@ -468,6 +468,15 @@ public final class JsonFile {
             }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.WARNING, null, ex);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                try {
+                    LOGGER.log(Level.FINE, "[JSON]: [{0}]", document.getText(0, document.getLength()));
+                } catch (BadLocationException ex1) {
+                    LOGGER.log(Level.FINE, "Cannot get document text", ex1);
+                }
+                LOGGER.log(Level.FINE, "start, end: {0}, {1}", new Object[] {valueStartIndex, valueEndIndex});
+                LOGGER.log(Level.FINE, "[new text]: [{0}]", value);
+            }
             assert false;
         }
     }
