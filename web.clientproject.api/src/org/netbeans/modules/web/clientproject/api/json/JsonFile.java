@@ -258,16 +258,34 @@ public final class JsonFile {
 
     /**
      * Set new value of the given field.
+     * <p>
+     * <b>Warning:</b> This method must be called in a background thread. This method
+     * also first waits 2 seconds before it starts changing the content (to get
+     * correct document content after possible reload (typically external change)).
      * @param fieldHierarchy field (together with its hierarchy) to be changed
      * @param value new value of all type, e.g. new project name
-     * @throws IOException if all error occurs
+     * @throws IOException if any error occurs
      */
-    public synchronized void setContent(final List<String> fieldHierarchy, final Object value) throws IOException {
+    public void setContent(List<String> fieldHierarchy, Object value) throws IOException {
         assert fieldHierarchy != null;
         assert !fieldHierarchy.isEmpty();
         assert value != null;
         assert !EventQueue.isDispatchThread();
         assert exists();
+        // #256712 - after discussion with Mila, this is perhaps the best what we can do now:
+        // simply wait 2 seconds for possible reload to finish
+        // it can happen when external tool (npm, bower etc.) modifies the given file and
+        // right after it this method is called - sometimes, old content of the file
+        // can be still present
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ex) {
+            // noop
+        }
+        setContentInternal(fieldHierarchy, value);
+    }
+
+    private synchronized void setContentInternal(final List<String> fieldHierarchy, final Object value) throws IOException {
         initContent();
         DataObject dataObject = DataObject.find(FileUtil.toFileObject(getFile()));
         EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
