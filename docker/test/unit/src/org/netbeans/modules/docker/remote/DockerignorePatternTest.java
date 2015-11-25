@@ -152,20 +152,54 @@ public class DockerignorePatternTest extends NbTestCase {
         {"[\\-x]", "a"},
         {"a[", "a"}};
 
-//{"[]a]", "]", false, ErrBadPattern},
-//{"[-]", "-", false, ErrBadPattern},
-//{"[x-]", "x", false, ErrBadPattern},
-//{"[x-]", "-", false, ErrBadPattern},
-//{"[x-]", "z", false, ErrBadPattern},
-//{"[-x]", "x", false, ErrBadPattern},
-//{"[-x]", "-", false, ErrBadPattern},
-//{"[-x]", "a", false, ErrBadPattern},
-//{"\\", "a", false, ErrBadPattern},
-//{"[a-b-c]", "a", false, ErrBadPattern},
-//{"[", "a", false, ErrBadPattern},
-//{"[^", "a", false, ErrBadPattern},
-//{"[^bc", "a", false, ErrBadPattern},
-//{"a[", "ab", false, ErrBadPattern},
+    private static final String[][] PREPROCESS = new String[][]{
+        // Already clean
+        {"abc", "abc"},
+        {"abc/def", "abc/def"},
+        {"a/b/c", "a/b/c"},
+        {".", "."},
+        {"..", ".."},
+        {"../..", "../.."},
+        {"../../abc", "../../abc"},
+        {"/abc", "/abc"},
+        {"/", "/"},
+        // Empty is current dir
+        {"", "."},
+        // Remove trailing slash
+        {"abc/", "abc"},
+        {"abc/def/", "abc/def"},
+        {"a/b/c/", "a/b/c"},
+        {"./", "."},
+        {"../", ".."},
+        {"../../", "../.."},
+        {"/abc/", "/abc"},
+        // Remove doubled slash
+        {"abc//def//ghi", "abc/def/ghi"},
+        {"//abc", "/abc"},
+        {"///abc", "/abc"},
+        {"//abc//", "/abc"},
+        {"abc//", "abc"},
+        // Remove . elements
+        {"abc/./def", "abc/def"},
+        {"/./abc/def", "/abc/def"},
+        {"abc/.", "abc"},
+        // Remove .. elements
+        {"abc/def/ghi/../jkl", "abc/def/jkl"},
+        {"abc/def/../ghi/../jkl", "abc/jkl"},
+        {"abc/def/..", "abc"},
+        {"abc/def/../..", "."},
+        {"/abc/def/../..", "/"},
+        {"abc/def/../../..", ".."},
+        {"/abc/def/../../..", "/"},
+        {"abc/def/../../../ghi/jkl/../../../mno", "../../mno"},
+        {"/../abc", "/abc"},
+        // Combinations
+        {"abc/./../def", "def"},
+        {"abc//./../def", "def"},
+        {"abc/../../././../def", "../../def"}
+
+    };
+
     public DockerignorePatternTest(String name) {
         super(name);
     }
@@ -199,6 +233,12 @@ public class DockerignorePatternTest extends NbTestCase {
             } catch (IllegalStateException ex) {
                 fail(item[0] + ":" + item[1]);
             }
+        }
+    }
+
+    public void testPreprocess() {
+        for (String[] item : PREPROCESS) {
+            assertEquals(item[1], DockerignorePattern.preprocess(item[0], '/'));
         }
     }
 }
