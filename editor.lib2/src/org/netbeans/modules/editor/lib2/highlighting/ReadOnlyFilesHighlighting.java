@@ -114,7 +114,7 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Highlighting file " + file + " in <" + startOffset + ", " + endOffset + ">"); //NOI18N
                 }
-                return new CaretBasedBlockHighlighting.SimpleHighlightsSequence(
+                return new SimpleHighlightsSequence(
                     Math.max(0, startOffset),
                     Math.min(document.getLength(), endOffset),
                     attribs);
@@ -215,4 +215,44 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
         }
         return null;
     }
+    
+    private static final class SimpleHighlightsSequence implements HighlightsSequence {
+        
+        private int startOffset;
+        private int endOffset;
+        private AttributeSet attribs;
+        
+        private boolean end = false;
+        
+        public SimpleHighlightsSequence(int startOffset, int endOffset, AttributeSet attribs) {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.attribs = attribs;
+        }
+
+        @Override
+        public boolean moveNext() {
+            if (!end) {
+                end = true;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        @Override
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        @Override
+        public AttributeSet getAttributes() {
+            return attribs;
+        }
+    } // End of SimpleHighlightsSequence
 }

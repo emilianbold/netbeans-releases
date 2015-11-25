@@ -42,31 +42,49 @@
 package org.netbeans.api.editor;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import javax.swing.text.DefaultCaret;
+import java.util.concurrent.Callable;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Exceptions;
 
 /**
  * Extension to standard Swing caret used by all NetBeans editors.
- * <br/>
+ * <br>
  * It supports multi-caret editing mode where an arbitrary number of carets
  * is placed at arbitrary positions throughout a document.
- * In this mode each caret is described by its <code>CaretInfo</code> object
- * and one of the infos belongs to a "main" caret.
+ * In this mode each caret is described by its <code>CaretInfo</code> object.
  *
  * @author Miloslav Metelka
+ * @author Ralph Ruijs
  */
-public final class EditorCaret extends DefaultCaret {
+public abstract class EditorCaret implements Caret {
+    
+    /** Component this caret is bound to */
+    protected JTextComponent component;
+    
+    protected LinkedList<CaretInfo> carets;
+
+    public EditorCaret() {
+        carets = new LinkedList<>();
+    }
 
     @Override
     public int getDot() {
-        return getLastCaret().getDotPosition().getOffset();
+        final Position caretPos = getLastCaret().getDotPosition();
+        return (caretPos != null) ? caretPos.getOffset() : 0;
     }
     
     @Override
     public int getMark() {
-        return getLastCaret().getMarkPosition().getOffset();
+        final Position markPos = getLastCaret().getMarkPosition();
+        return (markPos != null) ? markPos.getOffset() : 0;
     }
     
     /**
@@ -78,7 +96,7 @@ public final class EditorCaret extends DefaultCaret {
      * @return unmodifiable list with size &gt;= 1 containing information about all carets.
      */
     public @NonNull List<CaretInfo> getCarets() {
-        return java.util.Collections.<CaretInfo>emptyList(); // TBD
+        return java.util.Collections.unmodifiableList(carets); // TBD
     }
     
     /**
@@ -107,7 +125,14 @@ public final class EditorCaret extends DefaultCaret {
      * @return last caret (the most recently added caret).
      */
     public @NonNull CaretInfo getLastCaret() {
-        return new CaretInfo(); // TBD
+        CaretInfo caret;
+        if(carets.isEmpty()) {
+            caret = new CaretInfo(this);
+            carets.add(caret);
+        } else {
+            caret = carets.getLast();
+        }
+        return caret;
     }
 
     /**
@@ -121,7 +146,7 @@ public final class EditorCaret extends DefaultCaret {
      * @return information about the newly created caret.
      */
     public @NonNull CaretInfo addCaret(@NonNull Position dotPos, @NonNull Position selectionStartPos) {
-        return new CaretInfo(); // TBD
+        return new CaretInfo(this); // TBD
     }
     
     /**
@@ -157,7 +182,68 @@ public final class EditorCaret extends DefaultCaret {
      * @return the caret instance that was removed or null if there's just one caret.
      */
     public @NonNull CaretInfo removeLastCaret() {
-        return new CaretInfo(); // TBD
+        return new CaretInfo(this); // TBD
     }
     
+    /**
+     * Get information about the caret at the specified offset.
+     *
+     * @param offset the offset of the caret
+     * @return CaretInfo for the caret at offset, null if there is no caret or
+     * the offset is invalid
+     */
+    public @CheckForNull CaretInfo getCaretAt(int offset) {
+        return null; // TBD
+    }
+    
+    protected void setDotCaret(int offset, CaretInfo caret, boolean expandFold) throws IllegalStateException {
+        JTextComponent c = component;
+        if (c != null) {
+            AbstractDocument doc = (AbstractDocument)c.getDocument();
+            boolean dotChanged = false;
+            doc.readLock();
+            try {
+                if (offset >= 0 && offset <= doc.getLength()) {
+                    dotChanged = true;
+                    try {
+                        caret.dotPos = doc.createPosition(offset);
+                        caret.markPos = doc.createPosition(offset);
+
+                        Callable<Boolean> cc = (Callable<Boolean>)c.getClientProperty("org.netbeans.api.fold.expander");
+                        if (cc != null && expandFold) {
+                            // the caretPos/markPos were already called.
+                            // nothing except the document is locked at this moment.
+                            try {
+                                cc.call();
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+//                        if (rectangularSelection) {
+//                            setRectangularSelectionToDotAndMark();
+//                        }
+                        
+                    } catch (BadLocationException e) {
+                        throw new IllegalStateException(e.toString());
+                        // setting the caret to wrong position leaves it at current position
+                    }
+                }
+            } finally {
+                doc.readUnlock();
+            }
+            
+            if (dotChanged) {
+                fireStateChanged();
+                dispatchUpdate(true);
+            }
+        }
+    }
+    
+    protected abstract void moveDotCaret(int offset, CaretInfo caret) throws IllegalStateException;
+    
+    /* Move to EditorCaret, or remove? */
+    protected abstract void fireStateChanged();
+    protected abstract void dispatchUpdate(final boolean scrollViewToCaret);
+    
+    /* Rectangular Selection stuff, rewrite? */
 }
