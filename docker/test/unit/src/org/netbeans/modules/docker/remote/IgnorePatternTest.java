@@ -209,6 +209,8 @@ public class IgnorePatternTest extends NbTestCase {
         {"c:..\\abc", "c:..\\abc"},
         {"\\", "\\"},
         {"/", "\\"},
+        {"..\\abc", "..\\abc"},
+        {"\\..\\abc", "\\abc"}
 //        {"\\\\i\\..\\c$", "\\c$"},
 //        {"\\\\i\\..\\i\\c$", "\\i\\c$"},
 //        {"\\\\i\\..\\I\\c$", "\\I\\c$"},
@@ -224,12 +226,12 @@ public class IgnorePatternTest extends NbTestCase {
 
     public void testCompile() {
         for (String s : COMPILABLE_PATTERNS) {
-            IgnorePattern pattern = IgnorePattern.compile(s, '/', false);
+            IgnorePattern pattern = IgnorePattern.compilePattern(s, '/', false);
             assertFalse(s, pattern.isError());
         }
 
         for (String s : UNCOMPILABLE_PATTERNS) {
-            IgnorePattern pattern = IgnorePattern.compile(s, '/', false);
+            IgnorePattern pattern = IgnorePattern.compilePattern(s, '/', false);
             assertTrue(s, pattern.isError());
         }
     }
@@ -237,7 +239,7 @@ public class IgnorePatternTest extends NbTestCase {
     public void testMatch() {
         for (String[] item : MATCH_INPUTS) {
             try {
-                IgnorePattern pattern = IgnorePattern.compile(item[0], '/', false);
+                IgnorePattern pattern = IgnorePattern.compilePattern(item[0], '/', false);
                 assertTrue(item[0] + ":" + item[1], pattern.matches(item[1]));
             } catch (IllegalStateException ex) {
                 fail(item[0] + ":" + item[1]);
@@ -246,7 +248,7 @@ public class IgnorePatternTest extends NbTestCase {
 
         for (String[] item : NO_MATCH_INPUTS) {
             try {
-                IgnorePattern pattern = IgnorePattern.compile(item[0], '/', false);
+                IgnorePattern pattern = IgnorePattern.compilePattern(item[0], '/', false);
                 assertFalse(item[0] + ":" + item[1], pattern.matches(item[1]));
             } catch (IllegalStateException ex) {
                 fail(item[0] + ":" + item[1]);
