@@ -46,6 +46,14 @@ CND_ARTIFACT_PATH_SunOS-Previse=dist/SunOS-Previse/OracleSolarisStudio-Solaris-x
 CND_PACKAGE_DIR_SunOS-Previse=dist/SunOS-Previse/OracleSolarisStudio-Solaris-x86/package
 CND_PACKAGE_NAME_SunOS-Previse=libBuildTrace.so.tar
 CND_PACKAGE_PATH_SunOS-Previse=dist/SunOS-Previse/OracleSolarisStudio-Solaris-x86/package/libBuildTrace.so.tar
+# SunOS-Previse_64 configuration
+CND_PLATFORM_SunOS-Previse_64=OracleSolarisStudio-Solaris-x86
+CND_ARTIFACT_DIR_SunOS-Previse_64=dist/SunOS-Previse_64/OracleSolarisStudio-Solaris-x86
+CND_ARTIFACT_NAME_SunOS-Previse_64=libBuildTrace.so
+CND_ARTIFACT_PATH_SunOS-Previse_64=dist/SunOS-Previse_64/OracleSolarisStudio-Solaris-x86/libBuildTrace.so
+CND_PACKAGE_DIR_SunOS-Previse_64=dist/SunOS-Previse_64/OracleSolarisStudio-Solaris-x86/package
+CND_PACKAGE_NAME_SunOS-Previse_64=libBuildTrace.so.tar
+CND_PACKAGE_PATH_SunOS-Previse_64=dist/SunOS-Previse_64/OracleSolarisStudio-Solaris-x86/package/libBuildTrace.so.tar
 # Linux-x86 configuration
 CND_PLATFORM_Linux-x86=GNU-Linux-x86
 CND_ARTIFACT_DIR_Linux-x86=dist/Linux-x86/GNU-Linux-x86
