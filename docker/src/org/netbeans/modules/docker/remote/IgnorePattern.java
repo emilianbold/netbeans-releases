@@ -49,24 +49,27 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.openide.util.Pair;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerignorePattern {
+public class IgnorePattern {
 
     private final List<Rule> rules;
 
-    private DockerignorePattern(List<Rule> rules) {
+    private boolean negative;
+
+    private IgnorePattern(List<Rule> rules, boolean negative) {
         this.rules = rules;
+        this.negative = negative;
     }
 
     public static String preprocess(String pattern, char separator) {
         String sep = Character.toString(separator);
-        String volume = getVolume(pattern, separator);
-        String path = pattern.trim().substring(volume.length());
+        String trimmed = pattern.trim();
+        String volume = getVolume(trimmed, separator);
+        String path = trimmed.substring(volume.length());
         String ret = path.replaceAll("(" + Pattern.quote(sep) + "){2,}", Matcher.quoteReplacement(sep))
                 .replaceAll("(" + Pattern.quote(sep) + "\\.)+(" + Pattern.quote(sep) + "|$)", Matcher.quoteReplacement(sep));
         if (ret.endsWith(sep) && ret.length() > 1) {
@@ -108,17 +111,18 @@ public class DockerignorePattern {
             ret = removed.toString();
         }
 
-        ret = volume + ret.replaceAll("^(" + Pattern.quote(sep) + "\\.\\.)+(" + Pattern.quote(sep) +")?", Matcher.quoteReplacement(sep))
+        ret = ret.replaceAll("^(" + Pattern.quote(sep) + "\\.\\.)+(" + Pattern.quote(sep) +")?", Matcher.quoteReplacement(sep))
                 .replaceAll("/", Matcher.quoteReplacement(sep));
         if (ret.isEmpty()) {
             ret = ".";
         }
-        return ret;
+        return volume + ret;
     }
 
-    public static DockerignorePattern compile(String pattern, char separator) {
+    public static IgnorePattern compile(String pattern, char separator, boolean negative) {
+        String trimmed = pattern.trim();
         List<Rule> ret = new ArrayList<>();
-        char[] patternChars = pattern.toCharArray();
+        char[] patternChars = trimmed.toCharArray();
         List<Character> buffer = new ArrayList<>();
         for (int i = 0; i < patternChars.length; i++) {
             char c = patternChars[i];
@@ -138,7 +142,7 @@ public class DockerignorePattern {
                     Pair<? extends Rule, Integer> p = createRange(patternChars, i, separator);
                     ret.add(p.first());
                     if (p.second() < 0) {
-                        return new DockerignorePattern(ret);
+                        return new IgnorePattern(ret, negative);
                     }
                     i = p.second();
                     break;
@@ -150,8 +154,8 @@ public class DockerignorePattern {
                             buffer.add(patternChars[++i]);
                         } else {
                             addCharacterListRule(ret, buffer);
-                            ret.add(new ErrorRule(pattern, i));
-                            return new DockerignorePattern(ret);
+                            ret.add(new ErrorRule(trimmed, i));
+                            return new IgnorePattern(ret, negative);
                         }
                     }
                     break;
@@ -161,7 +165,7 @@ public class DockerignorePattern {
             }
         }
         addCharacterListRule(ret, buffer);
-        return new DockerignorePattern(ret);
+        return new IgnorePattern(ret, negative);
     }
 
     private static void addCharacterListRule(List<Rule> rules, List<Character> buffer) {
