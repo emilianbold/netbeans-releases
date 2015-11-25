@@ -65,7 +65,7 @@ public class DockerignorePattern {
 
     public static String preprocess(String pattern, char separator) {
         String sep = Character.toString(separator);
-        String volume = getVolume(pattern);
+        String volume = getVolume(pattern, separator);
         String path = pattern.trim().substring(volume.length());
         String ret = path.replaceAll("(" + Pattern.quote(sep) + "){2,}", Matcher.quoteReplacement(sep))
                 .replaceAll("(" + Pattern.quote(sep) + "\\.)+(" + Pattern.quote(sep) + "|$)", Matcher.quoteReplacement(sep));
@@ -315,8 +315,8 @@ public class DockerignorePattern {
         //throw new PatternSyntaxException("Malformed range", new String(chars), chars.length - 1);
     }
 
-    private static String getVolume(String path) {
-        if (!Utilities.isWindows()) {
+    private static String getVolume(String path, char separator) {
+        if (separator != '\\') {
             return "";
         }
         if (path.length() < 2) {
