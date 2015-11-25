@@ -45,8 +45,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.openide.util.Pair;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -60,9 +63,62 @@ public class DockerignorePattern {
         this.rules = rules;
     }
 
-    public static DockerignorePattern compile(String goPattern, char separator) {
+    public static String preprocess(String pattern, char separator) {
+        String sep = Character.toString(separator);
+        String volume = getVolume(pattern);
+        String path = pattern.trim().substring(volume.length());
+        String ret = path.replaceAll("(" + Pattern.quote(sep) + "){2,}", Matcher.quoteReplacement(sep))
+                .replaceAll("(" + Pattern.quote(sep) + "\\.)+(" + Pattern.quote(sep) + "|$)", Matcher.quoteReplacement(sep));
+        if (ret.endsWith(sep) && ret.length() > 1) {
+            ret = ret.substring(0, ret.length() - sep.length());
+        }
+        String[] parts = ret.split(Pattern.quote(sep));
+        if (parts.length > 1) {
+            boolean root = false;
+            StringBuilder removed = new StringBuilder();
+            int count = 0;
+            for (int i = parts.length - 1; i >= 0; i--) {
+                if (parts[i].isEmpty()) {
+                    root = true;
+                    break;
+                }
+                if (parts[i].equals("..")) {
+                    count++;
+                } else {
+                    if (count == 0) {
+                        if (removed.length() > 0) {
+                            removed.insert(0, sep);
+                        }
+                        removed.insert(0, parts[i]);
+                    } else {
+                        count--;
+                    }
+                }
+            }
+
+            for (int i = 0; i < count; i++) {
+                if (removed.length() > 0) {
+                    removed.insert(0, sep);
+                }
+                removed.insert(0, "..");
+            }
+            if (root) {
+                removed.insert(0, sep);
+            }
+            ret = removed.toString();
+        }
+
+        ret = volume + ret.replaceAll("^(" + Pattern.quote(sep) + "\\.\\.)+(" + Pattern.quote(sep) +")?", Matcher.quoteReplacement(sep))
+                .replaceAll("/", Matcher.quoteReplacement(sep));
+        if (ret.isEmpty()) {
+            ret = ".";
+        }
+        return ret;
+    }
+
+    public static DockerignorePattern compile(String pattern, char separator) {
         List<Rule> ret = new ArrayList<>();
-        char[] patternChars = goPattern.toCharArray();
+        char[] patternChars = pattern.toCharArray();
         List<Character> buffer = new ArrayList<>();
         for (int i = 0; i < patternChars.length; i++) {
             char c = patternChars[i];
@@ -94,7 +150,7 @@ public class DockerignorePattern {
                             buffer.add(patternChars[++i]);
                         } else {
                             addCharacterListRule(ret, buffer);
-                            ret.add(new ErrorRule(goPattern, i));
+                            ret.add(new ErrorRule(pattern, i));
                             return new DockerignorePattern(ret);
                         }
                     }
@@ -257,6 +313,22 @@ public class DockerignorePattern {
         }
         return Pair.of(new ErrorRule(new String(chars), chars.length - 1), -1);
         //throw new PatternSyntaxException("Malformed range", new String(chars), chars.length - 1);
+    }
+
+    private static String getVolume(String path) {
+        if (!Utilities.isWindows()) {
+            return "";
+        }
+        if (path.length() < 2) {
+            return "";
+        }
+        char drive = path.charAt(0);
+        if (path.charAt(1) == ':' && ('a' <= drive && drive <= 'z' || 'A' <= drive && drive <= 'Z')) { // NOI18N
+            return path.substring(0, 2);
+        }
+        // FIXME UNC
+
+        return "";
     }
 
     private static interface Rule {
