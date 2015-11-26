@@ -52,6 +52,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.lib.editor.util.ListenerList;
 import org.openide.util.Exceptions;
 
 /**
@@ -70,9 +71,12 @@ public abstract class EditorCaret implements Caret {
     protected JTextComponent component;
     
     protected LinkedList<CaretInfo> carets;
+    
+    private final ListenerList<EditorCaretListener> listenerList;
 
     public EditorCaret() {
         carets = new LinkedList<>();
+        listenerList = new ListenerList<EditorCaretListener>();
     }
 
     @Override
@@ -194,6 +198,20 @@ public abstract class EditorCaret implements Caret {
      */
     public @CheckForNull CaretInfo getCaretAt(int offset) {
         return null; // TBD
+    }
+    
+    public void addEditorCaretListener(EditorCaretListener listener) {
+        listenerList.add(listener);
+    }
+    
+    public void removeEditorCaretListener(EditorCaretListener listener) {
+        listenerList.remove(listener);
+    }
+    
+    protected void fireEditorCaretChange(EditorCaretEvent evt) {
+        for (EditorCaretListener listener : listenerList.getListeners()) {
+            listener.caretChanged(evt);
+        }
     }
     
     protected void setDotCaret(int offset, CaretInfo caret, boolean expandFold) throws IllegalStateException {
