@@ -94,6 +94,14 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
         return Bundle.LBL_RunContainerProperties();
     }
 
+    public String getContainerName() {
+        return UiUtils.getValue(nameTextField);
+    }
+
+    public void setContainerName(String name) {
+        nameTextField.setText(name);
+    }
+
     public String getCommand() {
         return UiUtils.getValue(commandTextField);
     }
@@ -102,12 +110,12 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
         commandTextField.setText(command);
     }
 
-    public String getContainerName() {
-        return UiUtils.getValue(nameTextField);
+    public String getUser() {
+        return UiUtils.getValue(userTextField);
     }
 
-    public void setContainerName(String name) {
-        nameTextField.setText(name);
+    public void setUser(String user) {
+        userTextField.setText(user);
     }
 
     public boolean isInteractive() {

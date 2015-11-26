@@ -129,6 +129,7 @@ public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<Wizar
 
         component.setContainerName((String) wiz.getProperty(RunTagWizard.NAME_PROPERTY));
         component.setCommand((String) wiz.getProperty(RunTagWizard.COMMAND_PROPERTY));
+        component.setUser((String) wiz.getProperty(RunTagWizard.USER_PROPERTY));
         Boolean interactive = (Boolean) wiz.getProperty(RunTagWizard.INTERACTIVE_PROPERTY);
         component.setInteractive(interactive != null ? interactive : false);
         Boolean tty = (Boolean) wiz.getProperty(RunTagWizard.TTY_PROPERTY);
@@ -142,6 +143,7 @@ public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<Wizar
     public void storeSettings(WizardDescriptor wiz) {
         wiz.putProperty(RunTagWizard.NAME_PROPERTY, component.getContainerName());
         wiz.putProperty(RunTagWizard.COMMAND_PROPERTY, component.getCommand());
+        wiz.putProperty(RunTagWizard.USER_PROPERTY, component.getUser());
         wiz.putProperty(RunTagWizard.INTERACTIVE_PROPERTY, component.isInteractive());
         wiz.putProperty(RunTagWizard.TTY_PROPERTY, component.hasTty());
     }
