@@ -52,20 +52,23 @@ import org.openide.util.ChangeSupport;
  */
 public class DockerContainer implements Identifiable {
 
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
     private final DockerInstance instance;
 
     private final String id;
 
     private final String image;
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final String name;
 
     private ContainerStatus status;
 
-    DockerContainer(DockerInstance instance, String id, String image, ContainerStatus status) {
+    DockerContainer(DockerInstance instance, String id, String image, String name, ContainerStatus status) {
         this.instance = instance;
         this.id = id;
         this.image = image;
+        this.name = name;
         this.status = status;
         instance.getEventBus().addContainerListener(new DockerEvent.Listener() {
             @Override
@@ -92,6 +95,10 @@ public class DockerContainer implements Identifiable {
 
     public String getImage() {
         return image;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public ContainerStatus getStatus() {

@@ -168,8 +168,13 @@ public class DockerRemote {
                 JSONObject json = (JSONObject) o;
                 String id = (String) json.get("Id");
                 String image = (String) json.get("Image");
+                String name = null;
+                JSONArray names = (JSONArray) json.get("Names");
+                if (names != null && !names.isEmpty()) {
+                    name = (String) names.get(0);
+                }
                 ContainerStatus status = DockerUtils.getContainerStatus((String) json.get("Status"));
-                ret.add(instance.getContainerFactory().create(id, image, status));
+                ret.add(instance.getContainerFactory().create(id, image, name, status));
             }
             return ret;
         } catch (DockerException ex) {
@@ -798,7 +803,9 @@ public class DockerRemote {
 
             String id = (String) value.get("Id");
             DockerContainer container = instance.getContainerFactory().create(id,
-                    (String) configuration.get("Image"), ContainerStatus.STOPPED);
+                    (String) configuration.get("Image"),
+                    "/" + name,
+                    ContainerStatus.STOPPED);
             StreamResult r = attach(container, true, true);
 
             os.write(("POST /containers/" + id + "/start HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));

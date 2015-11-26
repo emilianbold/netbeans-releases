@@ -77,7 +77,7 @@ public class DockerContainerNode extends AbstractNode {
     public DockerContainerNode(DockerContainer container) {
         super(Children.LEAF, Lookups.fixed(container));
         this.container = container;
-        setDisplayName(container.getImage() + " [" + DockerUtils.getShortId(container.getId()) + "]");
+        setDisplayName(container.getImage() + container.getName() + " [" + DockerUtils.getShortId(container.getId()) + "]");
         setShortDescription(DockerUtils.getShortId(container.getId()));
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
         this.container.addChangeListener(new ChangeListener() {

@@ -58,14 +58,14 @@ public class ContainerFactory {
         this.instance = instance;
     }
 
-    public DockerContainer create(String id, String image, ContainerStatus status) {
+    public DockerContainer create(String id, String image, String name, ContainerStatus status) {
         synchronized (instance) {
             DockerContainer ret = cache.get(id);
             if (ret != null) {
                 ret.setStatus(status);
                 return ret;
             } else {
-                ret = new DockerContainer(instance, id, image, status);
+                ret = new DockerContainer(instance, id, image, name, status);
                 cache.put(id, ret);
             }
             return ret;
