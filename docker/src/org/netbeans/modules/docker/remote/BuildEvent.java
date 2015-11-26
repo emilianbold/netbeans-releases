@@ -60,12 +60,15 @@ public class BuildEvent extends EventObject {
 
     private final boolean error;
 
-    BuildEvent(DockerInstance instance, String message, boolean error, Error detail) {
+    private final boolean upload;
+
+    BuildEvent(DockerInstance instance, String message, boolean error, Error detail, boolean upload) {
         super(instance);
         this.instance = instance;
         this.message = message;
         this.detail = detail;
         this.error = error;
+        this.upload = upload;
     }
 
     public String getMessage() {
@@ -81,6 +84,10 @@ public class BuildEvent extends EventObject {
         return error;
     }
 
+    public boolean isUpload() {
+        return upload;
+    }
+
     @Override
     public DockerInstance getSource() {
         return instance;
@@ -88,7 +95,7 @@ public class BuildEvent extends EventObject {
 
     @Override
     public String toString() {
-        return "BuildEvent{" + "message=" + message + ", detail=" + detail + ", error=" + error + '}';
+        return "BuildEvent{" + "instance=" + instance + ", message=" + message + ", detail=" + detail + ", error=" + error + ", upload=" + upload + '}';
     }
 
     public static class Error {
