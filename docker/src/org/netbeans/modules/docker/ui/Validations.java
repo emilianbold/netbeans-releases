@@ -51,6 +51,8 @@ import org.openide.util.Parameters;
  */
 public final class Validations {
 
+    private static final Pattern CONTAINER_PATTERN = Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9_.-]+$");
+
     private static final Pattern REPOSITORY_PATTERN = Pattern.compile("^[a-z0-9_\\.-]+$");
 
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile("^[a-z0-9_-]+$");
@@ -61,6 +63,27 @@ public final class Validations {
 
     private Validations() {
         super();
+    }
+
+    @NbBundle.Messages({
+        "MSG_ErrorContainerShort=Name length must be at least 2 characters.",
+        "# {0} - error token",
+        "MSG_ErrorContainerCharacter=Only [a-zA-Z0-9][a-zA-Z0-9_.-] allowed in name ({0})."
+    })
+    public static String validateContainer(String container) {
+        Parameters.notNull("container", container);
+
+        if (container.isEmpty()) {
+            return null;
+        }
+        if (container.length() < 2) {
+            return Bundle.MSG_ErrorContainerShort();
+        }
+        if (!CONTAINER_PATTERN.matcher(container).matches()) {
+            return Bundle.MSG_ErrorContainerCharacter(container);
+        }
+
+        return null;
     }
 
     // this is based on 1.6.2/remote 1.18
@@ -149,6 +172,7 @@ public final class Validations {
     }
 
     @NbBundle.Messages({
+        "# {0} - error token",
         "MSG_ErrorTagCharacter=Only [A-Za-z0-9_.-] allowed in tag ({0}).",
         "MSG_ErrorTagLong=Tag length must be at most 128 characters."
     })

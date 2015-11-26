@@ -807,7 +807,7 @@ public class DockerRemote {
             response = HttpUtils.readResponse(is);
             if (response.getCode() != HttpURLConnection.HTTP_NO_CONTENT) {
                 String error = HttpUtils.readContent(is, response);
-                throw new DockerRemoteException(response.getCode(),
+                throw codeToException(response.getCode(),
                         error != null ? error : response.getMessage());
             }
 
@@ -836,7 +836,7 @@ public class DockerRemote {
 
                 if (!okCodes.contains(conn.getResponseCode())) {
                     String error = HttpUtils.readError(conn);
-                    throw new DockerRemoteException(conn.getResponseCode(),
+                    throw codeToException(conn.getResponseCode(),
                             error != null ? error : conn.getResponseMessage());
                 }
 
@@ -878,7 +878,7 @@ public class DockerRemote {
 
                 if (!okCodes.contains(conn.getResponseCode())) {
                     String error = HttpUtils.readError(conn);
-                    throw new DockerRemoteException(conn.getResponseCode(),
+                    throw codeToException(conn.getResponseCode(),
                             error != null ? error : conn.getResponseMessage());
                 }
 
@@ -918,7 +918,7 @@ public class DockerRemote {
 
                 if (!okCodes.contains(conn.getResponseCode())) {
                     String error = HttpUtils.readError(conn);
-                    throw new DockerRemoteException(conn.getResponseCode(),
+                    throw codeToException(conn.getResponseCode(),
                             error != null ? error : conn.getResponseMessage());
                 }
 
@@ -989,6 +989,13 @@ public class DockerRemote {
         }
 
         return new URL(realUrl);
+    }
+
+    private static DockerException codeToException(int code, String message) {
+        if (code == HttpURLConnection.HTTP_CONFLICT) {
+            return new DockerConflictException(message);
+        }
+        return new DockerRemoteException(code, message);
     }
 
     private static String readEventObject(Reader is) throws IOException {
