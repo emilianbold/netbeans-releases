@@ -78,9 +78,11 @@ import org.openide.util.Utilities;
  */
 public class RunTagWizard {
 
+    public static final String NAME_PROPERTY = "name";
+
     public static final String COMMAND_PROPERTY = "command";
 
-    public static final String NAME_PROPERTY = "name";
+    public static final String USER_PROPERTY = "user";
 
     public static final String INTERACTIVE_PROPERTY = "interactive";
 
@@ -130,8 +132,9 @@ public class RunTagWizard {
             if (mapping == null) {
                 mapping = Collections.emptyList();
             }
-            run(tag, (String) wiz.getProperty(COMMAND_PROPERTY),
-                    (String) wiz.getProperty(NAME_PROPERTY),
+            run(tag, (String) wiz.getProperty(NAME_PROPERTY),
+                    (String) wiz.getProperty(COMMAND_PROPERTY),
+                    (String) wiz.getProperty(USER_PROPERTY),
                     (Boolean) wiz.getProperty(INTERACTIVE_PROPERTY),
                     (Boolean) wiz.getProperty(TTY_PROPERTY),
                     portRandom != null ? portRandom : RANDOM_BIND_DEFAULT,
@@ -139,7 +142,7 @@ public class RunTagWizard {
         }
     }
 
-    private void run(final DockerTag tag, final String command, final String name,
+    private void run(final DockerTag tag, final String name, final String command, final String user,
             final boolean interactive, final boolean tty, final boolean randomBind, final List<PortMapping> mapping) {
 
         RequestProcessor.getDefault().post(new Runnable() {
@@ -148,6 +151,9 @@ public class RunTagWizard {
                 try {
                     DockerRemote remote = new DockerRemote(tag.getImage().getInstance());
                     JSONObject config = new JSONObject();
+                    if (user != null) {
+                        config.put("User", user);
+                    }
                     if (interactive) {
                         config.put("OpenStdin", true);
                         config.put("StdinOnce", true);

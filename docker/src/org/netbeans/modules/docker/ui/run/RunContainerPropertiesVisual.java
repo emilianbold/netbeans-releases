@@ -41,7 +41,11 @@
  */
 package org.netbeans.modules.docker.ui.run;
 
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.docker.ui.UiUtils;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -50,18 +54,52 @@ import org.openide.util.NbBundle;
  */
 public class RunContainerPropertiesVisual extends javax.swing.JPanel {
 
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
     /**
      * Creates new form ContainerImagePanel
      */
     public RunContainerPropertiesVisual() {
         initComponents();
+
+        nameTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
 
     @NbBundle.Messages("LBL_RunContainerProperties=Container Properties")
     @Override
     public String getName() {
         return Bundle.LBL_RunContainerProperties();
+    }
+
+    public String getContainerName() {
+        return UiUtils.getValue(nameTextField);
+    }
+
+    public void setContainerName(String name) {
+        nameTextField.setText(name);
     }
 
     public String getCommand() {
@@ -72,12 +110,12 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
         commandTextField.setText(command);
     }
 
-    public String getContainerName() {
-        return UiUtils.getValue(nameTextField);
+    public String getUser() {
+        return UiUtils.getValue(userTextField);
     }
 
-    public void setContainerName(String name) {
-        nameTextField.setText(name);
+    public void setUser(String user) {
+        userTextField.setText(user);
     }
 
     public boolean isInteractive() {
@@ -111,6 +149,8 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
         ttyCheckBox = new javax.swing.JCheckBox();
         nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
+        userLabel = new javax.swing.JLabel();
+        userTextField = new javax.swing.JTextField();
 
         commandLabel.setLabelFor(commandTextField);
         org.openide.awt.Mnemonics.setLocalizedText(commandLabel, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.commandLabel.text")); // NOI18N
@@ -122,31 +162,41 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
         nameLabel.setLabelFor(nameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.nameLabel.text")); // NOI18N
 
+        nameTextField.setColumns(15);
+
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.userLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(interactiveCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+            .addComponent(ttyCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(nameLabel)
                     .addComponent(commandLabel)
-                    .addComponent(nameLabel))
+                    .addComponent(userLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(nameTextField)
-                    .addComponent(commandTextField)))
-            .addComponent(interactiveCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
-            .addComponent(ttyCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(commandTextField)
+                    .addComponent(userTextField)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(nameLabel)
+                    .addComponent(nameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(commandLabel)
                     .addComponent(commandTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nameLabel)
-                    .addComponent(nameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(userLabel)
+                    .addComponent(userTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(interactiveCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -162,5 +212,7 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JCheckBox ttyCheckBox;
+    private javax.swing.JLabel userLabel;
+    private javax.swing.JTextField userTextField;
     // End of variables declaration//GEN-END:variables
 }

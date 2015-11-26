@@ -41,20 +41,27 @@
  */
 package org.netbeans.modules.docker.ui.run;
 
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.DockerImageInfo;
+import org.netbeans.modules.docker.ui.Validations;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
-public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
+public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final DockerImageInfo info;
-    
+
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private RunContainerPropertiesVisual component;
+
+    private WizardDescriptor wizard;
 
     public RunContainerPropertiesPanel(DockerImageInfo info) {
         this.info = info;
@@ -68,6 +75,7 @@ public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<Wizar
     public RunContainerPropertiesVisual getComponent() {
         if (component == null) {
             component = new RunContainerPropertiesVisual();
+            component.addChangeListener(this);
         }
         return component;
     }
@@ -87,33 +95,61 @@ public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<Wizar
 
     @Override
     public boolean isValid() {
+        // clear the error message
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
+        wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
+
+        String name = component.getContainerName();
+        if (name != null) {
+            String message = Validations.validateContainer(name);
+            if (message != null) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+                return false;
+            }
+        }
         return true;
     }
 
     @Override
     public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     @Override
     public void readSettings(WizardDescriptor wiz) {
-        component.setCommand((String) wiz.getProperty(RunTagWizard.COMMAND_PROPERTY));
+        if (wizard == null) {
+            wizard = wiz;
+        }
+
         component.setContainerName((String) wiz.getProperty(RunTagWizard.NAME_PROPERTY));
+        component.setCommand((String) wiz.getProperty(RunTagWizard.COMMAND_PROPERTY));
+        component.setUser((String) wiz.getProperty(RunTagWizard.USER_PROPERTY));
         Boolean interactive = (Boolean) wiz.getProperty(RunTagWizard.INTERACTIVE_PROPERTY);
         component.setInteractive(interactive != null ? interactive : false);
         Boolean tty = (Boolean) wiz.getProperty(RunTagWizard.TTY_PROPERTY);
         component.setTty(tty != null ? tty : false);
+
+        // XXX revalidate; is this bug?
+        changeSupport.fireChange();
     }
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
-        wiz.putProperty(RunTagWizard.COMMAND_PROPERTY, component.getCommand());
         wiz.putProperty(RunTagWizard.NAME_PROPERTY, component.getContainerName());
+        wiz.putProperty(RunTagWizard.COMMAND_PROPERTY, component.getCommand());
+        wiz.putProperty(RunTagWizard.USER_PROPERTY, component.getUser());
         wiz.putProperty(RunTagWizard.INTERACTIVE_PROPERTY, component.isInteractive());
         wiz.putProperty(RunTagWizard.TTY_PROPERTY, component.hasTty());
     }
 
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
+    }
 }
