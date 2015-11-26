@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javaee.specs.support.api;
 
+import java.util.regex.Pattern;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.javaee.specs.support.bridge.IdeJaxWsStack;
 import org.netbeans.modules.javaee.specs.support.bridge.JdkJaxWsStack;
@@ -98,9 +99,17 @@ public class JaxWsStackSupport {
             }
         } else {
             try {
-                Float version = Float.valueOf(javaVersion.substring(0,3));
-                if (version > 1.6) return "2.1.3"; //NOI18N
-                else return null;
+                if (javaVersion.startsWith("1.")) { // NOI18N
+                    Float version = Float.valueOf(javaVersion.substring(0, 3));
+                    if (version > 1.6) {
+                        return "2.1.3"; //NOI18N
+                    } else {
+                        return null;
+                    }
+                } else {
+                    // XXX should this be updated ?
+                    return "2.1.3"; //NOI18N
+                }
             } catch (NumberFormatException ex) {
                 // return null for some strange jdk versions
                 return null;
