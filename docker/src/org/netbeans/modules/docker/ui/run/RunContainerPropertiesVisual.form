@@ -16,32 +16,39 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
+          <Component id="interactiveCheckBox" pref="520" max="32767" attributes="0"/>
+          <Component id="ttyCheckBox" alignment="0" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="commandLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="nameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="commandLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="nameTextField" max="32767" attributes="0"/>
                   <Component id="commandTextField" max="32767" attributes="0"/>
+                  <Component id="userTextField" alignment="0" max="32767" attributes="0"/>
               </Group>
           </Group>
-          <Component id="interactiveCheckBox" pref="520" max="32767" attributes="0"/>
-          <Component id="ttyCheckBox" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="nameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="nameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="commandLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="commandTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="nameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="nameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="userLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="userTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="interactiveCheckBox" min="-2" max="-2" attributes="0"/>
@@ -89,6 +96,18 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="nameTextField">
+      <Properties>
+        <Property name="columns" type="int" value="15"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="userLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/docker/ui/run/Bundle.properties" key="RunContainerPropertiesVisual.userLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="userTextField">
     </Component>
   </SubComponents>
 </Form>
