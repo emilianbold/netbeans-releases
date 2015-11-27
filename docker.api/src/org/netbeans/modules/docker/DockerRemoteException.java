@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.docker;
 
-import org.netbeans.modules.docker.api.action.DockerException;
+import org.netbeans.modules.docker.api.DockerException;
 
 /**
  *

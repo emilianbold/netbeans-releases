@@ -59,10 +59,9 @@ import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerImageDetail;
 import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerException;
-import org.netbeans.modules.docker.api.action.DockerAction;
-import org.netbeans.modules.docker.api.action.StreamResult;
+import org.netbeans.modules.docker.api.DockerException;
+import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.api.StreamResult;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -125,7 +124,7 @@ public class RunTagWizard {
         final WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<>(panels));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
-        wiz.setTitle(Bundle.LBL_Run(DockerUtils.getImage(tag)));
+        wiz.setTitle(Bundle.LBL_Run(getImage(tag)));
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
             Boolean portRandom = (Boolean) wiz.getProperty(RANDOM_BIND_PROPERTY);
             List<PortMapping> mapping = (List<PortMapping>) wiz.getProperty(PORT_MAPPING_PROPERTY);
@@ -164,7 +163,7 @@ public class RunTagWizard {
                     }
 
                     String[] parsed = command == null ? new String[]{} : Utilities.parseParameters(command);
-                    config.put("Image", DockerUtils.getImage(tag));
+                    config.put("Image", getImage(tag));
                     JSONArray cmdArray = new JSONArray();
                     cmdArray.addAll(Arrays.asList(parsed));
                     config.put("Cmd", cmdArray);
@@ -209,6 +208,14 @@ public class RunTagWizard {
             }
         });
     }
+    
+    private static String getImage(DockerTag tag) {
+        String id = tag.getTag();
+        if (id.equals("<none>:<none>")) { // NOI18N
+            id = tag.getImage().getId();
+        }
+        return id;
+    }
 
     private static class DockerImageInfoRunnable implements ProgressRunnable<DockerImageDetail> {
 
@@ -222,7 +229,7 @@ public class RunTagWizard {
         public DockerImageDetail run(ProgressHandle handle) {
             try {
                 DockerAction remote = new DockerAction(image.getInstance());
-                return remote.getInfo(image);
+                return remote.getDetail(image);
             } catch (DockerException ex) {
                 return null;
             }

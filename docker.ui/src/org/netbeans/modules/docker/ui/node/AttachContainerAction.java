@@ -45,9 +45,8 @@ import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.api.ContainerStatus;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerContainerDetail;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerException;
-import org.netbeans.modules.docker.api.action.DockerAction;
+import org.netbeans.modules.docker.api.DockerException;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,13 +66,13 @@ public class AttachContainerAction extends AbstractContainerAction {
     })
     @Override
     protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_AttachingContainer(DockerUtils.getShortId(container));
+        return Bundle.MSG_AttachingContainer(container.getShortId());
     }
 
     @Override
     protected void performAction(DockerContainer container) throws DockerException {
         DockerAction facade = new DockerAction(container.getInstance());
-        DockerContainerDetail info = facade.getInfo(container);
+        DockerContainerDetail info = facade.getDetail(container);
         UiUtils.openTerminal(container, null, info.isOpenStdin(), false);
     }
 

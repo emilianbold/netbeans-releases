@@ -39,93 +39,16 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.action;
-
-import java.util.EventListener;
-import java.util.EventObject;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.docker.api.DockerInstance;
+package org.netbeans.modules.docker.api;
 
 /**
  *
  * @author Petr Hejl
  */
-public class BuildEvent extends EventObject {
+public interface DockerEntity {
 
-    private final DockerInstance instance;
+    String getId();
 
-    private final String message;
+    String getShortId();
 
-    private final Error detail;
-
-    private final boolean error;
-
-    private final boolean upload;
-
-    BuildEvent(DockerInstance instance, String message, boolean error, Error detail, boolean upload) {
-        super(instance);
-        this.instance = instance;
-        this.message = message;
-        this.detail = detail;
-        this.error = error;
-        this.upload = upload;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    @CheckForNull
-    public Error getDetail() {
-        return detail;
-    }
-
-    public boolean isError() {
-        return error;
-    }
-
-    public boolean isUpload() {
-        return upload;
-    }
-
-    @Override
-    public DockerInstance getSource() {
-        return instance;
-    }
-
-    @Override
-    public String toString() {
-        return "BuildEvent{" + "instance=" + instance + ", message=" + message + ", detail=" + detail + ", error=" + error + ", upload=" + upload + '}';
-    }
-
-    public static class Error {
-
-        private final long code;
-
-        private final String message;
-
-        public Error(long code, String message) {
-            this.code = code;
-            this.message = message;
-        }
-
-        public long getCode() {
-            return code;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        @Override
-        public String toString() {
-            return "Error{" + "code=" + code + ", message=" + message + '}';
-        }
-    }
-
-    public static interface Listener extends EventListener {
-
-        void onEvent(BuildEvent event);
-
-    }
 }

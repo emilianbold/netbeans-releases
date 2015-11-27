@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.pull;
 
-import org.netbeans.modules.docker.api.action.StatusEvent;
+import org.netbeans.modules.docker.api.StatusEvent;
 import org.openide.windows.InputOutput;
 
 /**

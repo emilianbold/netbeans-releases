@@ -42,8 +42,7 @@
 package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerException;
+import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.NbBundle;
 
@@ -64,7 +63,7 @@ public class ShowLogAction extends AbstractContainerAction {
     })
     @Override
     protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_ShowingLog(DockerUtils.getShortId(container));
+        return Bundle.MSG_ShowingLog(container.getShortId());
     }
 
     @Override

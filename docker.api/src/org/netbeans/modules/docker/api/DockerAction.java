@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.action;
+package org.netbeans.modules.docker.api;
 
+import org.netbeans.modules.docker.ConnectionListener;
 import org.netbeans.modules.docker.DockerRemoteException;
 import org.netbeans.modules.docker.FolderUploader;
 import org.netbeans.modules.docker.MuxedStreamResult;
@@ -92,19 +93,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.docker.DockerContainerAccessor;
-import org.netbeans.modules.docker.DockerImageAccessor;
-import org.netbeans.modules.docker.DockerTagAccessor;
-import org.netbeans.modules.docker.api.ContainerStatus;
-import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerContainerDetail;
-import org.netbeans.modules.docker.api.DockerHubImage;
-import org.netbeans.modules.docker.api.DockerImage;
-import org.netbeans.modules.docker.api.DockerImageDetail;
-import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.NetworkPort;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
@@ -116,6 +104,8 @@ import org.openide.util.io.NullOutputStream;
  * @author Petr Hejl
  */
 public class DockerAction {
+
+    public static final String DOCKER_FILE = "Dockerfile"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(DockerAction.class.getName());
 
@@ -163,8 +153,7 @@ public class DockerAction {
                 long created = (long) json.get("Created");
                 long size = (long) json.get("Size");
                 long virtualSize = (long) json.get("VirtualSize");
-                ret.add(DockerImageAccessor.getDefault().createDockerImage(
-                        instance, repoTags, id, created, size, virtualSize));
+                ret.add(new DockerImage(instance, repoTags, id, created, size, virtualSize));
             }
             return ret;
         } catch (DockerException ex) {
@@ -187,8 +176,8 @@ public class DockerAction {
                 if (names != null && !names.isEmpty()) {
                     name = (String) names.get(0);
                 }
-                ContainerStatus status = DockerUtils.getContainerStatus((String) json.get("Status"));
-                ret.add(DockerContainerAccessor.getDefault().createDockerContainer(instance, id, image, name, status));
+                ContainerStatus status = org.netbeans.modules.docker.DockerUtils.getContainerStatus((String) json.get("Status"));
+                ret.add(new DockerContainer(instance, id, image, name, status));
             }
             return ret;
         } catch (DockerException ex) {
@@ -264,8 +253,7 @@ public class DockerAction {
             }
 
             // FIXME image size and time parameters
-            return DockerImageAccessor.getDefault().createDockerImage(
-                    instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
+            return new DockerImage(instance, Collections.singletonList(org.netbeans.modules.docker.DockerUtils.getTag(repository, tag)),
                     (String) value.get("Id"), time, 0, 0);
 
         } catch (UnsupportedEncodingException ex) {
@@ -293,7 +281,7 @@ public class DockerAction {
         doPostRequest(instance.getUrl(), action.toString(), null,
                 false, Collections.singleton(HttpURLConnection.HTTP_CREATED));
 
-        String tagResult = DockerUtils.getTag(repository, tag);
+        String tagResult = org.netbeans.modules.docker.DockerUtils.getTag(repository, tag);
         long time = System.currentTimeMillis() / 1000;
         // XXX we send it as older API does not have the commit event
         if (emitEvents) {
@@ -302,10 +290,10 @@ public class DockerAction {
                             source.getId(), tagResult, time));
         }
 
-        return DockerTagAccessor.getDefault().createDockerTag(source.getImage(), tagResult);
+        return new DockerTag(source.getImage(), tagResult);
     }
 
-    public DockerContainerDetail getInfo(DockerContainer container) throws DockerException {
+    public DockerContainerDetail getDetail(DockerContainer container) throws DockerException {
         JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
                 "/containers/" + container.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
         boolean tty = false;
@@ -318,7 +306,7 @@ public class DockerAction {
         return new DockerContainerDetail(openStdin, tty);
     }
 
-    public DockerImageDetail getInfo(DockerImage image) throws DockerException {
+    public DockerImageDetail getDetail(DockerImage image) throws DockerException {
         JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
                 "/images/" + image.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
         List<NetworkPort> ports = new LinkedList<>();
@@ -385,7 +373,7 @@ public class DockerAction {
     }
 
     public void remove(DockerTag tag) throws DockerException {
-        String id = DockerUtils.getImage(tag);
+        String id = getImage(tag);
         JSONArray value = (JSONArray) doDeleteRequest(instance.getUrl(), "/images/" + id, true,
                 REMOVE_IMAGE_CODES);
 
@@ -418,7 +406,7 @@ public class DockerAction {
     public StreamResult attach(DockerContainer container, boolean stdin, boolean logs) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
-        DockerContainerDetail info = getInfo(container);
+        DockerContainerDetail info = DockerAction.this.getDetail(container);
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -652,8 +640,7 @@ public class DockerAction {
                                             m.group(1), null, time));
                         }
                         // FIXME image size and time parameters
-                        return DockerImageAccessor.getDefault().createDockerImage(
-                                instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
+                        return new DockerImage(instance, Collections.singletonList(org.netbeans.modules.docker.DockerUtils.getTag(repository, tag)),
                                 m.group(1), time, 0, 0);
                     }
                 }
@@ -737,7 +724,7 @@ public class DockerAction {
     public LogResult logs(DockerContainer container) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
-        DockerContainerDetail info = getInfo(container);
+        DockerContainerDetail info = getDetail(container);
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -823,7 +810,7 @@ public class DockerAction {
             }
 
             String id = (String) value.get("Id");
-            DockerContainer container = DockerContainerAccessor.getDefault().createDockerContainer(
+            DockerContainer container = new DockerContainer(
                     instance,
                     id,
                     (String) configuration.get("Image"),
@@ -1070,6 +1057,14 @@ public class DockerAction {
         }
         return ret;
     }
+    
+    private static String getImage(DockerTag tag) {
+        String id = tag.getTag();
+        if (id.equals("<none>:<none>")) { // NOI18N
+            id = tag.getImage().getId();
+        }
+        return id;
+    }
 
     public static class LogResult implements Closeable {
 
@@ -1156,11 +1151,4 @@ public class DockerAction {
         }
     }
 
-    public static interface ConnectionListener {
-
-        void onConnect(Socket s);
-
-        void onDisconnect();
-
-    }
 }

@@ -39,43 +39,93 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker;
+package org.netbeans.modules.docker.api;
 
-import org.netbeans.modules.docker.api.DockerImage;
+import java.util.EventListener;
+import java.util.EventObject;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.docker.api.DockerInstance;
 
 /**
  *
  * @author Petr Hejl
  */
-public abstract class DockerTagAccessor {
+public class BuildEvent extends EventObject {
 
-    private static volatile DockerTagAccessor DEFAULT;
+    private final DockerInstance instance;
 
-    public static DockerTagAccessor getDefault() {
-        DockerTagAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
+    private final String message;
 
-        // invokes static initializer of DockerTag.class
-        // that will assign value to the DEFAULT field above
-        Class c = org.netbeans.modules.docker.api.DockerTag.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
-        }
-        return DEFAULT;
+    private final Error detail;
+
+    private final boolean error;
+
+    private final boolean upload;
+
+    BuildEvent(DockerInstance instance, String message, boolean error, Error detail, boolean upload) {
+        super(instance);
+        this.instance = instance;
+        this.message = message;
+        this.detail = detail;
+        this.error = error;
+        this.upload = upload;
     }
 
-    public static void setDefault(DockerTagAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-
-        DEFAULT = accessor;
+    public String getMessage() {
+        return message;
     }
 
-    public abstract org.netbeans.modules.docker.api.DockerTag createDockerTag(
-            DockerImage image, String tag);
+    @CheckForNull
+    public Error getDetail() {
+        return detail;
+    }
+
+    public boolean isError() {
+        return error;
+    }
+
+    public boolean isUpload() {
+        return upload;
+    }
+
+    @Override
+    public DockerInstance getSource() {
+        return instance;
+    }
+
+    @Override
+    public String toString() {
+        return "BuildEvent{" + "instance=" + instance + ", message=" + message + ", detail=" + detail + ", error=" + error + ", upload=" + upload + '}';
+    }
+
+    public static class Error {
+
+        private final long code;
+
+        private final String message;
+
+        public Error(long code, String message) {
+            this.code = code;
+            this.message = message;
+        }
+
+        public long getCode() {
+            return code;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public String toString() {
+            return "Error{" + "code=" + code + ", message=" + message + '}';
+        }
+    }
+
+    public static interface Listener extends EventListener {
+
+        void onEvent(BuildEvent event);
+
+    }
 }

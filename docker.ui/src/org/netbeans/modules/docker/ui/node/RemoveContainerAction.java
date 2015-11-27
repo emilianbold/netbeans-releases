@@ -43,9 +43,8 @@ package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.api.ContainerStatus;
 import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerException;
-import org.netbeans.modules.docker.api.action.DockerAction;
+import org.netbeans.modules.docker.api.DockerException;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,7 +64,7 @@ public class RemoveContainerAction extends AbstractContainerAction {
     })
     @Override
     protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_RemovingContainer(DockerUtils.getShortId(container));
+        return Bundle.MSG_RemovingContainer(container.getShortId());
     }
 
     @Override

@@ -39,44 +39,20 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker;
-
-import java.util.List;
-import org.netbeans.modules.docker.api.DockerInstance;
+package org.netbeans.modules.docker.api;
 
 /**
  *
  * @author Petr Hejl
  */
-public abstract class DockerImageAccessor {
+public class DockerConflictException extends DockerException {
 
-    private static volatile DockerImageAccessor DEFAULT;
-
-    public static DockerImageAccessor getDefault() {
-        DockerImageAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
-        // invokes static initializer of DockerImage.class
-        // that will assign value to the DEFAULT field above
-        Class c = org.netbeans.modules.docker.api.DockerImage.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
-        }
-        return DEFAULT;
+    public DockerConflictException(String message) {
+        super(message);
     }
 
-    public static void setDefault(DockerImageAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-
-        DEFAULT = accessor;
+    public DockerConflictException(Throwable cause) {
+        super(cause);
     }
 
-    public abstract org.netbeans.modules.docker.api.DockerImage createDockerImage(
-            DockerInstance instance, List<String> tags, String id, long created, long size, long virtualSize);
 }

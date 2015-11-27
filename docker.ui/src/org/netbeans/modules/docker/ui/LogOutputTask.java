@@ -47,8 +47,8 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.action.DockerAction;
-import org.netbeans.modules.docker.api.action.StreamItem;
+import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.api.StreamItem;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.action;
+package org.netbeans.modules.docker;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -49,6 +49,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.api.DockerInstance;
+import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.api.DockerEvent;
+import org.netbeans.modules.docker.api.DockerException;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -57,7 +60,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Petr Hejl
  */
-public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerAction.ConnectionListener {
+public class DockerEventBus implements Closeable, DockerEvent.Listener, ConnectionListener {
 
     private static final Logger LOGGER = Logger.getLogger(DockerEventBus.class.getName());
 
@@ -65,13 +68,13 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerAc
 
     private final RequestProcessor processor = new RequestProcessor(DockerEventBus.class);
 
-    private final DockerInstance instance;
+    final DockerInstance instance;
 
     private final List<DockerEvent.Listener> imageListeners = new ArrayList<>();
 
     private final List<DockerEvent.Listener> containerListeners = new ArrayList<>();
 
-    private Socket socket;
+    Socket socket;
 
     private DockerEvent lastEvent;
 
@@ -119,7 +122,7 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerAc
         }
     }
 
-    void sendEvent(DockerEvent event) {
+    public void sendEvent(DockerEvent event) {
         List<DockerEvent.Listener> toFire;
         synchronized (this) {
             if (event.getStatus().isContainer()) {

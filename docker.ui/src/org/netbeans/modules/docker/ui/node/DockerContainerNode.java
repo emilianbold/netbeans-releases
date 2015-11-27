@@ -49,7 +49,6 @@ import org.netbeans.modules.docker.api.ContainerStatus;
 import static org.netbeans.modules.docker.api.ContainerStatus.PAUSED;
 import static org.netbeans.modules.docker.api.ContainerStatus.RUNNING;
 import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerUtils;
 import org.netbeans.modules.docker.ui.commit.CommitContainerAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -77,8 +76,8 @@ public class DockerContainerNode extends AbstractNode {
     public DockerContainerNode(DockerContainer container) {
         super(Children.LEAF, Lookups.fixed(container));
         this.container = container;
-        setDisplayName(container.getImage() + container.getName() + " [" + DockerUtils.getShortId(container.getId()) + "]");
-        setShortDescription(DockerUtils.getShortId(container.getId()));
+        setDisplayName(container.getImage() + container.getName() + " [" + container.getShortId() + "]");
+        setShortDescription(container.getShortId());
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
         this.container.addChangeListener(new ChangeListener() {
             @Override

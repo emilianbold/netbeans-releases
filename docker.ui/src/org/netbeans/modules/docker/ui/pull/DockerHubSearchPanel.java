@@ -54,8 +54,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.docker.api.DockerHubImage;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerAction;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -149,8 +148,16 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         } else {
             toPull = searchTextField.getText().trim();
         }
-        toPull = DockerUtils.appendLatestTag(toPull);
+        toPull = appendLatestTag(toPull);
         return toPull;
+    }
+
+    public static String appendLatestTag(String image) {
+        String ret = image;
+        if (!image.contains(":") && !image.contains("@")) { // NOI18N
+            ret += ":latest"; // NOI18N
+        }
+        return ret;
     }
 
     private class SearchListener implements DocumentListener {
@@ -192,7 +199,7 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
             revalidate();
         }
     }
-    
+
     private class SelectionListener implements ListSelectionListener {
 
         @Override
@@ -200,7 +207,7 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
             if (e.getValueIsAdjusting()) {
                 return;
             }
-            
+
             resultTextField.setText(getImage());
         }
     }

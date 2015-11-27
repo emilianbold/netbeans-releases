@@ -245,3 +245,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-api-htmlui" value="${javadoc.web.root}/org-netbeans-api-htmlui"/>
 <property name="javadoc.docs.org-netbeans-api-knockout" value="${javadoc.web.root}/org-netbeans-api-knockout"/>
 <property name="javadoc.docs.org-netbeans-lib-v8debug" value="${javadoc.web.root}/org-netbeans-lib-v8debug"/>
+<property name="javadoc.docs.org-netbeans-modules-docker-api" value="${javadoc.web.root}/org-netbeans-modules-docker-api"/>

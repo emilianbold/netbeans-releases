@@ -39,11 +39,17 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api;
+package org.netbeans.modules.docker;
 
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.docker.api.action.DockerEvent;
+import org.netbeans.modules.docker.api.ContainerStatus;
+import org.netbeans.modules.docker.api.DockerEntity;
+import org.netbeans.modules.docker.api.DockerEvent;
+import static org.netbeans.modules.docker.api.DockerEvent.Status.DIE;
+import static org.netbeans.modules.docker.api.DockerEvent.Status.PAUSE;
+import static org.netbeans.modules.docker.api.DockerEvent.Status.START;
+import static org.netbeans.modules.docker.api.DockerEvent.Status.UNPAUSE;
+import org.netbeans.modules.docker.api.DockerTag;
 
 /**
  *
@@ -57,11 +63,8 @@ public final class DockerUtils {
         super();
     }
 
-    public static String getShortId(Identifiable identifiable) {
-        return getShortId(identifiable.getId());
-    }
-
-    public static String getShortId(String id) {
+    public static String getShortId(DockerEntity identifiable) {
+        String id = identifiable.getId();
         if (id.length() > 12) {
             return id.substring(0, 12);
         }
@@ -118,14 +121,5 @@ public final class DockerUtils {
             default:
                 return null;
         }
-    }
-
-    @NonNull
-    public static String appendLatestTag(String image) {
-        String ret = image;
-        if (!image.contains(":") && !image.contains("@")) { // NOI18N
-            ret += ":latest"; // NOI18N
-        }
-        return ret;
     }
 }

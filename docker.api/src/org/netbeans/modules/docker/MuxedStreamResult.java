@@ -47,8 +47,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.action.StreamItem;
-import org.netbeans.modules.docker.api.action.StreamResult;
+import org.netbeans.modules.docker.api.StreamItem;
+import org.netbeans.modules.docker.api.StreamResult;
 
 /**
  *

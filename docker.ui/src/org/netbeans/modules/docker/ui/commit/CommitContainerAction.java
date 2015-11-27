@@ -47,9 +47,8 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerException;
-import org.netbeans.modules.docker.api.action.DockerAction;
+import org.netbeans.modules.docker.api.DockerException;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -81,7 +80,7 @@ public class CommitContainerAction extends NodeAction {
             CommitPanel panel = new CommitPanel(container.getInstance());
 
             DialogDescriptor descriptor
-                    = new DialogDescriptor(panel, Bundle.LBL_CommitContainer(DockerUtils.getShortId(container)),
+                    = new DialogDescriptor(panel, Bundle.LBL_CommitContainer(container.getShortId()),
                             true, new Object[] {commitButton, DialogDescriptor.CANCEL_OPTION}, commitButton,
                             DialogDescriptor.DEFAULT_ALIGN, null, null);
             descriptor.setClosingOptions(new Object[] {commitButton, DialogDescriptor.CANCEL_OPTION});
@@ -113,7 +112,7 @@ public class CommitContainerAction extends NodeAction {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_Commiting(DockerUtils.getShortId(container)));
+                ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_Commiting(container.getShortId()));
                 handle.start();
                 try {
                     DockerAction facade = new DockerAction(container.getInstance());

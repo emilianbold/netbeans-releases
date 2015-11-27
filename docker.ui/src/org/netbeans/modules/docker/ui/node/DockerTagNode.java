@@ -44,7 +44,6 @@ package org.netbeans.modules.docker.ui.node;
 import org.netbeans.modules.docker.ui.run.RunTagAction;
 import javax.swing.Action;
 import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.api.DockerUtils;
 import org.netbeans.modules.docker.ui.tag.TagTagAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -65,11 +64,11 @@ public class DockerTagNode extends AbstractNode {
         super(Children.LEAF, Lookups.fixed(tag));
         this.tag = tag;
 //        if ("<none>:<none>".equals(tag.getTag())) {
-        setDisplayName(tag.getTag() + " [" + DockerUtils.getShortId(tag.getImage().getId()) + "]");
+        setDisplayName(tag.getTag() + " [" + tag.getShortId() + "]");
 //        } else {
 //            setDisplayName(tag.getTag());
 //        }
-        setShortDescription(DockerUtils.getShortId(tag.getImage().getId()));
+        setShortDescription(tag.getShortId());
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
     }
 

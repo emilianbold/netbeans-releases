@@ -46,8 +46,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerAction;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -75,7 +74,7 @@ public class RemoveTagAction extends NodeAction {
         for (final Node node : activatedNodes) {
             final DockerTag tag = node.getLookup().lookup(DockerTag.class);
             if (tag != null) {
-                final ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_RemovingTag(DockerUtils.getShortId(tag)));
+                final ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_RemovingTag(tag.getShortId()));
                 handle.start();
                 Runnable task = new Runnable() {
                     @Override

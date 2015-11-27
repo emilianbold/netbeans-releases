@@ -137,7 +137,6 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.docker.ui</friend>
                 <package>org.netbeans.modules.docker.api</package>
-                <package>org.netbeans.modules.docker.api.action</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/bcpkix-jdk15on-153.jar</runtime-relative-path>

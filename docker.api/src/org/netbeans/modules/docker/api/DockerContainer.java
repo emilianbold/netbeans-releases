@@ -43,24 +43,14 @@ package org.netbeans.modules.docker.api;
 
 import java.util.Objects;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.docker.DockerContainerAccessor;
-import org.netbeans.modules.docker.api.action.DockerEvent;
 import org.openide.util.ChangeSupport;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerContainer implements Identifiable {
+public final class DockerContainer implements DockerEntity {
 
-    static {
-        DockerContainerAccessor.setDefault(new DockerContainerAccessor() {
-            @Override
-            public DockerContainer createDockerContainer(DockerInstance instance, String id, String image, String name, ContainerStatus status) {
-                return new DockerContainer(instance, id, image, name, status);
-            }
-        });
-    }
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final DockerInstance instance;
@@ -73,7 +63,7 @@ public class DockerContainer implements Identifiable {
 
     private ContainerStatus status;
 
-    private DockerContainer(DockerInstance instance, String id, String image, String name, ContainerStatus status) {
+    DockerContainer(DockerInstance instance, String id, String image, String name, ContainerStatus status) {
         this.instance = instance;
         this.id = id;
         this.image = image;
@@ -83,7 +73,7 @@ public class DockerContainer implements Identifiable {
             @Override
             public void onEvent(DockerEvent event) {
                 if (event.getId().equals(DockerContainer.this.id)) {
-                    ContainerStatus fresh = DockerUtils.getContainerStatus(event);
+                    ContainerStatus fresh = org.netbeans.modules.docker.DockerUtils.getContainerStatus(event);
                     if (fresh != null) {
                         setStatus(fresh);
                     }
@@ -100,6 +90,11 @@ public class DockerContainer implements Identifiable {
     @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public String getShortId() {
+        return org.netbeans.modules.docker.DockerUtils.getShortId(this);
     }
 
     public String getImage() {

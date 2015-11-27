@@ -77,10 +77,9 @@ import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerException;
-import org.netbeans.modules.docker.api.action.DockerAction;
-import org.netbeans.modules.docker.api.action.StreamResult;
+import org.netbeans.modules.docker.api.DockerException;
+import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.api.StreamResult;
 import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IONotifier;
@@ -281,7 +280,7 @@ public final class UiUtils {
             LogConnect connect = LOGS.get(container);
             if (connect == null) {
                 InputOutput io = IOProvider.getDefault().getIO(
-                        Bundle.LBL_LogInputOutput(DockerUtils.getShortId(container)), true);
+                        Bundle.LBL_LogInputOutput(container.getShortId()), true);
                 connect = new LogConnect(io);
                 LOGS.put(container, connect);
             }
@@ -294,7 +293,7 @@ public final class UiUtils {
             InputOutput io = TERMS.get(container);
             if (io == null) {
                 io = IOProvider.get("Terminal") // NOI18N
-                        .getIO(DockerUtils.getShortId(container), new Action[] {new TerminalOptionsAction()});
+                        .getIO(container.getShortId(), new Action[] {new TerminalOptionsAction()});
                 TERMS.put(container, io);
                 return Pair.of(io, false);
             }

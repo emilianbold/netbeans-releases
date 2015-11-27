@@ -44,8 +44,8 @@ package org.netbeans.modules.docker.ui.build2;
 import java.io.File;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerUtils;
 import org.netbeans.modules.docker.ui.Validations;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -101,7 +101,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
         }
         String dockerfile = (String) wizard.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY);
         if (dockerfile == null) {
-            dockerfile = DockerUtils.DOCKER_FILE;
+            dockerfile = DockerAction.DOCKER_FILE;
         }
         File file = new File(dockerfile);
         if (!file.isAbsolute()) {

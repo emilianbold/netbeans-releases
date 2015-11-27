@@ -39,24 +39,38 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.action;
+package org.netbeans.modules.docker.api;
 
-import java.io.Closeable;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface StreamResult extends Closeable {
+public class StreamItem {
 
-    OutputStream getStdIn();
+    public static final StreamItem EMPTY = new StreamItem(ByteBuffer.allocate(0), false);
 
-    InputStream getStdOut();
+    private final ByteBuffer data;
 
-    InputStream getStdErr();
+    private final boolean error;
 
-    boolean hasTty();
+    public StreamItem(ByteBuffer data, boolean error) {
+        this.data = data;
+        this.error = error;
+    }
 
+    public ByteBuffer getData() {
+        return data;
+    }
+
+    public boolean isError() {
+        return error;
+    }
+
+    public static interface Fetcher {
+
+        StreamItem fetch();
+
+    }
 }

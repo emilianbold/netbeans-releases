@@ -50,8 +50,8 @@ import java.util.logging.Logger;
 import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.api.action.DockerEvent;
-import org.netbeans.modules.docker.api.action.DockerAction;
+import org.netbeans.modules.docker.api.DockerEvent;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -89,7 +89,7 @@ public class DockerImagesChildFactory extends ChildFactory<DockerTag> implements
                 refresh();
             }
         });
-        instance.getEventBus().addImageListener(new DockerEvent.Listener() {
+        instance.addImageListener(new DockerEvent.Listener() {
             @Override
             public void onEvent(DockerEvent event) {
                 if (DockerEvent.Status.PUSH != event.getStatus()) {

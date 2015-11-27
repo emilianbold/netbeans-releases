@@ -55,7 +55,7 @@ import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.docker.api.action.DockerEventBus;
+import org.netbeans.modules.docker.DockerEventBus;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
@@ -152,10 +152,6 @@ public class DockerInstance {
         return instances;
     }
 
-    public DockerEventBus getEventBus() {
-        return eventBus;
-    }
-
     public String getDisplayName() {
         return prefs.get(DISPLAY_NAME_KEY, null);
     }
@@ -196,6 +192,22 @@ public class DockerInstance {
         changeSupport.removeChangeListener(listener);
     }
 
+    public void addImageListener(DockerEvent.Listener listener) {
+        eventBus.addImageListener(listener);
+    }
+
+    public void removeImageListener(DockerEvent.Listener listener) {
+        eventBus.removeImageListener(listener);
+    }
+
+    public void addContainerListener(DockerEvent.Listener listener) {
+        eventBus.addContainerListener(listener);
+    }
+
+    public void removeContainerListener(DockerEvent.Listener listener) {
+        eventBus.removeContainerListener(listener);
+    }
+
     @Override
     public int hashCode() {
         int hash = 5;
@@ -224,6 +236,10 @@ public class DockerInstance {
     @Override
     public String toString() {
         return "DockerInstance{" + "url=" + url + '}';
+    }
+
+    DockerEventBus getEventBus() {
+        return eventBus;
     }
 
     private void init() {

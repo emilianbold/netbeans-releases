@@ -39,44 +39,20 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker;
-
-import org.netbeans.modules.docker.api.ContainerStatus;
-import org.netbeans.modules.docker.api.DockerInstance;
+package org.netbeans.modules.docker.api;
 
 /**
  *
  * @author Petr Hejl
  */
-public abstract class DockerContainerAccessor {
+public class DockerException extends Exception {
 
-    private static volatile DockerContainerAccessor DEFAULT;
-
-    public static DockerContainerAccessor getDefault() {
-        DockerContainerAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
-        // invokes static initializer of DockerContainer.class
-        // that will assign value to the DEFAULT field above
-        Class c = org.netbeans.modules.docker.api.DockerContainer.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
-        }
-        return DEFAULT;
+    public DockerException(String message) {
+        super(message);
     }
 
-    public static void setDefault(DockerContainerAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-
-        DEFAULT = accessor;
+    public DockerException(Throwable cause) {
+        super(cause);
     }
 
-    public abstract org.netbeans.modules.docker.api.DockerContainer createDockerContainer(
-            DockerInstance instance, String id, String image, String name, ContainerStatus status);
 }
