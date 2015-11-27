@@ -28,9 +28,9 @@ your own identifying information:
 
 Contributor(s):
 
-The Original Software is NetBeans. The Initial Developer of the Original
+ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-Microsystems, Inc. All Rights Reserved.
+ Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -43,22 +43,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project xmlns="http://www.netbeans.org/ns/project/1">
-    <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.libs.commons_compress</code-name-base>
-            <module-dependencies/>
-            <friend-packages>
-                <friend>org.netbeans.modules.docker.api</friend>
-                <friend>org.netbeans.modules.javascript.nodejs</friend>
-                <package>org.apache.commons.compress.archivers</package>
-                <package>org.apache.commons.compress.archivers.tar</package>
-            </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/commons-compress-1.8.1.jar</runtime-relative-path>
-                <binary-origin>external/commons-compress-1.8.1.jar</binary-origin>
-            </class-path-extension>
-        </data>
-    </configuration>
+
+<project basedir="." default="netbeans" name="docker.ui">
+    <description>Builds, tests, and runs the project org.netbeans.modules.docker.ui</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>
