@@ -65,18 +65,18 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
-public final class RootNode extends AbstractNode {
+public final class DockerNode extends AbstractNode {
 
     private static final RequestProcessor REFRESH_PROCESSOR =
             new RequestProcessor("Docker node update/refresh", 5);
 
     private static final String DOCKER_ICON = "org/netbeans/modules/docker/ui/resources/docker_root.png"; // NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger(RootNode.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DockerNode.class.getName());
 
-    private static RootNode node;
+    private static DockerNode node;
 
-    private RootNode(ChildFactory factory, String displayName, String shortDesc, String iconBase) {
+    private DockerNode(ChildFactory factory, String displayName, String shortDesc, String iconBase) {
         super(Children.create(factory, true));
 
         setName(""); // NOI18N
@@ -92,14 +92,14 @@ public final class RootNode extends AbstractNode {
         iconResource = "org/netbeans/modules/docker/ui/resources/docker_root.png",
         position = 500
     )
-    public static synchronized RootNode getInstance() {
+    public static synchronized DockerNode getInstance() {
         if (node == null) {
             ChildFactory factory = new ChildFactory(DockerIntegration.getInstance());
             factory.init();
 
-            node = new RootNode(factory, 
-                    NbBundle.getMessage(RootNode.class, "Docker_Root_Node_Name"),
-                    NbBundle.getMessage(RootNode.class, "Docker_Root_Node_Short_Description"),
+            node = new DockerNode(factory, 
+                    NbBundle.getMessage(DockerNode.class, "Docker_Root_Node_Name"),
+                    NbBundle.getMessage(DockerNode.class, "Docker_Root_Node_Short_Description"),
                     DOCKER_ICON);
         }
         return node;
