@@ -64,7 +64,7 @@ public class DockerContainer implements Identifiable {
 
     private ContainerStatus status;
 
-    DockerContainer(DockerInstance instance, String id, String image, String name, ContainerStatus status) {
+    public DockerContainer(DockerInstance instance, String id, String image, String name, ContainerStatus status) {
         this.instance = instance;
         this.id = id;
         this.image = image;

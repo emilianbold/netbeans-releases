@@ -44,7 +44,7 @@ package org.netbeans.modules.docker.ui.node;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.api.ContainerStatus;
 import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerContainerInfo;
+import org.netbeans.modules.docker.api.DockerContainerDetail;
 import org.netbeans.modules.docker.api.DockerUtils;
 import org.netbeans.modules.docker.api.remote.DockerException;
 import org.netbeans.modules.docker.api.remote.DockerRemote;
@@ -73,7 +73,7 @@ public class AttachContainerAction extends AbstractContainerAction {
     @Override
     protected void performAction(DockerContainer container) throws DockerException {
         DockerRemote facade = new DockerRemote(container.getInstance());
-        DockerContainerInfo info = facade.getInfo(container);
+        DockerContainerDetail info = facade.getInfo(container);
         UiUtils.openTerminal(container, null, info.isOpenStdin(), false);
     }
 

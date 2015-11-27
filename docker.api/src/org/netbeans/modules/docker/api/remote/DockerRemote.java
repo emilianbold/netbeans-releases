@@ -93,10 +93,10 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.api.ContainerStatus;
 import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerContainerInfo;
+import org.netbeans.modules.docker.api.DockerContainerDetail;
 import org.netbeans.modules.docker.api.DockerHubImage;
 import org.netbeans.modules.docker.api.DockerImage;
-import org.netbeans.modules.docker.api.DockerImageInfo;
+import org.netbeans.modules.docker.api.DockerImageDetail;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerUtils;
@@ -141,7 +141,8 @@ public class DockerRemote {
         this(instance, true);
     }
 
-    public DockerRemote(DockerInstance instance, boolean emitEvents) {
+    // not needed in the api for now
+    private DockerRemote(DockerInstance instance, boolean emitEvents) {
         this.instance = instance;
         this.emitEvents = emitEvents;
     }
@@ -182,7 +183,7 @@ public class DockerRemote {
                     name = (String) names.get(0);
                 }
                 ContainerStatus status = DockerUtils.getContainerStatus((String) json.get("Status"));
-                ret.add(instance.getContainerFactory().create(id, image, name, status));
+                ret.add(new DockerContainer(instance, id, image, name, status));
             }
             return ret;
         } catch (DockerException ex) {
@@ -298,7 +299,7 @@ public class DockerRemote {
         return new DockerTag(source.getImage(), tagResult);
     }
 
-    public DockerContainerInfo getInfo(DockerContainer container) throws DockerException {
+    public DockerContainerDetail getInfo(DockerContainer container) throws DockerException {
         JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
                 "/containers/" + container.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
         boolean tty = false;
@@ -308,10 +309,10 @@ public class DockerRemote {
             tty = (boolean) getOrDefault(config, "Tty", false);
             openStdin = (boolean) getOrDefault(config, "OpenStdin", false);
         }
-        return new DockerContainerInfo(openStdin, tty);
+        return new DockerContainerDetail(openStdin, tty);
     }
 
-    public DockerImageInfo getInfo(DockerImage image) throws DockerException {
+    public DockerImageDetail getInfo(DockerImage image) throws DockerException {
         JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
                 "/images/" + image.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
         List<NetworkPort> ports = new LinkedList<>();
@@ -332,7 +333,7 @@ public class DockerRemote {
                 }
             }
         }
-        return new DockerImageInfo(ports);
+        return new DockerImageDetail(ports);
     }
 
     public void start(DockerContainer container) throws DockerException {
@@ -411,7 +412,7 @@ public class DockerRemote {
     public StreamResult attach(DockerContainer container, boolean stdin, boolean logs) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
-        DockerContainerInfo info = getInfo(container);
+        DockerContainerDetail info = getInfo(container);
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -729,7 +730,7 @@ public class DockerRemote {
     public LogResult logs(DockerContainer container) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
-        DockerContainerInfo info = getInfo(container);
+        DockerContainerDetail info = getInfo(container);
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -815,7 +816,7 @@ public class DockerRemote {
             }
 
             String id = (String) value.get("Id");
-            DockerContainer container = instance.getContainerFactory().create(id,
+            DockerContainer container = new DockerContainer(instance, id,
                     (String) configuration.get("Image"),
                     "/" + name,
                     ContainerStatus.STOPPED);

@@ -88,8 +88,6 @@ public class DockerInstance {
 
     private final Preferences prefs;
 
-    private final ContainerFactory containerFactory = new ContainerFactory(this);
-
     private final DockerEventBus eventBus = new DockerEventBus(this);
 
     private DockerInstance(String url, Preferences prefs) {
@@ -152,10 +150,6 @@ public class DockerInstance {
             LOGGER.log(Level.WARNING, null, ex);
         }
         return instances;
-    }
-
-    public ContainerFactory getContainerFactory() {
-        return containerFactory;
     }
 
     public DockerEventBus getEventBus() {

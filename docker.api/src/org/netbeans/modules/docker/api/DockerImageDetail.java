@@ -41,34 +41,22 @@
  */
 package org.netbeans.modules.docker.api;
 
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
  * @author Petr Hejl
  */
-public class ContainerFactory {
+public class DockerImageDetail {
 
-    private final DockerInstance instance;
+    private final List<NetworkPort> exposedPorts;
 
-    private final Map<String, DockerContainer> cache = new WeakHashMap<>();
-
-    public ContainerFactory(DockerInstance instance) {
-        this.instance = instance;
+    public DockerImageDetail(List<NetworkPort> exposedPorts) {
+        this.exposedPorts = exposedPorts;
     }
 
-    public DockerContainer create(String id, String image, String name, ContainerStatus status) {
-        synchronized (instance) {
-            DockerContainer ret = cache.get(id);
-            if (ret != null) {
-                ret.setStatus(status);
-                return ret;
-            } else {
-                ret = new DockerContainer(instance, id, image, name, status);
-                cache.put(id, ret);
-            }
-            return ret;
-        }
+    public List<NetworkPort> getExposedPorts() {
+        return Collections.unmodifiableList(exposedPorts);
     }
 }

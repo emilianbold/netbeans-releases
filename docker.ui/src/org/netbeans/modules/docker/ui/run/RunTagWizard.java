@@ -57,7 +57,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerImage;
-import org.netbeans.modules.docker.api.DockerImageInfo;
+import org.netbeans.modules.docker.api.DockerImageDetail;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerUtils;
 import org.netbeans.modules.docker.api.remote.DockerException;
@@ -105,7 +105,7 @@ public class RunTagWizard {
         "LBL_Run=Run {0}"
     })
     public void show() {
-        DockerImageInfo info = BaseProgressUtils.showProgressDialogAndRun(
+        DockerImageDetail info = BaseProgressUtils.showProgressDialogAndRun(
                 new DockerImageInfoRunnable(tag.getImage()), Bundle.MSG_ReceivingImageInfo(), false);
 
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
@@ -210,7 +210,7 @@ public class RunTagWizard {
         });
     }
 
-    private static class DockerImageInfoRunnable implements ProgressRunnable<DockerImageInfo> {
+    private static class DockerImageInfoRunnable implements ProgressRunnable<DockerImageDetail> {
 
         private final DockerImage image;
 
@@ -219,7 +219,7 @@ public class RunTagWizard {
         }
 
         @Override
-        public DockerImageInfo run(ProgressHandle handle) {
+        public DockerImageDetail run(ProgressHandle handle) {
             try {
                 DockerRemote remote = new DockerRemote(image.getInstance());
                 return remote.getInfo(image);

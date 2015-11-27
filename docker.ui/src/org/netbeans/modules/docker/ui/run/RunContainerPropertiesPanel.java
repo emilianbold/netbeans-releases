@@ -43,7 +43,7 @@ package org.netbeans.modules.docker.ui.run;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.docker.api.DockerImageInfo;
+import org.netbeans.modules.docker.api.DockerImageDetail;
 import org.netbeans.modules.docker.ui.Validations;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
@@ -53,7 +53,7 @@ public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<Wizar
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final DockerImageInfo info;
+    private final DockerImageDetail info;
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -63,7 +63,7 @@ public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<Wizar
 
     private WizardDescriptor wizard;
 
-    public RunContainerPropertiesPanel(DockerImageInfo info) {
+    public RunContainerPropertiesPanel(DockerImageDetail info) {
         this.info = info;
     }
 

@@ -49,7 +49,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.docker.api.DockerImageInfo;
+import org.netbeans.modules.docker.api.DockerImageDetail;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -59,7 +59,7 @@ public class RunPortBindingsPanel implements WizardDescriptor.Panel<WizardDescri
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final DockerImageInfo info;
+    private final DockerImageDetail info;
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -69,7 +69,7 @@ public class RunPortBindingsPanel implements WizardDescriptor.Panel<WizardDescri
 
     private WizardDescriptor wizard;
 
-    public RunPortBindingsPanel(DockerImageInfo info) {
+    public RunPortBindingsPanel(DockerImageDetail info) {
         this.info = info;
     }
 

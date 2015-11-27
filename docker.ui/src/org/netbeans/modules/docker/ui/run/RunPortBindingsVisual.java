@@ -56,7 +56,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
-import org.netbeans.modules.docker.api.DockerImageInfo;
+import org.netbeans.modules.docker.api.DockerImageDetail;
 import org.netbeans.modules.docker.api.NetworkPort;
 import org.netbeans.modules.docker.api.NetworkPort.Type;
 import org.netbeans.modules.docker.ui.UiUtils;
@@ -71,14 +71,14 @@ public class RunPortBindingsVisual extends javax.swing.JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final DockerImageInfo info;
+    private final DockerImageDetail info;
 
     private final PortMappingModel model = new PortMappingModel();
 
     /**
      * Creates new form RunNetworkVisual
      */
-    public RunPortBindingsVisual(DockerImageInfo info) {
+    public RunPortBindingsVisual(DockerImageDetail info) {
         initComponents();
         this.info = info;
 

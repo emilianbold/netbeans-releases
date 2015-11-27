@@ -41,22 +41,26 @@
  */
 package org.netbeans.modules.docker.api;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
  *
  * @author Petr Hejl
  */
-public class DockerImageInfo {
+public class DockerContainerDetail {
 
-    private final List<NetworkPort> exposedPorts;
+    private final boolean openStdin;
 
-    public DockerImageInfo(List<NetworkPort> exposedPorts) {
-        this.exposedPorts = exposedPorts;
+    private final boolean tty;
+
+    public DockerContainerDetail(boolean openStdin, boolean tty) {
+        this.openStdin = openStdin;
+        this.tty = tty;
     }
 
-    public List<NetworkPort> getExposedPorts() {
-        return Collections.unmodifiableList(exposedPorts);
+    public boolean isOpenStdin() {
+        return openStdin;
+    }
+
+    public boolean isTty() {
+        return tty;
     }
 }
