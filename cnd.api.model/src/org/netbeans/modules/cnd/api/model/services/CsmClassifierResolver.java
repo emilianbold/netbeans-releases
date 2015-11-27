@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.openide.util.Lookup;
 
@@ -61,7 +62,11 @@ public abstract class CsmClassifierResolver {
     private static final CsmClassifierResolver DEFAULT = new Default();
 
     public abstract CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile);
+    
+    @Deprecated
     public abstract CsmClassifier getTypeClassifier(CsmType type, CsmFile contextFile, int contextOffset, boolean resolveTypeChain);
+    
+    public abstract CsmClassifier getTypeClassifier(CsmType type, CsmScope contextScope, CsmFile contextFile, int contextOffset, boolean resolveTypeChain);
 
     /**
      * trying to find classifier with full qualified name used in file
@@ -160,13 +165,18 @@ public abstract class CsmClassifierResolver {
 
         @Override
         public CsmClassifier getTypeClassifier(CsmType type, CsmFile contextFile, int contextOffset, boolean resolveTypeChain) {
+            return getTypeClassifier(type, null, contextFile, contextOffset, resolveTypeChain);
+        }
+
+        @Override
+        public CsmClassifier getTypeClassifier(CsmType type, CsmScope contextScope, CsmFile contextFile, int contextOffset, boolean resolveTypeChain) {
             CsmClassifier classifier = null;
             final TypeResolveRequest request = new TypeResolveRequest(type, contextFile, contextOffset);
             if (enterAntiloop(threadLocalTypeAntiloopSet.get(), request)) {
                 try {
                     CsmClassifierResolver service = getService();            
                     if (service != null) {
-                        return service.getTypeClassifier(type, contextFile, contextOffset, resolveTypeChain);
+                        return service.getTypeClassifier(type, contextScope, contextFile, contextOffset, resolveTypeChain);
                     }
                     classifier = type.getClassifier();
                     if (resolveTypeChain) {
