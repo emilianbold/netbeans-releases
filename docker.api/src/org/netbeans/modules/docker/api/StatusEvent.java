@@ -44,13 +44,12 @@ package org.netbeans.modules.docker.api;
 import java.util.EventListener;
 import java.util.EventObject;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.docker.api.DockerInstance;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StatusEvent extends EventObject {
+public final class StatusEvent extends EventObject {
 
     private final DockerInstance instance;
 

@@ -49,7 +49,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
  *
  * @author Petr Hejl
  */
-public class BuildEvent extends EventObject {
+public final class BuildEvent extends EventObject {
 
     private final DockerInstance instance;
 

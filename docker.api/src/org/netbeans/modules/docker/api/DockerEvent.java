@@ -46,13 +46,12 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.netbeans.modules.docker.api.DockerInstance;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerEvent extends EventObject {
+public final class DockerEvent extends EventObject {
 
     public enum Status {
 
