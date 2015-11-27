@@ -46,7 +46,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
-import org.netbeans.modules.docker.api.DockerRegistry;
+import org.netbeans.modules.docker.api.DockerIntegration;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -102,7 +102,7 @@ public class AddDockerInstanceWizard {
                 keyFile = new File(file, DEFAULT_KEY_FILE);
             }
 
-            DockerRegistry.getInstance().createInstance((String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
+            DockerIntegration.getInstance().createInstance((String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
                     (String) wiz.getProperty(URL_PROPERTY), caFile, certFile, keyFile);
 
         }

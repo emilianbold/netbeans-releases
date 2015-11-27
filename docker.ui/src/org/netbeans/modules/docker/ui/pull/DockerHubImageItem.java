@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.pull;
 
-import org.netbeans.modules.docker.api.DockerHubImage;
+import org.netbeans.modules.docker.api.DockerRegistryImage;
 
 /**
  *
@@ -49,13 +49,13 @@ import org.netbeans.modules.docker.api.DockerHubImage;
  */
 public class DockerHubImageItem implements Comparable<DockerHubImageItem> {
 
-    private final DockerHubImage hubImage;
+    private final DockerRegistryImage hubImage;
 
-    public DockerHubImageItem(DockerHubImage imageInfo) {
+    public DockerHubImageItem(DockerRegistryImage imageInfo) {
         this.hubImage = imageInfo;
     }
 
-    public DockerHubImage getHubImage() {
+    public DockerRegistryImage getHubImage() {
         return hubImage;
     }
 
@@ -73,8 +73,8 @@ public class DockerHubImageItem implements Comparable<DockerHubImageItem> {
 
     @Override
     public int compareTo(DockerHubImageItem o) {
-        DockerHubImage o1 = hubImage;
-        DockerHubImage o2 = o.hubImage;
+        DockerRegistryImage o1 = hubImage;
+        DockerRegistryImage o2 = o.hubImage;
 
         if (o1.getStars() > o2.getStars()) {
             return -1;

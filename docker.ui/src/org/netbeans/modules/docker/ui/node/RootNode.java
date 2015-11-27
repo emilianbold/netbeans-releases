@@ -56,7 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerRegistry;
+import org.netbeans.modules.docker.api.DockerIntegration;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -94,7 +94,7 @@ public final class RootNode extends AbstractNode {
     )
     public static synchronized RootNode getInstance() {
         if (node == null) {
-            ChildFactory factory = new ChildFactory(DockerRegistry.getInstance());
+            ChildFactory factory = new ChildFactory(DockerIntegration.getInstance());
             factory.init();
 
             node = new RootNode(factory, 
@@ -115,9 +115,9 @@ public final class RootNode extends AbstractNode {
 
         private static final Comparator<DockerInstance> COMPARATOR = new InstanceComparator();
 
-        private final DockerRegistry registry;
+        private final DockerIntegration registry;
 
-        public ChildFactory(DockerRegistry registry) {
+        public ChildFactory(DockerIntegration registry) {
             super();
             this.registry = registry;
         }
@@ -145,7 +145,7 @@ public final class RootNode extends AbstractNode {
         }
 
         private synchronized void updateState(final ChangeEvent e) {
-            if (e.getSource() instanceof DockerRegistry) {
+            if (e.getSource() instanceof DockerIntegration) {
 
             }
             refresh();

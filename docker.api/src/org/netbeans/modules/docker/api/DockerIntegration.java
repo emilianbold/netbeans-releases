@@ -63,11 +63,11 @@ import org.openide.util.Parameters;
  *
  * @author Petr Hejl
  */
-public final class DockerRegistry {
+public final class DockerIntegration {
 
-    private static final Logger LOGGER = Logger.getLogger(DockerRegistry.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DockerIntegration.class.getName());
 
-    private static DockerRegistry registry;
+    private static DockerIntegration registry;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -77,15 +77,15 @@ public final class DockerRegistry {
     // GuardedBy("this")
     private boolean initialized;
 
-    private DockerRegistry() {
+    private DockerIntegration() {
         super();
     }
 
-    public static DockerRegistry getInstance() {
-        DockerRegistry ret;
-        synchronized (DockerRegistry.class) {
+    public static DockerIntegration getInstance() {
+        DockerIntegration ret;
+        synchronized (DockerIntegration.class) {
             if (registry == null) {
-                registry = new DockerRegistry();
+                registry = new DockerIntegration();
                 Preferences p = NbPreferences.forModule(DockerInstance.class).node(DockerInstance.INSTANCES_KEY);
                 p.addNodeChangeListener(new NodeChangeListener() {
                     @Override

@@ -47,7 +47,7 @@ import java.util.Objects;
  *
  * @author Petr Hejl
  */
-public class DockerHubImage {
+public class DockerRegistryImage {
 
     private final String name;
 
@@ -59,7 +59,7 @@ public class DockerHubImage {
 
     private final boolean automated;
 
-    public DockerHubImage(String name, String description, long stars, boolean official, boolean automated) {
+    public DockerRegistryImage(String name, String description, long stars, boolean official, boolean automated) {
         this.name = name;
         this.description = description;
         this.stars = stars;
@@ -105,7 +105,7 @@ public class DockerHubImage {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final DockerHubImage other = (DockerHubImage) obj;
+        final DockerRegistryImage other = (DockerRegistryImage) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }

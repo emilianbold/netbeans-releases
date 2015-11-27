@@ -186,7 +186,7 @@ public class DockerAction {
         return Collections.emptyList();
     }
 
-    public List<DockerHubImage> search(String searchTerm) {
+    public List<DockerRegistryImage> search(String searchTerm) {
         // the api does not allow this TAG and DIGEST separator characters
         if (searchTerm.contains(":") || searchTerm.contains("@")) { // NOI18N
             return Collections.emptyList();
@@ -195,7 +195,7 @@ public class DockerAction {
         try {
             JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
                     "/images/search?term=" + HttpParsingUtils.encodeParameter(searchTerm), Collections.singleton(HttpURLConnection.HTTP_OK));
-            List<DockerHubImage> ret = new ArrayList<>(value.size());
+            List<DockerRegistryImage> ret = new ArrayList<>(value.size());
             for (Object o : value) {
                 JSONObject json = (JSONObject) o;
                 String name = (String) json.get("name");
@@ -203,7 +203,7 @@ public class DockerAction {
                 long stars = ((Number) getOrDefault(json, "star_count", 0)).longValue();
                 boolean official = (boolean) getOrDefault(json, "is_official", false);
                 boolean automated = (boolean) getOrDefault(json, "is_automated", false);
-                ret.add(new DockerHubImage(name, description, stars, official, automated));
+                ret.add(new DockerRegistryImage(name, description, stars, official, automated));
             }
             return ret;
         } catch (DockerException | UnsupportedEncodingException ex) {

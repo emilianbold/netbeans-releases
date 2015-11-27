@@ -47,7 +47,7 @@ import java.net.URL;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerRegistry;
+import org.netbeans.modules.docker.api.DockerIntegration;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -109,7 +109,7 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyDisplayName());
             return false;
         }
-        for (DockerInstance instance : DockerRegistry.getInstance().getInstances()) {
+        for (DockerInstance instance : DockerIntegration.getInstance().getInstances()) {
             if (displayName.equals(instance.getDisplayName())) {
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_AlreadyUsedDisplayName());
                 return false;
