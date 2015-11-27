@@ -99,8 +99,15 @@ public class DockerInstance {
     static DockerInstance create(@NonNull String displayName, @NonNull String url,
             @NullAllowed File caCertificate, @NullAllowed File certificate, @NullAllowed File key) {
         Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
+
         // XXX synchronization ?
-        Preferences prefs = global.node(escapeUrl(url));
+        Preferences prefs = null;
+        int suffix = 0;
+        do {
+            prefs = global.node(escapeUrl(url) + suffix);
+            suffix++;
+        } while (prefs.get(URL_KEY, null) != null && suffix < Integer.MAX_VALUE);
+
         prefs.put(DISPLAY_NAME_KEY, displayName);
         prefs.put(URL_KEY, url);
         if (caCertificate != null) {
@@ -247,7 +254,7 @@ public class DockerInstance {
     }
 
     private static String escapeUrl(String url) {
-        return url.replaceFirst("://", "_"); // NOI18N
+        return url.replaceAll("[:/]", "_"); // NOI18N
     }
 
     private class InstanceListener implements PreferenceChangeListener {

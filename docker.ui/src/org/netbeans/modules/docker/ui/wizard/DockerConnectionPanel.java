@@ -196,7 +196,8 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
         String url = (String) wiz.getProperty(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY);
         if (url == null) {
             if (Utilities.isMac() || Utilities.isWindows()) {
-                url = "https://192.168.59.103:2376"; // NOI18N
+                // dockertoolbox it was https://192.168.59.103:2376 with boot2docker
+                url = "https://192.168.99.100:2376"; // NOI18N
             } else {
                 url = "http://127.0.0.1:2375"; // NOI18N
             }
@@ -209,12 +210,14 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
             if (envPath != null && new File(envPath).isDirectory()) {
                 certPath = envPath;
             } else if (Utilities.isMac() || Utilities.isWindows()) {
-                File docker = new File(System.getProperty("user.home"), ".docker"); // NOI18N
-                if (!docker.isDirectory()) {
-                    docker = new File(System.getProperty("user.home"), ".boot2docker"); // NOI18N
+                // dockertoolbox
+                File folder = new File(System.getProperty("user.home"), ".docker" + File.separator
+                        + "machine" + File.separator + "machines" + File.separator + "default"); // NOI18N
+                if (!folder.isDirectory()) {
+                    folder = new File(System.getProperty("user.home"), ".boot2docker"); // NOI18N
                 }
-                if (docker.isDirectory()) {
-                    certPath = docker.getAbsolutePath();
+                if (folder.isDirectory()) {
+                    certPath = folder.getAbsolutePath();
                 }
             }
         }
