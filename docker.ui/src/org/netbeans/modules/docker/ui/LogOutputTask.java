@@ -47,8 +47,8 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.api.ActionStreamItem;
+import org.netbeans.modules.docker.api.ActionChunkedResult;
+import org.netbeans.modules.docker.api.ActionChunkedResult.Chunk;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
@@ -64,9 +64,9 @@ public class LogOutputTask implements Runnable {
 
     private final InputOutput io;
 
-    private final DockerAction.LogResult logResult;
+    private final ActionChunkedResult logResult;
 
-    public LogOutputTask(InputOutput io, DockerAction.LogResult logResult) {
+    public LogOutputTask(InputOutput io, ActionChunkedResult logResult) {
         this.io = io;
         this.logResult = logResult;
     }
@@ -77,20 +77,15 @@ public class LogOutputTask implements Runnable {
 
     @Override
     public void run() {
-        ActionStreamItem.Fetcher fetcher = logResult.getFetcher();
-        ActionStreamItem r;
+        Chunk r;
         try {
-            while ((r = fetcher.fetch()) != null) {
-                ByteBuffer buffer = r.getData();
-                String value = new String(buffer.array(), buffer.position(), buffer.limit(), "UTF-8");
+            while ((r = logResult.fetchChunk()) != null) {
                 if (r.isError()) {
-                    io.getErr().print(value);
+                    io.getErr().print(r.getData());
                 } else {
-                    io.getOut().print(value);
+                    io.getOut().print(r.getData());
                 }
             }
-        } catch (UnsupportedEncodingException ex) {
-            LOGGER.log(Level.INFO, null, ex);
         } finally {
             close();
         }

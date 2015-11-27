@@ -44,7 +44,6 @@ package org.netbeans.modules.docker.api;
 import java.util.EventListener;
 import java.util.EventObject;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.docker.api.DockerInstance;
 
 /**
  *

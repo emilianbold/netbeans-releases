@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api;
+package org.netbeans.modules.docker;
 
 import java.nio.ByteBuffer;
 
@@ -47,15 +47,15 @@ import java.nio.ByteBuffer;
  *
  * @author Petr Hejl
  */
-public class ActionStreamItem {
+public class StreamItem {
 
-    public static final ActionStreamItem EMPTY = new ActionStreamItem(ByteBuffer.allocate(0), false);
+    public static final StreamItem EMPTY = new StreamItem(ByteBuffer.allocate(0), false);
 
     private final ByteBuffer data;
 
     private final boolean error;
 
-    public ActionStreamItem(ByteBuffer data, boolean error) {
+    public StreamItem(ByteBuffer data, boolean error) {
         this.data = data;
         this.error = error;
     }
@@ -70,7 +70,7 @@ public class ActionStreamItem {
 
     public static interface Fetcher {
 
-        ActionStreamItem fetch();
+        StreamItem fetch();
 
     }
 }

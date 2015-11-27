@@ -39,72 +39,66 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker;
+package org.netbeans.modules.docker.api;
 
-import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.nio.charset.Charset;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.docker.StreamItem;
 
 /**
  *
  * @author Petr Hejl
  */
-//@NotThreadSafe
-public class Demuxer implements StreamItem.Fetcher {
+public final class ActionChunkedResult implements Closeable {
 
-    private static final Logger LOGGER = Logger.getLogger(Demuxer.class.getName());
+    private final Socket s;
 
-    private final InputStream is;
+    private final StreamItem.Fetcher fetcher;
 
-    private byte[] buffer = new byte[8];
+    private final Charset charset;
 
-    private byte[] content = new byte[256];
+    ActionChunkedResult(Socket s, StreamItem.Fetcher fetcher, Charset charset) {
+        this.s = s;
+        this.fetcher = fetcher;
+        this.charset = charset;
+    }
 
-    public Demuxer(InputStream is) {
-        this.is = is;
+    @CheckForNull
+    public Chunk fetchChunk() {
+        StreamItem r = fetcher.fetch();
+        if (r == null) {
+            return null;
+        }
+        ByteBuffer buffer = r.getData();
+        return new Chunk(new String(buffer.array(), buffer.position(), buffer.limit(), charset), r.isError());
     }
 
     @Override
-    public StreamItem fetch() {
-        try {
-            int sum = 0;
-            do {
-                int read = is.read(buffer, sum, buffer.length - sum);
-                if (read < 0) {
-                    return null;
-                }
-                sum += read;
-            } while (sum < 8);
-            // now we have 8 bytes
-            assert buffer.length == 8;
+    public void close() throws IOException {
+        s.close();
+    }
 
-            boolean error;
-            int size = ByteBuffer.wrap(buffer).getInt(4);
-            if (buffer[0] == 0 || buffer[0] == 1) {
-                error = false;
-            } else if (buffer[0] == 2) {
-                error = true;
-            } else {
-                throw new IOException("Unparsable stream " + buffer[0]);
-            }
+    public static class Chunk {
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
-            sum = 0;
-            do {
-                int read = is.read(content, 0, Math.min(size - sum, content.length));
-                if (read < 0) {
-                    return null;
-                }
-                bos.write(content, 0, read);
-                sum += read;
-            } while (sum < size);
-            return new StreamItem(ByteBuffer.wrap(bos.toByteArray()), error);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            return null;
+        private final String data;
+
+        private final boolean error;
+
+        private Chunk(String data, boolean error) {
+            this.data = data;
+            this.error = error;
+        }
+
+        public String getData() {
+            return data;
+        }
+
+        public boolean isError() {
+            return error;
         }
     }
 }

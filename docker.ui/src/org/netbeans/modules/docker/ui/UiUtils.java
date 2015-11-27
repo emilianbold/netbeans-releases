@@ -89,6 +89,7 @@ import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.netbeans.modules.docker.api.ActionChunkedResult;
 import org.netbeans.modules.docker.api.ActionStreamResult;
 
 /**
@@ -227,7 +228,7 @@ public final class UiUtils {
         }
 
         DockerAction facade = new DockerAction(container.getInstance());
-        DockerAction.LogResult result = facade.logs(container);
+        ActionChunkedResult result = facade.logs(container);
         try {
             logIO.getInputOutput().getOut().reset();
         } catch (IOException ex) {
@@ -449,7 +450,7 @@ public final class UiUtils {
             return io;
         }
 
-        public synchronized void connect(DockerAction.LogResult result) {
+        public synchronized void connect(ActionChunkedResult result) {
             task = new LogOutputTask(io, result).start();
         }
 

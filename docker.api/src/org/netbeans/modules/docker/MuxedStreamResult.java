@@ -47,7 +47,6 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.ActionStreamItem;
 import org.netbeans.modules.docker.api.ActionStreamResult;
 
 /**
@@ -68,7 +67,7 @@ public class MuxedStreamResult implements ActionStreamResult {
 
     private final InputStream stdErr;
 
-    private ActionStreamItem last = ActionStreamItem.EMPTY;
+    private StreamItem last = StreamItem.EMPTY;
 
     public MuxedStreamResult(Socket s, InputStream is) throws IOException {
         this.s = s;

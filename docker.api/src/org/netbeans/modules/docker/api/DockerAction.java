@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.api;
 
+import org.netbeans.modules.docker.StreamItem;
 import org.netbeans.modules.docker.ConnectionListener;
 import org.netbeans.modules.docker.DockerRemoteException;
 import org.netbeans.modules.docker.FolderUploader;
@@ -70,6 +71,7 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -721,7 +723,7 @@ public class DockerAction {
        }
     }
 
-    public LogResult logs(DockerContainer container) throws DockerException {
+    public ActionChunkedResult logs(DockerContainer container) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         DockerContainerDetail info = getDetail(container);
@@ -746,15 +748,15 @@ public class DockerAction {
 
             is = HttpParsingUtils.getResponseStream(is, response);
 
-            ActionStreamItem.Fetcher fetcher;
+            StreamItem.Fetcher fetcher;
             Integer length = HttpParsingUtils.getLength(response.getHeaders());
             // if there was no log it may return just standard reply with content length 0
             if (length != null && length == 0) {
                 assert !(is instanceof ChunkedInputStream);
                 LOGGER.log(Level.INFO, "Empty logs");
-                fetcher = new ActionStreamItem.Fetcher() {
+                fetcher = new StreamItem.Fetcher() {
                     @Override
-                    public ActionStreamItem fetch() {
+                    public StreamItem fetch() {
                         return null;
                     }
                 };
@@ -763,7 +765,7 @@ public class DockerAction {
             } else {
                 fetcher = new Demuxer(is);
             }
-            return new LogResult(s, fetcher);
+            return new ActionChunkedResult(s, fetcher, HttpParsingUtils.getCharset(response));
         } catch (MalformedURLException e) {
             closeSocket(s);
             throw new DockerException(e);
@@ -1066,28 +1068,8 @@ public class DockerAction {
         return id;
     }
 
-    public static class LogResult implements Closeable {
 
-        private final Socket s;
-
-        private final ActionStreamItem.Fetcher fetcher;
-
-        public LogResult(Socket s, ActionStreamItem.Fetcher fetcher) {
-            this.s = s;
-            this.fetcher = fetcher;
-        }
-
-        public ActionStreamItem.Fetcher getFetcher() {
-            return fetcher;
-        }
-
-        @Override
-        public void close() throws IOException {
-            s.close();
-        }
-    }
-
-    private static class DirectFetcher implements ActionStreamItem.Fetcher {
+    private static class DirectFetcher implements StreamItem.Fetcher {
 
         private final InputStream is;
 
@@ -1098,13 +1080,13 @@ public class DockerAction {
         }
 
         @Override
-        public ActionStreamItem fetch() {
+        public StreamItem fetch() {
             try {
                 int count = is.read(buffer);
                 if (count < 0) {
                     return null;
                 }
-                return new ActionStreamItem(ByteBuffer.wrap(buffer, 0, count), false);
+                return new StreamItem(ByteBuffer.wrap(buffer, 0, count), false);
             } catch (IOException ex) {
                 LOGGER.log(Level.FINE, null, ex);
                 return null;
