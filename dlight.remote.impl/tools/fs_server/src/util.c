@@ -147,14 +147,14 @@ void soft_assert(int condition, char* format, ...) {
     }
 }
 
-void mutex_lock(pthread_mutex_t *mutex) {
+void mutex_lock_wrapper(pthread_mutex_t *mutex) {
     if (pthread_mutex_lock(mutex)) {
         report_error("error locking mutex: %s\n", strerror(errno));
         exit(FAILURE_LOCKING_MUTEX);
     }
 }
 
-void mutex_unlock(pthread_mutex_t *mutex) {
+void mutex_unlock_wrapper(pthread_mutex_t *mutex) {
     if (pthread_mutex_unlock(mutex)) {
         report_error("error unlocking mutex: %s\n", strerror(errno));
         exit(FAILURE_UNLOCKING_MUTEX);
