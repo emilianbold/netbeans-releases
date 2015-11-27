@@ -48,7 +48,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.api.StreamItem;
+import org.netbeans.modules.docker.api.ActionStreamItem;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
@@ -77,8 +77,8 @@ public class LogOutputTask implements Runnable {
 
     @Override
     public void run() {
-        StreamItem.Fetcher fetcher = logResult.getFetcher();
-        StreamItem r;
+        ActionStreamItem.Fetcher fetcher = logResult.getFetcher();
+        ActionStreamItem r;
         try {
             while ((r = fetcher.fetch()) != null) {
                 ByteBuffer buffer = r.getData();

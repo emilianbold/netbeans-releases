@@ -50,13 +50,13 @@ import java.util.List;
  */
 public class DockerImageDetail {
 
-    private final List<NetworkPort> exposedPorts;
+    private final List<ExposedPort> exposedPorts;
 
-    public DockerImageDetail(List<NetworkPort> exposedPorts) {
+    public DockerImageDetail(List<ExposedPort> exposedPorts) {
         this.exposedPorts = exposedPorts;
     }
 
-    public List<NetworkPort> getExposedPorts() {
+    public List<ExposedPort> getExposedPorts() {
         return Collections.unmodifiableList(exposedPorts);
     }
 }

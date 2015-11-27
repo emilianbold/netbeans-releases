@@ -45,13 +45,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import org.netbeans.modules.docker.api.StreamResult;
+import org.netbeans.modules.docker.api.ActionStreamResult;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DirectStreamResult implements StreamResult {
+public class DirectStreamResult implements ActionStreamResult {
 
     private final Socket s;
 

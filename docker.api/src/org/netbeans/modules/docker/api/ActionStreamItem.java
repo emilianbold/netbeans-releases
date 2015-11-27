@@ -47,15 +47,15 @@ import java.nio.ByteBuffer;
  *
  * @author Petr Hejl
  */
-public class StreamItem {
+public class ActionStreamItem {
 
-    public static final StreamItem EMPTY = new StreamItem(ByteBuffer.allocate(0), false);
+    public static final ActionStreamItem EMPTY = new ActionStreamItem(ByteBuffer.allocate(0), false);
 
     private final ByteBuffer data;
 
     private final boolean error;
 
-    public StreamItem(ByteBuffer data, boolean error) {
+    public ActionStreamItem(ByteBuffer data, boolean error) {
         this.data = data;
         this.error = error;
     }
@@ -70,7 +70,7 @@ public class StreamItem {
 
     public static interface Fetcher {
 
-        StreamItem fetch();
+        ActionStreamItem fetch();
 
     }
 }

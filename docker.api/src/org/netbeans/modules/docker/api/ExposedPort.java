@@ -41,22 +41,68 @@
  */
 package org.netbeans.modules.docker.api;
 
-import java.io.Closeable;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.Objects;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface StreamResult extends Closeable {
+public class ExposedPort {
 
-    OutputStream getStdIn();
+    public enum Type {
+        TCP,
+        UDP
+    }
 
-    InputStream getStdOut();
+    private final int port;
 
-    InputStream getStdErr();
+    private final Type type;
 
-    boolean hasTty();
+    public ExposedPort(int port, Type type) {
+        if (port < 1 || port > 65535) {
+            throw new IllegalArgumentException("Port number must be between 1 and 65535");
+        }
+        Parameters.notNull("type", type);
 
+        this.port = port;
+        this.type = type;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + this.port;
+        hash = 23 * hash + Objects.hashCode(this.type);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ExposedPort other = (ExposedPort) obj;
+        if (this.port != other.port) {
+            return false;
+        }
+        if (this.type != other.type) {
+            return false;
+        }
+        return true;
+    }
 }

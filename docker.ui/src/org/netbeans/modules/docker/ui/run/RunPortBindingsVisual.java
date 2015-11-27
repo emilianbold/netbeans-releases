@@ -57,8 +57,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.docker.api.DockerImageDetail;
-import org.netbeans.modules.docker.api.NetworkPort;
-import org.netbeans.modules.docker.api.NetworkPort.Type;
+import org.netbeans.modules.docker.api.ExposedPort;
+import org.netbeans.modules.docker.api.ExposedPort.Type;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -87,7 +87,7 @@ public class RunPortBindingsVisual extends javax.swing.JPanel {
         UiUtils.configureRowHeight(portMappingTable);
 
         TableColumn typeColumn = portMappingTable.getColumnModel().getColumn(0);
-        JComboBox typeCombo = new JComboBox(NetworkPort.Type.values());
+        JComboBox typeCombo = new JComboBox(ExposedPort.Type.values());
         typeColumn.setCellEditor(new DefaultCellEditor(typeCombo));
         typeColumn.setPreferredWidth(typeColumn.getPreferredWidth() / 2);
 
@@ -413,7 +413,7 @@ public class RunPortBindingsVisual extends javax.swing.JPanel {
 
     private void addExposedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addExposedButtonActionPerformed
         List<PortMapping> current = model.getMappings();
-        for (NetworkPort p : info.getExposedPorts()) {
+        for (ExposedPort p : info.getExposedPorts()) {
             boolean present = false;
             for (PortMapping m : current) {
                 if (p.getType() == m.getType()

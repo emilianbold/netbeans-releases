@@ -79,7 +79,6 @@ import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.api.StreamResult;
 import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IONotifier;
@@ -90,6 +89,7 @@ import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.netbeans.modules.docker.api.ActionStreamResult;
 
 /**
  *
@@ -237,7 +237,7 @@ public final class UiUtils {
         logIO.getInputOutput().select();
     }
 
-    public static void openTerminal(DockerContainer container, StreamResult r, boolean stdin, boolean logs) throws DockerException {
+    public static void openTerminal(DockerContainer container, ActionStreamResult r, boolean stdin, boolean logs) throws DockerException {
         Pair<InputOutput, Boolean> termIO = getTerminalInputOutput(container);
         InputOutput io = termIO.first();
         if (IOTerm.isSupported(io)) {
@@ -245,7 +245,7 @@ public final class UiUtils {
                 focusTerminal(io);
             } else {
                 DockerAction facade = new DockerAction(container.getInstance());
-                StreamResult result = r != null ? r : facade.attach(container, stdin, logs);
+                ActionStreamResult result = r != null ? r : facade.attach(container, stdin, logs);
 
                 try {
                     io.getOut().reset();

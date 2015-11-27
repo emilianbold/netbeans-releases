@@ -41,68 +41,22 @@
  */
 package org.netbeans.modules.docker.api;
 
-import java.util.Objects;
-import org.openide.util.Parameters;
+import java.io.Closeable;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  *
  * @author Petr Hejl
  */
-public class NetworkPort {
+public interface ActionStreamResult extends Closeable {
 
-    public enum Type {
-        TCP,
-        UDP
-    }
+    OutputStream getStdIn();
 
-    private final int port;
+    InputStream getStdOut();
 
-    private final Type type;
+    InputStream getStdErr();
 
-    public NetworkPort(int port, Type type) {
-        if (port < 1 || port > 65535) {
-            throw new IllegalArgumentException("Port number must be between 1 and 65535");
-        }
-        Parameters.notNull("type", type);
+    boolean hasTty();
 
-        this.port = port;
-        this.type = type;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + this.port;
-        hash = 23 * hash + Objects.hashCode(this.type);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final NetworkPort other = (NetworkPort) obj;
-        if (this.port != other.port) {
-            return false;
-        }
-        if (this.type != other.type) {
-            return false;
-        }
-        return true;
-    }
 }

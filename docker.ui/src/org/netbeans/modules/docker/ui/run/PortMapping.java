@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.run;
 
-import org.netbeans.modules.docker.api.NetworkPort;
+import org.netbeans.modules.docker.api.ExposedPort;
 
 /**
  *
@@ -49,7 +49,7 @@ import org.netbeans.modules.docker.api.NetworkPort;
  */
 public class PortMapping {
 
-    private final NetworkPort.Type type;
+    private final ExposedPort.Type type;
 
     private final Integer port;
 
@@ -57,14 +57,14 @@ public class PortMapping {
 
     private final String hostAddress;
 
-    public PortMapping(NetworkPort.Type type, Integer port, Integer hostPort, String hostAddress) {
+    public PortMapping(ExposedPort.Type type, Integer port, Integer hostPort, String hostAddress) {
         this.type = type;
         this.port = port;
         this.hostPort = hostPort;
         this.hostAddress = hostAddress;
     }
 
-    public NetworkPort.Type getType() {
+    public ExposedPort.Type getType() {
         return type;
     }
 

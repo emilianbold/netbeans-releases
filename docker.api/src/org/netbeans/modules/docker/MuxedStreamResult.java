@@ -47,14 +47,14 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.StreamItem;
-import org.netbeans.modules.docker.api.StreamResult;
+import org.netbeans.modules.docker.api.ActionStreamItem;
+import org.netbeans.modules.docker.api.ActionStreamResult;
 
 /**
  *
  * @author Petr Hejl
  */
-public class MuxedStreamResult implements StreamResult {
+public class MuxedStreamResult implements ActionStreamResult {
 
     private static final Logger LOGGER = Logger.getLogger(MuxedStreamResult.class.getName());
 
@@ -68,7 +68,7 @@ public class MuxedStreamResult implements StreamResult {
 
     private final InputStream stdErr;
 
-    private StreamItem last = StreamItem.EMPTY;
+    private ActionStreamItem last = ActionStreamItem.EMPTY;
 
     public MuxedStreamResult(Socket s, InputStream is) throws IOException {
         this.s = s;

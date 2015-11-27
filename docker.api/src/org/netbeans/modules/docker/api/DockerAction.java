@@ -309,7 +309,7 @@ public class DockerAction {
     public DockerImageDetail getDetail(DockerImage image) throws DockerException {
         JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
                 "/images/" + image.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
-        List<NetworkPort> ports = new LinkedList<>();
+        List<ExposedPort> ports = new LinkedList<>();
         JSONObject config = (JSONObject) value.get("Config");
         if (config != null) {
             JSONObject portsObject = (JSONObject) config.get("ExposedPorts");
@@ -319,8 +319,8 @@ public class DockerAction {
                     Matcher m = PORT_PATTERN.matcher(portStr);
                     if (m.matches()) {
                         int port = Integer.parseInt(m.group(1));
-                        NetworkPort.Type type = NetworkPort.Type.valueOf(m.group(2).toUpperCase(Locale.ENGLISH));
-                        ports.add(new NetworkPort(port, type));
+                        ExposedPort.Type type = ExposedPort.Type.valueOf(m.group(2).toUpperCase(Locale.ENGLISH));
+                        ports.add(new ExposedPort(port, type));
                     } else {
                         LOGGER.log(Level.FINE, "Unparsable port: {0}", portStr);
                     }
@@ -403,7 +403,7 @@ public class DockerAction {
                 null, false, Collections.singleton(HttpURLConnection.HTTP_OK));
     }
 
-    public StreamResult attach(DockerContainer container, boolean stdin, boolean logs) throws DockerException {
+    public ActionStreamResult attach(DockerContainer container, boolean stdin, boolean logs) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         DockerContainerDetail info = DockerAction.this.getDetail(container);
@@ -746,15 +746,15 @@ public class DockerAction {
 
             is = HttpParsingUtils.getResponseStream(is, response);
 
-            StreamItem.Fetcher fetcher;
+            ActionStreamItem.Fetcher fetcher;
             Integer length = HttpParsingUtils.getLength(response.getHeaders());
             // if there was no log it may return just standard reply with content length 0
             if (length != null && length == 0) {
                 assert !(is instanceof ChunkedInputStream);
                 LOGGER.log(Level.INFO, "Empty logs");
-                fetcher = new StreamItem.Fetcher() {
+                fetcher = new ActionStreamItem.Fetcher() {
                     @Override
-                    public StreamItem fetch() {
+                    public ActionStreamItem fetch() {
                         return null;
                     }
                 };
@@ -776,7 +776,7 @@ public class DockerAction {
         }
     }
 
-    public Pair<DockerContainer, StreamResult> run(String name, JSONObject configuration) throws DockerException {
+    public Pair<DockerContainer, ActionStreamResult> run(String name, JSONObject configuration) throws DockerException {
         Socket s = null;
         try {
             URL url = createURL(instance.getUrl(), null);
@@ -816,7 +816,7 @@ public class DockerAction {
                     (String) configuration.get("Image"),
                     "/" + name,
                     ContainerStatus.STOPPED);
-            StreamResult r = attach(container, true, true);
+            ActionStreamResult r = attach(container, true, true);
 
             os.write(("POST /containers/" + id + "/start HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
             os.flush();
@@ -1070,14 +1070,14 @@ public class DockerAction {
 
         private final Socket s;
 
-        private final StreamItem.Fetcher fetcher;
+        private final ActionStreamItem.Fetcher fetcher;
 
-        public LogResult(Socket s, StreamItem.Fetcher fetcher) {
+        public LogResult(Socket s, ActionStreamItem.Fetcher fetcher) {
             this.s = s;
             this.fetcher = fetcher;
         }
 
-        public StreamItem.Fetcher getFetcher() {
+        public ActionStreamItem.Fetcher getFetcher() {
             return fetcher;
         }
 
@@ -1087,7 +1087,7 @@ public class DockerAction {
         }
     }
 
-    private static class DirectFetcher implements StreamItem.Fetcher {
+    private static class DirectFetcher implements ActionStreamItem.Fetcher {
 
         private final InputStream is;
 
@@ -1098,13 +1098,13 @@ public class DockerAction {
         }
 
         @Override
-        public StreamItem fetch() {
+        public ActionStreamItem fetch() {
             try {
                 int count = is.read(buffer);
                 if (count < 0) {
                     return null;
                 }
-                return new StreamItem(ByteBuffer.wrap(buffer, 0, count), false);
+                return new ActionStreamItem(ByteBuffer.wrap(buffer, 0, count), false);
             } catch (IOException ex) {
                 LOGGER.log(Level.FINE, null, ex);
                 return null;
@@ -1113,7 +1113,7 @@ public class DockerAction {
 
     }
 
-    private static class EmptyStreamResult implements StreamResult {
+    private static class EmptyStreamResult implements ActionStreamResult {
 
         private final OutputStream os = new NullOutputStream();
 

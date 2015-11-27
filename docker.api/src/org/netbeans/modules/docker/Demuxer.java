@@ -47,14 +47,14 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.StreamItem;
+import org.netbeans.modules.docker.api.ActionStreamItem;
 
 /**
  *
  * @author Petr Hejl
  */
 //@NotThreadSafe
-public class Demuxer implements StreamItem.Fetcher {
+public class Demuxer implements ActionStreamItem.Fetcher {
 
     private static final Logger LOGGER = Logger.getLogger(Demuxer.class.getName());
 
@@ -69,7 +69,7 @@ public class Demuxer implements StreamItem.Fetcher {
     }
 
     @Override
-    public StreamItem fetch() {
+    public ActionStreamItem fetch() {
         try {
             int sum = 0;
             do {
@@ -102,7 +102,7 @@ public class Demuxer implements StreamItem.Fetcher {
                 bos.write(content, 0, read);
                 sum += read;
             } while (sum < size);
-            return new StreamItem(ByteBuffer.wrap(bos.toByteArray()), error);
+            return new ActionStreamItem(ByteBuffer.wrap(bos.toByteArray()), error);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             return null;
