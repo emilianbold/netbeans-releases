@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.api.action;
 
+import org.netbeans.modules.docker.DockerRemoteException;
 import org.netbeans.modules.docker.FolderUploader;
 import org.netbeans.modules.docker.MuxedStreamResult;
 import org.netbeans.modules.docker.ChunkedInputStream;

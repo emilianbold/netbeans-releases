@@ -39,7 +39,9 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.action;
+package org.netbeans.modules.docker;
+
+import org.netbeans.modules.docker.api.action.DockerException;
 
 /**
  *
