@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.remote;
+package org.netbeans.modules.docker.api.action;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -57,7 +57,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Petr Hejl
  */
-public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRemote.ConnectionListener {
+public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerAction.ConnectionListener {
 
     private static final Logger LOGGER = Logger.getLogger(DockerEventBus.class.getName());
 
@@ -186,7 +186,7 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, DockerRe
             processor.post(new Runnable() {
                 @Override
                 public void run() {
-                    DockerRemote remote = new DockerRemote(instance);
+                    DockerAction remote = new DockerAction(instance);
                     for (;;) {
                         try {
                             if (Thread.currentThread().isInterrupted()) {

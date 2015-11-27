@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.remote;
+package org.netbeans.modules.docker.api.action;
 
 import java.util.EventListener;
 import java.util.EventObject;

@@ -39,93 +39,44 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.remote;
+package org.netbeans.modules.docker;
 
-import java.util.EventListener;
-import java.util.EventObject;
-import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.docker.api.ContainerStatus;
 import org.netbeans.modules.docker.api.DockerInstance;
 
 /**
  *
  * @author Petr Hejl
  */
-public class BuildEvent extends EventObject {
+public abstract class DockerContainerAccessor {
 
-    private final DockerInstance instance;
+    private static volatile DockerContainerAccessor DEFAULT;
 
-    private final String message;
-
-    private final Error detail;
-
-    private final boolean error;
-
-    private final boolean upload;
-
-    BuildEvent(DockerInstance instance, String message, boolean error, Error detail, boolean upload) {
-        super(instance);
-        this.instance = instance;
-        this.message = message;
-        this.detail = detail;
-        this.error = error;
-        this.upload = upload;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    @CheckForNull
-    public Error getDetail() {
-        return detail;
-    }
-
-    public boolean isError() {
-        return error;
-    }
-
-    public boolean isUpload() {
-        return upload;
-    }
-
-    @Override
-    public DockerInstance getSource() {
-        return instance;
-    }
-
-    @Override
-    public String toString() {
-        return "BuildEvent{" + "instance=" + instance + ", message=" + message + ", detail=" + detail + ", error=" + error + ", upload=" + upload + '}';
-    }
-
-    public static class Error {
-
-        private final long code;
-
-        private final String message;
-
-        public Error(long code, String message) {
-            this.code = code;
-            this.message = message;
+    public static DockerContainerAccessor getDefault() {
+        DockerContainerAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
         }
 
-        public long getCode() {
-            return code;
+        // invokes static initializer of DockerContainer.class
+        // that will assign value to the DEFAULT field above
+        Class c = org.netbeans.modules.docker.api.DockerContainer.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
         }
-
-        public String getMessage() {
-            return message;
-        }
-
-        @Override
-        public String toString() {
-            return "Error{" + "code=" + code + ", message=" + message + '}';
-        }
+        return DEFAULT;
     }
 
-    public static interface Listener extends EventListener {
+    public static void setDefault(DockerContainerAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
 
-        void onEvent(BuildEvent event);
-
+        DEFAULT = accessor;
     }
+
+    public abstract org.netbeans.modules.docker.api.DockerContainer createDockerContainer(
+            DockerInstance instance, String id, String image, String name, ContainerStatus status);
 }

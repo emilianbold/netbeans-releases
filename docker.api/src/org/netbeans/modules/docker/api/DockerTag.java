@@ -42,6 +42,7 @@
 package org.netbeans.modules.docker.api;
 
 import java.util.Objects;
+import org.netbeans.modules.docker.DockerTagAccessor;
 
 /**
  *
@@ -49,11 +50,20 @@ import java.util.Objects;
  */
 public class DockerTag implements Identifiable {
 
+    static {
+        DockerTagAccessor.setDefault(new DockerTagAccessor() {
+            @Override
+            public DockerTag createDockerTag(DockerImage image, String tag) {
+                return new DockerTag(image, tag);
+            }
+        });
+    }
+
     private final DockerImage image;
 
     private final String tag;
 
-    public DockerTag(DockerImage image, String tag) {
+    private DockerTag(DockerImage image, String tag) {
         this.image = image;
         this.tag = tag;
     }

@@ -48,8 +48,8 @@ import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.remote.DockerException;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
+import org.netbeans.modules.docker.api.action.DockerException;
+import org.netbeans.modules.docker.api.action.DockerAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -116,7 +116,7 @@ public class CommitContainerAction extends NodeAction {
                 ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_Commiting(DockerUtils.getShortId(container)));
                 handle.start();
                 try {
-                    DockerRemote facade = new DockerRemote(container.getInstance());
+                    DockerAction facade = new DockerAction(container.getInstance());
                     facade.commit(container, repository, tag, author, message, pause);
                 } catch (DockerException ex) {
                     // FIXME inform user

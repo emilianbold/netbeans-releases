@@ -45,7 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.remote.DockerException;
+import org.netbeans.modules.docker.api.action.DockerException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;

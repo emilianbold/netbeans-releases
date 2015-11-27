@@ -43,7 +43,7 @@ package org.netbeans.modules.docker.api;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.docker.api.remote.DockerEvent;
+import org.netbeans.modules.docker.api.action.DockerEvent;
 
 /**
  *

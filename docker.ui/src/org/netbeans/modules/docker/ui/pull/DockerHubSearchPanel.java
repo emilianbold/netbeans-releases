@@ -55,7 +55,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.docker.api.DockerHubImage;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
+import org.netbeans.modules.docker.api.action.DockerAction;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -104,7 +104,7 @@ public class DockerHubSearchPanel extends javax.swing.JPanel {
         assert !SwingUtilities.isEventDispatchThread();
         assert searchTerm != null && !searchTerm.isEmpty();
 
-        DockerRemote facade = new DockerRemote(instance);
+        DockerAction facade = new DockerAction(instance);
         final List<DockerHubImage> images = facade.search(searchTerm);
 
         final List<DockerHubImageItem> fresh = new ArrayList<>(images.size());

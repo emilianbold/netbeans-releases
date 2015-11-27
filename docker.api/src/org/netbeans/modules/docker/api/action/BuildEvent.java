@@ -39,37 +39,93 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.api.action;
 
-import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerException;
-import org.netbeans.modules.docker.ui.UiUtils;
-import org.openide.util.NbBundle;
+import java.util.EventListener;
+import java.util.EventObject;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.docker.api.DockerInstance;
 
 /**
  *
  * @author Petr Hejl
  */
-public class ShowLogAction extends AbstractContainerAction {
+public class BuildEvent extends EventObject {
 
-    @NbBundle.Messages("LBL_ShowLogAction=Show Log")
-    public ShowLogAction() {
-        super(Bundle.LBL_ShowLogAction());
+    private final DockerInstance instance;
+
+    private final String message;
+
+    private final Error detail;
+
+    private final boolean error;
+
+    private final boolean upload;
+
+    BuildEvent(DockerInstance instance, String message, boolean error, Error detail, boolean upload) {
+        super(instance);
+        this.instance = instance;
+        this.message = message;
+        this.detail = detail;
+        this.error = error;
+        this.upload = upload;
     }
 
-    @NbBundle.Messages({
-        "# {0} - container id",
-        "MSG_ShowingLog=Showing log for container {0}"
-    })
+    public String getMessage() {
+        return message;
+    }
+
+    @CheckForNull
+    public Error getDetail() {
+        return detail;
+    }
+
+    public boolean isError() {
+        return error;
+    }
+
+    public boolean isUpload() {
+        return upload;
+    }
+
     @Override
-    protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_ShowingLog(DockerUtils.getShortId(container));
+    public DockerInstance getSource() {
+        return instance;
     }
 
     @Override
-    protected void performAction(DockerContainer container) throws DockerException {
-        UiUtils.openLog(container);
+    public String toString() {
+        return "BuildEvent{" + "instance=" + instance + ", message=" + message + ", detail=" + detail + ", error=" + error + ", upload=" + upload + '}';
     }
 
+    public static class Error {
+
+        private final long code;
+
+        private final String message;
+
+        public Error(long code, String message) {
+            this.code = code;
+            this.message = message;
+        }
+
+        public long getCode() {
+            return code;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public String toString() {
+            return "Error{" + "code=" + code + ", message=" + message + '}';
+        }
+    }
+
+    public static interface Listener extends EventListener {
+
+        void onEvent(BuildEvent event);
+
+    }
 }

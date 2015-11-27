@@ -78,9 +78,9 @@ import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.remote.DockerException;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
-import org.netbeans.modules.docker.api.remote.StreamResult;
+import org.netbeans.modules.docker.api.action.DockerException;
+import org.netbeans.modules.docker.api.action.DockerAction;
+import org.netbeans.modules.docker.api.action.StreamResult;
 import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IONotifier;
@@ -192,7 +192,7 @@ public final class UiUtils {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                DockerRemote facade = new DockerRemote(instance);
+                DockerAction facade = new DockerAction(instance);
                 List<DockerImage> images = facade.getImages();
                 final Set<String> repositories = new TreeSet<>();
                 for (DockerImage image : images) {
@@ -227,8 +227,8 @@ public final class UiUtils {
             return;
         }
 
-        DockerRemote facade = new DockerRemote(container.getInstance());
-        DockerRemote.LogResult result = facade.logs(container);
+        DockerAction facade = new DockerAction(container.getInstance());
+        DockerAction.LogResult result = facade.logs(container);
         try {
             logIO.getInputOutput().getOut().reset();
         } catch (IOException ex) {
@@ -245,7 +245,7 @@ public final class UiUtils {
             if (termIO.second()) {
                 focusTerminal(io);
             } else {
-                DockerRemote facade = new DockerRemote(container.getInstance());
+                DockerAction facade = new DockerAction(container.getInstance());
                 StreamResult result = r != null ? r : facade.attach(container, stdin, logs);
 
                 try {
@@ -341,7 +341,7 @@ public final class UiUtils {
                     synchronized (TerminalResizeListener.this) {
                         newValue = value;
                     }
-                    DockerRemote remote = new DockerRemote(TerminalResizeListener.this.container.getInstance());
+                    DockerAction remote = new DockerAction(TerminalResizeListener.this.container.getInstance());
                     try {
                         remote.resizeTerminal(TerminalResizeListener.this.container, newValue.height, newValue.width);
                     } catch (DockerException ex) {
@@ -450,7 +450,7 @@ public final class UiUtils {
             return io;
         }
 
-        public synchronized void connect(DockerRemote.LogResult result) {
+        public synchronized void connect(DockerAction.LogResult result) {
             task = new LogOutputTask(io, result).start();
         }
 

@@ -51,8 +51,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.remote.DockerEvent;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
+import org.netbeans.modules.docker.api.action.DockerEvent;
+import org.netbeans.modules.docker.api.action.DockerAction;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -111,7 +111,7 @@ public class DockerContainersChildFactory extends ChildFactory<DockerContainer> 
 
     @Override
     protected boolean createKeys(List<DockerContainer> toPopulate) {
-        DockerRemote facade = new DockerRemote(instance);
+        DockerAction facade = new DockerAction(instance);
         List<DockerContainer> containers = new ArrayList<>(facade.getContainers());
         Collections.sort(containers, COMPARATOR);
         toPopulate.addAll(containers);

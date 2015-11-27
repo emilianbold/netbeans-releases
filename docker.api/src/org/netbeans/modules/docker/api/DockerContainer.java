@@ -43,7 +43,8 @@ package org.netbeans.modules.docker.api;
 
 import java.util.Objects;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.docker.api.remote.DockerEvent;
+import org.netbeans.modules.docker.DockerContainerAccessor;
+import org.netbeans.modules.docker.api.action.DockerEvent;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -52,6 +53,14 @@ import org.openide.util.ChangeSupport;
  */
 public class DockerContainer implements Identifiable {
 
+    static {
+        DockerContainerAccessor.setDefault(new DockerContainerAccessor() {
+            @Override
+            public DockerContainer createDockerContainer(DockerInstance instance, String id, String image, String name, ContainerStatus status) {
+                return new DockerContainer(instance, id, image, name, status);
+            }
+        });
+    }
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final DockerInstance instance;
@@ -64,7 +73,7 @@ public class DockerContainer implements Identifiable {
 
     private ContainerStatus status;
 
-    public DockerContainer(DockerInstance instance, String id, String image, String name, ContainerStatus status) {
+    private DockerContainer(DockerInstance instance, String id, String image, String name, ContainerStatus status) {
         this.instance = instance;
         this.id = id;
         this.image = image;

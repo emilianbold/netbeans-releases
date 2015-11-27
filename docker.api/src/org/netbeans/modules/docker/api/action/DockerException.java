@@ -39,23 +39,20 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.remote;
+package org.netbeans.modules.docker.api.action;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerRemoteException extends DockerException {
+public class DockerException extends Exception {
 
-    private final int code;
-
-    public DockerRemoteException(int code, String message) {
+    public DockerException(String message) {
         super(message);
-        this.code = code;
     }
 
-    public int getCode() {
-        return code;
+    public DockerException(Throwable cause) {
+        super(cause);
     }
 
 }

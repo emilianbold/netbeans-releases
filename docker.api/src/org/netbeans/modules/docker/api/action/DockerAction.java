@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.remote;
+package org.netbeans.modules.docker.api.action;
 
 import org.netbeans.modules.docker.FolderUploader;
 import org.netbeans.modules.docker.MuxedStreamResult;
@@ -91,6 +91,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.docker.DockerContainerAccessor;
+import org.netbeans.modules.docker.DockerImageAccessor;
+import org.netbeans.modules.docker.DockerTagAccessor;
 import org.netbeans.modules.docker.api.ContainerStatus;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerContainerDetail;
@@ -111,9 +114,9 @@ import org.openide.util.io.NullOutputStream;
  *
  * @author Petr Hejl
  */
-public class DockerRemote {
+public class DockerAction {
 
-    private static final Logger LOGGER = Logger.getLogger(DockerRemote.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DockerAction.class.getName());
 
     private static final Pattern ID_PATTERN = Pattern.compile(".*([0-9a-f]{12}([0-9a-f]{52})?).*");
 
@@ -131,18 +134,18 @@ public class DockerRemote {
         Collections.addAll(REMOVE_IMAGE_CODES, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_NOT_FOUND);
     }
 
-    private final RequestProcessor requestProcessor = new RequestProcessor(DockerRemote.class);
+    private final RequestProcessor requestProcessor = new RequestProcessor(DockerAction.class);
 
     private final DockerInstance instance;
 
     private final boolean emitEvents;
 
-    public DockerRemote(DockerInstance instance) {
+    public DockerAction(DockerInstance instance) {
         this(instance, true);
     }
 
     // not needed in the api for now
-    private DockerRemote(DockerInstance instance, boolean emitEvents) {
+    private DockerAction(DockerInstance instance, boolean emitEvents) {
         this.instance = instance;
         this.emitEvents = emitEvents;
     }
@@ -159,7 +162,8 @@ public class DockerRemote {
                 long created = (long) json.get("Created");
                 long size = (long) json.get("Size");
                 long virtualSize = (long) json.get("VirtualSize");
-                ret.add(new DockerImage(instance, repoTags, id, created, size, virtualSize));
+                ret.add(DockerImageAccessor.getDefault().createDockerImage(
+                        instance, repoTags, id, created, size, virtualSize));
             }
             return ret;
         } catch (DockerException ex) {
@@ -183,7 +187,7 @@ public class DockerRemote {
                     name = (String) names.get(0);
                 }
                 ContainerStatus status = DockerUtils.getContainerStatus((String) json.get("Status"));
-                ret.add(new DockerContainer(instance, id, image, name, status));
+                ret.add(DockerContainerAccessor.getDefault().createDockerContainer(instance, id, image, name, status));
             }
             return ret;
         } catch (DockerException ex) {
@@ -259,7 +263,8 @@ public class DockerRemote {
             }
 
             // FIXME image size and time parameters
-            return new DockerImage(instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
+            return DockerImageAccessor.getDefault().createDockerImage(
+                    instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
                     (String) value.get("Id"), time, 0, 0);
 
         } catch (UnsupportedEncodingException ex) {
@@ -296,7 +301,7 @@ public class DockerRemote {
                             source.getId(), tagResult, time));
         }
 
-        return new DockerTag(source.getImage(), tagResult);
+        return DockerTagAccessor.getDefault().createDockerTag(source.getImage(), tagResult);
     }
 
     public DockerContainerDetail getInfo(DockerContainer container) throws DockerException {
@@ -646,7 +651,8 @@ public class DockerRemote {
                                             m.group(1), null, time));
                         }
                         // FIXME image size and time parameters
-                        return new DockerImage(instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
+                        return DockerImageAccessor.getDefault().createDockerImage(
+                                instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
                                 m.group(1), time, 0, 0);
                     }
                 }
@@ -816,7 +822,9 @@ public class DockerRemote {
             }
 
             String id = (String) value.get("Id");
-            DockerContainer container = new DockerContainer(instance, id,
+            DockerContainer container = DockerContainerAccessor.getDefault().createDockerContainer(
+                    instance,
+                    id,
                     (String) configuration.get("Image"),
                     "/" + name,
                     ContainerStatus.STOPPED);

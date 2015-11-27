@@ -39,101 +39,24 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.remote;
+package org.netbeans.modules.docker.api.action;
 
-import java.util.EventListener;
-import java.util.EventObject;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.docker.api.DockerInstance;
+import java.io.Closeable;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StatusEvent extends EventObject {
+public interface StreamResult extends Closeable {
 
-    private final DockerInstance instance;
+    OutputStream getStdIn();
 
-    private final String id;
+    InputStream getStdOut();
 
-    private final String message;
+    InputStream getStdErr();
 
-    private final String progress;
+    boolean hasTty();
 
-    private final Progress detail;
-
-    private final boolean error;
-
-    StatusEvent(DockerInstance instance, String id, String message,
-            String progress, boolean error, Progress detail) {
-        super(instance);
-        this.instance = instance;
-        this.id = id;
-        this.message = message;
-        this.progress = progress;
-        this.error = error;
-        this.detail = detail;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getProgress() {
-        return progress;
-    }
-
-    @CheckForNull
-    public Progress getDetail() {
-        return detail;
-    }
-
-    public boolean isError() {
-        return error;
-    }
-
-    @Override
-    public DockerInstance getSource() {
-        return instance;
-    }
-
-    @Override
-    public String toString() {
-        return "StatusEvent{" + "id=" + id + ", message=" + message + ", progress=" + progress + ", detail=" + detail + ", error=" + error + '}';
-    }
-
-    public static class Progress {
-
-        private final long current;
-
-        private final long total;
-
-        public Progress(long current, long total) {
-            this.current = current;
-            this.total = total;
-        }
-
-        public long getCurrent() {
-            return current;
-        }
-
-        public long getTotal() {
-            return total;
-        }
-
-        @Override
-        public String toString() {
-            return "Progress{" + "current=" + current + ", total=" + total + '}';
-        }
-    }
-
-    public static interface Listener extends EventListener {
-
-        void onEvent(StatusEvent event);
-
-    }
 }

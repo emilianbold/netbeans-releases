@@ -55,7 +55,7 @@ import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.docker.api.remote.DockerEventBus;
+import org.netbeans.modules.docker.api.action.DockerEventBus;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;

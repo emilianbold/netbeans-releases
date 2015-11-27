@@ -54,9 +54,9 @@ import javax.swing.JComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.remote.BuildEvent;
-import org.netbeans.modules.docker.api.remote.DockerException;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
+import org.netbeans.modules.docker.api.action.BuildEvent;
+import org.netbeans.modules.docker.api.action.DockerException;
+import org.netbeans.modules.docker.api.action.DockerAction;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -158,7 +158,7 @@ public class BuildImageWizard {
                             file = new File(buildContext, dockerfile);
                         }
                     }
-                    DockerRemote facade = new DockerRemote(instance);
+                    DockerAction facade = new DockerAction(instance);
                     facade.build(new File(buildContext), file, repository, tag, pull, noCache,
                             new BuildEvent.Listener() {
                         @Override

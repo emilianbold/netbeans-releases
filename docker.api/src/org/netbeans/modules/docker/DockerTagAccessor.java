@@ -39,38 +39,43 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api.remote;
+package org.netbeans.modules.docker;
 
-import java.nio.ByteBuffer;
+import org.netbeans.modules.docker.api.DockerImage;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StreamItem {
+public abstract class DockerTagAccessor {
 
-    public static final StreamItem EMPTY = new StreamItem(ByteBuffer.allocate(0), false);
+    private static volatile DockerTagAccessor DEFAULT;
 
-    private final ByteBuffer data;
+    public static DockerTagAccessor getDefault() {
+        DockerTagAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
 
-    private final boolean error;
-
-    public StreamItem(ByteBuffer data, boolean error) {
-        this.data = data;
-        this.error = error;
+        // invokes static initializer of DockerTag.class
+        // that will assign value to the DEFAULT field above
+        Class c = org.netbeans.modules.docker.api.DockerTag.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+        return DEFAULT;
     }
 
-    public ByteBuffer getData() {
-        return data;
+    public static void setDefault(DockerTagAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+
+        DEFAULT = accessor;
     }
 
-    public boolean isError() {
-        return error;
-    }
-
-    public static interface Fetcher {
-
-        StreamItem fetch();
-
-    }
+    public abstract org.netbeans.modules.docker.api.DockerTag createDockerTag(
+            DockerImage image, String tag);
 }

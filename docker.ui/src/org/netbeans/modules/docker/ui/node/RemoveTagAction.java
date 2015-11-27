@@ -47,7 +47,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
+import org.netbeans.modules.docker.api.action.DockerAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -82,7 +82,7 @@ public class RemoveTagAction extends NodeAction {
                     public void run() {
                         try {
                             DockerInstance instance = tag.getImage().getInstance();
-                            DockerRemote facade = new DockerRemote(instance);
+                            DockerAction facade = new DockerAction(instance);
                             facade.remove(tag);
                         } catch (Exception ex) {
                             // FIXME offer force remove ?

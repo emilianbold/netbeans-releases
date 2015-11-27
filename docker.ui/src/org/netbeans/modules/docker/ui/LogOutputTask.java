@@ -47,8 +47,8 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
-import org.netbeans.modules.docker.api.remote.StreamItem;
+import org.netbeans.modules.docker.api.action.DockerAction;
+import org.netbeans.modules.docker.api.action.StreamItem;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
@@ -64,9 +64,9 @@ public class LogOutputTask implements Runnable {
 
     private final InputOutput io;
 
-    private final DockerRemote.LogResult logResult;
+    private final DockerAction.LogResult logResult;
 
-    public LogOutputTask(InputOutput io, DockerRemote.LogResult logResult) {
+    public LogOutputTask(InputOutput io, DockerAction.LogResult logResult) {
         this.io = io;
         this.logResult = logResult;
     }

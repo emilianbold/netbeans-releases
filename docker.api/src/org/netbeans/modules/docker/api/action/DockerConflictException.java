@@ -39,37 +39,20 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
-
-import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerException;
-import org.netbeans.modules.docker.ui.UiUtils;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.docker.api.action;
 
 /**
  *
  * @author Petr Hejl
  */
-public class ShowLogAction extends AbstractContainerAction {
+public class DockerConflictException extends DockerException {
 
-    @NbBundle.Messages("LBL_ShowLogAction=Show Log")
-    public ShowLogAction() {
-        super(Bundle.LBL_ShowLogAction());
+    public DockerConflictException(String message) {
+        super(message);
     }
 
-    @NbBundle.Messages({
-        "# {0} - container id",
-        "MSG_ShowingLog=Showing log for container {0}"
-    })
-    @Override
-    protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_ShowingLog(DockerUtils.getShortId(container));
-    }
-
-    @Override
-    protected void performAction(DockerContainer container) throws DockerException {
-        UiUtils.openLog(container);
+    public DockerConflictException(Throwable cause) {
+        super(cause);
     }
 
 }

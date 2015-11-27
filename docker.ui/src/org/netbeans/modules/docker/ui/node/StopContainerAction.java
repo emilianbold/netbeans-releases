@@ -44,8 +44,8 @@ package org.netbeans.modules.docker.ui.node;
 import org.netbeans.modules.docker.api.ContainerStatus;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.remote.DockerException;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
+import org.netbeans.modules.docker.api.action.DockerException;
+import org.netbeans.modules.docker.api.action.DockerAction;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,7 +70,7 @@ public class StopContainerAction extends AbstractContainerAction {
 
     @Override
     protected void performAction(DockerContainer container) throws DockerException {
-        DockerRemote facade = new DockerRemote(container.getInstance());
+        DockerAction facade = new DockerAction(container.getInstance());
         facade.stop(container);
     }
 

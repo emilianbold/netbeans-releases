@@ -47,8 +47,8 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.api.remote.DockerException;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
+import org.netbeans.modules.docker.api.action.DockerException;
+import org.netbeans.modules.docker.api.action.DockerAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -114,7 +114,7 @@ public class TagTagAction extends NodeAction {
                 ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_Tagging(source.getTag()));
                 handle.start();
                 try {
-                    DockerRemote facade = new DockerRemote(source.getImage().getInstance());
+                    DockerAction facade = new DockerAction(source.getImage().getInstance());
                     facade.tag(source, repository, tag, force);
                 } catch (DockerException ex) {
                     // FIXME inform user

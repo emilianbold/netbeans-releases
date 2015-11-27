@@ -39,37 +39,38 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.api.action;
 
-import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.action.DockerException;
-import org.netbeans.modules.docker.ui.UiUtils;
-import org.openide.util.NbBundle;
+import java.nio.ByteBuffer;
 
 /**
  *
  * @author Petr Hejl
  */
-public class ShowLogAction extends AbstractContainerAction {
+public class StreamItem {
 
-    @NbBundle.Messages("LBL_ShowLogAction=Show Log")
-    public ShowLogAction() {
-        super(Bundle.LBL_ShowLogAction());
+    public static final StreamItem EMPTY = new StreamItem(ByteBuffer.allocate(0), false);
+
+    private final ByteBuffer data;
+
+    private final boolean error;
+
+    public StreamItem(ByteBuffer data, boolean error) {
+        this.data = data;
+        this.error = error;
     }
 
-    @NbBundle.Messages({
-        "# {0} - container id",
-        "MSG_ShowingLog=Showing log for container {0}"
-    })
-    @Override
-    protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_ShowingLog(DockerUtils.getShortId(container));
+    public ByteBuffer getData() {
+        return data;
     }
 
-    @Override
-    protected void performAction(DockerContainer container) throws DockerException {
-        UiUtils.openLog(container);
+    public boolean isError() {
+        return error;
     }
 
+    public static interface Fetcher {
+
+        StreamItem fetch();
+
+    }
 }

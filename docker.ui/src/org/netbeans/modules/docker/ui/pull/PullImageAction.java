@@ -51,8 +51,8 @@ import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.remote.DockerException;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
+import org.netbeans.modules.docker.api.action.DockerException;
+import org.netbeans.modules.docker.api.action.DockerAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -125,7 +125,7 @@ public class PullImageAction extends NodeAction {
                 try {
                     io.getOut().reset();
                     io.select();
-                    DockerRemote facade = new DockerRemote(instance);
+                    DockerAction facade = new DockerAction(instance);
                     facade.pull(image, new PullOutputListener(io));
                 } catch (DockerException ex) {
                     io.getErr().println(ex.getMessage());

@@ -58,7 +58,7 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.remote.BuildEvent;
+import org.netbeans.modules.docker.api.action.BuildEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;

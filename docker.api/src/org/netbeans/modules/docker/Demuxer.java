@@ -47,7 +47,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.remote.StreamItem;
+import org.netbeans.modules.docker.api.action.StreamItem;
 
 /**
  *

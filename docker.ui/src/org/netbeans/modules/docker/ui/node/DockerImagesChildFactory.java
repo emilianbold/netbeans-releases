@@ -50,8 +50,8 @@ import java.util.logging.Logger;
 import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.api.remote.DockerEvent;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
+import org.netbeans.modules.docker.api.action.DockerEvent;
+import org.netbeans.modules.docker.api.action.DockerAction;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -106,7 +106,7 @@ public class DockerImagesChildFactory extends ChildFactory<DockerTag> implements
 
     @Override
     protected boolean createKeys(List<DockerTag> toPopulate) {
-        DockerRemote facade = new DockerRemote(instance);
+        DockerAction facade = new DockerAction(instance);
         List<DockerTag> tags = new ArrayList<>();
         for (DockerImage image : facade.getImages()) {
             tags.addAll(image.getTags());

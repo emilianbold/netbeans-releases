@@ -44,12 +44,23 @@ package org.netbeans.modules.docker.api;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.netbeans.modules.docker.DockerImageAccessor;
+import org.netbeans.modules.docker.DockerTagAccessor;
 
 /**
  *
  * @author Petr Hejl
  */
 public class DockerImage implements Identifiable {
+
+    static {
+        DockerImageAccessor.setDefault(new DockerImageAccessor() {
+            @Override
+            public DockerImage createDockerImage(DockerInstance instance, List<String> tags, String id, long created, long size, long virtualSize) {
+                return new DockerImage(instance, tags, id, created, size, virtualSize);
+            }
+        });
+    }
 
     private final DockerInstance instance;
 
@@ -63,7 +74,7 @@ public class DockerImage implements Identifiable {
 
     private final long virtualSize;
 
-    public DockerImage(DockerInstance instance, List<String> tags,
+    private DockerImage(DockerInstance instance, List<String> tags,
             String id, long created, long size, long virtualSize) {
         this.instance = instance;
         this.id = id;
@@ -71,7 +82,7 @@ public class DockerImage implements Identifiable {
         this.size = size;
         this.virtualSize = virtualSize;
         for (String tag : tags) {
-            this.tags.add(new DockerTag(this, tag));
+            this.tags.add(DockerTagAccessor.getDefault().createDockerTag(this, tag));
         }
     }
 

@@ -60,9 +60,9 @@ import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerImageDetail;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerUtils;
-import org.netbeans.modules.docker.api.remote.DockerException;
-import org.netbeans.modules.docker.api.remote.DockerRemote;
-import org.netbeans.modules.docker.api.remote.StreamResult;
+import org.netbeans.modules.docker.api.action.DockerException;
+import org.netbeans.modules.docker.api.action.DockerAction;
+import org.netbeans.modules.docker.api.action.StreamResult;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -149,7 +149,7 @@ public class RunTagWizard {
             @Override
             public void run() {
                 try {
-                    DockerRemote remote = new DockerRemote(tag.getImage().getInstance());
+                    DockerAction remote = new DockerAction(tag.getImage().getInstance());
                     JSONObject config = new JSONObject();
                     if (user != null) {
                         config.put("User", user);
@@ -221,7 +221,7 @@ public class RunTagWizard {
         @Override
         public DockerImageDetail run(ProgressHandle handle) {
             try {
-                DockerRemote remote = new DockerRemote(image.getInstance());
+                DockerAction remote = new DockerAction(image.getInstance());
                 return remote.getInfo(image);
             } catch (DockerException ex) {
                 return null;
