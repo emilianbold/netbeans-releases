@@ -356,7 +356,7 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
                        ? Bundle.ResetResultsProfilingPoint_OneHitString(time)
                        : Bundle.ResetResultsProfilingPoint_NHitsString(size, time);
             } else {
-                return Bundle.LoadGenProfilingPoint_NoResultsString();
+                return Bundle.ResetResultsProfilingPoint_NoResultsString();
             }
         }
     }
