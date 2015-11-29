@@ -159,13 +159,15 @@ public final class RemoteMenu extends DynamicMenu {
             menu.add(item);
             
             item = new JMenuItem();
-            action = (Action) SystemAction.get(SearchIncomingWithContextAction.class);
+            action = (Action) SystemAction.get(SearchOutgoingAction.class);
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
             
+            menu.addSeparator();
+            
             item = new JMenuItem();
-            action = (Action) SystemAction.get(SearchOutgoingAction.class);
+            action = (Action) SystemAction.get(SearchIncomingWithContextAction.class);
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
@@ -202,9 +204,11 @@ public final class RemoteMenu extends DynamicMenu {
             menu.addSeparator();
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(SearchIncomingAction.class), NbBundle.getMessage(SearchIncomingAction.class, "LBL_SearchIncomingAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(SearchIncomingWithContextAction.class), NbBundle.getMessage(SearchIncomingWithContextAction.class, "LBL_SearchIncomingWithContextAction_PopupName"), lkp)); //NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(SearchOutgoingAction.class), NbBundle.getMessage(SearchOutgoingAction.class, "LBL_SearchOutgoingAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            
+            menu.addSeparator();
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(SearchIncomingWithContextAction.class), NbBundle.getMessage(SearchIncomingWithContextAction.class, "LBL_SearchIncomingWithContextAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(SearchOutgoingWithContextAction.class), NbBundle.getMessage(SearchOutgoingWithContextAction.class, "LBL_SearchOutgoingWithContextAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());

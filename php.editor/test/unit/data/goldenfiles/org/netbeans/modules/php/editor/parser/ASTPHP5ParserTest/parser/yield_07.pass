@@ -57,7 +57,7 @@
         <token id='T_CURLY_OPEN' start='65' end='66'>
             <text>{</text>
         </token>
-        <token id='unknown' start='75' end='80'>
+        <token id='T_YIELD' start='75' end='80'>
             <text>yield</text>
         </token>
         <token id='T_SEMICOLON' start='80' end='81'>

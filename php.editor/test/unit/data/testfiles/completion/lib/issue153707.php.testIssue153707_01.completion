@@ -644,3 +644,4 @@ KEYWORD    var                                        null
 KEYWORD    while                                      null
 KEYWORD    xor                                        null
 KEYWORD    yield                                      null
+KEYWORD    yield from                                 null

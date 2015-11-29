@@ -1,5 +1,7 @@
 [[21,27]-Syntax error
  unexpected:	variable '$value'
+ after:	yield
  expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <=>, <, >, <<, >>, +, -, *, /, %, '.', ], ), :, ??] 21-27:Syntax error
  unexpected:	variable '$value'
+ after:	yield
  expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <=>, <, >, <<, >>, +, -, *, /, %, '.', ], ), :, ??

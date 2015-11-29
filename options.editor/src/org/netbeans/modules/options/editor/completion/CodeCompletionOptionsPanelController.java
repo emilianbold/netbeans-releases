@@ -64,7 +64,6 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.indentation.ProxyPreferences;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;

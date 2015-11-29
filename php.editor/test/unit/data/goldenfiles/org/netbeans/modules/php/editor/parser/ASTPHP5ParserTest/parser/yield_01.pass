@@ -57,7 +57,7 @@
         <token id='T_CURLY_OPEN' start='62' end='63'>
             <text>{</text>
         </token>
-        <token id='unknown' start='72' end='77'>
+        <token id='T_YIELD' start='72' end='77'>
             <text>yield</text>
         </token>
         <token id='T_VARIABLE' start='78' end='80'>

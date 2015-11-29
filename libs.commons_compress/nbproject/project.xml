@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.libs.commons_compress</code-name-base>
             <module-dependencies/>
             <friend-packages>
-                <friend>org.netbeans.modules.docker</friend>
+                <friend>org.netbeans.modules.docker.api</friend>
                 <friend>org.netbeans.modules.javascript.nodejs</friend>
                 <package>org.apache.commons.compress.archivers</package>
                 <package>org.apache.commons.compress.archivers.tar</package>

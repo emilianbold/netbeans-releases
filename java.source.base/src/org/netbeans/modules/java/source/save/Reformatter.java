@@ -1778,7 +1778,6 @@ public class Reformatter implements ReformatTask {
                 if (node.getBodyKind() == BodyKind.STATEMENT) {
                     if (continuationIndent) {
                         lastIndent = indent;
-                        indent += continuationIndentSize;
                         continuationIndent = false;
                     }
                 }
@@ -1803,7 +1802,7 @@ public class Reformatter implements ReformatTask {
                     }
                 }
                 try {
-                    wrapOperatorAndTree(cs.wrapLambdaArrow(), -1, cs.spaceAroundLambdaArrow() ? 1 : 0, node.getBody());
+                    wrapOperatorAndTree(cs.wrapLambdaArrow(), -1, cs.spaceAroundLambdaArrow() ? 1 : 0, cs.spaceAroundLambdaArrow() ? 1 : 0, lastIndent, node.getBody());
                 } finally {
                     continuationIndent = old;
                     indent = oldIndent;
@@ -2273,7 +2272,7 @@ public class Reformatter implements ReformatTask {
                 spaces(cs.spaceWithinForParens() ? 1 : 0);
                 int alignIndent = cs.alignMultilineFor() ? col : -1;
                 scan(node.getVariable(), p);
-                wrapOperatorAndTree(cs.wrapFor(), alignIndent, cs.spaceBeforeColon() ? 1 : 0, cs.spaceAfterColon() ? 1 : 0, node.getExpression());
+                wrapOperatorAndTree(cs.wrapFor(), alignIndent, cs.spaceBeforeColon() ? 1 : 0, cs.spaceAfterColon() ? 1 : 0, -1, node.getExpression());
                 spaces(cs.spaceWithinForParens() ? 1 : 0);
                 accept(RPAREN);
             } finally {
@@ -3703,10 +3702,10 @@ public class Reformatter implements ReformatTask {
         }
 
         private int wrapOperatorAndTree(CodeStyle.WrapStyle wrapStyle, int alignIndent, int spacesCnt, Tree tree) {
-            return wrapOperatorAndTree(wrapStyle, alignIndent, spacesCnt, spacesCnt, tree);
+            return wrapOperatorAndTree(wrapStyle, alignIndent, spacesCnt, spacesCnt, -1, tree);
         }
 
-        private int wrapOperatorAndTree(CodeStyle.WrapStyle wrapStyle, int alignIndent, int spacesCntBeforeOp, int spacesCntAfterOp, Tree tree) {
+        private int wrapOperatorAndTree(CodeStyle.WrapStyle wrapStyle, int alignIndent, int spacesCntBeforeOp, int spacesCntAfterOp, int treeIndent, Tree tree) {
             int ret = -1;
             switch (wrapStyle) {
                 case WRAP_ALWAYS:
@@ -3738,6 +3737,9 @@ public class Reformatter implements ReformatTask {
                             spaces(spacesCntAfterOp);
                         } else {
                             continuationIndent = false;
+                        }
+                        if (treeIndent >= 0) {
+                            indent = treeIndent;
                         }
                         scan(tree, null);
                     } finally {
@@ -3784,6 +3786,9 @@ public class Reformatter implements ReformatTask {
                             } else {
                                 continuationIndent = false;
                             }
+                            if (treeIndent >= 0) {
+                                indent = treeIndent;
+                            }
                             scan(tree, null);
                         } finally {
                             continuationIndent = oldContinuationIndent;
@@ -3826,6 +3831,9 @@ public class Reformatter implements ReformatTask {
                             } else {
                                 continuationIndent = false;
                             }
+                            if (treeIndent >= 0) {
+                                indent = treeIndent;
+                            }
                             scan(tree, null);
                         } finally {
                             continuationIndent = oldContinuationIndent;
@@ -3857,29 +3865,31 @@ public class Reformatter implements ReformatTask {
                     }
                     try {
                         if (tree.getKind() == Tree.Kind.BLOCK) {
-                            if (spaces(spacesCntAfterOp, false)) {
-                                rollback(index, c, d);
-                                old = indent;
-                                oldLast = lastIndent;
-                                try {
-                                    if (alignIndent >= 0) {
-                                        indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
+                            if (cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE) {
+                                if (spaces(spacesCntAfterOp, false)) {
+                                    rollback(index, c, d);
+                                    old = indent;
+                                    oldLast = lastIndent;
+                                    try {
+                                        if (alignIndent >= 0) {
+                                            indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
+                                        }
+                                        newline();
+                                    } finally {
+                                        indent = old;
+                                        lastIndent = oldLast;
                                     }
-                                    newline();
-                                } finally {
-                                    indent = old;
-                                    lastIndent = oldLast;
-                                }
-                                ret = col;
-                                if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
-                                    col += tokens.token().length();
-                                    lastBlankLines = -1;
-                                    lastBlankLinesTokenIndex = -1;
-                                    tokens.moveNext();
-                                }
-                                spaces(spacesCntAfterOp);
-                            }                            
-                            continuationIndent = isLastIndentContinuation;
+                                    ret = col;
+                                    if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                                        col += tokens.token().length();
+                                        lastBlankLines = -1;
+                                        lastBlankLinesTokenIndex = -1;
+                                        tokens.moveNext();
+                                    }
+                                    spaces(spacesCntAfterOp);
+                                }                            
+                                continuationIndent = isLastIndentContinuation;
+                            }
                         } else if (tree.getKind() != Tree.Kind.NEW_ARRAY
                                 || ((NewArrayTree) tree).getType() != null
                                 || cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE) {
@@ -3907,6 +3917,9 @@ public class Reformatter implements ReformatTask {
                             }
                         } else {
                             continuationIndent = isLastIndentContinuation;
+                        }
+                        if (treeIndent >= 0) {
+                            indent = treeIndent;
                         }
                         scan(tree, null);
                     } finally {

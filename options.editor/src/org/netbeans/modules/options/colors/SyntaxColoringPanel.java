@@ -66,10 +66,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -116,9 +115,9 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     private ColorModel          colorModel = null;
     private String              currentLanguage;
     private String              currentProfile;
-    /** cache Map (String (profile name) > Map (String (language name) > Vector (AttributeSet))). */
-    private Map<String, Map<String, Vector<AttributeSet>>>
-                                profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
+    /** cache Map (String (profile name) > Map (String (language name) > List (AttributeSet))). */
+    private Map<String, Map<String, List<AttributeSet>>>
+                                profiles = new HashMap<String, Map<String, List<AttributeSet>>>();
     /** Map (String (profile name) > Set (String (language name))) of names of changed languages. */
     private Map<String, Set<String>>
                                 toBeSaved = new HashMap<String, Set<String>>();
@@ -457,7 +456,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         
         if (Preview.PROP_CURRENT_ELEMENT.equals(evt.getPropertyName())) {
             String currentCategory = (String) evt.getNewValue();
-            Vector<AttributeSet> categories = getCategories(currentProfile, currentLanguage);
+            List<AttributeSet> categories = getCategories(currentProfile, currentLanguage);
             if (currentLanguage.equals(ColorModel.ALL_LANGUAGES)) {
                 String converted = (String) convertALC.get(currentCategory);
                 if (converted != null) {
@@ -531,7 +530,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     @Override
     public void cancel () {
         toBeSaved = new HashMap<String, Set<String>>();
-        profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
+        profiles = new HashMap<String, Map<String, List<AttributeSet>>>();
         changed = false;
     }
     
@@ -540,7 +539,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         if (colorModel == null) return;
         for(String profile : toBeSaved.keySet()) {
             Set<String> toBeSavedLanguages = toBeSaved.get(profile);
-            Map<String, Vector<AttributeSet>> schemeMap = profiles.get(profile);
+            Map<String, List<AttributeSet>> schemeMap = profiles.get(profile);
             for(String languageName : toBeSavedLanguages) {
                 colorModel.setCategories(
                     profile,
@@ -550,7 +549,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             }
         }
         toBeSaved = new HashMap<String, Set<String>>();
-        profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
+        profiles = new HashMap<String, Map<String, List<AttributeSet>>>();
         changed = false;
     }
     
@@ -567,8 +566,8 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             !profiles.containsKey (currentProfile)
         )
             cloneScheme (oldProfile, currentProfile);
-        Vector<AttributeSet> categories = getCategories (currentProfile, currentLanguage);
-        lCategories.setListData (categories);
+        List<AttributeSet> categories = getCategories (currentProfile, currentLanguage);
+        lCategories.setListData (categories.toArray(new AttributeSet[categories.size()]));
         blink = false;
         lCategories.setSelectedIndex (0);
         blink = true;
@@ -578,7 +577,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
 
     @Override
     public void deleteProfile (String profile) {
-        Map<String, Vector<AttributeSet>> m = new HashMap<String, Vector<AttributeSet>> ();
+        Map<String, List<AttributeSet>> m = new HashMap<String, List<AttributeSet>> ();
         boolean custom = colorModel.isCustomProfile (profile);
         for (String language : colorModel.getLanguages ()) {
             if (custom) {
@@ -603,16 +602,16 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     // other methods ...........................................................
     
     private void cloneScheme(String oldScheme, String newScheme) {
-        Map<String, Vector<AttributeSet>> m = new HashMap<String, Vector<AttributeSet>>();
+        Map<String, List<AttributeSet>> m = new HashMap<String, List<AttributeSet>>();
         for(String language : colorModel.getLanguages()) {
-            Vector<AttributeSet> v = getCategories(oldScheme, language);
-            Vector<AttributeSet> newV = new Vector<AttributeSet> ();
+            List<AttributeSet> v = getCategories(oldScheme, language);
+            List<AttributeSet> newV = new ArrayList<AttributeSet> ();
             Iterator<AttributeSet> it = v.iterator ();
             while (it.hasNext ()) {
                 AttributeSet attributeSet = it.next ();
                 newV.add(new SimpleAttributeSet (attributeSet));
             }
-            m.put(language, new Vector<AttributeSet>(newV));
+            m.put(language, new ArrayList<AttributeSet>(newV));
             setToBeSaved(newScheme, language);
         }
         profiles.put(newScheme, m);
@@ -634,7 +633,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         
         // setup categories list
         blink = false;
-        lCategories.setListData (getCategories (currentProfile, currentLanguage));
+        lCategories.setListData (getCategories (currentProfile, currentLanguage).toArray(new AttributeSet[]{}));
         lCategories.setSelectedIndex (0);
         blink = true;
         refreshUI ();
@@ -869,14 +868,14 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         boolean isChanged = false;
         for(String profile : toBeSaved.keySet()) {
             Set<String> toBeSavedLanguages = toBeSaved.get(profile);
-            Map<String, Vector<AttributeSet>> schemeMap = profiles.get(profile);
+            Map<String, List<AttributeSet>> schemeMap = profiles.get(profile);
             for(String languageName : toBeSavedLanguages) {
                 String[] mimePath = getMimePath(languageName);
                 if (mimePath != null) { // this is a valid language
                     FontColorSettingsFactory fcs = EditorSettings.getDefault().getFontColorSettings(mimePath);
                     Collection<AttributeSet> allFontColors = fcs.getAllFontColors(profile);
                     Map<String, AttributeSet> savedSyntax = toMap(allFontColors);
-                    Vector<AttributeSet> attributeSet = schemeMap.get(languageName);
+                    List<AttributeSet> attributeSet = schemeMap.get(languageName);
                     Map<String, AttributeSet> currentSyntax = toMap(attributeSet);
                     if (savedSyntax != null && currentSyntax != null) {
                         if (savedSyntax.size() >= currentSyntax.size()) {
@@ -1002,14 +1001,14 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     }
     // end copied from ColorModel
     
-    private Vector<AttributeSet> getCategories(String profile, String language) {
+    private List<AttributeSet> getCategories(String profile, String language) {
         if (colorModel == null) return null;
-        Map<String, Vector<AttributeSet>> m = profiles.get(profile);
+        Map<String, List<AttributeSet>> m = profiles.get(profile);
         if (m == null) {
-            m = new HashMap<String, Vector<AttributeSet>>();
+            m = new HashMap<String, List<AttributeSet>>();
             profiles.put(profile, m);
         }
-        Vector<AttributeSet> v = m.get(language);
+        List<AttributeSet> v = m.get(language);
         if (v == null) {
             Collection<AttributeSet> c = colorModel.getCategories(profile, language);
             if (c == null) {
@@ -1017,36 +1016,36 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             }
             List<AttributeSet> l = new ArrayList<AttributeSet>(c);
             Collections.sort(l, new CategoryComparator());
-            v = new Vector<AttributeSet>(l);
+            v = new ArrayList<AttributeSet>(l);
             m.put(language, v);
         }
         return v;
     }
 
-    private Map<String, Map<String, Vector<AttributeSet>>> defaults = new HashMap<String, Map<String, Vector<AttributeSet>>>();
+    private Map<String, Map<String, List<AttributeSet>>> defaults = new HashMap<String, Map<String, List<AttributeSet>>>();
     /**
      * Returns original colors for given profile.
      */
-    private Vector<AttributeSet> getDefaults(String profile, String language) {
-        Map<String, Vector<AttributeSet>> m = defaults.get(profile);
+    private List<AttributeSet> getDefaults(String profile, String language) {
+        Map<String, List<AttributeSet>> m = defaults.get(profile);
         if (m == null) {
-            m = new HashMap<String, Vector<AttributeSet>>();
+            m = new HashMap<String, List<AttributeSet>>();
             defaults.put(profile, m);
         }
-        Vector<AttributeSet> v = m.get(language);
+        List<AttributeSet> v = m.get(language);
         if (v == null) {
             Collection<AttributeSet> c = colorModel.getDefaults(profile, language);
             List<AttributeSet> l = new ArrayList<AttributeSet>(c);
             Collections.sort(l, new CategoryComparator());
-            v = new Vector<AttributeSet>(l);
+            v = new ArrayList<AttributeSet>(l);
             m.put(language, v);
         }
-        return new Vector<AttributeSet>(v);
+        return new ArrayList<AttributeSet>(v);
     }
     
     private AttributeSet getCurrentCategory () {
         int i = lCategories.getSelectedIndex ();
-        Vector<AttributeSet> c = getCategories(currentProfile, currentLanguage);
+        List<AttributeSet> c = getCategories(currentProfile, currentLanguage);
         return i >= 0 && i < c.size() ? (AttributeSet) c.get(i) : null;
     }
     
@@ -1060,7 +1059,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         String language, 
         String name
     ) {
-        Vector v = getCategories (profile, language);
+        List v = getCategories (profile, language);
         Iterator it = v.iterator ();
         while (it.hasNext ()) {
             AttributeSet c = (AttributeSet) it.next ();

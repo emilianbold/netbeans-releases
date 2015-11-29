@@ -326,7 +326,6 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         }
         if (e.getSource () == bDelete) {
             deleteCurrentProfile ();
-            return;
         }
     }
     

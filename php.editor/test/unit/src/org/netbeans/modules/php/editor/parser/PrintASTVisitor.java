@@ -917,6 +917,13 @@ public class PrintASTVisitor implements Visitor {
     }
 
     @Override
+    public void visit(YieldFromExpression node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "YieldFromExpression");
+        printNode.addChild(node.getExpr());
+        printNode.print(this);
+    }
+
+    @Override
     public void visit(AnonymousObjectVariable node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "AnonymousObjectVariable");
         printNode.addChild(node.getName());

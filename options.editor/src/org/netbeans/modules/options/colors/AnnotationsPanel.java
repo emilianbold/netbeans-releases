@@ -59,7 +59,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -72,7 +71,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.ColorComboBox;
@@ -297,7 +295,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     }
     
     public void setCurrentProfile (String currentScheme) {
-        if (currentScheme == this.currentScheme) {
+        if (this.currentScheme.equals(currentScheme)) {
             return;
         }
         String oldScheme = this.currentScheme;
@@ -306,12 +304,12 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         if (v == null) {
             // clone scheme
             v = getAnnotations (oldScheme);
-            schemes.put (currentScheme, new Vector<AttributeSet>(v));
+            schemes.put (currentScheme, new ArrayList<AttributeSet>(v));
             toBeSaved.add (currentScheme);
             v = getAnnotations (currentScheme);
         }
         toBeSaved.add(currentScheme);
-        lCategories.setListData (v.toArray(new AttributeSet[]{}));
+        lCategories.setListData (v.toArray(new AttributeSet[v.size()]));
         if (lCategories.getModel ().getSize () > 0)
             lCategories.setSelectedIndex (0);
         refreshUI ();
