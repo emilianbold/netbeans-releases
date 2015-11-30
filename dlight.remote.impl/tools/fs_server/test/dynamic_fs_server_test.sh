@@ -51,6 +51,7 @@ echo "changing current directory to ${basedir}"
 cd ${basedir}
 
 req_file="/tmp/dynamic_fs_server_test.req"
+rsp_file="/tmp/dynamic_fs_server_test.rsp"
 echo "preparing requests and writing them into ${req_file}"
 rm -rf ${req_file}
 req_idx=0
@@ -116,7 +117,7 @@ arc=`arch`
 if [ "${arc}" = "sun4" ]; then
     arc="sparc"
 else
-    if [ "${arc}" = "x86_64" ]; then
+    if [ "${arc}" = "x86_64" -o "${arc}" = "i86pc" ]; then
         arc="x86"
     else
         echo "Architecture ${arc} is not supported for this test"
@@ -128,7 +129,7 @@ os=`uname -s`
 
 echo "launching fs_server and feeding it with commands from ${req_file}"
 
-cat ${req_file} | ../../../release/bin/${os}-${arc}/fs_server -t 16 -p -l -s -d /tmp/fs_server_test_cache_${USER} > /dev/null
+cat ${req_file} | ../../../release/bin/${os}-${arc}/fs_server -t 16 -p -l -s -d /tmp/fs_server_test_cache_${USER} > ${rsp_file}
 
 #just in case remove temp directory
 if [ -d ${tmpdir} ]; then
