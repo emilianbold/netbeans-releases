@@ -88,8 +88,15 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
         boolean foundDirective = false;
         if (searchInterestedFile) {
             // check if stop directive is met
-            if (super.getCurIncludeDirectiveFileIndex() == stopDirective.getIncludeDirectiveIndex() && inclPath.equals(stopDirective.getIncludedPath())) {
-                foundDirective = true;
+            if (super.getCurIncludeDirectiveFileIndex() == stopDirective.getIncludeDirectiveIndex()) {
+                if (inclPath.equals(stopDirective.getIncludedPath())) {
+                    foundDirective = true;
+                } else {
+                    // we restored by incorrect include stack, see comment to this.visit()
+                    APTHandlersSupport.invalidatePreprocHandler(getPreprocHandler());
+                    super.stop();
+                    return null;
+                }
             }
         }
         try {
