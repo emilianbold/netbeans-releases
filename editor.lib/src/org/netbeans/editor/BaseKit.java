@@ -205,6 +205,10 @@ public class BaseKit extends DefaultEditorKit {
     
     public static final String moveSelectionElseLineDownAction = "move-selection-else-line-down"; // NOI18N
     
+    public static final String addSelectionElseCaretUpAction = "add-selection-else-caret-up"; // NOI18N
+    
+    public static final String addSelectionElseCaretDownAction = "add-selection-else-caret-down"; // NOI18N
+    
     public static final String copySelectionElseLineUpAction = "copy-selection-else-line-up"; // NOI18N
     
     public static final String copySelectionElseLineDownAction = "copy-selection-else-line-down"; // NOI18N

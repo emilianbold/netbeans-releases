@@ -53,6 +53,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  * Extension to standard Swing caret used by all NetBeans editors.
@@ -137,7 +138,7 @@ public abstract class EditorCaret implements Caret {
 
     /**
      * Create a new caret at the given position with a possible selection.
-     * <br/>
+     * <br>
      * The caret will become the last caret of the list returned by {@link #getCarets() }.
      * 
      * @param dotPos position of the newly created caret.
@@ -146,7 +147,11 @@ public abstract class EditorCaret implements Caret {
      * @return information about the newly created caret.
      */
     public @NonNull CaretInfo addCaret(@NonNull Position dotPos, @NonNull Position selectionStartPos) {
-        return new CaretInfo(this); // TBD
+        CaretInfo caret = new CaretInfo(this, dotPos, selectionStartPos);
+        carets.add(caret);
+        fireStateChanged();
+        dispatchUpdate(true);
+        return caret;
     }
     
     /**
@@ -159,8 +164,16 @@ public abstract class EditorCaret implements Caret {
      *  if the particular caret has no selection). The list must have even size.
      * @return list of caret infos. It has a half of the size of the dotAndSelectionStartPosPairs list.
      */
-    public @NonNull List<CaretInfo> addCarets(@NonNull List<Position> dotAndSelectionStartPosPairs) {
-        return Collections.emptyList(); // TBD
+    public @NonNull List<CaretInfo> addCarets(@NonNull List<Pair<Position, Position>> dotAndSelectionStartPosPairs) {
+        List<CaretInfo> created = new LinkedList<>();
+        for (Pair<Position, Position> dotPos : dotAndSelectionStartPosPairs) {
+            CaretInfo caretInfo = new CaretInfo(this, dotPos.first(), dotPos.second());
+            created.add(caretInfo);
+            carets.add(caretInfo);
+        }
+        fireStateChanged();
+        dispatchUpdate(true);
+        return created;
     }
 
     /**
