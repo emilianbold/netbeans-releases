@@ -44,6 +44,8 @@ package org.netbeans.modules.docker.ui.wizard;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
@@ -55,6 +57,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+
+    private static final Pattern REMOTE_HOST_PATTERN = Pattern.compile("^(tcp://)[^/:](:\\d+)($|/.*)"); // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -109,7 +113,7 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyDisplayName());
             return false;
         }
-        for (DockerInstance instance : DockerIntegration.getInstance().getInstances()) {
+        for (DockerInstance instance : DockerIntegration.getDefault().getInstances()) {
             if (displayName.equals(instance.getDisplayName())) {
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_AlreadyUsedDisplayName());
                 return false;
@@ -193,33 +197,15 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
         }
         component.setDisplayName(displayName);
 
-        String url = (String) wiz.getProperty(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY);
+        String url = (String) wiz.getProperty(AddDockerInstanceWizard.URL_PROPERTY);
         if (url == null) {
-            if (Utilities.isMac() || Utilities.isWindows()) {
-                // dockertoolbox it was https://192.168.59.103:2376 with boot2docker
-                url = "https://192.168.99.100:2376"; // NOI18N
-            } else {
-                url = "http://127.0.0.1:2375"; // NOI18N
-            }
+            url = getDefaultUrl();
         }
         component.setUrl(url);
 
         String certPath = (String) wiz.getProperty(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY);
         if (certPath == null) {
-            String envPath = System.getenv("DOCKER_CERT_PATH"); // NOI18N
-            if (envPath != null && new File(envPath).isDirectory()) {
-                certPath = envPath;
-            } else if (Utilities.isMac() || Utilities.isWindows()) {
-                // dockertoolbox
-                File folder = new File(System.getProperty("user.home"), ".docker" + File.separator
-                        + "machine" + File.separator + "machines" + File.separator + "default"); // NOI18N
-                if (!folder.isDirectory()) {
-                    folder = new File(System.getProperty("user.home"), ".boot2docker"); // NOI18N
-                }
-                if (folder.isDirectory()) {
-                    certPath = folder.getAbsolutePath();
-                }
-            }
+            certPath = getDefaultCertificatePath();
         }
         component.setCertPath(certPath);
 
@@ -237,5 +223,66 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
     @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
+    }
+
+    private static String getDefaultUrl() {
+        String url = null;
+        String envUrl = System.getenv("DOCKER_HOST").trim(); // NOI18N
+        if (envUrl != null) {
+            try {
+                return new URL(envUrl).toString();
+            } catch (MalformedURLException ex) {
+                // try to parse it
+            }
+            Matcher m = REMOTE_HOST_PATTERN.matcher(envUrl);
+            if (m.matches()) {
+                boolean https = false;
+                String tlsEnv = System.getenv("DOCKER_TLS_VERIFY"); // NOI18N
+                if (tlsEnv != null && "1".equals(tlsEnv)) { // NOI18N
+                    https = true;
+                } else {
+                    https = Integer.parseInt(m.group(2)) == 2376;
+                }
+                return (https ? "https://" : "http://") + envUrl.substring(m.group(1).length()); // NOI18N
+            }
+        }
+
+        if (url == null) {
+            if (Utilities.isMac() || Utilities.isWindows()) {
+                if (new File(System.getProperty("user.home"), ".docker").isDirectory()) { // NOI18N
+                    // dockertoolbox
+                    url = "https://192.168.99.100:2376"; // NOI18N
+                } else {
+                    // obsolete boot2docker
+                    url = "https://192.168.59.103:2376"; // NOI18N
+                }
+            } else {
+                url = "http://127.0.0.1:2375"; // NOI18N
+            }
+        }
+        return url;
+    }
+
+    private static String getDefaultCertificatePath() {
+        String certPath = null;
+        String envPath = System.getenv("DOCKER_CERT_PATH").trim(); // NOI18N
+        if (envPath != null && new File(envPath).isDirectory()) {
+            return envPath;
+        }
+
+        if (Utilities.isMac() || Utilities.isWindows()) {
+            // dockertoolbox
+            File folder = new File(System.getProperty("user.home"), ".docker" + File.separator // NOI18N
+                    + "machine" + File.separator + "machines" + File.separator + "default"); // NOI18N
+            if (!folder.isDirectory()) {
+                // obsolete boot2docker
+                folder = new File(System.getProperty("user.home"), ".boot2docker" + File.separator // NOI18N
+                        + "certs" + File.separator + "boot2docker-vm"); // NOI18N
+            }
+            if (folder.isDirectory()) {
+                certPath = folder.getAbsolutePath();
+            }
+        }
+        return certPath;
     }
 }
