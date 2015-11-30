@@ -42,26 +42,18 @@
 package org.netbeans.modules.docker;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.security.KeyFactory;
-import java.security.KeyManagementException;
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
@@ -70,8 +62,6 @@ import java.util.logging.Logger;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import org.bouncycastle.openssl.PEMKeyPair;
-import org.bouncycastle.openssl.PEMParser;
 import org.netbeans.modules.docker.api.DockerInstance;
 
 /**
@@ -169,15 +159,7 @@ public final class SecureContextProvider {
 
             PrivateKey clientKeyObject = null;
             if (clientKey != null) {
-                PEMKeyPair clientKeyPair;
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(clientKey), "UTF-8"))) {
-                    clientKeyPair = (PEMKeyPair) new PEMParser(r).readObject();
-                }
-
-                PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(
-                        clientKeyPair.getPrivateKeyInfo().getEncoded());
-                KeyFactory kf = KeyFactory.getInstance("RSA");
-                clientKeyObject = kf.generatePrivate(spec);
+                clientKeyObject = PrivateKeyParser.load(clientKey);
             }
 
             KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -203,8 +185,7 @@ public final class SecureContextProvider {
             SSLContext context = SSLContext.getInstance("TLS");
             context.init(kmfactory != null ? kmfactory.getKeyManagers() : null, tmfactory.getTrustManagers(), null);
             return context;
-        } catch (CertificateException | KeyStoreException | NoSuchAlgorithmException
-                | KeyManagementException | UnrecoverableKeyException | InvalidKeySpecException ex) {
+        } catch (GeneralSecurityException ex) {
             throw new IOException(ex);
         }
     }
