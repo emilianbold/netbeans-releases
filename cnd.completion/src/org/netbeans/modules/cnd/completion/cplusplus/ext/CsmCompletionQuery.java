@@ -1394,84 +1394,54 @@ abstract public class CsmCompletionQuery {
                     if(((CsmStatement) var.getScope()).getKind().equals(CsmStatement.Kind.RANGE_FOR)) {
                         CsmRangeForStatement forStmt = (CsmRangeForStatement) var.getScope();
                         final CsmExpression initializer = forStmt.getInitializer();
-                        if(initializer != null && initializer.getText() != null) {
-                            TokenHierarchy<String> hi = TokenHierarchy.create(initializer.getText().toString(), CndLexerUtilities.getLanguage(getBaseDocument()));
-                            List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(initializer.getEndOffset(), true);
-                            // Go from inner to outer TSes
-                            TokenSequence<TokenId> cppts = null;
-                            for (int i = tsList.size() - 1; i >= 0; i--) {
-                                TokenSequence<?> ts = tsList.get(i);
-                                final Language<?> lang = ts.languagePath().innerLanguage();
-                                if (CndLexerUtilities.isCppLanguage(lang, false)) {
-                                    @SuppressWarnings("unchecked") // NOI18N
-                                    TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
-                                    cppts = uts;
-                                }
-                            }
-                            if(cppts != null && !antiLoop.contains(initializer)) {
-                                antiLoop.add(initializer);
+                        if (initializer != null && initializer.getText() != null) {
+                            varType = findExpressionType(initializer);
+                            if (varType != null) {
+                                if(varType.getArrayDepth() == 0) {
+                                    // In fact this is a workaround, because according to standard we
+                                    // must look for standalone functions begin(<expression>). But for now
+                                    // NetBeans doesn't support functions like
+                                    //
+                                    // template<typename C> auto begin(C& c) -> decltype(c.begin());
+                                    //
+                                    // So, just try to find member function "begin"
+                                    //
+                                    // @see http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2009/n2930.html
 
-                                final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initializer.getEndOffset(), initializer.getStartOffset());
-                                tp.enableLambdaSupport(true);
-                                tp.enableTemplateSupport(true);
-                                final BaseDocument doc = getBaseDocument();
-                                doc.render(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        CndTokenUtilities.processTokens(tp, doc, initializer.getStartOffset(), initializer.getEndOffset());
-                                    }
-                                });
-                                CsmCompletionExpression exp = tp.getResultExp();
-
-                                varType = resolveType(exp);
-                                if(varType != null) {
-                                    if(varType.getArrayDepth() == 0) {
-                                        // In fact this is a workaround, because according to standard we
-                                        // must look for standalone functions begin(<expression>). But for now
-                                        // NetBeans doesn't support functions like
-                                        //
-                                        // template<typename C> auto begin(C& c) -> decltype(c.begin());
-                                        //
-                                        // So, just try to find member function "begin"
-                                        //
-                                        // @see http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2009/n2930.html
-
-                                        CsmClassifier cls = CsmBaseUtilities.getOriginalClassifier(varType.getClassifier(), contextFile);
-                                        List<CsmObject> decls = findFieldsAndMethods(finder, contextElement, cls, "begin", true, false, false, true, false, false, false); // NOI18N
-                                        for (CsmObject csmObject : decls) {
-                                            if(CsmKindUtilities.isFunction(csmObject)) {
-                                                varType = ((CsmFunction)csmObject).getReturnType();
-                                                break;
-                                            }
+                                    CsmClassifier cls = CsmBaseUtilities.getOriginalClassifier(varType.getClassifier(), contextFile);
+                                    List<CsmObject> decls = findFieldsAndMethods(finder, contextElement, cls, "begin", true, false, false, true, false, false, false); // NOI18N
+                                    for (CsmObject csmObject : decls) {
+                                        if(CsmKindUtilities.isFunction(csmObject)) {
+                                            varType = ((CsmFunction)csmObject).getReturnType();
+                                            break;
                                         }
-
-                                        cls = CsmBaseUtilities.getOriginalClassifier(varType.getClassifier(), contextFile);
-                                        CsmFunction dereferenceOperator = getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.POINTER);
-                                        if (dereferenceOperator != null) {
-                                            varType = dereferenceOperator.getReturnType();
-                                        }
-
-                                        varType = CsmCompletion.createType(
-                                                varType.getClassifier(),
-                                                varType.getPointerDepth(),
-                                                getReferenceValue(oldType),
-                                                varType.getArrayDepth(),
-                                                oldType.isConst() | (varType.isPointer() & varType.isConst())
-                                        );
-                                    } else {
-                                        // Iterations on array
-                                        varType = CsmCompletion.createType(
-                                                varType.getClassifier(),
-                                                varType.getPointerDepth(),
-                                                getReferenceValue(oldType),
-                                                varType.getArrayDepth() - 1,
-                                                oldType.isConst() | (varType.isPointer() & varType.isConst())
-                                        );
                                     }
+
+                                    cls = CsmBaseUtilities.getOriginalClassifier(varType.getClassifier(), contextFile);
+                                    CsmFunction dereferenceOperator = getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.POINTER);
+                                    if (dereferenceOperator != null) {
+                                        varType = dereferenceOperator.getReturnType();
+                                    }
+
+                                    varType = CsmCompletion.createType(
+                                            varType.getClassifier(),
+                                            varType.getPointerDepth(),
+                                            getReferenceValue(oldType),
+                                            varType.getArrayDepth(),
+                                            oldType.isConst() | (varType.isPointer() & varType.isConst())
+                                    );
+                                } else {
+                                    // Iterations on array
+                                    varType = CsmCompletion.createType(
+                                            varType.getClassifier(),
+                                            varType.getPointerDepth(),
+                                            getReferenceValue(oldType),
+                                            varType.getArrayDepth() - 1,
+                                            oldType.isConst() | (varType.isPointer() & varType.isConst())
+                                    );
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -1480,7 +1450,8 @@ abstract public class CsmCompletionQuery {
 
         private CsmType findExpressionType(final CsmOffsetable expression) {
             if (expression != null && !antiLoop.contains(expression)) {
-
+                antiLoop.add(expression);
+                
                 final boolean processAsExpression = CsmKindUtilities.isExpression(expression);
                 CsmCompletionTokenProcessor tp;
 
@@ -1492,7 +1463,6 @@ abstract public class CsmCompletionQuery {
                 }
 
                 if (!checkErrorTokenState(tp)) {
-                    antiLoop.add(expression);
                     CsmCompletionExpression exp = getResultExpression(tp, processAsExpression, true);
                     return resolveType(exp);
                 }
