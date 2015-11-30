@@ -67,14 +67,14 @@ public final class PrivateKeyParser {
     }
 
     // PKCS#8 format
-    private static final String PEM_PRIVATE_START = "-----BEGIN PRIVATE KEY-----";
+    private static final String PEM_PRIVATE_START = "-----BEGIN PRIVATE KEY-----"; // NOI18N
 
-    private static final String PEM_PRIVATE_END = "-----END PRIVATE KEY-----";
+    private static final String PEM_PRIVATE_END = "-----END PRIVATE KEY-----"; // NOI18N
 
     // PKCS#1 format
-    private static final String PEM_RSA_PRIVATE_START = "-----BEGIN RSA PRIVATE KEY-----";
+    private static final String PEM_RSA_PRIVATE_START = "-----BEGIN RSA PRIVATE KEY-----"; // NOI18N
 
-    private static final String PEM_RSA_PRIVATE_END = "-----END RSA PRIVATE KEY-----";
+    private static final String PEM_RSA_PRIVATE_END = "-----END RSA PRIVATE KEY-----"; // NOI18N
 
     public static PrivateKey load(File pemFileName) throws GeneralSecurityException, IOException {
         Path path = Paths.get(pemFileName.getAbsolutePath());
