@@ -90,7 +90,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 7
-#define FS_SERVER_MINOR_VERSION 3
+#define FS_SERVER_MINOR_VERSION 4
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -282,6 +282,29 @@ static int word_len(const char* p) {
     return len;
 }
 
+static bool is_valid_request_kind(char c) {
+    switch (c) {
+        case FS_REQ_LS:
+        case FS_REQ_RECURSIVE_LS:
+        case FS_REQ_STAT:
+        case FS_REQ_LSTAT:
+        case FS_REQ_COPY:
+        case FS_REQ_MOVE:
+        case FS_REQ_QUIT:
+        case FS_REQ_SLEEP:
+        case FS_REQ_ADD_WATCH:
+        case FS_REQ_REMOVE_WATCH:
+        case FS_REQ_REFRESH:
+        case FS_REQ_DELETE:
+        case FS_REQ_SERVER_INFO:
+        case FS_REQ_HELP:
+        case FS_REQ_OPTION:
+            return true;
+        default:
+            return false;
+    }
+}
+
 /**
  * Decodes in-place fs_raw_request into fs_request
  */
@@ -297,6 +320,18 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
         path_len = 0;
         p = "";
     } else {
+        if(*raw_request == '\0' || *raw_request == '\n') {
+            report_error("wrong (zero length) request\n");
+            return NULL;
+        }
+        if(!is_valid_request_kind(*raw_request)) {
+            report_error("wrong request kind: %s", raw_request);
+            return NULL;
+        }
+        if(*(raw_request+1) != ' ') {
+            report_error("wrong request, no space after request kind: %s", raw_request);
+            return NULL;
+        }
         p = raw_request + 2;
         p = decode_int(p, &id);
         if (*raw_request == FS_REQ_SERVER_INFO) {
