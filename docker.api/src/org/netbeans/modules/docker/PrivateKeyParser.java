@@ -60,8 +60,12 @@ import sun.security.util.DerValue;
  *
  * @author Petr Hejl
  */
-public class PrivateKeyParser {
+public final class PrivateKeyParser {
 
+    private PrivateKeyParser() {
+        super();
+    }
+    
     // PKCS#8 format
     private static final String PEM_PRIVATE_START = "-----BEGIN PRIVATE KEY-----";
 
