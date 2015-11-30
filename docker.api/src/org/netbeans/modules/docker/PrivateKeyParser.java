@@ -65,7 +65,7 @@ public final class PrivateKeyParser {
     private PrivateKeyParser() {
         super();
     }
-    
+
     // PKCS#8 format
     private static final String PEM_PRIVATE_START = "-----BEGIN PRIVATE KEY-----";
 
