@@ -427,4 +427,9 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug256058.cpp", 104, 12, "bug256058.cpp", 60, 9);
         performTest("bug256058.cpp", 107, 12, "bug256058.cpp", 47, 13);
     }
+    
+    public void testBug256739() throws Exception {
+        // Bug 256739 - IDE cannot find type of (*this) in initializer
+        performTest("bug256739.cpp", 15, 25, "bug256739.cpp", 13, 9);
+    }
 }
