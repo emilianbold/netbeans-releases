@@ -172,9 +172,9 @@ public class ClassPathProviderImplTest extends NbTestCase {
         TestFileUtils.writeZipFile(d, "target/endorsed/override.jar", "javax/Whatever.class:whatever");
         EndorsedClassPathImpl.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertTrue(cp.toString(), cp.toString().contains("a317188c2dbde871ebc4d2502aa02d8d0405fe7b.jar"));
+        assertTrue(cp.toString(), cp.toString().contains("d4c2e28102f941105d838bf5ce0aedbb763bbcb7.jar"));
         pcl2.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertTrue(bcp.toString(), bcp.toString().contains("a317188c2dbde871ebc4d2502aa02d8d0405fe7b.jar"));
+        assertTrue(bcp.toString(), bcp.toString().contains("d4c2e28102f941105d838bf5ce0aedbb763bbcb7.jar"));
         d.getFileObject("target").delete();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertRoots(cp);
