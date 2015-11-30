@@ -36,11 +36,7 @@ PNAME=fs_server
 
 CC_COMMON=gcc
 
-ifdef PREVISE
-  CC_SOLARIS=cc
-else
-  CC_SOLARIS=gcc
-endif
+CC_SOLARIS=cc
 
 CC_Linux-x86      = $(CC_COMMON)
 CC_Linux-x86_64   = $(CC_COMMON)
@@ -84,12 +80,7 @@ EXEC=$(DIST_DIR)/$(PNAME)
 
 #CF_COMMON         = --std=c99 -s -O2
 CF_COMMON         = --std=c99 -g -Wall -Werror -D_REENTRANT
-
-ifdef PREVISE
-  CF_SOLARIS         = -std=c99 -g -errwarn -D_REENTRANT
-else
-  CF_SOLARIS         = $(CF_COMMON)
-endif
+CF_SOLARIS         = -std=c99 -g -errwarn -D_REENTRANT
 
 CF_Linux-arm      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32
