@@ -46,6 +46,7 @@ package org.apache.tools.ant.module.bridge;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -56,6 +57,7 @@ import java.io.PrintStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -78,9 +80,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntSettings;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -367,8 +371,7 @@ public final class AntBridge {
     
     private static List<File> createMainClassPath() throws Exception {
         // Use LinkedHashSet to automatically suppress duplicates.
-        Collection<File> cp = new LinkedHashSet<File>();
-        addJARs(cp, new File(new File(System.getProperty("java.home")).getParentFile(), "lib"));
+        final Collection<File> cp = new LinkedHashSet<>();
         File antHome = AntSettings.getAntHome();
         if (antHome != null) {
             File libdir = new File(antHome, "lib"); // NOI18N
@@ -384,23 +387,43 @@ public final class AntBridge {
         addJARs(cp, new File(new File(System.getProperty("user.home"), ".ant"), "lib"));
         cp.addAll(AntSettings.getExtraClasspath());
         cp.addAll(AntSettings.getAutomaticExtraClasspath());
-        return new ArrayList<File>(cp);
+        return new ArrayList<>(cp);
     }
+
     private static void addJARs(Collection<File> cp, File dir) {
         File[] libs = dir.listFiles(new JarFilter());
         if (libs != null) {
-            cp.addAll(Arrays.asList(libs));
+            Collections.addAll(cp, libs);
         }
     }
-    
-    private static ClassLoader createMainClassLoader(List<File> mainClassPath) throws Exception {
-        URL[] cp = new URL[mainClassPath.size()];
+
+    private static URL[] toURLs(List<? extends File> classPath) throws MalformedURLException {
+        final URL[] urls = new URL[classPath.size()];
         int i = 0;
-        for (File entry : mainClassPath) {
-            cp[i++] = /* #162158: do not use FileUtil.urlForArchiveOrDir(entry) */Utilities.toURI(entry).toURL();
+        for (File entry : classPath) {
+            urls[i++] = /* #162158: do not use FileUtil.urlForArchiveOrDir(entry) */Utilities.toURI(entry).toURL();
         }
+        return urls;
+    }
+
+    private static boolean hasJavac(final ClassLoader cl) {
+        return cl.getResource("com/sun/tools/javac/Main.class") != null;    //NOI18N
+    }
+
+    private static List<File> prependTools(List<File> origCp) {
+        final Collection<File> tools = new LinkedHashSet<>();
+        addJARs(tools, new File(new File(System.getProperty("java.home")).getParentFile(), "lib")); //NOI18N
+        tools.removeAll(origCp);
+        final List<File> res = new ArrayList<>(tools.size() + origCp.size());
+        res.addAll(tools);
+        res.addAll(origCp);
+        return res;
+    }
+
+    private static ClassLoader createMainClassLoader(List<File> mainClassPath) throws Exception {
         if (AntSettings.getAntHome() != null) {
-            ClassLoader parent = ClassLoader.getSystemClassLoader()/* #152620 */.getParent();
+            final ClassLoader sysClassLoader = ClassLoader.getSystemClassLoader();
+            ClassLoader parent = sysClassLoader/* #152620 */.getParent();
             if (LOG.isLoggable(Level.FINE)) {
                 List<URL> parentURLs;
                 if (parent instanceof URLClassLoader) {
@@ -408,12 +431,27 @@ public final class AntBridge {
                 } else {
                     parentURLs = null;
                 }
-                LOG.log(Level.FINER, "AntBridge.createMainClassLoader: cp={0} parent.urls={1}", new Object[] {Arrays.asList(cp), parentURLs});
+                LOG.log(Level.FINER, "AntBridge.createMainClassLoader: cp={0} parent.urls={1}", new Object[] {mainClassPath, parentURLs});
             }
-            return new MainClassLoader(cp, parent);
+            if (!hasJavac(parent)) {
+                //No javac in ext  ClassLoader add it either from sys ClassLoader
+                //or try to add tools.jar on cp
+                if (hasJavac(sysClassLoader)) {
+                    parent = new AddJavacClassLoader(parent, sysClassLoader);
+                } else {
+                    mainClassPath = prependTools(mainClassPath);
+                }
+            }
+            return new MainClassLoader(toURLs(mainClassPath), parent);
         } else {
             // Run-in-classpath mode.
             ClassLoader existing = AntBridge.class.getClassLoader();
+            if (!hasJavac(existing)) {
+                //javac is not transitivelly on ext ClassLoader
+                //try to add it
+                mainClassPath = prependTools(mainClassPath);
+            }
+            final URL[] cp = toURLs(mainClassPath);
             if (existing instanceof URLClassLoader) {
                 try {
                     // Need to insert resources into it.
@@ -661,7 +699,142 @@ public final class AntBridge {
         }
         
     }
-    
+
+
+    private static final class AddJavacClassLoader extends ClassLoader {
+        private static final Iterable<? extends String> javacPackages = Arrays.asList(
+                "com.sun.jarsigner.",               //NOI18N
+                "com.sun.javadoc.",                 //NOI18N
+                "com.sun.mirror.",                  //NOI18N
+                "com.sun.source.",                  //NOI18N
+                "com.sun.tools.",                   //NOI18N
+                "javax.annotation.processing.",     //NOI18N
+                "javax.lang.model.",                //NOI18N
+                "javax.tools.",                     //NOI18N
+                "sun.rmi.",                         //NOI18N
+                "sun.security.",                    //NOI18N
+                "sun.tools.");                      //NOI18N
+
+
+
+
+
+        private static final int INITIAL_BUFSIZ = 1<<14;
+
+        private final ClassLoader contextClassLoader;
+        //@GuardedBy("getClassLoadingLock()")
+        private byte[] buffer;
+
+        public AddJavacClassLoader(
+                @NonNull final ClassLoader parentClassLoader,
+                @NonNull final ClassLoader contextClassLoader) {
+            super(parentClassLoader);
+            this.contextClassLoader = contextClassLoader;
+        }
+
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (isFromContextClassLoader(name, true)) {
+                try {
+                    synchronized (getClassLoadingLock(name)) {
+                        Class<?> c = findLoadedClass(name);
+                        if (c == null) {
+                            InputStream in = contextClassLoader.getResourceAsStream(
+                                    name.replace('.', '/').concat(".class"));    //NOI18N
+                            if (in != null) {
+                                try {
+                                    in = new BufferedInputStream(in, INITIAL_BUFSIZ);
+                                    final int len = readFully(in);
+                                    final int lastDot = name.lastIndexOf('.');   //NOI18N
+                                    if (lastDot >= 0) {
+                                        final String pack = name.substring(0, lastDot);
+                                        if (getPackage(pack) == null) {
+                                            definePackage(pack, null, null, null, null, null, null, null);
+                                        }
+                                    }
+                                    c = defineClass(name, buffer, 0, len);
+                                } finally {
+                                    in.close();
+                                }
+                            } else {
+                                throw new ClassNotFoundException(String.format(
+                                        "The class: %s is not found in %s", //NOI18N
+                                        name,
+                                        contextClassLoader));
+                            }
+                        }
+                        if (resolve) {
+                            resolveClass(c);
+                        }
+                        return c;
+                    }
+                } catch (final IOException ioe) {
+                    throw new ClassNotFoundException(String.format(
+                            "IO Error while loading: %s", name),
+                            ioe);
+                }
+            }
+            return super.loadClass(name, resolve);
+        }
+
+        @Override
+        public URL getResource(String name) {
+            if (isFromContextClassLoader(name, false)) {
+                return contextClassLoader.getResource(name);
+            }
+            return super.getResource(name);
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            Enumeration<URL> res =  super.getResources(name);
+            if (isFromContextClassLoader(name, false)) {
+                final Enumeration<URL> cclRes = contextClassLoader.getResources(name);
+                res = Enumerations.concat(res, cclRes);
+            }
+            return res;
+        }
+
+        private static boolean isFromContextClassLoader(
+                @NonNull String name,
+                final boolean pkg) {
+            //the 5-th letter of all interesting packages is either 's','x','r','t'
+            //using that to prevent (possibly expensive) loop through javacPackages:
+            char f = name.length() > 4 ? name.charAt(4) : '\0';
+            if (f == 'x' || f == 's' || f == 'r' || f =='t') { //NOI18N
+                if (!pkg) {
+                    name = name.replace('/', '.');  //NOI18N
+                }
+                for (String pack : javacPackages) {
+                    if (name.startsWith(pack)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private int readFully(@NonNull final InputStream in) throws IOException {
+            if (buffer == null) {
+                buffer = new byte[INITIAL_BUFSIZ];
+            }
+            int capacity = buffer.length;
+            int nread = 0, n;
+            while (true) {
+                while ((n = in.read(buffer, nread, capacity - nread)) > 0) {
+                    nread += n;
+                }
+                if (n < 0 || (n = in.read()) < 0) {
+                    break;
+                }
+                capacity = capacity << 1;
+                buffer = Arrays.copyOf(buffer, capacity);
+                buffer[nread++] = (byte)n;
+            }
+            return nread;
+        }
+
+    }
     // I/O redirection impl. Keyed by thread group (each Ant process has its own TG).
     // Various Ant tasks (e.g. <java fork="false" output="..." ...>) need the system
     // I/O streams to be redirected to the demux streams of the project so they can

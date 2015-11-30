@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileObject;
@@ -67,9 +68,9 @@ public class FileObjectArchive implements Archive {
     public FileObjectArchive (final FileObject root) {
         this.root = root;
     }
-    
+
     public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException {
-        FileObject folder = root.getFileObject(folderName);        
+        FileObject folder = root.getFileObject(folderName);
         if (folder == null || !(entry == null || entry.includes(folder))) {
             return Collections.<JavaFileObject>emptySet();
         }
@@ -77,8 +78,15 @@ public class FileObjectArchive implements Archive {
         List<JavaFileObject> result = new ArrayList<JavaFileObject>(children.length);
         for (FileObject fo : children) {
             if (fo.isData() && (entry == null || entry.includes(fo))) {
-                if (kinds == null || kinds.contains (FileObjects.getKind(fo.getExt()))) {
-                    result.add(FileObjects.sourceFileObject(fo, root, filter,false));
+                final Kind kind = FileObjects.getKind(fo.getExt());
+                if (kinds == null || kinds.contains (kind)) {
+                    JavaFileObject file;
+                    if (kind == Kind.CLASS) {
+                        file = FileObjects.fileObjectFileObject(fo, root, filter, null);
+                    } else {
+                        file = FileObjects.sourceFileObject(fo, root, filter,false);
+                    }
+                    result.add(file);
                 }
             }
         }

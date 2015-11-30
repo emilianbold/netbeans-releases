@@ -285,27 +285,41 @@ public class TreeFactory {
         return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, Collections.<TypeParameterTree>emptyList(), null, implementsClauses, memberDecls);
     }
     
+    public CompilationUnitTree CompilationUnit(PackageTree packageDecl,
+                                               List<? extends ImportTree> importDecls, 
+                                               List<? extends Tree> typeDecls, 
+                                               JavaFileObject sourceFile) {
+
+        ListBuffer<JCTree> defs = new ListBuffer<>();
+        if (packageDecl != null) {
+            defs.append((JCTree)packageDecl);
+        }
+        if (importDecls != null) {
+            for (Tree t : importDecls) {
+                defs.append((JCTree)t);
+            }
+        }
+        if (typeDecls != null) {
+            for (Tree t : typeDecls) {
+                defs.append((JCTree)t);
+            }
+        }
+        JCCompilationUnit unit = make.at(NOPOS).TopLevel(defs.toList());
+        unit.sourcefile = sourceFile;
+        return unit;
+    }
+    
     public CompilationUnitTree CompilationUnit(@NonNull List<? extends AnnotationTree> packageAnnotations,
                                                ExpressionTree packageDecl,
                                                List<? extends ImportTree> importDecls, 
                                                List<? extends Tree> typeDecls, 
                                                JavaFileObject sourceFile) {
 
-        ListBuffer<JCAnnotation> annotations = new ListBuffer<JCAnnotation>();
+        ListBuffer<JCAnnotation> annotations = new ListBuffer<>();
         for (AnnotationTree at : packageAnnotations) {
             annotations.add((JCAnnotation) at);
         }
-        ListBuffer<JCTree> defs = new ListBuffer<JCTree>();
-        if (importDecls != null)
-            for (Tree t : importDecls)
-                defs.append((JCTree)t);
-        if (typeDecls != null) 
-            for (Tree t : typeDecls)
-                defs.append((JCTree)t);
-        JCCompilationUnit unit = make.at(NOPOS).TopLevel(annotations.toList(),
-                                                          (JCExpression)packageDecl, defs.toList());
-        unit.sourcefile = sourceFile;
-        return unit;
+        return CompilationUnit(packageDecl != null ? make.at(NOPOS).PackageDecl(annotations.toList(), (JCExpression) packageDecl) : null, importDecls, typeDecls, sourceFile);
     }
     
     public CompoundAssignmentTree CompoundAssignment(Kind operator, 
@@ -608,6 +622,13 @@ public class TreeFactory {
                              (JCClassDecl)classBody);
     }
     
+    public PackageTree Package(List<? extends AnnotationTree> annotations, ExpressionTree pid) {
+        ListBuffer<JCAnnotation> anns = new ListBuffer<JCAnnotation>();
+        for (AnnotationTree t : annotations)
+            anns.append((JCAnnotation)t);
+        return make.at(NOPOS).PackageDecl(anns.toList(), (JCExpression)pid);
+    }
+    
     public ParameterizedTypeTree ParameterizedType(Tree type,
                                                    List<? extends Tree> typeArguments) {
         ListBuffer<JCExpression> typeargs = new ListBuffer<JCExpression>();
@@ -663,7 +684,7 @@ public class TreeFactory {
     public ExpressionTree QualIdent(Element element) {
         Symbol s = (Symbol) element;
 
-        if (s.owner != null && (s.owner.kind == Kinds.MTH || s.owner.name.isEmpty())) {
+        if (s.owner != null && (s.owner.kind == Kinds.Kind.MTH || s.owner.name.isEmpty())) {
             JCIdent result = make.at(NOPOS).Ident(s);
             result.setType(s.type);
             return result;
@@ -1657,7 +1678,7 @@ public class TreeFactory {
         for (DocTree t : tags) {
             tg.append((DCTree) t);
         }
-        return docMake.at(NOPOS).DocComment(null, fs.toList(), bd.toList(), tg.toList());
+        return docMake.at(NOPOS).DocComment(fs.toList(), bd.toList(), tg.toList());
     }
     
     public com.sun.source.doctree.ErroneousTree Erroneous(String text, DiagnosticSource diagSource, String code, Object... args) {

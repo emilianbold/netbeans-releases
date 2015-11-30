@@ -47,7 +47,6 @@ package org.netbeans.modules.web.jspparser_ext;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -107,7 +106,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -351,13 +349,22 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
     // #128360
     private void resetClassLoaders() {
-        try {
-            waClassLoader.reset();
-            waContextClassLoader.reset();
-        } catch (Exception e) {
-            // the code in try block is _NOT_ API
-            Exceptions.printStackTrace(e);
+        if (noReset) {
+            return;
         }
+        URL[] loadingURLs = waClassLoader.getLoadingURLs();
+        URL[] tomcatURLs = waClassLoader.getTomcatURLs();
+        URL[] loadingContextURLs = waContextClassLoader.getLoadingURLs();
+        URL[] tomcatContextURLs = waContextClassLoader.getTomcatURLs();
+
+        try {
+            waClassLoader.close();
+            waContextClassLoader.close();
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, null, e);
+        }
+        waClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, waClassLoader.getParent());
+        waContextClassLoader = new ParserClassLoader(loadingContextURLs, tomcatContextURLs, waContextClassLoader.getParent());
      }
 
     // #127379 - XXX review after listening on a web module is possible
@@ -868,7 +875,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      * The classloader is hiding some resources to avoid commons logging
      * related jar locking. See issue 128360.
      */
-    public static class ParserClassLoader extends URLClassLoader implements Closeable {
+    public static class ParserClassLoader extends URLClassLoader {
 
         private static final Logger LOGGER = Logger.getLogger(ParserClassLoader.class.getName());
 
@@ -904,6 +911,14 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
          */
         @Override
         public URL[] getURLs() {
+            return tomcatURLs;
+        }
+
+        public URL[] getLoadingURLs() {
+            return super.getURLs();
+        }
+
+        public URL[] getTomcatURLs() {
             return tomcatURLs;
         }
 
@@ -982,85 +997,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             sb.append(", parent : "); // NOI18N
             sb.append(getParent().toString());
             return sb.toString();
-        }
-
-        public void reset() {
-            if (noReset || !Utilities.isWindows()) {
-                return;
-            }
-
-            URL[] urls = super.getURLs();
-
-            // Test we can fix classloader later
-            Method getJavaNetAccess = null;
-            Method getURLClasspath = null;
-            Method push = null;
-
-            try {
-                Class clazz = Class.forName("sun.misc.SharedSecrets"); // NOI18N
-                getJavaNetAccess = clazz.getMethod("getJavaNetAccess", new Class[]{}); // NOI18N
-
-                getURLClasspath = getJavaNetAccess.getReturnType().getMethod("getURLClassPath", //NOI18N
-                        new Class[] {URLClassLoader.class});
-                getURLClasspath.setAccessible(true);
-
-                push = getURLClasspath.getReturnType().getDeclaredMethod("push", // NOI18N
-                        new Class[] {urls.getClass()});
-                push.setAccessible(true);
-            } catch (ClassNotFoundException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return; // Bad luck - will be locked
-            } catch (NoSuchMethodException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return; // Bad luck - will be locked
-            } catch (SecurityException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return; // Bad luck - will be locked
-            }
-
-            // Release loader
-            try {
-                Class clazz = Class.forName("sun.misc.ClassLoaderUtil"); // NOI18N
-                if (clazz != null) {
-                    Method releaseMethod = clazz.getMethod("releaseLoader", URLClassLoader.class); // NOI18N
-                    if (releaseMethod != null) {
-                        releaseMethod.invoke(null, new Object[]{this});
-                    }
-                }
-            } catch (ClassNotFoundException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return; // Bad luck - will be locked
-            } catch (NoSuchMethodException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return; // Bad luck - will be locked
-            } catch (IllegalAccessException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return; // Bad luck - will be locked
-            } catch (InvocationTargetException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return; // Bad luck - will be locked
-            }
-
-            LOGGER.log(Level.FINE, "Classloader released"); // NOI18N
-
-            // Fix the classpath
-            try {
-                Object javaNetAccess = getJavaNetAccess.invoke(null, new Object[]{});
-                Object urlClasspath = getURLClasspath.invoke(javaNetAccess, new Object[]{this});
-                push.invoke(urlClasspath, new Object[] {urls});
-            } catch (IllegalAccessException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return; // TODO Unusable classloader
-            } catch (InvocationTargetException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return; // TODO Unusable classloader
-            }
-
-            LOGGER.log(Level.FINE, "Classloader reinitialized"); // NOI18N
-        }
-
-        public void close() throws IOException {
-            reset();
         }
     }
 

@@ -500,7 +500,7 @@ public final class SourceAnalyzerFactory {
             if (!activeClass.empty()) {
                 addIdent(activeClass.peek(), name, p, false);
                 if (sym != null) {
-                    if (sym.kind == Kinds.ERR) {
+                    if (sym.kind == Kinds.Kind.ERR) {
                         final Symbol owner = sym.getEnclosingElement();
                         if (owner.getKind().isClass() || owner.getKind().isInterface()) {
                             addUsage(owner, activeClass.peek(), p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
@@ -550,7 +550,7 @@ public final class SourceAnalyzerFactory {
                 } else if (state == State.PACKAGE_ANN) {
                     packageAnnotationIdents.add(name);
                     if (sym != null) {
-                        if (sym.kind == Kinds.ERR) {
+                        if (sym.kind == Kinds.Kind.ERR) {
                             final Symbol owner = sym.getEnclosingElement();
                             if (owner.getKind().isClass() || owner.getKind().isInterface()) {
                                 packageAnnotations.add (Pair.of(owner,ClassIndexImpl.UsageType.TYPE_REFERENCE));

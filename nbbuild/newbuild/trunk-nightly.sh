@@ -46,7 +46,11 @@ set -x
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
-export BUILD_DESC=trunk-nightly
+
+if [ -z ${BUILD_DESC} ]; then
+    export BUILD_DESC=trunk-nightly
+fi
+
 source init.sh
 
 rm -rf $DIST

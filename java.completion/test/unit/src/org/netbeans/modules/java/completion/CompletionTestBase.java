@@ -140,8 +140,8 @@ public class CompletionTestBase extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
         ClassPathProvider cpp = new ClassPathProvider() {
+            volatile ClassPath bootCache;
             @Override
             public ClassPath findClassPath(FileObject file, String type) {
                 try {
@@ -152,7 +152,11 @@ public class CompletionTestBase extends NbTestCase {
                         return ClassPathSupport.createClassPath(new FileObject[0]);
                     }
                     if (type.equals(ClassPath.BOOT)) {
-                        return bootPath;
+                        ClassPath cp = bootCache;
+                        if (cp == null) {
+                            bootCache = cp = createClassPath(System.getProperty("sun.boot.class.path"));
+                        }
+                        return cp;
                     }
                 } catch (IOException ex) {}
                 return null;
@@ -183,6 +187,7 @@ public class CompletionTestBase extends NbTestCase {
                 tx.commit();
             }
         }
+        final ClassPath bootPath = cpp.findClassPath(FileUtil.toFileObject(getWorkDir()), ClassPath.BOOT);
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, ClassPathSupport.createClassPath(new URL[0]), sourcePath);
         assertNotNull(cpInfo);
         final JavaSource js = JavaSource.create(cpInfo);

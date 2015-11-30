@@ -76,6 +76,7 @@ import org.xml.sax.*;
 
 import org.netbeans.api.java.platform.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
 
 /**
@@ -100,6 +101,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     private static final String PLATFORM_STOREGE = "Services/Platforms/org-netbeans-api-java-Platform"; //NOI18N
     private static final String PLATFORM_DTD_ID = "-//NetBeans//DTD Java PlatformDefinition 1.0//EN"; // NOI18N
+    private static final String URL_EMBEDDING = "!/";   //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(PlatformConvertor.class.getName(), 1, false, false);
 
     private PlatformConvertor() {}
@@ -211,7 +213,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         }
     }
 
-    JavaPlatform createPlatform(H handler) {
+    JavaPlatform createPlatform(H handler) throws IOException {
         JavaPlatform p;
 
         if (handler.isDefault) {
@@ -221,6 +223,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             p = new J2SEPlatformImpl(handler.name,handler.installFolders, handler.properties, handler.sysProperties,handler.sources, handler.javadoc);
             defaultPlatform = false;
         }
+        validate(p);
         p.addPropertyChangeListener(this);
         return p;
     }
@@ -344,16 +347,37 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             StringBuilder sbootcp = new StringBuilder();
             for (ClassPath.Entry entry : bootCP.entries()) {
                 URL url = entry.getURL();
-                if ("jar".equals(url.getProtocol())) {              //NOI18N
+                String pathInArchive = "";  //NOI18N
+                boolean wasFolder = false;
+                if (FileUtil.isArchiveArtifact(url)) {
+                    String path = url.getPath();
+                    int index = path.lastIndexOf(URL_EMBEDDING); //NOI18N
+                    if (index >= 0) {
+                        wasFolder = index > 0 && path.charAt(index-1) == '/';   //NOI18N
+                        pathInArchive = path.substring(index+URL_EMBEDDING.length());
+                    }
                     url = FileUtil.getArchiveFile(url);
                 }
-                File root = Utilities.toFile(URI.create(url.toExternalForm()));
+                String rootPath = BaseUtilities.toFile(URI.create(url.toExternalForm())).getAbsolutePath();
+                if (!pathInArchive.isEmpty()) {
+                    final StringBuilder rpb = new StringBuilder(
+                            rootPath.length() + File.separator.length() + URL_EMBEDDING.length() + pathInArchive.length());
+                    rpb.append(rootPath);
+                    if (wasFolder && !rootPath.endsWith(File.separator)) {
+                        rpb.append(File.separator);
+                    }
+                    rpb.append(URL_EMBEDDING);
+                    rpb.append(pathInArchive);
+                    rootPath = rpb.toString();
+                }
                 if (sbootcp.length()>0) {
                     sbootcp.append(File.pathSeparator);
                 }
-                sbootcp.append(normalizePath(root, jdkHome, homePropName));
+                sbootcp.append(normalizePath(rootPath, jdkHome, homePropName));
             }
-            props.setProperty(bootClassPathPropName,sbootcp.toString());   //NOI18N
+            if (sbootcp != null) {
+                props.setProperty(bootClassPathPropName,sbootcp.toString());
+            }
             props.setProperty(compilerType,getCompilerType(platform));
             for (int i = 0; i < IMPORTANT_TOOLS.length; i++) {
                 String name = IMPORTANT_TOOLS[i];
@@ -372,6 +396,16 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     public static String createName (String platName, String propType) {
         return "platforms." + platName + "." + propType;        //NOI18N
+    }
+
+    private void validate(@NonNull JavaPlatform plat) throws IOException {
+        final SpecificationVersion ver = plat.getSpecification().getVersion();
+        if (ver.compareTo(SourceLevelQuery.MINIMAL_SOURCE_LEVEL) < 0) {
+            final IOException veto = new IOException(String.format(
+                "Unsupported platform source level: %s",
+                ver));
+            throw Exceptions.attachSeverity(veto, Level.FINEST);
+        }
     }
 
     private static DataObject create(final J2SEPlatformImpl plat, final DataFolder f, final String idName) throws IOException {
@@ -452,16 +486,18 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     }
 
     private static String normalizePath (File path,  File jdkHome, String propName) {
+        return normalizePath(path.getAbsolutePath(), jdkHome, propName);
+    }
+
+    private static String normalizePath (String absolutePath,  File jdkHome, String propName) {
         String jdkLoc = jdkHome.getAbsolutePath();
         if (!jdkLoc.endsWith(File.separator)) {
             jdkLoc = jdkLoc + File.separator;
         }
-        String loc = path.getAbsolutePath();
-        if (loc.startsWith(jdkLoc)) {
-            return "${"+propName+"}"+File.separator+loc.substring(jdkLoc.length());           //NOI18N
-        }
-        else {
-            return loc;
+        if (absolutePath.startsWith(jdkLoc)) {
+            return "${"+propName+"}"+File.separator+absolutePath.substring(jdkLoc.length());           //NOI18N
+        } else {
+            return absolutePath;
         }
     }
 

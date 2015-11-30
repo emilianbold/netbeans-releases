@@ -698,14 +698,20 @@ public final class ModuleManager extends Modules {
 
         @Override
         synchronized Enumeration<URL> getResourcesImpl(String name) throws IOException {
-            Enumeration<URL> first = super.getResourcesImpl(name);
-            ClassLoader l = netigso.findFallbackLoader();
-            if (l != null && l != this) {
-                return Enumerations.removeDuplicates(
-                    Enumerations.concat(first, l.getResources(name))
-                );
+            if (JRE_PROVIDED_FACTORIES.contains(name)) {
+                // #146082: prefer JRE versions of JAXP factories when available.
+                // #147082: use empty file rather than null (~ delegation to ClassLoader.systemClassLoader) to work around JAXP #6723276
+                return parents.systemCL().getResources(name);
             } else {
-                return first;
+                Enumeration<URL> first = super.getResourcesImpl(name);
+                ClassLoader l = netigso.findFallbackLoader();
+                if (l != null && l != this) {
+                    return Enumerations.removeDuplicates(
+                        Enumerations.concat(first, l.getResources(name))
+                    );
+                } else {
+                    return first;
+                }
             }
         }
 

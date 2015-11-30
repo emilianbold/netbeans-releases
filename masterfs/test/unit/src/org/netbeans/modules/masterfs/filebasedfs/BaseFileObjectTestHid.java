@@ -51,6 +51,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Handler;
@@ -79,12 +82,16 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.TestBaseHid;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.test.StatFiles;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.io.NbMarshalledObject;
 
 
 public class BaseFileObjectTestHid extends TestBaseHid{
     public static final HashSet<String> AUTOMOUNT_SET = new HashSet<String>(Arrays.asList("set", "shared", "net", "java", "share", "home", "ws", "ade_autofs"));
+    private static final Set<String> REMOTE_FSTYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+    "nfs", "nfs4","autofs")));  //NOI18N
+    private static final boolean CHECK_REMOTE_FSTYPES = true;
     private FileObject root;
     private Logger LOG;
     
@@ -231,7 +238,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
         sb.append("\n");
         for (FileObject ch : fo.getChildren()) {
-            if (!skipChildren.contains(ch.getNameExt())) {
+            if (!skipChildren.contains(ch.getNameExt()) && !isRemoteFS(ch)) {
                 deep(ch, depth, sb, path, Collections.<String>emptySet());
             }
         }
@@ -1354,6 +1361,27 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         
         assertFalse("Became invalid", root.isValid());
         assertFalse("Leaf is invalid as well", next.isValid());
+    }
+
+    private static boolean isRemoteFS (FileObject fo) {
+        if (!CHECK_REMOTE_FSTYPES) {
+            return false;
+        }
+        if (!fo.isFolder()) {
+            return false;
+        }
+        final File f = FileUtil.toFile(fo);
+        if (f == null) {
+            return false;
+        }
+        final Path p = f.toPath();
+        try {
+            final String fsType = Files.getFileStore(p).type();
+            return REMOTE_FSTYPES.contains(fsType);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            return false;
+        }
     }
     
     private class IgnoreDirFileSystem extends LocalFileSystem {

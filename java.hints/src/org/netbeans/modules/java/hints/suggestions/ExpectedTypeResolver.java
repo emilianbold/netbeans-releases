@@ -79,6 +79,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
@@ -1323,6 +1324,11 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
 
     @Override
     public List<? extends TypeMirror> visitCompilationUnit(CompilationUnitTree node, Object p) {
+        return null;
+    }
+
+    @Override
+    public List<? extends TypeMirror> visitPackage(PackageTree pt, Object p) {
         return null;
     }
 

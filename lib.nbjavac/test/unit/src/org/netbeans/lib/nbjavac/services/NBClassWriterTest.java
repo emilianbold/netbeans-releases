@@ -42,6 +42,9 @@
 package org.netbeans.lib.nbjavac.services;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.api.JavacTool;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javadoc.JavadocClassFinder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -59,6 +62,8 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 import org.netbeans.junit.NbTestCase;
+
+import static org.netbeans.lib.nbjavac.services.Utilities.DEV_NULL;
 
 /**
  *
@@ -107,9 +112,12 @@ public class NBClassWriterTest extends NbTestCase {
 
         std.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(workingDir));
 
-        final JavacTaskImpl ct = (JavacTaskImpl) tool.getTask(null, std, null, Arrays.asList("-bootclasspath",  bootPath, "-source", "1.4", "-target", "1.4"), null, Arrays.asList(new MyFileObject(code)));
+        Context context = new Context();
+        NBMessager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+        final JavacTaskImpl ct = (JavacTaskImpl) ((JavacTool)tool).getTask(null, std, null, Arrays.asList("-bootclasspath",  bootPath, "-source", "1.6", "-target", "1.6"), null, Arrays.asList(new MyFileObject(code)), context);
 
-        NBClassReader.preRegister(ct.getContext(), false);
+        NBClassReader.preRegister(ct.getContext());
+        JavadocClassFinder.preRegister(ct.getContext(), false);
         NBClassWriter.preRegister(ct.getContext());
 
         ct.call();
@@ -125,9 +133,12 @@ public class NBClassWriterTest extends NbTestCase {
         std.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(workingDir));
         std.setLocation(StandardLocation.CLASS_PATH, Collections.singleton(workingDir));
 
-        JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, std, null, Arrays.asList("-bootclasspath",  bootPath), null, Arrays.<JavaFileObject>asList());
+        Context context = new Context();
+        NBMessager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+        JavacTaskImpl ct = (JavacTaskImpl)((JavacTool)tool).getTask(null, std, null, Arrays.asList("-bootclasspath",  bootPath), null, Arrays.<JavaFileObject>asList(), context);
 
-        NBClassReader.preRegister(ct.getContext(), false);
+        NBClassReader.preRegister(ct.getContext());
+        JavadocClassFinder.preRegister(ct.getContext(), false);
         NBClassWriter.preRegister(ct.getContext());
         
         PackageElement pack = ct.getElements().getPackageElement(packageName);

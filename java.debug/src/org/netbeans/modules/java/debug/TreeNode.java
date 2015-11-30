@@ -81,6 +81,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
@@ -733,6 +734,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingComments(below);
             
             super.visitCompilationUnit(tree, below);
+            
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitPackage(PackageTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+            
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitPackage(tree, below);
             
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;

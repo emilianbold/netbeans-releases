@@ -1,4 +1,4 @@
-println('<?xml version="1.0"?>');
-println('<root>');
-println('    Žluťoučký kůň skákal přes čtvero mezí.');
-println('</root>');
+print('<?xml version="1.0"?>');
+print('<root>');
+print('    Žluťoučký kůň skákal přes čtvero mezí.');
+print('</root>');

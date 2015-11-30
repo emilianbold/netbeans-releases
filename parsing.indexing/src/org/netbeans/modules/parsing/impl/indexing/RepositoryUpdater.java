@@ -5314,7 +5314,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             final boolean upToDate;
                             final long currentLastModified;
                             if (file != null) {
-                                final Pair<Long,Map<Pair<String,Integer>,Integer>> lastState = ArchiveTimeStamps.getLastModified(file.toURL());
+                                final Pair<Long,Map<Pair<String,Integer>,Integer>> lastState = ArchiveTimeStamps.getLastModified(root);
                                 final boolean indexersUpToDate = checkBinaryIndexers(lastState, contexts);
                                 currentLastModified = file.lastModified().getTime();
                                 upToDate = indexersUpToDate && lastState.first() ==  currentLastModified;
@@ -5328,9 +5328,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 success = indexBinary(root, binaryIndexers, contexts);
                             } finally {
                                 binaryScanFinished(binaryIndexers, contexts, startedIndexers, success);
-                                URL archiveFile = FileUtil.getArchiveFile(root);
-                                if (success && archiveFile != null && !upToDate) {
-                                    ArchiveTimeStamps.setLastModified(archiveFile, createBinaryIndexersTimeStamp(currentLastModified,contexts));
+                                if (success && !upToDate && FileUtil.getArchiveFile(root) != null) {
+                                    ArchiveTimeStamps.setLastModified(root, createBinaryIndexersTimeStamp(currentLastModified,contexts));
                                 }
                             }
                         } finally {

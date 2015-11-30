@@ -138,27 +138,27 @@ public class JavaFxRuntimeInclusion {
         String runtimePath = null;
         for(String runtimeLocation : Utils.getJavaFxRuntimeLocations()) {
             runtimePath = runtimeLocation + Utils.getJavaFxRuntimeArchiveName();
-            runtimeSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir() + runtimePath);
+            runtimeSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir(javaPlatform) + runtimePath);
             if(runtimeSupport != Support.MISSING) {
                 break;
             }
         }
         if(runtimeSupport != Support.MISSING && runtimePath != null) {
             if(runtimeSupport == Support.PRESENT) {
-                paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir()) + runtimePath);
+                paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir(javaPlatform)) + runtimePath);
             }
             for(String optionalName : Utils.getJavaFxRuntimeOptionalNames()) {
                 Support optionalSupport = Support.MISSING;
                 String optionalPath = null;
                 for(String optionalLocation : Utils.getJavaFxRuntimeLocations()) {
                     optionalPath = optionalLocation + optionalName;
-                    optionalSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir() + optionalPath);
+                    optionalSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir(javaPlatform) + optionalPath);
                     if(optionalSupport == Support.PRESENT) {
                         break;
                     }
                 }
                 if(optionalSupport == Support.PRESENT && optionalPath != null) {
-                    paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir()) + optionalPath);
+                    paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir(javaPlatform)) + optionalPath);
                 }
             }
         }

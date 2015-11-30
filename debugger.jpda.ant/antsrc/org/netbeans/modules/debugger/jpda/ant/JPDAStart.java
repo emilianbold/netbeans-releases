@@ -63,6 +63,7 @@ import java.beans.PropertyChangeListener;
 
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -117,6 +118,7 @@ public class JPDAStart extends Task implements Runnable {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
 
+    private static final String URL_EMBEDDING = String.format("!%c",File.separatorChar);   //NOI18N
     private static final String SOCKET_TRANSPORT = "dt_socket"; // NOI18N
     private static final String SHMEM_TRANSPORT = "dt_shmem"; // NOI18N
     private static final String SOCKET_CONNECTOR = "com.sun.jdi.SocketListen"; // NOI18N
@@ -725,11 +727,22 @@ public class JPDAStart extends Task implements Runnable {
         int i, k = paths.length;
         for (i = 0; i < k; i++) {
             String pathName = project.replaceProperties(paths[i]);
+            final String pathInArchive;
+            final int index = pathName.lastIndexOf(URL_EMBEDDING);
+            if (index >= 0) {
+                pathInArchive = pathName.substring(index+URL_EMBEDDING.length()).replace(File.separatorChar, '/');  //NOI18N
+                pathName = pathName.substring(0, index);
+            } else {
+                pathInArchive = ""; //NOI18N
+            }
             File file = FileUtil.normalizeFile
                 (project.resolveFile (pathName));
             if (!isValid (file, project)) continue;
             URL url = fileToURL (file, project, reportNonExistingFiles, true);
             if (url == null) continue;
+            if (!pathInArchive.isEmpty()) {
+                url = appendPathInArchive(url, pathInArchive, project);
+            }
             logger.log(Level.FINE, "convertToSourcePath - class: {0}", url); // NOI18N
             try {
                 SourceForBinaryQuery.Result srcRootsResult = SourceForBinaryQuery.findSourceRoots(url);
@@ -766,6 +779,19 @@ public class JPDAStart extends Task implements Runnable {
             }
         }
         return ClassPathSupport.createClassPath (l);
+    }
+
+    private static URL appendPathInArchive(URL rootURL, String pathInArchive, Project prj) {
+        String embeddedURL = rootURL.toExternalForm() + pathInArchive;
+        if (embeddedURL.charAt(embeddedURL.length()-1) != '/') {    //NOI18N
+            embeddedURL = embeddedURL + '/';    //NOI18N
+        }
+        try {
+            return new URL(embeddedURL);
+        } catch (MalformedURLException e) {
+            prj.log("Invalid embedded URL: \""+embeddedURL+"\".", Project.MSG_WARN);   //NOI18N
+            return rootURL;
+        }
     }
 
 

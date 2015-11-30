@@ -69,6 +69,14 @@ import javax.servlet.jsp.tagext.TagLibraryInfo;
 public abstract class PageInfo {
 
     public static final String JSP_SERVLET_BASE = "javax.servlet.http.HttpServlet";
+
+    private static Comparator<TagFileInfo> TAG_FILE_INFO_COMPARATOR = new Comparator<TagFileInfo>() {
+
+        @Override
+        public int compare(TagFileInfo o1, TagFileInfo o2) {
+            return o1.getPath().compareTo(o2.getPath());
+        }
+    };
     
     private List<String> imports;
     private List<String> dependants;
@@ -779,7 +787,8 @@ public abstract class PageInfo {
                 sb.append(tagInfoToString(tags[i], indent + "  "));  // NOI18N
         }
         
-        TagFileInfo tagFiles[] = info.getTagFiles();
+        TagFileInfo tagFiles[] = info.getTagFiles().clone();
+        Arrays.sort(tagFiles, TAG_FILE_INFO_COMPARATOR);
         if (tagFiles != null) {
             for (int i = 0; i < tagFiles.length; i++)
                 sb.append(tagFileToString(tagFiles[i], indent + "  "));  // NOI18N

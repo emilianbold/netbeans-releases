@@ -104,7 +104,7 @@ public class J2SEProjectPlatformTest extends NbTestCase {
 
     
     public void testProjectPlatform() throws Exception {
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.5"));   //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.6"));   //NOI18N
         AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, "TestProject", null, "manifest.mf", null, false);        //NOI18N
         Project prj = ProjectManager.getDefault().findProject(aph.getProjectDirectory());                                
         final JavaPlatform dp = MockJavaPlatformProvider.getInstance().getInstalledPlatforms()[0];
@@ -121,7 +121,7 @@ public class J2SEProjectPlatformTest extends NbTestCase {
     }
 
     public void testListening() throws Exception {
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.5"));   //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.6"));   //NOI18N
         AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, "TestProject", null, "manifest.mf", null, false);        //NOI18N
         Project prj = ProjectManager.getDefault().findProject(aph.getProjectDirectory());        
         final JavaPlatform dp = MockJavaPlatformProvider.getInstance().getInstalledPlatforms()[0];

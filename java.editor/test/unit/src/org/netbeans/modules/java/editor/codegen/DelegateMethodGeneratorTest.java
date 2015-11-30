@@ -184,7 +184,8 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
             }
         }, true);
 
-        compareReferenceFiles();
+        String version = System.getProperty("java.specification.version") + "/";
+        compareReferenceFiles(this.getName()+".ref",version+this.getName()+".pass",this.getName()+".diff");
     }
      
     private void performMethodProposalsTest(final String name) throws Exception {
@@ -253,7 +254,8 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
             ref(s);
         }
         
-        compareReferenceFiles();
+        String version = System.getProperty("java.specification.version") + "/";
+        compareReferenceFiles(this.getName()+".ref",version+this.getName()+".pass",this.getName()+".diff");
     }
     
     private String dump(ExecutableElement ee) {

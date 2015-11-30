@@ -345,6 +345,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	CompilationUnitTree result = rewriteChildren(tree);
         return result;
     }
+    public Tree visitPackage(PackageTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
     public Tree visitImport(ImportTree tree, Object p) {
 	return rewriteChildren(tree);
     }
@@ -557,6 +560,19 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
             model.setElement(n, model.getElement(tree));
 	    copyCommentTo(tree,n);
             model.setPos(n, model.getPos(tree));
+	    tree = n;
+	}
+	return tree;
+    }
+
+    protected final PackageTree rewriteChildren(PackageTree tree) {
+        List<? extends AnnotationTree> annotations = translate(tree.getAnnotations());
+	ExpressionTree pid = (ExpressionTree) translate(tree.getPackageName());
+	if (pid != tree.getPackageName() || !annotations.equals(tree.getAnnotations())) {
+	    PackageTree n = make.Package(annotations, pid);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
 	    tree = n;
 	}
 	return tree;
@@ -1282,6 +1298,4 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	}
 	return node;
     }
-
-
 }

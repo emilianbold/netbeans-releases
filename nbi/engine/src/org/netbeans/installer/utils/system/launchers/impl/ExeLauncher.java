@@ -85,7 +85,7 @@ public class ExeLauncher extends CommonLauncher {
     /**
      * See <code>ShLauncher#MIN_JAVA_VERSION_UNIX</code> for details.
      */
-    public static final String MIN_JAVA_VERSION_WINDOWS_ALL   = "1.7.0";
+    public static final String MIN_JAVA_VERSION_WINDOWS_ALL   = "1.8.0";
     public static final String MIN_JAVA_VERSION_WINDOWS       = "1.5.0_03";
     public static final String MIN_JAVA_VERSION_WINDOWS_VISTA = "1.5.0_11";
     public static final String MIN_JAVA_VERSION_WINDOWS_2K8   = "1.5.0_17";

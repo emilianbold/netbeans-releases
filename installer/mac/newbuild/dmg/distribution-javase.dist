@@ -40,16 +40,16 @@ function checkMemsize() {
 
 /* js:pkmk:start */
 function checkJavaVersion() {
-    var JDK_ENABLED = false;
+    var JDK_ENABLED = true;
     var result = false;
-    var java7u10_or_newer = false;
+    var java8_or_newer = false;
     var jdkFound = false;
     var jreFound = false;
     try {
         if(system.files.fileExistsAtPath('/usr/libexec/java_home')) {
-           var res = system.run("/usr/libexec/java_home", "--version", "1.7.0_10+", "--failfast");                       
-           java7u10_or_newer = (0 == res);
-           if(!java7u10_or_newer) {
+           var res = system.run("/usr/libexec/java_home", "--version", "1.8+", "--failfast");                       
+           java8_or_newer = (0 == res);
+           if(!java8_or_newer) {
                var res = system.run("/usr/libexec/java_home", "--version", "1.5", "--failfast");                       
                jdkFound = (0 == res);
            }
@@ -60,13 +60,13 @@ function checkJavaVersion() {
         jreFound = true;
     }
 
-    if (java7u10_or_newer || JDK_ENABLED &amp;&amp; jreFound) {
+    if (java8_or_newer || JDK_ENABLED &amp;&amp; jreFound) {
         result = true;
     } else {
         if (jdkFound) {
             my.result.type = 'Fatal';
-            my.result.title = system.localizedStringWithFormat('ERR_OLDER_JAVA7_TITLE');
-            my.result.message = system.localizedStringWithFormat('ERR_OLDER_JAVA7_TITLE');
+            my.result.title = system.localizedStringWithFormat('ERR_OLDER_JAVA8_TITLE');
+            my.result.message = system.localizedStringWithFormat('ERR_OLDER_JAVA8_TITLE');
         } else if (jreFound) {
             my.result.type = 'Fatal';
             my.result.title = system.localizedStringWithFormat('ERR_NO_JDK_TITLE');

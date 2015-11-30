@@ -121,6 +121,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCPackageDecl;
 import com.sun.tools.javac.tree.JCTree.JCParens;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
@@ -502,7 +503,7 @@ public class CasualDiff {
         td.oldTopLevel = diffContext.origUnit;
         // TODO: the package name actually ends at the end of the name, so the semicolon could be treated as part
         // of the diffed list
-        int start = td.oldTopLevel.getPackageName() != null ? td.endPos(td.oldTopLevel.getPackageName()) : 0;
+        int start = td.oldTopLevel.getPackage() != null ? td.endPos(td.oldTopLevel.getPackage()) : 0;
 
         List<JCImport> originalJC = new LinkedList<JCImport>();
         List<JCImport> nueJC = new LinkedList<JCImport>();
@@ -561,18 +562,8 @@ public class CasualDiff {
     }
 
     protected void diffTopLevel(JCCompilationUnit oldT, JCCompilationUnit newT, int[] elementBounds) {
-        final int start = elementBounds[0];
-        int packageKeywordStart = start;
-        if (oldT.pid != null) {
-            tokenSequence.move(oldT.pid.getStartPosition());
-            moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
-            packageKeywordStart = tokenSequence.offset();
-        }
-        //when adding first annotation, skip initial comments (typically a license):
-        int localPointer = oldT.packageAnnotations.isEmpty() && !newT.packageAnnotations.isEmpty() ? packageKeywordStart : start;
         oldTopLevel = oldT;
-        localPointer = diffAnnotationsLists(oldT.packageAnnotations, newT.packageAnnotations, localPointer, start);
-        localPointer = diffPackageStatement(oldT, newT, packageKeywordStart, localPointer);
+        int localPointer = diffPackage(oldT.getPackage(), newT.getPackage(), elementBounds[0]);
         PositionEstimator est = EstimatorFactory.imports(oldT.getImports(), newT.getImports(), diffContext);
         localPointer = diffList(oldT.getImports(), newT.getImports(), localPointer, est, Measure.DEFAULT, printer);
         est = EstimatorFactory.toplevel(oldT.getTypeDecls(), newT.getTypeDecls(), diffContext);
@@ -676,25 +667,38 @@ public class CasualDiff {
         }
     }
 
-    private int diffPackageStatement(JCCompilationUnit oldT, JCCompilationUnit newT, int packageKeywordStart, int localPointer) {
-        ChangeKind change = getChangeKind(oldT.pid, newT.pid);
+    protected int diffPackage(JCPackageDecl oldT, JCPackageDecl newT, int start) {
+        int packageKeywordStart = start;
+        JCExpression oldTPid = oldT != null ? oldT.pid : null;
+        JCExpression newTPid = newT != null ? newT.pid : null;
+        if (oldTPid != null) {
+            tokenSequence.move(oldTPid.getStartPosition());
+            moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+            packageKeywordStart = tokenSequence.offset();
+        }
+        com.sun.tools.javac.util.List<JCAnnotation> oldTAnnotations = oldT != null ? oldT.annotations : com.sun.tools.javac.util.List.<JCAnnotation>nil();
+        com.sun.tools.javac.util.List<JCAnnotation> newTAnnotations = newT != null ? newT.annotations : com.sun.tools.javac.util.List.<JCAnnotation>nil();
+        //when adding first annotation, skip initial comments (typically a license):
+        int localPointer = oldTAnnotations.isEmpty() && !newTAnnotations.isEmpty() ? packageKeywordStart : start;
+        localPointer = diffAnnotationsLists(oldTAnnotations, newTAnnotations, localPointer, start);
+        ChangeKind change = getChangeKind(oldTPid, newTPid);
         switch (change) {
             // packages are the same or not available, i.e. both are null
             case NOCHANGE:
-                if (oldT.pid != null) {
-                    localPointer = copyUpTo(localPointer, endPos(oldT.pid));
+                if (oldTPid != null) {
+                    localPointer = copyUpTo(localPointer, endPos(oldTPid));
                 }
                 break;
 
             // package statement is new, print the keyword and semicolon
             case INSERT:
-                printer.printPackage(newT.pid);
+                printer.printPackage(newTPid);
                 break;
 
             // package statement was deleted.
             case DELETE:
                 copyTo(localPointer, packageKeywordStart);
-                tokenSequence.move(endPos(oldT.pid));
+                tokenSequence.move(endPos(oldTPid));
                 moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                 localPointer = tokenSequence.offset() + 1;
                 // todo (#pf): check the declaration:
@@ -703,10 +707,10 @@ public class CasualDiff {
 
             // package statement was modified.
             case MODIFY:
-                copyTo(localPointer, getOldPos(oldT.pid));
-                localPointer = endPos(oldT.pid);
-                printer.print(newT.pid);
-                diffInfo.put(getOldPos(oldT.pid), NbBundle.getMessage(CasualDiff.class,"TXT_UpdatePackageStatement"));
+                copyTo(localPointer, getOldPos(oldTPid));
+                localPointer = endPos(oldTPid);
+                printer.print(newTPid);
+                diffInfo.put(getOldPos(oldTPid), NbBundle.getMessage(CasualDiff.class,"TXT_UpdatePackageStatement"));
                 break;
         }
         return localPointer;
@@ -4949,6 +4953,9 @@ public class CasualDiff {
         switch (oldT.getTag()) {
           case TOPLEVEL:
               diffTopLevel((JCCompilationUnit)oldT, (JCCompilationUnit)newT, elementBounds);
+              break;
+          case PACKAGEDEF:
+              retVal = diffPackage((JCPackageDecl)oldT, (JCPackageDecl)newT, getOldPos(oldT));
               break;
           case IMPORT:
               retVal = diffImport((JCImport)oldT, (JCImport)newT, elementBounds);

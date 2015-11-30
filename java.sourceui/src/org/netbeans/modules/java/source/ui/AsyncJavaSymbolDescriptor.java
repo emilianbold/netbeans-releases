@@ -233,7 +233,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
             final ClassReader cr = ClassReader.instance(jt.getContext());
             final Set<?> pkgs = new HashSet<>(getPackages(cr).keySet());
             final Set<?> clzs = new HashSet<>(getClasses(cr).keySet());
-            final JavacElements elements = jt.getElements();
+            final JavacElements elements = (JavacElements)jt.getElements();
             final TypeElement te = (TypeElement) elements.getTypeElementByBinaryName(
                     ElementHandleAccessor.getInstance().getJVMSignature(getOwner())[0]);
             if (te != null) {

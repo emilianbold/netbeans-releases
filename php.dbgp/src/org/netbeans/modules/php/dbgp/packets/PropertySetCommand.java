@@ -44,8 +44,7 @@
 package org.netbeans.modules.php.dbgp.packets;
 
 import java.io.UnsupportedEncodingException;
-
-import sun.misc.BASE64Encoder;
+import java.util.Base64;
 
 /**
  * @author ads
@@ -107,8 +106,7 @@ public class PropertySetCommand extends PropertyCommand {
         }
         if (getData() != null && getData().length() > 0) {
             try {
-                BASE64Encoder encoder = new BASE64Encoder();
-                int size = encoder.encode(getData().getBytes(DbgpMessage.ISO_CHARSET)).length();
+                int size = Base64.getEncoder().encodeToString(getData().getBytes(DbgpMessage.ISO_CHARSET)).length();
                 builder.append(BrkpntSetCommand.SPACE);
                 builder.append(LENGTH_ARG);
                 builder.append(size);

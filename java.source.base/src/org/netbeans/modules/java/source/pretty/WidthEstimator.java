@@ -46,6 +46,7 @@ package org.netbeans.modules.java.source.pretty;
 import com.sun.tools.javac.util.*;
 import com.sun.tools.javac.code.*;
 import com.sun.tools.javac.code.Symbol.*;
+import com.sun.tools.javac.comp.Operators;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -59,11 +60,11 @@ public class WidthEstimator extends JCTree.Visitor {
     private int prec;
     private int maxwidth;
     private final Symtab symbols;
-    private final TreeInfo treeinfo;
+    private final Operators operators;
 
     public WidthEstimator(Context context) {
 	symbols = Symtab.instance(context);
-	treeinfo = TreeInfo.instance(context);
+        operators = Operators.instance(context);
     }
 
     public int estimateWidth(JCTree t, int maxwidth) {
@@ -232,7 +233,7 @@ System.err.println("Need width calc for "+tree);
     public void visitAssignop(JCAssignOp tree) {
 	open(prec, TreeInfo.assignopPrec);
 	width+=3;
-	width(treeinfo.operatorName(tree.getTag()));
+	width(operators.operatorName(tree.getTag()));
 	width(tree.lhs, TreeInfo.assignopPrec + 1);
 	width(tree.rhs, TreeInfo.assignopPrec);
     }
@@ -243,15 +244,15 @@ System.err.println("Need width calc for "+tree);
 	width(tree.rhs, TreeInfo.assignPrec);
     }
     public void visitUnary(JCUnary tree) {
-	int ownprec = treeinfo.opPrec(tree.getTag());
-	Name opname = treeinfo.operatorName(tree.getTag());
+	int ownprec = TreeInfo.opPrec(tree.getTag());
+	Name opname = operators.operatorName(tree.getTag());
 	open(prec, ownprec);
 	width(opname);
 	width(tree.arg, ownprec);
     }
     public void visitBinary(JCBinary tree) {
-	int ownprec = treeinfo.opPrec(tree.getTag());
-	Name opname = treeinfo.operatorName(tree.getTag());
+	int ownprec = TreeInfo.opPrec(tree.getTag());
+	Name opname = operators.operatorName(tree.getTag());
 	open(prec, ownprec);
 	width(opname);
 	width+=2;

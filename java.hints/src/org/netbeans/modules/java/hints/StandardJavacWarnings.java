@@ -217,8 +217,7 @@ public class StandardJavacWarnings extends AbstractHint {
                 }
             }
             
-            sb.append("-XDidentifyLambdaCandidate=true ");
-            sb.append("-XDfindDiamond ");
+            sb.append("-XDfind=diamond,lambda ");
 
             if (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
                 sb.deleteCharAt(sb.length() - 1);

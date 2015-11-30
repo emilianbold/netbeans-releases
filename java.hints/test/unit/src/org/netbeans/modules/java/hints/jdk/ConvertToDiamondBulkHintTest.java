@@ -69,7 +69,7 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(ConvertToDiamondBulkHint.class)
-                .findWarning("2:49-2:77:verifier:redundant type arguments in new expression (use diamond operator instead).")
+                .findWarning("2:49-2:77:verifier:Redundant type arguments in new expression (use diamond operator instead).")
                 .applyFix("FIX_ConvertToDiamond")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -88,7 +88,7 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(ConvertToDiamondBulkHint.class)
-                .findWarning("3:39-3:57:verifier:redundant type arguments in new expression (use diamond operator instead).")
+                .findWarning("3:39-3:57:verifier:Redundant type arguments in new expression (use diamond operator instead).")
                 .applyFix("FIX_ConvertToDiamond")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -133,7 +133,7 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(ConvertToDiamondBulkHint.class)
-                .assertWarnings("2:43-2:71:verifier:redundant type arguments in new expression (use diamond operator instead).");
+                .assertWarnings("2:43-2:71:verifier:Redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration2b() throws Exception {
@@ -145,7 +145,7 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(ConvertToDiamondBulkHint.class)
-                .assertWarnings("2:43-2:71:verifier:redundant type arguments in new expression (use diamond operator instead).");
+                .assertWarnings("2:43-2:71:verifier:Redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration2c() throws Exception {
@@ -184,7 +184,7 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
                 .preference(ConvertToDiamondBulkHint.KEY, allBut("initializer"))
                 .sourceLevel("1.7")
                 .run(ConvertToDiamondBulkHint.class)
-                .assertWarnings("2:58-2:86:verifier:redundant type arguments in new expression (use diamond operator instead).");
+                .assertWarnings("2:58-2:86:verifier:Redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration5() throws Exception {
@@ -261,7 +261,7 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(ConvertToDiamondBulkHint.class)
-                .assertWarnings("2:75-2:93:verifier:redundant type arguments in new expression (use diamond operator instead).");
+                .assertWarnings("2:75-2:93:verifier:Redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration7b() throws Exception {
@@ -273,7 +273,7 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(ConvertToDiamondBulkHint.class)
-                .assertWarnings("2:80-2:98:verifier:redundant type arguments in new expression (use diamond operator instead).");
+                .assertWarnings("2:80-2:98:verifier:Redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration7c() throws Exception {
@@ -285,7 +285,7 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(ConvertToDiamondBulkHint.class)
-                .assertWarnings("2:79-2:97:verifier:redundant type arguments in new expression (use diamond operator instead).");
+                .assertWarnings("2:79-2:97:verifier:Redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration7d() throws Exception {
@@ -297,7 +297,7 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
                        "}\n")
                 .sourceLevel("1.7")
                 .run(ConvertToDiamondBulkHint.class)
-                .assertWarnings("2:87-2:105:verifier:redundant type arguments in new expression (use diamond operator instead).");
+                .assertWarnings("2:87-2:105:verifier:Redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration8() throws Exception {
@@ -314,6 +314,6 @@ public class ConvertToDiamondBulkHintTest extends NbTestCase {
     }
     
     static {
-        TestCompilerSettings.commandLine = "-XDfindDiamond";
+        TestCompilerSettings.commandLine = "-XDfind=diamond";
     }
 }

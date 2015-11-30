@@ -390,7 +390,23 @@ public final class TreeMaker {
         return delegate.CompilationUnit(packageAnnotations, packageName, imports, typeDeclarations, sourceFile);
     }
      
-    
+    /**
+     * Creates a new CompilationUnitTree.
+     *
+     * @param pkg                a tree representing the package statement.
+     * @param imports            a list of import statements.
+     * @param typeDeclarations   a list of type (class, interface or enum) declarations.
+     * @param sourceFile         the source file associated with this compilation unit.
+     * @see com.sun.source.tree.CompilationUnitTree
+     * @since 2.12
+     */
+    public CompilationUnitTree CompilationUnit(PackageTree pkg,
+                                        List<? extends ImportTree> imports,
+                                        List<? extends Tree> typeDeclarations,
+                                        JavaFileObject sourceFile) {
+        return delegate.CompilationUnit(pkg, imports, typeDeclarations, sourceFile);
+    }
+         
     /**
      * Creates a new CompilationUnitTree.
      * @param sourceRoot         a source root under which the new file is created

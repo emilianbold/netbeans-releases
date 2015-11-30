@@ -77,8 +77,12 @@ import org.openide.util.WeakListeners;
  */
 public class SourceLevelQuery {
 
+    /**
+     * The minimal supported source level.
+     * @since 1.60
+     */
+    public static final SpecificationVersion MINIMAL_SOURCE_LEVEL = new SpecificationVersion("1.6");  //NOI18N
     private static final Logger LOGGER = Logger.getLogger(SourceLevelQuery.class.getName());
-
     private static final Pattern SOURCE_LEVEL = Pattern.compile("\\d+\\.\\d+"); //NOI18N
     private static final Pattern SYNONYM = Pattern.compile("\\d+");             //noI18N
     private static final SpecificationVersion JDK8 = new SpecificationVersion("1.8");   //NOI18N

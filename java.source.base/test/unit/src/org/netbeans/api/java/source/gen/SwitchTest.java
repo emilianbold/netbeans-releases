@@ -180,7 +180,7 @@ public class SwitchTest extends GeneratorTestBase {
                 final TreeMaker make = copy.getTreeMaker();
                 new TreePathScanner<Void, Void>() {
                     @Override public Void visitIf(IfTree node, Void p) {
-                        List<StatementTree> statements = new ArrayList<>(((BlockTree) node.getThenStatement()).getStatements());
+                        List<StatementTree> statements = new ArrayList<StatementTree>(((BlockTree) node.getThenStatement()).getStatements());
                         statements.add(make.Break(null));
                         copy.rewrite(node, make.Switch(make.Identifier("p"), Collections.singletonList(make.Case(make.Literal(0), statements))));
                         return super.visitIf(node, p);

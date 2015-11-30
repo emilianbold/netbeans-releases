@@ -99,7 +99,7 @@ public class J2SEPersistenceProviderTest extends NbTestCase {
         // see APH.fireExternalChange
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
             public Void run() throws Exception{
-                J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.5"));
+                J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.6"));
                 J2SEProjectGenerator.createProject(FileUtil.toFile(projdir), "proj", "foo.Main", "manifest.mf", null, false);
                 J2SEProjectGenerator.setDefaultSourceLevel(null);
                 return null;

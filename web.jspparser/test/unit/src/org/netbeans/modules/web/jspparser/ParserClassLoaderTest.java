@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 public class ParserClassLoaderTest extends NbTestCase {
 
     private static final String ISSUE_WA_VENDOR = "Sun Microsystems";
+    private static final String ISSUE_WA_VENDOR_ALT = "Oracle Corporation";
     private static final int ISSUE_WA_MAJOR_VERSION = 1;
     private static final int ISSUE_WA_MINOR_VERSION = 6;
 
@@ -71,7 +72,7 @@ public class ParserClassLoaderTest extends NbTestCase {
 
     public void testReusable() throws Exception {
         String vendor = System.getProperty("java.vendor");
-        if (!vendor.contains(ISSUE_WA_VENDOR)) {
+        if (!vendor.contains(ISSUE_WA_VENDOR) && !vendor.contains(ISSUE_WA_VENDOR_ALT)) {
             return;
         }
         String version = System.getProperty("java.version");
@@ -114,7 +115,7 @@ public class ParserClassLoaderTest extends NbTestCase {
 
     public void testPerformanceDifference() throws Exception {
         String vendor = System.getProperty("java.vendor");
-        if (!vendor.contains(ISSUE_WA_VENDOR)) {
+        if (!vendor.contains(ISSUE_WA_VENDOR) && !vendor.contains(ISSUE_WA_VENDOR_ALT)) {
             return;
         }
         String version = System.getProperty("java.version");

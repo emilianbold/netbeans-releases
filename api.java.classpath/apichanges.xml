@@ -76,6 +76,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="PathEmbeddingMode">
+            <api name="classpath"/>
+            <summary>Added a policy for handling in archive paths</summary>
+            <version major="1" minor="52"/>
+            <date day="2" month="6" year="2015"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added a policy for handling in archive paths while converting the <code>ClassPath</code> to <code>String</code>.
+                    The <code>ClassPath.toString</code> takes a <code>PathEmbeddingMode</code> parameter determining how the in archive
+                    path is handled. It can be included into stringified root, omitted from it, or handled as an invalid classpath root.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+        </change>
         <change id="GlobalPathRegistryImplementation">
             <api name="classpath"/>
             <summary>Added a SPI interface to allow different implementations of <code>GlobalPathRegistry</code></summary>

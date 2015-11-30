@@ -68,6 +68,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Scope;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Name;
 
@@ -309,20 +310,20 @@ public class OrganizeImports {
             }
 
             private Element global(Element element, Set<Element> stars) {
-                for (Scope.Entry e = ((JCCompilationUnit)cut).namedImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
-                    if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind())
-                        return e.sym;
+                for (Symbol sym : ((JCCompilationUnit)cut).namedImportScope.getSymbolsByName((Name)element.getSimpleName())) {
+                    if (element == sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == sym.getKind())
+                        return sym;
                 }
-                for (Scope.Entry e = ((JCCompilationUnit)cut).packge.members().lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
-                    if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind())
-                        return e.sym;
+                for (Symbol sym : ((JCCompilationUnit)cut).packge.members().getSymbolsByName((Name)element.getSimpleName())) {
+                    if (element == sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == sym.getKind())
+                        return sym;
                 }
-                for (Scope.Entry e = ((JCCompilationUnit)cut).starImportScope.lookup((Name)element.getSimpleName()); e.scope != null; e = e.next()) {
-                    if (element == e.sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == e.sym.getKind()) {
+                for (Symbol sym : ((JCCompilationUnit)cut).starImportScope.getSymbolsByName((Name)element.getSimpleName())) {
+                    if (element == sym || element.asType().getKind() == TypeKind.ERROR && element.getKind() == sym.getKind()) {
                         if (stars != null) {
-                            stars.add(e.sym.owner);
+                            stars.add(sym.owner);
                         }
-                        return e.sym;
+                        return sym;
                     }
                 }
                 return null;

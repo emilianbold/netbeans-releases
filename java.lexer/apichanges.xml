@@ -106,9 +106,20 @@ is the proper place.
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
-
     <changes>
-         <change id="Lambda-Tokens">
+        <change id="Underscore">
+             <api name="general"/>
+             <summary>Added Underscore token</summary>
+             <version major="1" minor="32"/>
+             <date day="10" month="11" year="2015"/>
+             <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added JavaTokenId.UNDERSCORE as a keyword
+             </description>
+             <class package="org.netbeans.api.java.lexer" name="JavaTokenId"/>
+        </change>
+        <change id="Lambda-Tokens">
              <api name="general"/>
              <summary>Double colon and arrow token ids added</summary>
              <version major="1" minor="23"/>

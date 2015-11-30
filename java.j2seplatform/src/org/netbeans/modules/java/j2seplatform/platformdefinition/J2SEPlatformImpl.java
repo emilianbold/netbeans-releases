@@ -74,6 +74,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -88,7 +89,7 @@ import org.openide.util.lookup.Lookups;
  * bootstrap classpath information.
  */
 public class J2SEPlatformImpl extends JavaPlatform {
-    
+
     public static final String PROP_ANT_NAME = "antName";                   //NOI18N
     public static final String PLATFORM_J2SE = "j2se";                      //NOI18N
 
@@ -178,7 +179,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
             //Old version, repair
             String home = initialProperties.remove ("platform.home");        //NOI18N
             if (home != null) {
-                this.installFolders = new ArrayList<URL> ();
+                this.installFolders = new ArrayList<> ();
                 StringTokenizer tk = new StringTokenizer (home, File.pathSeparator);
                 while (tk.hasMoreTokens()) {
                     File f = new File (tk.nextToken());
@@ -225,7 +226,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
         this.displayName = name;
         firePropertyChange(PROP_DISPLAY_NAME, null, null); // NOI18N
     }
-    
+
     /**
      * Alters the human-readable name of the platform without firing
      * events. This method is an internal contract to allow lazy creation
@@ -248,7 +249,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
         this.properties.put(PLAT_PROP_ANT_NAME, antName);
         this.firePropertyChange (PROP_ANT_NAME,null,null);
     }
-    
+
     public void setArchFolder (final String folder) {
         if (folder == null || folder.length() == 0) {
             throw new IllegalArgumentException ();
@@ -258,22 +259,29 @@ public class J2SEPlatformImpl extends JavaPlatform {
 
 
     @Override
+    @NonNull
     public ClassPath getBootstrapLibraries() {
         synchronized (this) {
             ClassPath cp = (bootstrap == null ? null : bootstrap.get());
-            if (cp != null)
+            if (cp != null) {
                 return cp;
-            String pathSpec = getSystemProperties().get(SYSPROP_BOOT_CLASSPATH);
-            if (pathSpec == null) {
-                LOG.log(Level.WARNING, "No " + SYSPROP_BOOT_CLASSPATH + " property in platform {0}, broken platform?", getDisplayName());
-                pathSpec = "";  //NOI18N
             }
-            String extPathSpec = Util.getExtensions(getSystemProperties().get(SYSPROP_JAVA_EXT_PATH));
-            if (extPathSpec != null) {
-                pathSpec = pathSpec + File.pathSeparator + extPathSpec;
+            if (new SpecificationVersion("9").compareTo(getSpecification().getVersion())<=0) {    //NOI18N
+                cp = Util.createModulePath(getInstallFolders());
             }
-            cp = Util.createClassPath (pathSpec);
-            bootstrap = new SoftReference<ClassPath>(cp);
+            if (cp == null) {
+                String pathSpec = getSystemProperties().get(SYSPROP_BOOT_CLASSPATH);
+                if (pathSpec == null) {
+                    LOG.log(Level.WARNING, "No " + SYSPROP_BOOT_CLASSPATH + " property in platform {0}, broken platform?", getDisplayName());
+                    pathSpec = "";  //NOI18N
+                }
+                String extPathSpec = Util.getExtensions(getSystemProperties().get(SYSPROP_JAVA_EXT_PATH));
+                if (extPathSpec != null) {
+                    pathSpec = pathSpec + File.pathSeparator + extPathSpec;
+                }
+                cp = Util.createClassPath (pathSpec);
+            }
+            bootstrap = new SoftReference<>(cp);
             return cp;
         }
     }
@@ -296,7 +304,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
             else {
                 cp = Util.createClassPath (pathSpec);
             }
-            standardLibs = new SoftReference<ClassPath>(cp);
+            standardLibs = new SoftReference<>(cp);
             return cp;
         }
     }
@@ -314,10 +322,10 @@ public class J2SEPlatformImpl extends JavaPlatform {
 
     @Override
     public final FileObject findTool(final String toolName) {
-        String archFolder = getProperties().get(PLAT_PROP_ARCH_FOLDER);        
+        String archFolder = getProperties().get(PLAT_PROP_ARCH_FOLDER);
         FileObject tool = null;
         if (archFolder != null) {
-            tool = Util.findTool (toolName, this.getInstallFolders(), archFolder);            
+            tool = Util.findTool (toolName, this.getInstallFolders(), archFolder);
         }
         if (tool == null) {
             tool = Util.findTool (toolName, this.getInstallFolders());
@@ -416,11 +424,11 @@ public class J2SEPlatformImpl extends JavaPlatform {
     public Map<String,String> getProperties() {
         return Collections.unmodifiableMap (this.properties);
     }
-    
+
     Collection getInstallFolderURLs () {
         return Collections.unmodifiableList(this.installFolders);
     }
-    
+
     protected static String filterProbe (String v, final String probePath) {
         if (v != null) {
             final String[] pes = PropertyUtils.tokenizePath(v);
@@ -441,7 +449,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
         }
         return v;
     }
-    
+
     private static Map<String,String> filterProbe (final Map<String,String> p) {
         if (p!=null) {
             final String val = p.get(SYSPROP_JAVA_CLASS_PATH);
@@ -454,7 +462,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
 
 
     private static ClassPath createClassPath (final List<? extends URL> urls) {
-        List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation> ();
+        List<PathResourceImplementation> resources = new ArrayList<> ();
         if (urls != null) {
             for (URL url : urls) {
                 resources.add (ClassPathSupport.createResource (url));
@@ -462,20 +470,20 @@ public class J2SEPlatformImpl extends JavaPlatform {
         }
         return ClassPathSupport.createClassPath (resources);
     }
-    
+
     /**
      * Tests if the default javadoc was already added and removed.
      * If so do not add it again.
-     * @return 
+     * @return
      */
     private boolean shouldAddDefaultJavadoc() {
         return !Boolean.parseBoolean(getProperties().get(PROP_NO_DEFAULT_JAVADOC));
     }
-    
+
     @NonNull
     private static List<? extends URI> toURIList(
             @NonNull final List<? extends URL> original) {
-        final List<URI> result = new ArrayList<URI>(original.size());
+        final List<URI> result = new ArrayList<>(original.size());
         for (URL url : original) {
             try {
                 result.add(url.toURI());
@@ -485,7 +493,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
         }
         return result;
     }
-    
+
     /**
      * Try to find the standard Javadoc for a platform.
      * The {@code docs/} folder is used if it exists, else network Javadoc is looked up.

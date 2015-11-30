@@ -65,7 +65,7 @@ General options:\n\
   --trace <path>        path for launcher log (for trouble shooting)\n\
 \n";
 
-const char *PlatformLauncher::REQ_JAVA_VERSION = "1.7";
+const char *PlatformLauncher::REQ_JAVA_VERSION = "1.8";
 
 const char *PlatformLauncher::OPT_JDK_HOME = "-Djdk.home=";
 const char *PlatformLauncher::OPT_NB_PLATFORM_HOME = "-Dnetbeans.home=";

@@ -10,3 +10,23 @@ org.openide.filesystems.FileUtil.preventFileChooserSymlinkTraversal($c, $d)
 =>
 $c.setCurrentDirectory($d)
 ;;
+
+//"jar".equals($url.getProtocol()) :: $url instanceof java.net.URL
+//=>
+//org.openide.filesystems.FileUtil.isArchiveArtifact($url)
+//;;
+
+//$url.getProtocol().equals("jar") :: $url instanceof java.net.URL
+//=>
+//org.openide.filesystems.FileUtil.isArchiveArtifact($url)
+//;;
+
+//"jar".equals($uri.getScheme()) :: $uri instanceof java.net.URI
+//=>
+//org.openide.filesystems.FileUtil.isArchiveArtifact($uri.toURL())
+//;;
+
+//$uri.getScheme().equals("jar") :: $uri instanceof java.net.URI
+//=>
+//org.openide.filesystems.FileUtil.isArchiveArtifact($uri.toURL())
+//;;

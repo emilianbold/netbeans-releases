@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -231,6 +232,7 @@ public final class ClassPath {
      */
     public static final ClassPath EMPTY = new ClassPath();
 
+    private static final String URL_EMBEDDING = "!/";   //NOI18N
     private static final Logger LOG = Logger.getLogger(ClassPath.class.getName());
     
     private static final AtomicReference<Lookup.Result<? extends ClassPathProvider>> implementations =
@@ -726,6 +728,28 @@ public final class ClassPath {
     }
 
     /**
+     * Policy for handling in archive path.
+     * @see #toString(ClassPath.PathConversionMode, ClassPath.PathEmbeddingMode)
+     * @since 1.52
+     */
+    public enum PathEmbeddingMode {
+        /**
+         * The in archive path in included into the stringified classpath root.
+         * The embedded in archive path is separated by {@code !/} from the outer path.
+         */
+        INCLUDE,
+        /**
+         * The in archive path in removed from the stringified classpath root.
+         */
+        EXCLUDE,
+        /**
+         * The classpath root with in archive path is treated as invalid and handled
+         * according to {@link PathConversionMode}.
+         */
+        FAIL
+    }
+
+    /**
      * ClassPath's flags.
      * @since 1.44
      */
@@ -740,39 +764,69 @@ public final class ClassPath {
     /**
      * Render this classpath in the conventional format used by the Java launcher.
      * @param conversionMode policy for converting unusual entries
+     * @param pathEmbeddingMode policy for handling in archive path
      * @return a conventionally-formatted representation of the classpath
-     * @since org.netbeans.api.java/1 1.15
+     * @since 1.52
      * @see File#pathSeparator
      * @see FileUtil#archiveOrDirForURL
      * @see ClassPathSupport#createClassPath(String)
      */
-    public String toString(PathConversionMode conversionMode) {
+    @NonNull
+    @SuppressWarnings("fallthrough")
+    public String toString(@NonNull final PathConversionMode conversionMode, @NonNull final PathEmbeddingMode pathEmbeddingMode) {
         StringBuilder b = new StringBuilder();
         for (Entry e : entries()) {
-            URL u = e.getURL();
+            final URL u = e.getURL();
+            String pathInArchive = "";
+            boolean folder = false;
             File f = FileUtil.archiveOrDirForURL(u);
+            if (f == null && FileUtil.isArchiveArtifact(u)) {
+                switch (pathEmbeddingMode) {
+                    case EXCLUDE:
+                    case INCLUDE:
+                        final Object[] p = splitEmbedding(u);
+                        if (p != null) {
+                            f = FileUtil.archiveOrDirForURL((URL)p[0]);
+                            if (pathEmbeddingMode == PathEmbeddingMode.INCLUDE) {
+                                pathInArchive = (String) p[1];
+                                folder = (Boolean) p[2];
+                            }
+                        }
+                    case FAIL:
+                        break;
+                    default:
+                        throw new IllegalArgumentException(String.valueOf(pathEmbeddingMode));
+                }
+            }
             if (f != null) {
                 if (b.length() > 0) {
                     b.append(File.pathSeparatorChar);
                 }
                 b.append(f.getAbsolutePath());
+                if (!pathInArchive.isEmpty()) {
+                    if (folder) {
+                        b.append(File.separatorChar);
+                    }
+                    b.append(URL_EMBEDDING);
+                    b.append(pathInArchive);
+                }
             } else {
                 switch (conversionMode) {
-                case SKIP:
-                    break;
-                case PRINT:
-                    if (b.length() > 0) {
-                        b.append(File.pathSeparatorChar);
-                    }
-                    b.append(u);
-                    break;
-                case WARN:
-                    LOG.log(Level.WARNING, "Encountered untranslatable classpath entry: {0}", u);
-                    break;
-                case FAIL:
-                    throw new IllegalArgumentException("Encountered untranslatable classpath entry: " + u); // NOI18N
-                default:
-                    assert false : conversionMode;
+                    case SKIP:
+                        break;
+                    case PRINT:
+                        if (b.length() > 0) {
+                            b.append(File.pathSeparatorChar);
+                        }
+                        b.append(u);
+                        break;
+                    case WARN:
+                        LOG.log(Level.WARNING, "Encountered untranslatable classpath entry: {0}", u);
+                        break;
+                    case FAIL:
+                        throw new IllegalArgumentException("Encountered untranslatable classpath entry: " + u); // NOI18N
+                    default:
+                        assert false : conversionMode;
                 }
             }
         }
@@ -780,10 +834,26 @@ public final class ClassPath {
     }
 
     /**
+     * Render this classpath in the conventional format used by the Java launcher.
+     * @param conversionMode policy for converting unusual entries
+     * @return a conventionally-formatted representation of the classpath
+     * @since org.netbeans.api.java/1 1.15
+     * @see File#pathSeparator
+     * @see FileUtil#archiveOrDirForURL
+     * @see ClassPathSupport#createClassPath(String)
+     */
+    @NonNull
+    public String toString(@NonNull final PathConversionMode conversionMode) {
+        return toString(conversionMode, PathEmbeddingMode.FAIL);
+    }
+
+    /**
      * Calls {@link #toString(ClassPath.PathConversionMode)} with {@link ClassPath.PathConversionMode#PRINT}.
      * @return a classpath suitable for logging or debugging
      */
-    public @Override String toString() {
+    @Override
+    @NonNull
+    public String toString() {
         return toString(PathConversionMode.PRINT);
     }
 
@@ -1164,6 +1234,39 @@ public final class ClassPath {
         }
         rootIndex[0] = ridx;
         return f;
+    }
+
+    @CheckForNull
+    private Object[] splitEmbedding(@NonNull final URL url) {
+        final String surl = url.toExternalForm();
+        final int index = surl.lastIndexOf(URL_EMBEDDING);
+        final String archiveRoot;
+        final String pathInArchive;
+        final boolean folder;
+        if (index >= 0) {
+            archiveRoot = surl.substring(0, index+URL_EMBEDDING.length());
+            pathInArchive = surl.substring(index+URL_EMBEDDING.length());
+            folder = index > 0 && surl.charAt(index-1) == '/';   //NOI18N
+        } else {
+            archiveRoot = surl;
+            pathInArchive = ""; //NOI18N
+            folder = false;
+        }
+        try {
+            return new Object[] {
+                new URL(archiveRoot),
+                pathInArchive,
+                folder};
+        } catch (MalformedURLException e) {
+            LOG.log(
+                    Level.WARNING,
+                    "Invalid URL: {0} ({1})",   //NOI18N
+                    new Object[]{
+                        archiveRoot,
+                        e.getMessage()
+                    });
+            return null;
+        }
     }
 
     private static final Reference<ClassLoader> EMPTY_REF = new SoftReference<ClassLoader>(null);

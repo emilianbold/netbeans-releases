@@ -663,11 +663,11 @@ public class TreeLoader extends LazyTreeLoader {
                         assert methodName != null : "Null methodName. Signature: [" + signature + "], Names: [" + names + "]";
                         assert paramTypes.size() == paramNames.size() : "Inconsistent param types/names. Signature: [" + signature + "], Names: [" + names + "]";
                         if (paramNames.size() > 0) {
-                            for (Scope.Entry e = clazz.members().lookup(isCtor
+                            for (Symbol s : clazz.members().getSymbolsByName(isCtor
                                     ? clazz.name.table.names.init
-                                    : clazz.name.table.fromString(methodName)); e.scope != null; e = e.next()) {
-                                if (e.sym.kind == Kinds.MTH && e.sym.owner == clazz) {
-                                    MethodSymbol sym = (MethodSymbol)e.sym;
+                                    : clazz.name.table.fromString(methodName))) {
+                                if (s.kind == Kinds.Kind.MTH && s.owner == clazz) {
+                                    MethodSymbol sym = (MethodSymbol)s;
                                     List<VarSymbol> params = sym.params;
                                     if (checkParamTypes(params, paramTypes)) {
                                         for (String name : paramNames) {
