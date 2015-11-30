@@ -307,8 +307,8 @@ static void mkdir_or_die_recursive(const char *path, int exit_code_fail_create, 
 }
 
 static void fill_default_root() {
-    const char* home = get_home_dir();
-    if (!home) {
+    char home[PATH_MAX + 1];
+    if (!get_home_dir(home, sizeof home)) {
         report_error("can't determine home directory\n");
         exit(FAILURE_GETTING_HOME_DIR);
     }
