@@ -75,15 +75,15 @@ public class RenameContainerAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         DockerContainer container = activatedNodes[0].getLookup().lookup(DockerContainer.class);
         if (container != null) {
-            JButton rename = new JButton();
-            Mnemonics.setLocalizedText(rename, Bundle.LBL_Rename());
-            RenamePanel panel = new RenamePanel();
+            JButton renameButton = new JButton();
+            Mnemonics.setLocalizedText(renameButton, Bundle.LBL_Rename());
+            RenamePanel panel = new RenamePanel(renameButton);
 
             DialogDescriptor descriptor
                     = new DialogDescriptor(panel, Bundle.LBL_RenameContainer(container.getName()),
-                            true, new Object[] {rename, DialogDescriptor.CANCEL_OPTION}, rename,
+                            true, new Object[] {renameButton, DialogDescriptor.CANCEL_OPTION}, renameButton,
                             DialogDescriptor.DEFAULT_ALIGN, null, null);
-            descriptor.setClosingOptions(new Object[] {rename, DialogDescriptor.CANCEL_OPTION});
+            descriptor.setClosingOptions(new Object[] {renameButton, DialogDescriptor.CANCEL_OPTION});
             panel.setMessageLine(descriptor.createNotificationLineSupport());
             Dialog dlg = null;
 
@@ -91,7 +91,7 @@ public class RenameContainerAction extends NodeAction {
                 dlg = DialogDisplayer.getDefault().createDialog(descriptor);
                 dlg.setVisible(true);
 
-                if (descriptor.getValue() == rename) {
+                if (descriptor.getValue() == renameButton) {
                     perform(container, panel.getContainerName());
                 }
             } finally {

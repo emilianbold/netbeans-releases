@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.rename;
 
+import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.docker.ui.UiUtils;
@@ -54,13 +55,17 @@ import org.openide.util.NbBundle;
  */
 public class RenamePanel extends javax.swing.JPanel {
 
+    private final JButton actionButton;
+
     private NotificationLineSupport messageLine;
 
     /**
      * Creates new form RenamePanel
      */
-    public RenamePanel() {
+    public RenamePanel(JButton actionButton) {
         initComponents();
+
+        this.actionButton = actionButton;
 
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -94,8 +99,10 @@ public class RenamePanel extends javax.swing.JPanel {
         }
 
         messageLine.clearMessages();
+        actionButton.setEnabled(true);
         if (getContainerName() == null) {
             messageLine.setErrorMessage(Bundle.MSG_EmptyName());
+            actionButton.setEnabled(false);
             return;
         }
         String name = getContainerName();
@@ -103,6 +110,7 @@ public class RenamePanel extends javax.swing.JPanel {
             String message = Validations.validateContainer(name);
             if (message != null) {
                 messageLine.setErrorMessage(message);
+                actionButton.setEnabled(false);
                 return;
             }
         }
