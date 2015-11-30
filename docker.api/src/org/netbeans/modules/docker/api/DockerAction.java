@@ -94,6 +94,7 @@ import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.DockerActionAccessor;
+import org.netbeans.modules.docker.StreamResult;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -465,14 +466,14 @@ public class DockerAction {
             Integer length = HttpParsingUtils.getLength(response.getHeaders());
             if (length != null && length <= 0) {
                 closeSocket(s);
-                return new EmptyStreamResult(info.isTty());
+                return new ActionStreamResult(new EmptyStreamResult(info.isTty()));
             }
             is = HttpParsingUtils.getResponseStream(is, response);
 
             if (info.isTty()) {
-                return new DirectStreamResult(s, is);
+                return new ActionStreamResult(new DirectStreamResult(s, is));
             } else {
-                return new MuxedStreamResult(s, is);
+                return new ActionStreamResult(new MuxedStreamResult(s, is));
             }
         } catch (MalformedURLException e) {
             closeSocket(s);
@@ -1122,7 +1123,7 @@ public class DockerAction {
 
     }
 
-    private static class EmptyStreamResult implements ActionStreamResult {
+    private static class EmptyStreamResult implements StreamResult {
 
         private final OutputStream os = new NullOutputStream();
 
