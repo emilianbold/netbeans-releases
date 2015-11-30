@@ -200,7 +200,7 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, Connecti
                                     return;
                                 }
                             }
-                            remote.events(lastEvent != null ? lastEvent.getTime() : null,
+                            DockerActionAccessor.getDefault().events(remote, lastEvent != null ? lastEvent.getTime() : null,
                                     DockerEventBus.this, DockerEventBus.this);
                         } catch (DockerException ex) {
                             synchronized (DockerEventBus.this) {
