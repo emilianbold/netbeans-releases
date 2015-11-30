@@ -227,8 +227,9 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
 
     private static String getDefaultUrl() {
         String url = null;
-        String envUrl = System.getenv("DOCKER_HOST").trim(); // NOI18N
+        String envUrl = System.getenv("DOCKER_HOST"); // NOI18N
         if (envUrl != null) {
+            envUrl = envUrl.trim();
             try {
                 return new URL(envUrl).toString();
             } catch (MalformedURLException ex) {
@@ -265,9 +266,12 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
 
     private static String getDefaultCertificatePath() {
         String certPath = null;
-        String envPath = System.getenv("DOCKER_CERT_PATH").trim(); // NOI18N
-        if (envPath != null && new File(envPath).isDirectory()) {
-            return envPath;
+        String envPath = System.getenv("DOCKER_CERT_PATH"); // NOI18N
+        if (envPath != null) {
+            envPath = envPath.trim();
+            if (new File(envPath).isDirectory()) {
+                return envPath;
+            }
         }
 
         if (Utilities.isMac() || Utilities.isWindows()) {
