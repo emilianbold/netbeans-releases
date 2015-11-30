@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.classpath;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
@@ -60,6 +62,7 @@ import org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
+import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
 import org.netbeans.modules.maven.indexer.spi.Redo;
 import org.openide.filesystems.FileObject;
@@ -67,6 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
+import sun.tools.jar.resources.jar;
 
 public class ClassPathProviderImplTest extends NbTestCase {
 
@@ -168,13 +172,15 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertNotNull(bcp);
         MockPropertyChangeListener pcl2 = new MockPropertyChangeListener();
         bcp.addPropertyChangeListener(pcl2);
-        assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));
+        assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));        
         TestFileUtils.writeZipFile(d, "target/endorsed/override.jar", "javax/Whatever.class:whatever");
         EndorsedClassPathImpl.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertTrue(cp.toString(), cp.toString().contains("d4c2e28102f941105d838bf5ce0aedbb763bbcb7.jar"));
+        
+        String cs = RepositoryUtil.calculateSHA1Checksum(new File(FileUtil.toFile(d), "target/endorsed/override.jar"));
+        assertTrue(cp.toString(), cp.toString().contains(cs + ".jar"));
         pcl2.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertTrue(bcp.toString(), bcp.toString().contains("d4c2e28102f941105d838bf5ce0aedbb763bbcb7.jar"));
+        assertTrue(bcp.toString(), bcp.toString().contains(cs + ".jar"));
         d.getFileObject("target").delete();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertRoots(cp);
