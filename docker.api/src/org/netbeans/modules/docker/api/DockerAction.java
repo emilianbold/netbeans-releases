@@ -96,6 +96,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.DockerActionAccessor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullInputStream;
 import org.openide.util.io.NullOutputStream;
@@ -264,6 +265,26 @@ public class DockerAction {
             return new DockerImage(instance, Collections.singletonList(org.netbeans.modules.docker.DockerUtils.getTag(repository, tag)),
                     (String) value.get("Id"), time, 0, 0);
 
+        } catch (UnsupportedEncodingException ex) {
+            throw new DockerException(ex);
+        }
+    }
+
+    public void rename(DockerContainer container, String name) throws DockerException {
+        Parameters.notNull("name", name);
+
+        try {
+            doPostRequest(instance.getUrl(),
+                    "/containers/" + container.getId() + "/rename?name=" + HttpParsingUtils.encodeParameter(name), null,
+                    false, Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
+
+            long time = System.currentTimeMillis() / 1000;
+            // XXX we send it as older API does not have the commit event
+            if (emitEvents) {
+                instance.getEventBus().sendEvent(
+                        new DockerEvent(instance, DockerEvent.Status.RENAME,
+                                container.getId(), container.getId(), time));
+            }
         } catch (UnsupportedEncodingException ex) {
             throw new DockerException(ex);
         }
