@@ -94,7 +94,7 @@ public final class DockerNode extends AbstractNode {
     )
     public static synchronized DockerNode getInstance() {
         if (node == null) {
-            ChildFactory factory = new ChildFactory(DockerIntegration.getInstance());
+            ChildFactory factory = new ChildFactory(DockerIntegration.getDefault());
             factory.init();
 
             node = new DockerNode(factory, 

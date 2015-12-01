@@ -42,21 +42,41 @@
 package org.netbeans.modules.docker.api;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.netbeans.modules.docker.StreamResult;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface ActionStreamResult extends Closeable {
+public final class ActionStreamResult implements Closeable {
 
-    OutputStream getStdIn();
+    private final StreamResult result;
 
-    InputStream getStdOut();
+    ActionStreamResult(StreamResult result) {
+        this.result = result;
+    }
 
-    InputStream getStdErr();
+    public OutputStream getStdIn() {
+        return result.getStdIn();
+    }
 
-    boolean hasTty();
+    public InputStream getStdOut() {
+        return result.getStdOut();
+    }
 
+    public InputStream getStdErr() {
+        return result.getStdErr();
+    }
+
+    public boolean hasTty() {
+        return result.hasTty();
+    }
+
+    @Override
+    public void close() throws IOException {
+        result.close();
+    }
 }

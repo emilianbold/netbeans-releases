@@ -102,7 +102,7 @@ public class AddDockerInstanceWizard {
                 keyFile = new File(file, DEFAULT_KEY_FILE);
             }
 
-            DockerIntegration.getInstance().createInstance((String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
+            DockerIntegration.getDefault().createInstance((String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
                     (String) wiz.getProperty(URL_PROPERTY), caFile, certFile, keyFile);
 
         }
