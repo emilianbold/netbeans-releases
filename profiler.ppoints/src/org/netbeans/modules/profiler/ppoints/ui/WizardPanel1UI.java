@@ -43,10 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.netbeans.lib.profiler.ui.UIConstants;
-import org.netbeans.lib.profiler.ui.UIUtils;
-import org.netbeans.lib.profiler.ui.components.JExtendedTable;
-import org.netbeans.lib.profiler.ui.components.table.JExtendedTablePanel;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointFactory;
 import org.netbeans.modules.profiler.ppoints.Utils;
 import org.openide.util.HelpCtx;
@@ -70,7 +66,9 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.AbstractTableModel;
+import org.netbeans.lib.profiler.ui.swing.ProfilerTable;
+import org.netbeans.lib.profiler.ui.swing.ProfilerTableContainer;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
@@ -88,7 +86,7 @@ import org.openide.util.Lookup;
     "WizardPanel1UI_PpProjectString=Profiling point &project:",
     "WizardPanel1UI_DescriptionLabelText=Description:",
     "WizardPanel1UI_SupportedModesLabelText=Supported modes:",
-    "WizardPanel1UI_MonitorModeString=Monitor",
+    "WizardPanel1UI_MonitorModeString=Telemetry",
     "WizardPanel1UI_CpuModeString=Methods",
     "WizardPanel1UI_MemoryModeString=Objects",
     "WizardPanel1UI_PpListAccessName=List of available Profiling Points",
@@ -97,7 +95,7 @@ import org.openide.util.Lookup;
 public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
-    private class PPointTypeTableModel extends DefaultTableModel {
+    private class PPointTypeTableModel extends AbstractTableModel {
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -137,10 +135,10 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private DefaultTableModel ppointTypeTableModel;
+    private AbstractTableModel ppointTypeTableModel;
     private Dimension initialMinSize;
     private JComboBox ppointProjectCombo;
-    private JExtendedTable ppointTypeTable;
+    private ProfilerTable ppointTypeTable;
     private JLabel ppointDescriptionCaptionLabel;
     private JLabel ppointEffectiveCPULabel;
     private JLabel ppointEffectiveCaptionLabel;
@@ -232,9 +230,11 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         add(ppointTypeCaptionLabel, constraints);
 
         ppointTypeTableModel = new PPointTypeTableModel();
-        ppointTypeTable = new JExtendedTable(ppointTypeTableModel);
+        ppointTypeTable = new ProfilerTable(ppointTypeTableModel, false, false, null);
         ppointTypeTable.getAccessibleContext().setAccessibleName(Bundle.WizardPanel1UI_ProjectsListAccessName());
         ppointTypeCaptionLabel.setLabelFor(ppointTypeTable);
+        ppointTypeTable.setMainColumn(1);
+        ppointTypeTable.setFitWidthColumn(1);
         ppointTypeTable.setTableHeader(null);
         ppointTypeTable.setRowSelectionAllowed(true);
         ppointTypeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -243,13 +243,6 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
                     refresh();
                 }
             });
-        ppointTypeTable.setGridColor(UIConstants.TABLE_VERTICAL_GRID_COLOR);
-        ppointTypeTable.setSelectionBackground(UIConstants.TABLE_SELECTION_BACKGROUND_COLOR);
-        ppointTypeTable.setSelectionForeground(UIConstants.TABLE_SELECTION_FOREGROUND_COLOR);
-        ppointTypeTable.setShowHorizontalLines(UIConstants.SHOW_TABLE_HORIZONTAL_GRID);
-        ppointTypeTable.setShowVerticalLines(UIConstants.SHOW_TABLE_VERTICAL_GRID);
-        ppointTypeTable.setRowMargin(UIConstants.TABLE_ROW_MARGIN);
-        ppointTypeTable.setRowHeight(UIUtils.getDefaultRowHeight() + 2);
         ppointTypeTable.setDefaultRenderer(Integer.class, Utils.getScopeRenderer()); // TODO: enable once Scope is implemented
         ppointTypeTable.setDefaultRenderer(String.class, Utils.getPresenterRenderer());
         constraints = new GridBagConstraints();
@@ -261,7 +254,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         constraints.anchor = GridBagConstraints.WEST;
         constraints.fill = GridBagConstraints.BOTH;
         constraints.insets = new Insets(0, 15, 12, 10);
-        add(new JExtendedTablePanel(ppointTypeTable), constraints);
+        add(new ProfilerTableContainer(ppointTypeTable, true, null), constraints);
 
         ppointProjectLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(ppointProjectLabel, Bundle.WizardPanel1UI_PpProjectString());

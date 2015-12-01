@@ -46,8 +46,6 @@ package org.netbeans.modules.profiler.ppoints;
 import javax.swing.Icon;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.global.ProfilingSessionStatus;
-import org.netbeans.lib.profiler.ui.components.table.EnhancedTableCellRenderer;
-import org.netbeans.lib.profiler.ui.components.table.LabelTableCellRenderer;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -67,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -74,16 +73,14 @@ import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.lib.profiler.ui.swing.renderer.LabelRenderer;
+import org.netbeans.lib.profiler.ui.swing.renderer.ProfilerRenderer;
 import org.netbeans.modules.profiler.api.*;
-import org.netbeans.modules.profiler.api.icons.GeneralIcons;
-import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
@@ -100,37 +97,6 @@ import org.openide.util.RequestProcessor;
     "Utils_InvalidPPLocationMsg=<html><b>Invalid location of {0}.</b><br><br>Location of the profiling point does not seem to be valid.<br>Make sure it points inside method definition, otherwise<br>the profiling point will not be hit during profiling.</html>"
 })
 public class Utils {
-    //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
-    private static class JavaEditorContext {
-        //~ Instance fields ------------------------------------------------------------------------------------------------------
-
-        private Document document;
-        private FileObject fileObject;
-        private JTextComponent textComponent;
-
-        //~ Constructors ---------------------------------------------------------------------------------------------------------
-
-        public JavaEditorContext(JTextComponent textComponent, Document document, FileObject fileObject) {
-            this.textComponent = textComponent;
-            this.document = document;
-            this.fileObject = fileObject;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public Document getDocument() {
-            return document;
-        }
-
-        public FileObject getFileObject() {
-            return fileObject;
-        }
-
-        public JTextComponent getTextComponent() {
-            return textComponent;
-        }
-    }
 
     private static class ProfilingPointPresenterListRenderer extends DefaultListCellRenderer {
         //~ Methods --------------------------------------------------------------------------------------------------------------
@@ -159,75 +125,58 @@ public class Utils {
         }
     }
 
-    private static class ProfilingPointPresenterRenderer extends LabelTableCellRenderer {
+    private static class ProfilingPointPresenterRenderer extends LabelRenderer  {
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
         public ProfilingPointPresenterRenderer() {
-            super(SwingConstants.LEADING);
             //      setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 5)); // TODO: enable once Scope is implemented
             setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 5));
         }
 
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public Component getTableCellRendererComponentPersistent(JTable table, Object value, boolean isSelected,
-                                                                 boolean hasFocus, int row, int column) {
-            return new ProfilingPointPresenterRenderer().getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
-                                                                                       column);
-        }
-
-        protected void setValue(JTable table, Object value, int row, int column) {
-            if (table != null) {
-                setFont(table.getFont());
-            }
-
+        public void setValue(Object value, int row) {
             if (value instanceof ProfilingPoint) {
-                boolean enabled = ((ProfilingPoint) value).isEnabled();
-                label.setText(((ProfilingPoint) value).getName());
-                label.setIcon(enabled ? ((ProfilingPoint) value).getFactory().getIcon() :
-                                        ((ProfilingPoint) value).getFactory().getDisabledIcon());
-                label.setEnabled(enabled);
+                ProfilingPoint ppoint = (ProfilingPoint)value;
+                boolean enabled = ppoint.isEnabled();
+                setText(ppoint.getName());
+                setIcon(enabled ? ppoint.getFactory().getIcon() : ppoint.getFactory().getDisabledIcon());
+                setEnabled(enabled);
             } else if (value instanceof ProfilingPointFactory) {
-                label.setText(((ProfilingPointFactory) value).getType());
-                label.setIcon(((ProfilingPointFactory) value).getIcon());
-                label.setEnabled(true);
-            } else {
-                label.setText(""); //NOI18N
-                label.setIcon(null);
-                label.setEnabled(true);
+                ProfilingPointFactory factory = (ProfilingPointFactory)value;
+                setText(factory.getType());
+                setIcon(factory.getIcon());
+                setEnabled(true);
             }
         }
     }
 
-    private static class ProfilingPointScopeRenderer extends LabelTableCellRenderer {
+    private static class ProfilingPointScopeRenderer extends LabelRenderer {
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
         public ProfilingPointScopeRenderer() {
-            super(SwingConstants.CENTER);
+            setHorizontalAlignment(SwingConstants.CENTER);
             setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 12));
         }
-
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public Component getTableCellRendererComponentPersistent(JTable table, Object value, boolean isSelected,
-                                                                 boolean hasFocus, int row, int column) {
-            return new ProfilingPointScopeRenderer().getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-
-        protected void setValue(JTable table, Object value, int row, int column) {
-            label.setText(""); //NOI18N
+        
+        public void setValue(Object value, int row) {            
+            Icon icon = null;
 
             if (value instanceof ProfilingPoint) {
-                label.setIcon(((ProfilingPoint) value).getFactory().getScopeIcon());
-                label.setEnabled(((ProfilingPoint) value).isEnabled());
+                ProfilingPoint ppoint = (ProfilingPoint)value;
+                icon = ppoint.getFactory().getScopeIcon();
+                
+                setEnabled(ppoint.isEnabled());
             } else if (value instanceof ProfilingPointFactory) {
-                label.setIcon(((ProfilingPointFactory) value).getScopeIcon());
-                label.setEnabled(true);
-            } else {
-                label.setIcon(Icons.getIcon(GeneralIcons.EMPTY));
-                label.setEnabled(true);
+                icon = ((ProfilingPointFactory) value).getScopeIcon();
+                setEnabled(true);
             }
+            
+            setText(""); // NOI18N
+            setIcon(isEnabled() ? icon : disabledIcon(icon));
         }
+    }
+    
+    private static Icon disabledIcon(Icon icon) {
+        return new ImageIcon(GrayFilter.createDisabledImage(((ImageIcon)icon).getImage()));
     }
 
     private static class ProjectPresenterListRenderer extends DefaultListCellRenderer {
@@ -281,7 +230,7 @@ public class Utils {
         }
     }
 
-    private static class ProjectPresenterRenderer extends LabelTableCellRenderer {
+    private static class ProjectPresenterRenderer extends LabelRenderer {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
         private Font font;
@@ -289,40 +238,26 @@ public class Utils {
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
         public ProjectPresenterRenderer() {
-            super(SwingConstants.LEADING);
             setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
-            font = label.getFont();
+            font = getFont();
         }
 
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public Component getTableCellRendererComponentPersistent(JTable table, Object value, boolean isSelected,
-                                                                 boolean hasFocus, int row, int column) {
-            return new ProjectPresenterRenderer().getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-
-        protected void setValue(JTable table, Object value, int row, int column) {
-            if ((value != null) && (value instanceof Lookup.Provider || value instanceof ProfilingPoint)) {
-                if (table != null) {
-                    setFont(table.getFont());
-                }
-
+        public void setValue(Object value, int row) {
+            
+            if (value instanceof Lookup.Provider || value instanceof ProfilingPoint) {
                 if (value instanceof ProfilingPoint) {
-                    label.setEnabled(((ProfilingPoint) value).isEnabled());
-                    value = ((ProfilingPoint) value).getProject();
+                    ProfilingPoint ppoint = (ProfilingPoint)value;
+                    value = ppoint.getProject();
+                    setEnabled(ppoint.isEnabled());
                 } else {
-                    label.setEnabled(true);
+                    setEnabled(true);
                 }
-
-                final Icon icon = ProjectUtilities.getIcon((Lookup.Provider)value);
-                label.setText(ProjectUtilities.getDisplayName((Lookup.Provider)value));
-                label.setIcon(table.isEnabled() ? icon
-                                                : new ImageIcon(GrayFilter.createDisabledImage(((ImageIcon) icon).getImage())));
-                label.setFont((ProjectUtilities.getMainProject() == value) ? font.deriveFont(Font.BOLD) : font); // bold for main project
-            } else {
-                label.setText(""); //NOI18N
-                label.setIcon(null);
-                label.setEnabled(true);
+                
+                Lookup.Provider project = (Lookup.Provider)value;
+                setText(ProjectUtilities.getDisplayName(project));
+                Icon icon = ProjectUtilities.getIcon(project);
+                setIcon(isEnabled() ? icon : disabledIcon(icon));
+                setFont(Objects.equals(ProjectUtilities.getMainProject(), value) ? font.deriveFont(Font.BOLD) : font); // bold for main project
             }
         }
     }
@@ -333,10 +268,10 @@ public class Utils {
 
     // TODO: Move to more "universal" location
     public static final ImageIcon EMPTY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/resources/empty16.gif", false); // NOI18N
-    private static final ProjectPresenterRenderer projectRenderer = new ProjectPresenterRenderer();
+    private static final ProfilerRenderer projectRenderer = new ProjectPresenterRenderer();
     private static final ProjectPresenterListRenderer projectListRenderer = new ProjectPresenterListRenderer();
-    private static final EnhancedTableCellRenderer scopeRenderer = new ProfilingPointScopeRenderer();
-    private static final ProfilingPointPresenterRenderer presenterRenderer = new ProfilingPointPresenterRenderer();
+    private static final ProfilerRenderer scopeRenderer = new ProfilingPointScopeRenderer();
+    private static final ProfilerRenderer presenterRenderer = new ProfilingPointPresenterRenderer();
     private static final ProfilingPointPresenterListRenderer presenterListRenderer = new ProfilingPointPresenterListRenderer();
     private static final DateFormat fullDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
     private static final DateFormat todayDateFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
@@ -722,7 +657,7 @@ public class Utils {
         return presenterListRenderer;
     }
 
-    public static EnhancedTableCellRenderer getPresenterRenderer() {
+    public static ProfilerRenderer getPresenterRenderer() {
         return presenterRenderer;
     }
 
@@ -759,7 +694,7 @@ public class Utils {
     }
 
     // TODO: should be moved to ProjectUtilities
-    public static EnhancedTableCellRenderer getProjectRenderer() {
+    public static ProfilerRenderer getProjectRenderer() {
         return projectRenderer;
     }
 
@@ -780,7 +715,7 @@ public class Utils {
                + FileUtil.getRelativePath(projectDirectory, FileUtil.toFileObject(file)); // file placed in project directory => relative path used
     }
 
-    public static EnhancedTableCellRenderer getScopeRenderer() {
+    public static ProfilerRenderer getScopeRenderer() {
         return scopeRenderer;
     }
 

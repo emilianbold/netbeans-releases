@@ -50,7 +50,6 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.event.ProfilingStateEvent;
 import org.netbeans.lib.profiler.common.event.ProfilingStateListener;
-import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsWindow;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
@@ -151,10 +150,10 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
             ProfilingPoint pp2 = sortOrder ? (ProfilingPoint) o2 : (ProfilingPoint) o1;
 
             switch (sortBy) {
-                case CommonConstants.SORTING_COLUMN_DEFAULT:
-                case SORT_BY_PROJECT:
-                    return ProjectUtilities.getDisplayName(pp1.getProject())
-                                       .compareTo(ProjectUtilities.getDisplayName(pp2.getProject()));
+//                case CommonConstants.SORTING_COLUMN_DEFAULT:
+//                case SORT_BY_PROJECT:
+//                    return ProjectUtilities.getDisplayName(pp1.getProject())
+//                                       .compareTo(ProjectUtilities.getDisplayName(pp2.getProject()));
                 case SORT_BY_SCOPE:
 
                     int v1 = pp1.getFactory().getScope();
@@ -166,7 +165,9 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
                 case SORT_BY_RESULTS:
                     return pp1.getResultsText().compareTo(pp2.getResultsText());
                 default:
-                    throw new RuntimeException("Unsupported compare operation for " + o1 + ", " + o2); // NOI18N
+                    return ProjectUtilities.getDisplayName(pp1.getProject())
+                                       .compareTo(ProjectUtilities.getDisplayName(pp2.getProject()));
+//                    throw new RuntimeException("Unsupported compare operation for " + o1 + ", " + o2); // NOI18N
             }
         }
     }
