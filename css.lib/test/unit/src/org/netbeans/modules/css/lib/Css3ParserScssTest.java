@@ -1912,4 +1912,30 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    width: calc(100% - #{$left-column-width});\n"
                 + "}");
     }
+    
+    public void testURLinScss() {
+        assertParses("@function oj-image-url($path){\n"
+                + " @return url($imageDir + $path);\n"
+                + "}");
+        assertParses(".xxx {\n"
+                + "    content: url($imagesDir + \"functional/func_back_24_ena.png\"); \n"
+                + "}");
+        assertParses("@function composeURL($a, $b)\n"
+                + "{\n"
+                + "    @return url($a + $b);\n"
+                + "}");
+        assertParses("@each $ord in 1, 2, 3, 4 {\n"
+                + "	\n"
+                + "	body._#{$ord} #page {\n"
+                + "		background: $page-bg url(#{$scssDir}/images/bg#{$ord}-squares-blue.png);\n"
+                + "	}\n"
+                + "	\n"
+                + "}");
+        assertParses("li {\n"
+                + "    background: transparent url(@{img_path}list-bullet.png) no-repeat 0 0;\n"
+                + "				padding-left: 14px;\n"
+                + "				margin-bottom: 5px;\n"
+                + "}");
+        
+    }
 }
