@@ -329,7 +329,7 @@ made subject to such option by the copyright holder.
             <p>
                 Some plugins needs a way to suppress <a href="@JDK@/java/net/Authenticator.html"><code>java.net.Authenticator</code></a> without asking
                 user a question about the credentials. 
-                Invoke <a href="@TOP@/org/openide/util/NetworkSettings.html#suppressAuthenticationDialog(java.util.concurrent.Callable)">
+                Invoke <a href="@TOP@/org/openide/util/NetworkSettings.html#suppressAuthenticationDialog-java.util.concurrent.Callable-">
                 suppressAuthenticationDialog</a> with a block of code where authentication dialog will be suppressed.                
                 See <a href="http://wiki.netbeans.org/Authenticator">http://wiki.netbeans.org/Authenticator</a>
             </p>
@@ -361,7 +361,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>
-            Images loaded by <a href="@TOP@/org/openide/util/ImageUtilities.html#loadImage(java.lang.String,%20boolean)">
+            Images loaded by <a href="@TOP@/org/openide/util/ImageUtilities.html#loadImage-java.lang.String-boolean-">
             ImageUtilities.loadImage</a> now
             respond to <code>getProperty("url", null)</code> calls.
             </p>
@@ -1027,7 +1027,7 @@ made subject to such option by the copyright holder.
       <description>
           When one calls <a href="@org-openide-util@/org/openide/util/RequestProcessor.Task.html">RequestProcessor.Task</a>.cancel(), 
           the running thread gets interrupted if the 
-          <a href="@org-openide-util@/org/openide/util/RequestProcessor.html#RequestProcessor(java.lang.String,%20int,%20boolean)">
+          <a href="@org-openide-util@/org/openide/util/RequestProcessor.html#RequestProcessor-java.lang.String-int-boolean-">
           RequestProcessor(string, int, boolean) 
           </a> 
           constructor is used.

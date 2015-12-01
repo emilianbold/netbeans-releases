@@ -293,7 +293,7 @@ you are likely to want to override:
 
 <ul>
 
-<li><a href="../AbstractNode.html#canCopy()"><code>AbstractNode.canCopy()</code></a>
+<li><a href="../AbstractNode.html#canCopy--"><code>AbstractNode.canCopy()</code></a>
 
 and related methods (for cutting, renaming, and destroying) are all
 true by default, so that the node may be moved around somewhat
@@ -313,11 +313,11 @@ reconstituting a node after serialization.
 
 <p>You may set these explicitly with
 
-<a href="../Node.html#setName(java.lang.String)"><code>Node.setName(...)</code></a>
+<a href="../Node.html#setName-java.lang.String-"><code>Node.setName(...)</code></a>
 
 and
 
-<a href="../Node.html#setDisplayName(java.lang.String)"><code>Node.setDisplayName(...)</code></a>,
+<a href="../Node.html#setDisplayName-java.lang.String-"><code>Node.setDisplayName(...)</code></a>,
 
 or you may want to take advantage of <code>AbstractNode</code>'s
 ability to have the display name be calculated implicitly from the
@@ -327,7 +327,7 @@ system name by means of a
 
 There is also a
 
-<a href="../Node.html#setShortDescription(java.lang.String)">short description</a>
+<a href="../Node.html#setShortDescription-java.lang.String-">short description</a>
 
 which is intended for things such as tool tips on the node.
 
@@ -336,7 +336,7 @@ specify a set of icons according to whether small or large icons are
 to be used, whether the node's hierarchy (if applicable) is expanded
 or collapsed, etc. The best approach is to use
 
-<a href="../AbstractNode.html#setIconBaseWithExtension(java.lang.String)"><code>AbstractNode.setIconBaseWithExtension(...)</code></a>
+<a href="../AbstractNode.html#setIconBaseWithExtension-java.lang.String-"><code>AbstractNode.setIconBaseWithExtension(...)</code></a>
 
 to set the base name for the icon image resources.
 
@@ -373,12 +373,12 @@ same form component may also have a normal Bean property set
 Nodes are only required to cluster properties into sets, by
 implementing
 
-<a href="../Node.html#getPropertySets()"><code>Node.getPropertySets()</code></a>;
+<a href="../Node.html#getPropertySets--"><code>Node.getPropertySets()</code></a>;
 
 but sheets are convenient to handle, and they may be used from an
 <code>AbstractNode</code>, for example by overriding
 
-<a href="../AbstractNode.html#createSheet()"><code>AbstractNode.createSheet()</code></a>
+<a href="../AbstractNode.html#createSheet--"><code>AbstractNode.createSheet()</code></a>
 
 to provide the basic list of property sets desired for the
 node. (You should get the sheet set you need from it, checking
@@ -393,27 +393,27 @@ effect.)
 <li>It has a name, frequently corresponding to a Bean property name,
 obtainable from
 
-<a href="@JDK@/java/beans/FeatureDescriptor.html#getName()"><code>FeatureDescriptor.getName()</code></a>.
+<a href="@JDK@/java/beans/FeatureDescriptor.html#getName--"><code>FeatureDescriptor.getName()</code></a>.
 
 It may also have a display name, similarly.
 
 <li>It may be read-only, read-write, or (rarely) write-only, according
 to
 
-<a href="../Node.Property.html#canRead()"><code>Node.Property.canRead()</code></a>
+<a href="../Node.Property.html#canRead--"><code>Node.Property.canRead()</code></a>
 
 and
 
-<a href="../Node.Property.html#canWrite()"><code>Node.Property.canWrite()</code></a>.
+<a href="../Node.Property.html#canWrite--"><code>Node.Property.canWrite()</code></a>.
 
 <li>It has a defined value type, to which its actual value must be
 assignable, as determined by
 
-<a href="../Node.Property.html#getValueType()"><code>Node.Property.getValueType()</code></a>.
+<a href="../Node.Property.html#getValueType--"><code>Node.Property.getValueType()</code></a>.
 
 There may also be a
 
-<a href="../Node.Property.html#supportsDefaultValue()">default value</a>.
+<a href="../Node.Property.html#supportsDefaultValue--">default value</a>.
 
 <li>It may be indexed (i.e. be an array type with access to the
 individual elements).
@@ -461,7 +461,7 @@ descriptors, and so may have internal and display names, etc.
 may automatically create a sheet with some useful properties on it;
 then this sheet should generally be appended to by overriding
 
-<a href="../AbstractNode.html#createSheet()"><code>AbstractNode.createSheet()</code></a>
+<a href="../AbstractNode.html#createSheet--"><code>AbstractNode.createSheet()</code></a>
 
 and calling the superclass method first.
 
@@ -471,11 +471,11 @@ edit individual properties, especially without getting a holistic
 preview. If this is the case, a customizing GUI component may be
 returned from
 
-<a href="../Node.html#getCustomizer()"><code>Node.getCustomizer()</code></a>,
+<a href="../Node.html#getCustomizer--"><code>Node.getCustomizer()</code></a>,
 
 and
 
-<a href="../Node.html#hasCustomizer()"><code>Node.hasCustomizer()</code></a>
+<a href="../Node.html#hasCustomizer--"><code>Node.hasCustomizer()</code></a>
 
 turned on. The exact way in which the customizer will be displayed is
 determined by NetBeans, but typically it will be popped up in a dialog
@@ -485,7 +485,7 @@ however appropriate.
 <p>If a full customizer is not required, individual properties may
 still have a custom editing style associated with them;
 
-<a href="../Node.Property.html#getPropertyEditor()"><code>Node.Property.getPropertyEditor()</code></a>
+<a href="../Node.Property.html#getPropertyEditor--"><code>Node.Property.getPropertyEditor()</code></a>
 
 is used to look for a property editor, defaulting to the standard
 JavaBeans property editor for the appropriate type.
@@ -530,7 +530,7 @@ and structure of children under it.
 You need only create it with the default constructor, and add child
 nodes to it (at any time, or remove them later for that matter) using
 
-<a href="../Children.html#add(org.openide.nodes.Node[])"><code>Children.add(...)</code></a>.
+<a href="../Children.html#add-org.openide.nodes.Node:A-"><code>Children.add(...)</code></a>.
 
 <p>If it is desirable that the children be sorted when displayed, you can use e.g.
 
@@ -582,7 +582,7 @@ cookie on your node, which exists to handle this case. This cookie provides ways
 for the user to move particular children around, or to undertake a
 complete rearrangement using a
 
-<a href="../Index.Support.html#showIndexedCustomizer(org.openide.nodes.Index)">dialog box</a>.
+<a href="../Index.Support.html#showIndexedCustomizer-org.openide.nodes.Index-">dialog box</a>.
 
 There is a generic
 
@@ -622,7 +622,7 @@ API describes these defaults.)
 implement certain behaviors, is quite straightforward. The basic
 interface for retrieving a cookie is
 
-<a href="../Node.html#getCookie(java.lang.Class)"><code>Node.getCookie(...)</code></a>.
+<a href="../Node.html#getCookie-java.lang.Class-"><code>Node.getCookie(...)</code></a>.
 
 However, this is abstract in <code>Node</code>, and also
 <code>Node</code> itself does not set any policy for settings up the
@@ -631,7 +631,7 @@ cookies for a node or changing them.
 <p>Rather, if you are subclassing <code>AbstractNode</code>, you may
 use
 
-<a href="../AbstractNode.html#setCookieSet(org.openide.nodes.CookieSet)"><code>AbstractNode.setCookieSet(...)</code></a>
+<a href="../AbstractNode.html#setCookieSet-org.openide.nodes.CookieSet-"><code>AbstractNode.setCookieSet(...)</code></a>
 
 to specify a set of cookies to be returned by the node (and you should
 merge your cookies with those provided by the superclass, as a
@@ -645,16 +645,16 @@ for implementing <code>getCookie(...)</code>.
 
 <p>To attach actions to a node, which are listed by
 
-<a href="../Node.html#getActions()"><code>Node.getActions()</code></a>
+<a href="../Node.html#getActions--"><code>Node.getActions()</code></a>
 
 (and sometimes a primary and obvious action in
 
-<a href="../Node.html#getDefaultAction()"><code>Node.getDefaultAction()</code></a>),
+<a href="../Node.html#getDefaultAction--"><code>Node.getDefaultAction()</code></a>),
 
 you should merge the superclass' actions into your own (if desired),
 and override e.g.
 
-<a href="../AbstractNode.html#createActions()"><code>AbstractNode.createActions()</code></a>,
+<a href="../AbstractNode.html#createActions--"><code>AbstractNode.createActions()</code></a>,
 
 which is called to set up the actions list when
 <code>getActions()</code> is first called.
@@ -663,17 +663,17 @@ which is called to set up the actions list when
 associate commands with the node, e.g. by providing them in a pop-up
 menu.
 
-<a href="../Node.html#getDefaultAction()"><code>Node.getDefaultAction()</code></a>
+<a href="../Node.html#getDefaultAction--"><code>Node.getDefaultAction()</code></a>
 
 and
 
-<a href="../Node.html#getContextActions()"><code>Node.getContextActions()</code></a>
+<a href="../Node.html#getContextActions--"><code>Node.getContextActions()</code></a>
 
 provide more refined variants of the actions list which may be
 appropriate for different presentations. Nodes with unusual needs for
 action presentation can override
 
-<a href="../Node.html#getContextMenu()"><code>Node.getContextMenu()</code></a>
+<a href="../Node.html#getContextMenu--"><code>Node.getContextMenu()</code></a>
 
 to define a particular UI for this presentation.
 
@@ -739,11 +739,11 @@ special serializable handle which represents the node by its position
 in the hierarchy, and permits finding the original node again after
 deserialization (if it still exists). To create a handle, just call
 
-<a href="../Node.html#getHandle()"><code>Node.getHandle()</code></a>,
+<a href="../Node.html#getHandle--"><code>Node.getHandle()</code></a>,
 
 and to restore the node call
 
-<a href="../Node.Handle.html#getNode()"><code>Node.Handle.getNode()</code></a>.
+<a href="../Node.Handle.html#getNode--"><code>Node.Handle.getNode()</code></a>.
 
 <p>Creation of a usable handle is implemented in
 <code>AbstractNode</code>, and you should not need to override
@@ -757,7 +757,7 @@ reconstructing your root from scratch, and return it from
 
 <p>The methods in <code>NodeOp</code> such as
 
-<a href="../NodeOp.html#findPath(org.openide.nodes.Node,%20java.lang.String[])"><code>NodeOp.findPath(...)</code></a>
+<a href="../NodeOp.html#findPath-org.openide.nodes.Node-java.lang.String:A-"><code>NodeOp.findPath(...)</code></a>
 
 may also be used for general-purpose navigation along the hierarchy,
 should this be necessary.
@@ -775,7 +775,7 @@ on.
 <p>Since most of this behavior is automatic and driven by the
 JavaBeans API, you need do little to use it: just create a node using
 
-<a href="../BeanNode.html#BeanNode(java.lang.Object)"><code>new BeanNode(...)</code></a>.
+<a href="../BeanNode.html#BeanNode-java.lang.Object-"><code>new BeanNode(...)</code></a>.
 
 <p class="nonnormative">Do not confuse such a bean node, which may be any sort of node that
 just happens to use the JavaBeans API to implement its behavior, with
@@ -804,13 +804,13 @@ node; this may be used when the visual organization of a hierarchy
 requires one object to appear in more than one place. In such a case,
 you may use
 
-<a href="../FilterNode.html#FilterNode(org.openide.nodes.Node)"><code>new FilterNode(...)</code></a>
+<a href="../FilterNode.html#FilterNode-org.openide.nodes.Node-"><code>new FilterNode(...)</code></a>
 
 to create such a proxy.
 
 <p>Or, you may use
 
-<a href="../AbstractNode.html#cloneNode()"><code>AbstractNode.cloneNode()</code></a>
+<a href="../AbstractNode.html#cloneNode--"><code>AbstractNode.cloneNode()</code></a>
 
 to create the filter if the node does not intrinsically support
 
@@ -835,7 +835,7 @@ Event Model, as is routine in the IDE:
 <li>Changes to the basic structure or presence of nodes may be
 listened to. Attach a listener with
 
-<a href="../Node.html#addNodeListener(org.openide.nodes.NodeListener)"><code>Node.addNodeListener(...)</code></a>.
+<a href="../Node.html#addNodeListener-org.openide.nodes.NodeListener-"><code>Node.addNodeListener(...)</code></a>.
 
 This will report the changes mentioned directly in
 <code>NodeListener</code>, as well as several varieties of standard
@@ -847,19 +847,19 @@ values), and icons.
 <li>Changes to the values of node properties may be listened to;
 attach to
 
-<a href="../Node.html#addPropertyChangeListener(java.beans.PropertyChangeListener)"><code>Node.addPropertyChangeListener(...)</code></a>.
+<a href="../Node.html#addPropertyChangeListener-java.beans.PropertyChangeListener-"><code>Node.addPropertyChangeListener(...)</code></a>.
 
 This will report only changes relating to the exposed Bean-like
 properties of the node, <em>not</em> intrinsic properties like the
 parent.
 
-<li><a href="../CookieSet.html#addChangeListener(javax.swing.event.ChangeListener)">Cookie sets</a>,
+<li><a href="../CookieSet.html#addChangeListener-javax.swing.event.ChangeListener-">Cookie sets</a>,
 
-<a href="../Sheet.Set.html#addPropertyChangeListener(java.beans.PropertyChangeListener)">property sets</a>,
+<a href="../Sheet.Set.html#addPropertyChangeListener-java.beans.PropertyChangeListener-">property sets</a>,
 
 and
 
-<a href="../Sheet.html#addPropertyChangeListener(java.beans.PropertyChangeListener)">property sheets</a>
+<a href="../Sheet.html#addPropertyChangeListener-java.beans.PropertyChangeListener-">property sheets</a>
 
 may all have listeners attached to them individually, although generally it
 is easier just to listen to the node holding them.
@@ -876,11 +876,11 @@ operations.
 <p>There are some simple node-level operations which do not need to
 use data transfer.
 
-<a href="../AbstractNode.html#setName(java.lang.String)"><code>AbstractNode.setName(...)</code></a>
+<a href="../AbstractNode.html#setName-java.lang.String-"><code>AbstractNode.setName(...)</code></a>
 
 and
 
-<a href="../Node.html#destroy()"><code>Node.destroy()</code></a>
+<a href="../Node.html#destroy--"><code>Node.destroy()</code></a>
 
 may simply be overridden to handle customized renames and
 deletes. (Or, you could attach a <code>NodeListener</code> to take
@@ -888,12 +888,12 @@ action after the fact, if that suffices.)
 
 <p>Supporting creation of fresh children is possible by overriding
 
-<a href="../Node.html#getNewTypes()"><code>Node.getNewTypes()</code></a>
+<a href="../Node.html#getNewTypes--"><code>Node.getNewTypes()</code></a>
 
 to provide a list of new types of data which can be created under your
 node. Each of these should implement
 
-<a href="@org-openide-util-ui@/org/openide/util/datatransfer/NewType.html#create()"><code>NewType.create()</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/datatransfer/NewType.html#create--"><code>NewType.create()</code></a>
 
 to actually create a new child. Make sure that you include
 
@@ -901,7 +901,7 @@ to actually create a new child. Make sure that you include
 
 in your
 
-<a href="../Node.html#getActions()">list of actions</a>.
+<a href="../Node.html#getActions--">list of actions</a>.
 
 <h4>Data transfer</h4>
 
@@ -949,7 +949,7 @@ arbitrary Node A.
 is enabled (from a context menu, the Edit menu, etc.), because node A
 indicated it could be copied using
 
-<a href="../Node.html#canCopy()"><code>Node.canCopy()</code></a>
+<a href="../Node.html#canCopy--"><code>Node.canCopy()</code></a>
 
 (turned on in <code>AbstractNode</code>).
 
@@ -963,17 +963,17 @@ provides the regular implementation of <code>CopyAction</code> for any
 
 <li>The user invokes the Copy action.
 
-<a href="../AbstractNode.html#clipboardCopy()"><code>AbstractNode.clipboardCopy()</code></a>
+<a href="../AbstractNode.html#clipboardCopy--"><code>AbstractNode.clipboardCopy()</code></a>
 
 is called. It creates a transferable supporting only one flavor, which is invisible
 to the APIs. The creation of this transferable is done by a special utility method which
 hides the data flavor and transferables contents:
 
-<a href="../NodeTransfer.html#transferable(org.openide.nodes.Node,%20int)"><code>NodeTransfer.transferable(...)</code></a>.
+<a href="../NodeTransfer.html#transferable-org.openide.nodes.Node-int-"><code>NodeTransfer.transferable(...)</code></a>.
 
 The copy action
 
-<a href="@JDK@/java/awt/datatransfer/Clipboard.html#setContents(java.awt.datatransfer.Transferable,%20java.awt.datatransfer.ClipboardOwner)">sets</a>
+<a href="@JDK@/java/awt/datatransfer/Clipboard.html#setContents-java.awt.datatransfer.Transferable-java.awt.datatransfer.ClipboardOwner-">sets</a>
 
 that transferable to the clipboard.
 
@@ -985,11 +985,11 @@ holding children. One effect of the change in selection is that the
 action checks to see if it should be enabled. To do so, it checks node
 B's
 
-<a href="../AbstractNode.html#getPasteTypes(java.awt.datatransfer.Transferable)"><code>AbstractNode.getPasteTypes(...)</code></a>,
+<a href="../AbstractNode.html#getPasteTypes-java.awt.datatransfer.Transferable-"><code>AbstractNode.getPasteTypes(...)</code></a>,
 
 which in turns calls
 
-<a href="../AbstractNode.html#createPasteTypes(java.awt.datatransfer.Transferable,%20java.util.List)"><code>AbstractNode.createPasteTypes(...)</code></a>
+<a href="../AbstractNode.html#createPasteTypes-java.awt.datatransfer.Transferable-java.util.List-"><code>AbstractNode.createPasteTypes(...)</code></a>
 
 to do the work.
 
@@ -998,7 +998,7 @@ to do the work.
 accepted by the node (so-called "intelligent pastes"); this flavor is
 hidden from the APIs but can be tested for in a transferable using
 
-<a href="../NodeTransfer.html#findPaste(java.awt.datatransfer.Transferable)"><code>NodeTransfer.findPaste(Transferable)</code></a>.
+<a href="../NodeTransfer.html#findPaste-java.awt.datatransfer.Transferable-"><code>NodeTransfer.findPaste(Transferable)</code></a>.
 
 This is not the flavor that was provided by the copy, so no paste type
 is created in the super method. However, Node B
@@ -1090,11 +1090,11 @@ displayed in the same order as they were added.
 <li>Since <code>AbstractNode</code> by default just looks for the secret data
 flavor represented by
 
-<a href="../NodeTransfer.html#createPaste(org.openide.nodes.NodeTransfer.Paste)"><code>NodeTransfer.createPaste(Paste)</code></a>
+<a href="../NodeTransfer.html#createPaste-org.openide.nodes.NodeTransfer.Paste-"><code>NodeTransfer.createPaste(Paste)</code></a>
 
 and
 
-<a href="../NodeTransfer.html#findPaste(java.awt.datatransfer.Transferable)"><code>NodeTransfer.findPaste(Transferable)</code></a>,
+<a href="../NodeTransfer.html#findPaste-java.awt.datatransfer.Transferable-"><code>NodeTransfer.findPaste(Transferable)</code></a>,
 
 any part of the
 system that wants to be able to paste to nodes can do so without
@@ -1137,13 +1137,13 @@ or added as an alternate flavor to any transferable already there.
 pasted to from nodes may do so by accepting transferables in the
 clipboard satisfying
 
-<a href="../NodeTransfer.html#node(java.awt.datatransfer.Transferable,%20int)"><code>NodeTransfer.node(...)</code></a>,
+<a href="../NodeTransfer.html#node-java.awt.datatransfer.Transferable-int-"><code>NodeTransfer.node(...)</code></a>,
 
-<a href="../NodeTransfer.html#nodes(java.awt.datatransfer.Transferable,%20int)"><code>NodeTransfer.nodes(...)</code></a>,
+<a href="../NodeTransfer.html#nodes-java.awt.datatransfer.Transferable-int-"><code>NodeTransfer.nodes(...)</code></a>,
 
 or
 
-<a href="../NodeTransfer.html#cookie(java.awt.datatransfer.Transferable,%20int,%20java.lang.Class)"><code>NodeTransfer.cookie(...)</code></a>;
+<a href="../NodeTransfer.html#cookie-java.awt.datatransfer.Transferable-int-java.lang.Class-"><code>NodeTransfer.cookie(...)</code></a>;
 
 then no special
 cooperation is required from the node (provided it is an

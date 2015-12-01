@@ -124,7 +124,7 @@ the search algorithm with an easy interface. Just write:
 <pre>
     <font class="keyword">import</font> <font class="type">java.awt.Toolkit</font>;
     <font class="keyword">import</font> <font class="type">org.openide.util.Lookup;</font>;
-    <font class="type">Toolkit</font> <font class="variable-name">t</font> = (<font class="type">Toolkit</font>)Lookup.getDefault().<a href="@TOP@org/openide/util/Lookup.html#lookup(java.lang.Class)">lookup</a>(Toolkit.<font class="keyword">class</font>);
+    <font class="type">Toolkit</font> <font class="variable-name">t</font> = (<font class="type">Toolkit</font>)Lookup.getDefault().<a href="@TOP@org/openide/util/Lookup.html#lookup-java.lang.Class-">lookup</a>(Toolkit.<font class="keyword">class</font>);
 </PRE>
 and if the JAR with <code>MyToolkit</CODE> is in the class path, the simple call 
 above will do the rest.
@@ -170,7 +170,7 @@ whether the object supports a given interface like this:
 <font class="type">MorphingObject</FONT> <font class="variable-name">morph</FONT> = ...
 <font class="type">AnInterface</font> <font class="variable-name">impl</font> = (<font
 class="type">AnInterface</font>)morph.getLookup().<a
-href="@TOP@org/openide/util/Lookup.html#lookup(java.lang.Class)">lookup</a>(AnInterface.<font class="keyword">class</font>);
+href="@TOP@org/openide/util/Lookup.html#lookup-java.lang.Class-">lookup</a>(AnInterface.<font class="keyword">class</font>);
 <font class="keyword">if</font> (impl == <font class="constant">null</font>) {
     <font class="keyword">return;</font><font class="comment">/* AnInterface not supported now! */</font>
 }

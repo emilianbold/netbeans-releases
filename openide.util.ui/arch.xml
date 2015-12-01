@@ -144,7 +144,7 @@ made subject to such option by the copyright holder.
    indirectly communicates with <a href="@org-openide-awt@/overview-summary.html">UI Utilities</a>
    module using <api name="AWTBridge" category="private" group="java" type="export" 
    url="http://www.netbeans.org/source/browse/openide/util/src/org/netbeans/modules/openide/util/AWTBridge.java">
-   a class that is looked up in <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+   a class that is looked up in <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault--">Lookup.getDefault()</a>
    and if registered can provide better UI elements for <a href="@JDK@/javax/swing/Action.html">Action</a>s.
    </api>
    
@@ -432,9 +432,9 @@ made subject to such option by the copyright holder.
     </api>.</li>
 
     <li><api name="LookupContextGlobalProvider" category="stable" group="lookup" type="export">
-    <a href="@TOP@/org/openide/util/Utilities.html#actionsGlobalContext()">actionsGlobalContext</a>
+    <a href="@TOP@/org/openide/util/Utilities.html#actionsGlobalContext--">actionsGlobalContext</a>
     searches for <a href="@TOP@/org/openide/util/ContextGlobalProvider.html">ContextGlobalProvider</a> in 
-    <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
+    <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault--">Lookup.getDefault()</a>.
     The provider is usually provided by <a href="@org-openide-windows@/overview-summary.html">window 
     system implementation</a>.
     </api>.</li>
@@ -591,7 +591,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-progress">
   <p>
-   Actions declared as <a href="@TOP@/org/openide/util/actions/CallableSystemAction.html#asynchronous()">CallableSystemAction.asynchronous()</a> 
+   Actions declared as <a href="@TOP@/org/openide/util/actions/CallableSystemAction.html#asynchronous--">CallableSystemAction.asynchronous()</a> 
    are executed outside of AWT thread on a dedicated request processor one.
   </p>
  </answer>
