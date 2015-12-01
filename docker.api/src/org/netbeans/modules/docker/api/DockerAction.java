@@ -47,7 +47,7 @@ import org.netbeans.modules.docker.DockerRemoteException;
 import org.netbeans.modules.docker.FolderUploader;
 import org.netbeans.modules.docker.MuxedStreamResult;
 import org.netbeans.modules.docker.ChunkedInputStream;
-import org.netbeans.modules.docker.tls.SecureContextProvider;
+import org.netbeans.modules.docker.tls.ContextProvider;
 import org.netbeans.modules.docker.IgnoreFileFilter;
 import org.netbeans.modules.docker.HttpParsingUtils;
 import org.netbeans.modules.docker.DirectStreamResult;
@@ -994,7 +994,7 @@ public class DockerAction {
     private Socket createSocket(URL url) throws IOException {
         try {
             if ("https".equals(url.getProtocol())) { // NOI18N
-                SSLContext context = SecureContextProvider.getInstance().getSSLContext(instance);
+                SSLContext context = ContextProvider.getInstance().getSSLContext(instance);
                 return context.getSocketFactory().createSocket(url.getHost(), url.getPort());
             } else {
                 Socket s = new Socket(ProxySelector.getDefault().select(url.toURI()).get(0));
@@ -1011,7 +1011,7 @@ public class DockerAction {
         try {
             HttpURLConnection ret = (HttpURLConnection) url.openConnection(ProxySelector.getDefault().select(url.toURI()).get(0));
             if (ret instanceof HttpsURLConnection) {
-                ((HttpsURLConnection) ret).setSSLSocketFactory(SecureContextProvider.getInstance().getSSLContext(instance).getSocketFactory());
+                ((HttpsURLConnection) ret).setSSLSocketFactory(ContextProvider.getInstance().getSSLContext(instance).getSocketFactory());
             }
             return ret;
         } catch (URISyntaxException ex) {

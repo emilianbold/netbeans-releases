@@ -45,22 +45,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 
-public class SimpleDerParser {
+/**
+ *
+ * @author Petr Hejl
+ */
+public class DerParser {
 
     private final InputStream is;
 
-    public SimpleDerParser(InputStream is) {
+    public DerParser(InputStream is) {
         this.is = is;
     }
 
-    public SimpleAsn1Object read() throws IOException {
+    public Asn1Object read() throws IOException {
         int tag = is.read();
 
         if (tag < 0) {
             throw new IOException("No more data to read");
         }
         int length = readLength();
-        return new SimpleAsn1Object(tag, readValue(length));
+        return new Asn1Object(tag, readValue(length));
     }
 
     private int readLength() throws IOException {

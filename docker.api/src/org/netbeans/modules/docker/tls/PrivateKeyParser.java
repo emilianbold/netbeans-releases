@@ -96,10 +96,10 @@ public class PrivateKeyParser {
                     .replace(PEM_RSA_PRIVATE_END, "")
                     .replaceAll("\\s", "");
 
-            SimpleDerParser parser = new SimpleDerParser(new ByteArrayInputStream(
+            DerParser parser = new DerParser(new ByteArrayInputStream(
                     Base64.getDecoder().decode(privateKeyPem)));
 
-            SimpleAsn1Object sequence = parser.read();
+            Asn1Object sequence = parser.read();
             parser = sequence.read();
 
             parser.read(); // Skip version

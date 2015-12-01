@@ -54,7 +54,7 @@ import java.math.BigInteger;
  *|  Class    | CF  |     +      Type             |
  *-------------------------------------------------
  */
-public class SimpleAsn1Object {
+public class Asn1Object {
 
     private static final int FLAG_CONSTRUCTED = 0x20;
 
@@ -68,17 +68,17 @@ public class SimpleAsn1Object {
 
     private final byte[] value;
 
-    public SimpleAsn1Object(int tag, byte[] value) {
+    public Asn1Object(int tag, byte[] value) {
         this.tag = tag;
         this.type = tag & TYPE_MASK;
         this.value = value;
     }
 
-    public SimpleDerParser read() throws IOException {
+    public DerParser read() throws IOException {
         if ((tag & FLAG_CONSTRUCTED) == 0) {
             throw new IOException("This object is not a constructed value");
         }
-        return new SimpleDerParser(new ByteArrayInputStream(value));
+        return new DerParser(new ByteArrayInputStream(value));
     }
 
     public BigInteger getBigInteger() throws IOException {

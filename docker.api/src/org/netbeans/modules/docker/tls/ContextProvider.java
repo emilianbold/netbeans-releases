@@ -68,21 +68,21 @@ import org.netbeans.modules.docker.api.DockerInstance;
  *
  * @author Petr Hejl
  */
-public final class SecureContextProvider {
+public final class ContextProvider {
 
-    private static final Logger LOGGER = Logger.getLogger(SecureContextProvider.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ContextProvider.class.getName());
 
-    private static final SecureContextProvider INSTANCE = new SecureContextProvider();
+    private static final ContextProvider INSTANCE = new ContextProvider();
 
     private final SecureRandom random = new SecureRandom();
 
     private final Map<DockerInstance, ContextHolder> cache = new WeakHashMap<>();
 
-    private SecureContextProvider() {
+    private ContextProvider() {
         super();
     }
 
-    public static SecureContextProvider getInstance() {
+    public static ContextProvider getInstance() {
         return INSTANCE;
     }
 
