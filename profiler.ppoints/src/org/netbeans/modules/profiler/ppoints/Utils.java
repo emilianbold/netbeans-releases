@@ -151,6 +151,8 @@ public class Utils {
 
     private static class ProfilingPointScopeRenderer extends LabelRenderer {
         //~ Constructors ---------------------------------------------------------------------------------------------------------
+        
+        private Integer scope;
 
         public ProfilingPointScopeRenderer() {
             setHorizontalAlignment(SwingConstants.CENTER);
@@ -162,16 +164,23 @@ public class Utils {
 
             if (value instanceof ProfilingPoint) {
                 ProfilingPoint ppoint = (ProfilingPoint)value;
-                icon = ppoint.getFactory().getScopeIcon();
-                
+                ProfilingPointFactory factory = ppoint.getFactory();
+                icon = factory.getScopeIcon();
+                scope = factory.getScope();
                 setEnabled(ppoint.isEnabled());
             } else if (value instanceof ProfilingPointFactory) {
-                icon = ((ProfilingPointFactory) value).getScopeIcon();
+                ProfilingPointFactory factory = (ProfilingPointFactory)value;
+                icon = factory.getScopeIcon();
+                scope = factory.getScope();
                 setEnabled(true);
             }
             
             setText(""); // NOI18N
             setIcon(isEnabled() ? icon : disabledIcon(icon));
+        }
+        
+        public String toString() {
+            return Integer.toString(scope);
         }
     }
     
