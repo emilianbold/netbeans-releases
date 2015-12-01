@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
       <author login="jtulach"/>
       <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
       <description>
-          <a href="@TOP@/org/netbeans/spi/sendopts/Env.html#usage()">Env.usage</a> 
+          <a href="@TOP@/org/netbeans/spi/sendopts/Env.html#usage--">Env.usage</a> 
           can be called when one wants to process own <code>--help</code> option.
      </description>
      <class package="org.netbeans.spi.sendopts" name="Env"/>
@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
       <description>
           <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">@Arg</a> annotation
           and associated classes allow to register options declaratively. There
-          is a new  <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#create(java.lang.Class...)">
+          is a new  <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#create-java.lang.Class...-">
             factory method
           </a> to create multiple instances of differently configured
           <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html">command lines</a>.
@@ -94,7 +94,7 @@ made subject to such option by the copyright holder.
       <description>
           Those processors that wish to be informed about every command line
           processing, can register themselves as providers of 
-          <a href="@TOP@/org/netbeans/spi/sendopts/Option.html#always()">always</a>
+          <a href="@TOP@/org/netbeans/spi/sendopts/Option.html#always--">always</a>
           option. This one is automatically present in each successfully parsed
           command line.
      </description>
@@ -149,7 +149,7 @@ made subject to such option by the copyright holder.
       <author login="jtulach"/>
       <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
       <description>
-          There is new method <a href="@TOP@org/netbeans/api/sendopts/CommandLine.html#usage(java.io.PrintWriter)">usage</a>
+          There is new method <a href="@TOP@org/netbeans/api/sendopts/CommandLine.html#usage-java.io.PrintWriter-">usage</a>
           that
           allows to print description of all available options in the command
           line.

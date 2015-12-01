@@ -113,7 +113,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>NbModuleSuite.Configuration now has a
-                <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addStartupArgument(java.lang.String...)">
+                <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addStartupArgument-java.lang.String...-">
                 addStartupArgument</a>
                 method which allows one to append one or more command line
                 arguments which will be used to start the application.
@@ -150,9 +150,9 @@ made subject to such option by the copyright holder.
             <p>
             Do you need to fail the test when some wrong message or
             exception is logged? Easy now with
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#failOnMessage(java.util.logging.Level)">
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#failOnMessage-java.util.logging.Level-">
                 Configuration.failOnMessage(Level.WARNING)</a> and
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#failOnException(java.util.logging.Level)">
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#failOnException-java.util.logging.Level-">
                 Configuration.failOnException(Level.INFO)</a>.
             </p>
         </description>
@@ -170,7 +170,7 @@ made subject to such option by the copyright holder.
             <p>
             One can decide to <b>not</b> enable autoload modules
             by calling
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#honorAutoloadEager(boolean)">
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#honorAutoloadEager-boolean-">
                 Configuration.honorAutoEager(true)</a>.
             </p>
         </description>
@@ -187,7 +187,7 @@ made subject to such option by the copyright holder.
             <p>
             One can decide to <b>not</b> include modules on classpath in the test
             by calling 
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#enableClasspathModules(boolean)">
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#enableClasspathModules-boolean-">
                 Configuration.enableClasspathModules(false)</a>.
             </p>
         </description>
@@ -203,7 +203,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>
             It is now possible to easily enable modules in one cluster due
-            to <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#enableModules(java.lang.String,%20java.lang.String)">
+            to <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#enableModules-java.lang.String-java.lang.String-">
             Configuration.enableModules</a> method.
             </p>
         </description>
@@ -219,7 +219,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes" semantic="incompatible" binary="compatible" source="compatible" modification="yes"/>
         <description>
             <p>Semantics of
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#clusters(java.lang.String)">
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#clusters-java.lang.String-">
             Configuration.clusters</a> method has been extended. It can now be
             called multiple times to accumulate the results.
             </p>
@@ -236,7 +236,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>Enhanced version of
-            <a href="@TOP@/org/netbeans/junit/Log.html#assertInstances(java.lang.String,%20java.lang.String...)">
+            <a href="@TOP@/org/netbeans/junit/Log.html#assertInstances-java.lang.String-java.lang.String...-">
             assertInstances(String msg, String... types)</a> added.
             </p>
         </description>
@@ -251,7 +251,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>NbModuleSuite.Configuration now has
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#reuseUserDir(boolean)">reuseUserDir(boolean)</a>
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#reuseUserDir-boolean-">reuseUserDir(boolean)</a>
             method which enables test suite to reuse userdir from previous suite run.
             </p>
         </description>
@@ -266,7 +266,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>NbModuleSuite.Configuration now has 
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addTest(java.lang.Class)">addTest(java.lang.Class)</a>
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addTest-java.lang.Class-">addTest(java.lang.Class)</a>
             method which allows to add Test implementation classes into configuration
             and execution of the NbModuleSuite.
             </p>
@@ -282,7 +282,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>NbModuleSuite now has 
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.html#emptyConfiguration()">emptyConfiguration()</a>
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.html#emptyConfiguration--">emptyConfiguration()</a>
             method which returns empty, ready to be configured configuration.
             </p>
         </description>
@@ -297,7 +297,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>NbModuleSuite.Configuration now has 
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addTest(java.lang.Class,%20java.lang.String...)">addTest(clazz, tests)</a>
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addTest-java.lang.Class-java.lang.String...-">addTest(clazz, tests)</a>
             method which allows to add multiple test classes into single configuration
             and execution of the NbModuleSuite.
             </p>
@@ -438,7 +438,7 @@ made subject to such option by the copyright holder.
       <description>
         <p>An excelent tool to emulate race condition, deadlock or any other
         non-deterministic behaviour created in the form of
-        <a href="@TOP@/org/netbeans/junit/Log.html#controlFlow(java.util.logging.Logger,%20java.util.logging.Logger,%20java.lang.String,%20int)">
+        <a href="@TOP@/org/netbeans/junit/Log.html#controlFlow-java.util.logging.Logger-java.util.logging.Logger-java.lang.String-int-">
         Log.controlFlow</a> method.
         </p>
       </description>
@@ -457,16 +457,16 @@ made subject to such option by the copyright holder.
       <compatibility addition="yes" binary="compatible" semantic="compatible" />
       <description>
         <p>Added two ways how to enable logging in a test case. One can
-        either overwrite <a href="@TOP@/org/netbeans/junit/NbTestCase.html#logLevel()">NbTestCase.logLevel</a>
+        either overwrite <a href="@TOP@/org/netbeans/junit/NbTestCase.html#logLevel--">NbTestCase.logLevel</a>
         method and return the right level to capture in the test and then
         all the messages logged with the level and greater will be sent
-        to <a href="@TOP@/org/netbeans/junit/NbTestCase.html#getLog()">NbTestCase.getLog()</a>
+        to <a href="@TOP@/org/netbeans/junit/NbTestCase.html#getLog--">NbTestCase.getLog()</a>
         stream which is placed in working directory.
         </p>
 
         <p>
         Or one can directly call
-        <a href="@TOP@/org/netbeans/junit/Log.html#enable(java.lang.String,%20java.util.logging.Level)">Log.enable</a>
+        <a href="@TOP@/org/netbeans/junit/Log.html#enable-java.lang.String-java.util.logging.Level-">Log.enable</a>
         to capture all the logging into a <code>CharSequence</code>
         which can be later queried for its content, usually by calling <code>its.toString()</code>
         method.

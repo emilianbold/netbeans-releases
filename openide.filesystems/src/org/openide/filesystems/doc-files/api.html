@@ -112,7 +112,7 @@ which abstracts away most of the details of files and presents data in
 terms of <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html">DataObject</a>s,
 which typically represent the parsed content of a file and provide
 objects to programmatically access that content via 
-<a href="@org-openide-loaders@/org/openide/loaders/DataObject.html#getCookie(java.lang.Class)">DataObject.getCookie()</a>.
+<a href="@org-openide-loaders@/org/openide/loaders/DataObject.html#getCookie-java.lang.Class-">DataObject.getCookie()</a>.
 
 <h2><a name="basic-usage">Common Tasks</a></h2>
 
@@ -140,7 +140,7 @@ which represents it.
 <p>If you need to get a file object corresponding to a file on disk, use:
 
 <pre>
-fileObject = FileUtil.<a href="../FileUtil.html#toFileObject(java.io.File)">toFileObject</a>(new File("/some/path/to/file.txt"));
+fileObject = FileUtil.<a href="../FileUtil.html#toFileObject-java.io.File-">toFileObject</a>(new File("/some/path/to/file.txt"));
 </pre>
 
 <p><code>FileUtil</code> also has methods for working with archive (ZIP/JAR) entries. File objects corresponding
@@ -151,15 +151,15 @@ To find all the folders and files directly contained in this
 folder, you may use:
 
 <pre>
-FileObject children[]=folder.<a href="../FileObject.html#getChildren()">getChildren</a>();
+FileObject children[]=folder.<a href="../FileObject.html#getChildren--">getChildren</a>();
 </pre>
 
 Occasionally you may need to present a given file object as a URL; for example, to display it in
 a web browser. This is straightforward:
 
 <pre>
-URL url = <a href="../FileObject.html#getURL()">file.getURL()</a>;
-HtmlBrowser.URLDisplayer.getDefault().<a href="@org-openide-awt@/org/openide/awt/HtmlBrowser.URLDisplayer.html#showURL(java.net.URL)">showURL</a>(url);
+URL url = <a href="../FileObject.html#getURL--">file.getURL()</a>;
+HtmlBrowser.URLDisplayer.getDefault().<a href="@org-openide-awt@/org/openide/awt/HtmlBrowser.URLDisplayer.html#showURL-java.net.URL-">showURL</a>(url);
 </pre>
 
 <h3><a name="create-delete-rename">Creating, deleting, and renaming files and folders</a></h3>
@@ -168,8 +168,8 @@ This example creates a subfolder and then a new file within that
 subfolder:
 
 <pre>
-FileObject subfolder=folder.<a href="../FileObject.html#createFolder(java.lang.String)">createFolder</a>("sub");
-FileObject newfile=subfolder.<a href="../FileObject.html#createData(java.lang.String,%20java.lang.String)">createData</a>("NewSource", "java");
+FileObject subfolder=folder.<a href="../FileObject.html#createFolder-java.lang.String-">createFolder</a>("sub");
+FileObject newfile=subfolder.<a href="../FileObject.html#createData-java.lang.String-java.lang.String-">createData</a>("NewSource", "java");
 </pre>
 
 <p>You can delete a file easily:</p>
@@ -188,16 +188,16 @@ at the same time. Then you may rename it:
 <pre>
 FileLock lock = null;
 try {
-    lock=newfile.<a href="../FileObject.html#lock()">lock</a>();
+    lock=newfile.<a href="../FileObject.html#lock--">lock</a>();
 } catch (<a href="../FileAlreadyLockedException.html">FileAlreadyLockedException</a> e) {
     // Try again later; perhaps display a warning dialog.
     return;
 }
 try {
-    newfile.<a href="../FileObject.html#rename(org.openide.filesystems.FileLock,%20java.lang.String,%20java.lang.String)">rename</a>(lock, "NewSrc", "java");
+    newfile.<a href="../FileObject.html#rename-org.openide.filesystems.FileLock-java.lang.String-java.lang.String-">rename</a>(lock, "NewSrc", "java");
 } finally {
     // Always put this in a finally block!
-    lock.<a href="../FileLock.html#releaseLock()">releaseLock</a>();
+    lock.<a href="../FileLock.html#releaseLock--">releaseLock</a>();
 }
 </pre>
 
@@ -208,7 +208,7 @@ to use a NetBeans helper method:
 <pre>
 FileObject someFile;
 FileObject whereTo;
-<a href="@TOP@/org/openide/filesystems/FileUtil.html#moveFile(org.openide.filesystems.FileObject,%20org.openide.filesystems.FileObject,%20java.lang.String)">FileUtil.moveFile</a>(someFile, whereTo, "YourSource");
+<a href="@TOP@/org/openide/filesystems/FileUtil.html#moveFile-org.openide.filesystems.FileObject-org.openide.filesystems.FileObject-java.lang.String-">FileUtil.moveFile</a>(someFile, whereTo, "YourSource");
 </pre>
 
 Note that in the current API set, it is neither possible nor
@@ -235,7 +235,7 @@ facilities for
 Reading and writing the contents of a data file is straightforward:
 
 <pre>
-BufferedReader from=new BufferedReader(new InputStreamReader(someFile.<a href="../FileObject.html#getInputStream()">getInputStream</a>()));
+BufferedReader from=new BufferedReader(new InputStreamReader(someFile.<a href="../FileObject.html#getInputStream--">getInputStream</a>()));
 try {
     String line;
     while ((line=from.readLine()) != null) {
@@ -251,7 +251,7 @@ try {
     return;
 }
 try {
-    PrintWriter to=new PrintWriter(someFile.<a href="../FileObject.html#getOutputStream(org.openide.filesystems.FileLock)">getOutputStream</a>(lock));
+    PrintWriter to=new PrintWriter(someFile.<a href="../FileObject.html#getOutputStream-org.openide.filesystems.FileLock-">getOutputStream</a>(lock));
     try {
         to.println("testing...");
         to.println("1..2..3..");
@@ -269,12 +269,12 @@ If you need to keep track of what is being done to a file by other
 components, you can monitor it using normal Java events:
 
 <pre>
-someFile.<a href="../FileObject.html#addFileChangeListener(org.openide.filesystems.FileChangeListener)">addFileChangeListener</a>(new <a href="../FileChangeAdapter.html">FileChangeAdapter</a>() {
-    public void <a href="../FileChangeAdapter.html#fileChanged(org.openide.filesystems.FileEvent)">fileChanged</a>(<a href="../FileEvent.html">FileEvent</a> ev) {
+someFile.<a href="../FileObject.html#addFileChangeListener-org.openide.filesystems.FileChangeListener-">addFileChangeListener</a>(new <a href="../FileChangeAdapter.html">FileChangeAdapter</a>() {
+    public void <a href="../FileChangeAdapter.html#fileChanged-org.openide.filesystems.FileEvent-">fileChanged</a>(<a href="../FileEvent.html">FileEvent</a> ev) {
         System.out.println("Contents changed.");
     }
-    public void <a href="../FileChangeAdapter.html#fileAttributeChanged(org.openide.filesystems.FileAttributeEvent)">fileAttributeChanged</a>(<a href="../FileAttributeEvent.html">FileAttributeEvent</a> ev) {
-        System.out.println(ev.<a href="../FileAttributeEvent.html#getName()">getName</a>() + ": " + ev.<a href="../FileAttributeEvent.html#getOldValue()">getOldValue</a>() + " -> " + ev.<a href="../FileAttributeEvent.html#getNewValue()">getNewValue</a>());
+    public void <a href="../FileChangeAdapter.html#fileAttributeChanged-org.openide.filesystems.FileAttributeEvent-">fileAttributeChanged</a>(<a href="../FileAttributeEvent.html">FileAttributeEvent</a> ev) {
+        System.out.println(ev.<a href="../FileAttributeEvent.html#getName--">getName</a>() + ": " + ev.<a href="../FileAttributeEvent.html#getOldValue--">getOldValue</a>() + " -> " + ev.<a href="../FileAttributeEvent.html#getNewValue--">getNewValue</a>());
     }
 });
 </pre>
@@ -285,12 +285,12 @@ just want to listen on the parent folder. Also, file creation events
 are fired on the folder only, of course:
 
 <pre>
-FileObject someFolder=someFile.<a href="../FileObject.html#getParent()">getParent</a>();
+FileObject someFolder=someFile.<a href="../FileObject.html#getParent--">getParent</a>();
 someFolder.addFileChangeListener(new FileChangeAdapter() {
     public void fileChanged(FileEvent ev) {
-        System.out.println("Contents of " + ev.<a href="../FileEvent.html#getFile()">getFile</a>() + " changed.");
+        System.out.println("Contents of " + ev.<a href="../FileEvent.html#getFile--">getFile</a>() + " changed.");
     }
-    public void <a href="../FileChangeAdapter.html#fileDataCreated(org.openide.filesystems.FileEvent)">fileDataCreated</a>(FileEvent ev) {
+    public void <a href="../FileChangeAdapter.html#fileDataCreated-org.openide.filesystems.FileEvent-">fileDataCreated</a>(FileEvent ev) {
         System.out.println("File " + ev.getFile() + " created.");
     }
 });

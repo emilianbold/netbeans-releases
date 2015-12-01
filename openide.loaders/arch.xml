@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
         <p>
         Often many people require ability to create a "clever" template - e.g.
         write piece of simple text and at the time of its 
-        <a href="@TOP@/org/openide/loaders/DataObject.html#createFromTemplate(org.openide.loaders.DataFolder,%20java.lang.String,%20java.util.Map)">
+        <a href="@TOP@/org/openide/loaders/DataObject.html#createFromTemplate-org.openide.loaders.DataFolder-java.lang.String-java.util.Map-">
             processing
         </a>
         do some advanced changes to it using either 
@@ -561,7 +561,7 @@ for more information about this.
     <api group="property" category="stable" name="wizard.anything" type="export" >
         When <a href="@TOP@/org/openide/loaders/TemplateWizard.html">TemplateWizard</a> invokes 
         <a href="@TOP@/org/openide/loaders/DataObject.html">DataObject</a>.createFromTemplate,
-        it passes as argument all its <a href="@org-openide-dialogs@/org/openide/WizardDescriptor.html#getProperties()">properties</a>
+        it passes as argument all its <a href="@org-openide-dialogs@/org/openide/WizardDescriptor.html#getProperties--">properties</a>
         to it with prefix <code>wizard.</code>. That way they are available to
         underlaying <a href="@TOP@/architecture-summary.html#script">scripting and templating
         engines</a>.
@@ -867,7 +867,7 @@ about used templates.
         Since version 7.44 one can attach <code>property-prefix</code> attribute
         to every folder. Then all the file attributes are scanned and if some 
         of them start with the specified prefix they are placed a 
-        <a href="@JDK@/javax/swing/JComponent.html#putClientProperty(java.lang.Object,%20java.lang.Object)">
+        <a href="@JDK@/javax/swing/JComponent.html#putClientProperty-java.lang.Object-java.lang.Object-">
         client
         properties</a> on the <a href="@JDK@/javax/swing/JMenu.html">JMenu</a>
         instance (after stripping the prefix off).
