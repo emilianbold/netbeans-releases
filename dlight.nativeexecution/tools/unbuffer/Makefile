@@ -41,7 +41,14 @@ DIST_DIR=$(ROOT_DIR)/dist/$(CONF)
 INSTALL_DIR=../../release/bin/nativeexecution/$(CONF)
 LINE=sh $(ROOT_DIR)/make/line
 
-CF_COMMON         = -s -O2
+CF_COMMON         = -O2
+
+ifndef NOSTRIP
+    CF_COMMON += -s 
+else 
+    CF_COMMON += -g
+endif
+
 CF_Linux-x86      = $(CF_COMMON) -DLINUX -shared -fPIC -m32
 EX_Linux-x86      = unbuffer.so
 CF_Linux-arm      = $(CF_COMMON) -DLINUX -shared -fPIC

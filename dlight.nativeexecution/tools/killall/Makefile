@@ -71,7 +71,8 @@ LINE=sh $(ROOT_DIR)/make/line
 
 EXEC=$(DIST_DIR)/$(PNAME)
 
-CF_COMMON         = -s -O2
+CF_COMMON = -O2
+
 CF_Linux-x86      = $(CF_COMMON) -DLINUX -m32
 CF_Linux-arm      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -std=c99
 CF_MacOSX-x86     = $(CF_COMMON) -DMACOSX  -D_DARWIN_C_SOURCE -m32
@@ -95,6 +96,12 @@ LF_SunOS-sparc_64 = -lrt
 
 CFLAGS=$(CF_$(CONF)) $(CFLAGS_EXTRA)
 LDFLAGS=$(LF_$(CONF)) $(LDFLAGS_EXTRA)
+
+ifndef NOSTRIP
+    CFLAGS += -s 
+else 
+    CFLAGS += -g
+endif
 
 all: $(EXEC)
 	@$(LINE) =
