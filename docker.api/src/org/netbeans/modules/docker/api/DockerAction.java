@@ -47,7 +47,7 @@ import org.netbeans.modules.docker.DockerRemoteException;
 import org.netbeans.modules.docker.FolderUploader;
 import org.netbeans.modules.docker.MuxedStreamResult;
 import org.netbeans.modules.docker.ChunkedInputStream;
-import org.netbeans.modules.docker.SecureContextProvider;
+import org.netbeans.modules.docker.tls.SecureContextProvider;
 import org.netbeans.modules.docker.IgnoreFileFilter;
 import org.netbeans.modules.docker.HttpParsingUtils;
 import org.netbeans.modules.docker.DirectStreamResult;
@@ -1011,8 +1011,7 @@ public class DockerAction {
         try {
             HttpURLConnection ret = (HttpURLConnection) url.openConnection(ProxySelector.getDefault().select(url.toURI()).get(0));
             if (ret instanceof HttpsURLConnection) {
-                ((HttpsURLConnection) ret).setSSLSocketFactory(
-                        SecureContextProvider.getInstance().getSSLContext(instance).getSocketFactory());
+                ((HttpsURLConnection) ret).setSSLSocketFactory(SecureContextProvider.getInstance().getSSLContext(instance).getSocketFactory());
             }
             return ret;
         } catch (URISyntaxException ex) {

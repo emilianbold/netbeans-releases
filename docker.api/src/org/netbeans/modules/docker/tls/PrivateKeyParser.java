@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker;
+package org.netbeans.modules.docker.tls;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -53,17 +54,17 @@ import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.Base64;
-import sun.security.util.DerInputStream;
-import sun.security.util.DerValue;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class PrivateKeyParser {
+public class PrivateKeyParser {
 
-    private PrivateKeyParser() {
-        super();
+    private final File pemFile;
+
+    public PrivateKeyParser(File pemFile) {
+        this.pemFile = pemFile;
     }
 
     // PKCS#8 format
@@ -76,8 +77,8 @@ public final class PrivateKeyParser {
 
     private static final String PEM_RSA_PRIVATE_END = "-----END RSA PRIVATE KEY-----"; // NOI18N
 
-    public static PrivateKey load(File pemFileName) throws GeneralSecurityException, IOException {
-        Path path = Paths.get(pemFileName.getAbsolutePath());
+    public PrivateKey parse() throws GeneralSecurityException, IOException {
+        Path path = pemFile.toPath();
 
         String privateKeyPem = new String(Files.readAllBytes(path));
 
@@ -95,22 +96,21 @@ public final class PrivateKeyParser {
                     .replace(PEM_RSA_PRIVATE_END, "")
                     .replaceAll("\\s", "");
 
-            DerInputStream derReader = new DerInputStream(Base64.getDecoder().decode(privateKeyPem));
-            DerValue[] seq = derReader.getSequence(0);
+            SimpleDerParser parser = new SimpleDerParser(new ByteArrayInputStream(
+                    Base64.getDecoder().decode(privateKeyPem)));
 
-            if (seq.length < 9) {
-                throw new GeneralSecurityException("Could not parse a PKCS1 private key");
-            }
+            SimpleAsn1Object sequence = parser.read();
+            parser = sequence.read();
 
-            // skip version seq[0];
-            BigInteger modulus = seq[1].getBigInteger();
-            BigInteger publicExp = seq[2].getBigInteger();
-            BigInteger privateExp = seq[3].getBigInteger();
-            BigInteger prime1 = seq[4].getBigInteger();
-            BigInteger prime2 = seq[5].getBigInteger();
-            BigInteger exp1 = seq[6].getBigInteger();
-            BigInteger exp2 = seq[7].getBigInteger();
-            BigInteger crtCoef = seq[8].getBigInteger();
+            parser.read(); // Skip version
+            BigInteger modulus = parser.read().getBigInteger();
+            BigInteger publicExp = parser.read().getBigInteger();
+            BigInteger privateExp = parser.read().getBigInteger();
+            BigInteger prime1 = parser.read().getBigInteger();
+            BigInteger prime2 = parser.read().getBigInteger();
+            BigInteger exp1 = parser.read().getBigInteger();
+            BigInteger exp2 = parser.read().getBigInteger();
+            BigInteger crtCoef = parser.read().getBigInteger();
 
             RSAPrivateCrtKeySpec keySpec = new RSAPrivateCrtKeySpec(modulus, publicExp,
                     privateExp, prime1, prime2, exp1, exp2, crtCoef);

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker;
+package org.netbeans.modules.docker.tls;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -159,7 +159,7 @@ public final class SecureContextProvider {
 
             PrivateKey clientKeyObject = null;
             if (clientKey != null) {
-                clientKeyObject = PrivateKeyParser.load(clientKey);
+                clientKeyObject = new PrivateKeyParser(clientKey).parse();
             }
 
             KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
