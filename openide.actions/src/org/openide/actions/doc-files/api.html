@@ -155,7 +155,7 @@ The typical usage pattern for these is along the lines of:
 <pre>
 ActionMap actionMap = topComponent.getActionMap();
 CallbackSystemAction a = SystemAction.get(SomeAction.class);
-actionMap.put(<a href="@org-openide-util-ui@/org/openide/util/actions/CallbackSystemAction.html#getActionMapKey()">a.getActionMapKey()</a>, new MyAction());
+actionMap.put(<a href="@org-openide-util-ui@/org/openide/util/actions/CallbackSystemAction.html#getActionMapKey--">a.getActionMapKey()</a>, new MyAction());
 </pre>
 or directly
 <pre>
@@ -171,7 +171,7 @@ recent versions of NetBeans, this is abstracted into an instance of
 <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html"><code>Lookup</code></a> (which may be the result of
 the selected <code>Node</code>'s <code>getLookup()</code> method, or a merge of several
 selected <code>Node</code>s' <code>Lookup</code>s).  This <code>Lookup</code> instance is found via
-<a href="@org-openide-util-ui@/org/openide/util/Utilities.html#actionsGlobalContext()"><code>Utilities.actionsGlobalContext</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/Utilities.html#actionsGlobalContext--"><code>Utilities.actionsGlobalContext</code></a>.
 So typically, an action will be enabled or disabled depending on the presence
 or absence of a given object in the global action context - which is typically
 the <code>Lookup</code> of the <i>selected <code>Node</code>(s)</i> for whichever <i><code>TopComponent</code></i> has
@@ -232,16 +232,16 @@ may be subclassed. First decide what, if any, state the action
 needs; if it does need some, this should be stored in the class
 itself, rather than in the instance, as it should be a
 singleton. Conventionally,
-<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#getValue(java.lang.String)"><code>SystemAction.getValue(...)</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#getValue-java.lang.String-"><code>SystemAction.getValue(...)</code></a>
 and
 <a
-href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#putValue(java.lang.String,%20java.lang.Object)"><code>SystemAction.putValue(...)</code></a>
+href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#putValue-java.lang.String-java.lang.Object-"><code>SystemAction.putValue(...)</code></a>
 are used for storage.
 
-<p><a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#getName()"><code>SystemAction.getName()</code></a>,
-<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#getHelpCtx()"><code>SystemAction.getHelpCtx()</code></a>,
+<p><a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#getName--"><code>SystemAction.getName()</code></a>,
+<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#getHelpCtx--"><code>SystemAction.getHelpCtx()</code></a>,
 and
-<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#iconResource()"><code>SystemAction.iconResource()</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#iconResource--"><code>SystemAction.iconResource()</code></a>
 should all be overridden to provide basic information about how to
 display the action in its presenters.
 
@@ -250,7 +250,7 @@ to indicate a desired mnemonic position. E.g.
 <samp>My&nbsp;Act&amp;ion</samp> should use the <samp>i</samp> as a
 mnemonic. The default menu and popup presenters honor these mnemonics.
 
-<p><a href="@org-openide-util-ui@/org/openide/util/actions/CallbackSystemAction.html#setSurviveFocusChange(boolean)"><code>CallbackSystemAction.setSurviveFocusChange(...)</code></a>
+<p><a href="@org-openide-util-ui@/org/openide/util/actions/CallbackSystemAction.html#setSurviveFocusChange-boolean-"><code>CallbackSystemAction.setSurviveFocusChange(...)</code></a>
 might be called in the <code>initialize</code> method if it needs to
 be changed.
 
@@ -367,7 +367,7 @@ An action that does not have global scope and sensitivity should
 usually be explicitly attached to components that can use it. For
 example,
 
-<a href="@org-openide-loaders@/org/openide/loaders/DataLoader.html#actionsContext()"><code>DataLoader.actionsContext()</code></a>
+<a href="@org-openide-loaders@/org/openide/loaders/DataLoader.html#actionsContext--"><code>DataLoader.actionsContext()</code></a>
 
 may be used to provide context-menu actions appropriate to all <code>DataObject</code>s
 created by that loader, e.g.:
@@ -417,13 +417,13 @@ provide a usable
 
 <li><p>Nodes may attach actions by overriding
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getActions(boolean)"><code>Node.getActions(...)</code></a>
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getActions-boolean-"><code>Node.getActions(...)</code></a>
 or
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getPreferredAction()"><code>Node.getPreferredAction()</code></a>.
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getPreferredAction--"><code>Node.getPreferredAction()</code></a>.
 
 <li><p><code>TopComponent</code>s (dockable, window-like tabs) may attach actions
 by overriding
-<a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getActions()"><code>TopComponent.getActions()</code></a>.
+<a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getActions--"><code>TopComponent.getActions()</code></a>.
 For example, Editor windows provide a few right-click actions in the
 Editor tab, such as Save and Close.
 
@@ -543,7 +543,7 @@ the action in question, and place it in the <samp>Shortcuts/</samp>
 folder. The file name will give the keyboard sequence, named
 according to the method
 
-<a href="@org-openide-util-ui@/org/openide/util/Utilities.html#keyToString(javax.swing.KeyStroke)"><code>Utilities.keyToString(KeyStroke)</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/Utilities.html#keyToString-javax.swing.KeyStroke-"><code>Utilities.keyToString(KeyStroke)</code></a>.
 
 Such instances will be used to create the
 global keymap used as a fallback for all components.

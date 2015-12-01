@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
   <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/CodeGeneratorContextProvider.html">CodeGeneratorContextProvider</a></code>
   interface serve for adding an additonal content to the context which is passed
   as a parameter to the
-  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/CodeGenerator.Factory.html#create(org.openide.util.Lookup)">CodeGenerator.Factory.create</a></code>
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/CodeGenerator.Factory.html#create-org.openide.util.Lookup-">CodeGenerator.Factory.create</a></code>
   method.
   </p>
   
@@ -105,7 +105,7 @@ made subject to such option by the copyright holder.
   <p>
   The <code>CGFactory</code> class will simply return a new instance of
   the module's implementation of the <code>CodeGenerator</code> interface from its
-  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/CodeGenerator.Factory.html#create(org.openide.util.Lookup)">create</a></code>
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/CodeGenerator.Factory.html#create-org.openide.util.Lookup-">create</a></code>
   method. The method can create and return multiple <code>CodeGenerator</code>s.
   </p>
 
@@ -138,7 +138,7 @@ made subject to such option by the copyright holder.
 
   <p>
   The <code>CGContextProvider</code> class in its
-  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/CodeGeneratorContextProvider.html#runTaskWithinContext(org.openide.util.Lookup, org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider.Task)">runTaskWithinContext</a></code>
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/CodeGeneratorContextProvider.html#runTaskWithinContext-org.openide.util.Lookup-org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider.Task-">runTaskWithinContext</a></code>
   method creates the new context by merging the original context content
   with the additional data and runs the task obtained as the parameter with the newly
   created context. 

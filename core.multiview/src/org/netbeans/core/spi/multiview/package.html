@@ -50,7 +50,7 @@ influence the overall behaviour of the component.<br>
 This SPI handles the lifecycle of a multiview component.<p>
 <h3>Creation</h3>
 New instance of MultiView TopComponent can be created by calling
-<a href="@TOP@/org/netbeans/core/spi/multiview/MultiViewFactory.html#createMultiView(org.netbeans.core.spi.multiview.MultiViewDescription[],%20org.netbeans.core.spi.multiview.MultiViewDescription)">
+<a href="@TOP@/org/netbeans/core/spi/multiview/MultiViewFactory.html#createMultiView-org.netbeans.core.spi.multiview.MultiViewDescription:A-org.netbeans.core.spi.multiview.MultiViewDescription-">
     MultiViewFactory.createMultiView
 </a>
 <!--{@link org.netbeans.core.spi.multiview.MultiViewFactory#createMultiView}.-->
@@ -59,8 +59,8 @@ convenience. The factory method requires an array of
 {@link org.netbeans.core.spi.multiview.MultiViewDescription}s that
 describe the content of the view.<br>
 Each description in the View shall have a unique <a
- href="@TOP@/org/netbeans/core/spi/multiview/MultiViewDescription.html#getDisplayName()">display name</a>
-and <a href="@TOP@/org/netbeans/core/spi/multiview/MultiViewDescription.html#preferredID()">preferredId</a>.
+ href="@TOP@/org/netbeans/core/spi/multiview/MultiViewDescription.html#getDisplayName--">display name</a>
+and <a href="@TOP@/org/netbeans/core/spi/multiview/MultiViewDescription.html#preferredID--">preferredId</a>.
 All the descriptions shall be lightweight classes, which create the
 actual visual components on demand in 
 {@link org.netbeans.core.spi.multiview.MultiViewDescription#createElement}<br>

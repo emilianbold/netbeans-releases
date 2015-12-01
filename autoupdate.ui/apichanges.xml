@@ -68,8 +68,8 @@ made subject to such option by the copyright holder.
             <description>
                 <p>
                 <code>PluginManager</code> ands its
-                <a href="@TOP@/org/netbeans/modules/autoupdate/ui/api/PluginManager.html#installSingle(java.lang.String, java.lang.String, java.lang.Object...)">installSingle</a>
-                and <a href="@TOP@/org/netbeans/modules/autoupdate/ui/api/PluginManager.html#install(java.util.Set, java.lang.Object...)">install</a>
+                <a href="@TOP@/org/netbeans/modules/autoupdate/ui/api/PluginManager.html#installSingle-java.lang.String-java.lang.String-java.lang.Object...-">installSingle</a>
+                and <a href="@TOP@/org/netbeans/modules/autoupdate/ui/api/PluginManager.html#install-java.util.Set-java.lang.Object...-">install</a>
                 shows standard UI for easy installation of single plugin based
                 on codenamebase.
                 </p>
@@ -89,7 +89,7 @@ made subject to such option by the copyright holder.
             <description>
                 <p>
                 <code>PluginManager</code> ands its 
-                <a href="@TOP@/org/netbeans/modules/autoupdate/ui/api/PluginManager.html#openInstallWizard(org.netbeans.api.autoupdate.OperationContainer)">openInstallWizard</a>
+                <a href="@TOP@/org/netbeans/modules/autoupdate/ui/api/PluginManager.html#openInstallWizard-org.netbeans.api.autoupdate.OperationContainer-">openInstallWizard</a>
                 shows standard UI for installing of selected modules.
                 </p>
             </description>

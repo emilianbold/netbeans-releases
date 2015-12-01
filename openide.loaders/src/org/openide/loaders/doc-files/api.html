@@ -193,13 +193,13 @@ Like the loader used by the Form Editor, they are able to recognize
 multiple files at once and create a data object from them. All data
 objects have a
 
-<a href="../DataObject.html#getPrimaryFile()">primary file</a>
+<a href="../DataObject.html#getPrimaryFile--">primary file</a>
 
 which is representative of the data object;
 e.g. <code>myform.java</code> in the previous example. As well, these
 multi loaders may have any number of
 
-<a href="../DataObject.html#files()">secondary files</a>.
+<a href="../DataObject.html#files--">secondary files</a>.
 
 <p>The basic mechanism a multi-file loader uses, is that the loader
 pool will pass it file objects to recognize in an arbitrary order; the
@@ -282,7 +282,7 @@ the Explorer as nodes, and user actions will trigger use of the data
 object. However, if you do need to retrieve the data object for a file
 object you may do so using
 
-<a href="../DataObject.html#find(org.openide.filesystems.FileObject)"><code>DataObject.find(...)</code></a>,
+<a href="../DataObject.html#find-org.openide.filesystems.FileObject-"><code>DataObject.find(...)</code></a>,
 
 which will create a new data object for the file if it needs to,
 otherwise will return the existing one. (Catch
@@ -300,7 +300,7 @@ Data objects have separate, but associated,
 which represent them in the Explorer and present a meaningful
 interface to the user. You may use
 
-<a href="../DataObject.html#getNodeDelegate()"><code>DataObject.getNodeDelegate()</code></a>
+<a href="../DataObject.html#getNodeDelegate--"><code>DataObject.getNodeDelegate()</code></a>
 
 to retrieve the node delegate for a data object, if necessary.
 
@@ -322,7 +322,7 @@ to appropriate MIME type. If the
     href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html">FileObject</a>
 of your interest returns for example <code>text/xml+acme</code> from its
 <a
-    href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html#getMIMEType()">getMIMEType()</a>
+    href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html#getMIMEType--">getMIMEType()</a>
 method, then you shall register its 
 <a href="../DataLoader.html">DataLoader</a> or other configured 
 <a href="../DataObject.Factory.html">DataObject.Factory</a> into layer file
@@ -384,7 +384,7 @@ to deal with a single primary file.
 
 For a single-file loader, handling file recognition is quite straightforward from the point of view of the API: you just need to override
 
-<a href="../UniFileLoader.html#findPrimaryFile(org.openide.filesystems.FileObject)"><code>UniFileLoader.findPrimaryFile(...)</code></a>
+<a href="../UniFileLoader.html#findPrimaryFile-org.openide.filesystems.FileObject-"><code>UniFileLoader.findPrimaryFile(...)</code></a>
 
 to return its argument if this file is of the type that should be
 handled by your loader, or <code>null</code> if it is not.
@@ -397,7 +397,7 @@ this method at all; simply create an appropriate
 
 and call
 
-<a href="../UniFileLoader.html#setExtensions(org.openide.loaders.ExtensionList)"><code>UniFileLoader.setExtensions(...)</code></a>
+<a href="../UniFileLoader.html#setExtensions-org.openide.loaders.ExtensionList-"><code>UniFileLoader.setExtensions(...)</code></a>
 
 in your loader's constructor.
 
@@ -405,7 +405,7 @@ in your loader's constructor.
 but still NetBeans takes care of most of the work for you. You should
 implement
 
-<a href="../MultiFileLoader.html#findPrimaryFile(org.openide.filesystems.FileObject)"><code>MultiFileLoader.findPrimaryFile(...)</code></a>
+<a href="../MultiFileLoader.html#findPrimaryFile-org.openide.filesystems.FileObject-"><code>MultiFileLoader.findPrimaryFile(...)</code></a>
 
 as follows:
 
@@ -420,7 +420,7 @@ file which it should be associated with, and return that. For this
 purpose, you may find it useful to call
 
 <a
-href="@org-openide-filesystems@/org/openide/filesystems/FileUtil.html#findBrother(org.openide.filesystems.FileObject,%20java.lang.String)"><code>FileUtil.findBrother(...)</code></a>,
+href="@org-openide-filesystems@/org/openide/filesystems/FileUtil.html#findBrother-org.openide.filesystems.FileObject-java.lang.String-"><code>FileUtil.findBrother(...)</code></a>,
 
 or perform a similar lookup by hand.
 
@@ -438,7 +438,7 @@ file first - the implementation in NetBeans takes care of this for you.
 The most interesting part of the loader is that which actually creates
 the data object from the underlying file object. You must implement
 
-<a href="../MultiFileLoader.html#createMultiObject(org.openide.filesystems.FileObject)"><code>MultiFileLoader.createMultiObject(...)</code></a>
+<a href="../MultiFileLoader.html#createMultiObject-org.openide.filesystems.FileObject-"><code>MultiFileLoader.createMultiObject(...)</code></a>
 
 in order to do this. The method will be passed the correct primary
 file object for you to work with.
@@ -462,19 +462,19 @@ data object from being renamed or otherwise tampered with, if doing so
 would make it useless or corrupted in some way; just return
 <code>false</code> from e.g.
 
-<a href="../MultiDataObject.html#isRenameAllowed()"><code>MultiDataObject.isRenameAllowed()</code></a>.
+<a href="../MultiDataObject.html#isRenameAllowed--"><code>MultiDataObject.isRenameAllowed()</code></a>.
 
 <p>Or, if e.g. moves are to be permitted but require special
 treatment, you may override e.g.
 
-<a href="../MultiDataObject.html#handleMove(org.openide.loaders.DataFolder)"><code>MultiDataObject.handleMove(...)</code></a>.
+<a href="../MultiDataObject.html#handleMove-org.openide.loaders.DataFolder-"><code>MultiDataObject.handleMove(...)</code></a>.
 
 <h4>Choosing entry types</h4>
 
 For single-file loaders, the default implementation of
 
 <a
-href="../UniFileLoader.html#createPrimaryEntry(org.openide.loaders.MultiDataObject,%20org.openide.filesystems.FileObject)"><code>UniFileLoader.createPrimaryEntry(...)</code></a>
+href="../UniFileLoader.html#createPrimaryEntry-org.openide.loaders.MultiDataObject-org.openide.filesystems.FileObject-"><code>UniFileLoader.createPrimaryEntry(...)</code></a>
 
 just produces a
 
@@ -486,12 +486,12 @@ which is most likely what you want.
 by implementing
 
 <a
-href="../MultiFileLoader.html#createPrimaryEntry(org.openide.loaders.MultiDataObject,%20org.openide.filesystems.FileObject)"><code>MultiFileLoader.createPrimaryEntry(...)</code></a>
+href="../MultiFileLoader.html#createPrimaryEntry-org.openide.loaders.MultiDataObject-org.openide.filesystems.FileObject-"><code>MultiFileLoader.createPrimaryEntry(...)</code></a>
 
 and
 
 <a
-href="../MultiFileLoader.html#createSecondaryEntry(org.openide.loaders.MultiDataObject,%20org.openide.filesystems.FileObject)"><code>MultiFileLoader.createSecondaryEntry(...)</code></a>.
+href="../MultiFileLoader.html#createSecondaryEntry-org.openide.loaders.MultiDataObject-org.openide.filesystems.FileObject-"><code>MultiFileLoader.createSecondaryEntry(...)</code></a>.
 
 <p>Typically, the primary entry will be a <code>FileEntry</code>, and
 will behave normally. The secondary entry might also be a
@@ -507,7 +507,7 @@ be discarded (for example, this would be useful for compiled
 <code>*.class</code> files, cached indices, etc.). For such dummy
 files, you will generally also want to use
 
-<a href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html#setImportant(boolean)"><code>FileObject.setImportant(...)</code></a>
+<a href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html#setImportant-boolean-"><code>FileObject.setImportant(...)</code></a>
 
 to prevent the file from being considered by a version control
 system, for example.
@@ -528,7 +528,7 @@ is a convenient entry type to use if you wish to perform substitution of some ty
 of token when creating the file from template. Typically the method
 
 <a
-href="../FileEntry.Format.html#createFormat(org.openide.filesystems.FileObject,%20java.lang.String,%20java.lang.String)"><code>FileEntry.Format.createFormat(...)</code></a>
+href="../FileEntry.Format.html#createFormat-org.openide.filesystems.FileObject-java.lang.String-java.lang.String-"><code>FileEntry.Format.createFormat(...)</code></a>
 
 will be implemented to return an instance of
 
@@ -556,11 +556,11 @@ wish to associate any properties with a data loader, you should:
 
 <li> Implement getter and setter methods to call
 
-<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#getProperty(java.lang.Object)"><code>SharedClassObject.getProperty(key)</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#getProperty-java.lang.Object-"><code>SharedClassObject.getProperty(key)</code></a>
 
 and
 
-<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#putProperty(java.lang.String,%20java.lang.Object,%20boolean)"><code>SharedClassObject.putProperty(key, value, true)</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#putProperty-java.lang.String-java.lang.Object-boolean-"><code>SharedClassObject.putProperty(key, value, true)</code></a>
 
 (the latter will automatically fire property changes and synchronize for you).
 
@@ -571,17 +571,17 @@ your property values from the stream. Please always first call the super methods
 
 <p>You should use the method
 
-<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#initialize()"><code>SharedClassObject.initialize()</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#initialize--"><code>SharedClassObject.initialize()</code></a>
 
 to set up the shared instance, including both your own properties, and standard ones such as
 
-<a href="../DataLoader.html#setDisplayName(java.lang.String)"><code>DataLoader.setDisplayName(String)</code></a>,
+<a href="../DataLoader.html#setDisplayName-java.lang.String-"><code>DataLoader.setDisplayName(String)</code></a>,
 
-<a href="../DataLoader.html#setActions(org.openide.util.actions.SystemAction[])"><code>DataLoader.setActions(SystemAction[])</code></a>,
+<a href="../DataLoader.html#setActions-org.openide.util.actions.SystemAction:A-"><code>DataLoader.setActions(SystemAction[])</code></a>,
 
 and
 
-<a href="../UniFileLoader.html#setExtensions(org.openide.loaders.ExtensionList)"><code>UniFileLoader.setExtensions(ExtensionList)</code></a>.
+<a href="../UniFileLoader.html#setExtensions-org.openide.loaders.ExtensionList-"><code>UniFileLoader.setExtensions(ExtensionList)</code></a>.
 
 <p>Finally, data loaders will be customized by the user as Beans (and persisted using
 externalization). For this reason, they should have an associated bean info class
@@ -616,12 +616,12 @@ and there is no way to alter the set of cookies provided in this way.
 
 <p>A better technique is to provide cookies explicitly from
 
-<a href="../DataObject.html#getCookie(java.lang.Class)"><code>DataObject.getCookie(...)</code></a>.
+<a href="../DataObject.html#getCookie-java.lang.Class-"><code>DataObject.getCookie(...)</code></a>.
 
 Assuming that you are subclassing <code>MultiDataObject</code>, you
 need not override this method yourself, but rather should use
 
-<a href="../MultiDataObject.html#getCookieSet()"><code>MultiDataObject.getCookieSet()</code></a>
+<a href="../MultiDataObject.html#getCookieSet--"><code>MultiDataObject.getCookieSet()</code></a>
 
 in the constructor and add the cookies you
 want to provide by default. Then it is possible to extend this set
@@ -634,11 +634,11 @@ later, and to more easily examine its contents.
 to the nodes <a href="#create-delegate">associated</a> with your data
 objects. The easiest way to do this is to call
 
-<a href="../DataLoader.html#setActions(org.openide.util.actions.SystemAction[])"><code>DataLoader.setActions(...)</code></a>
+<a href="../DataLoader.html#setActions-org.openide.util.actions.SystemAction:A-"><code>DataLoader.setActions(...)</code></a>
 
 in your loader's
 
-<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#initialize()"><code>SharedClassObject.initialize()</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#initialize--"><code>SharedClassObject.initialize()</code></a>
 
 method, which lets you provide a set of
 actions appropriate to all data objects created by this
@@ -650,7 +650,7 @@ their positioning.
 <p>Or, you may wish to selectively attach actions to certain data
 objects' nodes and not others. If you need to do this, please override
 
-<a href="../DataNode.html#getActions(boolean)"><code>DataNode.getActions(boolean)</code></a>
+<a href="../DataNode.html#getActions-boolean-"><code>DataNode.getActions(boolean)</code></a>
 
 when creating your node delegate; you probably want to call the super
 method and append any additional actions this particular node should
@@ -662,7 +662,7 @@ double-click on the node; this should do something safe and obvious on
 the node, such as opening it for editing, running it if executable,
 etc. To do so, your node delegate should override
 
-<a href="../DataNode.html#getPreferredAction()"><code>DataNode.getPreferredAction()</code></a>.
+<a href="../DataNode.html#getPreferredAction--"><code>DataNode.getPreferredAction()</code></a>.
 
 If unspecified, NetBeans may still provide a generic default action,
 such as displaying properties of the object.
@@ -672,7 +672,7 @@ templates, so you may override this. However, if there is a chance
 this data object might serve as a template, for UI consistency this
 default action should be preserved; you may check
 
-<a href="../DataObject.html#isTemplate()"><code>DataObject.isTemplate()</code></a>,
+<a href="../DataObject.html#isTemplate--"><code>DataObject.isTemplate()</code></a>,
 
 and if true, provide
 
@@ -689,12 +689,12 @@ You must create a
 to represent your data object in the Explorer hierarchy, so that the
 user may interact with it visually. The method
 
-<a href="../DataObject.html#createNodeDelegate()"><code>DataObject.createNodeDelegate()</code></a>
+<a href="../DataObject.html#createNodeDelegate--"><code>DataObject.createNodeDelegate()</code></a>
 
 controls what sort of node should be created. To control the icon, you
 should use
 
-<a href="@org-openide-nodes@/org/openide/nodes/AbstractNode.html#setIconBaseWithExtension(java.lang.String)"><code>AbstractNode.setIconBaseWithExtension(...)</code></a>
+<a href="@org-openide-nodes@/org/openide/nodes/AbstractNode.html#setIconBaseWithExtension-java.lang.String-"><code>AbstractNode.setIconBaseWithExtension(...)</code></a>
 
 on the newly created <code>DataNode</code>, either in its constructor
 (if subclassing) or in <code>DataObject.createNodeDelegate()</code>.
@@ -714,7 +714,7 @@ cookies, and common actions without doing so.
 NetBeans installs a few extra "hidden" loaders into the loader pool, as
 are returned by
 
-<a href="../DataLoaderPool.html#allLoaders()"><code>DataLoaderPool.allLoaders()</code></a>.
+<a href="../DataLoaderPool.html#allLoaders--"><code>DataLoaderPool.allLoaders()</code></a>.
 
 Currently, these include among other things:
 
@@ -805,7 +805,7 @@ an opaque callback object.
 <p>Originally there used to be a marker interface
 <a href="@org-openide-nodes@/org/openide/nodes/Node.Cookie.html"><code>Node.Cookie</code></a>,
 however it is no longer necessary to use it. Rather rely on
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()">getLookup</a>
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup--">getLookup</a>
 method which can deal with plain Java objects.
 
 As such there are no requirements as to what makes a valid
@@ -815,7 +815,7 @@ such as "opening", "compiling", "searching", etc.
 <p>Uses of cookies on nodes are not much different from uses on data
 objects; the initial cookie detection is done by
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()"><code>Node.getLookup().lookup(...)</code></a>;
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup--"><code>Node.getLookup().lookup(...)</code></a>;
 
 however the default data node provides
 
@@ -823,14 +823,14 @@ however the default data node provides
 
 that looks inside 
 
-<a href="../MultiDataObject.html#getCookieSet()"><code>MultiDataObject.getCookieSet()</code></a>.
+<a href="../MultiDataObject.html#getCookieSet--"><code>MultiDataObject.getCookieSet()</code></a>.
 
 <h4><a name="attach-retrieve">Attaching and retrieving cookies</a></h4>
 
 <p>In short, there are a number of ways to attach cookies to either a
 node or data object (and you may listen for changes in the set of
 supported cookies, etc.). In all cases, the
-<a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#lookup(java.lang.Class)">lookup(Class)</a>
+<a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#lookup-java.lang.Class-">lookup(Class)</a>
 method
 is used by the system to
 determine whether or not a given cookie is supported: thus, cookies
@@ -861,7 +861,7 @@ cookie appropriate once more, at which time the folder re-adds the
 cookie to its cookie set and
 <a href="@org-openide-util-lookup@/org/openide/util/LookupListener.html">LookupListener</a>
 may observer the
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#fireCookieChange()">fired changes</a>
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#fireCookieChange--">fired changes</a>
 to this effect.
 
 <h4>Cookie Usage Scenarios</h4>
@@ -1099,7 +1099,7 @@ as principal argument, so as to encourage its use in the context of a
 loader; the file entry of course gives easy access to the file object
 it represents, as well as the data object via
 
-<a href="../MultiDataObject.Entry.html#getDataObject()"><code>MultiDataObject.Entry.getDataObject()</code></a>.
+<a href="../MultiDataObject.Entry.html#getDataObject--"><code>MultiDataObject.Entry.getDataObject()</code></a>.
 
 <p>If the support is designed to be usable from someone else's loader,
 and it is not obvious for which data objects using the support is
@@ -1118,11 +1118,11 @@ Using an existing support is generally straightforward - assuming your
 data object is a subclass of <code>MultiDataObject</code>, you may
 just add a new instance of the support using
 
-<a href="../MultiDataObject.html#setCookieSet(org.openide.nodes.CookieSet)"><code>MultiDataObject.setCookieSet(...)</code></a>
+<a href="../MultiDataObject.html#setCookieSet-org.openide.nodes.CookieSet-"><code>MultiDataObject.setCookieSet(...)</code></a>
 
 in the constructor, passing in the primary entry (most likely) from
 
-<a href="../MultiDataObject.html#getPrimaryEntry()"><code>MultiDataObject.getPrimaryEntry()</code></a>.
+<a href="../MultiDataObject.html#getPrimaryEntry--"><code>MultiDataObject.getPrimaryEntry()</code></a>.
 
 
 
@@ -1171,7 +1171,7 @@ The extended clipboard supports Java Event-based notification of
 changes in the contents of the clipboard. Just register your listener
 with
 
-<a href="@org-openide-util-ui@/org/openide/util/datatransfer/ExClipboard.html#addClipboardListener(org.openide.util.datatransfer.ClipboardListener)"><code>ExClipboard.addClipboardListener(...)</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/datatransfer/ExClipboard.html#addClipboardListener-org.openide.util.datatransfer.ClipboardListener-"><code>ExClipboard.addClipboardListener(...)</code></a>.
 
 <h3><a name="multi-transfer">Multi-transfers</a></h3>
 
