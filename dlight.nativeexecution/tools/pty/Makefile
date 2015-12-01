@@ -33,6 +33,7 @@ else
 endif
 
 PNAME=pty
+
 CC=gcc
 
 SOURCES=\
@@ -73,8 +74,8 @@ CF_Windows-x86_64 = $(CF_COMMON) -DWINDOWS -m32
 LF_Windows-x86    = --static-libgcc
 LF_Windows-x86_64 = --static-libgcc
 
-CFLAGS=$(CF_$(CONF))
-LDFLAGS=$(LF_$(CONF))
+CFLAGS=$(CF_$(CONF)) $(CFLAGS_EXTRA)
+LDFLAGS=$(LF_$(CONF)) $(LDFLAGS_EXTRA)
 
 all: $(EXEC)
 	@$(LINE) =
