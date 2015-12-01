@@ -28,6 +28,7 @@ else
 endif
 
 PNAME=killall
+
 CC=gcc
 
 SOURCES_SunOS=\
@@ -92,8 +93,8 @@ LF_SunOS-x86_64   = -lrt
 LF_SunOS-sparc    = -lrt
 LF_SunOS-sparc_64 = -lrt
 
-CFLAGS=$(CF_$(CONF))
-LDFLAGS=$(LF_$(CONF))
+CFLAGS=$(CF_$(CONF)) $(CFLAGS_EXTRA)
+LDFLAGS=$(LF_$(CONF)) $(LDFLAGS_EXTRA)
 
 all: $(EXEC)
 	@$(LINE) =

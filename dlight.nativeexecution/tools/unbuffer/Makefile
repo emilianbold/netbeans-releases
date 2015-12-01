@@ -70,8 +70,8 @@ EX_Windows-x86_64 = unbuffer.dll
 LF_Windows-x86    = --static-libgcc
 LF_Windows-x86_64 = --static-libgcc
 
-CFLAGS=$(CF_$(CONF))
-LDFLAGS=$(LF_$(CONF))
+CFLAGS=$(CF_$(CONF)) $(CFLAGS_EXTRA)
+LDFLAGS=$(LF_$(CONF)) $(LDFLAGS_EXTRA)
 
 PNAME=$(EX_$(CONF))
 
