@@ -98,6 +98,12 @@ CC=gcc
 CFLAGS += $(CFLAGS-$(OSFAMILY))
 LDFLAGS += $(LDFLAGS-$(OSFAMILY))
 
+ifndef NOSTRIP
+    CFLAGS += -s 
+else 
+    CFLAGS += -g
+endif
+
 DIST=../release/bin/nativeexecution
 BUILD=./build
 
@@ -107,23 +113,18 @@ all: init privp process_start pty_open sigqueue stat
 
 privp: init
 	${CC} ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
-	strip ${APP_PATH}/$@
 
 process_start: init
 	${CC} ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
-	strip ${APP_PATH}/$@
 
 pty_open: init
 	${CC} ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
-	strip ${APP_PATH}/$@
 
 sigqueue: init
 	${CC} ${CFLAGS} ${FLAG64} ${LDFLAGS} -o ${APP_PATH}/$@ $@.c
-	strip ${APP_PATH}/$@
 
 stat: init
 	${CC} ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
-	strip ${APP_PATH}/$@
 
 clean:
 	rm -rf ${APP_PATH} ${DIST}/${PLATFORM_DIR}
