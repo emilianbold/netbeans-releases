@@ -344,11 +344,11 @@ public class CssBracketCompleterTest extends TestBase {
     }
 
     private void backspace() {
-        backspaceAction.actionPerformed(new ActionEvent(doc, 0, null));
+        backspaceAction.actionPerformed(new ActionEvent(pane, 0, null));
     }
     
     private void delete() {
-        deleteAction.actionPerformed(new ActionEvent(doc, 0, null));
+        deleteAction.actionPerformed(new ActionEvent(pane, 0, null));
     }
 
     private String getText() throws BadLocationException {
