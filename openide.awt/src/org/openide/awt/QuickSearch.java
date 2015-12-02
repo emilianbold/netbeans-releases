@@ -306,8 +306,8 @@ public class QuickSearch {
             rp.post(new LazyFire(QS_FIRE.UPDATE, searchText));
         } else {
             callback.quickSearchUpdate(searchText);
-            hasSearchText = true;
         }
+        hasSearchText = true;
     }
     
     private void fireShowNextSelection(boolean forward) {
@@ -611,7 +611,6 @@ public class QuickSearch {
             try {
             switch (fire) {
                 case UPDATE:    callback.quickSearchUpdate(searchText);//fireQuickSearchUpdate(qsls, searchText);
-                                hasSearchText = true;
                                 break;
                 case NEXT:      callback.showNextSelection(forward);//fireShowNextSelection(qsls, forward);
                                 break;
