@@ -39,14 +39,14 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.tag;
+package org.netbeans.modules.docker.ui.rename;
 
 import java.awt.Dialog;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.docker.api.DockerTag;
+import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.openide.DialogDescriptor;
@@ -62,28 +62,28 @@ import org.openide.util.actions.NodeAction;
  *
  * @author Petr Hejl
  */
-public class TagTagAction extends NodeAction {
+public class RenameContainerAction extends NodeAction {
 
-    private static final Logger LOGGER = Logger.getLogger(TagTagAction.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RenameContainerAction.class.getName());
 
     @NbBundle.Messages({
-        "LBL_Tag=&Tag",
-        "# {0} - tag",
-        "LBL_TagTag=Tag {0}"
+        "LBL_Rename=&Rename",
+        "# {0} - container name",
+        "LBL_RenameContainer=Rename {0}"
     })
     @Override
     protected void performAction(Node[] activatedNodes) {
-        DockerTag tag = activatedNodes[0].getLookup().lookup(DockerTag.class);
-        if (tag != null) {
-            JButton tagButton = new JButton();
-            Mnemonics.setLocalizedText(tagButton, Bundle.LBL_Tag());
-            TagPanel panel = new TagPanel(tag.getImage().getInstance(), tagButton);
+        DockerContainer container = activatedNodes[0].getLookup().lookup(DockerContainer.class);
+        if (container != null) {
+            JButton renameButton = new JButton();
+            Mnemonics.setLocalizedText(renameButton, Bundle.LBL_Rename());
+            RenamePanel panel = new RenamePanel(renameButton);
 
             DialogDescriptor descriptor
-                    = new DialogDescriptor(panel, Bundle.LBL_TagTag(tag.getTag()),
-                            true, new Object[] {tagButton, DialogDescriptor.CANCEL_OPTION}, tagButton,
+                    = new DialogDescriptor(panel, Bundle.LBL_RenameContainer(container.getName()),
+                            true, new Object[] {renameButton, DialogDescriptor.CANCEL_OPTION}, renameButton,
                             DialogDescriptor.DEFAULT_ALIGN, null, null);
-            descriptor.setClosingOptions(new Object[] {tagButton, DialogDescriptor.CANCEL_OPTION});
+            descriptor.setClosingOptions(new Object[] {renameButton, DialogDescriptor.CANCEL_OPTION});
             panel.setMessageLine(descriptor.createNotificationLineSupport());
             Dialog dlg = null;
 
@@ -91,8 +91,8 @@ public class TagTagAction extends NodeAction {
                 dlg = DialogDisplayer.getDefault().createDialog(descriptor);
                 dlg.setVisible(true);
 
-                if (descriptor.getValue() == tagButton) {
-                    perform(tag, panel.getRepository(), panel.getTag(), panel.isForce());
+                if (descriptor.getValue() == renameButton) {
+                    perform(container, panel.getContainerName());
                 }
             } finally {
                 if (dlg != null) {
@@ -103,19 +103,18 @@ public class TagTagAction extends NodeAction {
     }
 
     @NbBundle.Messages({
-        "# {0} - tag",
-        "MSG_Tagging=Tagging {0}"
+        "# {0} - container name",
+        "MSG_Renaming=Renaming {0}"
     })
-    private void perform(final DockerTag source, final String repository,
-            final String tag, final boolean force) {
+    private void perform(final DockerContainer container, final String name) {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_Tagging(source.getTag()));
+                ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_Renaming(container.getName()));
                 handle.start();
                 try {
-                    DockerAction facade = new DockerAction(source.getImage().getInstance());
-                    facade.tag(source, repository, tag, force);
+                    DockerAction facade = new DockerAction(container.getInstance());
+                    facade.rename(container, name);
                 } catch (DockerException ex) {
                     // FIXME inform user
                     LOGGER.log(Level.INFO, null, ex);
@@ -131,13 +130,13 @@ public class TagTagAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return activatedNodes[0].getLookup().lookup(DockerTag.class) != null;
+        return activatedNodes[0].getLookup().lookup(DockerContainer.class) != null;
     }
 
-    @NbBundle.Messages("LBL_TagTagAction=Tag...")
+    @NbBundle.Messages("LBL_RenameContainerAction=Rename...")
     @Override
     public String getName() {
-        return Bundle.LBL_TagTagAction();
+        return Bundle.LBL_RenameContainerAction();
     }
 
     @Override

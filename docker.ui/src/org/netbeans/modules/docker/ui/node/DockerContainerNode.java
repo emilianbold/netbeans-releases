@@ -50,6 +50,7 @@ import static org.netbeans.modules.docker.api.ContainerStatus.PAUSED;
 import static org.netbeans.modules.docker.api.ContainerStatus.RUNNING;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.ui.commit.CommitContainerAction;
+import org.netbeans.modules.docker.ui.rename.RenameContainerAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
@@ -96,6 +97,7 @@ public class DockerContainerNode extends AbstractNode {
             SystemAction.get(UnpauseContainerAction.class),
             null,
             SystemAction.get(CommitContainerAction.class),
+            SystemAction.get(RenameContainerAction.class),
             null,
             SystemAction.get(AttachContainerAction.class),
             SystemAction.get(ShowLogAction.class),

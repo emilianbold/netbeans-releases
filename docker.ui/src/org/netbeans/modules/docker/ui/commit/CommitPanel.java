@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.commit;
 
+import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -56,13 +57,17 @@ import org.openide.util.NbBundle;
  */
 public class CommitPanel extends javax.swing.JPanel {
 
+    private final JButton actionButton;
+
     private NotificationLineSupport messageLine;
 
     /**
      * Creates new form CommitPanel
      */
-    public CommitPanel(DockerInstance instance) {
+    public CommitPanel(DockerInstance instance, JButton actionButton) {
         initComponents();
+
+        this.actionButton = actionButton;
 
         DefaultDocumentListener listener = new DefaultDocumentListener();
         ((JTextComponent) repositoryComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(listener);
@@ -86,8 +91,10 @@ public class CommitPanel extends javax.swing.JPanel {
         }
 
         messageLine.clearMessages();
+        actionButton.setEnabled(true);
         if (getRepository() == null && getTag() != null) {
             messageLine.setErrorMessage(Bundle.MSG_EmptyRepository());
+            actionButton.setEnabled(false);
             return;
         }
         String repository = getRepository();
@@ -95,6 +102,7 @@ public class CommitPanel extends javax.swing.JPanel {
             String message = Validations.validateRepository(repository);
             if (message != null) {
                 messageLine.setErrorMessage(message);
+                actionButton.setEnabled(false);
                 return;
             }
         }
@@ -103,6 +111,7 @@ public class CommitPanel extends javax.swing.JPanel {
             String message = Validations.validateTag(tag);
             if (message != null) {
                 messageLine.setErrorMessage(message);
+                actionButton.setEnabled(false);
                 return;
             }
         }

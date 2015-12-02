@@ -77,7 +77,7 @@ public class CommitContainerAction extends NodeAction {
         if (container != null) {
             JButton commitButton = new JButton();
             Mnemonics.setLocalizedText(commitButton, Bundle.LBL_Commit());
-            CommitPanel panel = new CommitPanel(container.getInstance());
+            CommitPanel panel = new CommitPanel(container.getInstance(), commitButton);
 
             DialogDescriptor descriptor
                     = new DialogDescriptor(panel, Bundle.LBL_CommitContainer(container.getShortId()),
