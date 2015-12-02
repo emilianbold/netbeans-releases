@@ -81,7 +81,7 @@ public final class DockerIntegration {
         super();
     }
 
-    public static DockerIntegration getInstance() {
+    public static DockerIntegration getDefault() {
         DockerIntegration ret;
         synchronized (DockerIntegration.class) {
             if (registry == null) {
