@@ -108,7 +108,7 @@ public class CndTokenList implements TokenList {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                TokenSequence<?> ts = CndLexerUtilities.getCppTokenSequence(doc, nextBlockStart, true, false);
+                TokenSequence<?> ts = CndLexerUtilities.getCppTokenSequence(doc, nextBlockStart, false, false);
                 if (ts == null) {
                     ts = CndLexerUtilities.getFortranTokenSequence(doc, nextBlockStart);
                 }
