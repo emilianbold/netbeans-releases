@@ -70,7 +70,6 @@ import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectUtil
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -158,7 +157,6 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
         setupProject(handle, files, projectDirectory);
 
-        hackIgnoreCSSErrorsInUrlFile(projectDirectory);
         handle.finish();
         return files;
     }
@@ -344,18 +342,6 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         }
     }
 
-    private void hackIgnoreCSSErrorsInUrlFile(FileObject projectDirectory) {
-        Enumeration<? extends FileObject> children = projectDirectory.getChildren(true);
-        while (children.hasMoreElements()) {
-            FileObject file = children.nextElement();
-            if ("_oj.utilities.urls".equals(file.getName())) {
-                try {
-                    file.setAttribute("disable_error_checking_CSS", Boolean.TRUE.toString());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-    }
+    
 
 }

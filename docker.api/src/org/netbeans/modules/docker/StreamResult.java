@@ -41,55 +41,22 @@
  */
 package org.netbeans.modules.docker;
 
-import java.io.IOException;
+import java.io.Closeable;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DirectStreamResult implements StreamResult {
+public interface StreamResult extends Closeable {
 
-    private final Socket s;
+    OutputStream getStdIn();
 
-    private final OutputStream stdIn;
+    InputStream getStdOut();
 
-    private final InputStream stdOut;
+    InputStream getStdErr();
 
-    private final InputStream stdErr;
-
-    public DirectStreamResult(Socket s, InputStream is) throws IOException {
-        this.s = s;
-        this.stdIn = s.getOutputStream();
-        this.stdOut = is == null ? s.getInputStream() : is;
-        this.stdErr = null;
-    }
-
-    @Override
-    public OutputStream getStdIn() {
-        return stdIn;
-    }
-
-    @Override
-    public InputStream getStdOut() {
-        return stdOut;
-    }
-
-    @Override
-    public InputStream getStdErr() {
-        return stdErr;
-    }
-
-    @Override
-    public boolean hasTty() {
-        return true;
-    }
-
-    @Override
-    public void close() throws IOException {
-        s.close();
-    }
+    boolean hasTty();
 
 }

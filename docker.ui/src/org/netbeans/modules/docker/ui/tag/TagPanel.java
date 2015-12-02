@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.tag;
 
+import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -56,13 +57,17 @@ import org.openide.util.NbBundle;
  */
 public class TagPanel extends javax.swing.JPanel {
 
+    private final JButton actionButton;
+
     private NotificationLineSupport messageLine;
 
     /**
      * Creates new form TagPanel
      */
-    public TagPanel(DockerInstance instance) {
+    public TagPanel(DockerInstance instance, JButton actionButton) {
         initComponents();
+
+        this.actionButton = actionButton;
 
         DefaultDocumentListener listener = new DefaultDocumentListener();
         ((JTextComponent) repositoryComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(listener);
@@ -85,8 +90,10 @@ public class TagPanel extends javax.swing.JPanel {
         }
 
         messageLine.clearMessages();
+        actionButton.setEnabled(true);
         if (getRepository() == null) {
             messageLine.setErrorMessage(Bundle.MSG_EmptyRepository());
+            actionButton.setEnabled(false);
             return;
         }
         String repository = getRepository();
@@ -94,6 +101,7 @@ public class TagPanel extends javax.swing.JPanel {
             String message = Validations.validateRepository(repository);
             if (message != null) {
                 messageLine.setErrorMessage(message);
+                actionButton.setEnabled(false);
                 return;
             }
         }
@@ -102,6 +110,7 @@ public class TagPanel extends javax.swing.JPanel {
             String message = Validations.validateTag(tag);
             if (message != null) {
                 messageLine.setErrorMessage(message);
+                actionButton.setEnabled(false);
                 return;
             }
         }

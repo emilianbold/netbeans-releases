@@ -47,14 +47,13 @@ import org.netbeans.modules.docker.DockerRemoteException;
 import org.netbeans.modules.docker.FolderUploader;
 import org.netbeans.modules.docker.MuxedStreamResult;
 import org.netbeans.modules.docker.ChunkedInputStream;
-import org.netbeans.modules.docker.SecureContextProvider;
+import org.netbeans.modules.docker.tls.ContextProvider;
 import org.netbeans.modules.docker.IgnoreFileFilter;
 import org.netbeans.modules.docker.HttpParsingUtils;
 import org.netbeans.modules.docker.DirectStreamResult;
 import org.netbeans.modules.docker.Demuxer;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,7 +70,6 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -95,8 +93,11 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.docker.DockerActionAccessor;
+import org.netbeans.modules.docker.StreamResult;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullInputStream;
 import org.openide.util.io.NullOutputStream;
@@ -122,6 +123,13 @@ public class DockerAction {
     private static final Set<Integer> REMOVE_IMAGE_CODES = new HashSet<>();
 
     static {
+        DockerActionAccessor.setDefault(new DockerActionAccessor() {
+            @Override
+            public void events(DockerAction action, Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
+                action.events(since, listener, connectionListener);
+            }
+        });
+
         Collections.addAll(START_STOP_CONTAINER_CODES, HttpURLConnection.HTTP_NO_CONTENT, HttpURLConnection.HTTP_NOT_MODIFIED);
         Collections.addAll(REMOVE_CONTAINER_CODES, HttpURLConnection.HTTP_NO_CONTENT, HttpURLConnection.HTTP_NOT_FOUND);
         Collections.addAll(REMOVE_IMAGE_CODES, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_NOT_FOUND);
@@ -258,6 +266,26 @@ public class DockerAction {
             return new DockerImage(instance, Collections.singletonList(org.netbeans.modules.docker.DockerUtils.getTag(repository, tag)),
                     (String) value.get("Id"), time, 0, 0);
 
+        } catch (UnsupportedEncodingException ex) {
+            throw new DockerException(ex);
+        }
+    }
+
+    public void rename(DockerContainer container, String name) throws DockerException {
+        Parameters.notNull("name", name);
+
+        try {
+            doPostRequest(instance.getUrl(),
+                    "/containers/" + container.getId() + "/rename?name=" + HttpParsingUtils.encodeParameter(name), null,
+                    false, Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
+
+            long time = System.currentTimeMillis() / 1000;
+            // XXX we send it as older API does not have the commit event
+            if (emitEvents) {
+                instance.getEventBus().sendEvent(
+                        new DockerEvent(instance, DockerEvent.Status.RENAME,
+                                container.getId(), container.getId(), time));
+            }
         } catch (UnsupportedEncodingException ex) {
             throw new DockerException(ex);
         }
@@ -438,14 +466,14 @@ public class DockerAction {
             Integer length = HttpParsingUtils.getLength(response.getHeaders());
             if (length != null && length <= 0) {
                 closeSocket(s);
-                return new EmptyStreamResult(info.isTty());
+                return new ActionStreamResult(new EmptyStreamResult(info.isTty()));
             }
             is = HttpParsingUtils.getResponseStream(is, response);
 
             if (info.isTty()) {
-                return new DirectStreamResult(s, is);
+                return new ActionStreamResult(new DirectStreamResult(s, is));
             } else {
-                return new MuxedStreamResult(s, is);
+                return new ActionStreamResult(new MuxedStreamResult(s, is));
             }
         } catch (MalformedURLException e) {
             closeSocket(s);
@@ -662,67 +690,6 @@ public class DockerAction {
         }
     }
 
-    // this call is BLOCKING
-    public void events(Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
-        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
-
-        try {
-            URL url = createURL(instance.getUrl(), null);
-            Socket s = createSocket(url);
-            try {
-                OutputStream os = s.getOutputStream();
-                os.write(("GET " + (since != null ? "/events?since=" + since : "/events") + " HTTP/1.1\r\n"
-                        + "Accept: application/json\r\n\r\n").getBytes("ISO-8859-1"));
-                os.flush();
-
-                InputStream is = s.getInputStream();
-                HttpParsingUtils.Response response = HttpParsingUtils.readResponse(is);
-                int responseCode = response.getCode();
-
-                if (responseCode != HttpURLConnection.HTTP_OK) {
-                    String error = HttpParsingUtils.readContent(is, response);
-                    throw new DockerRemoteException(responseCode,
-                            error != null ? error : response.getMessage());
-                }
-
-                is = HttpParsingUtils.getResponseStream(is, response);
-
-                if (connectionListener != null) {
-                    connectionListener.onConnect(s);
-                }
-
-                JSONParser parser = new JSONParser();
-                try (InputStreamReader r = new InputStreamReader(is, HttpParsingUtils.getCharset(response))) {
-                    String line;
-                    while ((line = readEventObject(r)) != null) {
-                        JSONObject o = (JSONObject) parser.parse(line);
-                        DockerEvent.Status status = DockerEvent.Status.parse((String) o.get("status"));
-                        String id = (String) o.get("id");
-                        String from = (String) o.get("from");
-                        long time = (Long) o.get("time");
-                        if (status == null) {
-                            LOGGER.log(Level.INFO, "Unknown event {0}", o);
-                        } else {
-                            listener.onEvent(new DockerEvent(instance, status, id, from, time));
-                        }
-                        parser.reset();
-                    }
-                } catch (ParseException ex) {
-                    throw new DockerException(ex);
-                }
-            } finally {
-                closeSocket(s);
-                if (connectionListener != null) {
-                    connectionListener.onDisconnect();
-                }
-            }
-        } catch (MalformedURLException e) {
-            throw new DockerException(e);
-        } catch (IOException e) {
-            throw new DockerException(e);
-       }
-    }
-
     public ActionChunkedResult logs(DockerContainer container) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
@@ -841,6 +808,67 @@ public class DockerAction {
             closeSocket(s);
             throw e;
         }
+    }
+
+    // this call is BLOCKING
+    private void events(Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+
+        try {
+            URL url = createURL(instance.getUrl(), null);
+            Socket s = createSocket(url);
+            try {
+                OutputStream os = s.getOutputStream();
+                os.write(("GET " + (since != null ? "/events?since=" + since : "/events") + " HTTP/1.1\r\n"
+                        + "Accept: application/json\r\n\r\n").getBytes("ISO-8859-1"));
+                os.flush();
+
+                InputStream is = s.getInputStream();
+                HttpParsingUtils.Response response = HttpParsingUtils.readResponse(is);
+                int responseCode = response.getCode();
+
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    String error = HttpParsingUtils.readContent(is, response);
+                    throw new DockerRemoteException(responseCode,
+                            error != null ? error : response.getMessage());
+                }
+
+                is = HttpParsingUtils.getResponseStream(is, response);
+
+                if (connectionListener != null) {
+                    connectionListener.onConnect(s);
+                }
+
+                JSONParser parser = new JSONParser();
+                try (InputStreamReader r = new InputStreamReader(is, HttpParsingUtils.getCharset(response))) {
+                    String line;
+                    while ((line = readEventObject(r)) != null) {
+                        JSONObject o = (JSONObject) parser.parse(line);
+                        DockerEvent.Status status = DockerEvent.Status.parse((String) o.get("status"));
+                        String id = (String) o.get("id");
+                        String from = (String) o.get("from");
+                        long time = (Long) o.get("time");
+                        if (status == null) {
+                            LOGGER.log(Level.INFO, "Unknown event {0}", o);
+                        } else {
+                            listener.onEvent(new DockerEvent(instance, status, id, from, time));
+                        }
+                        parser.reset();
+                    }
+                } catch (ParseException ex) {
+                    throw new DockerException(ex);
+                }
+            } finally {
+                closeSocket(s);
+                if (connectionListener != null) {
+                    connectionListener.onDisconnect();
+                }
+            }
+        } catch (MalformedURLException e) {
+            throw new DockerException(e);
+        } catch (IOException e) {
+            throw new DockerException(e);
+       }
     }
 
     private Object doGetRequest(@NonNull String url, @NonNull String action, Set<Integer> okCodes) throws DockerException {
@@ -966,7 +994,7 @@ public class DockerAction {
     private Socket createSocket(URL url) throws IOException {
         try {
             if ("https".equals(url.getProtocol())) { // NOI18N
-                SSLContext context = SecureContextProvider.getInstance().getSSLContext(instance);
+                SSLContext context = ContextProvider.getInstance().getSSLContext(instance);
                 return context.getSocketFactory().createSocket(url.getHost(), url.getPort());
             } else {
                 Socket s = new Socket(ProxySelector.getDefault().select(url.toURI()).get(0));
@@ -983,8 +1011,7 @@ public class DockerAction {
         try {
             HttpURLConnection ret = (HttpURLConnection) url.openConnection(ProxySelector.getDefault().select(url.toURI()).get(0));
             if (ret instanceof HttpsURLConnection) {
-                ((HttpsURLConnection) ret).setSSLSocketFactory(
-                        SecureContextProvider.getInstance().getSSLContext(instance).getSocketFactory());
+                ((HttpsURLConnection) ret).setSSLSocketFactory(ContextProvider.getInstance().getSSLContext(instance).getSocketFactory());
             }
             return ret;
         } catch (URISyntaxException ex) {
@@ -1059,7 +1086,7 @@ public class DockerAction {
         }
         return ret;
     }
-    
+
     private static String getImage(DockerTag tag) {
         String id = tag.getTag();
         if (id.equals("<none>:<none>")) { // NOI18N
@@ -1095,7 +1122,7 @@ public class DockerAction {
 
     }
 
-    private static class EmptyStreamResult implements ActionStreamResult {
+    private static class EmptyStreamResult implements StreamResult {
 
         private final OutputStream os = new NullOutputStream();
 
