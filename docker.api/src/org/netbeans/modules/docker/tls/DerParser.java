@@ -39,57 +39,63 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker;
+package org.netbeans.modules.docker.tls;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
+import java.math.BigInteger;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DirectStreamResult implements StreamResult {
+public class DerParser {
 
-    private final Socket s;
+    private final InputStream is;
 
-    private final OutputStream stdIn;
-
-    private final InputStream stdOut;
-
-    private final InputStream stdErr;
-
-    public DirectStreamResult(Socket s, InputStream is) throws IOException {
-        this.s = s;
-        this.stdIn = s.getOutputStream();
-        this.stdOut = is == null ? s.getInputStream() : is;
-        this.stdErr = null;
+    public DerParser(InputStream is) {
+        this.is = is;
     }
 
-    @Override
-    public OutputStream getStdIn() {
-        return stdIn;
+    public Asn1Object read() throws IOException {
+        int tag = is.read();
+
+        if (tag < 0) {
+            throw new IOException("No more data to read");
+        }
+        int length = readLength();
+        return new Asn1Object(tag, readValue(length));
     }
 
-    @Override
-    public InputStream getStdOut() {
-        return stdOut;
+    private int readLength() throws IOException {
+        int read = is.read();
+        if (read < 0) {
+            throw new IOException("No more data to read");
+        }
+        // sigle byte
+        if ((read & ~0x7F) == 0) {
+            return read;
+        }
+
+        // multibyte
+        int num = read & 0x7F;
+        if (read >= 0xFF || num > 4) {
+            throw new IOException("Length too big to be used");
+        }
+        return new BigInteger(1, readValue(num)).intValue();
     }
 
-    @Override
-    public InputStream getStdErr() {
-        return stdErr;
-    }
-
-    @Override
-    public boolean hasTty() {
-        return true;
-    }
-
-    @Override
-    public void close() throws IOException {
-        s.close();
+    private byte[] readValue(int length) throws IOException {
+        byte[] value = new byte[length];
+        int count = 0;
+        while (count < length) {
+            int real = is.read(value, count, length - count);
+            if (real < 0) {
+                throw new IOException("Can't read the requested value");
+            }
+            count += real;
+        }
+        return value;
     }
 
 }

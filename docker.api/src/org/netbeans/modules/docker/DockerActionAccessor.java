@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.docker;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
+import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.api.DockerEvent;
+import org.netbeans.modules.docker.api.DockerException;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DirectStreamResult implements StreamResult {
+public abstract class DockerActionAccessor {
 
-    private final Socket s;
+    private static volatile DockerActionAccessor DEFAULT;
 
-    private final OutputStream stdIn;
+    public static DockerActionAccessor getDefault() {
+        DockerActionAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
 
-    private final InputStream stdOut;
-
-    private final InputStream stdErr;
-
-    public DirectStreamResult(Socket s, InputStream is) throws IOException {
-        this.s = s;
-        this.stdIn = s.getOutputStream();
-        this.stdOut = is == null ? s.getInputStream() : is;
-        this.stdErr = null;
+        // invokes static initializer of DockerAction.class
+        // that will assign value to the DEFAULT field above
+        Class c = org.netbeans.modules.docker.api.DockerAction.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+        return DEFAULT;
     }
 
-    @Override
-    public OutputStream getStdIn() {
-        return stdIn;
+    public static void setDefault(DockerActionAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+
+        DEFAULT = accessor;
     }
 
-    @Override
-    public InputStream getStdOut() {
-        return stdOut;
-    }
-
-    @Override
-    public InputStream getStdErr() {
-        return stdErr;
-    }
-
-    @Override
-    public boolean hasTty() {
-        return true;
-    }
-
-    @Override
-    public void close() throws IOException {
-        s.close();
-    }
-
+    public abstract void events(DockerAction action, Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) 
+            throws DockerException;
 }

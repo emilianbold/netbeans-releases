@@ -44,18 +44,21 @@
 package org.netbeans.modules.profiler.ppoints;
 
 import org.netbeans.lib.profiler.common.ProfilingSettings;
-import org.netbeans.lib.profiler.ui.components.table.HTMLLabelTableCellRenderer;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
-import javax.swing.JLabel;
+import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.event.SwingPropertyChangeSupport;
+import javax.swing.table.TableCellRenderer;
+import org.netbeans.lib.profiler.ui.components.HTMLLabel;
 import org.openide.util.Lookup;
 
 
@@ -66,46 +69,49 @@ import org.openide.util.Lookup;
  */
 public abstract class ProfilingPoint {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
-    public class ResultsRenderer extends HTMLLabelTableCellRenderer {
-        //~ Instance fields ------------------------------------------------------------------------------------------------------
-
-        private JTable lastTable;
-
-        //~ Constructors ---------------------------------------------------------------------------------------------------------
-
-        public ResultsRenderer() {
-            this(JLabel.TRAILING, false);
+    
+    public class ResultsRenderer extends HTMLLabel implements TableCellRenderer {
+        
+        private Reference<JComponent> lastTable;
+        
+        {
+            setOpaque(true);
         }
 
-        public ResultsRenderer(int horizontalAlignment, boolean persistent) {
-            super(horizontalAlignment, persistent);
+        public JComponent getComponent() {
+            return this;
+        }
+        
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            ProfilingPoint ppoint = (ProfilingPoint)value;
+            resultsRenderer.setText(ppoint.getResultsText());
+            setEnabled(ppoint.isEnabled());
+            lastTable = new WeakReference(table);
+            return getComponent();
         }
 
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public Component getTableCellRendererComponentPersistent(JTable table, Object value, boolean isSelected,
-                                                                 boolean hasFocus, int row, int column) {
-            return new ResultsRenderer(getHorizontalAlignment(), true).getTableCellRendererComponent(table, value, isSelected,
-                                                                                                     hasFocus, row, column);
+        public void dispatchMouseEvent(MouseEvent e, Rectangle offset) {
+            setSize(getPreferredSize());
+            
+            int w = offset.width - getPreferredSize().width;
+            MouseEvent event = new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiers(),
+                                              e.getX() - offset.x - w, e.getY() - offset.y, e.getClickCount(),
+                                              e.isPopupTrigger(), e.getButton());
+            processEvent(event);
+        }
+        
+        public void setCaretPosition(int position) {}
+        
+        public void moveCaretPosition(int position) {}
+        
+        public void setCursor(Cursor cursor) {
+            super.setCursor(cursor);
+            
+            JComponent table = lastTable != null ? lastTable.get() : null;
+            if (table != null) table.setCursor(cursor);
         }
 
-        public void dispatchMouseEvent(MouseEvent e) {
-            label.dispatchEvent(SwingUtilities.convertMouseEvent(this, e, label));
-        }
-
-        protected void setValue(JTable table, Object value, int row, int column) {
-            lastTable = table;
-            label.setText(getResultsText());
-        }
-
-        protected void handleCursor(Cursor cursor) {
-            if (lastTable != null) {
-                lastTable.setCursor(cursor);
-            }
-        }
-
-        protected void handleLink(URL url) {
+        protected void showURL(URL url) {
             showResults(url);
         }
     }

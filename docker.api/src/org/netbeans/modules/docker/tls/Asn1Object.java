@@ -39,57 +39,52 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker;
+package org.netbeans.modules.docker.tls;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
+import java.math.BigInteger;
 
-/**
+/*
+ * The first byte in ASN.1
  *
- * @author Petr Hejl
+ *-------------------------------------------------
+ *|Bit 8|Bit 7|Bit 6|Bit 5|Bit 4|Bit 3|Bit 2|Bit 1|
+ *-------------------------------------------------
+ *|  Class    | CF  |     +      Type             |
+ *-------------------------------------------------
  */
-public class DirectStreamResult implements StreamResult {
+public class Asn1Object {
 
-    private final Socket s;
+    private static final int FLAG_CONSTRUCTED = 0x20;
 
-    private final OutputStream stdIn;
+    private static final int TYPE_INTEGER = 0x02;
 
-    private final InputStream stdOut;
+    private static final int TYPE_MASK = 0x1F;
 
-    private final InputStream stdErr;
+    private final int tag;
 
-    public DirectStreamResult(Socket s, InputStream is) throws IOException {
-        this.s = s;
-        this.stdIn = s.getOutputStream();
-        this.stdOut = is == null ? s.getInputStream() : is;
-        this.stdErr = null;
+    private final int type;
+
+    private final byte[] value;
+
+    public Asn1Object(int tag, byte[] value) {
+        this.tag = tag;
+        this.type = tag & TYPE_MASK;
+        this.value = value;
     }
 
-    @Override
-    public OutputStream getStdIn() {
-        return stdIn;
+    public DerParser read() throws IOException {
+        if ((tag & FLAG_CONSTRUCTED) == 0) {
+            throw new IOException("This object is not a constructed value");
+        }
+        return new DerParser(new ByteArrayInputStream(value));
     }
 
-    @Override
-    public InputStream getStdOut() {
-        return stdOut;
+    public BigInteger getBigInteger() throws IOException {
+        if (type != TYPE_INTEGER) {
+            throw new IOException("This object does not represent integer: " + type);
+        }
+        return new BigInteger(value);
     }
-
-    @Override
-    public InputStream getStdErr() {
-        return stdErr;
-    }
-
-    @Override
-    public boolean hasTty() {
-        return true;
-    }
-
-    @Override
-    public void close() throws IOException {
-        s.close();
-    }
-
 }
