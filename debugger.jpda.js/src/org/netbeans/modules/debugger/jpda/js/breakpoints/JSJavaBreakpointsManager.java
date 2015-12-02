@@ -66,6 +66,7 @@ import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ClassVariable;
+import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -100,6 +101,7 @@ import org.openide.util.Exceptions;
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
     
+    private static final String NASHORN_PACKAGE = "jdk.nashorn";                // NOI18N
     private static final String NASHORN_CONTEXT_CLASS = "jdk.nashorn.internal.runtime.Context"; // NOI18N
     private static final String NASHORN_CONTEXT_SOURCE_BIND_METHOD = "cacheClass";    // NOI18N
     
@@ -249,6 +251,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         
         ScriptsHandler(JPDADebugger debugger) {
             this.debugger = debugger;
+            retrieveExistingSources();
         }
         
         void addBreakpoint(JSLineBreakpoint jslb) {
@@ -389,6 +392,107 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             event.resume();
         }
         
+        private void retrieveExistingSources() {
+            if (debugger.getState() < JPDADebugger.STATE_RUNNING) {
+                debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (Integer.valueOf(JPDADebugger.STATE_RUNNING).equals(evt.getNewValue())) {
+                            retrieveExistingSources();
+                            debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+                        }
+                    }
+                });
+                return ;
+            }
+            List<JPDAClassType> classesByName = debugger.getClassesByName(NASHORN_CONTEXT_CLASS);
+            if (classesByName.isEmpty()) {
+                return ;
+            }
+            JPDAClassType contextClass = classesByName.get(0);
+            List<ObjectVariable> contextInstances = contextClass.getInstances(0);
+            if (contextInstances.isEmpty()) {
+                return ;
+            }
+            ObjectVariable context = contextInstances.get(0);
+            final ObjectVariable classCache = (ObjectVariable) context.getField("classCache");
+            if (classCache == null) {
+                LOG.log(Level.CONFIG, "No classCache field in "+context.getValue());
+                return ;
+            }
+
+            // We need to suspend the app to be able to invoke methods:
+            final MethodBreakpoint inNashorn = MethodBreakpoint.create(NASHORN_PACKAGE+".*", "*");
+            inNashorn.addJPDABreakpointListener(new JPDABreakpointListener() {
+                @Override
+                public void breakpointReached(JPDABreakpointEvent event) {
+                    DebuggerManager.getDebuggerManager().removeBreakpoint(inNashorn);
+                    try {
+                        doRetrieveExistingSources(classCache);
+                    } finally {
+                        event.resume();
+                    }
+                }
+            });
+            inNashorn.setSession(debugger);
+            inNashorn.setHidden(true);
+            DebuggerManager.getDebuggerManager().addBreakpoint(inNashorn);
+        }
+
+        private void doRetrieveExistingSources(ObjectVariable classCache) {
+            ObjectVariable crCollection;
+            ObjectVariable crArray;
+            try {
+                crCollection = (ObjectVariable) classCache.invokeMethod("values", "()Ljava/util/Collection;", new Variable[]{});
+            } catch (NoSuchMethodException | InvalidExpressionException ex) {
+                LOG.log(Level.CONFIG, "Problems retrieving values from ClassCache", ex);
+                return ;
+            }
+            try {
+                crArray = (ObjectVariable) crCollection.invokeMethod("toArray", "()[Ljava/lang/Object;", new Variable[]{});
+            } catch (NoSuchMethodException | InvalidExpressionException ex) {
+                LOG.log(Level.CONFIG, "Problems retrieving array values from ClassCache's collection", ex);
+                return ;
+            }
+            Field[] classReferences = crArray.getFields(0, Integer.MAX_VALUE);
+            for (Field cr : classReferences) {
+                Variable scriptClass;
+                try {
+                    scriptClass = ((ObjectVariable) cr).invokeMethod("get", "()Ljava/lang/Object;", new Variable[]{});
+                } catch (NoSuchMethodException | InvalidExpressionException ex) {
+                    LOG.log(Level.CONFIG, "Problems retrieving values from ClassCache", ex);
+                    continue;
+                }
+                if (scriptClass == null) {
+                    continue;
+                }
+                Variable sourceVar = ((ObjectVariable) cr).getField("source");
+
+                if (scriptClass instanceof ObjectVariable) {
+                    try {
+                        Object jdiVal = scriptClass.getClass().getMethod("getJDIValue").invoke(scriptClass);
+                        scriptClass = (Variable) debugger.getClass().getMethod("getVariable", com.sun.jdi.Value.class).invoke(debugger, jdiVal);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                if (sourceVar instanceof ObjectVariable && scriptClass instanceof ClassVariable) {
+                    JPDAClassType scriptType;
+                    try {
+                        scriptType = (JPDAClassType) scriptClass.getClass().getMethod("getReflectedType").invoke(scriptClass);
+                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+                        scriptType = null;
+                    }
+                    if (scriptType != null) {
+                        Source source = Source.getSource(debugger, scriptType, (ObjectVariable) sourceVar);
+                        if (source != null) {
+                            sourceCreated(source);
+                        }
+                    }
+                }
+            }
+        }
+
         private void sourceCreated(Source source) {
             URL url = source.getUrl();
             if (url != null) {
