@@ -108,6 +108,7 @@ made subject to such option by the copyright holder.
         a list of APIs for a particular version, you may want to go to:
         </p>
         <ul>
+            <li><a href="http://bits.netbeans.org/8.1/javadoc/" target="_top">8.1</a> - Javadoc as released for NetBeans IDE 8.1</li>
             <li><a href="http://bits.netbeans.org/8.0.1/javadoc/" target="_top">8.0.1</a> - Javadoc as released for NetBeans IDE 8.0.1</li>
             <li><a href="http://bits.netbeans.org/8.0/javadoc/" target="_top">8.0</a> - Javadoc as released for NetBeans IDE 8.0</li>
             <li><a href="http://bits.netbeans.org/7.4/javadoc/" target="_top">7.4</a> - Javadoc as released for NetBeans IDE 7.4</li>
