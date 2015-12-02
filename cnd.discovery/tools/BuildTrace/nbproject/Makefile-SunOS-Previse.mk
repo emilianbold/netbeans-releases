@@ -39,7 +39,7 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=-m64 -xprevise -xannotate
+CFLAGS=-m32 -xprevise -xannotate
 
 # CC Compiler Flags
 CCFLAGS=
@@ -76,8 +76,3 @@ ${OBJECTDIR}/execint.o: execint.c
 
 # Subprojects
 .clean-subprojects:
-
-# Enable dependency checking
-.dep.inc: .depcheck-impl
-
-include .dep.inc

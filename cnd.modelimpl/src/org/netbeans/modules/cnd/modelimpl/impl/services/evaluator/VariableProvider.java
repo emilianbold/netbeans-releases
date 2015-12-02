@@ -408,8 +408,9 @@ public class VariableProvider {
         
         CsmType objType = CsmExpressionResolver.resolveType(obj, variableFile, variableEndOffset, objScope, instantiations);
         
-        // This is necessary to resolve classifiers defined in macroses
-        objType = CsmExpressionResolver.resolveMacroType(objType, objScope, instantiations, null);
+        if (CsmExpressionResolver.shouldResolveAsMacroType(objType, objScope)) {
+            objType = CsmExpressionResolver.resolveMacroType(objType, objScope, instantiations, null);
+        }
         
         return Utils.getSizeOfType(objType, variableFile);
     }

@@ -76,8 +76,3 @@ ${OBJECTDIR}/execint.o: execint.c
 
 # Subprojects
 .clean-subprojects:
-
-# Enable dependency checking
-.dep.inc: .depcheck-impl
-
-include .dep.inc

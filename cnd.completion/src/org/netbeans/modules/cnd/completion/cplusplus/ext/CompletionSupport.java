@@ -861,25 +861,8 @@ public final class CompletionSupport implements DocumentListener {
 
                 // we should check if this function is viable
                 CsmType retType = extractFunctionType(ctx, Arrays.asList(candidate.function), exp, paramTypes);
-                CsmClassifier cls = retType != null ? CsmBaseUtilities.getClassifier(retType, ctx.getContextFile(), ctx.getEndOffset(), true) : null;
+                CsmClassifier cls = retType != null ? CsmBaseUtilities.getClassifier(retType, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true) : null;
                 validCandidate = (cls != null && cls.isValid());
-                if (retType != null && !validCandidate && ctx.getContextScope() != null) {
-                    List<CsmInstantiation> instantiations = null;
-                    if (CsmKindUtilities.isInstantiation(candidate.function)) {
-                        CsmInstantiation inst = (CsmInstantiation) candidate.function;
-                        instantiations = new ArrayList<CsmInstantiation>();
-                        instantiations.add(inst);
-                        while (CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-                            inst = (CsmInstantiation) inst.getTemplateDeclaration();
-                            instantiations.add(inst);
-                        }
-                    }
-
-                    // TODO: run this check only if resolving was started from macros and we should use context scope
-                    retType = CsmExpressionResolver.resolveMacroType(retType, ctx.getContextScope(), instantiations, null);
-
-                    validCandidate = retType != null ? CsmBaseUtilities.isValid(retType.getClassifier()) : false;
-                }
             }
 
             if (validCandidate) {
@@ -1872,9 +1855,8 @@ public final class CompletionSupport implements DocumentListener {
             CsmClassifier cls = type.getClassifier();
 
             if (deepResolving && (cls == null || CsmBaseUtilities.isUnresolved(cls))) {
-                if (ctx != null && ctx.getContextScope() != null) {
+                if (ctx != null && CsmExpressionResolver.shouldResolveAsMacroType(type, ctx.getContextScope())) {
                     List<CsmInstantiation> instantiations = CsmInstantiationProvider.getDefault().getInstantiatedTypeInstantiations(type);
-                    // TODO: run this check only if resolving was started from macros and we should use context scope
                     type = CsmExpressionResolver.resolveMacroType(type, ctx.getContextScope(), instantiations, new ResolvedTypeInfoCollector(typeInfo));
                     cls = (type != null) ? type.getClassifier() : null;
                 }

@@ -610,11 +610,12 @@ import org.openide.util.RequestProcessor;
             RemoteLogger.assertTrue(respKind == FSSResponseKind.FS_RSP_SERVER_INFO.getChar());
             int respId = buf.getInt();
             RemoteLogger.assertTrue(respId == infoReq.getId());
-            String rest = buf.getRest().trim();
-            checkVersions(MIN_SERVER_VERSION, rest);
+            String version = buf.getRest().trim();
+            checkVersions(MIN_SERVER_VERSION, version);
             if (accessCheckType != FileSystemProvider.AccessCheckType.FULL) {
                 sendAccessTypeChangeRequest(accessCheckType);
             }
+            RemoteLogger.info("Remote agent version " + version + " [" + env + "] "); //NOI18N
         }
     }
 
@@ -776,19 +777,17 @@ import org.openide.util.RequestProcessor;
 
 
             reader = new BufferedReader(new InputStreamReader(inputStream, charset));
-            if (RemoteFileSystemUtils.isUnitTestMode()) {
-                StringBuilder sb = new StringBuilder("launching ").append(path).append(' '); // NOI18N
-                for (String p : args) {
-                    sb.append(p).append(' ');
-                }
-                try {
-                    int pid = process.getPID();
-                    sb.append(" [pid=").append(pid).append(" at ").append(env).append("] "); // NOI18N
-                } catch (IllegalStateException ex) {
-                    sb.append(" [no pid] "); // NOI18N
-                }
-                RemoteLogger.info(sb.toString());                
+            StringBuilder sb = new StringBuilder("Started remote agent ").append(path).append(' '); // NOI18N
+            for (String p : args) {
+                sb.append(p).append(' ');
             }
+            try {
+                int pid = process.getPID();
+                sb.append(" [pid=").append(pid).append(" at ").append(env).append("] "); // NOI18N
+            } catch (IllegalStateException ex) {
+                sb.append(" [no pid] "); // NOI18N
+            }
+            RemoteLogger.info(sb.toString());                
         }
         
         private String getCacheDirectory() throws IOException, ConnectionManager.CancellationException {

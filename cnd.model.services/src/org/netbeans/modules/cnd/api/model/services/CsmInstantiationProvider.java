@@ -237,6 +237,12 @@ public abstract class CsmInstantiationProvider {
      * @return specialization parameter
       */
     public abstract CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmScope scope, CsmFile file, int start, int end);
+    
+    /**
+     * returns text of original type
+     */
+    public abstract CharSequence getOriginalText(CsmType type);
+    
     /**
      * returns instantiated text if possible to resolve all instantiation mappings
      */
@@ -376,6 +382,11 @@ public abstract class CsmInstantiationProvider {
         @Override
         public CsmVariadicSpecializationParameter createVariadicSpecializationParameter(List<CsmSpecializationParameter> args, CsmFile file, int start, int end) {
             return null;
+        }
+
+        @Override
+        public CharSequence getOriginalText(CsmType type) {
+            return type.getText();
         }
 
         @Override

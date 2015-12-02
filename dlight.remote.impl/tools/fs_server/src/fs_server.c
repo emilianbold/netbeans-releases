@@ -90,7 +90,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 7
-#define FS_SERVER_MINOR_VERSION 2
+#define FS_SERVER_MINOR_VERSION 4
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -171,16 +171,16 @@ static void err_set(int code, const char *format, ...) {
 
 static bool state_get_proceed() {
     bool proceed;
-    mutex_lock(&state.mutex);
+    mutex_lock_wrapper(&state.mutex);
     proceed = state.proceed; // don't even think of doing smth else under this mutex!
-    mutex_unlock(&state.mutex);
+    mutex_unlock_wrapper(&state.mutex);
     return proceed;
 }
 
 static void state_set_proceed(bool proceed) {
-    mutex_lock(&state.mutex);
+    mutex_lock_wrapper(&state.mutex);
     state.proceed = proceed; // don't even think of doing smth else under this mutex!
-    mutex_unlock(&state.mutex);
+    mutex_unlock_wrapper(&state.mutex);
 }
 
 static bool need_to_proceed() {
@@ -189,29 +189,29 @@ static bool need_to_proceed() {
 
 static void state_init() {
     pthread_mutex_init(&state.mutex, NULL);
-    mutex_lock(&state.mutex);
+    mutex_lock_wrapper(&state.mutex);
     state.proceed = true;
     state.busy_threads = 0;
-    mutex_unlock(&state.mutex);
+    mutex_unlock_wrapper(&state.mutex);
 }
 
 static void decrement_busy_threads() {
-    mutex_lock(&state.mutex);
+    mutex_lock_wrapper(&state.mutex);
     state.busy_threads--;
-    mutex_unlock(&state.mutex);
+    mutex_unlock_wrapper(&state.mutex);
 }
 
 static void increment_busy_threads() {
-    mutex_lock(&state.mutex);
+    mutex_lock_wrapper(&state.mutex);
     state.busy_threads++;
-    mutex_unlock(&state.mutex);
+    mutex_unlock_wrapper(&state.mutex);
 }
 
 static int get_busy_threads() {
     int result;
-    mutex_lock(&state.mutex);
+    mutex_lock_wrapper(&state.mutex);
     result = state.busy_threads;
-    mutex_unlock(&state.mutex);
+    mutex_unlock_wrapper(&state.mutex);
     return result;
 }
 
@@ -282,6 +282,29 @@ static int word_len(const char* p) {
     return len;
 }
 
+static bool is_valid_request_kind(char c) {
+    switch (c) {
+        case FS_REQ_LS:
+        case FS_REQ_RECURSIVE_LS:
+        case FS_REQ_STAT:
+        case FS_REQ_LSTAT:
+        case FS_REQ_COPY:
+        case FS_REQ_MOVE:
+        case FS_REQ_QUIT:
+        case FS_REQ_SLEEP:
+        case FS_REQ_ADD_WATCH:
+        case FS_REQ_REMOVE_WATCH:
+        case FS_REQ_REFRESH:
+        case FS_REQ_DELETE:
+        case FS_REQ_SERVER_INFO:
+        case FS_REQ_HELP:
+        case FS_REQ_OPTION:
+            return true;
+        default:
+            return false;
+    }
+}
+
 /**
  * Decodes in-place fs_raw_request into fs_request
  */
@@ -297,6 +320,18 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
         path_len = 0;
         p = "";
     } else {
+        if(*raw_request == '\0' || *raw_request == '\n') {
+            report_error("wrong (zero length) request\n");
+            return NULL;
+        }
+        if(!is_valid_request_kind(*raw_request)) {
+            report_error("wrong request kind: %s", raw_request);
+            return NULL;
+        }
+        if(*(raw_request+1) != ' ') {
+            report_error("wrong request, no space after request kind: %s", raw_request);
+            return NULL;
+        }
         p = raw_request + 2;
         p = decode_int(p, &id);
         if (*raw_request == FS_REQ_SERVER_INFO) {
@@ -588,13 +623,13 @@ static bool __full_access_check(const bool *new_value) {
     static bool full_access_check = true;
     static pthread_mutex_t full_access_mutex = PTHREAD_MUTEX_INITIALIZER;    
     bool result;
-    mutex_lock(&full_access_mutex);
+    mutex_lock_wrapper(&full_access_mutex);
     if (new_value) {
         full_access_check = *new_value;
         trace(TRACE_FINEST, "Setting full access check %s\n", full_access_check ? "ON" : "OFF");
     }
     result = full_access_check;
-    mutex_unlock(&full_access_mutex);
+    mutex_unlock_wrapper(&full_access_mutex);
     return result;
 }
 

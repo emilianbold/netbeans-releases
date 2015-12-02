@@ -471,8 +471,13 @@ public class CsmBaseUtilities {
         return CsmClassifierResolver.getDefault().getOriginalClassifier(orig, contextFile);
     }
 
+    @Deprecated
     public static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, int offset, boolean resolveTypeChain) {
         return CsmClassifierResolver.getDefault().getTypeClassifier(type, contextFile, offset, resolveTypeChain);
+    }
+    
+    public static CsmClassifier getClassifier(CsmType type, CsmScope contextScope, CsmFile contextFile, int offset, boolean resolveTypeChain) {
+        return CsmClassifierResolver.getDefault().getTypeClassifier(type, contextScope, contextFile, offset, resolveTypeChain);
     }
 
     public static CsmObject findClosestTopLevelObject(CsmObject csmTopLevelObject) {
