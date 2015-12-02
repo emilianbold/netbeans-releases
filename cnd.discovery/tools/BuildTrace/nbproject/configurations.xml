@@ -8,6 +8,9 @@
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
                    projectFiles="true">
+      <itemPath>compile.bash</itemPath>
+      <itemPath>test.awk</itemPath>
+      <itemPath>test.bash</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -24,6 +27,7 @@
                    projectFiles="false"
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
+      <itemPath>nbproject/launcher.properties</itemPath>
     </logicalFolder>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
@@ -32,7 +36,7 @@
       <toolsSet>
         <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
         <platform>0</platform>
-        <dependencyChecking>true</dependencyChecking>
+        <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
@@ -53,13 +57,11 @@
       <toolsSet>
         <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
         <platform>0</platform>
-        <dependencyChecking>true</dependencyChecking>
+        <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>0</developmentMode>
-          <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
         </cTool>
         <linkerTool>
@@ -74,7 +76,7 @@
       <toolsSet>
         <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
         <platform>1</platform>
-        <dependencyChecking>true</dependencyChecking>
+        <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
@@ -95,7 +97,7 @@
       <toolsSet>
         <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
         <platform>1</platform>
-        <dependencyChecking>true</dependencyChecking>
+        <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
@@ -116,7 +118,26 @@
       <toolsSet>
         <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
         <platform>1</platform>
-        <dependencyChecking>true</dependencyChecking>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <architecture>1</architecture>
+          <commandLine>-xprevise -xannotate</commandLine>
+        </cTool>
+        <linkerTool>
+          <linkerNorunpath>false</linkerNorunpath>
+        </linkerTool>
+      </compileType>
+      <item path="execint.c" ex="false" tool="0" flavor2="9">
+      </item>
+    </conf>
+    <conf name="SunOS-Previse_64" type="2" platformSpecific="true">
+      <toolsSet>
+        <compilerSet>OracleSolarisStudio|OSS</compilerSet>
+        <platform>1</platform>
+        <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
@@ -129,13 +150,16 @@
         </linkerTool>
       </compileType>
       <item path="execint.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+          <commandLine>-xprevise -xannotate</commandLine>
+        </cTool>
       </item>
     </conf>
     <conf name="Linux-x86" type="2" platformSpecific="true">
       <toolsSet>
         <compilerSet>GNU|GNU</compilerSet>
         <platform>2</platform>
-        <dependencyChecking>true</dependencyChecking>
+        <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
@@ -159,7 +183,7 @@
       <toolsSet>
         <compilerSet>GNU|GNU</compilerSet>
         <platform>2</platform>
-        <dependencyChecking>true</dependencyChecking>
+        <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
@@ -183,7 +207,7 @@
       <toolsSet>
         <compilerSet>GNU|GNU</compilerSet>
         <platform>2</platform>
-        <dependencyChecking>true</dependencyChecking>
+        <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
@@ -226,9 +250,9 @@
     </conf>
     <conf name="MacOSX-x86_64" type="2" platformSpecific="true">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <platform>4</platform>
-        <dependencyChecking>true</dependencyChecking>
+        <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>

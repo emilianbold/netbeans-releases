@@ -83,10 +83,10 @@ void log_close();
 void report_error(const char *format, ...);
 void soft_assert(int condition, char* format, ...);
 
-void mutex_unlock(pthread_mutex_t *mutex);
-void mutex_lock(pthread_mutex_t *mutex);
+void mutex_unlock_wrapper(pthread_mutex_t *mutex);
+void mutex_lock_wrapper(pthread_mutex_t *mutex);
 
-const char* get_home_dir();
+bool get_home_dir(char* home, int size);
 bool file_exists(const char* path);
 bool dir_exists(const char* path);
 

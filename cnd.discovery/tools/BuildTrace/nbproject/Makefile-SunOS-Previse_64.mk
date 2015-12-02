@@ -23,7 +23,7 @@ AS=as
 # Macros
 CND_PLATFORM=OracleSolarisStudio-Solaris-x86
 CND_DLIB_EXT=so
-CND_CONF=SunOS-x86_64
+CND_CONF=SunOS-Previse_64
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 
@@ -39,7 +39,7 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=-m64
+CFLAGS=-m64 -xprevise -xannotate
 
 # CC Compiler Flags
 CCFLAGS=
@@ -60,11 +60,11 @@ LDLIBSOPTIONS=
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT}: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -G -s -KPIC -h libBuildTrace.${CND_DLIB_EXT}
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -G -KPIC -h libBuildTrace.${CND_DLIB_EXT}
 
 ${OBJECTDIR}/execint.o: execint.c 
 	${MKDIR} -p ${OBJECTDIR}
-	$(COMPILE.c) -s -KPIC  -o ${OBJECTDIR}/execint.o execint.c
+	$(COMPILE.c) -g -xprevise -xannotate -KPIC  -o ${OBJECTDIR}/execint.o execint.c
 
 # Subprojects
 .build-subprojects:

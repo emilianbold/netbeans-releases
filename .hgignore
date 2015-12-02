@@ -186,3 +186,4 @@ derby\.log
 ^o\.n\.bootstrap/launcher/windows/nbexec_exe\.res$
 ^installer/mac/newbuild/dist_dmg$
 ^cordova\.platforms\.ios/external/ios-sim$
+^cnd\.discovery/tools/BuildTrace/\.dep\.inc$

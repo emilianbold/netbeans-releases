@@ -41,7 +41,14 @@ DIST_DIR=$(ROOT_DIR)/dist/$(CONF)
 INSTALL_DIR=../../release/bin/nativeexecution/$(CONF)
 LINE=sh $(ROOT_DIR)/make/line
 
-CF_COMMON         = -s -O2
+CF_COMMON         = -O2
+
+ifndef NOSTRIP
+    CF_COMMON += -s 
+else 
+    CF_COMMON += -g
+endif
+
 CF_Linux-x86      = $(CF_COMMON) -DLINUX -shared -fPIC -m32
 EX_Linux-x86      = unbuffer.so
 CF_Linux-arm      = $(CF_COMMON) -DLINUX -shared -fPIC
@@ -70,8 +77,8 @@ EX_Windows-x86_64 = unbuffer.dll
 LF_Windows-x86    = --static-libgcc
 LF_Windows-x86_64 = --static-libgcc
 
-CFLAGS=$(CF_$(CONF))
-LDFLAGS=$(LF_$(CONF))
+CFLAGS=$(CF_$(CONF)) $(CFLAGS_EXTRA)
+LDFLAGS=$(LF_$(CONF)) $(LDFLAGS_EXTRA)
 
 PNAME=$(EX_$(CONF))
 

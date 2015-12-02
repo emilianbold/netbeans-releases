@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -52,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities.Predicate;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionResolverImplementation;
@@ -189,6 +191,25 @@ public final class CsmExpressionResolver {
     }       
     
     /**
+     * Checks if type should be resolved as a type from macros.
+     * 
+     * @param type
+     * @param scope
+     * @return true if type came from macro, false otherwise.
+     */
+    public static boolean shouldResolveAsMacroType(CsmType type, CsmScope scope) {
+        if (type != null && CsmKindUtilities.isOffsetable(scope)) {
+            CsmOffsetable offsetable = (CsmOffsetable) scope;
+            if (Objects.equals(offsetable.getContainingFile(), type.getContainingFile()) 
+                && offsetable.getStartOffset() == type.getStartOffset()
+                && offsetable.getEndOffset() == type.getEndOffset()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Can resolve type which comes from macros.
      * 
      * NB! Use with caution!
@@ -204,12 +225,13 @@ public final class CsmExpressionResolver {
      * @return resolved type
      */
     public static CsmType resolveMacroType(CsmType typeFromMacro, CsmScope scope, List<CsmInstantiation> instantiations, ResolvedTypeHandler handler) {
+        assert shouldResolveAsMacroType(typeFromMacro, scope);
         CsmType type = typeFromMacro;
         int counter = Antiloop.MAGIC_PLAIN_TYPE_RESOLVING_CONST;
         CompositeResolvedTypeHandler compositeHandler = new CompositeResolvedTypeHandler(new SimpleResolvedTypeHandler(), handler);
         while (type != null && !CsmBaseUtilities.isValid(type.getClassifier()) && !CharSequenceUtils.isNullOrEmpty(type.getClassifierText()) && counter > 0) {
             CsmExpressionResolver.resolveType(
-                    type.getClassifierText(), 
+                    CsmInstantiationProvider.getDefault().getOriginalText(type), 
                     type.getContainingFile(), 
                     type.getStartOffset(), 
                     scope, 

@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -55,16 +56,20 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 
@@ -76,6 +81,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 public class ClassifierResolverImpl extends CsmClassifierResolver {
     @Override
     public CsmClassifier getTypeClassifier(CsmType type, CsmFile contextFile, int contextOffset, boolean resolveTypeChain) {
+        return getTypeClassifier(type, null, contextFile, contextOffset, resolveTypeChain);
+    }
+
+    @Override
+    public CsmClassifier getTypeClassifier(CsmType type, CsmScope contextScope, CsmFile contextFile, int contextOffset, boolean resolveTypeChain) {
         CsmProject project = contextFile.getProject();
         // we'd prefer to start from real project, not artificial one
         if (project != null && project.isArtificial()) {
@@ -90,6 +100,18 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
         CsmClassifier cls = null;
         try {
             cls = type.getClassifier();
+            if (CsmBaseUtilities.isUnresolved(cls) && CsmExpressionResolver.shouldResolveAsMacroType(type, contextScope)) {
+                // This type came from macro! Let's resolve it again.
+                CsmType resolvedMacroType = CsmExpressionResolver.resolveMacroType(
+                    type, 
+                    contextScope, 
+                    Instantiation.getInstantiatedTypeInstantiations(type),
+                    null
+                );
+                if (resolvedMacroType != null) {
+                    cls = resolvedMacroType.getClassifier();
+                }
+            }
             if (resolveTypeChain) {
                 cls = resolver.getOriginalClassifier(cls);
             }

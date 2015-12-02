@@ -83,7 +83,12 @@ public final class CndFileVisibilityQuery implements VisibilityQueryImplementati
 
     @Override
     public boolean isVisible(FileObject file) {
-        return isVisible(file.getNameExt());
+        if (file.getExt().isEmpty()) {
+            // it can be header file without extension
+            return MIMENames.HEADER_MIME_TYPE.equals(file.getMIMEType(MIMENames.HEADER_MIME_TYPE));
+        } else {
+            return isVisible(file.getNameExt());
+        }
     }
 
     @Override
