@@ -45,12 +45,20 @@ LINKER=cc
 CC-Linux := gcc
 CC-SunOS := cc
 CC-Mac_OS_X := gcc
+	
+ifdef PREVISE
+    PREVISE_FLAG = -xprevise=yes 
+    CODEAN_TARGET = codean
+else
+    PREVISE_FLAG = 
+    CODEAN_TARGET = 
+endif
 
 DEBUG := -g
 
 CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE
-CFLAGS-Linux := ${CFLAGS-COMMON} -Wreturn-type -Wimplicit -Werror -std=c99
-CFLAGS-SunOS := ${CFLAGS-COMMON} -xc99 -errwarn
+CFLAGS-Linux := ${CFLAGS-COMMON} -Wreturn-type -Wimplicit -Werror -std=c99 ${PREVISE_FLAG}
+CFLAGS-SunOS := ${CFLAGS-COMMON} -xc99 -errwarn ${PREVISE_FLAG}
 CFLAGS-Mac_OS_X := ${CFLAGS-COMMON}
 
 LDFLAGS-LIB-Linux := -shared -ldl -lrt
@@ -85,8 +93,8 @@ endif
 TRACE := 0
 CC := ${CC-${OSNAME}}
 CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${EXTRA_CFLAGS}
-LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64} ${DEBUG}
-LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG32_64} ${DEBUG}
+LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64} ${DEBUG} ${PREVISE_FLAG}
+LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG32_64} ${DEBUG} ${PREVISE_FLAG}
 
 ifdef 64BITS
     PLATFORM_64 := _64
@@ -124,7 +132,7 @@ BUILD=${BUILD_BASE}/$(OSNAME)-$(PLATFORM)
 
 INSTALLDIR=../../nbbuild/netbeans/cnd/bin
 
-all: build_impl install
+all: build_impl install ${CODEAN_TARGET}
 
 install: build_impl
 	mkdir -p ${INSTALLDIR}
@@ -132,6 +140,15 @@ install: build_impl
 
 build_impl: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs_test_env
 
+codean:
+	@(echo; echo "========== rfs_preload.so static analysis =========="; echo)
+	@codean -s ${DIST}/rfs_preload.so
+	@(echo; echo "========== rfs_controller static analysis =========="; echo)
+	@codean -s ${DIST}/rfs_controller
+	@(echo; echo HTML results are:)
+	@(cd ${DIST}; ls `pwd`/rfs_preload.so.static.html)
+	@(cd ${DIST}; ls `pwd`/rfs_controller.static.html)
+	
 #object files
 ${BUILD}/%.o : %.c
 	${CC} ${CFLAGS} -o $@ $<
@@ -143,21 +160,30 @@ ${BUILD}/rfs_test_env.o : rfs_test_env.c
 PRELOAD_OBJFILES := ${BUILD}/rfs_preload.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
 CONTROLLER_OBJFILES := ${BUILD}/rfs_controller.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_filedata.o
 TEST_ENV_OBJFILES := ${BUILD}/rfs_test_env.o
+	
+ifdef PREVISE
+    STRIP = @echo "Not stripping" 
+else
+    STRIP = strip
+endif
 
 #library:
 ${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
 	${LINKER} ${LDFLAGS_LIB} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
-	strip ${DIST}/rfs_preload.so
+	${STRIP} ${DIST}/rfs_preload.so
+	@(cd ${DIST}; echo "`pwd`/rfs_preload.so"); echo
 
 #appliction:
 ${DIST}/rfs_controller: ${CONTROLLER_OBJFILES}
 	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${CONTROLLER_OBJFILES}
-	strip ${DIST}/rfs_controller
+	${STRIP} ${DIST}/rfs_controller
+	@(cd ${DIST}; echo "`pwd`/rfs_controller"); echo
 
 #test environment:
 ${DIST}/rfs_test_env: ${TEST_ENV_OBJFILES}
 	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_test_env ${TEST_ENV_OBJFILES}
-	strip ${DIST}/rfs_test_env
+	${STRIP} ${DIST}/rfs_test_env
+	@(cd ${DIST}; echo "`pwd`/rfs_test_env"); echo
 
 clean:
 	rm -rf ${BUILD} ${DIST}
@@ -167,6 +193,7 @@ cleanall:
 
 init:
 	@mkdir -p ${BUILD} ${DIST}
+	@echo "Using the following compiler: `which $(CC)`"
 
 check:
 	@if [ -n "$(testit)" ]; \
