@@ -62,6 +62,8 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,6 +81,7 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.ScrollPaneUI;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -103,7 +106,7 @@ import org.openide.util.WeakListeners;
 
 @SuppressWarnings("ClassWithMultipleLoggers") //NOI18N
 public final class DocumentViewOp
-        implements PropertyChangeListener, ChangeListener, MouseWheelListener
+        implements PropertyChangeListener, ChangeListener
 {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.DocumentViewOp.level=FINE
@@ -219,6 +222,8 @@ public final class DocumentViewOp
     
     private static final int UPDATE_VISIBLE_DIMENSION_PENDING   = 1024;
     
+    private static final String ORIG_MOUSE_WHEEL_LISTENER_PROP = "orig-mouse-wheel-listener";
+    
     private final DocumentView docView;
 
     private int statusBits;
@@ -292,12 +297,10 @@ public final class DocumentViewOp
     private TextLayout lineContinuationTextLayout;
 
     private LookupListener lookupListener;
-
-    private JViewport listeningOnViewport;
-
-    private JScrollPane listeningOnScrollPane;
     
-    private PropertyChangeListener scrollPaneWeakL;
+    private JViewport activeViewport;
+
+    private JScrollPane activeScrollPane;
 
     private Preferences prefs;
 
@@ -324,8 +327,6 @@ public final class DocumentViewOp
      * are multiplied by the constant.
      */
     private float rowHeightCorrection = 1.0f;
-    
-    private MouseWheelListener origMouseWheelListener;
     
     private int textZoom;
     
@@ -752,33 +753,21 @@ public final class DocumentViewOp
             parent = viewport.getParent();
             if (parent instanceof JScrollPane) {
                 JScrollPane scrollPane = (JScrollPane) parent;
-                if (listeningOnViewport != viewport) {
+                if (activeViewport != viewport) {
                     uninstallFromViewport();
-                    listeningOnViewport = viewport;
+                    activeViewport = viewport;
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.log(Level.FINE, "DocumentViewOp.updateVisibleDimension(): viewport change pane={0}, viewport={1}\n",
-                                new Object[]{obj2String(listeningOnViewport.getView()), obj2String(listeningOnViewport)});
+                                new Object[]{obj2String(activeViewport.getView()), obj2String(activeViewport)});
                     }
-                    if (listeningOnViewport != null) {
-                        listeningOnViewport.addChangeListener(this);
+                    if (activeViewport != null) {
+                        activeViewport.addChangeListener(this);
                     }
                 }
-                if (listeningOnScrollPane != scrollPane) {
+                if (activeScrollPane != scrollPane) {
                     uninstallFromScrollPane();
-                    MouseWheelListener[] mwls = scrollPane.getListeners(MouseWheelListener.class);
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.log(Level.FINE, "DocumentViewOp.updateVisibleDimension(): scrollPane change pane={0} scrollPane={1}, MouseWheelListeners:{2}\n",
-                                new Object[]{obj2String(listeningOnViewport.getView()), scrollPane, Arrays.asList(mwls)});
-                    }
-                    // Only function in regular setup when there's BasicScrollPaneUI.Handler listening and nothing else
-                    if (mwls.length == 1) {
-                        origMouseWheelListener = mwls[0]; // Component.addMouseWheelListener() checks listener's non-nullity
-                        // Replace original listener and delegate to origMouseWheelListener when desired (Alt not pressed).
-                        scrollPane.removeMouseWheelListener(origMouseWheelListener);
-                        scrollPane.addMouseWheelListener(this);
-                        scrollPane.addPropertyChangeListener(scrollPaneWeakL = WeakListeners.propertyChange(this, scrollPane));
-                        listeningOnScrollPane = scrollPane;
-                    }
+                    activeScrollPane = scrollPane;
+                    MouseWheelDelegator.install(this, activeScrollPane);
                 }
             }
             newVisibleRect = viewport.getViewRect(); // acquires AWT treelock
@@ -790,14 +779,14 @@ public final class DocumentViewOp
         }
 
         final float extraHeight;
-        if (!DocumentView.DISABLE_END_VIRTUAL_SPACE && listeningOnViewport != null && !asTextField) {
+        if (!DocumentView.DISABLE_END_VIRTUAL_SPACE && activeViewport != null && !asTextField) {
             // Compute same value regardless whether there's a horizontal scrollbar visible or not.
             // This is important to avoid flickering caused by vertical shrinking of the text component
             // so that vertical scrollbar appears and then appearing of a horizontal scrollbar
             // (in case there was a line nearly wide as viewport's width without Vscrollbar)\
             // which in turn causes viewport's height to decrease and triggers recomputation again etc.
-            float eHeight = listeningOnViewport.getExtentSize().height;
-            if ((parent = listeningOnViewport.getParent()) instanceof JScrollPane) {
+            float eHeight = activeViewport.getExtentSize().height;
+            if ((parent = activeViewport.getParent()) instanceof JScrollPane) {
                 JScrollBar hScrollBar = ((JScrollPane)parent).getHorizontalScrollBar();
                 if (hScrollBar != null && hScrollBar.isVisible()) {
                     eHeight += hScrollBar.getHeight();
@@ -841,30 +830,26 @@ public final class DocumentViewOp
     
     private void uninstallFromViewport() {
 //        assert SwingUtilities.isEventDispatchThread() : "Must be called in EDT"; // NOI18N
-        if (listeningOnViewport != null) {
+        if (activeViewport != null) {
             uninstallFromScrollPane();
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "DocumentViewOp.uninstallFromViewport(): pane={0}, viewport={1}\n",
-                        new Object[] {obj2String(listeningOnViewport.getView()), obj2String(listeningOnViewport)});
+                        new Object[] {obj2String(activeViewport.getView()), obj2String(activeViewport)});
             }
-            listeningOnViewport.removeChangeListener(this);
-            listeningOnViewport = null;
+            activeViewport.removeChangeListener(this);
+            activeViewport = null;
         }
     }
     
     private void uninstallFromScrollPane() {
-        if (listeningOnScrollPane != null) {
+        if (activeScrollPane != null) {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "DocumentViewOp.uninstallFromScrollPane(): pane={0}, scrollPane={1}\n",
-                        new Object[]{obj2String((listeningOnViewport != null) ? listeningOnViewport.getView() : null),
-                            obj2String(listeningOnScrollPane)});
+                        new Object[]{obj2String((activeViewport != null) ? activeViewport.getView() : null),
+                            obj2String(activeScrollPane)});
             }
-            listeningOnScrollPane.removeMouseWheelListener(this);
-            if (origMouseWheelListener != null) {
-                listeningOnScrollPane.addMouseWheelListener(origMouseWheelListener);
-                origMouseWheelListener = null;
-            }
-            listeningOnScrollPane = null;
+            MouseWheelDelegator.uninstall(activeScrollPane);
+            activeScrollPane = null;
         }
     }
     
@@ -1478,14 +1463,6 @@ public final class DocumentViewOp
                 docView.updateBaseY();
                 releaseChildren = true;
             }
-        } else if (src instanceof JScrollPane) {
-            if ("ui".equals(propName)) {
-                if (scrollPaneWeakL != null) {
-                    ((JScrollPane) src).removePropertyChangeListener(scrollPaneWeakL);
-                    scrollPaneWeakL = null;
-                    origMouseWheelListener = null; // No longer restore the original listener
-                }
-            }
         }
         if (releaseChildren) {
             releaseChildren(updateFonts);
@@ -1497,9 +1474,8 @@ public final class DocumentViewOp
         textZoom = (textZoomInteger != null) ? textZoomInteger : 0;
     }
     
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent evt) {
-        if (origMouseWheelListener == null) {
+    public void mouseWheelMoved(MouseWheelEvent evt, MouseWheelListener delegateListener) {
+        if (delegateListener == null) {
             return;
         }
 
@@ -1508,7 +1484,7 @@ public final class DocumentViewOp
         // in origMouseWheelListener and installs "this" as MouseWheelListener instead.
         // This method only calls origMouseWheelListener if Ctrl is not pressed (zooming in/out).
         if (evt.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-            origMouseWheelListener.mouseWheelMoved(evt);
+            delegateListener.mouseWheelMoved(evt);
 //          evt.consume(); // consuming the event has no effect
             return;
         }
@@ -1536,7 +1512,7 @@ public final class DocumentViewOp
                 action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
                 textComponent.repaint(); // Consider repaint triggering elsewhere
             } else {
-                origMouseWheelListener.mouseWheelMoved(evt);
+                delegateListener.mouseWheelMoved(evt);
             }
         } else if (wheelRotation > 0) {
             Action action = keymap.getAction(KeyStroke.getKeyStroke(0x291, modifiers)); //WHEEL_DOWN constant
@@ -1544,7 +1520,7 @@ public final class DocumentViewOp
                 action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
                 textComponent.repaint(); // Consider repaint triggering elsewhere
             } else {
-                origMouseWheelListener.mouseWheelMoved(evt);
+                delegateListener.mouseWheelMoved(evt);
             }
         } // else: wheelRotation == 0 => do nothing
     }
@@ -1573,4 +1549,103 @@ public final class DocumentViewOp
         return appendInfo(new StringBuilder(200)).toString();
     }
 
+    /**
+     * Listener for changes of UI of a scroll pane.
+     */
+    private static final class MouseWheelDelegator implements MouseWheelListener, PropertyChangeListener {
+        
+        static void install(DocumentViewOp op, JScrollPane scrollPane) {
+            MouseWheelDelegator mwd = (MouseWheelDelegator) scrollPane.getClientProperty(MouseWheelDelegator.class);
+            if (mwd == null) {
+                mwd = new MouseWheelDelegator(scrollPane);
+                scrollPane.putClientProperty(MouseWheelDelegator.class, mwd);
+            }
+            mwd.setOp(op);
+        }
+        
+        static void uninstall(JScrollPane scrollPane) {
+            MouseWheelDelegator mwd = (MouseWheelDelegator) scrollPane.getClientProperty(MouseWheelDelegator.class);
+            if (mwd != null) {
+                mwd.uninstall();
+                scrollPane.putClientProperty(MouseWheelDelegator.class, null);
+            }
+        }
+        
+        private Reference<DocumentViewOp> opRef;
+
+        private final JScrollPane scrollPane;
+        
+        private ScrollPaneUI lastUI;
+        
+        private MouseWheelListener delegateListener;
+
+        MouseWheelDelegator(JScrollPane scrollPane) {
+            this.scrollPane = scrollPane;
+            scrollPane.addPropertyChangeListener(this);
+            updateListeners();
+        }
+        
+        DocumentViewOp op() {
+            Reference<DocumentViewOp> lOp = this.opRef;
+            return (lOp != null) ? lOp.get() : null;
+        }
+        
+        void setOp(DocumentViewOp op) {
+            if (op != op()) {
+                this.opRef = new WeakReference<DocumentViewOp>(op);
+            }
+        }
+        
+        private void updateListeners() {
+            ScrollPaneUI ui = scrollPane.getUI();
+            if (ui != lastUI) {
+                // Update "ui" property listener
+                if (ui != null) {
+                    // Check mouse wheel listeners on scroll pane.
+                    // Pair first non-MWDelegator listener with 
+                    // Remove any other delegators than this one.
+                    MouseWheelListener[] mwls = scrollPane.getListeners(MouseWheelListener.class);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "MouseWheelDelegator.updateListeners(): scrollPane change scrollPane={0}, MouseWheelListeners:{1}\n",
+                                new Object[]{obj2String(scrollPane), Arrays.asList(mwls)});
+                    }
+                    delegateListener = null;
+                    for (MouseWheelListener listener : mwls) {
+                        if (listener instanceof MouseWheelDelegator) {
+                            scrollPane.removeMouseWheelListener(listener);
+                        } else { // Regular listener 
+                            // Current patch only assumes one MW listener attached by the UI impl.
+                            if (delegateListener == null) {
+                                delegateListener = listener;
+                                scrollPane.removeMouseWheelListener(listener);
+                                scrollPane.addMouseWheelListener(this);
+                            }
+                        }
+                    }
+                }
+                lastUI = ui;
+            }
+        }
+        
+        private void uninstall() {
+            scrollPane.removePropertyChangeListener(this);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("ui".equals(evt.getPropertyName())) {
+                updateListeners();
+            }
+        }
+
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent e) {
+            DocumentViewOp op = op();
+            if (op != null) {
+                op.mouseWheelMoved(e, delegateListener);
+            }
+        }
+        
+    }
+    
 }
