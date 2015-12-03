@@ -125,7 +125,10 @@ public class CordovaPerformer implements BuildPerformer {
     
     
     public Task createPlatforms(final Project project) {
-        return perform("upgrade-to-cordova-project", project);      
+        
+        System.out.println(" +++ ");
+        
+        return perform("upgrade-to-cordova-project", project, false);      
     }
     
     @NbBundle.Messages({
@@ -145,7 +148,11 @@ public class CordovaPerformer implements BuildPerformer {
         "ERR_SiteRootNotDefined=Project Site Root Folder must be located in project directory"    
     })
     @Override
-    public ExecutorTask perform(final String target, final Project project) {
+    public ExecutorTask perform(final String target, final Project project) {    
+        return perform(target, project, true);
+    }
+    
+    private ExecutorTask perform(final String target, final Project project, final boolean checkOtherScripts) {    
         if ((target.startsWith("build") || target.startsWith("sim"))
                 && ClientProjectUtilities.getStartFile(project) == null) {
             DialogDisplayer.getDefault().notify(
@@ -212,7 +219,8 @@ public class CordovaPerformer implements BuildPerformer {
                         }
                     }
                     
-                    if(project.getProjectDirectory().getFileObject(PATH_BUILD_XML) == null && 
+                    if(checkOtherScripts && 
+                       project.getProjectDirectory().getFileObject(PATH_BUILD_XML) == null && 
                        checkOtherBuildScripts(project)) 
                     {
                         return;
@@ -416,12 +424,12 @@ public class CordovaPerformer implements BuildPerformer {
     }
     
     private boolean checkOtherBuildScripts(Project project) {
-        return checkBuildTool(project, "Gruntfile.js", "Grunt", () -> { project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(GRUNT_CUSTOMIZER_IDENT, null); }) ||
-               checkBuildTool(project, "gulpfile.js",  "Gulp", () -> { project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(GULP_CUSTOMIZER_IDENT, null); }) 
+        return hasOtherBuildTool(project, "Gruntfile.js", "Grunt", () -> { project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(GRUNT_CUSTOMIZER_IDENT, null); }) ||
+               hasOtherBuildTool(project, "gulpfile.js",  "Gulp", () -> { project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(GULP_CUSTOMIZER_IDENT, null); }) 
                ? true : false;            
     }
     
-    private boolean checkBuildTool(Project project, String toolfile, String toolName, Runnable r) {
+    private boolean hasOtherBuildTool(Project project, String toolfile, String toolName, Runnable r) {
         if(project.getProjectDirectory().getFileObject(toolfile) != null) {
             ProjectInformation info = ProjectUtils.getInformation(project);
             String name = info != null ? info.getDisplayName() : project.getProjectDirectory().getNameExt();
@@ -436,12 +444,12 @@ public class CordovaPerformer implements BuildPerformer {
             DialogDisplayer.getDefault().notify(desc);
             if(desc.getValue() == tool) {
                 r.run();
-                return false;
+                return true;
             } else if (desc.getValue() == NotifyDescriptor.CANCEL_OPTION) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
     
     private static String getConfigPath(Project project) {
@@ -490,10 +498,6 @@ public class CordovaPerformer implements BuildPerformer {
         }
     }
 
-    public static boolean createScript(Project project, String source, String target, boolean overwrite) throws IOException {
-        return createScript(project, source, target, overwrite, null);
-    }
-    
     /**
      * 
      * @param project
@@ -503,7 +507,8 @@ public class CordovaPerformer implements BuildPerformer {
      * @return true if script was created. False if script was already there
      * @throws IOException 
      */
-    private static boolean createScript(Project project, String source, String target, boolean overwrite, FileObject build) throws IOException {        
+    public static boolean createScript(Project project, String source, String target, boolean overwrite) throws IOException {        
+        FileObject build = null;
         if (!overwrite) {
             build = project.getProjectDirectory().getFileObject(target);
         }
