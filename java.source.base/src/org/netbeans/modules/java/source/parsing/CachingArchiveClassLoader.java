@@ -106,9 +106,7 @@ public final class CachingArchiveClassLoader extends ClassLoader {
                             }
                             return defineClass(
                                     name,
-                                    //todo: not in JDK9 javac
-                                    //com.sun.tools.hc.LambdaMetafactory.translateClassFile(buffer,0,len),
-                                    buffer,
+                                    com.sun.tools.hc.LambdaMetafactory.translateClassFile(buffer,0,len),
                                     0,
                                     len);
                         } catch (FileNotFoundException fnf) {
