@@ -449,6 +449,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
             Bundle.ProfilingPointsWindowUI_PpColumnToolTip(), 
             Bundle.ProfilingPointsWindowUI_ResultsColumnToolTip()
         });
+        profilingPointsTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         profilingPointsTable.getSelectionModel().addListSelectionListener(this);
         profilingPointsTable.addMouseListener(this);
         profilingPointsTable.addMouseMotionListener(this);
