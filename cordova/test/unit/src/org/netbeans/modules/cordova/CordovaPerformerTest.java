@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,27 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.api;
+package org.netbeans.modules.cordova;
 
-import org.netbeans.modules.web.clientproject.spi.ClientProjectWizardProviderImpl;
-import org.openide.WizardDescriptor;
-import org.openide.util.Lookup;
+import org.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.javascript.grunt.ui.customizer.GruntCustomizerProvider;
+import org.netbeans.modules.javascript.gulp.ui.customizer.GulpCustomizerProvider;
 
 /**
  *
- * @author Jan Becicka
+ * @author beci
  */
-public abstract class ClientProjectWizardProvider {
-    public static WizardDescriptor.InstantiatingIterator newProjectWithExtender() {
-        ClientProjectWizardProviderImpl wiz = Lookup.getDefault().lookup(ClientProjectWizardProviderImpl.class);
-        return wiz.newClientProjectWithExtender();
+public class CordovaPerformerTest extends NbTestCase {
+    
+    
+    public CordovaPerformerTest(String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Test
+    public void testHiddenGruntDependency() throws Exception {
+        assertEquals(CordovaPerformer.GRUNT_CUSTOMIZER_IDENT, GruntCustomizerProvider.CUSTOMIZER_IDENT);
     }
     
-    public static WizardDescriptor.InstantiatingIterator existingHtml5Project() {
-        ClientProjectWizardProviderImpl wiz = Lookup.getDefault().lookup(ClientProjectWizardProviderImpl.class);
-        return wiz.existingHtml5Project();
+    @Test
+    public void testHiddenGulpDependency() throws Exception {
+        assertEquals(CordovaPerformer.GULP_CUSTOMIZER_IDENT, GulpCustomizerProvider.CUSTOMIZER_IDENT);
     }
+    
 }
- 

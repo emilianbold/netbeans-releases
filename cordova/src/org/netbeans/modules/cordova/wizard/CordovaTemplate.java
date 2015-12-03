@@ -304,4 +304,14 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         return ClientProjectWizardProvider.newProjectWithExtender();
     }
 
+    @NbBundle.Messages("ClientSideProjectWizardIterator.existingCordovaProject.displayName=Cordova Application with Existing Sources")
+    @TemplateRegistration(folder="Project/ClientSide",
+            displayName="#ClientSideProjectWizardIterator.existingCordovaProject.displayName",
+            description = "../resources/CordovaProjectDescription.html", // NOI18N
+            iconBase = "org/netbeans/modules/cordova/resources/project.png", // NOI18N
+            position=500)
+    public static WizardDescriptor.InstantiatingIterator existingHtml5Project() {
+        return ClientProjectWizardProvider.existingHtml5Project();
+    }
+    
 }
