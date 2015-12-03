@@ -725,7 +725,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
                 int y2 = baseUI.getYFromPos(rel.getEnd().getOffset());
 
                 // only support preceding related segments, for now
-                if (y2 < yFrom) {
+                if (y2 < yPos) {
                     // the related content will be displayed
                     contentHeight += y2 - y1 + lineHeight;
                     // and finally the suppression line:
