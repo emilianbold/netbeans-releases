@@ -67,8 +67,10 @@ public interface ProcessesImplementation {
      *
      * @param process process to kill
      * @param environment map containing the variables and their values which the
-     *             process must have to be considered being part of
-     *             the tree to kill
+     *             process should have to be considered being part of
+     *             the tree to kill; used as a hint to find subprocesses
+     * @throws UnsupportedOperationException when this implementation is not able
+     *             to even attempt to kill the process and the subprocesses
      */
-    void killTree(Process process, Map<String, String> environment);
+    void killTree(Process process, Map<String, String> environment) throws UnsupportedOperationException;
 }
