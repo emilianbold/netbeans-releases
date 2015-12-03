@@ -115,6 +115,7 @@ public class FixUsesPerformerTest extends PHPTestBase {
         performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS), false, options);
     }
 
+    // XXX incorrect result, the two 'b's are swapped
     public void testIssue211585_02() throws Exception {
         String[] selections = new String[] {"\\Fom\\Bom\\ClassName", "\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName"};
         Options options = new Options(false, false, true, true, false);
