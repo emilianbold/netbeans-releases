@@ -58,4 +58,9 @@ public class ClientProjectWizardProviderImplementation implements ClientProjectW
         return ClientSideProjectWizardIterator.newProjectWithExtender();
     }
     
+    @Override
+    public WizardDescriptor.InstantiatingIterator<WizardDescriptor> existingHtml5Project() {
+        return ClientSideProjectWizardIterator.existingHtml5Project();
+    }
+    
 }
