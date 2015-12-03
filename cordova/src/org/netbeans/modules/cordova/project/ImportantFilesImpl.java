@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.cordova.project;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
@@ -59,6 +61,8 @@ import org.openide.util.NbBundle;
 public class ImportantFilesImpl implements ImportantFilesImplementation {
 
     private final ImportantFilesSupport support;
+    private final ImportantFilesSupport support2;
+    
     private final ImportantFilesSupport.FileInfoCreator fileInfoCreator = new ImportantFilesSupport.FileInfoCreator() {
         @Override
         public FileInfo create(FileObject fileObject) {
@@ -72,20 +76,25 @@ public class ImportantFilesImpl implements ImportantFilesImplementation {
     public ImportantFilesImpl(Project project) {
         assert project != null;
         support = ImportantFilesSupport.create(project.getProjectDirectory().getFileObject("nbproject"), "plugins.properties"); // NOI18N
+        support2 = ImportantFilesSupport.create(project.getProjectDirectory(), "config.xml"); // NOI18N
     }
 
     @Override
     public Collection<FileInfo> getFiles() {
-        return support.getFiles(fileInfoCreator);
+        List<FileInfo> ret = new ArrayList<>(support.getFiles(fileInfoCreator));
+        ret.addAll(support2.getFiles(fileInfoCreator));
+        return ret;
     }
 
     @Override
     public void addChangeListener(ChangeListener listener) {
         support.addChangeListener(listener);
+        support2.addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
         support.removeChangeListener(listener);
+        support2.removeChangeListener(listener);
     }
 }
