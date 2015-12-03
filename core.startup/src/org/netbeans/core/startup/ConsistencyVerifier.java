@@ -61,6 +61,7 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.ModuleManager;
+import org.openide.modules.Dependency;
 
 /**
  * Utility class permitting you to verify that a set of modules could be enabled together.
@@ -170,6 +171,12 @@ public class ConsistencyVerifier {
             }
             SortedSet<String> probnames = new TreeSet<String>();
             for (Object prob : probs) {
+                if (prob instanceof Dependency) {
+                    Dependency d = (Dependency) prob;
+                    if (Dependency.TYPE_JAVA == d.getType() && m.isAutoload()) {
+                        continue;
+                    }
+                }
                 String description;
                 if (formatted) {
                     description = NbProblemDisplayer.messageForProblem(m, prob, false);
@@ -178,7 +185,9 @@ public class ConsistencyVerifier {
                 }
                 probnames.add(description);
             }
-            problems.put(cnb, probnames);
+            if (!probnames.isEmpty()) {
+                problems.put(cnb, probnames);
+            }
         }
         return problems;
     }

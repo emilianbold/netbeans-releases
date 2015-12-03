@@ -46,19 +46,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.extexecution.WrapperProcess;
+import org.netbeans.api.extexecution.base.Environment;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -268,152 +264,31 @@ public final class ExternalProcessBuilder implements Callable<Process> {
     @NonNull
     @Override
     public Process call() throws IOException {
-        List<String> commandList = new ArrayList<String>();
-
-        if (Utilities.isWindows() && !ESCAPED_PATTERN.matcher(executable).matches()) {
-            commandList.add(escapeString(executable));
-        } else {
-            commandList.add(executable);
-        }
-
-        List<String> args = buildArguments();
-        commandList.addAll(args);
-
-        java.lang.ProcessBuilder pb = new java.lang.ProcessBuilder(commandList.toArray(new String[commandList.size()]));
-        if (workingDirectory != null) {
-            pb.directory(workingDirectory);
-        }
-
-        Map<String, String> pbEnv = pb.environment();
-        Map<String, String> env = buildEnvironment(pbEnv);
-        pbEnv.putAll(env);
-        String uuid = UUID.randomUUID().toString();
-        pbEnv.put(WrapperProcess.KEY_UUID, uuid);
-        adjustProxy(pb);
-        pb.redirectErrorStream(redirectErrorStream);
-        logProcess(Level.FINE, pb);
-        WrapperProcess wp = new WrapperProcess(pb.start(), uuid);
-        return wp;
-    }
-
-    /**
-     * Logs the given <code>pb</code> using the given <code>level</code>.
-     *
-     * @param pb the ProcessBuilder to log.
-     * @param level the level for logging.
-     */
-    private void logProcess(final Level level, final java.lang.ProcessBuilder pb) {
-
-        if (!LOGGER.isLoggable(level)) {
-            return;
-        }
-
-        File dir = pb.directory();
-        String basedir = dir == null ? "" : "(basedir: " + dir.getAbsolutePath() + ") "; //NOI18N
-
-        StringBuilder command = new StringBuilder();
-        for (Iterator<String> it = pb.command().iterator(); it.hasNext();) {
-            command.append(it.next());
-            if (it.hasNext()) {
-                command.append(' '); //NOI18N
-            }
-        }
-
-        LOGGER.log(level, "Running: " + basedir + '"' + command.toString() + '"'); //NOI18N
-        LOGGER.log(level, "Environment: " + pb.environment()); //NOI18N
-    }
-
-    // package level for unit testing
-    Map<String, String> buildEnvironment(Map<String, String> original) {
-        Map<String, String> ret = new HashMap<String, String>(original);
-        ret.putAll(envVariables);
-
-        // Find PATH environment variable - on Windows it can be some other
-        // case and we should use whatever it has.
-        String pathName = "PATH"; // NOI18N
-
-        if (Utilities.isWindows()) {
-            pathName = "Path"; // NOI18N
-
-            for (String key : ret.keySet()) {
-                if ("PATH".equals(key.toUpperCase(Locale.ENGLISH))) { // NOI18N
-                    pathName = key;
-                    break;
-                }
-            }
-        }
-
-        // TODO use StringBuilder
-        String currentPath = ret.get(pathName);
-
-        if (currentPath == null) {
-            currentPath = "";
-        }
-
+        org.netbeans.api.extexecution.base.ProcessBuilder builder =
+                org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+        builder.setExecutable(executable);
+        builder.setWorkingDirectory(workingDirectory.getPath());
+        builder.setArguments(arguments);
+        builder.setRedirectErrorStream(redirectErrorStream);
+        Environment env  = builder.getEnvironment();
         for (File path : paths) {
-            currentPath = path.getAbsolutePath().replace(" ", "\\ ") //NOI18N
-                    + File.pathSeparator + currentPath;
+            env.prependPath("PATH", path.getPath());
         }
+        for (Map.Entry<String, String> entry : envVariables.entrySet()) {
+            env.setVariable(entry.getKey(), entry.getValue());
+        }
+        // XXX just to be sure
+        adjustProxy(env);
 
-        if (!"".equals(currentPath.trim())) {
-            ret.put(pathName, currentPath);
-        }
-        return ret;
+        return builder.call();
     }
 
-    // package level for unit testing
-    List<String> buildArguments() {
-        if (!Utilities.isWindows()) {
-            return new ArrayList<String>(arguments);
-        }
-        List<String> result = new ArrayList<String>(arguments.size());
-        for (String arg : arguments) {
-            if (arg != null && !ESCAPED_PATTERN.matcher(arg).matches()) {
-                result.add(escapeString(arg));
-            } else {
-                result.add(arg);
-            }
-        }
-        return result;
-    }
-
-    private static String escapeString(String s) {
-        if (s.length() == 0) {
-            return "\"\""; // NOI18N
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        boolean hasSpace = false;
-        final int slen = s.length();
-        char c;
-
-        for (int i = 0; i < slen; i++) {
-            c = s.charAt(i);
-
-            if (Character.isWhitespace(c)) {
-                hasSpace = true;
-                sb.append(c);
-
-                continue;
-            }
-            sb.append(c);
-        }
-
-        if (hasSpace) {
-            sb.insert(0, '"'); // NOI18N
-            sb.append('"'); // NOI18N
-        }
-        return sb.toString();
-    }
-
-    private void adjustProxy(java.lang.ProcessBuilder pb) {
+    private void adjustProxy(Environment env) {
         String proxy = getNetBeansHttpProxy();
         if (proxy != null) {
-            Map<String, String> env = pb.environment();
-            if ((env.get("HTTP_PROXY") == null) && (env.get("http_proxy") == null)) { // NOI18N
-                env.put("HTTP_PROXY", proxy); // NOI18N
-                env.put("http_proxy", proxy); // NOI18N
+            if ((env.getVariable("HTTP_PROXY") == null) && (env.getVariable("http_proxy") == null)) { // NOI18N
+                env.setVariable("HTTP_PROXY", proxy); // NOI18N
+                env.setVariable("http_proxy", proxy); // NOI18N
             }
             // PENDING - what if proxy was null so the user has TURNED off
             // proxies while there is still an environment variable set - should
