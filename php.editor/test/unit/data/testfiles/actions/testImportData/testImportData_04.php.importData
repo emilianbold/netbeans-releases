@@ -1,18 +1,18 @@
 Caret position: 132
 Should show uses panel: true
 Defaults:
- \Nette\Http\Request
  \Nette\Application\UI\Presenter
+ \Nette\Http\Request
 
 Names:
- Request
  Presenter
+ Request
 
 Variants:
- \Nette\Application\Request
- \Nette\Http\Request
+ \Nette\Application\UI\Presenter
  Don't use type.
 
- \Nette\Application\UI\Presenter
+ \Nette\Application\Request
+ \Nette\Http\Request
  Don't use type.
 
