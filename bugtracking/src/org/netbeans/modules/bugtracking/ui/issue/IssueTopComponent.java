@@ -432,6 +432,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                             controller = getController();
                             issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
                             registerListeners();
+                            controller.opened();
                             revalidate();
                             repaint();
 

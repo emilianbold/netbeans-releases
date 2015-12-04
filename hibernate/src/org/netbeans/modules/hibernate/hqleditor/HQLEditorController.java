@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.swing.SwingUtilities;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -91,7 +92,7 @@ import org.openide.util.NbBundle;
  */
 public class HQLEditorController {
 
-    private Logger logger = Logger.getLogger(HQLEditorController.class.getName());
+    private static final Logger logger = Logger.getLogger(HQLEditorController.class.getName());
     private HQLEditorTopComponent editorTopComponent = null;
 
     private enum AnnotationAccessType {
@@ -743,21 +744,13 @@ public class HQLEditorController {
                 fileManager.setLocation(StandardLocation.SOURCE_PATH, sourcePath);
                 List<String> options = new ArrayList<String>();
                 options.add("-target"); //NOI18N
-                String jdkVersion = System.getProperty("java.specification.version"); //NOI18N
-                if (jdkVersion == null || jdkVersion.equals("")) { //NOI18N
-                    // Set to 1.5
-                    jdkVersion = "1.5"; //NOI18N
+                final SourceVersion runtimeSourceVersion = getRuntimeSourceVersion();
+                final SourceVersion nbJavacSourceVersion = SourceVersion.latest();
+                if (runtimeSourceVersion.compareTo(nbJavacSourceVersion) <= 0) {
+                    options.add(sourceVersionToString(runtimeSourceVersion));
                 } else {
-                    if (javax.lang.model.SourceVersion.latest().ordinal() < 10) {//should work for up to 1.9 release, need to be reviewed after 10  will be reached.
-                        String biggest = "1." + javax.lang.model.SourceVersion.latest().ordinal();//it's workaround for #223036
-                        if (jdkVersion.compareTo(biggest) > 0) {
-                            jdkVersion = biggest;
-                        }
-                    }
+                    options.add(sourceVersionToString(nbJavacSourceVersion));
                 }
-                options.add(jdkVersion);
-
-
 
                 // for some reason the following is not working.. Bug in JavaC API?
 //                options.add("-classpath");
@@ -817,5 +810,49 @@ public class HQLEditorController {
         }
         logger.info("Adding classpath " + cpEntries);
         return cpEntries;
+    }
+
+    private static SourceVersion getRuntimeSourceVersion() {
+        final String specVer = System.getProperty("java.specification.version", "");    //NOI18N
+        final String parts[] = specVer.split("\\.");    //NOI18N
+        try {
+            int major;
+            int minor;
+            if (parts.length == 1) {
+                major = Integer.parseInt(parts[0]);
+                minor = 0;
+            } else if (parts.length == 2) {
+                major = Integer.parseInt(parts[0]);
+                minor = Integer.parseInt(parts[1]);
+            } else {
+                return SourceVersion.RELEASE_5;
+            }
+            final SourceVersion[] sourceVersions = SourceVersion.values();
+            do {
+                final int ordinal = major >= 9 ? major : minor;
+                if (sourceVersions.length > ordinal) {
+                    return sourceVersions[ordinal];
+                }
+                //Downgrade
+                if (major > 9) {
+                    major -= 1;
+                } else if (major == 9) {
+                    major = 1;
+                    minor = 8;
+                } else {
+                    minor -= 1;
+                }
+            } while ((major > 1) || (minor >= 0));
+        } catch (NumberFormatException e) {
+            logger.log(
+                Level.WARNING,
+                "Invalid java.specification.version: {0}, using 1.5",   //NOI18N
+                specVer);
+        }
+        return SourceVersion.RELEASE_5;
+    }
+
+    private static String sourceVersionToString(final SourceVersion sv) {
+        return Integer.toString(sv.ordinal());
     }
 }
