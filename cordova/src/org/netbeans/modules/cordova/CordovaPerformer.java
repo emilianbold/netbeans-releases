@@ -125,9 +125,6 @@ public class CordovaPerformer implements BuildPerformer {
     
     
     public Task createPlatforms(final Project project) {
-        
-        System.out.println(" +++ ");
-        
         return perform("upgrade-to-cordova-project", project, false);      
     }
     
