@@ -54,7 +54,6 @@ import org.openide.util.actions.SystemAction;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -68,7 +67,6 @@ import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -79,7 +77,6 @@ import org.netbeans.lib.profiler.ui.components.ProfilerToolbar;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTable;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTableContainer;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
-import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.openide.util.Lookup;
 
@@ -132,7 +129,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     private JButton editButton;
     private JButton removeButton;
     private JCheckBox dependenciesCheckbox;
-    private JComboBox projectsCombo;
+    private ProjectSelector ppointProjectSelector;
     private ProfilerTable profilingPointsTable;
     private JLabel projectLabel;
     private JMenuItem disableItem;
@@ -148,8 +145,6 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     private ProfilingPoint[] profilingPoints = new ProfilingPoint[0];
     private boolean profilingInProgress = false;
 
-    private boolean internalComboChange;
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public ProfilingPointsWindowUI() {
@@ -161,13 +156,11 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     
 
     public Lookup.Provider getSelectedProject() {
-        return (projectsCombo.getSelectedItem() instanceof Lookup.Provider) ? (Lookup.Provider) projectsCombo.getSelectedItem() : null;
+        return ppointProjectSelector.getProject();
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == projectsCombo) {
-            if (!internalComboChange) refreshProfilingPoints();
-        } else if (e.getSource() == addButton) {
+       if (e.getSource() == addButton) {
             SystemAction.get(InsertProfilingPointAction.class).performAction(getSelectedProject());
         } else if (e.getSource() == removeButton) {
             int[] selectedRows = profilingPointsTable.getSelectedRows();
@@ -506,25 +499,13 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, Bundle.ProfilingPointsWindowUI_ProjectLabelText());
         projectLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 
-        projectsCombo = new JComboBox(new Object[] { Bundle.ProfilingPointsWindowUI_AllProjectsString() }) {
-                public Dimension getMaximumSize() {
-                    return getPreferredSize();
-                }
-
-                public Dimension getPreferredSize() {
-                    return new Dimension(200, super.getPreferredSize().height);
-                }
-                ;
-                public Dimension getMinimumSize() {
-                    return getPreferredSize();
-                }
-                ;
-            };
-        projectLabel.setLabelFor(projectsCombo);
-        projectsCombo.addActionListener(this);
-        projectsCombo.setRenderer(Utils.getProjectListRenderer());
+        ppointProjectSelector = new ProjectSelector(Bundle.ProfilingPointsWindowUI_AllProjectsString()) {
+            protected void selectionChanged() { refreshProfilingPoints(); }
+            protected int getPreferredWidth() { return 200; }
+        };
+        projectLabel.setLabelFor(ppointProjectSelector);
         toolbar.add(projectLabel);
-        toolbar.add(projectsCombo);
+        toolbar.add(ppointProjectSelector);
 
         if (ProfilingPointsUIHelper.get().displaySubprojectsOption()) {
             dependenciesCheckbox = new JCheckBox();
@@ -668,31 +649,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     }
 
     private void updateProjectsCombo() {
-        Lookup.Provider[] projects = ProjectUtilities.getSortedProjects(ProjectUtilities.getOpenedProjects());
-        List items = new ArrayList(projects.length + 1);
-        items.addAll(Arrays.asList(projects));
-
-        items.add(0, Bundle.ProfilingPointsWindowUI_AllProjectsString());
-
-        DefaultComboBoxModel comboModel = (DefaultComboBoxModel) projectsCombo.getModel();
-        Object selectedItem = projectsCombo.getSelectedItem();
-
-        internalComboChange = true;
-
-        comboModel.removeAllElements();
-
-        for (int i = 0; i < items.size(); i++) {
-            comboModel.addElement(items.get(i));
-        }
-
-        if ((selectedItem != null) && (comboModel.getIndexOf(selectedItem) != -1)) {
-            projectsCombo.setSelectedItem(selectedItem);
-        } else {
-            projectsCombo.setSelectedItem(Bundle.ProfilingPointsWindowUI_AllProjectsString());
-        }
-
-        internalComboChange = false;
-
+        ppointProjectSelector.resetModel();
         refreshProfilingPoints();
     }
 }
