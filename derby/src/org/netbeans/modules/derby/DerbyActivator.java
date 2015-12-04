@@ -104,9 +104,9 @@ public class DerbyActivator {
         try {
             DerbyDatabases.createSampleDatabase();
         } catch (DatabaseException e) {
-            Logger.getLogger(DerbyActivator.class.getName()).log(Level.WARNING, null, e);
+            LOGGER.log(Level.WARNING, null, e);
         } catch (IOException e) {
-            Logger.getLogger(DerbyActivator.class.getName()).log(Level.WARNING, null, e);
+            LOGGER.log(Level.INFO, "Failed to create sample database", e);
         }
     }
 }
