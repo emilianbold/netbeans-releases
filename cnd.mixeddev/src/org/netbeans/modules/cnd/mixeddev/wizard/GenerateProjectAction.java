@@ -55,6 +55,10 @@ import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -67,6 +71,12 @@ import org.openide.util.actions.NodeAction;
  * @author Alexander Simon
  */
 public class GenerateProjectAction extends NodeAction {
+    
+    public static final GenerateProjectAction INSTANCE = new GenerateProjectAction();
+    
+    private GenerateProjectAction() {
+        super();
+    }
     
     @Override
     protected void performAction(Node[] activatedNodes) {

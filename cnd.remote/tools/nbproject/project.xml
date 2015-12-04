@@ -42,6 +42,14 @@
                     <name>Linux-SPARC</name>
                     <type>0</type>
                 </confElem>
+                <confElem>
+                    <name>Previse_32</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Previse_64</name>
+                    <type>0</type>
+                </confElem>
             </confList>
             <formatting>
                 <project-formatting-style>false</project-formatting-style>

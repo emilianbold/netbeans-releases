@@ -58,6 +58,14 @@ ifdef PARFAIT
    CC=parfait-gcc
 endif
 
+ifdef PREVISE
+    PREVISE_FLAG = -xprevise=yes 
+    CODEAN_TARGET = codean
+else
+    PREVISE_FLAG = 
+    CODEAN_TARGET = 
+endif
+
 SOURCES=\
 	$(ROOT_DIR)/src/fs_server.c \
 	$(ROOT_DIR)/src/queue.c \
@@ -101,16 +109,16 @@ LF_Linux-x86      = $(LF_COMMON)
 LF_Linux-x86_64   = $(LF_COMMON)
 LF_Linux-arm      = $(LF_COMMON) -static
 
-CFLAGS=$(CF_$(CONF))
-LDFLAGS=$(LF_$(CONF))
+CFLAGS=$(CF_$(CONF)) ${PREVISE_FLAG}
+LDFLAGS=$(LF_$(CONF)) ${PREVISE_FLAG}
 
 ifdef PREVISE
-  STRIP = 
+  STRIP = @echo "Not stripping" 
 else
   STRIP = strip $(EXEC)
 endif
 
-all: $(EXEC) strip summarise
+all: $(EXEC) strip summarise ${CODEAN_TARGET}
 
 all-debug: $(EXEC) summarise
 
@@ -125,6 +133,12 @@ summarise:
 
 strip:
 	$(STRIP) 
+
+codean:
+	@(echo; echo "========== $(EXEC) static analysis =========="; echo)
+	@codean -s $(EXEC)
+	@(echo; echo HTML results are:)
+	@(cd ${DIST}; ls $(EXEC).static.html)
 
 parfait: all
 	@echo Processing parfait output. This can take a while...

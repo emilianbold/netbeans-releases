@@ -6,7 +6,7 @@
             <folder name="x-java">
                 <folder name="Popup">
                     <folder name="MixedDevelopment">
-                        <attr name="position" intvalue="0"/>
+                        <attr name="position" intvalue="1950"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.mixeddev.Bundle"/>
                     </folder>
                 </folder>
@@ -21,23 +21,4 @@
             </folder>    
         </folder>
     </folder>
-    
-    <folder name="Loaders">
-        <folder name="text">
-            <folder name="x-java">
-                <folder name="Actions">
-                    <file name="GenerateProjectAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-cnd-mixeddev-wizard-GenerateProjectAction.instance"/>
-                        <attr name="position" intvalue="1290"/>
-                    </file>
-                </folder>                
-            </folder>    
-        </folder>
-    </folder>
-    
-    <folder name="Actions">
-        <folder name="Build">
-            <file name="org-netbeans-modules-cnd-mixeddev-wizard-GenerateProjectAction.instance"/>
-        </folder>    
-    </folder> <!-- Actions -->
 </filesystem>
