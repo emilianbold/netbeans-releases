@@ -1918,7 +1918,29 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             }
         });
     }
-
+ 	
+    private void loadNode(final JFileChooser fileChooser, final FileNode node) {
+        COMMON_RP.post(new Runnable() {
+            @Override
+            public void run() {
+                if (!EventQueue.isDispatchThread()) {
+                    // first pass, out of EQ thread, loads data
+                    markStartTime();
+                    setCursor(fileChooser, Cursor.WAIT_CURSOR);
+                    node.loadChildren(fileChooser, true);
+                    // send to second pass
+                    EventQueue.invokeLater(this);
+                } else {
+                    // second pass, in EQ thread
+                    ((DefaultTreeModel) tree.getModel()).reload(node);
+//                  ((DefaultTreeModel) tree.getModel()).nodeStructureChanged(node);
+                    setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+                    checkUpdate();
+                }
+            }
+        });
+    }
+ 
     private void setCursor (final JComponent comp, final int type) {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable () {
@@ -2950,7 +2972,17 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             if (validationResult.isDirectoryChanged) {
                 fireDirectoryChanged(null);
             }
-            setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+            boolean isLoading = false;
+            if (rootNode instanceof FileNode) {
+                FileNode fn = (FileNode) rootNode;
+                if (!fn.isLoaded()) {
+                    isLoading = true;
+                    loadNode(fileChooser, fn);
+                }
+            }
+            if (!isLoading) {
+                setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+            }
             return;
         }
         if (loadingModel == null) {
@@ -2998,7 +3030,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
 
     private static final class ValidationParams {
 
-        private File file;
+        private final File file;
         private long eventID;
 
         ValidationParams(File file) {
@@ -3085,18 +3117,12 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                 if (currentDirectoryPath != null) {
                     try{
                         String currentDir = currentDirectoryPath.call();
-                        if (Thread.interrupted()) {
-                            return new ValidationResult(Boolean.FALSE, null, false, curDir);
-                        }
                         file = (currentDir == null || currentDir.isEmpty()) ?
                                 fileChooser.getFileSystemView().getDefaultDirectory() :
                                 fileChooser.getFileSystemView().createFileObject(currentDir);
-                        if (Thread.interrupted()) {
-                            return new ValidationResult(Boolean.FALSE, null, false, curDir);
-                        }
                     } catch(Exception ex) {
-                     ex.printStackTrace(System.err);
-                     return new ValidationResult(Boolean.FALSE, null, false, curDir);
+                        ex.printStackTrace(System.err);
+                        return new ValidationResult(Boolean.FALSE, null, false, curDir);
                     }
                 } else {
                     file = oldValue  == null ? fileChooser.getFileSystemView().getDefaultDirectory() : oldValue;
@@ -3111,7 +3137,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             }
             final boolean directoryChanged = !file.equals(oldValue);
             final FileNode node = new FileNode(file);
-            node.loadChildren(fileChooser, true);
+            //node.loadChildren(fileChooser, true);
             return new ValidationResult(Boolean.TRUE, node, directoryChanged, file);
         }
 

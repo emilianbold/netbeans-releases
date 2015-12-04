@@ -781,7 +781,7 @@ int main(int argc, char* argv[]) {
     while (1) {
         /* wait for a client to talk to us */
         connection_data* conn_data = (connection_data*) malloc(sizeof (connection_data));
-        int addrlen = sizeof (conn_data->pin);
+        socklen_t addrlen = sizeof (conn_data->pin);
         if ((conn_data->sd = accept(sd, (struct sockaddr *) & conn_data->pin, &addrlen)) == -1) {
             perror("accept");
             exit(1);
