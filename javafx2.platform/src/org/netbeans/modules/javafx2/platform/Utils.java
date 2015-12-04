@@ -76,7 +76,7 @@ public final class Utils {
     private static final String JDK_JRE_PATH = "jre/"; //NOI18N
     private static final String[] JFXRT_JAR_JRE_PATHS = {"lib/", "lib/ext/"}; //NOI18N
     private static final String[] JFXRT_OPTIONAL_JARS = {"javaws.jar", "deploy.jar", "plugin.jar"}; // NOI18N
-    private static final SpecificationVersion JDK9 = new SpecificationVersion("1.9");   //NOI18N
+    private static final SpecificationVersion JDK9 = new SpecificationVersion("9");   //NOI18N
     private static final String MODUL_PROTOCOL = "nbjrt";   //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.javafx2.platform.Utils"); // NOI18N
