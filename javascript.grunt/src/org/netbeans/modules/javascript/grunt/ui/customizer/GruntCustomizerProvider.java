@@ -46,6 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.GruntBuildTool;
 import org.netbeans.modules.javascript.grunt.preferences.GruntPreferences;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -140,6 +141,11 @@ public final class GruntCustomizerProvider implements ProjectCustomizer.Composit
         public void setTask(String commandId, String task) {
             assert commandId != null;
             preferences.setTask(commandId, task);
+        }
+
+        @Override
+        public CustomizerPanelImplementation getCustomizerPanel() {
+            return null;
         }
 
     }
