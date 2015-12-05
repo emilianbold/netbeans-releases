@@ -142,7 +142,9 @@ public class ProjectUtilitiesProviderImpl extends ProjectUtilitiesProvider {
                 synchronized(ProjectUtilitiesProviderImpl.this) {
                     if (!hasListeners()) return;
 
-                    if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+                    String prop = evt.getPropertyName();
+                    if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(prop) ||
+                        OpenProjects.PROPERTY_MAIN_PROJECT.equals(prop)) {
                         for (ChangeListener listener : listeners)
                             listener.stateChanged(new ChangeEvent(evt));
                     }
