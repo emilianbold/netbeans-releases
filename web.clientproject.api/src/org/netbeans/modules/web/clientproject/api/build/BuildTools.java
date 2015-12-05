@@ -53,6 +53,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.build.ui.CustomizerPanel;
 import org.netbeans.modules.web.clientproject.build.ui.TasksMenu;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Parameters;
@@ -186,6 +187,13 @@ public final class BuildTools {
          */
         void setTask(@NonNull String commandId, @NullAllowed String task);
 
+        /**
+         * Get panel for extending the existing build tool customizer.
+         * @return panel for extending the existing build tool customizer, can be {@code null}
+         * @since 1.102
+         */
+        @CheckForNull
+        CustomizerPanelImplementation getCustomizerPanel();
     }
 
     /**
