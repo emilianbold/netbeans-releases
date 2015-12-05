@@ -46,6 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.phing.PhingBuildTool;
 import org.netbeans.modules.php.phing.preferences.PhingPreferences;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -118,6 +119,11 @@ public final class PhingCustomizerProvider implements ProjectCustomizer.Composit
         public void setTask(String commandId, String task) {
             assert commandId != null;
             preferences.setTarget(commandId, task);
+        }
+
+        @Override
+        public CustomizerPanelImplementation getCustomizerPanel() {
+            return null;
         }
 
     }
