@@ -41,10 +41,11 @@
                   <Component id="testFileTextField" alignment="1" max="32767" attributes="0"/>
               </Group>
           </Group>
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <Component id="assignLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
           </Group>
+          <Component id="extenderPanel" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -96,7 +97,8 @@
                   <Component id="testFileCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="testFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="extenderPanel" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -215,5 +217,9 @@
         <Property name="columns" type="int" value="20"/>
       </Properties>
     </Component>
+    <Container class="javax.swing.JPanel" name="extenderPanel">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+    </Container>
   </SubComponents>
 </Form>

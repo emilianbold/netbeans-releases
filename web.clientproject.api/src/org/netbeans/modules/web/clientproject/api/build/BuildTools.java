@@ -53,8 +53,8 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.build.ui.CustomizerPanel;
 import org.netbeans.modules.web.clientproject.build.ui.TasksMenu;
-import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
+import org.netbeans.modules.web.clientproject.spi.build.CustomizerPanelImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Parameters;
 
