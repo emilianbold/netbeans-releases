@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.grunt.preferences;
+package org.netbeans.modules.javascript.grunt.ui.customizer;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
+import java.awt.EventQueue;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.javascript.grunt.preferences.GruntPreferences;
+import org.netbeans.modules.web.clientproject.spi.build.CustomizerPanelImplementation;
 
-public final class GruntPreferences {
+public class GruntCustomizerPanelImpl implements CustomizerPanelImplementation {
 
-    private static final String COMMAND_PREFIX = "action."; // NOI18N
-    private static final String TASKS = "tasks"; // NOI18N
-
-    private final Project project;
+    private final GruntPreferences preferences;
 
     // @GuardedBy("this")
-    private Preferences sharedPreferences;
+    private GruntCustomizerPanel panel;
 
 
-    public GruntPreferences(Project project) {
-        assert project != null;
-        this.project = project;
+    GruntCustomizerPanelImpl(GruntPreferences preferences) {
+        assert preferences != null;
+        this.preferences = preferences;
     }
 
-    @CheckForNull
-    public String getTask(String commandId) {
-        return getPreferences().get(COMMAND_PREFIX + commandId, null);
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        getPanel().addChangeListener(listener);
     }
 
-    public void setTask(String commandId, @NullAllowed String value) {
-        if (value != null) {
-            getPreferences().put(COMMAND_PREFIX + commandId, value);
-        } else {
-            getPreferences().remove(COMMAND_PREFIX + commandId);
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        getPanel().removeChangeListener(listener);
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return getPanel();
+    }
+
+    @Override
+    public boolean isValid() {
+        return getErrorMessage() == null;
+    }
+
+    @Override
+    public String getErrorMessage() {
+        return getPanel().getErrorMessage();
+    }
+
+    @Override
+    public String getWarningMessage() {
+        return getPanel().getWarningMessage();
+    }
+
+    @Override
+    public void save() {
+        assert !EventQueue.isDispatchThread();
+        preferences.setTasks(getPanel().getTaks());
+    }
+
+    private synchronized GruntCustomizerPanel getPanel() {
+        if (panel == null) {
+            panel = new GruntCustomizerPanel(preferences.getProject(), preferences.getTasks());
         }
-    }
-
-    @CheckForNull
-    public String getTasks() {
-        return getPreferences().get(TASKS, null);
-    }
-
-    public void setTasks(@NullAllowed String tasks) {
-        if (tasks == null) {
-            getPreferences().remove(TASKS);
-        } else {
-            getPreferences().put(TASKS, tasks);
-        }
-    }
-
-    public Project getProject() {
-        return project;
-    }
-
-    private synchronized Preferences getPreferences() {
-        if (sharedPreferences == null) {
-            sharedPreferences = ProjectUtils.getPreferences(project, GruntPreferences.class, true);
-        }
-        return sharedPreferences;
+        return panel;
     }
 
 }
