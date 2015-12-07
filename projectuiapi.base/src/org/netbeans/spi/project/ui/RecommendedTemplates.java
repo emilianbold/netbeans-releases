@@ -50,7 +50,7 @@ package org.netbeans.spi.project.ui;
  * to affect the recommended template list for that project.
  * <p>
  * For more information about registering templates see overview of
- * {@link org.netbeans.spi.project.ui.templates.support} package.
+ * <a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/templates/support/package-summary.html">org.netbeans.spi.project.ui.templates.support</a> package.
  * @author Petr Hrebejk
  */
 public interface RecommendedTemplates {
