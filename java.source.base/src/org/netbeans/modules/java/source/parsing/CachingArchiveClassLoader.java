@@ -106,7 +106,10 @@ public final class CachingArchiveClassLoader extends ClassLoader {
                             }
                             return defineClass(
                                     name,
-                                    com.sun.tools.hc.LambdaMetafactory.translateClassFile(buffer,0,len),
+                                    buffer,
+                                    //Todo:
+                                    //-buffer
+                                    //+com.sun.tools.hc.LambdaMetafactory.translateClassFile(buffer,0,len),
                                     0,
                                     len);
                         } catch (FileNotFoundException fnf) {
