@@ -125,15 +125,25 @@ public class GetRemotesCommand extends GitCommand {
                 }
                 if (s.length == 3) {
                     if ("(fetch)".equals(s[2])) {
-                        conf.fetchSpecs.add(s[1]);
+                        conf.uris.add(s[1]);
                     } else if ("(push)".equals(s[2])) {
-                        conf.pushSpecs.add(s[1]);
+                        conf.pushUris.add(s[1]);
                     }  
                 }
             }
         }
         for(Map.Entry<String, RemoteContainer> e : list.entrySet()) {
-            GitRemoteConfig conf = new GitRemoteConfig(e.getKey(), e.getValue().uris, e.getValue().pushUris, e.getValue().fetchSpecs, e.getValue().pushSpecs);
+            GitRemoteConfig fromConfig = new GitRemoteConfig(getRepository().getConfig(), e.getKey());
+            final RemoteContainer value = e.getValue();
+            value.fetchSpecs =  fromConfig.getFetchRefSpecs();
+            value.pushSpecs = fromConfig.getPushRefSpecs();
+            if (value.uris.isEmpty()) {
+                value.uris = fromConfig.getUris();
+            }
+            if (value.pushUris.isEmpty()) {
+                value.uris = fromConfig.getPushUris();
+            }
+            GitRemoteConfig conf = new GitRemoteConfig(e.getKey(), value.uris, value.pushUris, value.fetchSpecs, value.pushSpecs);
             remotes.put(e.getKey(), conf);
         }
     }
