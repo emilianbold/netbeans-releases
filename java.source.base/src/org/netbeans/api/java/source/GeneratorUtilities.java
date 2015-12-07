@@ -86,6 +86,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.comp.Modules;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
@@ -1806,7 +1807,9 @@ public final class GeneratorUtilities {
         if (element == null)
             element = elements.getPackageElement(fqn);
         if (element == null)
-            element = Symtab.instance(copy.impl.getJavacTask().getContext()).enterClass((com.sun.tools.javac.util.Name)elements.getName(fqn));
+            element = Symtab.instance(copy.impl.getJavacTask().getContext()).enterClass(
+                    Modules.instance(copy.impl.getJavacTask().getContext()).getDefaultModule(),
+                    (com.sun.tools.javac.util.Name)elements.getName(fqn));
         return element;
     }
     
