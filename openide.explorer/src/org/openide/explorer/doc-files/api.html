@@ -126,7 +126,7 @@ window of some type, browsing some set of nodes.
 <h3><a name="show-expl">Displaying a new Explorer window</a></h3>
 
 Probably the easiest way to show an Explorer window is just to call
-<a href="@org-openide-nodes@/org/openide/nodes/NodeOperation.html#explore(org.openide.nodes.Node)"><code>NodeOperation.explore(...)</code></a>.
+<a href="@org-openide-nodes@/org/openide/nodes/NodeOperation.html#explore-org.openide.nodes.Node-"><code>NodeOperation.explore(...)</code></a>.
 
 This will simply show a node and its subtree (if any) in a new window
 using the normal tree-style Explorer view. It does not permit any
@@ -187,7 +187,7 @@ Once you have created an Explorer component, your code will not typically
 interact directly with it - rather it will call methods on its ExplorerManager
 to set selection, etc.</li>
 
-<li>Lastly you'll call <a href="../ExplorerManager.html#setRootContext(org.openide.nodes.Node)">ExplorerManager.setRootContext</a>
+<li>Lastly you'll call <a href="../ExplorerManager.html#setRootContext-org.openide.nodes.Node-">ExplorerManager.setRootContext</a>
 to actually set what node the view will be displaying.
 </li>
 
@@ -242,35 +242,35 @@ of the represented nodes which are likely to be visually mirrored:
 
 <li>The node's
 
-<a href="@JDK@/java/beans/FeatureDescriptor.html#getDisplayName()">display name</a>
+<a href="@JDK@/java/beans/FeatureDescriptor.html#getDisplayName--">display name</a>
 
 and
 
-<a href="@JDK@/java/beans/FeatureDescriptor.html#getShortDescription()">short description</a>
+<a href="@JDK@/java/beans/FeatureDescriptor.html#getShortDescription--">short description</a>
 
 ought to be used by views to display the node and provide (e.g.) tool tips.
 
 <li>The
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getIcon(int)">icon</a>
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getIcon-int-">icon</a>
 
 is used in most views alongside the display name. Non-leaf nodes upon
 expansion will show the
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getOpenedIcon(int)">opened icon</a>.
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getOpenedIcon-int-">opened icon</a>.
 
 <li>Some or all of the node's
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getChildren()">children</a>
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getChildren--">children</a>
 
 are typically displayed (except of course if it is a
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#isLeaf()">leaf</a>).
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#isLeaf--">leaf</a>).
 
 Normally they will be in the same order as
 the node itself
 
-<a href="@org-openide-nodes@/org/openide/nodes/Children.html#getNodes()">specifies</a>,
+<a href="@org-openide-nodes@/org/openide/nodes/Children.html#getNodes--">specifies</a>,
 
 though a view might provide special display characteristics for
 certain children lists such as
@@ -281,13 +281,13 @@ Generally nodes may allow their children to be
 
 <a href="@org-openide-nodes@/org/openide/nodes/Index.html">reordered</a>.
 
-<li><a href="@org-openide-nodes@/org/openide/nodes/Node.html#getActions()"><code>Node.getActions()</code></a>,
+<li><a href="@org-openide-nodes@/org/openide/nodes/Node.html#getActions--"><code>Node.getActions()</code></a>,
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getContextActions()"><code>Node.getContextActions()</code></a>,
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getContextActions--"><code>Node.getContextActions()</code></a>,
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getDefaultAction()"><code>Node.getDefaultAction()</code></a>,
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getDefaultAction--"><code>Node.getDefaultAction()</code></a>,
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getContextMenu()"><code>Node.getContextMenu()</code></a>,
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getContextMenu--"><code>Node.getContextMenu()</code></a>,
 
 etc. are typically used to build an event-handling system for the
 visual representation of the nodes.
@@ -295,18 +295,18 @@ visual representation of the nodes.
 <li>Standard actions are generally enabled on nodes in the Explorer,
 so that
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#hasCustomizer()"><code>Node.hasCustomizer()</code></a>,
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#hasCustomizer--"><code>Node.hasCustomizer()</code></a>,
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()"><code>Node.getLookup().lookup(...)</code></a>,
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup--"><code>Node.getLookup().lookup(...)</code></a>,
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getNewTypes()"><code>Node.getNewTypes()</code></a>,
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getNewTypes--"><code>Node.getNewTypes()</code></a>,
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getPasteTypes(java.awt.datatransfer.Transferable)"><code>Node.getPasteTypes(...)</code></a>,
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#getPasteTypes-java.awt.datatransfer.Transferable-"><code>Node.getPasteTypes(...)</code></a>,
 
 and so on affect other UI components (such as toolbars) which may hold
 action presenters.
 
-<li><a href="@org-openide-nodes@/org/openide/nodes/Node.html#getPropertySets()"><code>Node.getPropertySets()</code></a>
+<li><a href="@org-openide-nodes@/org/openide/nodes/Node.html#getPropertySets--"><code>Node.getPropertySets()</code></a>
 
 is of course used by the Property Sheet view.
 
@@ -315,13 +315,13 @@ system actions present in popup menus, e.g.) for moving nodes,
 renaming them in place, etc. - these will use the standard node hooks
 such as
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#canRename()"><code>Node.canRename()</code></a>,
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#canRename--"><code>Node.canRename()</code></a>,
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#cloneNode()"><code>Node.cloneNode()</code></a>,
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#cloneNode--"><code>Node.cloneNode()</code></a>,
 
 or
 
-<a href="@org-openide-nodes@/org/openide/nodes/Node.html#clipboardCut()"><code>Node.clipboardCut()</code></a>.
+<a href="@org-openide-nodes@/org/openide/nodes/Node.html#clipboardCut--"><code>Node.clipboardCut()</code></a>.
 
 </ul>
 

@@ -48,7 +48,7 @@ var NBJDK_DOWNLOAD_LINK  = "http://www.oracle.com/technetwork/java/javase/downlo
 
 var JAVA_COM_LINK        = "http://java.com/";
 
-var JDK_NOTE_ALL      = "HTML/JS, PHP and C/C++ NetBeans bundles include Java Runtime Environment and do not require a separate Java installation.<br><br>JDK 7 and later versions are required for installing and running the Java SE, Java EE and All NetBeans Bundles. You can download <a href=\"{1}\">standalone JDK</a> or download the latest <a href=\"{2}\">JDK with NetBeans IDE Java SE bundle</a>.<br><br>";
+var JDK_NOTE_ALL      = "HTML/JS, PHP and C/C++ NetBeans bundles include Java Runtime Environment and do not require a separate Java installation.<br><br>JDK 8 and later versions are required for installing and running the Java SE, Java EE and All NetBeans Bundles. You can download <a href=\"{1}\">standalone JDK</a> or download the latest <a href=\"{2}\">JDK with NetBeans IDE Java SE bundle</a>.<br><br>";
 
 var FREE_SIZE_MESSAGE  = "Free, {0}&nbsp;MB";
 var NOT_AVAILABLE_SIZE = "--";

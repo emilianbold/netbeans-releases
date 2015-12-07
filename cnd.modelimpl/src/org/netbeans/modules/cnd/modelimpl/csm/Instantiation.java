@@ -1585,7 +1585,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         if (isInstantiatedType(type)) {
             List<CsmInstantiation> insts = new ArrayList<>();
             while (type instanceof Type) {
-                insts.add(0, ((Type) type).getInstantiation());
+                insts.add(((Type) type).getInstantiation());
                 type = ((Type) type).originalType;
             }        
             return insts;
@@ -2580,6 +2580,13 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         public InstantiationSelfUID(RepositoryDataInput input) throws IOException {
             this.ref = null;
         }
+    }
+    
+    public static CharSequence getOriginalText(CsmType type) {
+        if (type instanceof Type) {
+            return getOriginalText(((Type) type).originalType);
+        }
+        return type.getText();
     }
     
     public static CharSequence getInstantiatedText(CsmType type) {

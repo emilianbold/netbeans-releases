@@ -193,20 +193,6 @@ if [ -z $DONT_SIGN_INSTALLER ]; then
 
 fi
 
-###################################################################
-#
-# Delete all installers except javase
-#
-###################################################################
-
-find $DIST/bundles -name "*cpp*" | xargs -t -I [] rm -rf []
-find $DIST/bundles -name "*html*" | xargs -t -I [] rm -rf []
-find $DIST/bundles -name "*javaee*" | xargs -t -I [] rm -rf []
-find $DIST/bundles -name "*php*" | xargs -t -I [] rm -rf []
-rm -rf $DIST/bundles/netbeans-jdk9branch-$BUILDNUMBER-linux.sh
-rm -rf $DIST/bundles/netbeans-jdk9branch-$BUILDNUMBER-macosx.dmg
-rm -rf $DIST/bundles/netbeans-jdk9branch-$BUILDNUMBER-windows.exe
-
 cd $DIST
 
 bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk bundles/weblogic zip zip/moduleclusters

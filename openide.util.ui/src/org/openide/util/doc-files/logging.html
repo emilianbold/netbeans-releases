@@ -36,12 +36,12 @@
     
     <p>Another important thing is to chain stack traces to
     exceptions using 
-    <a href="@JDK@/java/lang/Throwable.html#initCause(java.lang.Throwable)">
+    <a href="@JDK@/java/lang/Throwable.html#initCause-java.lang.Throwable-">
     Throwable.initCause(Throwable)</a>, permitting you to throw an exception 
     of a type permitted by your
     API signature while safely encapsulating the root cause of the problem (in terms
     of other nested exceptions). Code should use 
-    <a href="@JDK@/java/util/logging/Logger.html#log(java.util.logging.Level,%20java.lang.String,%20java.lang.Throwable)">
+    <a href="@JDK@/java/util/logging/Logger.html#log-java.util.logging.Level-java.lang.String-java.lang.Throwable-">
     Logger.log(Level.SEVERE, msg, exception)</a>
     rather than directly printing caught exceptions,
     to make sure nested annotations are not lost and to allow pluged in
@@ -66,7 +66,7 @@
         global logger
     </a>
     but it is preferred to create
-    <a href="@JDK@/java/util/logging/Logger.html#getLogger(java.lang.String)">
+    <a href="@JDK@/java/util/logging/Logger.html#getLogger-java.lang.String-">
         named and shared instances 
     </a> of loggers.
     The later has the advantage of finer control of what is going
@@ -126,11 +126,11 @@ show blinking
 icon to the user in bottom right corner of main window):
 </p>
 <pre>
-private static final <a href="@JDK@/java/util/logging/Logger.html">Logger</a> logger = <a href="@JDK@/java/util/logging/Logger.html#getLogger(java.lang.String)">Logger.getLogger</a>(ThisClass.class.getName());
+private static final <a href="@JDK@/java/util/logging/Logger.html">Logger</a> logger = <a href="@JDK@/java/util/logging/Logger.html#getLogger-java.lang.String-">Logger.getLogger</a>(ThisClass.class.getName());
 try {
     foo.doSomething();
 } catch (IOException ioe) {
-    <a href="@JDK@/java/util/logging/Logger.html#log(java.util.logging.Level,%20java.lang.String,%20java.lang.Throwable)">logger.log</a>(Level.SEVERE, null, ioe);
+    <a href="@JDK@/java/util/logging/Logger.html#log-java.util.logging.Level-java.lang.String-java.lang.Throwable-">logger.log</a>(Level.SEVERE, null, ioe);
 }
 </pre>
 
@@ -167,10 +167,10 @@ try {
 This code will present a dialog box with warning message extracted from
 the exception <code>ex</code> sometime in the <q>future</q> - e.g. when the
 AWT event queue is empty and can show the dialog. Use of
-<a href="@org-openide-dialogs@/org/openide/DialogDisplayer.html#notifyLater(org.openide.NotifyDescriptor)">
+<a href="@org-openide-dialogs@/org/openide/DialogDisplayer.html#notifyLater-org.openide.NotifyDescriptor-">
 notifyLater</a> 
 to plain
-<a href="@org-openide-dialogs@/org/openide/DialogDisplayer.html#notify(org.openide.NotifyDescriptor)">
+<a href="@org-openide-dialogs@/org/openide/DialogDisplayer.html#notify-org.openide.NotifyDescriptor-">
 notify</a> 
 
 is recommended in order to prevent deadlocks and
@@ -181,7 +181,7 @@ starvations
     
 <p>
     To rethrow an exception use standard JDK's 
-    <a href="@JDK@/java/lang/Throwable.html#initCause(java.lang.Throwable)">
+    <a href="@JDK@/java/lang/Throwable.html#initCause-java.lang.Throwable-">
     Throwable.initCause(Throwable)</a> method. It is going to
     be properly annotated and printed when sent to logger:
 <pre>
@@ -248,15 +248,15 @@ class Something {
 <p>
 There is an easy way how to annotate exceptions with localized and non-localized
 messages in NetBeans. One can use
-<a href="@org-openide-util@/org/openide/util/Exceptions.html#attachMessage(E,%20java.lang.String)">
+<a href="@org-openide-util@/org/openide/util/Exceptions.html#attachMessage-E-java.lang.String-">
     Exceptions.attachMessage
 </a> or 
-<a href="@org-openide-util@/org/openide/util/Exceptions.html#attachLocalizedMessage(E,%20java.lang.String)">
+<a href="@org-openide-util@/org/openide/util/Exceptions.html#attachLocalizedMessage-E-java.lang.String-">
     Exceptions.attachLocalizedMessage
 </a>. The non-localized messages are guaranteed to be printed when one does
 <code>ex.printStackTrace()</code>, to extract associated localized message
 one can use 
-<a href="@org-openide-util@/org/openide/util/Exceptions.html#findLocalizedMessage(java.lang.Throwable)">
+<a href="@org-openide-util@/org/openide/util/Exceptions.html#findLocalizedMessage-java.lang.Throwable-">
     Exceptions.findLocalizedMessage
 </a>.
 </p>

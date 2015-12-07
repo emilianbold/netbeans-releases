@@ -94,7 +94,7 @@
     </conf>
     <conf name="Solaris-x86" type="0" platformSpecific="true">
       <toolsSet>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
         <platform>1</platform>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
@@ -278,7 +278,7 @@
     </conf>
     <conf name="Solaris-SPARC" type="0" platformSpecific="true">
       <toolsSet>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
         <platform>0</platform>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
@@ -465,10 +465,10 @@
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>SOLARIS</Elem>
-              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+              <Elem>LINUX</Elem>
+              <Elem>_GNU_SOURCE</Elem>
               <Elem>_REENTRANT</Elem>
-              <Elem>__EXTENSIONS__</Elem>
+              <Elem>_XOPEN_SOURCE=700</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -670,7 +670,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-std=c99 -g"/>
+        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -687,8 +687,10 @@
             <preprocessorList>
               <Elem>LINUX</Elem>
               <Elem>_GNU_SOURCE</Elem>
+              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
+              <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -786,20 +788,20 @@
     </conf>
     <conf name="Previse_Solaris-x86" type="0" platformSpecific="true">
       <toolsSet>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>OracleSolarisStudio_12.5|OSS</compilerSet>
         <platform>1</platform>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
+        <element flagsID="0" commonFlags="-std=c99 -m64"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>gmake -f Makefile</buildCommand>
+          <buildCommand>gmake -f Makefile PREVISE=1</buildCommand>
           <cleanCommand>gmake -f Makefile clean</cleanCommand>
           <executablePath>../../release/bin/SunOS-x86/fs_server</executablePath>
           <cTool>

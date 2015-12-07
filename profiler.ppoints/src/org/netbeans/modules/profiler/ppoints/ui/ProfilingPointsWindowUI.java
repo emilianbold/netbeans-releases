@@ -43,14 +43,7 @@
 
 package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.netbeans.lib.profiler.global.CommonConstants;
-import org.netbeans.lib.profiler.ui.UIConstants;
 import org.netbeans.lib.profiler.ui.UIUtils;
-import org.netbeans.lib.profiler.ui.components.JExtendedTable;
-import org.netbeans.lib.profiler.ui.components.table.EnhancedTableCellRenderer;
-import org.netbeans.lib.profiler.ui.components.table.ExtendedTableModel;
-import org.netbeans.lib.profiler.ui.components.table.JExtendedTablePanel;
-import org.netbeans.lib.profiler.ui.components.table.SortableTableModel;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.ppoints.CodeProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
@@ -61,7 +54,6 @@ import org.openide.util.actions.SystemAction;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -75,16 +67,16 @@ import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
 import org.netbeans.lib.profiler.ui.components.ProfilerToolbar;
+import org.netbeans.lib.profiler.ui.swing.ProfilerTable;
+import org.netbeans.lib.profiler.ui.swing.ProfilerTableContainer;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
-import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.openide.util.Lookup;
 
@@ -131,21 +123,14 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    protected String[] columnNames;
-    protected TableCellRenderer[] columnRenderers;
-    protected String[] columnToolTips;
-    protected Class[] columnTypes;
-    protected int[] columnWidths;
-    protected boolean sortOrder; // Defines the sorting order (ascending or descending)
-    protected int sortBy; // Defines sorting criteria (concrete values provided in subclasses)
-    private ExtendedTableModel profilingPointsTableModel;
+    private AbstractTableModel profilingPointsTableModel;
     private JButton addButton;
     private JButton disableButton;
     private JButton editButton;
     private JButton removeButton;
     private JCheckBox dependenciesCheckbox;
-    private JComboBox projectsCombo;
-    private JExtendedTable profilingPointsTable;
+    private ProjectSelector ppointProjectSelector;
+    private ProfilerTable profilingPointsTable;
     private JLabel projectLabel;
     private JMenuItem disableItem;
     private JMenuItem editItem;
@@ -159,48 +144,23 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     private JPopupMenu profilingPointsPopup;
     private ProfilingPoint[] profilingPoints = new ProfilingPoint[0];
     private boolean profilingInProgress = false;
-    private int initialSortingColumn;
-    private int minProfilingPointColumnWidth; // minimal width of Profiling Point column
-
-    private boolean internalComboChange;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public ProfilingPointsWindowUI() {
-        setDefaultSorting();
-        initColumnsData();
         initComponents();
         updateProjectsCombo();
         notifyProfilingStateChanged();
         ProfilingPointsManager.getDefault().addPropertyChangeListener(this);
     }
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    // NOTE: this method only sets sortBy and sortOrder, it doesn't refresh UI!
-    public void setDefaultSorting() {
-        setSorting(1, SortableTableModel.SORT_ORDER_ASC);
-    }
+    
 
     public Lookup.Provider getSelectedProject() {
-        return (projectsCombo.getSelectedItem() instanceof Lookup.Provider) ? (Lookup.Provider) projectsCombo.getSelectedItem() : null;
-    }
-
-    // NOTE: this method only sets sortBy and sortOrder, it doesn't refresh UI!
-    public void setSorting(int sColumn, boolean sOrder) {
-        if (sColumn == CommonConstants.SORTING_COLUMN_DEFAULT) {
-            setDefaultSorting();
-        } else {
-            initialSortingColumn = sColumn;
-            sortBy = getSortBy(initialSortingColumn);
-            sortOrder = sOrder;
-        }
+        return ppointProjectSelector.getProject();
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == projectsCombo) {
-            if (!internalComboChange) refreshProfilingPoints();
-        } else if (e.getSource() == addButton) {
+       if (e.getSource() == addButton) {
             SystemAction.get(InsertProfilingPointAction.class).performAction(getSelectedProject());
         } else if (e.getSource() == removeButton) {
             int[] selectedRows = profilingPointsTable.getSelectedRows();
@@ -416,160 +376,77 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         updateButtons();
     }
 
-    protected void initColumnsData() {
-        minProfilingPointColumnWidth = getFontMetrics(getFont()).charWidth('W') * 30; // NOI18N
+    private ProfilingPoint getProfilingPointAt(int row) {
+        return profilingPoints[profilingPointsTable.convertRowIndexToModel(row)];
+    }
 
-        EnhancedTableCellRenderer scopeRenderer = Utils.getScopeRenderer();
-        EnhancedTableCellRenderer projectRenderer = Utils.getProjectRenderer();
-        EnhancedTableCellRenderer profilingPointRenderer = Utils.getPresenterRenderer();
+    private void createProfilingPointsTable() {
+        profilingPointsTableModel = new AbstractTableModel() {
+            public String getColumnName(int col) {
+                if (col == 0) {
+                    return Bundle.ProfilingPointsWindowUI_ScopeColumnName();
+                } else if (col == 1) {
+                    return Bundle.ProfilingPointsWindowUI_ProjectColumnName();
+                } else if (col == 2) {
+                    return Bundle.ProfilingPointsWindowUI_PpColumnName();
+                } else if (col == 3) {
+                    return Bundle.ProfilingPointsWindowUI_ResultsColumnName();
+                }
+                return null;
+            }
 
-        columnNames = new String[] { 
-            Bundle.ProfilingPointsWindowUI_ScopeColumnName(), 
-            Bundle.ProfilingPointsWindowUI_ProjectColumnName(), 
-            Bundle.ProfilingPointsWindowUI_PpColumnName(), 
-            Bundle.ProfilingPointsWindowUI_ResultsColumnName() 
+            public int getRowCount() {
+                return profilingPoints.length;
+            }
+
+            public int getColumnCount() {
+                return 4;
+            }
+
+            public Class getColumnClass(int col) {
+                return ProfilingPoint.class;
+            }
+
+            public Object getValueAt(int row, int col) {
+                return profilingPoints[row];
+            }
         };
-        columnToolTips = new String[] { 
+
+        profilingPointsTable = new ProfilerTable(profilingPointsTableModel, true, true, null) {
+            public TableCellRenderer getCellRenderer(int row, int column) {
+                if (convertColumnIndexToModel(column) == 3) {
+                    return getProfilingPointAt(row).getResultsRenderer();
+                } else {
+                    return super.getCellRenderer(row, column);
+                }
+            }
+        };
+        //    profilingPointsTable.getAccessibleContext().setAccessibleName(TABLE_ACCESS_NAME);
+
+        profilingPointsTable.setMainColumn(2);
+        profilingPointsTable.setFitWidthColumn(2);
+        profilingPointsTable.setDefaultSortOrder(SortOrder.ASCENDING);
+        profilingPointsTable.setSortColumn(1);
+
+        profilingPointsTable.setColumnRenderer(0, Utils.getScopeRenderer());
+        profilingPointsTable.setColumnRenderer(1, Utils.getProjectRenderer());
+        profilingPointsTable.setColumnRenderer(2, Utils.getPresenterRenderer());
+//        profilingPointsTable.setColumnRenderer(3, null);
+
+        profilingPointsTable.setDefaultColumnWidth(0, 50);
+        profilingPointsTable.setDefaultColumnWidth(1, 165);
+        profilingPointsTable.setDefaultColumnWidth(3, 200);
+        profilingPointsTable.setColumnToolTips(new String[] {
             Bundle.ProfilingPointsWindowUI_ScopeColumnToolTip(), 
             Bundle.ProfilingPointsWindowUI_ProjectColumnToolTip(), 
             Bundle.ProfilingPointsWindowUI_PpColumnToolTip(), 
             Bundle.ProfilingPointsWindowUI_ResultsColumnToolTip()
-        };
-        columnTypes = new Class[] { Integer.class, Lookup.Provider.class, ProfilingPoint.class, ProfilingPoint.ResultsRenderer.class };
-        columnRenderers = new TableCellRenderer[] { scopeRenderer, projectRenderer, profilingPointRenderer, null // dynamic
-                          };
-        columnWidths = new int[] { 50, 165, -1, // dynamic
-            200 };
-    }
-
-    private void setColumnsData() {
-        TableColumnModel colModel = profilingPointsTable.getColumnModel();
-        colModel.getColumn(2).setPreferredWidth(minProfilingPointColumnWidth);
-
-        //    colModel.getColumn(1).setPreferredWidth(minProfilingPointColumnWidth); // TODO: revert use column 2 once Scope is enabled
-        int index;
-
-        for (int i = 0; i < colModel.getColumnCount(); i++) {
-            index = profilingPointsTableModel.getRealColumn(i);
-            colModel.getColumn(i).setPreferredWidth((index == 2) ? minProfilingPointColumnWidth : columnWidths[index]);
-            //      colModel.getColumn(i).setPreferredWidth(index == 1 ? minProfilingPointColumnWidth : columnWidths[index]); // TODO: revert use column 2 once Scope is enabled
-            colModel.getColumn(i).setCellRenderer(columnRenderers[index]);
-        }
-    }
-
-    private ProfilingPoint getProfilingPointAt(int row) {
-        return (ProfilingPoint) profilingPointsTable.getValueAt(row, 0);
-    }
-
-    private int getSortBy(int column) {
-        switch (column) {
-            case 0:
-                return ProfilingPointsManager.SORT_BY_SCOPE;
-            case 1:
-                return ProfilingPointsManager.SORT_BY_PROJECT;
-            case 2:
-                return ProfilingPointsManager.SORT_BY_NAME; // TODO: revert use column 2 once Scope is enabled
-            case 3:
-                return ProfilingPointsManager.SORT_BY_RESULTS; // TODO: revert use column 3 once Scope is enabled
-            default:
-                return CommonConstants.SORTING_COLUMN_DEFAULT;
-        }
-    }
-
-    private void createProfilingPointsTable() {
-        profilingPointsTableModel = new ExtendedTableModel(new SortableTableModel() {
-                public String getColumnName(int col) {
-                    return columnNames[col];
-                }
-
-                public int getRowCount() {
-                    return profilingPoints.length;
-                }
-
-                public int getColumnCount() {
-                    return columnNames.length;
-                }
-
-                public Class getColumnClass(int col) {
-                    return columnTypes[col];
-                }
-
-                public Object getValueAt(int row, int col) {
-                    return profilingPoints[row];
-                }
-
-                public String getColumnToolTipText(int col) {
-                    return columnToolTips[col];
-                }
-
-                public void sortByColumn(int column, boolean order) {
-                    sortBy = getSortBy(column);
-                    sortOrder = order;
-                    refreshProfilingPoints();
-                }
-
-                /**
-                 * @param column The table column index
-                 * @return Initial sorting for the specified column - if true, ascending, if false descending
-                 */
-                public boolean getInitialSorting(int column) {
-                    return true;
-                }
-            });
-
-        profilingPointsTable = new JExtendedTable(profilingPointsTableModel) {
-                public TableCellRenderer getCellRenderer(int row, int column) {
-                    if (getColumnClass(column) == ProfilingPoint.ResultsRenderer.class) {
-                        return getProfilingPointAt(row).getResultsRenderer();
-                    } else {
-                        return super.getCellRenderer(row, column);
-                    }
-                }
-
-                public void doLayout() {
-                    int columnsWidthsSum = 0;
-                    int realFirstColumn = -1;
-
-                    int index;
-
-                    for (int i = 0; i < profilingPointsTableModel.getColumnCount(); i++) {
-                        index = profilingPointsTableModel.getRealColumn(i);
-
-                        if (index == 2) {
-                            //          if (index == 1) { // TODO: revert use column 2 once Scope is enabled
-                            realFirstColumn = i;
-                        } else {
-                            columnsWidthsSum += getColumnModel().getColumn(i).getPreferredWidth();
-                        }
-                    }
-
-                    if (realFirstColumn != -1) {
-                        getColumnModel().getColumn(realFirstColumn)
-                            .setPreferredWidth(Math.max(getWidth() - columnsWidthsSum, minProfilingPointColumnWidth));
-                    }
-
-                    super.doLayout();
-                }
-                ;
-            };
-        //    profilingPointsTable.getAccessibleContext().setAccessibleName(TABLE_ACCESS_NAME);
-        profilingPointsTableModel.setTable(profilingPointsTable);
-        profilingPointsTableModel.setInitialSorting(initialSortingColumn, sortOrder);
-        profilingPointsTable.setRowSelectionAllowed(true);
+        });
         profilingPointsTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        profilingPointsTable.setGridColor(UIConstants.TABLE_VERTICAL_GRID_COLOR);
-        profilingPointsTable.setSelectionBackground(UIConstants.TABLE_SELECTION_BACKGROUND_COLOR);
-        profilingPointsTable.setSelectionForeground(UIConstants.TABLE_SELECTION_FOREGROUND_COLOR);
-        profilingPointsTable.setShowHorizontalLines(UIConstants.SHOW_TABLE_HORIZONTAL_GRID);
-        profilingPointsTable.setShowVerticalLines(UIConstants.SHOW_TABLE_VERTICAL_GRID);
-        profilingPointsTable.setRowMargin(UIConstants.TABLE_ROW_MARGIN);
-        profilingPointsTable.setRowHeight(UIUtils.getDefaultRowHeight() + 2);
         profilingPointsTable.getSelectionModel().addListSelectionListener(this);
         profilingPointsTable.addMouseListener(this);
         profilingPointsTable.addMouseMotionListener(this);
         profilingPointsTable.addKeyListener(this);
-
-        setColumnsData();
     }
 
     private void deletePPs() {
@@ -610,10 +487,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         ProfilingPoint profilingPoint = getProfilingPointAt(row);
         ProfilingPoint.ResultsRenderer resultsRenderer = profilingPoint.getResultsRenderer();
         Rectangle cellRect = profilingPointsTable.getCellRect(row, column, true);
-        MouseEvent mouseEvent = new MouseEvent(profilingPointsTable, e.getID(), e.getWhen(), e.getModifiers(),
-                                               e.getX() - cellRect.x, e.getY() - cellRect.y, e.getClickCount(),
-                                               e.isPopupTrigger(), e.getButton());
-        resultsRenderer.dispatchMouseEvent(mouseEvent);
+        resultsRenderer.dispatchMouseEvent(e, cellRect);
     }
 
     private void initComponents() {
@@ -625,25 +499,13 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, Bundle.ProfilingPointsWindowUI_ProjectLabelText());
         projectLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 
-        projectsCombo = new JComboBox(new Object[] { Bundle.ProfilingPointsWindowUI_AllProjectsString() }) {
-                public Dimension getMaximumSize() {
-                    return getPreferredSize();
-                }
-
-                public Dimension getPreferredSize() {
-                    return new Dimension(200, super.getPreferredSize().height);
-                }
-                ;
-                public Dimension getMinimumSize() {
-                    return getPreferredSize();
-                }
-                ;
-            };
-        projectLabel.setLabelFor(projectsCombo);
-        projectsCombo.addActionListener(this);
-        projectsCombo.setRenderer(Utils.getProjectListRenderer());
+        ppointProjectSelector = new ProjectSelector(Bundle.ProfilingPointsWindowUI_AllProjectsString()) {
+            protected void selectionChanged() { refreshProfilingPoints(); }
+            protected int getPreferredWidth() { return 200; }
+        };
+        projectLabel.setLabelFor(ppointProjectSelector);
         toolbar.add(projectLabel);
-        toolbar.add(projectsCombo);
+        toolbar.add(ppointProjectSelector);
 
         if (ProfilingPointsUIHelper.get().displaySubprojectsOption()) {
             dependenciesCheckbox = new JCheckBox();
@@ -686,9 +548,6 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
         createProfilingPointsTable();
 
-        JExtendedTablePanel tablePanel = new JExtendedTablePanel(profilingPointsTable);
-        tablePanel.clearBorders();
-
         showInSourceItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_ShowSourceItemText());
         showInSourceItem.setFont(showInSourceItem.getFont().deriveFont(Font.BOLD));
         showInSourceItem.addActionListener(this);
@@ -724,27 +583,14 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         profilingPointsPopup.add(removeItem);
 
         add(toolbar.getComponent(), BorderLayout.NORTH);
-        add(tablePanel, BorderLayout.CENTER);
+        add(new ProfilerTableContainer(profilingPointsTable, false, null), BorderLayout.CENTER);
     }
 
     private void refreshProfilingPoints() {
-        int[] selectedRows = profilingPointsTable.getSelectedRows();
-        ProfilingPoint[] selectedProfilingPoints = new ProfilingPoint[selectedRows.length];
-
-        for (int i = 0; i < selectedRows.length; i++) {
-            selectedProfilingPoints[i] = getProfilingPointAt(selectedRows[i]);
-        }
-
-        List<ProfilingPoint> sortedProfilingPoints = ProfilingPointsManager.getDefault()
-                                                                           .getSortedProfilingPoints(getSelectedProject(),
-                                                                                                     sortBy, sortOrder);
+        List<ProfilingPoint> sortedProfilingPoints = ProfilingPointsManager.getDefault().getProfilingPoints(
+                getSelectedProject(), ProfilerIDESettings.getInstance().getIncludeProfilingPointsDependencies(), false);
         profilingPoints = sortedProfilingPoints.toArray(new ProfilingPoint[sortedProfilingPoints.size()]);
         profilingPointsTableModel.fireTableDataChanged();
-
-        if (selectedProfilingPoints.length > 0) {
-            profilingPointsTable.selectRowsByInstances(selectedProfilingPoints, 0, true);
-        }
-
         repaint();
     }
 
@@ -803,31 +649,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     }
 
     private void updateProjectsCombo() {
-        Lookup.Provider[] projects = ProjectUtilities.getSortedProjects(ProjectUtilities.getOpenedProjects());
-        List items = new ArrayList(projects.length + 1);
-        items.addAll(Arrays.asList(projects));
-
-        items.add(0, Bundle.ProfilingPointsWindowUI_AllProjectsString());
-
-        DefaultComboBoxModel comboModel = (DefaultComboBoxModel) projectsCombo.getModel();
-        Object selectedItem = projectsCombo.getSelectedItem();
-
-        internalComboChange = true;
-
-        comboModel.removeAllElements();
-
-        for (int i = 0; i < items.size(); i++) {
-            comboModel.addElement(items.get(i));
-        }
-
-        if ((selectedItem != null) && (comboModel.getIndexOf(selectedItem) != -1)) {
-            projectsCombo.setSelectedItem(selectedItem);
-        } else {
-            projectsCombo.setSelectedItem(Bundle.ProfilingPointsWindowUI_AllProjectsString());
-        }
-
-        internalComboChange = false;
-
+        ppointProjectSelector.resetModel();
         refreshProfilingPoints();
     }
 }

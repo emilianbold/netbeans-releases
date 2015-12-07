@@ -13,9 +13,8 @@ namespace Omg;
 
 use \Baz\Bat\ClassName;
 use \Fom\Bom\ClassName as FBC;
-use \Foo\Bar\ClassName as FBC2;
 
-$a = new FBC2();//HERE
+$a = new FBC();//HERE
 $b = new ClassName();
 $b = new FBC();
 ?>

@@ -15,6 +15,7 @@ PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    First                           [PUBLIC]   null
 PACKAGE    Fom                             [PUBLIC]   null
+PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    FrontSpace                      [PUBLIC]   null
 PACKAGE    Froo                            [PUBLIC]   null
 PACKAGE    God                             [PUBLIC]   null
@@ -64,7 +65,6 @@ PACKAGE    bar                             [PUBLIC]   null
 PACKAGE    c                               [PUBLIC]   null
 PACKAGE    d                               [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
-PACKAGE    foo                             [PUBLIC]   null
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
 ------------------------------------
 PACKAGE    Application                     [PUBLIC]   Nette

@@ -33,6 +33,7 @@ else
 endif
 
 PNAME=pty
+
 CC=gcc
 
 SOURCES=\
@@ -56,7 +57,8 @@ LINE=sh $(ROOT_DIR)/make/line
 EXEC=$(DIST_DIR)/$(PNAME)
 
 
-CF_COMMON         = --std=c99 -s -O2
+CF_COMMON         = --std=c99 -O2
+
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32 
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
 CF_Linux-sparc_64 = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
@@ -73,8 +75,14 @@ CF_Windows-x86_64 = $(CF_COMMON) -DWINDOWS -m32
 LF_Windows-x86    = --static-libgcc
 LF_Windows-x86_64 = --static-libgcc
 
-CFLAGS=$(CF_$(CONF))
-LDFLAGS=$(LF_$(CONF))
+CFLAGS=$(CF_$(CONF)) $(CFLAGS_EXTRA)
+LDFLAGS=$(LF_$(CONF)) $(LDFLAGS_EXTRA)
+
+ifndef NOSTRIP
+    CFLAGS += -s 
+else 
+    CFLAGS += -g
+endif
 
 all: $(EXEC)
 	@$(LINE) =

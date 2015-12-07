@@ -44,6 +44,7 @@ package org.netbeans.modules.remotefs.versioning.spi;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -252,11 +253,14 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         }
 
         @Override
-        public long listFiles(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children) {
+        public long refreshRecursively(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children) {
             List<VCSFileProxy> res = new ArrayList<>();
             for(Object f : children) {
                 res.add(toVCSFileProxy((FileProxyI)f));
             }
+            // The below looks a bit strange, but VCSFilesystemInterceptor.listFiles 
+            // in fact calls refreshRecursively (and that's all it does -
+            // so I'd propose to rename it as well, but it resides in versioning.core and has too many dependencies
             return VCSFilesystemInterceptor.listFiles(toVCSFileProxy(dir), lastTimeStamp, res);
         }
 

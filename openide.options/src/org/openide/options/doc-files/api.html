@@ -118,7 +118,7 @@ providing them, and ought to end in <code>Settings</code>: e.g.,
 <code>MyModuleSettings</code>. This does not affect display, however;
 every option must implement
 
-<a href="../SystemOption.html#displayName()"><code>SystemOption.displayName()</code></a>
+<a href="../SystemOption.html#displayName--"><code>SystemOption.displayName()</code></a>
 
 to provide a reasonable name to present to users in the Control Panel.
 
@@ -154,13 +154,13 @@ it is more convenient to use the automatically-managed state provided by
 <pre>
 public Color getForeground () {
   // Retrieves from class-wide state:
-  return (Color) <a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#getProperty(java.lang.Object)">getProperty</a> (PROPERTY_FOREGROUND);
+  return (Color) <a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#getProperty-java.lang.Object-">getProperty</a> (PROPERTY_FOREGROUND);
 }
 public void setForeground (Color fg) {
   // make sure it is sane...
   if (fg == null) throw new NullPointerException ();
   // Stores in class-wide state and fires property changes if needed:
-  <a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#putProperty(java.lang.String,%20java.lang.Object,%20boolean)">putProperty</a> (PROPERTY_FOREGROUND, fg, true);
+  <a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#putProperty-java.lang.String-java.lang.Object-boolean-">putProperty</a> (PROPERTY_FOREGROUND, fg, true);
 }
 </pre>
 
@@ -241,7 +241,7 @@ a regular one, but each child should also be a valid system option in
 its own right, and they should be added to the parent (e.g. in the
 parent's constructor) using
 
-<a href="../ContextSystemOption.html#addOption(org.openide.options.SystemOption)"><code>ContextSystemOption.addOption(...)</code></a>.
+<a href="../ContextSystemOption.html#addOption-org.openide.options.SystemOption-"><code>ContextSystemOption.addOption(...)</code></a>.
 
 <p>Such a cluster should be used for any system options for which one
 property list would be unwieldy; or if it makes sense to have multiple
@@ -260,7 +260,7 @@ other part of the module.
 
 <p>When such a property is set, it should fire its change using
 
-<a href="../VetoSystemOption.html#fireVetoableChange(java.lang.String, java.lang.Object, java.lang.Object)"><code>VetoSystemOption.fireVetoableChange(...)</code></a>
+<a href="../VetoSystemOption.html#fireVetoableChange-java.lang.String-java.lang.Object-java.lang.Object-"><code>VetoSystemOption.fireVetoableChange(...)</code></a>
 
 and be prepared to revoke the change if a veto occurs.
 
@@ -285,7 +285,7 @@ made by the user in the Control Panel.
 <p>If it necessary to access some other option, you may use:
 
 <pre>
-OtherOption oo = (OtherOption) <a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#findObject(java.lang.Class,%20boolean)">SystemOption.findObject</a>(OtherOption.class, true);
+OtherOption oo = (OtherOption) <a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#findObject-java.lang.Class-boolean-">SystemOption.findObject</a>(OtherOption.class, true);
 </pre>
 
 You may also use this method to obtain the default instance for local use.

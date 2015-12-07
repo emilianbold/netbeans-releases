@@ -203,7 +203,7 @@ Microsystems, Inc. All Rights Reserved.
     <p>
       Client wants to destroy the process, trying to kill whole process tree.
       Method
-      <a href="@TOP@org/netbeans/api/extexecution/base/Processes.html#killTree(java.lang.Process,%20java.util.Map)">
+      <a href="@TOP@org/netbeans/api/extexecution/base/Processes.html#killTree-java.lang.Process-java.util.Map-">
       Processes.killTree(java.lang.Process process, Map&lt;String,String&gt; environment)</a>
       is designed for that. It will use a
       <a href="@TOP@org/netbeans/spi/extexecution/base/ProcessesImplementation.html">ProcessesImplementation</a>

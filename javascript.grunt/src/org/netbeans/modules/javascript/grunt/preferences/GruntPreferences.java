@@ -50,6 +50,7 @@ import org.netbeans.api.project.ProjectUtils;
 public final class GruntPreferences {
 
     private static final String COMMAND_PREFIX = "action."; // NOI18N
+    private static final String TASKS = "tasks"; // NOI18N
 
     private final Project project;
 
@@ -58,6 +59,7 @@ public final class GruntPreferences {
 
 
     public GruntPreferences(Project project) {
+        assert project != null;
         this.project = project;
     }
 
@@ -72,6 +74,23 @@ public final class GruntPreferences {
         } else {
             getPreferences().remove(COMMAND_PREFIX + commandId);
         }
+    }
+
+    @CheckForNull
+    public String getTasks() {
+        return getPreferences().get(TASKS, null);
+    }
+
+    public void setTasks(@NullAllowed String tasks) {
+        if (tasks == null) {
+            getPreferences().remove(TASKS);
+        } else {
+            getPreferences().put(TASKS, tasks);
+        }
+    }
+
+    public Project getProject() {
+        return project;
     }
 
     private synchronized Preferences getPreferences() {

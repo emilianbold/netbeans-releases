@@ -271,6 +271,14 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug255475.cpp", 17, 20, "bug255475.cpp", 6, 9);
     }
     
+    public void testBug256700() throws Exception {
+        // Bug 256700 - errors in stlport
+        performTest("bug256700.cpp", 41, 61, "bug256700.cpp", 8, 11);
+        performTest("bug256700.cpp", 42, 14, "bug256700.cpp", 25, 9);
+        performTest("bug256700.cpp", 43, 61, "bug256700.cpp", 9, 11);
+        performTest("bug256700.cpp", 44, 15, "bug256700.cpp", 25, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

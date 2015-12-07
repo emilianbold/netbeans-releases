@@ -81,16 +81,19 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import static org.netbeans.modules.cnd.apt.utils.APTUtils.SCOPE;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -321,6 +324,17 @@ public final class Resolver3 implements Resolver {
             } else if (CsmKindUtilities.isTypedef(orig) || CsmKindUtilities.isTypeAlias(orig)) {
                 CsmType t = ((CsmTypedef)orig).getType();
                 resovedClassifier = t.getClassifier();
+                if (CsmBaseUtilities.isUnresolved(resovedClassifier) && CsmExpressionResolver.shouldResolveAsMacroType(t, orig.getScope())) {
+                    CsmType resolvedMacroType = CsmExpressionResolver.resolveMacroType(
+                        t, 
+                        orig.getScope(), 
+                        Instantiation.getInstantiatedTypeInstantiations(t),
+                        null
+                    );
+                    if (resolvedMacroType != null) {
+                        resovedClassifier = resolvedMacroType.getClassifier();
+                    }
+                }
                 if (resovedClassifier == null) {
                     // have to stop with current 'orig' value
                     break;

@@ -100,7 +100,7 @@ set initialization properties.
 <h2>Wizard panel initialization</h2>
 
 Use 
-<a href="../WizardDescriptor.html#putProperty(java.lang.String,%20java.lang.Object)">
+<a href="../WizardDescriptor.html#putProperty-java.lang.String-java.lang.Object-">
 <code>WizardDescriptor.putProperty()</code></a> to set following initialization 
 properties.
 <ul>
@@ -121,13 +121,13 @@ Name <b> <code>"WizardPanel_autoWizardStyle"</code></b>, type <b> <code>Boolean<
 <br>
 <br>
 Also set to <code>Boolean.TRUE</code> to turn on subtitle creation from
-<a href="../WizardDescriptor.Panel.html#getComponent()">
+<a href="../WizardDescriptor.Panel.html#getComponent--">
 <code>WizardDesriptor.Panel.getComponent()</code></a><code>.getName()</code>
 as first and 
-<a href="../WizardDescriptor.Iterator.html#name()">
+<a href="../WizardDescriptor.Iterator.html#name--">
 <code>WizardDescriptor.Iterator.name()</code></a> as second parameter in subtitle
 format set with 
-<a href="../WizardDescriptor.html#setTitleFormat(java.text.MessageFormat)">
+<a href="../WizardDescriptor.html#setTitleFormat-java.text.MessageFormat-">
 <code>WizardDesriptor.setTitleFormat()</code></a>. 
 Default subtitle format is <code>"{0} wizard ({1})"</code> and name of default 
 
@@ -218,7 +218,7 @@ Set image displayed as background of content.
 
 <li><tt>
 Set subtitle (!!!) format with 
-<a href="../WizardDescriptor.html#setTitleFormat(java.text.MessageFormat)">
+<a href="../WizardDescriptor.html#setTitleFormat-java.text.MessageFormat-">
 <code>WizardDescriptor.setTitleFormat()</code></a>.
 </tt></li>
 
@@ -227,7 +227,7 @@ Set subtitle (!!!) format with
 <li><tt>
 Set title of the wizard with 
 
-<a href="../NotifyDescriptor.html#setTitle(java.lang.String)">
+<a href="../NotifyDescriptor.html#setTitle-java.lang.String-">
 <code>WizardDescriptor.setTitle()</code></a>. 
 </tt></li>
 <br><br>
@@ -277,21 +277,21 @@ Set name of panel <code>JComponent.setName("First wizard panel")</code>,
 used as first part of subtitle, second
 is 
 
-<a href="../WizardDescriptor.Iterator.html#name()">
+<a href="../WizardDescriptor.Iterator.html#name--">
 <code>WizardDescriptor.Panel.name()</code></a> when you use <code>"{0}{1}"</code> message format.
 </tt></li>
 
 </ul>
 
 All properties could be set with
-both alternatives (<a href="../WizardDescriptor.html#putProperty(java.lang.String,%20java.lang.Object)"><code>WizardDescriptor.putProperty()</code></a> or 
+both alternatives (<a href="../WizardDescriptor.html#putProperty-java.lang.String-java.lang.Object-"><code>WizardDescriptor.putProperty()</code></a> or 
 <code>JComponent.putClientProperty()</code>)
 except <b><code>"WizardPanel_helpURL"</code></b> which can be set only with 
 <code>JComponent.putClientProperty()</code> and the property <b><code>"WizardPanel_errorMessage"</code></b> which can be set only by
-<a href="../WizardDescriptor.html#putProperty(java.lang.String,%20java.lang.Object)"><code>WizardDescriptor.putProperty()</code></a>.
+<a href="../WizardDescriptor.html#putProperty-java.lang.String-java.lang.Object-"><code>WizardDescriptor.putProperty()</code></a>.
 <br>
 If both are used at the same time then 
-<a href="../WizardDescriptor.html#putProperty(java.lang.String,%20java.lang.Object)">
+<a href="../WizardDescriptor.html#putProperty-java.lang.String-java.lang.Object-">
 <code>WizardDescriptor.putProperty()</code></a> matters.
 <a href="../WizardDescriptor.html">
 <code>WizardDescriptor</code></a> listens on property changes of not initialization properties

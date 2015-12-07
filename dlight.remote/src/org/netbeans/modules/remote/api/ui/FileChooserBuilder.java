@@ -167,8 +167,9 @@ public final class FileChooserBuilder {
     }
 
     public JFileChooserEx createFileChooser(Callable<String> selectedPath) {
+        JFileChooserEx res;
         if (env.isLocal()) {
-            return new LocalFileChooserImpl(selectedPath);
+            res = new LocalFileChooserImpl(selectedPath);
         } else {
             String currentOpenTitle = UIManager.getString(openDialogTitleTextKey);
             String currentSaveTitle = UIManager.getString(saveDialogTitleTextKey);
@@ -187,8 +188,10 @@ public final class FileChooserBuilder {
             UIManager.put(saveDialogTitleTextKey, currentSaveTitle);
             UIManager.put(readOnlyKey, currentReadOnly);
 
-            return chooser;
-        }        
+            res = chooser;
+        }
+        res.setFileHidingEnabled(false);
+        return res;
     }
 
     public JFileChooserEx createFileChooser() {

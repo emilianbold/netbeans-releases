@@ -47,13 +47,12 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.ActionStreamResult;
 
 /**
  *
  * @author Petr Hejl
  */
-public class MuxedStreamResult implements ActionStreamResult {
+public class MuxedStreamResult implements StreamResult {
 
     private static final Logger LOGGER = Logger.getLogger(MuxedStreamResult.class.getName());
 

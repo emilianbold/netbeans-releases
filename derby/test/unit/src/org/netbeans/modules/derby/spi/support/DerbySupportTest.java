@@ -44,27 +44,55 @@
 
 package org.netbeans.modules.derby.spi.support;
 
-import junit.framework.*;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.derby.DerbyOptions;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Andrei Badea
  */
-public class DerbySupportTest extends TestCase {
-
+public class DerbySupportTest extends NbTestCase {
     public DerbySupportTest(String testName) {
         super(testName);
     }
-
+    
     public void testDefaultSystemHomeWhenNDSHPropertySetIssue76908() {
-        // returning .netbeans-derby when netbeans.derby.system.home is not set...
-        String defaultSystemHome = new File(System.getProperty("user.home"), ".netbeans-derby").getAbsolutePath();
-        assertEquals(defaultSystemHome, DerbySupport.getDefaultSystemHome());
+        // ensure "foo" ist not the "default" derby home
+        assert (! DerbySupport.getDefaultSystemHome().equals("foo"));
 
         // ... but returning it when it is
         System.setProperty(DerbyOptions.NETBEANS_DERBY_SYSTEM_HOME, "foo");
         assertEquals("foo", DerbySupport.getDefaultSystemHome());
+    }
+    
+    public void testGetSystemHome() throws IOException {
+        System.clearProperty(DerbyOptions.NETBEANS_DERBY_SYSTEM_HOME);
+        clearWorkDir();
+
+        String origUserHome = System.getProperty("user.home");
+        String origOsName = System.getProperty("os.name");
+        
+        System.setProperty("user.home", getWorkDirPath());
+        
+        // This test is only partitially correct (the tested method reads
+        // environment variables, so this is a partitial solution) - the idea:
+        // On non-windows systems default system home is user.home/.netbeans-derby
+        // On windows system default system home has "Derby" as final path part
+        
+        System.setProperty("os.name", "Linux");
+        assertTrue(DerbySupport.getDefaultSystemHome().equals(new File(getWorkDirPath(), ".netbeans-derby").getAbsolutePath()));
+
+        System.setProperty("os.name", "Windows 8");
+        assertTrue(new File(DerbySupport.getDefaultSystemHome()).getName().equals("Derby"));
+        
+        Files.createDirectory(new File(getWorkDirPath(), ".netbeans-derby").toPath());
+        assertTrue(DerbySupport.getDefaultSystemHome().equals(new File(getWorkDirPath(), ".netbeans-derby").getAbsolutePath()));
+        
+        System.setProperty("user.home", origUserHome);
+        System.setProperty("os.name", origOsName);
     }
 }

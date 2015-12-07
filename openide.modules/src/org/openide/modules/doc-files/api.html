@@ -318,7 +318,7 @@ only handle the exceptional parts.
 
 base class. Your class must be able to be
 
-<a href="@JDK@/java/beans/Beans.html#instantiate(java.lang.ClassLoader,%20java.lang.String)">instantiated as a JavaBean</a>.
+<a href="@JDK@/java/beans/Beans.html#instantiate-java.lang.ClassLoader-java.lang.String-">instantiated as a JavaBean</a>.
 
 There are several methods which you may override, and may do anything
 which is required to make the module cleanly enter and exit NetBeans.</p>
@@ -334,7 +334,7 @@ import org.openide.filesystems.FileUtil;
 import java.net.*;
 
 public class ModuleHandler extends <a href="../ModuleInstall.html">ModuleInstall</a> {
-  public void <a href="../ModuleInstall.html#installed()">installed</a>() {
+  public void <a href="../ModuleInstall.html#installed--">installed</a>() {
     // This module has been installed for the first time! Notify authors.
     HttpURLConnection conn = (HttpURLConnection)
       (new URL ("http://www.modulemakers.com/clip_disp/installed.cgi").openConnection ());
@@ -345,15 +345,15 @@ public class ModuleHandler extends <a href="../ModuleInstall.html">ModuleInstall
   }
 
   // Nothing special required here.
-  // public void <a href="../ModuleInstall.html#restored()">restored</a>() {
+  // public void <a href="../ModuleInstall.html#restored--">restored</a>() {
   // }
 
   // Do not need to do anything special on uninstall.
   // Tools action will be removed automatically.
-  // public void <a href="../ModuleInstall.html#uninstalled()">uninstalled</a>() {
+  // public void <a href="../ModuleInstall.html#uninstalled--">uninstalled</a>() {
   // }
 
-  public boolean <a href="../ModuleInstall.html#closing()">closing</a>() {
+  public boolean <a href="../ModuleInstall.html#closing--">closing</a>() {
     // Ask the user to save any open, modified clipboard contents.
     // If the user selects "Cancel" on one of these dialogs, don't exit yet!
     return DisplayClipboardAction.askAboutExiting ();
@@ -375,7 +375,7 @@ acceptable to use in <code>restored</code>, including
 
 <p>The
 
-<a href="../ModuleInstall.html#updated(int,%20java.lang.String)"><code>ModuleInstall.updated(...)</code></a>
+<a href="../ModuleInstall.html#updated-int-java.lang.String-"><code>ModuleInstall.updated(...)</code></a>
 
 method will be called just once when
 a module is updated to a new version - when the new version is loaded
@@ -391,7 +391,7 @@ in order for it to be used. For example, an external application may need
 to be installed in order for it to do anything. Or it may require a valid
 license key. In such cases, the
 
-<a href="../ModuleInstall.html#validate()"><code>ModuleInstall.validate()</code></a>
+<a href="../ModuleInstall.html#validate--"><code>ModuleInstall.validate()</code></a>
 
 method may be overridden to check for this external resource and throw
 a (preferably politely localized) <code>IllegalStateException</code>
@@ -491,7 +491,7 @@ understood by <code>XMLFileSystem</code>.
 
 Its contents specify some files that the module will add to the
 
-<a href="@org-openide-filesystems@/org/openide/filesystems/Repository.html#getDefaultFileSystem()">system filesystem</a>
+<a href="@org-openide-filesystems@/org/openide/filesystems/Repository.html#getDefaultFileSystem--">system filesystem</a>
 
 controlling much of NetBeans' configuration. This filesystem is composed of many read-only XML layer filesystems
 as well as a writable layer corresponding to the <code>config</code> subdirectory of the user directory.</p>
@@ -576,7 +576,7 @@ for example, menus are
 in the order the instance-bearing data objects occur in the data
 folder. The call
 
-<a href="@org-openide-loaders@/org/openide/loaders/DataFolder.html#setOrder(org.openide.loaders.DataObject[])"><code>DataFolder.setOrder(DataObject[])</code></a>
+<a href="@org-openide-loaders@/org/openide/loaders/DataFolder.html#setOrder-org.openide.loaders.DataObject:A-"><code>DataFolder.setOrder(DataObject[])</code></a>
 
 suffices to arbitrarily change folder order, but usually it is
 desirable to create the proper order declaratively in the XML. For
@@ -585,7 +585,7 @@ this reason, <code>DataFolder</code> understands special attributes
 Specifically: if there are data objects A and B in the folder,
 represented by
 
-<a href="@org-openide-loaders@/org/openide/loaders/DataObject.html#getPrimaryFile()">primary files</a>
+<a href="@org-openide-loaders@/org/openide/loaders/DataObject.html#getPrimaryFile--">primary files</a>
 
 <samp>afile</samp> and <samp>bfile</samp>,
 and <samp>afile</samp> has an attribute named <code>position</code> whose numeric value is less
@@ -620,7 +620,7 @@ any bearing on the ordering.
 
 <p>There is also an older, now-deprecated system based on relative ordering attributes.</p>
 
-<p>More details are available in <a href="@org-openide-filesystems@/org/openide/filesystems/FileUtil.html#getOrder(java.util.Collection,%20boolean)"><code>FileUtil.getOrder</code></a>.</p>
+<p>More details are available in <a href="@org-openide-filesystems@/org/openide/filesystems/FileUtil.html#getOrder-java.util.Collection-boolean-"><code>FileUtil.getOrder</code></a>.</p>
 
 <p>The resource path pointing to the layer is automatically localized
 by NetBeans every time the module is installed or restored; if there
@@ -642,7 +642,7 @@ files installed by the core.
 <p>NetBeans recognizes several special file attributes, typically set in layers, which can control UI.
 For example, the labels of menus created from folders beneath <samp>Menu/</samp>
 are derived from the "localized display name" of the layer folder, when defined.
-See <a href="@org-openide-filesystems@/org/openide/filesystems/FileSystem.html#getDecorator()"><code>FileSystem.getDecorator()</code></a> 
+See <a href="@org-openide-filesystems@/org/openide/filesystems/FileSystem.html#getDecorator--"><code>FileSystem.getDecorator()</code></a> 
 (formerly <code>getStatus()</code>)for details.</p>
 
 <h4>Reverting user's modifications</h4>
@@ -1253,7 +1253,7 @@ missing a valid license key), simply use
 
 <p>When rewriting the module XML be sure to use
 
-<a href="@org-openide-filesystems@/org/openide/filesystems/FileSystem.html#runAtomicAction(org.openide.filesystems.FileSystem.AtomicAction)"><code>FileSystem.runAtomic(FileSystem.AtomicAction)</code></a>
+<a href="@org-openide-filesystems@/org/openide/filesystems/FileSystem.html#runAtomicAction-org.openide.filesystems.FileSystem.AtomicAction-"><code>FileSystem.runAtomic(FileSystem.AtomicAction)</code></a>
 
 to wrap the reading of the old XML and the writing of the new, to
 prevent file changes from being fired halfway through.</p>

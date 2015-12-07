@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
-/** Not preferred anymore, use <a href="@org-openide-awt@/org/openide/awt/Actions.html#alwaysEnabled(java.awt.event.ActionListener,%20java.lang.String,%20java.lang.String,%20boolean)">Actions.alwaysEnabled</a>
+/** Not preferred anymore, use <a href="@org-openide-awt@/org/openide/awt/Actions.html#alwaysEnabled-java.awt.event.ActionListener-java.lang.String-java.lang.String-boolean-">Actions.alwaysEnabled</a>
 * instead. To migrate your
 * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">
 * layer definition</a> use:

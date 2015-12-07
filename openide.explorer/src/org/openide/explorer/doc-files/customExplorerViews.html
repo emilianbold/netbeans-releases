@@ -63,28 +63,28 @@ it need not implement any particular interface, etc. However, the
 convention is that it keep track of the Explorer manager that controls
 it; this manager should be located when it is
 
-<a href="@JDK@/java/awt/Component.html#addNotify()">added</a>
+<a href="@JDK@/java/awt/Component.html#addNotify--">added</a>
 
 to a parent component, by calling
 
-<a href="../ExplorerManager.html#find(java.awt.Component)"><code>ExplorerManager.find(...)</code></a>,
+<a href="../ExplorerManager.html#find-java.awt.Component-"><code>ExplorerManager.find(...)</code></a>,
 
 and then use that manager's properties to control it; the view should
 also stop consulting the manager when the component is
 
-<a href="@JDK@/java/awt/Component.html#removeNotify()">removed</a>
+<a href="@JDK@/java/awt/Component.html#removeNotify--">removed</a>
 
 from its parent.
 
 <p>The view will want to use a
 
-<a href="../ExplorerManager.html#addPropertyChangeListener(java.beans.PropertyChangeListener)">property change listener</a>
+<a href="../ExplorerManager.html#addPropertyChangeListener-java.beans.PropertyChangeListener-">property change listener</a>
 
 to keep track of what the manager expects it to do;
 
 possibly it could also
 
-<a href="../ExplorerManager.html#addVetoableChangeListener(java.beans.VetoableChangeListener)">veto</a>
+<a href="../ExplorerManager.html#addVetoableChangeListener-java.beans.VetoableChangeListener-">veto</a>
 
 certain changes.
 

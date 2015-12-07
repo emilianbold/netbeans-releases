@@ -457,6 +457,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     @Override
+    public CharSequence getOriginalText(CsmType type) {
+        return Instantiation.getOriginalText(type);
+    }
+
+    @Override
     public CharSequence getInstantiatedText(CsmType type) {
         long time = System.currentTimeMillis();
         try {

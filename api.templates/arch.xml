@@ -67,7 +67,7 @@
         <p>
             Often many people require ability to create a "clever" template - e.g.
             write piece of simple text and at the time of its 
-            <a href="@TOP@/org/netbeans/api/templates/FileBuilder.html#createFromTemplate(org.openide.filesystems.FileObject, org.openide.filesystems.FileObject, java.lang.String, java.util.Map, org.netbeans.api.templates.FileBuilder.Mode)">
+            <a href="@TOP@/org/netbeans/api/templates/FileBuilder.html#createFromTemplate-org.openide.filesystems.FileObject-org.openide.filesystems.FileObject-java.lang.String-java.util.Map-org.netbeans.api.templates.FileBuilder.Mode-">
                 processing
             </a> 
             do some advanced changes to it using either 

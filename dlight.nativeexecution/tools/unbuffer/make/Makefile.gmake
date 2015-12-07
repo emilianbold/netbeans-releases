@@ -4,9 +4,8 @@ DEPS := $(OBJS:%.o=%.d)
 DEPFLAGS := -MMD -MP
 
 clean_deps:
-	$(RM) $(DEPS)
 
 $(OBJS): $(OBJ_DIR)/%.o: $(ROOT_DIR)/%.c | $(OBJ_DIRS)
-	$(COMPILE.c) $(DEPFLAGS) -MF $(@:%.o=%.d) -o $@ $<
+	$(COMPILE.c) -o $@ $<
 
 -include $(DEPS)

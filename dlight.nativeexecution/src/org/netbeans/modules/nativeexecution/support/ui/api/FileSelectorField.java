@@ -47,6 +47,7 @@ import java.awt.AWTKeyStroke;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -64,13 +65,14 @@ import org.openide.util.RequestProcessor;
  * @author ak119685
  */
 public final class FileSelectorField extends JTextField
-        implements Completable, PopupMenuListener {
+        implements PopupMenuListener {
 
     private final static RequestProcessor rp = new RequestProcessor("FileSelectorField", 3); // NOI18N
     private final AtomicReference<CompletionTask> currentTask;
     private boolean listenersInactive = false;
     private AutocompletionProvider provider;
     private CompletionPopup popup;
+    private final Completable completable = new CompletableImpl();
 
     public FileSelectorField() {
         this(null);
@@ -136,7 +138,7 @@ public final class FileSelectorField extends JTextField
         }
 
         if (popup == null) {
-            popup = new CompletionPopup(this);
+            popup = new CompletionPopup(completable);
             popup.addPopupMenuListener(this);
         }
 
@@ -167,19 +169,32 @@ public final class FileSelectorField extends JTextField
         this.provider = provider;
     }
 
-    @Override
-    public boolean completeWith(final String completion) {
-        String orig = getText().substring(0, getCaretPosition());
-        String newValue;
-        if (orig.startsWith("/") || orig.startsWith(".") || orig.startsWith("~")) { // NOI18N
-            newValue = orig.substring(0, orig.lastIndexOf('/') + 1) + completion;
-        } else {
-            newValue = completion;
+    private final class CompletableImpl implements Completable {
+
+        @Override
+        public boolean completeWith(final String completion) {
+            String orig = getText().substring(0, getCaretPosition());
+            String newValue;
+            if (orig.startsWith("/") || orig.startsWith(".") || orig.startsWith("~")) { // NOI18N
+                newValue = orig.substring(0, orig.lastIndexOf('/') + 1) + completion;
+            } else {
+                newValue = completion;
+            }
+
+            boolean updateCompletions = newValue.endsWith("/"); // NOI18N
+            setText(newValue, updateCompletions);
+            return updateCompletions;
         }
 
-        boolean updateCompletions = newValue.endsWith("/"); // NOI18N
-        setText(newValue, updateCompletions);
-        return updateCompletions;
+        @Override
+        public void requestFocus() {
+            FileSelectorField.this.requestFocus();
+        }
+
+        @Override
+        public void addKeyListener(KeyListener listener) {
+            FileSelectorField.this.addKeyListener(listener);
+        }
     }
 
     public void setText(String text, boolean updateCompletions) {
