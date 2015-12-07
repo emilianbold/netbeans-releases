@@ -64,6 +64,7 @@ import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.grunt.GruntBuildTool;
 import org.netbeans.modules.javascript.grunt.options.GruntOptions;
 import org.netbeans.modules.javascript.grunt.options.GruntOptionsValidator;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
@@ -86,9 +87,11 @@ public class GruntExecutable {
 
     private static final String HELP_PARAM = "--help"; // NOI18N
     private static final String NO_COLOR_PARAM = "--no-color"; // NOI18N
+    private static final String TASKS_PARAM = "--tasks"; // NOI18N
 
     protected final Project project;
     protected final String gruntPath;
+    private final List<String> tasks;
 
     @NullAllowed
     private final File workDir;
@@ -107,6 +110,7 @@ public class GruntExecutable {
         assert gruntPath != null;
         assert project != null;
         this.gruntPath = gruntPath;
+        this.tasks = getTasks(project, workDir);
         this.project = project;
         this.workDir = workDir;
     }
@@ -228,7 +232,13 @@ public class GruntExecutable {
 
     List<String> getParams(List<String> params) {
         assert params != null;
-        return params;
+        List<String> allParams = new ArrayList<>(tasks.size() * 2 + params.size());
+        for (String task : tasks) {
+            allParams.add(TASKS_PARAM);
+            allParams.add(task.trim());
+        }
+        allParams.addAll(params);
+        return allParams;
     }
 
     @CheckForNull
@@ -244,6 +254,18 @@ public class GruntExecutable {
 
     static List<String> getListTasksParams() {
         return Arrays.asList(NO_COLOR_PARAM, HELP_PARAM);
+    }
+
+    /**
+     * Gets tasks but only for project Gruntfile.js.
+     */
+    private List<String> getTasks(Project project, @NullAllowed File workDir) {
+        if (workDir == null
+                || workDir.equals(FileUtil.toFile(project.getProjectDirectory()))) {
+            return StringUtilities.explode(GruntBuildTool.forProject(project).getGruntPreferences().getTasks(), ","); // NOI18N
+        }
+        // not project grunt
+        return Collections.emptyList();
     }
 
     //~ Inner classes

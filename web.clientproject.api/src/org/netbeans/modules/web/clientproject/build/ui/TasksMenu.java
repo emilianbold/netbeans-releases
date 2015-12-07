@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.api.build.ui;
+package org.netbeans.modules.web.clientproject.build.ui;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
