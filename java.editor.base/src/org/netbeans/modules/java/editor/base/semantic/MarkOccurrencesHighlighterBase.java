@@ -212,7 +212,9 @@ public abstract class MarkOccurrencesHighlighterBase extends JavaParserResultTas
 
                     try {
                         TreePath tryPath = tu.getPathElementOfKind(Kind.TRY, typePath);
-                        return med.process(info, doc, ((TryTree)tryPath.getLeaf()).getBlock(), Collections.singletonList(typePath.getLeaf()));
+                        if (tryPath != null) {
+                            return med.process(info, doc, ((TryTree)tryPath.getLeaf()).getBlock(), Collections.singletonList(typePath.getLeaf()));
+                        }
                     } finally {
                         setExitDetector(null);
                     }
