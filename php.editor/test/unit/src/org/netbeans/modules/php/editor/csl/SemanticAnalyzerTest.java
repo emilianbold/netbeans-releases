@@ -190,4 +190,9 @@ public class SemanticAnalyzerTest extends SemanticAnalysisTestBase {
     public void testIssue245230() throws Exception {
         checkSemantic("testfiles/semantic/issue245230.php");
     }
+
+    public void testIssue247411() throws Exception {
+        // check unused private fields and methods for trait
+        checkSemantic("testfiles/semantic/issue247411.php");
+    }
 }

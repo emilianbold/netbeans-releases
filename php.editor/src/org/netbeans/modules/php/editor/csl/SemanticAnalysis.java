@@ -325,6 +325,25 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
         }
 
+        private void addColoringForUnusedPrivateFields() {
+            // are there unused private fields?
+            for (ASTNodeColoring item : privateFieldsUnused.values()) {
+                if (item.coloring.contains(ColoringAttributes.STATIC)) {
+                    if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
+                        addColoringForNode(item.identifier, DEPRECATED_UNUSED_STATIC_FIELD_SET);
+                    } else {
+                        addColoringForNode(item.identifier, UNUSED_STATIC_FIELD_SET);
+                    }
+                } else {
+                    if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
+                        addColoringForNode(item.identifier, DEPRECATED_UNUSED_FIELD_SET);
+                    } else {
+                        addColoringForNode(item.identifier, UNUSED_FIELD_SET);
+                    }
+                }
+            }
+        }
+
         @Override
         public void scan(ASTNode node) {
             if (!isCancelled()) {
@@ -376,22 +395,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 for (Block block : needToScan) {
                     block.accept(this);
                 }
-                // are there unused private fields?
-                for (ASTNodeColoring item : privateFieldsUnused.values()) {
-                    if (item.coloring.contains(ColoringAttributes.STATIC)) {
-                        if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
-                            addColoringForNode(item.identifier, DEPRECATED_UNUSED_STATIC_FIELD_SET);
-                        } else {
-                            addColoringForNode(item.identifier, UNUSED_STATIC_FIELD_SET);
-                        }
-                    } else {
-                        if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
-                            addColoringForNode(item.identifier, DEPRECATED_UNUSED_FIELD_SET);
-                        } else {
-                            addColoringForNode(item.identifier, UNUSED_FIELD_SET);
-                        }
-                    }
-                }
+                addColoringForUnusedPrivateFields();
             }
         }
 
@@ -564,8 +568,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 for (Block block : needToScan) {
                     block.accept(this);
                 }
+                addColoringForUnusedPrivateFields();
             }
-            super.visit(node);
         }
 
         @Override
