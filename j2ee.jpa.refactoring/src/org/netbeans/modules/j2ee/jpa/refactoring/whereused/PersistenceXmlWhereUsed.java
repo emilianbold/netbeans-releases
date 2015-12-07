@@ -104,6 +104,7 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
 
                     @Override
                     public void run(CompilationController ci) throws Exception {
+                        ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         Element resElement = handle.resolveElement(ci);
                         TypeElement type = (TypeElement) resElement;
                         String clazz = type.getQualifiedName().toString();

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.model.JavacElements;
 import java.io.File;
 import java.io.IOException;
@@ -132,7 +133,9 @@ public class ClasspathInfoTest extends NbTestCase {
     
     public void testGetTypeDeclaration() throws Exception {
         ClasspathInfo ci = ClasspathInfo.create( bootPath, classPath, null);
-	JavacElements elements = (JavacElements) JavacParser.createJavacTask(ci,  (DiagnosticListener) null, (String) null, null, null, null, null, null).getElements();
+        JavacTaskImpl jTask = JavacParser.createJavacTask(ci,  (DiagnosticListener) null, (String) null, null, null, null, null, null);
+        jTask.enter(); 
+	JavacElements elements = (JavacElements) jTask.getElements();
 	
         List<String> notFound = new LinkedList<String>();
         JarFile jf = new JarFile( rtJar );       
@@ -216,7 +219,7 @@ public class ClasspathInfoTest extends NbTestCase {
         createJavaFile(scp.getRoots()[0], "org/me/Lib.java", "package org.me;\n class Lib {}\n");
         TransactionContext tx = TransactionContext.beginStandardTransaction(scp.getRoots()[0].toURL(), true, true, false);
         try {
-            final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, classPath,scp, null, true, true, true, false);
+            final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, ClassPath.EMPTY, classPath, ClassPath.EMPTY, ClassPath.EMPTY, scp, null, true, true, true, false);
             final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo);
             Iterable<JavaFileObject> jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
             assertEquals (new String[] {"org.me.Lib"}, jfos, fm);

@@ -94,6 +94,7 @@ public class FmtOptions {
      */
     public static final String sortUsesDependencies = "sortUsesDependencies"; // NO18N
     
+    public static final String moduleDeclBracePlacement = "moduleDeclBracePlacement"; //NOI18N
     public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
     public static final String methodDeclBracePlacement = "methodDeclBracePlacement"; //NOI18N
     public static final String otherBracePlacement = "otherBracePlacement"; //NOI18N
@@ -102,6 +103,7 @@ public class FmtOptions {
     public static final String redundantForBraces = "redundantForBraces"; //NOI18N
     public static final String redundantWhileBraces = "redundantWhileBraces"; //NOI18N
     public static final String redundantDoWhileBraces = "redundantDoWhileBraces"; //NOI18N
+    public static final String alignMultilineExports = "alignMultilineExports"; //NOI18N
     public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
     public static final String alignMultilineLambdaParams = "alignMultilineLambdaParams"; //NOI18N
     public static final String alignMultilineCallArgs = "alignMultilineCallArgs"; //NOI18N
@@ -122,6 +124,9 @@ public class FmtOptions {
     public static final String placeFinallyOnNewLine = "placeFinallyOnNewLine"; //NOI18N
     public static final String placeNewLineAfterModifiers = "placeNewLineAfterModifiers"; //NOI18N
     
+    public static final String wrapProvidesWithKeyword = "wrapProvidesWithKeyword"; //NOI18N
+    public static final String wrapExportsToKeyword = "wrapExportsToKeyword"; //NOI18N
+    public static final String wrapExportsToList = "wrapExportsToList"; //NOI18N
     public static final String wrapExtendsImplementsKeyword = "wrapExtendsImplementsKeyword"; //NOI18N
     public static final String wrapExtendsImplementsList = "wrapExtendsImplementsList"; //NOI18N
     public static final String wrapMethodParams = "wrapMethodParams"; //NOI18N
@@ -155,6 +160,10 @@ public class FmtOptions {
     
     public static final String blankLinesInDeclarations = "blankLinesInDeclarations"; //NOI18N
     public static final String blankLinesInCode = "blankLinesInCode"; //NOI18N
+    public static final String blankLinesAfterModuleHeader = "blankLinesAfterModuleHeader"; //NOI18N
+    public static final String blankLinesBeforeModuleClosingBrace = "blankLinesBeforeModuleClosingBrace"; //NOI18N
+    public static final String blankLinesBeforeModuleDirectives = "blankLinesBeforeModuleDirectives"; //NOI18N
+    public static final String blankLinesAfterModuleDirectives = "blankLinesAfterModuleDirectives"; //NOI18N
     public static final String blankLinesBeforePackage = "blankLinesBeforePackage"; //NOI18N
     public static final String blankLinesAfterPackage = "blankLinesAfterPackage"; //NOI18N
     public static final String blankLinesBeforeImports = "blankLinesBeforeImports"; //NOI18N
@@ -193,6 +202,7 @@ public class FmtOptions {
     public static final String spaceAroundAnnotationValueAssignOps = "spaceAroundAnnotationValueAssignOps"; //NOI18N
     public static final String spaceAroundLambdaArrow = "spaceAroundLambdaArrow"; //NOI18N
     public static final String spaceAroundMethodReferenceDoubleColon = "spaceAroundMethodReferenceDoubleColon"; //NOI18N
+    public static final String spaceBeforeModuleDeclLeftBrace = "spaceBeforeModuleDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeIfLeftBrace = "spaceBeforeIfLeftBrace"; //NOI18N
@@ -382,6 +392,7 @@ public class FmtOptions {
             { sortUsesDependencies, TRUE}, //NOI18N
             { classMemberInsertionPoint, IP_CARET},
 
+            { moduleDeclBracePlacement, BP_SAME_LINE}, //NOI18N
             { classDeclBracePlacement, BP_SAME_LINE}, //NOI18N
             { methodDeclBracePlacement, BP_SAME_LINE}, //NOI18N
             { otherBracePlacement, BP_SAME_LINE}, //NOI18N
@@ -390,6 +401,7 @@ public class FmtOptions {
             { redundantForBraces, BGS_GENERATE}, //NOI18N
             { redundantWhileBraces, BGS_GENERATE}, //NOI18N
             { redundantDoWhileBraces, BGS_GENERATE}, //NOI18N
+            { alignMultilineExports, FALSE}, //NOI18N
             { alignMultilineMethodParams, FALSE}, //NOI18N
             { alignMultilineLambdaParams, FALSE}, //NOI18N
             { alignMultilineCallArgs, FALSE}, //NOI18N
@@ -410,6 +422,9 @@ public class FmtOptions {
             { placeFinallyOnNewLine, FALSE}, //NOI18N 
             { placeNewLineAfterModifiers, FALSE}, //NOI18N
 
+            { wrapProvidesWithKeyword, WRAP_NEVER}, //NOI18N
+            { wrapExportsToKeyword, WRAP_NEVER}, //NOI18N
+            { wrapExportsToList, WRAP_NEVER}, //NOI18N
             { wrapExtendsImplementsKeyword, WRAP_NEVER}, //NOI18N
             { wrapExtendsImplementsList, WRAP_NEVER}, //NOI18N
             { wrapMethodParams, WRAP_NEVER}, //NOI18N
@@ -443,6 +458,10 @@ public class FmtOptions {
 
             { blankLinesInDeclarations, "1"}, //NOI18N
             { blankLinesInCode, "1"}, //NOI18N
+            { blankLinesAfterModuleHeader, "0"}, //NOI18N 
+            { blankLinesBeforeModuleClosingBrace, "0"}, //NOI18N 
+            { blankLinesBeforeModuleDirectives, "0"}, //NOI18N 
+            { blankLinesAfterModuleDirectives, "0"}, //NOI18N 
             { blankLinesBeforePackage, "0"}, //NOI18N
             { blankLinesAfterPackage, "1"}, //NOI18N
             { blankLinesBeforeImports, "1"}, //NOI18N 
@@ -481,6 +500,7 @@ public class FmtOptions {
             { spaceAroundAnnotationValueAssignOps, TRUE}, //NOI18N
             { spaceAroundLambdaArrow, TRUE}, //NOI18N
             { spaceAroundMethodReferenceDoubleColon, FALSE}, //NOI18N
+            { spaceBeforeModuleDeclLeftBrace, TRUE}, //NOI18N
             { spaceBeforeClassDeclLeftBrace, TRUE}, //NOI18N
             { spaceBeforeMethodDeclLeftBrace, TRUE}, //NOI18N
             { spaceBeforeIfLeftBrace, TRUE}, //NOI18N

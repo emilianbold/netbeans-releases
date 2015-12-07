@@ -64,9 +64,10 @@ public interface Archive {
      *  @param entry owning ClassPath.Entry to check the excludes or null if everything should be included
      *  @param kinds to list, may be null => all types
      *  @param filter to filter the file content
+     *  @param recursive if true content of subfolders is included
      *  @return the listed files
      */
-    public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException;    
+    public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter, boolean recursive) throws IOException;
 
     /*
      * Returns a new {@link JavaFileObject} for given path.

@@ -43,15 +43,14 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -88,20 +87,21 @@ public final class PathArchive implements Archive {
             @NonNull String folderName,
             @NullAllowed final ClassPath.Entry entry,
             @NullAllowed final Set<JavaFileObject.Kind> kinds,
-            @NullAllowed final JavaFileFilterImplementation filter) throws IOException {
+            @NullAllowed final JavaFileFilterImplementation filter,
+            final boolean recursive) throws IOException {
         if (separator != FileObjects.NBFS_SEPARATOR_CHAR) {
             folderName = folderName.replace(FileObjects.NBFS_SEPARATOR_CHAR, separator);
         }
         final Path target = root.resolve(folderName);
-        try (DirectoryStream<Path> dir = Files.newDirectoryStream(target, new KindFilter(kinds))) {
-            final List<JavaFileObject> res = new ArrayList<>();
-            for (Path dirEnt : dir) {
-                res.add(FileObjects.pathFileObject(dirEnt, root, rootURI, null));
-            }
-            return res;
-        } catch (NotDirectoryException | NoSuchFileException e) {
-            return Collections.emptyList();
+        final List<JavaFileObject> res = new ArrayList<>();
+        try (final Stream<Path> s = recursive ? Files.walk(target, FileVisitOption.FOLLOW_LINKS) : Files.list(target)) {
+            s.filter((p)->{
+                return (kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(p.getFileName().toString()))))
+                    && Files.isRegularFile(p);
+            })
+            .forEach((p)->{res.add(FileObjects.pathFileObject(p, root, rootURI, null));});
         }
+        return Collections.unmodifiableCollection(res);
     }
 
     @Override
@@ -123,26 +123,5 @@ public final class PathArchive implements Archive {
 
     @Override
     public void clear() {
-    }
-
-
-    private static final class KindFilter implements DirectoryStream.Filter<Path> {
-        private final Set<JavaFileObject.Kind> kinds;
-
-        KindFilter(@NullAllowed final Set<JavaFileObject.Kind> kinds) {
-            this.kinds = kinds;
-        }
-
-        @Override
-        public boolean accept(Path entry) throws IOException {
-            if (Files.isDirectory(entry)) {
-                return false;
-            }
-            if (kinds == null) {
-                return true;
-            }
-            return kinds.contains(FileObjects.getKind(
-                    FileObjects.getExtension(entry.getFileName().toString())));
-        }
     }
 }

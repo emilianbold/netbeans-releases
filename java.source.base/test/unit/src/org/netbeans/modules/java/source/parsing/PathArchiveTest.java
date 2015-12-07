@@ -99,7 +99,7 @@ public final class PathArchiveTest extends NbTestCase {
         final PathArchive pa = new PathArchive(module, null);
         final Map<String,Set<String>> pkgs = getPackages(module);
         for (Map.Entry<String,Set<String>> pkg : pkgs.entrySet()) {
-            final Iterable<? extends JavaFileObject> res = pa.getFiles(pkg.getKey(), null, null, null);
+            final Iterable<? extends JavaFileObject> res = pa.getFiles(pkg.getKey(), null, null, null, false);
             assertPkgEquals(pkg.getKey(), pkg.getValue(), res);
         }
     }

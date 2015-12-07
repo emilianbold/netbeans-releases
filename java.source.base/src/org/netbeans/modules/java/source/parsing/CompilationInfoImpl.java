@@ -373,15 +373,21 @@ public final class CompilationInfoImpl {
             JavaSource.Phase currentPhase = getPhase();
             if (currentPhase.compareTo(phase)<0) {
                 setPhase(phase);
-                if (currentPhase == JavaSource.Phase.MODIFIED)
-                    getJavacTask().parse(); // Ensure proper javac initialization
+                if (currentPhase == JavaSource.Phase.MODIFIED) {
+                    getJavacTask().analyze(); // Ensure proper javac initialization
+                }
                 currentPhase = phase;
             }
             return currentPhase;
         }
         else {
-            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false);
-            return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
+            try {
+                JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false);
+                return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
+            } catch (Throwable t) {
+                System.out.println(t);
+                throw t;
+            }
         }
     }
 

@@ -58,7 +58,6 @@ import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
@@ -92,7 +91,7 @@ public class OutputFileManager extends CachingFileManager {
             @NonNull final CachingArchiveProvider provider,
             @NonNull final ClassPath outputClassPath,
             @NonNull final ClassPath sourcePath,
-            @NullAllowed final ClassPath aptPath,
+            @NonNull final ClassPath aptPath,
             @NonNull final SiblingProvider siblings,
             @NonNull final FileManagerTransaction tx) {
         super (provider, outputClassPath, false, true);
@@ -101,7 +100,7 @@ public class OutputFileManager extends CachingFileManager {
         assert siblings != null;
         assert tx != null;
 	this.scp = sourcePath;
-        this.apt = aptPath == null ? ClassPath.EMPTY : aptPath;
+        this.apt = aptPath;
         this.siblings = siblings;
         this.tx = tx;
     }

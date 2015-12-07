@@ -86,6 +86,15 @@ public final class ProjectProperties {
      */
     public static final String JAVAC_PROCESSORPATH = "javac.processorpath"; //NOI18N
     public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
+    /**
+     * @since 1.77
+     */
+    public static final String MODULE_COMPILE_PATH = "javac.modulepath";    //NOI18N
+    /**
+     * @since 1.77
+     */
+    public static final String TEST_MODULE_COMPILE_PATH = "javac.test.modulepath";    //NOI18N
+
     public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
     public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
     public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N

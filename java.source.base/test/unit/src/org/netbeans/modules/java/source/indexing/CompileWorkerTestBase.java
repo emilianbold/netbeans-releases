@@ -58,6 +58,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
@@ -123,7 +124,7 @@ public abstract class CompileWorkerTestBase extends NbTestCase {
             }
         }, LogContext.create(EventType.PATH, ""));
         
-        JavaParsingContext javaContext = new JavaParsingContext(ctx, ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), ClassPathSupport.createClassPath(new FileObject[0]), ClassPathSupport.createClassPath(new FileObject[] {src}), virtualFiles);
+        JavaParsingContext javaContext = new JavaParsingContext(ctx, ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), ClassPath.EMPTY, ClassPathSupport.createClassPath(new FileObject[0]), ClassPath.EMPTY, ClassPath.EMPTY, ClassPathSupport.createClassPath(new FileObject[] {src}), virtualFiles);
         List<CompileTuple> toIndex = new ArrayList<CompileTuple>();
         
         toIndex.addAll(files);

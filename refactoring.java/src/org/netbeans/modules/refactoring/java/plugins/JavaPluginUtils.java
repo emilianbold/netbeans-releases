@@ -59,6 +59,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -289,9 +290,12 @@ public final class JavaPluginUtils {
         JavaSource source;
         if (file != null) {
             final ClassPath mergedPlatformPath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.BOOT), ClassPath.getClassPath(file, ClassPath.BOOT));
+            final ClassPath mergedModulePlatformPath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.MODULE_BOOT), ClassPath.getClassPath(file, JavaClassPathConstants.MODULE_BOOT_PATH));
             final ClassPath mergedCompilePath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.COMPILE), ClassPath.getClassPath(file, ClassPath.COMPILE));
+            final ClassPath mergedModuleCompilePath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.MODULE_COMPILE), ClassPath.getClassPath(file, JavaClassPathConstants.MODULE_COMPILE_PATH));
+            final ClassPath mergedModuleClassPath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.MODULE_CLASS), ClassPath.getClassPath(file, JavaClassPathConstants.MODULE_CLASS_PATH));
             final ClassPath mergedSourcePath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.SOURCE), ClassPath.getClassPath(file, ClassPath.SOURCE));
-            final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedCompilePath, mergedSourcePath);
+            final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedModulePlatformPath, mergedCompilePath, mergedModuleCompilePath, mergedModuleClassPath, mergedSourcePath);
             source = JavaSource.create(mergedInfo, new FileObject[]{tph.getFileObject()});
         } else {
             source = JavaSource.create(cpInfo);

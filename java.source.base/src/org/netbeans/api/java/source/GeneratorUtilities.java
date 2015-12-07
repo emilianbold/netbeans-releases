@@ -1766,7 +1766,7 @@ public final class GeneratorUtilities {
                 String fqn = qualIdent.toString();
                 if (fqn.endsWith(".*")) //NOI18N
                     fqn = fqn.substring(0, fqn.length() - 2);
-                element = getElementByFQN(fqn);
+                element = getElementByFQN(cut, fqn);
             }
             return element;
         }
@@ -1774,13 +1774,13 @@ public final class GeneratorUtilities {
         if ("*".contentEquals(name)) { //NOI18N
             Element element = trees.getElement(TreePath.getPath(cut, ((MemberSelectTree)qualIdent).getExpression()));
             if (element == null)
-                element = getElementByFQN(((MemberSelectTree)qualIdent).getExpression().toString());
+                element = getElementByFQN(cut, ((MemberSelectTree)qualIdent).getExpression().toString());
             return element;
         }
         if (imp.isStatic()) {
             Element parent = trees.getElement(TreePath.getPath(cut, ((MemberSelectTree)qualIdent).getExpression()));
             if (parent == null)
-                parent = getElementByFQN(((MemberSelectTree)qualIdent).getExpression().toString());
+                parent = getElementByFQN(cut, ((MemberSelectTree)qualIdent).getExpression().toString());
             if (parent != null && (parent.getKind().isClass() || parent.getKind().isInterface())) {
                 Scope s = trees.getScope(new TreePath(cut));
                 for (Element e : parent.getEnclosedElements()) {
@@ -1796,11 +1796,11 @@ public final class GeneratorUtilities {
         }
         Element element = trees.getElement(found);
         if (element == null)
-            element = getElementByFQN(qualIdent.toString());
+            element = getElementByFQN(cut, qualIdent.toString());
         return element;
     }
     
-    private Element getElementByFQN(String fqn) {
+    private Element getElementByFQN(CompilationUnitTree cut, String fqn) {
         Elements elements = copy.getElements();
         Element element = elements.getTypeElement(fqn);
         if (element == null)

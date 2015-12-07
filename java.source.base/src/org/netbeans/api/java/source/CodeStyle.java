@@ -306,6 +306,11 @@ public final class CodeStyle {
     
     // Alignment and braces ----------------------------------------------------
     
+    public BracePlacement getModuleDeclBracePlacement() {
+        String placement = preferences.get(moduleDeclBracePlacement, getDefaultAsString(moduleDeclBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
     public BracePlacement getClassDeclBracePlacement() {
         String placement = preferences.get(classDeclBracePlacement, getDefaultAsString(classDeclBracePlacement));
         return BracePlacement.valueOf(placement);
@@ -343,6 +348,10 @@ public final class CodeStyle {
     public BracesGenerationStyle redundantDoWhileBraces() {
         String redundant = preferences.get(redundantDoWhileBraces, getDefaultAsString(redundantDoWhileBraces));
         return BracesGenerationStyle.valueOf(redundant);
+    }
+
+    public boolean alignMultilineExports() {
+        return preferences.getBoolean(alignMultilineExports, getDefaultAsBoolean(alignMultilineExports));
     }
 
     public boolean alignMultilineMethodParams() {
@@ -429,6 +438,21 @@ public final class CodeStyle {
 
     // Wrapping ----------------------------------------------------------------
     
+    public WrapStyle wrapProvidesWithKeyword() {
+        String wrap = preferences.get(wrapProvidesWithKeyword, getDefaultAsString(wrapProvidesWithKeyword));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapExportsToKeyword() {
+        String wrap = preferences.get(wrapExportsToKeyword, getDefaultAsString(wrapExportsToKeyword));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapExportsToList() {
+        String wrap = preferences.get(wrapExportsToList, getDefaultAsString(wrapExportsToList));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapExtendsImplementsKeyword() {
         String wrap = preferences.get(wrapExtendsImplementsKeyword, getDefaultAsString(wrapExtendsImplementsKeyword));
         return WrapStyle.valueOf(wrap);
@@ -608,6 +632,22 @@ public final class CodeStyle {
         return preferences.getInt(blankLinesInCode, getDefaultAsInt(blankLinesInCode));
     }
 
+    public int getBlankLinesAfterModuleHeader() {
+        return preferences.getInt(blankLinesAfterModuleHeader, getDefaultAsInt(blankLinesAfterModuleHeader));
+    }
+
+    public int getBlankLinesBeforeModuleClosingBrace() {
+        return preferences.getInt(blankLinesBeforeModuleClosingBrace, getDefaultAsInt(blankLinesBeforeModuleClosingBrace));
+    }
+
+    public int getBlankLinesBeforeModuleDirectives() {
+        return preferences.getInt(blankLinesBeforeModuleDirectives, getDefaultAsInt(blankLinesBeforeModuleDirectives));
+    }
+
+    public int getBlankLinesAfterModuleDirectives() {
+        return preferences.getInt(blankLinesAfterModuleDirectives, getDefaultAsInt(blankLinesAfterModuleDirectives));
+    }
+
     public int getBlankLinesBeforePackage() {
         return preferences.getInt(blankLinesBeforePackage, getDefaultAsInt(blankLinesBeforePackage));
     }
@@ -777,6 +817,10 @@ public final class CodeStyle {
      */
     public boolean spaceAroundMethodReferenceDoubleColon() {
         return preferences.getBoolean(spaceAroundMethodReferenceDoubleColon, getDefaultAsBoolean(spaceAroundMethodReferenceDoubleColon));
+    }
+
+    public boolean spaceBeforeModuleDeclLeftBrace() {
+        return preferences.getBoolean(spaceBeforeModuleDeclLeftBrace, getDefaultAsBoolean(spaceBeforeModuleDeclLeftBrace));
     }
 
     public boolean spaceBeforeClassDeclLeftBrace() {

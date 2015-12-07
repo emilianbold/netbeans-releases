@@ -50,16 +50,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.swing.Action;
+import javax.swing.Icon;
+import org.netbeans.api.actions.Openable;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -78,6 +86,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.Union2;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
@@ -93,7 +102,7 @@ public class ElementNode extends AbstractNode {
 
     private static final String ACTION_FOLDER = "Navigator/Actions/Members/text/x-java";  //NOI18N
     private static Node WAIT_NODE;
-    
+
     private OpenAction openAction;
     private Description description;
            
@@ -101,14 +110,15 @@ public class ElementNode extends AbstractNode {
     public ElementNode( Description description ) {
         super(
             description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()),
-            description.elementHandle == null ? null : prepareLookup(description));
+            prepareLookup(description));
         this.description = description;
         setDisplayName( description.name ); 
     }
     
     @Override
     public Image getIcon(int type) {
-         return description.kind == null ? super.getIcon(type) : ImageUtilities.icon2Image(ElementIcons.getElementIcon(description.kind, description.modifiers));
+        final Icon icon = description.icon.get();
+        return icon == null ? super.getIcon(type) : ImageUtilities.icon2Image(icon);
     }
 
     @Override
@@ -134,18 +144,30 @@ public class ElementNode extends AbstractNode {
     
     @Override
     public Action[] getActions( boolean context ) {
-        
         if ( context || description.name == null ) {
             return description.ui.getActions();
         } else {
             final Action panelActions[] = description.ui.getActions();
-            final List<? extends Action> additionalActions = Utilities.actionsForPath(ACTION_FOLDER);
+            final List<? extends Action> standardActions;
+            final List<? extends Action> additionalActions;
+            if (description.kind == ElementKind.OTHER) {
+                standardActions = Collections.singletonList(getOpenAction());
+                additionalActions = Collections.<Action>emptyList();
+            } else {
+                standardActions = Arrays.asList(new Action[] {
+                    getOpenAction(),
+                    RefactoringActionsFactory.whereUsedAction(),
+                    RefactoringActionsFactory.popupSubmenuAction()
+                });
+                additionalActions = Utilities.actionsForPath(ACTION_FOLDER);
+            }
+            final int standardActionsSize = standardActions.isEmpty() ? 0 : standardActions.size() + 1;
             final int additionalActionSize = additionalActions.isEmpty() ? 0 : additionalActions.size() + 1;
-            final List<Action> actions = new ArrayList<Action>(4 + panelActions.length + additionalActionSize);
-            actions.add(getOpenAction());
-            actions.add(RefactoringActionsFactory.whereUsedAction());
-            actions.add(RefactoringActionsFactory.popupSubmenuAction());
-            actions.add(null);
+            final List<Action> actions = new ArrayList<>(standardActionsSize + additionalActionSize + panelActions.length);
+            if (standardActionsSize > 0) {
+                actions.addAll(standardActions);
+                actions.add(null);
+            }
             if (additionalActionSize > 0) {
                 actions.addAll(additionalActions);
                 actions.add(null);
@@ -153,7 +175,7 @@ public class ElementNode extends AbstractNode {
             actions.addAll(Arrays.asList(panelActions));
             return actions.toArray(new Action[actions.size()]);
         }
-    }        
+    }
     
     @Override
     public Action getPreferredAction() {
@@ -196,11 +218,8 @@ public class ElementNode extends AbstractNode {
     }
         
     private synchronized Action getOpenAction() {
-        if ( openAction == null && description.elementHandle != null) {
-            openAction = new OpenAction(
-                description.elementHandle,
-                description.getFileObject(),
-                description.name);
+        if (openAction == null) {
+            openAction = OpenAction.create(description.openable);
         }
         return openAction;
     }
@@ -226,13 +245,11 @@ public class ElementNode extends AbstractNode {
         }        
     }
     
-    public ElementNode getNodeForElement( ElementHandle<Element> eh ) {
-        
-        if ( getDescritption().elementHandle != null &&
-             eh.signatureEquals(getDescritption().elementHandle)) {
+    public ElementNode getNodeForElement( ElementHandle<?> eh ) {
+        final ElementHandle<?> nodeHandle = getDescritption().getElementHandle();
+        if (nodeHandle != null && nodeHandle.signatureEquals(eh)) {
             return this;
         }
-        
         Children ch = getChildren();
         if ( ch instanceof ElementChilren ) {
            for( Node sub : ch.getNodes() ) {
@@ -242,10 +259,9 @@ public class ElementNode extends AbstractNode {
                }
            }
         }
-        
         return null;
     }
-    
+
     public void updateRecursively( Description newDescription ) {
         Children ch = getChildren();
         if ( ch instanceof ElementChilren ) {           
@@ -295,21 +311,20 @@ public class ElementNode extends AbstractNode {
         return description;
     }
 
-    private static Lookup prepareLookup(Description d) {
-        InstanceContent ic = new InstanceContent();
-
-        ic.add(d, ConvertDescription2TreePathHandle);
+    @NonNull
+    private static Lookup prepareLookup(@NonNull final Description d) {
+        final InstanceContent ic = new InstanceContent();
         ic.add(d, ConvertDescription2FileObject);
         ic.add(d, ConvertDescription2DataObject);
-
+        if (d.handle != null) {
+            ic.add(d, ConvertDescription2TreePathHandle);
+        }
         return new AbstractLookup(ic);
     }
-    
+
     private static final Convertor<Description, TreePathHandle> ConvertDescription2TreePathHandle = new InstanceContent.Convertor<Description, TreePathHandle>() {
         @Override public TreePathHandle convert(Description obj) {
-            return obj.elementHandle == null ?
-                null :
-                TreePathHandle.from(obj.elementHandle, obj.cpInfo);
+            return obj.getTreePathHandle();
         }
         @Override public Class<? extends TreePathHandle> type(Description obj) {
             return TreePathHandle.class;
@@ -377,61 +392,127 @@ public class ElementNode extends AbstractNode {
                        
     /** Stores all interesting data about given element.
      */    
-    static class Description {
+    static final class Description {
         
         public static final Comparator<Description> ALPHA_COMPARATOR =
             new DescriptionComparator(true);
         public static final Comparator<Description> POSITION_COMPARATOR = 
             new DescriptionComparator(false);    
-        
-        ClassMemberPanelUI ui;
-                
-        FileObject fileObject; // For the root description
-        
+
+        private final Union2<ElementHandle<?>,TreePathHandle> handle;
+        final ClassMemberPanelUI ui;
         final String name;
-        final ElementHandle<? extends Element> elementHandle;
         final ElementKind kind;
-        Set<Modifier> modifiers;        
-        Collection<Description> subs; 
-        String htmlHeader;
-        long pos;
+        final Supplier<Icon> icon;
+        final Openable openable;
+        final Set<Modifier> modifiers;
+        final long pos;
+        final ClasspathInfo cpInfo;
         final boolean isInherited;
         final boolean isTopLevel;
-        ClasspathInfo cpInfo;
-        
-        Description( ClassMemberPanelUI ui ) {
+
+        FileObject fileObject; // For the root description
+        Collection<Description> subs;
+        String htmlHeader;
+
+        private Description(ClassMemberPanelUI ui) {
             this.ui = ui;
             this.name = null;
-            this.elementHandle = null;
+            this.handle = null;
             this.kind = null;
             this.isInherited = false;
             this.isTopLevel = false;
+            this.icon = () -> null;
+            this.openable = () -> {};
+            this.cpInfo = null;
+            this.pos = -1;
+            this.modifiers = Collections.emptySet();
         }
-         
-        Description(@NonNull ClassMemberPanelUI ui,
-                    @NonNull String name,
-                    @NonNull ElementHandle<? extends Element> elementHandle,
-                    @NonNull ElementKind kind,
-                    boolean inherited,
-                    boolean topLevel) {
+
+        private Description(
+                @NonNull final ClassMemberPanelUI ui,
+                @NonNull final String name,
+                @NullAllowed final Union2<ElementHandle<?>,TreePathHandle> handle,
+                @NonNull final ElementKind kind,
+                @NonNull final ClasspathInfo cpInfo,
+                @NonNull final Set<Modifier> modifiers,
+                final long pos,
+                final boolean inherited,
+                final boolean topLevel,
+                @NonNull Supplier<Icon> icon,
+                @NonNull Openable openable) {
+            Parameters.notNull("ui", ui);   //NOI18N
+            Parameters.notNull("name", name);   //NOI18N
+            Parameters.notNull("kind", kind);   //NOI18N
+            Parameters.notNull("icon", icon);   //NOI18N
+            Parameters.notNull("openable", openable);  //NOI18N
+            this.ui = ui;
+            this.name = name;
+            this.handle = handle;
+            this.kind = kind;
+            this.cpInfo = cpInfo;
+            this.modifiers = modifiers;
+            this.pos = pos;
+            this.icon = icon;
+            this.isInherited = inherited;
+            this.isTopLevel = topLevel
+                    ;
+            this.openable = openable;
+        }
+
+        private Description(@NonNull ClassMemberPanelUI ui,
+                    @NonNull final String name,
+                    @NonNull final ElementHandle<? extends Element> elementHandle,
+                    @NonNull final ClasspathInfo cpInfo,
+                    @NonNull final Set<Modifier> modifiers,
+                    final long pos,
+                    final boolean inherited,
+                    final boolean topLevel) {
             Parameters.notNull("ui", ui);   //NOI18N
             Parameters.notNull("name", name);   //NOI18N
             Parameters.notNull("elementHandle", elementHandle); //NOI18N
-            Parameters.notNull("kind", kind);   //NOI18N
             this.ui = ui;
             this.name = name;
-            this.elementHandle = elementHandle;
-            this.kind = kind;
+            this.handle = Union2.<ElementHandle<?>,TreePathHandle>createFirst(elementHandle);
+            this.kind = elementHandle.getKind();
+            this.cpInfo = cpInfo;
+            this.modifiers = modifiers;
+            this.pos = pos;
             this.isInherited = inherited;
             this.isTopLevel = topLevel;
+            this.icon = () -> ElementIcons.getElementIcon(this.kind, this.modifiers);
+            this.openable = () -> {OpenAction.openable(elementHandle, getFileObject(), name).open();};
+        }
+
+        @CheckForNull
+        ElementHandle<?> getElementHandle() {
+            if (handle == null) {
+                return null;
+            }
+            return handle.hasFirst() ?
+                handle.first() :
+                handle.second().getElementHandle();
+        }
+
+        @CheckForNull
+        TreePathHandle getTreePathHandle() {
+            if (handle == null) {
+                return null;
+            }
+            return handle.hasSecond() ?
+                handle.second() :
+                TreePathHandle.from(handle.first(), cpInfo);
         }
 
         public FileObject getFileObject() {
-            if( !isInherited )
+            if (isInherited) {
+                assert getElementHandle() != null : handle;
+                return SourceUtils.getFile(getElementHandle(), cpInfo);
+            } else {
                 return ui.getFileObject();
-            return SourceUtils.getFile( elementHandle, cpInfo );
+            }
         }
-        
+
         @Override
         public boolean equals(Object o) {
                         
@@ -457,22 +538,12 @@ public class ElementNode extends AbstractNode {
                 return false;
             }
 
-            if (this.elementHandle != d.elementHandle && (this.elementHandle == null || !this.elementHandle.equals(d.elementHandle))) {
+            if (this.handle != d.handle && (this.handle == null || !this.handle.equals(d.handle))) {
                 return false;
             }
-            
-            /*
-            if ( !modifiers.equals(d.modifiers)) {
-                // E.println("- modifiers");
-                return false;
-            }
-            */
-            
-            // System.out.println("Equals called");            
             return true;
         }
-        
-        
+
         public int hashCode() {
             int hash = 7;
 
@@ -481,7 +552,68 @@ public class ElementNode extends AbstractNode {
             // hash = 29 * hash + (this.modifiers != null ? this.modifiers.hashCode() : 0);
             return hash;
         }
-        
+
+        @NonNull
+        static Description root(ClassMemberPanelUI ui) {
+            return new Description(ui);
+        }
+
+        @NonNull
+        static Description element(
+                @NonNull final ClassMemberPanelUI ui,
+                @NonNull final String name,
+                @NonNull final ElementHandle<? extends Element> elementHandle,
+                @NonNull final ClasspathInfo cpInfo,
+                @NonNull final Set<Modifier> modifiers,
+                final long pos,
+                boolean inherited,
+                boolean topLevel) {
+            return new Description(ui, name, elementHandle, cpInfo, modifiers, pos, inherited, topLevel);
+        }
+
+        @NonNull
+        static Description directive(
+                @NonNull final ClassMemberPanelUI ui,
+                @NonNull final String name,
+                @NonNull final TreePathHandle treePathHandle,
+                @NonNull final ModuleElement.DirectiveKind kind,
+                @NonNull final ClasspathInfo cpInfo,
+                @NonNull final long pos) {
+            return new Description(
+                    ui,
+                    name,
+                    Union2.<ElementHandle<?>,TreePathHandle>createSecond(treePathHandle),
+                    ElementKind.OTHER,
+                    cpInfo,
+                    EnumSet.of(Modifier.PUBLIC),
+                    pos,
+                    false,
+                    false,
+                    ()->ElementIcons.getModuleDirectiveIcon(kind),
+                    ()->{OpenAction.openable(treePathHandle, ui.getFileObject(), name).open();});
+        }
+
+        @NonNull
+        static Description directive(
+                @NonNull final ClassMemberPanelUI ui,
+                @NonNull final String name,
+                @NonNull final ModuleElement.DirectiveKind kind,
+                @NonNull final ClasspathInfo cpInfo,
+                @NonNull final Openable openable) {
+            return new Description(
+                    ui,
+                    name,
+                    null,
+                    ElementKind.OTHER,
+                    cpInfo,
+                    EnumSet.of(Modifier.PUBLIC),
+                    -1,
+                    false,
+                    false,
+                    ()->ElementIcons.getModuleDirectiveIcon(kind),
+                    openable);
+        }
+
         private static class DescriptionComparator implements Comparator<Description> {
             
             boolean alpha;

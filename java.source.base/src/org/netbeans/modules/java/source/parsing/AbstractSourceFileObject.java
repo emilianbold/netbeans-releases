@@ -54,6 +54,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
 import java.nio.CharBuffer;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
@@ -63,6 +64,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
@@ -321,7 +323,9 @@ public abstract class AbstractSourceFileObject implements PrefetchableJavaFileOb
     public final TokenHierarchy<?> getTokenHierarchy() throws IOException {
         if (this.tokens == null) {
             final CharBuffer charBuffer = getCharContent(true);
-            this.tokens = TokenHierarchy.create(charBuffer, false, JavaTokenId.language(), null, null); //TODO: .createSnapshot();
+            InputAttributes attrs = new InputAttributes();
+            attrs.setValue(JavaTokenId.language(), "fileName", (Supplier<String>) () -> getName(), true); //NOI18N            
+            this.tokens = TokenHierarchy.create(charBuffer, false, JavaTokenId.language(), null, attrs); //TODO: .createSnapshot();
         }
         return this.tokens;
     }

@@ -75,21 +75,25 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 //import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
 import org.netbeans.modules.java.source.base.Module;
@@ -157,7 +161,10 @@ public class JavaCustomIndexer extends CustomIndexer {
             APTUtils.sourceRootRegistered(context.getRoot(), context.getRootURI());
             final ClassPath sourcePath = ClassPath.getClassPath(root, ClassPath.SOURCE);
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+            final ClassPath moduleBootPath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_BOOT_PATH);
             final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);                                    
+            final ClassPath moduleCompilePath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_COMPILE_PATH);
+            final ClassPath moduleClassPath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_CLASS_PATH);
             if (sourcePath == null || bootPath == null || compilePath == null) {
                 txCtx.get(CacheAttributesTransaction.class).setInvalid(true);
                 JavaIndex.LOG.log(Level.WARNING, "Ignoring root with no ClassPath: {0}", FileUtil.getFileDisplayName(root)); // NOI18N
@@ -179,7 +186,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                     final JavaParsingContext javaContext = new JavaParsingContext(
                             context,
                             bootPath,
+                            moduleBootPath != null ? moduleBootPath : ClassPath.EMPTY,
                             compilePath,
+                            moduleCompilePath != null ? moduleCompilePath : ClassPath.EMPTY,
+                            moduleClassPath != null ? moduleClassPath : ClassPath.EMPTY,
                             sourcePath,
                             Collections.<CompileTuple>emptySet());
                     try {
@@ -204,7 +214,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 final JavaParsingContext javaContext;
                 try {
                     //todo: Ugly hack, the ClassIndexManager.createUsagesQuery has to be called before the root is set to dirty mode.
-                    javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
+                    javaContext = new JavaParsingContext(context, bootPath, moduleBootPath != null ? moduleBootPath : ClassPath.EMPTY, compilePath, moduleCompilePath != null ? moduleCompilePath : ClassPath.EMPTY, moduleClassPath != null ? moduleClassPath : ClassPath.EMPTY, sourcePath, virtualSourceTuples);
                 } finally {
                     JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                 }
@@ -234,14 +244,15 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 Exceptions.printStackTrace(ex);
                             }
                         }
-                        clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
+                        clear(context, javaContext, i, removedTypes, removedFiles, fmTx, null);
                     }
                     for (CompileTuple tuple : virtualSourceTuples) {
-                        clear(context, javaContext, tuple.indexable, removedTypes, removedFiles, fmTx);
+                        clear(context, javaContext, tuple.indexable, removedTypes, removedFiles, fmTx, null);
                     }
                     toCompile.addAll(virtualSourceTuples);
                     List<CompileTuple> toCompileRound = toCompile;
                     int round = 0;
+                    String moduleName = null;
                     while (round++ < 2) {
                         CompileWorker[] WORKERS = {
                             toCompileRound.size() < TRESHOLD ? new SuperOnePassCompileWorker() : new OnePassCompileWorker(),
@@ -252,6 +263,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             if (compileResult == null || context.isCancelled()) {
                                 return; // cancelled, IDE is sutting down
                             }
+                            moduleName = moduleName(moduleName, compileResult);
                             if (compileResult.success) {
                                 break;
                             }
@@ -270,6 +282,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                             compileResult.aptGenerated.clear();
                         }
+                    }
+                    if (moduleName != null) {
+                        JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, moduleName);
                     }
                     finished = compileResult.success;
                     
@@ -413,8 +428,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                     return; //No java no need to continue
                 final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                 final Set<File> removedFiles = new HashSet<File> ();
+                final boolean[] isModuleInfo = new boolean[1];
                 for (Indexable i : files) {
-                    clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
+                    clear(context, javaContext, i, removedTypes, removedFiles, fmTx, isModuleInfo);
+                    if (isModuleInfo[0]) {
+                        //TODO: clear cache
+                    }
                     ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
                     javaContext.getCheckSums().remove(i.getURL());
@@ -446,8 +465,18 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    private static void clear(final Context context, final JavaParsingContext javaContext, final Indexable indexable, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles, @NonNull final FileManagerTransaction fmTx) throws IOException {
+    private static void clear(
+            @NonNull final Context context,
+            @NonNull final JavaParsingContext javaContext,
+            @NonNull final Indexable indexable,
+            @NonNull final Set<ElementHandle<TypeElement>> removedTypes,
+            @NonNull final Set<File> removedFiles,
+            @NonNull final FileManagerTransaction fmTx,
+            @NullAllowed final boolean[] isModuleInfo) throws IOException {
         assert fmTx != null;
+        if (isModuleInfo != null) {
+            isModuleInfo[0] = false;
+        }
         final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
         final File classFolder = JavaIndex.getClassFolder(context);
         final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
@@ -542,6 +571,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                             fmTx.delete(f);
                         }
                     }
+                } else if ("module-info.sig".contentEquals(file.getName())) { //NOI18N
+                    if (isModuleInfo != null) {
+                        isModuleInfo[0] = true;
+                    }
+                    removedFiles.add(file);
+                    fmTx.delete(file);
                 }
             }
         }
@@ -633,7 +668,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             ErrorsCache.setErrors(context.getRootURI(), active.indexable, filteredErrorsList, active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
         }
     }
-    
+
     static void brokenPlatform(
             @NonNull final Context ctx,
             @NonNull final Iterable<? extends CompileTuple> files,
@@ -732,6 +767,19 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
         }
         return findDependent(root, deps, inverseDeps, peers, classes, includeFilesInError, true);
+    }
+
+    @CheckForNull
+    private static String moduleName(
+        @NullAllowed final String moduleName,
+        @NonNull final CompileWorker.ParsingOutput res) {
+        if (res.success) {
+            return res.moduleName;
+        } else {
+            return res.moduleName != null ?
+                res.moduleName :
+                moduleName;
+        }
     }
 
 

@@ -87,6 +87,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
 
         T createKeywordItem(String kwd, String postfix, int substitutionOffset, boolean smartType);
 
+        T createModuleItem(String moduleName, int substitutionOffset);
+
         T createPackageItem(String pkgFQN, int substitutionOffset, boolean inPackageStatement);
 
         T createTypeItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, ReferencesCount referencesCount, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImportEnclosingType);
@@ -163,6 +165,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
     private static final String DOUBLE_KEYWORD = "double"; //NOI18N
     private static final String ELSE_KEYWORD = "else"; //NOI18N
     private static final String ENUM_KEYWORD = "enum"; //NOI18N
+    private static final String EXPORTS_KEYWORD = "exports"; //NOI18N
     private static final String EXTENDS_KEYWORD = "extends"; //NOI18N
     private static final String FALSE_KEYWORD = "false"; //NOI18N
     private static final String FINAL_KEYWORD = "final"; //NOI18N
@@ -176,14 +179,17 @@ public final class JavaCompletionTask<T> extends BaseTask {
     private static final String INT_KEYWORD = "int"; //NOI18N
     private static final String INTERFACE_KEYWORD = "interface"; //NOI18N
     private static final String LONG_KEYWORD = "long"; //NOI18N
+    private static final String MODULE_KEYWORD = "module"; //NOI18N
     private static final String NATIVE_KEYWORD = "native"; //NOI18N
     private static final String NEW_KEYWORD = "new"; //NOI18N
     private static final String NULL_KEYWORD = "null"; //NOI18N
     private static final String PACKAGE_KEYWORD = "package"; //NOI18N
     private static final String PRIVATE_KEYWORD = "private"; //NOI18N
     private static final String PROTECTED_KEYWORD = "protected"; //NOI18N
+    private static final String PROVIDES_KEYWORD = "provides"; //NOI18N
     private static final String PUBLIC_KEYWORD = "public"; //NOI18N
     private static final String RETURN_KEYWORD = "return"; //NOI18N
+    private static final String REQUIRES_KEYWORD = "requires"; //NOI18N
     private static final String SHORT_KEYWORD = "short"; //NOI18N
     private static final String STATIC_KEYWORD = "static"; //NOI18N
     private static final String STRICT_KEYWORD = "strictfp"; //NOI18N
@@ -193,12 +199,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
     private static final String THIS_KEYWORD = "this"; //NOI18N
     private static final String THROW_KEYWORD = "throw"; //NOI18N
     private static final String THROWS_KEYWORD = "throws"; //NOI18N
+    private static final String TO_KEYWORD = "to"; //NOI18N
     private static final String TRANSIENT_KEYWORD = "transient"; //NOI18N
     private static final String TRUE_KEYWORD = "true"; //NOI18N
     private static final String TRY_KEYWORD = "try"; //NOI18N
+    private static final String USES_KEYWORD = "uses"; //NOI18N
     private static final String VOID_KEYWORD = "void"; //NOI18N
     private static final String VOLATILE_KEYWORD = "volatile"; //NOI18N
     private static final String WHILE_KEYWORD = "while"; //NOI18N
+    private static final String WITH_KEYWORD = "with"; //NOI18N
 
     private static final String JAVA_LANG_CLASS = "java.lang.Class"; //NOI18N
     private static final String JAVA_LANG_OBJECT = "java.lang.Object"; //NOI18N
@@ -221,6 +230,10 @@ public final class JavaCompletionTask<T> extends BaseTask {
     private static final String[] BLOCK_KEYWORDS = new String[]{
         ASSERT_KEYWORD, CLASS_KEYWORD, FINAL_KEYWORD, NEW_KEYWORD, STRICT_KEYWORD,
         THROW_KEYWORD
+    };
+
+    private static final String[] MODULE_BODY_KEYWORDS = new String[]{
+        EXPORTS_KEYWORD, REQUIRES_KEYWORD, PROVIDES_KEYWORD, USES_KEYWORD
     };
 
     private static final String[] CLASS_BODY_KEYWORDS = new String[]{
@@ -275,6 +288,21 @@ public final class JavaCompletionTask<T> extends BaseTask {
         switch (path.getLeaf().getKind()) {
             case COMPILATION_UNIT:
                 insideCompilationUnit(env);
+                break;
+            case MODULE:
+                insideModule(env);
+                break;
+            case EXPORTS:
+                insideExports(env);
+                break;
+            case PROVIDES:
+                insideProvides(env);
+                break;
+            case REQUIRES:
+                insideRequires(env);
+                break;
+            case USES:
+                insideUses(env);
                 break;
             case PACKAGE:
                 insidePackage(env);
@@ -469,6 +497,125 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 addKeywordsForCU(env);
             }
         }
+    }
+
+    private void insideModule(Env env) throws IOException {
+        int offset = env.getOffset();
+        TreePath path = env.getPath();
+        CompilationController controller = env.getController();
+        int startPos = (int) env.getSourcePositions().getStartPosition(env.getRoot(), path.getLeaf());
+        String headerText = controller.getText().substring(startPos, offset);
+        int idx = headerText.indexOf('{'); //NOI18N
+        if (idx >= 0) {
+            addKeywordsForModuleBody(env);
+        }
+    }
+
+    private void insideExports(Env env) throws IOException {
+        int offset = env.getOffset();
+        TreePath path = env.getPath();
+        ExportsTree exp = (ExportsTree) path.getLeaf();
+        SourcePositions sourcePositions = env.getSourcePositions();
+        CompilationUnitTree root = env.getRoot();
+        if (exp.getModuleNames() != null) {
+            int startPos = (int) sourcePositions.getStartPosition(root, exp);
+            Tree lastModule = null;
+            for (Tree mdl : exp.getModuleNames()) {
+                int implPos = (int) sourcePositions.getEndPosition(root, mdl);
+                if (implPos == Diagnostic.NOPOS || offset <= implPos) {
+                    break;
+                }
+                lastModule = mdl;
+                startPos = implPos;
+            }
+            if (lastModule != null) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, offset);
+                if (last != null && last.token().id() == JavaTokenId.COMMA) {
+                    addModuleNames(env, null, true);
+                }
+                return;
+            }
+        }
+        Tree name = exp.getExportName();
+        if (name != null) {
+            int extPos = (int) sourcePositions.getEndPosition(root, name);
+            if (extPos != Diagnostic.NOPOS && offset > extPos) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, extPos + 1, offset);
+                if (last != null && last.token().id() == JavaTokenId.TO) {
+                    addModuleNames(env, null, true);
+                } else {
+                    addKeyword(env, TO_KEYWORD, SPACE, false);
+                }
+                return;
+            }
+        }
+        addPackages(env, null, true);
+    }
+
+    private void insideProvides(Env env) throws IOException {
+        int offset = env.getOffset();
+        TreePath path = env.getPath();
+        ProvidesTree prov = (ProvidesTree) path.getLeaf();
+        SourcePositions sourcePositions = env.getSourcePositions();
+        CompilationUnitTree root = env.getRoot();
+        Tree impl = prov.getImplementationName();
+        if (impl != null) {
+            int extPos = (int) sourcePositions.getEndPosition(root, impl);
+            if (extPos != Diagnostic.NOPOS && offset > extPos) {
+                return;
+            }
+        }
+        Tree serv = prov.getServiceName();
+        if (serv != null) {
+            int extPos = (int) sourcePositions.getEndPosition(root, serv);
+            if (extPos != Diagnostic.NOPOS && offset > extPos) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, extPos + 1, offset);
+                if (last != null && last.token().id() == JavaTokenId.WITH) {
+                    CompilationController cc = env.getController();
+                    cc.toPhase(Phase.RESOLVED);
+                    Element el = cc.getTrees().getElement(new TreePath(path, serv));
+                    options.add(Options.ALL_COMPLETION);
+                    addTypes(env, EnumSet.of(CLASS), el != null && el.getKind().isInterface() ? (DeclaredType)el.asType() : null);
+                } else {
+                    addKeyword(env, WITH_KEYWORD, SPACE, false);
+                }
+                return;
+            }
+        }
+        options.add(Options.ALL_COMPLETION);
+        addTypes(env, EnumSet.of(INTERFACE), null);
+    }
+
+    private void insideRequires(Env env) throws IOException {
+        int offset = env.getOffset();
+        TreePath path = env.getPath();
+        RequiresTree req = (RequiresTree) path.getLeaf();
+        Tree name = req.getModuleName();
+        if (name != null) {
+            int extPos = (int) env.getSourcePositions().getEndPosition(env.getRoot(), name);
+            if (extPos != Diagnostic.NOPOS && offset > extPos) {
+                return;
+            }
+        }
+        if (!req.isPublic()) {
+            addKeyword(env, PUBLIC_KEYWORD, SPACE, false);
+        }
+        addModuleNames(env, null, false);
+    }
+
+    private void insideUses(Env env) throws IOException {
+        int offset = env.getOffset();
+        TreePath path = env.getPath();
+        UsesTree uses = (UsesTree) path.getLeaf();
+        Tree name = uses.getServiceName();
+        if (name != null) {
+            int extPos = (int) env.getSourcePositions().getEndPosition(env.getRoot(), name);
+            if (extPos != Diagnostic.NOPOS && offset > extPos) {
+                return;
+            }
+        }
+        options.add(Options.ALL_COMPLETION);
+        addTypes(env, EnumSet.of(INTERFACE), null);
     }
 
     private void insidePackage(Env env) {
@@ -1485,6 +1632,18 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 } else if (parent.getKind() == Tree.Kind.ENHANCED_FOR_LOOP && ((EnhancedForLoopTree) parent).getExpression() == fa) {
                     env.insideForEachExpression();
                     kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT);
+                } else if ((parent.getKind() == Tree.Kind.EXPORTS && ((ExportsTree)parent).getModuleNames() != null && ((ExportsTree)parent).getModuleNames().contains(fa))
+                        || (parent.getKind() == Tree.Kind.REQUIRES && ((RequiresTree)parent).getModuleName() == fa)) {
+                    String fqnPrefix = fa.getExpression().toString() + '.';
+                    anchorOffset = (int) sourcePositions.getStartPosition(root, fa);
+                    addModuleNames(env, fqnPrefix, true);
+                    return;
+                } else if (parent.getKind() == Tree.Kind.EXPORTS && ((ExportsTree)parent).getExportName() == fa) {
+                    String fqnPrefix = fa.getExpression().toString() + '.';
+                    addPackages(env, fqnPrefix, true);
+                    return;
+                } else if (parent.getKind() == Tree.Kind.PROVIDES) {
+                    kinds = EnumSet.of(((ProvidesTree)parent).getServiceName() == fa ? INTERFACE : CLASS);
                 } else {
                     kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT);
                 }
@@ -3424,7 +3583,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
         }
     }
 
-    private void addPackageContent(final Env env, PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType, boolean insideNew, boolean insidePkgStmt) throws IOException {
+    private void addPackageContent(final Env env, PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType, boolean insideNew, boolean srcOnly) throws IOException {
         Set<? extends TypeMirror> smartTypes = options.contains(Options.ALL_COMPLETION) ? null : getSmartTypes(env);
         CompilationController controller = env.getController();
         Elements elements = controller.getElements();
@@ -3445,18 +3604,32 @@ public final class JavaCompletionTask<T> extends BaseTask {
             }
         }
         String pkgName = pe.getQualifiedName() + "."; //NOI18N
-        addPackages(env, pkgName, insidePkgStmt);
+        addPackages(env, pkgName, srcOnly);
     }
 
-    private void addPackages(Env env, String fqnPrefix, boolean inPkgStmt) {
+    private void addPackages(Env env, String fqnPrefix, boolean srcOnly) {
         if (fqnPrefix == null) {
             fqnPrefix = EMPTY;
         }
         String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : null;
-        for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+        EnumSet<ClassIndex.SearchScope> scope = srcOnly ? EnumSet.of(ClassIndex.SearchScope.SOURCE) : EnumSet.allOf(ClassIndex.SearchScope.class);
+        for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true, scope)) {
             if (startsWith(env, pkgName, prefix) && !Utilities.isExcluded(pkgName + ".")) //NOI18N
             {
-                results.add(itemFactory.createPackageItem(pkgName, anchorOffset, inPkgStmt));
+                results.add(itemFactory.createPackageItem(pkgName, anchorOffset, srcOnly));
+            }
+        }
+    }
+    
+    private void addModuleNames(Env env, String fqnPrefix, boolean srcOnly) {
+        if (fqnPrefix == null) {
+            fqnPrefix = EMPTY;
+        }
+        srcOnly = false;
+        String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : fqnPrefix;
+        for (String name : SourceUtils.getModuleNames(env.getController(), srcOnly ? EnumSet.of(ClassIndex.SearchScope.SOURCE) : EnumSet.allOf(ClassIndex.SearchScope.class))) {
+            if (startsWith(env, name, prefix)) {
+                results.add(itemFactory.createModuleItem(name, anchorOffset));
             }
         }
     }
@@ -3899,43 +4072,60 @@ public final class JavaCompletionTask<T> extends BaseTask {
         int offset = env.getOffset();
         String prefix = env.getPrefix();
         CompilationUnitTree cu = env.getRoot();
+        boolean pkgInfo = env.getController().getTreeUtilities().isPackageInfo(cu);
+        boolean mdlInfo = env.getController().getTreeUtilities().isModuleInfo(cu);
         SourcePositions sourcePositions = env.getSourcePositions();
-        kws.add(ABSTRACT_KEYWORD);
-        kws.add(CLASS_KEYWORD);
-        kws.add(ENUM_KEYWORD);
-        kws.add(FINAL_KEYWORD);
-        kws.add(INTERFACE_KEYWORD);
-        boolean beforeAnyClass = true;
-        boolean beforePublicClass = true;
-        for (Tree t : cu.getTypeDecls()) {
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
-                int pos = (int) sourcePositions.getEndPosition(cu, t);
-                if (pos != Diagnostic.NOPOS && offset >= pos) {
-                    beforeAnyClass = false;
-                    if (((ClassTree) t).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
-                        beforePublicClass = false;
-                        break;
+        if (mdlInfo) {
+            kws.add(MODULE_KEYWORD);
+        } else {
+            if (!pkgInfo) {
+                kws.add(ABSTRACT_KEYWORD);
+                kws.add(CLASS_KEYWORD);
+                kws.add(ENUM_KEYWORD);
+                kws.add(FINAL_KEYWORD);
+                kws.add(INTERFACE_KEYWORD);
+            }
+            boolean beforeAnyClass = true;
+            boolean beforePublicClass = true;
+            for (Tree t : cu.getTypeDecls()) {
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
+                    int pos = (int) sourcePositions.getEndPosition(cu, t);
+                    if (pos != Diagnostic.NOPOS && offset >= pos) {
+                        beforeAnyClass = false;
+                        if (((ClassTree) t).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
+                            beforePublicClass = false;
+                            break;
+                        }
                     }
                 }
             }
-        }
-        if (beforePublicClass) {
-            kws.add(PUBLIC_KEYWORD);
-        }
-        if (beforeAnyClass) {
-            kws.add(IMPORT_KEYWORD);
-            Tree firstImport = null;
-            for (Tree t : cu.getImports()) {
-                firstImport = t;
-                break;
+            if (beforePublicClass && !pkgInfo) {
+                kws.add(PUBLIC_KEYWORD);
             }
-            Tree pd = cu.getPackageName();
-            if ((pd != null && offset <= sourcePositions.getStartPosition(cu, cu))
-                    || (pd == null && (firstImport == null || sourcePositions.getStartPosition(cu, firstImport) >= offset))) {
-                kws.add(PACKAGE_KEYWORD);
+            if (beforeAnyClass) {
+                kws.add(IMPORT_KEYWORD);
+                Tree firstImport = null;
+                for (Tree t : cu.getImports()) {
+                    firstImport = t;
+                    break;
+                }
+                Tree pd = cu.getPackageName();
+                if ((pd != null && offset <= sourcePositions.getStartPosition(cu, cu))
+                        || (pd == null && (firstImport == null || sourcePositions.getStartPosition(cu, firstImport) >= offset))) {
+                    kws.add(PACKAGE_KEYWORD);
+                }
             }
         }
         for (String kw : kws) {
+            if (Utilities.startsWith(kw, prefix)) {
+                results.add(itemFactory.createKeywordItem(kw, SPACE, anchorOffset, false));
+            }
+        }
+    }
+
+    private void addKeywordsForModuleBody(Env env) {
+        String prefix = env.getPrefix();
+        for (String kw : MODULE_BODY_KEYWORDS) {
             if (Utilities.startsWith(kw, prefix)) {
                 results.add(itemFactory.createKeywordItem(kw, SPACE, anchorOffset, false));
             }

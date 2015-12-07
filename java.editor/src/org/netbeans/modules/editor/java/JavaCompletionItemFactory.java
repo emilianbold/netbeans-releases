@@ -83,6 +83,11 @@ public final class JavaCompletionItemFactory implements JavaCompletionTask.TypeC
     }
 
     @Override
+    public JavaCompletionItem createModuleItem(String moduleName, int substitutionOffset) {
+        return JavaCompletionItem.createModuleItem(moduleName, substitutionOffset);
+    }
+
+    @Override
     public JavaCompletionItem createPackageItem(String pkgFQN, int substitutionOffset, boolean inPackageStatement) {
         return JavaCompletionItem.createPackageItem(pkgFQN, substitutionOffset, inPackageStatement);
     }

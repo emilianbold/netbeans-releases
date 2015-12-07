@@ -739,6 +739,86 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
 
     @Override
+    public void visitModuleDef(JCModuleDecl tree) {
+	toLeftMargin();
+        print("module ");
+        print(fullName(tree.qualId));
+	int old = cs.indentTopLevelClassMembers() ? indent() : out.leftMargin;
+	int bcol = old;
+        switch(cs.getModuleDeclBracePlacement()) {
+        case NEW_LINE:
+            newline();
+            toColExactly(old);
+            break;
+        case NEW_LINE_HALF_INDENTED:
+            newline();
+	    bcol += (indentSize >> 1);
+            toColExactly(bcol);
+            break;
+        case NEW_LINE_INDENTED:
+            newline();
+	    bcol = out.leftMargin;
+            toColExactly(bcol);
+            break;
+        }
+        if (cs.spaceBeforeModuleDeclLeftBrace())
+            needSpace();
+	print('{');
+        printInnerCommentsAsTrailing(tree, true);
+	if (!tree.directives.isEmpty()) {
+	    blankLines(cs.getBlankLinesAfterModuleHeader());
+            boolean firstDirective = true;
+            for (JCTree t : tree.directives) {
+                printStat(t, true, firstDirective, true, true, false);
+                firstDirective = false;
+            }
+	    blankLines(cs.getBlankLinesBeforeModuleClosingBrace());
+        } else {
+            printEmptyBlockComments(tree, false);
+        }
+        toColExactly(bcol);
+	undent(old);
+	print('}');
+    }
+
+    @Override
+    public void visitExports(JCExports tree) {
+        print("exports ");
+        print(fullName(tree.qualid));
+        if (tree.moduleNames.nonEmpty()) {
+            wrap("to ", cs.wrapExportsToKeyword());
+            wrapTrees(tree.moduleNames, cs.wrapExportsToList(), cs.alignMultilineExports()
+                    ? out.col : out.leftMargin + cs.getContinuationIndentSize());
+        }
+        print(';');
+    }
+
+    @Override
+    public void visitRequires(JCRequires tree) {
+        print("requires ");
+        if (tree.isPublic)
+            print("public ");
+        print(fullName(tree.moduleName));
+        print(';');
+    }
+
+    @Override
+    public void visitProvides(JCProvides tree) {
+        print("provides ");
+        print(fullName(tree.serviceName));
+        wrap("with ", cs.wrapProvidesWithKeyword());
+        print(fullName(tree.implName));
+        print(';');
+    }
+
+    @Override
+    public void visitUses(JCUses tree) {
+        print("uses ");
+        print(fullName(tree.qualid));
+        print(';');
+    }
+
+    @Override
     public void visitPackageDef(JCPackageDecl tree) {
         if (tree != null) {
             printAnnotations(tree.getAnnotations());

@@ -63,6 +63,7 @@ public enum ColoringAttributes {
     PARAMETER,
     METHOD,
     CONSTRUCTOR,
+    MODULE,
     CLASS,
     INTERFACE,
     ANNOTATION_TYPE,

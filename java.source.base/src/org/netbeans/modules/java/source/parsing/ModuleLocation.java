@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,26 +34,80 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.source.parsing;
+
+import java.net.URL;
+import javax.tools.JavaFileManager.Location;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
- * @author Petr Hrebejk
+ * @author Tomas Zezula
  */
-public class CachingZipArchiveTest extends CachingFolderArchiveTest {
+final class ModuleLocation implements Location {
 
-    //private static Setup setup;
-    //private CachingArchiveProvider archiveProvider;
+    private final Location base;
+    private final String name;
+    private final String moduleName;
+    private final URL moduleRoot;
 
-    public CachingZipArchiveTest(String testName) {
-        super(testName);
+    ModuleLocation(
+            @NonNull final Location base,
+            @NonNull final String name,
+            @NonNull final String moduleName,
+            @NonNull final URL moduleRoot) {
+        assert base != null;
+        assert name != null;
+        assert moduleName != null;
+        assert moduleRoot != null;
+        this.base = base;
+        this.name = name;
+        this.moduleName = moduleName;
+        this.moduleRoot = moduleRoot;
     }
 
     @Override
-    protected Archive createArchive() {
-        return new CachingArchive(rtFile, true);
+    @NonNull
+    public String getName() {
+        return name;
     }
-        
+
+    @Override
+    public boolean isOutputLocation() {
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+    @NonNull
+    String getModuleName() {
+        return moduleName;
+    }
+
+    @NonNull
+    URL getModuleRoot() {
+        return moduleRoot;
+    }
+
+    @NonNull
+    Location getBaseLocation() {
+        return base;
+    }
+
+    @NonNull
+    static ModuleLocation create(
+            @NonNull final Location base,
+            @NonNull final URL moduleRoot,
+            @NonNull final String moduleName) {
+        return new ModuleLocation(base, moduleRoot.toString(), moduleName, moduleRoot);
+    }
+
 }

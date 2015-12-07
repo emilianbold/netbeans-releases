@@ -107,6 +107,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Module">
+            <api name="general"/>
+            <summary>Support for Java 9 Module attribute</summary>
+            <version major="1" minor="47"/>
+            <date day="16" month="6" year="2015"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Java 9 added a Module attribute for module-info.class describing
+                the module.
+            </description>
+            <class package="org.netbeans.modules.classfile" name="ClassFile"/>
+            <class package="org.netbeans.modules.classfile" name="Module"/>
+	</change>
 	<change id="Java7Support">
             <api name="general"/>
             <summary>Support for Java 7 classfile enhancements.</summary>

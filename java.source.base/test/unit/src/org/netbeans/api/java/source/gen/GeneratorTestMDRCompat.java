@@ -68,6 +68,7 @@ import org.netbeans.modules.java.source.save.Reindenter;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -100,6 +101,11 @@ public abstract class GeneratorTestMDRCompat extends ClassIndexTestCase {
             }
         };
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
+        SourceLevelQueryImplementation slq = new SourceLevelQueryImplementation() {
+            @Override public String getSourceLevel(FileObject javaFile) {
+                return GeneratorTestMDRCompat.this.getSourceLevel();
+            }
+        };
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/source/resources/layer.xml"}, new Object[] {loader, cpp});
         MockMimeLookup.setInstances(MimePath.get("text/x-java"), new Reindenter.Factory());
         
@@ -208,6 +214,10 @@ public abstract class GeneratorTestMDRCompat extends ClassIndexTestCase {
     abstract String getGoldenPckg();
 
     abstract String getSourcePckg();
+    
+    String getSourceLevel() {
+        return System.getProperty("java.specification.version");
+    }
 
     FileObject[] getSourcePath() {
         return new FileObject[] {FileUtil.toFileObject(getDataDir())};

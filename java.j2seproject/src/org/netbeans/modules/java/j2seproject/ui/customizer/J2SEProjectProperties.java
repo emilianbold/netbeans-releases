@@ -171,6 +171,7 @@ public class J2SEProjectProperties {
     ComboBoxModel JAVAC_PROFILE_MODEL;
      
     // CustomizerLibraries
+    DefaultListModel JAVAC_MODULEPATH_MODEL;
     DefaultListModel JAVAC_CLASSPATH_MODEL;
     DefaultListModel JAVAC_PROCESSORPATH_MODEL;
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
@@ -300,6 +301,7 @@ public class J2SEProjectProperties {
         // CustomizerLibraries
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         
+        JAVAC_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.MODULE_COMPILE_PATH)));
         JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_CLASSPATH)));
         String processorPath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORPATH);
         processorPath = processorPath == null ? "${javac.classpath}" : processorPath;
@@ -533,6 +535,7 @@ public class J2SEProjectProperties {
         resolveProjectDependencies();
         
         // Encode all paths (this may change the project properties)
+        String[] javac_mp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_MODULEPATH_MODEL ) );
         String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL ) );
         String[] javac_pp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
@@ -592,6 +595,7 @@ public class J2SEProjectProperties {
         privateProperties.setProperty(JAVADOC_PREVIEW, encodeBoolean (JAVADOC_PREVIEW_MODEL.isSelected(), javadocPreviewBooleanKind));
                 
         // Save all paths
+        projectProperties.setProperty( ProjectProperties.MODULE_COMPILE_PATH, javac_mp );
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
         projectProperties.setProperty( ProjectProperties.JAVAC_PROCESSORPATH, javac_pp );
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );

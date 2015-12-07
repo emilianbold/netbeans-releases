@@ -89,6 +89,9 @@ public final class Icons {
         Image img = null;
 	
 	switch( elementKind ) {
+            case MODULE:
+                img = ImageUtilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
+		break;
 	    case PACKAGE:
 		img = ImageUtilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
 		break;

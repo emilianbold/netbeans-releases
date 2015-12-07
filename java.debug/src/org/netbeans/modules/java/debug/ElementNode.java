@@ -51,11 +51,12 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.ElementScanner6;
+import javax.lang.model.util.ElementScanner9;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -199,7 +200,7 @@ public class ElementNode extends AbstractNode implements OffsetProvider {
         
     }
     
-    private static class FindChildrenElementVisitor extends ElementScanner6<Void, List<Node>> {
+    private static class FindChildrenElementVisitor extends ElementScanner9<Void, List<Node>> {
         
         private CompilationInfo info;
         
@@ -251,6 +252,22 @@ public class ElementNode extends AbstractNode implements OffsetProvider {
             p.add(new ElementNode(info, e, below));
             return null;
         }
-        
+
+        @Override
+        public Void visitModule(ModuleElement e, List<Node> p) {
+            List<Node> below = new ArrayList<Node>();
+
+            super.visitModule(e, below);
+
+            p.add(new ElementNode(info, e, below));
+            return null;
+        }
+
+        @Override
+        public Void visitUnknown(Element e, List<Node> p) {
+            List<Node> below = new ArrayList<Node>();
+            p.add(new ElementNode(info, e, below));
+            return null;
+        }
     }
 }

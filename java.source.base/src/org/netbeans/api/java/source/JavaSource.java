@@ -70,6 +70,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
@@ -82,6 +83,7 @@ import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.parsing.MimeTask;
 import org.netbeans.modules.java.source.parsing.NewComilerTask;
 import org.netbeans.modules.java.source.save.ElementOverlay;
+import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -262,19 +264,49 @@ public final class JavaSource {
                     //javac requires at least java.lang
                     bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
                 }
+                boolean hasModulePath = true;
+                ClassPath moduleBootPath = ClassPath.getClassPath(fileObject, JavaClassPathConstants.MODULE_BOOT_PATH);
+                if (moduleBootPath == null) {
+                    moduleBootPath = bootPath;
+                    hasModulePath = false;
+                }
                 ClassPath compilePath = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
                 if (compilePath == null) {
-                    compilePath = ClassPathSupport.createClassPath(new URL[0]);
+                    compilePath = ClassPath.EMPTY;
+                }
+                ClassPath moduleCompilePath = ClassPath.getClassPath(fileObject, JavaClassPathConstants.MODULE_COMPILE_PATH);
+                if (moduleCompilePath == null) {
+                    moduleCompilePath = ClassPath.EMPTY;
+                }
+                ClassPath moduleClassPath = ClassPath.getClassPath(fileObject, JavaClassPathConstants.MODULE_CLASS_PATH);
+                if (moduleClassPath == null) {
+                    moduleClassPath = ClassPath.EMPTY;
                 }
                 ClassPath srcPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
                 if (srcPath == null) {
-                    srcPath = ClassPathSupport.createClassPath(new URL[0]);
+                    srcPath = ClassPath.EMPTY;
                 }
                 ClassPath execPath = ClassPath.getClassPath(fileObject, ClassPath.EXECUTE);
                 if (execPath != null) {
-                    bootPath = ClassPathSupport.createProxyClassPath(execPath, bootPath);
+                    if (hasModulePath) {
+                        //Todo: Upgrade module path should be here.
+                        moduleClassPath = moduleClassPath == ClassPath.EMPTY ?
+                                execPath :
+                                ClassPathSupport.createProxyClassPath(moduleClassPath, execPath);
+                        compilePath = ClassPathSupport.createProxyClassPath(compilePath, execPath);
+                    } else {
+                        bootPath = ClassPathSupport.createProxyClassPath(execPath, bootPath);
+                    }
                 }
-                final ClasspathInfo info = ClasspathInfo.create(bootPath, compilePath, srcPath);
+                final ClasspathInfo info = ClasspathInfoAccessor.getINSTANCE().create(
+                    bootPath,
+                    moduleBootPath,
+                    compilePath,
+                    moduleCompilePath,
+                    moduleClassPath,
+                    srcPath,
+                    null,
+                    false, false, false, true);
                 FileObject root = ClassPathSupport.createProxyClassPath(
                     ClassPathSupport.createClassPath(CachingArchiveProvider.getDefault().ctSymRootsFor(bootPath)),
                     bootPath,

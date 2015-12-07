@@ -123,6 +123,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new KeywordItem(kwd, 0, postfix, substitutionOffset, smartType);
     }
 
+    public static JavaCompletionItem createModuleItem(String moduleName, int substitutionOffset) {
+        return new ModuleItem(moduleName, substitutionOffset);
+    }
+
     public static JavaCompletionItem createPackageItem(String pkgFQN, int substitutionOffset, boolean inPackageStatement) {
         return new PackageItem(pkgFQN, substitutionOffset, inPackageStatement);
     }
@@ -801,6 +805,61 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
+    static class ModuleItem extends JavaCompletionItem {
+
+        private static final String MODULE = "org/netbeans/modules/java/editor/resources/package.gif"; // NOI18N
+        private static final String MODULE_COLOR = Utilities.getHTMLColor(64, 150, 64);
+        private static ImageIcon icon;
+
+        private String name;
+        private String leftText;
+
+        private ModuleItem(String moduleName, int substitutionOffset) {
+            super(substitutionOffset);
+            this.name = moduleName;
+        }
+
+        @Override
+        public int getSortPriority() {
+            return 950;
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            return name;
+        }
+
+        @Override
+        public CharSequence getInsertPrefix() {
+            return name;
+        }
+
+        @Override
+        protected ImageIcon getIcon(){
+            if (icon == null) {
+                icon = ImageUtilities.loadImageIcon(MODULE, false);
+            }
+            return icon;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(MODULE_COLOR);
+                sb.append(name);
+                sb.append(COLOR_END);
+                leftText = sb.toString();
+            }
+            return leftText;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
     static class PackageItem extends JavaCompletionItem {
 
         private static final String PACKAGE = "org/netbeans/modules/java/editor/resources/package.gif"; // NOI18N
@@ -1129,6 +1188,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     StringBuilder sb = new StringBuilder();
                                     if (addSimpleName || enclName == null) {
                                         sb.append(elem.getSimpleName());
+                                    } else if (controller.getTreeUtilities().isModuleInfo(controller.getCompilationUnit())) {
+                                        sb.append(elem.getQualifiedName());
                                     } else if (!"text/x-java".equals(controller.getSnapshot().getMimePath().getPath())) { //NOI18N
                                         TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
                                         sb.append(AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
