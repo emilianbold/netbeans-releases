@@ -110,22 +110,24 @@ public final class GoToImplementation extends BaseAction {
                 if (fo.isValid() && "pom.xml".equals(fo.getNameExt())) {
                     try {
                         Project prj = ProjectManager.getDefault().findProject(fo.getParent());
-                        NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
-                        List<ModelDescription> desc = MavenEmbedder.getModelDescriptors(nbprj.getMavenProject());
-                        if (desc != null) {
-                            ModelDescription d = desc.get(1);
-                            File f = d.getLocation();
-                            if (f != null) {
-                                //in sources
-                                FileObject fobj = FileUtil.toFileObject(f);
-                                if (fobj != null) {
-                                    //for files in local repo, fake read-only state..
-                                    NodeUtils.openPomFile(fobj);
-                                }
-                            } 
-                        } else {
-                            //no preexisting inheritance information
-                            
+                        NbMavenProject nbprj = prj != null ? prj.getLookup().lookup(NbMavenProject.class) : null;
+                        if(nbprj != null) { // pom in a non maven project? see also issue #256717  
+                            List<ModelDescription> desc = MavenEmbedder.getModelDescriptors(nbprj.getMavenProject());
+                            if (desc != null) {
+                                ModelDescription d = desc.get(1);
+                                File f = d.getLocation();
+                                if (f != null) {
+                                    //in sources
+                                    FileObject fobj = FileUtil.toFileObject(f);
+                                    if (fobj != null) {
+                                        //for files in local repo, fake read-only state..
+                                        NodeUtils.openPomFile(fobj);
+                                    }
+                                } 
+                            } else {
+                                //no preexisting inheritance information
+
+                            }
                         }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
