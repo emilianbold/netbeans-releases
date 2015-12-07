@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.api.build.ui;
+package org.netbeans.modules.web.clientproject.build.ui;
 
 import java.awt.Component;
 import java.awt.Container;

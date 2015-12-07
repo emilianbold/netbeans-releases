@@ -735,13 +735,15 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             String value = PluginPropertyUtils.getPluginPropertyBuildable(clonedConfig.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, "maven-enforcer-plugin", "enforce", new PluginPropertyUtils.ConfigurationBuilder<String>() {
                 @Override
                 public String build(Xpp3Dom configRoot, ExpressionEvaluator eval) {
-                    Xpp3Dom rules = configRoot.getChild("rules");
-                    if (rules != null) {
-                        Xpp3Dom rmv = rules.getChild("requireMavenVersion");
-                        if (rmv != null) {
-                            Xpp3Dom v = rmv.getChild("version");
-                            if (v != null) {
-                                return v.getValue();
+                    if(configRoot == null) {
+                        Xpp3Dom rules = configRoot.getChild("rules");
+                        if (rules != null) {
+                            Xpp3Dom rmv = rules.getChild("requireMavenVersion");
+                            if (rmv != null) {
+                                Xpp3Dom v = rmv.getChild("version");
+                                if (v != null) {
+                                    return v.getValue();
+                                }
                             }
                         }
                     }
