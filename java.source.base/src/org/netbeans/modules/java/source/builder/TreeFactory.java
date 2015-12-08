@@ -1731,7 +1731,7 @@ public class TreeFactory {
         for (DocTree t : tags) {
             tg.append((DCTree) t);
         }
-        return docMake.at(NOPOS).DocComment(null, fs.toList(), bd.toList(), tg.toList());
+        return docMake.at(NOPOS).DocComment(fs.toList(), bd.toList(), tg.toList());
     }
     
     public com.sun.source.doctree.ErroneousTree Erroneous(String text, DiagnosticSource diagSource, String code, Object... args) {

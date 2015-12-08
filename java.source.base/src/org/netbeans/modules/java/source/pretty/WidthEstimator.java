@@ -111,7 +111,7 @@ public class WidthEstimator extends JCTree.Visitor {
 	    }
     }
     public void widthQ(Symbol t) {
-	if (t.owner != null && t.owner != t.packge().modle.rootPackage && t.owner != t.packge().modle.unnamedPackage
+	if (t.owner != null && t.owner != symbols.rootPackage && t.owner != t.packge().modle.unnamedPackage
 	        && !(t.type instanceof Type.TypeVar)
 		&& !(t.owner instanceof MethodSymbol)) {
 	    width++;

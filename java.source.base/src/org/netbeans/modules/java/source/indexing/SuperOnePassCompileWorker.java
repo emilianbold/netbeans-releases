@@ -45,7 +45,6 @@ package org.netbeans.modules.java.source.indexing;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTaskImpl;
-import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.comp.AttrContext;
@@ -67,6 +66,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
@@ -213,7 +214,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         Iterable<? extends Processor> processors = jt.getProcessors();
         boolean aptEnabled = processors != null && processors.iterator().hasNext();
         try {
-            final Iterable<? extends TypeElement> types = jt.enter(trees);
+            final Iterable<? extends Element> types = jt.enter(trees);
             if (context.isCancelled()) {
                 return null;
             }
@@ -222,15 +223,17 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 freeMemory(false);
                 return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
-            final Map<TypeElement, CompileTuple> clazz2Tuple = new IdentityHashMap<TypeElement, CompileTuple>();
+            final Map<Element, CompileTuple> clazz2Tuple = new IdentityHashMap<Element, CompileTuple>();
             Enter enter = Enter.instance(jt.getContext());
-            for (TypeElement type : types) {
-                Env<AttrContext> typeEnv = enter.getEnv((TypeSymbol) type);
-                if (typeEnv == null) {
-                    JavaIndex.LOG.log(Level.FINE, "No Env for: {0}", type.getQualifiedName());
-                    continue;
+            for (Element type : types) {
+                if (type.getKind().isClass() || type.getKind().isInterface() || type.getKind() == ElementKind.MODULE) {
+                    Env<AttrContext> typeEnv = enter.getEnv((TypeSymbol) type);
+                    if (typeEnv == null) {
+                        JavaIndex.LOG.log(Level.FINE, "No Env for: {0}", ((TypeSymbol) type).getQualifiedName());
+                        continue;
+                    }
+                    clazz2Tuple.put(type, units.get(typeEnv.toplevel));
                 }
-                clazz2Tuple.put(type, units.get(typeEnv.toplevel));
             }
             jt.analyze(types);
             if (context.isCancelled()) {
@@ -279,7 +282,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             final Future<Void> done = FileManagerTransaction.runConcurrent(new FileSystem.AtomicAction() {
                 @Override
                 public void run() throws IOException {
-                    for (TypeElement type : types) {
+                    for (Element type : types) {
                         Iterable<? extends JavaFileObject> generatedFiles = jtFin.generate(Collections.singletonList(type));
                         CompileTuple unit = clazz2Tuple.get(type);
                         if (unit == null || !unit.virtual) {

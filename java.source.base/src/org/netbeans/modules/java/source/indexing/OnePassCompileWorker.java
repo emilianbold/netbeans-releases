@@ -62,6 +62,7 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
@@ -222,7 +223,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     freeMemory(false);
                     return ParsingOutput.lowMemory(moduleName[0], file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
-                final Iterable<? extends TypeElement> types = jt.enterTrees(Collections.singletonList(unit.first()));
+                final Iterable<? extends Element> types = jt.enterTrees(Collections.singletonList(unit.first()));
                 if (jfo2units.remove(active.jfo) != null) {
                     final Types ts = Types.instance(jt.getContext());
                     final Indexable activeIndexable = active.indexable;

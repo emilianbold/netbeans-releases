@@ -90,7 +90,7 @@ public final class CheckSums {
         load();
     }
 
-    public boolean checkAndSet(final URL file, final Iterable<? extends TypeElement> topLevelElements, final Elements elements) {
+    public boolean checkAndSet(final URL file, final Iterable<? extends Element> topLevelElements, final Elements elements) {
         String fileId = file.toExternalForm();
         String sum = computeCheckSum(md, topLevelElements, elements);
         String value = (String) props.setProperty(fileId, sum);
@@ -122,13 +122,13 @@ public final class CheckSums {
         }
     }
 
-    static String computeCheckSum(MessageDigest md, Iterable<? extends TypeElement> topLevelElements, Elements elements) {
-        Queue<TypeElement> toHandle = new LinkedList<TypeElement>();
-        for (TypeElement te : topLevelElements)
+    static String computeCheckSum(MessageDigest md, Iterable<? extends Element> topLevelElements, Elements elements) {
+        Queue<Element> toHandle = new LinkedList<Element>();
+        for (Element te : topLevelElements)
             toHandle.offer(te);
         List<String> sigs = new ArrayList<String>();
         while (!toHandle.isEmpty()) {
-            TypeElement te = toHandle.poll();
+            Element te = toHandle.poll();
             if (te == null) {
                 //workaround for 6443073
                 //see Symbol.java:601

@@ -55,6 +55,7 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
@@ -81,12 +82,14 @@ public final class FQN2Files implements DuplicateClassChecker {
         load();
     }
 
-    public void set(final Iterable<? extends TypeElement> topLevelElements, final URL file) {
-        for (TypeElement element : topLevelElements) {
-            String fqn = element.getQualifiedName().toString();
-            String value = props.getProperty(fqn);
-            if (value == null) {
-                props.setProperty(fqn, file.toExternalForm());
+    public void set(final Iterable<? extends Element> topLevelElements, final URL file) {
+        for (Element element : topLevelElements) {
+            if (element.getKind().isClass() || element.getKind().isInterface()) {
+                String fqn = ((TypeElement)element).getQualifiedName().toString();
+                String value = props.getProperty(fqn);
+                if (value == null) {
+                    props.setProperty(fqn, file.toExternalForm());
+                }
             }
         }
     }
