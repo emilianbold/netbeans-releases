@@ -493,6 +493,8 @@ public class SelectModePanel extends javax.swing.JPanel {
     private static final byte alreadyNbPoject = 4;
     private static final byte notFoundMakeAndConfigure = 5;
     private static final byte notRoot = 6;
+    private static final byte notExists = 7;
+    private static final byte notAbsolute = 8;
     private byte messageKind = noMessage;
 
     boolean valid() {
@@ -503,12 +505,12 @@ public class SelectModePanel extends javax.swing.JPanel {
                 return false;
             }
             if (!CndPathUtilities.isPathAbsolute(path)) {
-                messageKind = notFolder;
+                messageKind = notAbsolute;
                 return false;
             }
             FileObject projectDirFO = fileSystem.findResource(path); // can be null
             if (projectDirFO == null || !projectDirFO.isValid()) {
-                messageKind = notFolder;
+                messageKind = notExists;
                 return false;
             }
             if (!projectDirFO.isFolder()) {

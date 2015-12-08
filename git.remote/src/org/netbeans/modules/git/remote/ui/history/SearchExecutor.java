@@ -192,6 +192,7 @@ class SearchExecutor extends GitProgressSupport {
                     }
                     excludedCommitId = tracked.getId();
                     sc.setRevisionFrom(tracked.getName());
+                    sc.setAddSelfFrom(false);
                     break;
             }
             setDisplayName(Bundle.MSG_SearchExecutor_progress_searching());

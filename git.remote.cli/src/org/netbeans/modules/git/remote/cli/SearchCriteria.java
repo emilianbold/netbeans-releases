@@ -53,6 +53,7 @@ public final class SearchCriteria {
 
     private int limit;
     private String revisionFrom;
+    private boolean includePrevFrom = true;
     private String revisionTo;
     private Date from;
     private Date to;
@@ -127,6 +128,14 @@ public final class SearchCriteria {
         return revisionFrom;
     }
 
+    public boolean isAddSelfFrom(){
+        return includePrevFrom;
+    }
+
+    public void setAddSelfFrom(boolean includePrevFrom){
+        this.includePrevFrom = includePrevFrom;
+    }
+    
     /**
      * Sets the id of an ancestor commit for all commits that should satisfy
      * the criteria.
