@@ -266,9 +266,11 @@ final class LineVector {
             if (refArrayUnsorted) { // Unsorted array => use sequential search
                 for (; low <= last; low++) {
                     Line line = refArray[rawIndex(low)].get();
-                    int lineIndex = line.getLineNumber();
-                    if (startLineIndex <= lineIndex && lineIndex <= endLineIndex) {
-                        lines.add(line);
+                    if (line != null) {
+                        int lineIndex = line.getLineNumber();
+                        if (startLineIndex <= lineIndex && lineIndex <= endLineIndex) {
+                            lines.add(line);
+                        }
                     }
                 }
             }

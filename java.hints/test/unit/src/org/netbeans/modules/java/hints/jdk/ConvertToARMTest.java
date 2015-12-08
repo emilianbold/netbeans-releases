@@ -103,7 +103,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "         System.out.println(\"Done\");" +
                        "     }" +
                        "}")
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:178-0:180:verifier:TXT_ConvertToARM")
                 .applyFix("TXT_ConvertToARM")
@@ -158,7 +158,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "         System.out.println(\"Done\");" +
                        "     }" +
                        "}")
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:178-0:180:verifier:TXT_ConvertToARM")
                 .applyFix("TXT_ConvertToARM")
@@ -257,7 +257,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "         System.out.println(\"Done\");" +
                        "     }" +
                        "}")
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:161-0:163:verifier:TXT_ConvertToARM")
                 .applyFix("TXT_ConvertToARM")
@@ -300,7 +300,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "         System.out.println(\"Done\");" +
                        "     }" +
                        "}")
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:161-0:163:verifier:TXT_ConvertToARM")
                 .applyFix("TXT_ConvertToARM")
@@ -345,7 +345,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "         System.out.println(\"Done\");" +
                        "     }" +
                        "}")
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:161-0:163:verifier:TXT_ConvertToARM")
                 .applyFix("TXT_ConvertToARM")
@@ -419,7 +419,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "         }" +
                        "     }" +
                        "}", false)
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:269-0:271:verifier:TXT_ConvertToARM")
                 .applyFix("FIX_MergeTryResources")
@@ -502,7 +502,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "         }" +
                        "     }" +
                        "}", false)
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:269-0:271:verifier:TXT_ConvertToARM")
                 .applyFix("FIX_MergeTryResources")
@@ -578,7 +578,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "         in.close();" +
                        "     }" +
                        "}", false)
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:247-0:249:verifier:TXT_ConvertToARM")
                 .applyFix("FIX_MergeTryResources")
@@ -629,7 +629,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "        }" +
                        "     }" +
                        "}", false)
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:269-0:271:verifier:TXT_ConvertToARM")
                 .applyFix("FIX_MergeTryResources")
@@ -688,7 +688,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "        }" +
                        "     }" +
                        "}", false)
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:269-0:271:verifier:TXT_ConvertToARM")
                 .applyFix("FIX_MergeTryResources")
@@ -759,7 +759,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "         }" +
                        "    }" +
                        "}", false)
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:247-0:249:verifier:TXT_ConvertToARM")
                 .applyFix("FIX_MergeTryResources")
@@ -804,7 +804,7 @@ public class ConvertToARMTest extends NbTestCase {
                        "         } catch (Exception e) { throw e;} finally { System.gc(); }" +
                        "    }" +
                        "}", false)
-                .sourceLevel("1.9")
+                .sourceLevel("9")
                 .run(ConvertToARM.class)
                 .findWarning("0:247-0:249:verifier:TXT_ConvertToARM")
                 .applyFix("FIX_MergeTryResources")
