@@ -45,6 +45,8 @@ package org.netbeans.modules.cordova.project;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.spi.Device;
 import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
@@ -129,11 +131,12 @@ public class MobileConfigurationImpl implements ProjectConfiguration, PropertyPr
     }
 
     public static MobileConfigurationImpl create(Project project, String id) {
-        return create(project, project.getProjectDirectory().getFileObject("nbproject/configs/" + id +".properties")); // NOI18N
+        FileObject configFile = project.getProjectDirectory().getFileObject("nbproject/configs/" + id + ".properties"); // NOI18N
+        assert configFile != null : "missing configuration file for id: " + id;
+        return create(project, configFile); 
     }
 
     public static MobileConfigurationImpl create(Project proj, FileObject configFile) {
-
         try {
             InputStream is = configFile.getInputStream();
             try {
