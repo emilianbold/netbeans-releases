@@ -42,7 +42,6 @@
 package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.ui.UiUtils;
-import org.netbeans.modules.docker.api.ContainerStatus;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerContainerDetail;
 import org.netbeans.modules.docker.api.DockerException;
@@ -78,6 +77,6 @@ public class AttachContainerAction extends AbstractContainerAction {
 
     @Override
     protected boolean isEnabled(DockerContainer container) {
-        return container.getStatus() == ContainerStatus.RUNNING;
+        return container.getStatus() == DockerContainer.Status.RUNNING;
     }
 }
