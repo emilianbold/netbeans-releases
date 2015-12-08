@@ -94,6 +94,7 @@ import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.DockerActionAccessor;
+import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.StreamResult;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
@@ -186,7 +187,7 @@ public class DockerAction {
                 if (names != null && !names.isEmpty()) {
                     name = (String) names.get(0);
                 }
-                ContainerStatus status = org.netbeans.modules.docker.DockerUtils.getContainerStatus((String) json.get("Status"));
+                DockerContainer.Status status = DockerUtils.getContainerStatus((String) json.get("Status"));
                 ret.add(new DockerContainer(instance, id, image, name, status));
             }
             return ret;
@@ -263,7 +264,7 @@ public class DockerAction {
             }
 
             // FIXME image size and time parameters
-            return new DockerImage(instance, Collections.singletonList(org.netbeans.modules.docker.DockerUtils.getTag(repository, tag)),
+            return new DockerImage(instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
                     (String) value.get("Id"), time, 0, 0);
 
         } catch (UnsupportedEncodingException ex) {
@@ -311,7 +312,7 @@ public class DockerAction {
         doPostRequest(instance.getUrl(), action.toString(), null,
                 false, Collections.singleton(HttpURLConnection.HTTP_CREATED));
 
-        String tagResult = org.netbeans.modules.docker.DockerUtils.getTag(repository, tag);
+        String tagResult = DockerUtils.getTag(repository, tag);
         long time = System.currentTimeMillis() / 1000;
         // XXX we send it as older API does not have the commit event
         if (emitEvents) {
@@ -670,7 +671,7 @@ public class DockerAction {
                                             m.group(1), null, time));
                         }
                         // FIXME image size and time parameters
-                        return new DockerImage(instance, Collections.singletonList(org.netbeans.modules.docker.DockerUtils.getTag(repository, tag)),
+                        return new DockerImage(instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
                                 m.group(1), time, 0, 0);
                     }
                 }
@@ -784,7 +785,7 @@ public class DockerAction {
                     id,
                     (String) configuration.get("Image"),
                     "/" + name,
-                    ContainerStatus.STOPPED);
+                    DockerContainer.Status.STOPPED);
             ActionStreamResult r = attach(container, true, true);
 
             os.write(("POST /containers/" + id + "/start HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));

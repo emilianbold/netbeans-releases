@@ -51,6 +51,12 @@ import org.openide.util.ChangeSupport;
  */
 public final class DockerContainer implements DockerEntity {
 
+    public enum Status {
+        RUNNING,
+        PAUSED,
+        STOPPED
+    }
+
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final DockerInstance instance;
@@ -61,9 +67,9 @@ public final class DockerContainer implements DockerEntity {
 
     private final String name;
 
-    private ContainerStatus status;
+    private Status status;
 
-    DockerContainer(DockerInstance instance, String id, String image, String name, ContainerStatus status) {
+    DockerContainer(DockerInstance instance, String id, String image, String name, Status status) {
         this.instance = instance;
         this.id = id;
         this.image = image;
@@ -73,7 +79,7 @@ public final class DockerContainer implements DockerEntity {
             @Override
             public void onEvent(DockerEvent event) {
                 if (event.getId().equals(DockerContainer.this.id)) {
-                    ContainerStatus fresh = org.netbeans.modules.docker.DockerUtils.getContainerStatus(event);
+                    Status fresh = org.netbeans.modules.docker.DockerUtils.getContainerStatus(event);
                     if (fresh != null) {
                         setStatus(fresh);
                     }
@@ -105,13 +111,13 @@ public final class DockerContainer implements DockerEntity {
         return name;
     }
 
-    public ContainerStatus getStatus() {
+    public Status getStatus() {
         synchronized (this) {
             return status;
         }
     }
 
-    public void setStatus(ContainerStatus status) {
+    public void setStatus(Status status) {
         boolean fire = false;
         synchronized (this) {
             if (this.status != status) {

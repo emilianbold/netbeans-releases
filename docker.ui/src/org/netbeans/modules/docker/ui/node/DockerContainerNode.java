@@ -45,9 +45,6 @@ import java.awt.Image;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.docker.api.ContainerStatus;
-import static org.netbeans.modules.docker.api.ContainerStatus.PAUSED;
-import static org.netbeans.modules.docker.api.ContainerStatus.RUNNING;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.ui.commit.CommitContainerAction;
 import org.netbeans.modules.docker.ui.rename.RenameContainerAction;
@@ -114,7 +111,7 @@ public class DockerContainerNode extends AbstractNode {
         return badgeIcon(original, container.getStatus());
     }
 
-    private static Image badgeIcon(Image image, ContainerStatus status) {
+    private static Image badgeIcon(Image image, DockerContainer.Status status) {
         Image badge = null;
         switch (status) {
             case PAUSED:

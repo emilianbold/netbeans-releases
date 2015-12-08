@@ -39,41 +39,43 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
-
-import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerException;
-import org.netbeans.modules.docker.api.DockerAction;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.docker.api;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StartContainerAction extends AbstractContainerAction {
+public class Credentials {
 
-    @NbBundle.Messages("LBL_StartContainerAction=Start")
-    public StartContainerAction() {
-        super(Bundle.LBL_StartContainerAction());
+    private final String registry;
+
+    private final String username;
+
+    private final char[] password;
+
+    private final String email;
+
+    public Credentials(String registry, String username, char[] password, String email) {
+        this.registry = registry;
+        this.username = username;
+        this.password = password;
+        this.email = email;
     }
 
-    @NbBundle.Messages({
-        "# {0} - container id",
-        "MSG_StartingContainer=Starting container {0}"
-    })
-    @Override
-    protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_StartingContainer(container.getShortId());
+    public String getRegistry() {
+        return registry;
     }
 
-    @Override
-    protected void performAction(DockerContainer container) throws DockerException {
-        DockerAction facade = new DockerAction(container.getInstance());
-        facade.start(container);
+    public String getUsername() {
+        return username;
     }
 
-    @Override
-    protected boolean isEnabled(DockerContainer container) {
-        return container.getStatus() == DockerContainer.Status.STOPPED;
+    public char[] getPassword() {
+        return password;
     }
+
+    public String getEmail() {
+        return email;
+    }
+
 }

@@ -41,12 +41,43 @@
  */
 package org.netbeans.modules.docker.api;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.docker.DockerCfgFile;
+import org.openide.util.Exceptions;
+
 /**
  *
  * @author Petr Hejl
  */
-public enum ContainerStatus {
-    RUNNING,
-    PAUSED,
-    STOPPED
+public final class CredentialsManager {
+
+    private static final Logger LOGGER = Logger.getLogger(CredentialsManager.class.getName());
+
+    private static final CredentialsManager INSTANCE = new CredentialsManager();
+
+    private final DockerCfgFile config;
+
+    private CredentialsManager() {
+        super();
+        config = new DockerCfgFile(new File(System.getProperty("user.home"), ".dockercfg")); // NOI18N
+    }
+
+    public static CredentialsManager getDefault() {
+        return INSTANCE;
+    }
+
+    public Credentials getCredentials(String registry) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread();
+        return config.load(registry);
+    }
+
+    public Credentials createCredentials(String registry, String username, char[] password, String email) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread();
+        Credentials credentials = new Credentials(registry, username, password, email);
+        config.save(credentials);
+        return credentials;
+    }
 }
