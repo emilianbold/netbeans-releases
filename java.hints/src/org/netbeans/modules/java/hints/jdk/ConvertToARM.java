@@ -105,7 +105,7 @@ public class ConvertToARM {
 
     private static final Logger LOG = Logger.getLogger(ConvertToARMFix.class.getName());
     private static final SpecificationVersion JDK_17 = new SpecificationVersion("1.7"); //NOI18N
-    private static final SpecificationVersion JDK_19 = new SpecificationVersion("1.9"); //NOI18N
+    private static final SpecificationVersion JDK_9 = new SpecificationVersion("9"); //NOI18N
     
     private static final String AUTO_CLOSEABLE = "java.lang.AutoCloseable"; //NOI18N
     
@@ -326,7 +326,7 @@ public class ConvertToARM {
                 if (element != null && EnumSet.of(ElementKind.FIELD, ElementKind.PARAMETER, ElementKind.LOCAL_VARIABLE).contains(element.getKind())) {
                     final TreePath typeVar = vars.get("$CV"); //NOI18N
                     final VariableElement resElement = (VariableElement) element;
-                    if (typeVar != null || isSupportedSourceLevel(info.getFileObject(), JDK_19) && resElement.getKind() != ElementKind.LOCAL_VARIABLE && info.getElementUtilities().isEffectivelyFinal(resElement)) {
+                    if (typeVar != null || isSupportedSourceLevel(info.getFileObject(), JDK_9) && resElement.getKind() != ElementKind.LOCAL_VARIABLE && info.getElementUtilities().isEffectivelyFinal(resElement)) {
                         final Map<String,Collection<? extends TreePath>> multiVars = ctx.getMultiVariables();
                         final Collection<? extends TreePath> stms = multiVars.get("$stms$");    //NOI18N
                         if (!stms.isEmpty() && !isAssigned(resElement, stms, trees)) {
@@ -824,7 +824,7 @@ public class ConvertToARM {
     }
     
     private static boolean isEffectivelyFinal(final HintContext ctx) {
-        if (isSupportedSourceLevel(ctx.getInfo().getFileObject(), JDK_19)) {
+        if (isSupportedSourceLevel(ctx.getInfo().getFileObject(), JDK_9)) {
             TreePath var = ctx.getVariables().get("$var");
             if (var != null) {
                 Element el = ctx.getInfo().getTrees().getElement(var);

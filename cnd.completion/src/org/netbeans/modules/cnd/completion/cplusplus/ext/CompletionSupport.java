@@ -532,9 +532,10 @@ public final class CompletionSupport implements DocumentListener {
                         for (CsmParameter param : constructor.getParameters()) {
                             if (first) {
                                 first = false;
-                                if (!CsmKindUtilities.isTemplateParameterType(param.getType())) {
+                                CsmType paramType = param.getType();
+                                if (paramType != null && !CsmKindUtilities.isTemplateParameterType(paramType)) {
                                     TypeInfoCollector paramInfo = new TypeInfoCollector();
-                                    CsmType paramType = iterateTypeChain(param.getType(), paramInfo);
+                                    paramType = iterateTypeChain(paramType, paramInfo);
                                     CsmClassifier paramCls = paramType.getClassifier();
                                     if (!isViableClassifier(paramCls, true)) {
                                         appropriate = false;
