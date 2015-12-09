@@ -66,16 +66,19 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.lang.model.element.ModuleElement;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -126,7 +129,6 @@ final class ModuleClassPaths {
     }
 
     private static final class PlatformModulePath extends BaseClassPathImplementation implements PropertyChangeListener {
-        private static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
         private static final String PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
         private static final String PROTOCOL_NBJRT = "nbjrt";   //NOI18N
 
@@ -141,6 +143,8 @@ final class ModuleClassPaths {
             this.eval = eval;
             this.platformType = platformType;
             this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
+            final JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+            jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
         }
 
         @Override
@@ -164,23 +168,43 @@ final class ModuleClassPaths {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
-            if (propName == null || PLATFORM_ACTIVE.equals(propName)) {
+            if (propName == null ||
+                ProjectProperties.PLATFORM_ACTIVE.equals(propName) ||
+                (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(propName) && isActivePlatformChange())) {
                 resetCache(true);
             }
         }
 
+        private boolean isActivePlatformChange() {
+            List<PathResourceImplementation> current = getCache();
+            if (current == null) {
+                return false;
+            }
+            final Stream<JavaPlatform> platforms = getPlatforms();
+            return platforms.findFirst().isPresent() ?
+                current.isEmpty() :
+                !current.isEmpty();
+        }
+
         private List<PathResourceImplementation> createResources() {
             final List<PathResourceImplementation> res = new ArrayList<>();
-            final String platformName = eval.getProperty(PLATFORM_ACTIVE);
-            if (platformName != null && !platformName.isEmpty()) {
-                Arrays.stream(JavaPlatformManager.getDefault().getInstalledPlatforms())
-                        .filter((plat)->platformName.equals(plat.getProperties().get(PLATFORM_ANT_NAME)) && platformType.equals(plat.getSpecification().getName()))
-                        .flatMap((plat)->plat.getBootstrapLibraries().entries().stream())
-                        .map((entry) -> entry.getURL())
-                        .filter((root) -> (PROTOCOL_NBJRT.equals(root.getProtocol())))
-                        .forEach((root)->{res.add(org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(root));});
-            }
+            getPlatforms()
+                .flatMap((plat)->plat.getBootstrapLibraries().entries().stream())
+                .map((entry) -> entry.getURL())
+                .filter((root) -> (PROTOCOL_NBJRT.equals(root.getProtocol())))
+                .forEach((root)->{res.add(org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(root));});
             return res;
+        }
+
+        @NonNull
+        private Stream<JavaPlatform> getPlatforms() {
+            final String platformName = eval.getProperty(ProjectProperties.PLATFORM_ACTIVE);
+            return platformName != null && !platformName.isEmpty() ?
+                    Arrays.stream(JavaPlatformManager.getDefault().getInstalledPlatforms())
+                        .filter((plat)->
+                            platformName.equals(plat.getProperties().get(PLATFORM_ANT_NAME)) &&
+                            platformType.equals(plat.getSpecification().getName())) :
+                    Stream.empty();
         }
     }
 
