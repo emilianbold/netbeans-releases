@@ -39,24 +39,21 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.pull;
+package org.netbeans.modules.docker.ui.node;
 
-import org.netbeans.modules.docker.ui.StatusOutputListener;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerException;
+import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.openide.DialogDescriptor;
+import org.netbeans.modules.docker.api.DockerException;
+import org.netbeans.modules.docker.ui.StatusOutputListener;
 import org.openide.DialogDisplayer;
-import org.openide.awt.Mnemonics;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -69,54 +66,39 @@ import org.openide.windows.InputOutput;
  *
  * @author Petr Hejl
  */
-public class PullImageAction extends NodeAction {
+public class PushTagAction extends NodeAction {
 
-    private static final Logger LOGGER = Logger.getLogger(PullImageAction.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PushTagAction.class.getName());
 
-    @NbBundle.Messages({
-        "LBL_Pull=&Pull",
-        "LBL_SearchImage=Search Image"
-    })
     @Override
     protected void performAction(Node[] activatedNodes) {
-        DockerInstance instance = activatedNodes[0].getLookup().lookup(DockerInstance.class);
-        if (instance != null) {
-            JButton pullButton = new JButton();
-            Mnemonics.setLocalizedText(pullButton, Bundle.LBL_Pull());
-            DockerHubSearchPanel panel = new DockerHubSearchPanel(instance, pullButton);
-
-            DialogDescriptor descriptor
-                    = new DialogDescriptor(panel, Bundle.LBL_SearchImage(),
-                            true, new Object[] {pullButton, DialogDescriptor.CANCEL_OPTION}, pullButton,
-                            DialogDescriptor.DEFAULT_ALIGN, null, null);
-            descriptor.setClosingOptions(new Object[] {pullButton, DialogDescriptor.CANCEL_OPTION});
-            Dialog dlg = null;
-
-            try {
-                dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-                dlg.setVisible(true);
-
-                if (descriptor.getValue() == pullButton) {
-                    perform(instance, panel.getImage());
-                }
-            } finally {
-                if (dlg != null) {
-                    dlg.dispose();
-                }
+        for (final Node node : activatedNodes) {
+            final DockerTag tag = node.getLookup().lookup(DockerTag.class);
+            if (tag != null) {
+                perform(tag);
             }
         }
     }
 
     @NbBundle.Messages({
         "# {0} - image name",
-        "MSG_Pulling=Pulling {0}"
+        "MSG_PushQuestion=Do you really want to push the image {0} to the registry?",
+        "# {0} - image name",
+        "MSG_Pushing=Pushing {0}"
     })
-    private void perform(final DockerInstance instance, final String image) {
+    private void perform(final DockerTag tag) {
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                Bundle.MSG_PushQuestion(tag.getTag()), NotifyDescriptor.YES_NO_OPTION);
+        if (DialogDisplayer.getDefault().notify(desc) != NotifyDescriptor.YES_OPTION) {
+            return;
+        }
+
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Pulling(image), false);
-                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Pulling(image), new AbstractAction() {
+                String image = tag.getTag();
+                final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Pushing(image), false);
+                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Pushing(image), new AbstractAction() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         io.select();
@@ -126,8 +108,8 @@ public class PullImageAction extends NodeAction {
                 try {
                     io.getOut().reset();
                     io.select();
-                    DockerAction facade = new DockerAction(instance);
-                    facade.pull(image, new StatusOutputListener(io));
+                    DockerAction facade = new DockerAction(tag.getImage().getInstance());
+                    facade.push(tag, new StatusOutputListener(io));
                 } catch (DockerException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                     io.getErr().println(ex.getMessage());
@@ -146,13 +128,17 @@ public class PullImageAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return activatedNodes[0].getLookup().lookup(DockerInstance.class) != null;
+        DockerTag tag = activatedNodes[0].getLookup().lookup(DockerTag.class);
+        if (tag == null) {
+            return false;
+        }
+        return !"<none>:<none>".equals(tag.getTag());
     }
 
-    @NbBundle.Messages("LBL_PullImageAction=Pull...")
+    @NbBundle.Messages("LBL_PushTagAction=Push...")
     @Override
     public String getName() {
-        return Bundle.LBL_PullImageAction();
+        return Bundle.LBL_PushTagAction();
     }
 
     @Override
@@ -164,4 +150,5 @@ public class PullImageAction extends NodeAction {
     protected boolean asynchronous() {
         return false;
     }
+
 }

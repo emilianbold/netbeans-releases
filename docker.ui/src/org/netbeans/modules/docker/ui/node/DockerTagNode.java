@@ -79,6 +79,8 @@ public class DockerTagNode extends AbstractNode {
             null,
             SystemAction.get(TagTagAction.class),
             null,
+            SystemAction.get(PushTagAction.class),
+            null,
             SystemAction.get(CopyIdAction.class),
             null,
             SystemAction.get(RemoveTagAction.class)
