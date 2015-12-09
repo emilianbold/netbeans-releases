@@ -42,6 +42,7 @@
 package org.netbeans.modules.docker.ui;
 
 import java.util.regex.Pattern;
+import org.netbeans.modules.docker.api.DockerName;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -116,27 +117,11 @@ public final class Validations {
             return Bundle.MSG_ErrorSchema();
         }
 
-        String[] parts = repository.split("/", 3); // NOI18N
+        DockerName parsed = DockerName.parse(repository);
+        String registry = parsed.getRegistry();
+        String ns = parsed.getNamespace();
+        String repo = parsed.getRepository();
 
-        String registry = null;
-        String ns = null;
-        String repo = null;
-        if (parts.length == 1) {
-            repo = parts[0];
-        } else if (parts.length == 2) {
-            String namespace = parts[0];
-            // registry host
-            if (namespace.contains(".") || namespace.contains(":") || "localhost".equals(namespace)) { // NOI18N
-                registry = namespace;
-            } else {
-                ns = namespace;
-            }
-            repo = parts[1];
-        } else if (parts.length == 3) {
-            registry = parts[0];
-            ns = parts[1];
-            repo = parts[2];
-        }
         if (registry != null && (registry.startsWith("-") || registry.endsWith("-"))) { // NOI18N
             return Bundle.MSG_ErrorRegistryStartEndHyphen(registry);
         }
@@ -158,8 +143,7 @@ public final class Validations {
             }
         }
 
-        assert repo != null;
-        if (parts.length > 1 && repo.isEmpty()) {
+        if (repo.isEmpty()) {
             return Bundle.MSG_ErrorRepositoryEmpty();
         }
         if (ns == null && FORBIDDEN_REPOSITORY_PATTERN.matcher(repo).matches()) {
