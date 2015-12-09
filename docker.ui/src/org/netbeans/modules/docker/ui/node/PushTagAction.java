@@ -52,6 +52,8 @@ import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.ui.StatusOutputListener;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -77,12 +79,20 @@ public class PushTagAction extends NodeAction {
             }
         }
     }
-    
+
     @NbBundle.Messages({
+        "# {0} - image name",
+        "MSG_PushQuestion=Do you really want to push the image {0} to the registry?",
         "# {0} - image name",
         "MSG_Pushing=Pushing {0}"
     })
     private void perform(final DockerTag tag) {
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                Bundle.MSG_PushQuestion(tag.getTag()), NotifyDescriptor.YES_NO_OPTION);
+        if (DialogDisplayer.getDefault().notify(desc) != NotifyDescriptor.YES_OPTION) {
+            return;
+        }
+
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
@@ -115,15 +125,17 @@ public class PushTagAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        for (Node node : activatedNodes) {
-            if (node.getLookup().lookup(DockerTag.class) == null) {
-                return false;
-            }
+        if (activatedNodes.length != 1) {
+            return false;
         }
-        return true;
+        DockerTag tag = activatedNodes[0].getLookup().lookup(DockerTag.class);
+        if (tag == null) {
+            return false;
+        }
+        return !"<none>:<none>".equals(tag.getTag());
     }
 
-    @NbBundle.Messages("LBL_PushTagAction=Push")
+    @NbBundle.Messages("LBL_PushTagAction=Push...")
     @Override
     public String getName() {
         return Bundle.LBL_PushTagAction();
