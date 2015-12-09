@@ -68,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.lang.model.element.ModuleElement;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -589,7 +590,7 @@ final class ModuleClassPaths {
             this.listeners.removePropertyChangeListener(listener);
         }
 
-        @NonNull
+        @CheckForNull
         final synchronized List<PathResourceImplementation> getCache() {
             return this.cache;
         }
