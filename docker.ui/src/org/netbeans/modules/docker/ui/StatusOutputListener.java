@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.pull;
+package org.netbeans.modules.docker.ui;
 
 import org.netbeans.modules.docker.api.StatusEvent;
 import org.openide.windows.InputOutput;
@@ -48,11 +48,11 @@ import org.openide.windows.InputOutput;
  *
  * @author Petr Hejl
  */
-public class PullOutputListener implements StatusEvent.Listener {
+public class StatusOutputListener implements StatusEvent.Listener {
 
     private final InputOutput io;
 
-    public PullOutputListener(InputOutput io) {
+    public StatusOutputListener(InputOutput io) {
         this.io = io;
     }
 

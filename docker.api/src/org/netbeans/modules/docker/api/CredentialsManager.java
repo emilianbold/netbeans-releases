@@ -45,8 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.docker.DockerCfgFile;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.docker.DockerConfig;
 
 /**
  *
@@ -58,11 +57,11 @@ public final class CredentialsManager {
 
     private static final CredentialsManager INSTANCE = new CredentialsManager();
 
-    private final DockerCfgFile config;
+    private final DockerConfig config;
 
     private CredentialsManager() {
         super();
-        config = new DockerCfgFile(new File(System.getProperty("user.home"), ".dockercfg")); // NOI18N
+        config = new DockerConfig(new File(System.getProperty("user.home"), ".dockercfg")); // NOI18N
     }
 
     public static CredentialsManager getDefault() {

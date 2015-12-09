@@ -55,6 +55,9 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -64,21 +67,31 @@ import org.netbeans.modules.docker.api.Credentials;
  *
  * @author Petr Hejl
  */
-public class DockerCfgFile {
+public class DockerConfig {
 
-    private final File dockerCfg;
+    private static final String DOCKER_HUB_DOMAIN = "index.docker.io";
 
-    public DockerCfgFile(File dockerCfg) {
-        this.dockerCfg = dockerCfg;
+    private static final String DOCKER_HUB_REGISTRY = "https://" + DOCKER_HUB_DOMAIN + "/v1/";
+
+    private final File dockerConfig;
+
+    public DockerConfig(File dockerConfig) {
+        this.dockerConfig = dockerConfig;
     }
 
     public Credentials load(String registry) throws IOException {
-        if (!dockerCfg.isFile()) {
+        if (!dockerConfig.isFile()) {
             return null;
         }
 
+        Set<String> names = generateRegistryNames(registry);
+
         JSONObject current = parse();
-        JSONObject value = (JSONObject) current.get(registry);
+        JSONObject value = null;
+        Iterator<String> it = names.iterator();
+        while (value == null && it.hasNext()) {
+            value = (JSONObject) current.get(it.next());
+        }
         if (value == null) {
             return null;
         }
@@ -115,13 +128,13 @@ public class DockerCfgFile {
 
         JSONObject current = parse();
         current.put(credentials.getRegistry(), value);
-        try (Writer w = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(dockerCfg)), "UTF-8")) { // NOI18N
+        try (Writer w = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(dockerConfig)), "UTF-8")) { // NOI18N
             current.writeJSONString(w);
         }
     }
 
     private JSONObject parse() throws IOException {
-        try (Reader r = new InputStreamReader(new BufferedInputStream(new FileInputStream(dockerCfg)), "UTF-8")) { // NOI18N
+        try (Reader r = new InputStreamReader(new BufferedInputStream(new FileInputStream(dockerConfig)), "UTF-8")) { // NOI18N
             JSONParser parser = new JSONParser();
             try {
                 return (JSONObject) parser.parse(r);
@@ -129,5 +142,40 @@ public class DockerCfgFile {
                 throw new IOException(ex);
             }
         }
+    }
+
+    private static Set<String> generateRegistryNames(String registry) {
+        Set<String> result = new LinkedHashSet<>();
+
+        if (registry == null) {
+            result.add(DOCKER_HUB_REGISTRY);
+            result.addAll(generateRegistryNames(DOCKER_HUB_DOMAIN));
+            return result;
+        }
+
+        result.add(registry);
+        generatePaths(registry, result);
+
+        if (!registry.contains("://")) {
+            String https = "https://" + registry;
+            result.add(https);
+            generatePaths(https, result);
+            String http = "http://" + registry;
+            result.add(http);
+            generatePaths(http, result);
+        }
+        return result;
+    }
+
+    private static void generatePaths(String registry, Set<String> result) {
+        StringBuilder extended = new StringBuilder(registry);
+        if (registry.endsWith("/")) {
+            extended.append("v1");
+        } else {
+            extended.append("/v1");
+        }
+        result.add(extended.toString());
+        extended.append("/");
+        result.add(extended.toString());
     }
 }

@@ -175,8 +175,8 @@ public class BuildImageWizard {
 
                     });
                 } catch (DockerException ex) {
-                    io.getErr().println(ex.getMessage());
                     LOGGER.log(Level.INFO, null, ex);
+                    io.getErr().println(ex.getMessage());
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                 } finally {

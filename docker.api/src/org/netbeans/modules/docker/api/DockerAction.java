@@ -71,6 +71,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -97,6 +98,7 @@ import org.netbeans.modules.docker.DockerActionAccessor;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.StreamResult;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -493,10 +495,92 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL httpUrl = createURL(instance.getUrl(), "/images/create?fromImage=" + HttpParsingUtils.encodeParameter(imageName));
+            DockerName parsed = DockerName.parse(imageName);
+            URL httpUrl = createURL(instance.getUrl(), "/images/create?fromImage="
+                    + HttpParsingUtils.encodeParameter(imageName));
             HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("POST");
+                String auth = createXRegistryAuth(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
+                if (auth != null) {
+                    conn.setRequestProperty("X-Registry-Auth", auth);
+                }
+                conn.setRequestProperty("Accept", "application/json");
+
+                if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    String error = HttpParsingUtils.readError(conn);
+                    throw new DockerRemoteException(conn.getResponseCode(),
+                            error != null ? error : conn.getResponseMessage());
+                }
+
+                JSONParser parser = new JSONParser();
+                try (InputStreamReader r = new InputStreamReader(conn.getInputStream(), HttpParsingUtils.getCharset(conn))) {
+                    String line;
+                    while ((line = readEventObject(r)) != null) {
+                        JSONObject o = (JSONObject) parser.parse(line);
+                        boolean error = false;
+                        String id = (String) o.get("id");
+                        String status = (String) o.get("status");
+                        if (status == null) {
+                            status = (String) o.get("error");
+                            error = status != null;
+                        }
+                        if (status == null) {
+                            LOGGER.log(Level.INFO, "Unknown event {0}", o);
+                            continue;
+                        }
+
+                        String progress = (String) o.get("progress");
+                        StatusEvent.Progress detail = null;
+                        JSONObject detailObj = (JSONObject) o.get("progressDetail");
+                        if (detailObj != null) {
+                            long current = ((Number) getOrDefault(detailObj, "current", 1)).longValue();
+                            long total = ((Number) getOrDefault(detailObj, "total", 1)).longValue();
+                            detail = new StatusEvent.Progress(current, total);
+                        }
+                        listener.onEvent(new StatusEvent(instance, id, status, progress, error, detail));
+                        parser.reset();
+                    }
+                } catch (ParseException ex) {
+                    throw new DockerException(ex);
+                }
+            } finally {
+                conn.disconnect();
+            }
+        } catch (MalformedURLException e) {
+            throw new DockerException(e);
+        } catch (IOException e) {
+            throw new DockerException(e);
+       }
+    }
+
+    public void push(DockerTag tag, StatusEvent.Listener listener) throws DockerException {
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+
+        try {
+            String name = tag.getTag();
+            DockerName parsed = DockerName.parse(name);
+            String tagString = parsed.getTag();
+            StringBuilder action = new StringBuilder();
+            action.append("/images/");
+            if (tagString == null) {
+                action.append(name);
+            } else {
+                action.append(name.substring(0, name.length() - tagString.length() - 1));
+            }
+            action.append("/push");
+            if (tagString != null) {
+                action.append("?tag=").append(HttpParsingUtils.encodeParameter(tagString));
+            }
+
+            URL httpUrl = createURL(instance.getUrl(), action.toString());
+            HttpURLConnection conn = createConnection(httpUrl);
+            try {
+                conn.setRequestMethod("POST");
+                String auth = createXRegistryAuth(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
+                if (auth != null) {
+                    conn.setRequestProperty("X-Registry-Auth", auth);
+                }
                 conn.setRequestProperty("Accept", "application/json");
 
                 if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -1036,6 +1120,23 @@ public class DockerAction {
         }
 
         return new URL(realUrl);
+    }
+
+    private static String createXRegistryAuth(Credentials credentials) {
+        if (credentials == null) {
+            return null;
+        }
+        JSONObject value = new JSONObject();
+        value.put("username", credentials.getUsername());
+        value.put("password", new String(credentials.getPassword()));
+        value.put("email", credentials.getEmail());
+        value.put("serveraddress", credentials.getRegistry());
+        value.put("auth", "");
+        try {
+            return Base64.getEncoder().encodeToString(value.toJSONString().getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     private static DockerException codeToException(int code, String message) {
