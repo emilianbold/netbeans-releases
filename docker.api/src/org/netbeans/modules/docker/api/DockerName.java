@@ -39,25 +39,83 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker;
+package org.netbeans.modules.docker.api;
 
-import org.netbeans.modules.docker.api.DockerException;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerRemoteException extends DockerException {
+public class DockerName {
 
-    private final int code;
+    private final String registry;
 
-    public DockerRemoteException(int code, String message) {
-        super(code + ": " + message);
-        this.code = code;
+    private final String namespace;
+
+    private final String repository;
+
+    private final String tag;
+
+    private DockerName(String registry, String namespace, String repository, String tag) {
+        this.registry = registry;
+        this.namespace = namespace;
+        this.repository = repository;
+        this.tag = tag;
     }
 
-    public int getCode() {
-        return code;
+    public static DockerName parse(String name) {
+        Parameters.notNull("repository", name);
+
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("Name can't be empty");
+        }
+
+        String[] parts = name.split("/", 3); // NOI18N
+
+        String registry = null;
+        String ns = null;
+        String repo = null;
+        String tag = null;
+        if (parts.length == 1) {
+            repo = parts[0];
+        } else if (parts.length == 2) {
+            String namespace = parts[0];
+            // registry host
+            if (namespace.contains(".") || namespace.contains(":") || "localhost".equals(namespace)) { // NOI18N
+                registry = namespace;
+            } else {
+                ns = namespace;
+            }
+            repo = parts[1];
+        } else if (parts.length == 3) {
+            registry = parts[0];
+            ns = parts[1];
+            repo = parts[2];
+        }
+
+        int index = repo.indexOf(':');
+        if (index > 0) {
+            tag = repo.substring(index + 1);
+            repo = repo.substring(0, index);
+        }
+
+        return new DockerName(registry, ns, repo, tag);
     }
 
+    public String getRegistry() {
+        return registry;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public String getRepository() {
+        return repository;
+    }
+
+    public String getTag() {
+        return tag;
+    }
 }
