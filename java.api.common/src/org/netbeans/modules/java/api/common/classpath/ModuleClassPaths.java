@@ -62,6 +62,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,7 +97,6 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 final class ModuleClassPaths {
-    private static final String MODULE_INFO_JAVA = "module-info.java";   //NOI18N
     private static final Logger LOG = Logger.getLogger(ModuleClassPaths.class.getName());
 
     private ModuleClassPaths() {
@@ -297,6 +297,8 @@ final class ModuleClassPaths {
 
     private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener {
 
+        private static final String MODULE_INFO_JAVA = "module-info.java";   //NOI18N
+        private static final String MOD_JAVA_BASE = "java.base";    //NOI18N
         private static final List<PathResourceImplementation> TOMBSTONE = Collections.unmodifiableList(new ArrayList<>());
         private final ClassPath base;
         private final SourceRoots sources;
@@ -342,7 +344,12 @@ final class ModuleClassPaths {
             modulesByName.values().stream()
                     .map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
                     .forEach(res::add);
-            selfRes.set(new Object[]{res, needToFire});
+            selfRes.set(new Object[]{
+                Optional.ofNullable(modulesByName.get(MOD_JAVA_BASE))
+                    .map(org.netbeans.spi.java.classpath.support.ClassPathSupport::createResource)
+                    .map(Collections::singletonList)
+                    .orElseGet(Collections::emptyList),
+                needToFire});
             try {
                 boolean found = false;
                 for (URL root : sources.getRootURLs()) {
