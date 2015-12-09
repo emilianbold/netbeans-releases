@@ -112,7 +112,7 @@ public class RemoveTagAction extends NodeAction {
     @NbBundle.Messages("LBL_RemoveTagAction=Remove")
     @Override
     public String getName() {
-        return Bundle.LBL_RemoveInstanceAction();
+        return Bundle.LBL_RemoveTagAction();
     }
 
     @Override
