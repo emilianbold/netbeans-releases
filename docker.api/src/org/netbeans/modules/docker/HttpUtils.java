@@ -50,6 +50,7 @@ import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -61,16 +62,16 @@ import org.netbeans.api.annotations.common.CheckForNull;
  *
  * @author Petr Hejl
  */
-public final class HttpParsingUtils {
+public final class HttpUtils {
 
     private static final Pattern HTTP_RESPONSE_PATTERN = Pattern.compile("^HTTP/1\\.1 (\\d\\d\\d) (.*)$");
 
-    private HttpParsingUtils() {
+    private HttpUtils() {
         super();
     }
 
     public static Response readResponse(InputStream is) throws IOException {
-        String response = HttpParsingUtils.readResponseLine(is);
+        String response = HttpUtils.readResponseLine(is);
         if (response == null) {
             throw new IOException("No response from server");
         }
@@ -151,6 +152,10 @@ public final class HttpParsingUtils {
         return URLEncoder.encode(value, "UTF-8");
     }
 
+    public static String encodeBase64(String value) throws UnsupportedEncodingException {
+        return Base64.getEncoder().encodeToString(value.getBytes("UTF-8"));
+    }
+
     static String readResponseLine(InputStream is) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int b;
@@ -176,7 +181,7 @@ public final class HttpParsingUtils {
         Map<String, String> result = new HashMap<>();
         String line;
         for (;;) {
-            line = HttpParsingUtils.readResponseLine(is).trim();
+            line = HttpUtils.readResponseLine(is).trim();
             if (line != null && !"".equals(line)) {
                 int index = line.indexOf(':'); // NOI18N
                 if (index <= 0) {

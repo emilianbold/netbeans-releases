@@ -39,37 +39,47 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api;
+package org.netbeans.modules.php.editor.completion;
 
-import java.io.IOException;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.docker.DockerConfig;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- *
- * @author Petr Hejl
- */
-public final class CredentialsManager {
+public class PHPCodeCompletion246396Test extends PHPCodeCompletionTestBase {
 
-    private static final CredentialsManager INSTANCE = new CredentialsManager();
-
-    private CredentialsManager() {
-        super();
+    public PHPCodeCompletion246396Test(String testName) {
+        super(testName);
     }
 
-    public static CredentialsManager getDefault() {
-        return INSTANCE;
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[]{
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests246396/"))
+            })
+        );
     }
 
-    public Credentials getCredentials(String registry) throws IOException {
-        assert !SwingUtilities.isEventDispatchThread();
-        return DockerConfig.getDefault().getCredentials(registry);
+    public void testUseSelf() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "self::^publicStaticMethod();", false);
     }
 
-    public Credentials createCredentials(String registry, String username, char[] password, String email) throws IOException {
-        assert !SwingUtilities.isEventDispatchThread();
-        Credentials credentials = new Credentials(registry, username, password, email);
-        //DockerConfig.getDefault().setCredentials(credentials);
-        return credentials;
+    public void testUseStatic() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "static::^privateStaticMethod();", false);
     }
+
+    public void testUseTraitedSelf() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "self::^publicStaticTraitedMethod();", false);
+    }
+
+    public void testUseTraitedStatic() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "static::^privateStaticTraitedMethod();", false);
+    }
+
 }
