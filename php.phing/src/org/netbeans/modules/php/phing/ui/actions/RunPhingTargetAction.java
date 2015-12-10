@@ -197,6 +197,14 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
         }
 
         @Override
+        public FileObject getWorkDir() {
+            if (buildXml == null) {
+                return project.getProjectDirectory();
+            }
+            return buildXml.getParent();
+        }
+
+        @Override
         public String getIdentifier() {
             return PhingBuildTool.IDENTIFIER;
         }
@@ -205,7 +213,7 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
             "TasksMenuSupportImpl.targets.label=&Target(s)",
             "TasksMenuSupportImpl.targets.loading=Loading Targets...",
             "TasksMenuSupportImpl.targets.reload=Reload Targets",
-            "TasksMenuSupportImpl.targets.run.advanced=Run Target(s)",
+            "TasksMenuSupportImpl.targets.manage.advanced=Manage Target(s)",
             "TasksMenuSupportImpl.phing.configure=Configure Phing...",
         })
         @Override
@@ -219,8 +227,8 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
                     return Bundle.TasksMenuSupportImpl_targets_reload();
                 case CONFIGURE_TOOL:
                     return Bundle.TasksMenuSupportImpl_phing_configure();
-                case RUN_ADVANCED:
-                    return Bundle.TasksMenuSupportImpl_targets_run_advanced();
+                case MANAGE_ADVANCED:
+                    return Bundle.TasksMenuSupportImpl_targets_manage_advanced();
                 case TASKS_LABEL:
                     return Bundle.TasksMenuSupportImpl_targets_label();
                 case BUILD_TOOL_EXEC:
@@ -229,18 +237,6 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
                     assert false : "Unknown title: " + title;
             }
             return null;
-        }
-
-        @Override
-        public String getAdvancedTasksNamespace() {
-            if (buildXml == null) {
-                return null;
-            }
-            String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), buildXml);
-            if (relativePath != null) {
-                return relativePath;
-            }
-            return FileUtil.toFile(buildXml).getAbsolutePath();
         }
 
         @Override
