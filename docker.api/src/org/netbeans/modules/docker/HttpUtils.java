@@ -62,16 +62,16 @@ import org.netbeans.api.annotations.common.CheckForNull;
  *
  * @author Petr Hejl
  */
-public final class HttpParsingUtils {
+public final class HttpUtils {
 
     private static final Pattern HTTP_RESPONSE_PATTERN = Pattern.compile("^HTTP/1\\.1 (\\d\\d\\d) (.*)$");
 
-    private HttpParsingUtils() {
+    private HttpUtils() {
         super();
     }
 
     public static Response readResponse(InputStream is) throws IOException {
-        String response = HttpParsingUtils.readResponseLine(is);
+        String response = HttpUtils.readResponseLine(is);
         if (response == null) {
             throw new IOException("No response from server");
         }
@@ -181,7 +181,7 @@ public final class HttpParsingUtils {
         Map<String, String> result = new HashMap<>();
         String line;
         for (;;) {
-            line = HttpParsingUtils.readResponseLine(is).trim();
+            line = HttpUtils.readResponseLine(is).trim();
             if (line != null && !"".equals(line)) {
                 int index = line.indexOf(':'); // NOI18N
                 if (index <= 0) {

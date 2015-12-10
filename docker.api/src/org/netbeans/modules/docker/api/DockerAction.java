@@ -49,7 +49,7 @@ import org.netbeans.modules.docker.MuxedStreamResult;
 import org.netbeans.modules.docker.ChunkedInputStream;
 import org.netbeans.modules.docker.tls.ContextProvider;
 import org.netbeans.modules.docker.IgnoreFileFilter;
-import org.netbeans.modules.docker.HttpParsingUtils;
+import org.netbeans.modules.docker.HttpUtils;
 import org.netbeans.modules.docker.DirectStreamResult;
 import org.netbeans.modules.docker.Demuxer;
 import java.io.BufferedOutputStream;
@@ -206,7 +206,7 @@ public class DockerAction {
 
         try {
             JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
-                    "/images/search?term=" + HttpParsingUtils.encodeParameter(searchTerm), Collections.singleton(HttpURLConnection.HTTP_OK));
+                    "/images/search?term=" + HttpUtils.encodeParameter(searchTerm), Collections.singleton(HttpURLConnection.HTTP_OK));
             List<DockerRegistryImage> ret = new ArrayList<>(value.size());
             for (Object o : value) {
                 JSONObject json = (JSONObject) o;
@@ -236,16 +236,16 @@ public class DockerAction {
             action.append("?");
             action.append("container=").append(container.getId());
             if (repository != null) {
-                action.append("&repo=").append(HttpParsingUtils.encodeParameter(repository));
+                action.append("&repo=").append(HttpUtils.encodeParameter(repository));
                 if (tag != null) {
-                    action.append("&tag=").append(HttpParsingUtils.encodeParameter(tag));
+                    action.append("&tag=").append(HttpUtils.encodeParameter(tag));
                 }
             }
             if (author != null) {
-                action.append("&author=").append(HttpParsingUtils.encodeParameter(author));
+                action.append("&author=").append(HttpUtils.encodeParameter(author));
             }
             if (message != null) {
-                action.append("&comment=").append(HttpParsingUtils.encodeParameter(message));
+                action.append("&comment=").append(HttpUtils.encodeParameter(message));
             }
             if (!pause) {
                 action.append("&pause=0");
@@ -278,7 +278,7 @@ public class DockerAction {
 
         try {
             doPostRequest(instance.getUrl(),
-                    "/containers/" + container.getId() + "/rename?name=" + HttpParsingUtils.encodeParameter(name), null,
+                    "/containers/" + container.getId() + "/rename?name=" + HttpUtils.encodeParameter(name), null,
                     false, Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
 
             long time = System.currentTimeMillis() / 1000;
@@ -452,10 +452,10 @@ public class DockerAction {
             os.flush();
 
             InputStream is = s.getInputStream();
-            HttpParsingUtils.Response response = HttpParsingUtils.readResponse(is);
+            HttpUtils.Response response = HttpUtils.readResponse(is);
             int responseCode = response.getCode();
             if (responseCode != 101 && responseCode != HttpURLConnection.HTTP_OK) {
-                String error = HttpParsingUtils.readContent(is, response);
+                String error = HttpUtils.readContent(is, response);
                 throw new DockerRemoteException(responseCode, error != null ? error : response.getMessage());
             }
 
@@ -465,12 +465,12 @@ public class DockerAction {
                                 container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
             }
 
-            Integer length = HttpParsingUtils.getLength(response.getHeaders());
+            Integer length = HttpUtils.getLength(response.getHeaders());
             if (length != null && length <= 0) {
                 closeSocket(s);
                 return new ActionStreamResult(new EmptyStreamResult(info.isTty()));
             }
-            is = HttpParsingUtils.getResponseStream(is, response);
+            is = HttpUtils.getResponseStream(is, response);
 
             if (info.isTty()) {
                 return new ActionStreamResult(new DirectStreamResult(s, is));
@@ -496,24 +496,24 @@ public class DockerAction {
         try {
             DockerName parsed = DockerName.parse(imageName);
             URL httpUrl = createURL(instance.getUrl(), "/images/create?fromImage="
-                    + HttpParsingUtils.encodeParameter(imageName));
+                    + HttpUtils.encodeParameter(imageName));
             HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("POST");
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
                 if (auth != null) {
-                    conn.setRequestProperty("X-Registry-Auth", HttpParsingUtils.encodeBase64(auth.toJSONString()));
+                    conn.setRequestProperty("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
                 }
                 conn.setRequestProperty("Accept", "application/json");
 
                 if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    String error = HttpParsingUtils.readError(conn);
+                    String error = HttpUtils.readError(conn);
                     throw new DockerRemoteException(conn.getResponseCode(),
                             error != null ? error : conn.getResponseMessage());
                 }
 
                 JSONParser parser = new JSONParser();
-                try (InputStreamReader r = new InputStreamReader(conn.getInputStream(), HttpParsingUtils.getCharset(conn))) {
+                try (InputStreamReader r = new InputStreamReader(conn.getInputStream(), HttpUtils.getCharset(conn))) {
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
@@ -569,7 +569,7 @@ public class DockerAction {
             }
             action.append("/push");
             if (tagString != null) {
-                action.append("?tag=").append(HttpParsingUtils.encodeParameter(tagString));
+                action.append("?tag=").append(HttpUtils.encodeParameter(tagString));
             }
 
             URL httpUrl = createURL(instance.getUrl(), action.toString());
@@ -578,18 +578,18 @@ public class DockerAction {
                 conn.setRequestMethod("POST");
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
                 if (auth != null) {
-                    conn.setRequestProperty("X-Registry-Auth", HttpParsingUtils.encodeBase64(auth.toJSONString()));
+                    conn.setRequestProperty("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
                 }
                 conn.setRequestProperty("Accept", "application/json");
 
                 if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    String error = HttpParsingUtils.readError(conn);
+                    String error = HttpUtils.readError(conn);
                     throw new DockerRemoteException(conn.getResponseCode(),
                             error != null ? error : conn.getResponseMessage());
                 }
 
                 JSONParser parser = new JSONParser();
-                try (InputStreamReader r = new InputStreamReader(conn.getInputStream(), HttpParsingUtils.getCharset(conn))) {
+                try (InputStreamReader r = new InputStreamReader(conn.getInputStream(), HttpUtils.getCharset(conn))) {
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
@@ -660,10 +660,10 @@ public class DockerAction {
             request.append("pull=").append(pull ? 1 : 0);
             request.append("&nocache=").append(noCache ? 1 : 0);
             if (dockerfileName != null) {
-                request.append("&dockerfile=").append(HttpParsingUtils.encodeParameter(dockerfileName));
+                request.append("&dockerfile=").append(HttpUtils.encodeParameter(dockerfileName));
             }
             if (repository != null) {
-                request.append("&t=").append(HttpParsingUtils.encodeParameter(repository));
+                request.append("&t=").append(HttpUtils.encodeParameter(repository));
                 if (tag != null) {
                     request.append(":").append(tag);
                 }
@@ -679,7 +679,7 @@ public class DockerAction {
 
             if (!configs.isEmpty()) {
                 request.append("X-Registry-Config: ")
-                        .append(HttpParsingUtils.encodeBase64(registryConfig.toJSONString()))
+                        .append(HttpUtils.encodeBase64(registryConfig.toJSONString()))
                         .append("\r\n");
             }
             request.append("Transfer-Encoding: chunked\r\n");
@@ -703,11 +703,11 @@ public class DockerAction {
             });
 
             InputStream is = s.getInputStream();
-            HttpParsingUtils.Response response = HttpParsingUtils.readResponse(is);
+            HttpUtils.Response response = HttpUtils.readResponse(is);
             int responseCode = response.getCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 task.cancel(true);
-                String error = HttpParsingUtils.readContent(is, response);
+                String error = HttpUtils.readContent(is, response);
                 throw new DockerRemoteException(responseCode,
                         error != null ? error : response.getMessage());
             }
@@ -726,10 +726,10 @@ public class DockerAction {
                 throw new DockerException(ex.getCause());
             }
 
-            is = HttpParsingUtils.getResponseStream(is, response);
+            is = HttpUtils.getResponseStream(is, response);
 
             JSONParser parser = new JSONParser();
-            try (InputStreamReader r = new InputStreamReader(is, HttpParsingUtils.getCharset(response))) {
+            try (InputStreamReader r = new InputStreamReader(is, HttpUtils.getCharset(response))) {
                 String line;
                 String stream = null;
                 while ((line = readEventObject(r)) != null) {
@@ -803,18 +803,18 @@ public class DockerAction {
             os.flush();
 
             InputStream is = s.getInputStream();
-            HttpParsingUtils.Response response = HttpParsingUtils.readResponse(is);
+            HttpUtils.Response response = HttpUtils.readResponse(is);
             int responseCode = response.getCode();
             if (responseCode != 101 && responseCode != HttpURLConnection.HTTP_OK) {
-                String error = HttpParsingUtils.readContent(is, response);
+                String error = HttpUtils.readContent(is, response);
                 throw new DockerRemoteException(responseCode,
                         error != null ? error : response.getMessage());
             }
 
-            is = HttpParsingUtils.getResponseStream(is, response);
+            is = HttpUtils.getResponseStream(is, response);
 
             StreamItem.Fetcher fetcher;
-            Integer length = HttpParsingUtils.getLength(response.getHeaders());
+            Integer length = HttpUtils.getLength(response.getHeaders());
             // if there was no log it may return just standard reply with content length 0
             if (length != null && length == 0) {
                 assert !(is instanceof ChunkedInputStream);
@@ -830,7 +830,7 @@ public class DockerAction {
             } else {
                 fetcher = new Demuxer(is);
             }
-            return new ActionChunkedResult(s, fetcher, HttpParsingUtils.getCharset(response));
+            return new ActionChunkedResult(s, fetcher, HttpUtils.getCharset(response));
         } catch (MalformedURLException e) {
             closeSocket(s);
             throw new DockerException(e);
@@ -852,26 +852,26 @@ public class DockerAction {
             byte[] data = configuration.toJSONString().getBytes("UTF-8");
 
             OutputStream os = s.getOutputStream();
-            os.write(("POST " + (name != null ? "/containers/create?name=" + HttpParsingUtils.encodeParameter(name) : "/containers/create") + " HTTP/1.1\r\n"
+            os.write(("POST " + (name != null ? "/containers/create?name=" + HttpUtils.encodeParameter(name) : "/containers/create") + " HTTP/1.1\r\n"
                     + "Content-Type: application/json\r\n"
                     + "Content-Length: " + data.length + "\r\n\r\n").getBytes("ISO-8859-1"));
             os.write(data);
             os.flush();
 
             InputStream is = s.getInputStream();
-            HttpParsingUtils.Response response = HttpParsingUtils.readResponse(is);
+            HttpUtils.Response response = HttpUtils.readResponse(is);
             if (response.getCode() != HttpURLConnection.HTTP_CREATED) {
-                String error = HttpParsingUtils.readContent(is, response);
+                String error = HttpUtils.readContent(is, response);
                 throw new DockerRemoteException(response.getCode(),
                         error != null ? error : response.getMessage());
             }
 
-            is = HttpParsingUtils.getResponseStream(is, response);
+            is = HttpUtils.getResponseStream(is, response);
 
             JSONObject value;
             try {
                 JSONParser parser = new JSONParser();
-                value = (JSONObject) parser.parse(HttpParsingUtils.readContent(is, response));
+                value = (JSONObject) parser.parse(HttpUtils.readContent(is, response));
             } catch (ParseException ex) {
                 throw new DockerException(ex);
             }
@@ -888,9 +888,9 @@ public class DockerAction {
             os.write(("POST /containers/" + id + "/start HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
             os.flush();
 
-            response = HttpParsingUtils.readResponse(is);
+            response = HttpUtils.readResponse(is);
             if (response.getCode() != HttpURLConnection.HTTP_NO_CONTENT) {
-                String error = HttpParsingUtils.readContent(is, response);
+                String error = HttpUtils.readContent(is, response);
                 throw codeToException(response.getCode(),
                         error != null ? error : response.getMessage());
             }
@@ -922,23 +922,23 @@ public class DockerAction {
                 os.flush();
 
                 InputStream is = s.getInputStream();
-                HttpParsingUtils.Response response = HttpParsingUtils.readResponse(is);
+                HttpUtils.Response response = HttpUtils.readResponse(is);
                 int responseCode = response.getCode();
 
                 if (responseCode != HttpURLConnection.HTTP_OK) {
-                    String error = HttpParsingUtils.readContent(is, response);
+                    String error = HttpUtils.readContent(is, response);
                     throw new DockerRemoteException(responseCode,
                             error != null ? error : response.getMessage());
                 }
 
-                is = HttpParsingUtils.getResponseStream(is, response);
+                is = HttpUtils.getResponseStream(is, response);
 
                 if (connectionListener != null) {
                     connectionListener.onConnect(s);
                 }
 
                 JSONParser parser = new JSONParser();
-                try (InputStreamReader r = new InputStreamReader(is, HttpParsingUtils.getCharset(response))) {
+                try (InputStreamReader r = new InputStreamReader(is, HttpUtils.getCharset(response))) {
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
@@ -980,7 +980,7 @@ public class DockerAction {
                 conn.setRequestProperty("Accept", "application/json");
 
                 if (!okCodes.contains(conn.getResponseCode())) {
-                    String error = HttpParsingUtils.readError(conn);
+                    String error = HttpUtils.readError(conn);
                     throw codeToException(conn.getResponseCode(),
                             error != null ? error : conn.getResponseMessage());
                 }
@@ -1022,7 +1022,7 @@ public class DockerAction {
                 }
 
                 if (!okCodes.contains(conn.getResponseCode())) {
-                    String error = HttpParsingUtils.readError(conn);
+                    String error = HttpUtils.readError(conn);
                     throw codeToException(conn.getResponseCode(),
                             error != null ? error : conn.getResponseMessage());
                 }
@@ -1062,7 +1062,7 @@ public class DockerAction {
                         "application/x-www-form-urlencoded" );
 
                 if (!okCodes.contains(conn.getResponseCode())) {
-                    String error = HttpParsingUtils.readError(conn);
+                    String error = HttpUtils.readError(conn);
                     throw codeToException(conn.getResponseCode(),
                             error != null ? error : conn.getResponseMessage());
                 }
