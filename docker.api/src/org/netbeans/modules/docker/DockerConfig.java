@@ -50,10 +50,12 @@ import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -102,6 +104,48 @@ public class DockerConfig {
         return instance;
     }
 
+    public List<Credentials> getAllCredentials() throws IOException {
+        JSONObject currentAuths;
+        synchronized (this) {
+            loadCache();
+            currentAuths = auths;
+        }
+
+        List<Credentials> ret = new ArrayList<>(currentAuths.size());
+        for (Iterator it = currentAuths.entrySet().iterator(); it.hasNext();) {
+            Map.Entry e = (Map.Entry) it.next();
+            if (!(e.getKey() instanceof String)) {
+                continue;
+            }
+            String registry = (String) e.getKey();
+            JSONObject value = (JSONObject) e.getValue();
+            if (value == null) {
+                continue;
+            }
+
+            byte[] auth = Base64.getDecoder().decode((String) value.get("auth")); // NOI18N
+            CharBuffer chars = Charset.forName("UTF-8").newDecoder().decode(ByteBuffer.wrap(auth)); // NOI18N
+            int index = -1;
+            for (int i = 0; i < chars.length(); i++) {
+                if (chars.get(i) == ':') {
+                    index = i;
+                    break;
+                }
+            }
+            if (index < 0) {
+                throw new IOException("Malformed registry authentication record");
+            }
+            String username = new String(chars.array(), 0, index);
+            char[] password = new char[chars.length() - index - 1];
+            if (password.length > 0) {
+                System.arraycopy(chars.array(), index + 1, password, 0, password.length);
+            }
+            ret.add(new Credentials(registry, username, password, (String) value.get("email"))); // NOI18N
+        }
+
+        return ret;
+    }
+    
     public Credentials getCredentials(String registry) throws IOException {
         JSONObject currentAuths;
         synchronized (this) {

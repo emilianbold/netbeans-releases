@@ -50,6 +50,7 @@ import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -149,6 +150,10 @@ public final class HttpParsingUtils {
 
     public static String encodeParameter(String value) throws UnsupportedEncodingException {
         return URLEncoder.encode(value, "UTF-8");
+    }
+
+    public static String encodeBase64(String value) throws UnsupportedEncodingException {
+        return Base64.getEncoder().encodeToString(value.getBytes("UTF-8"));
     }
 
     static String readResponseLine(InputStream is) throws IOException {

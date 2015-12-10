@@ -71,7 +71,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -95,6 +94,7 @@ import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.DockerActionAccessor;
+import org.netbeans.modules.docker.DockerConfig;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.StreamResult;
 import org.openide.filesystems.FileUtil;
@@ -500,9 +500,9 @@ public class DockerAction {
             HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("POST");
-                String auth = createXRegistryAuth(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
+                JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
                 if (auth != null) {
-                    conn.setRequestProperty("X-Registry-Auth", auth);
+                    conn.setRequestProperty("X-Registry-Auth", HttpParsingUtils.encodeBase64(auth.toJSONString()));
                 }
                 conn.setRequestProperty("Accept", "application/json");
 
@@ -576,9 +576,9 @@ public class DockerAction {
             HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("POST");
-                String auth = createXRegistryAuth(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
+                JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
                 if (auth != null) {
-                    conn.setRequestProperty("X-Registry-Auth", auth);
+                    conn.setRequestProperty("X-Registry-Auth", HttpParsingUtils.encodeBase64(auth.toJSONString()));
                 }
                 conn.setRequestProperty("Accept", "application/json");
 
@@ -669,9 +669,23 @@ public class DockerAction {
                 }
             }
             request.append(" HTTP/1.1\r\n");
+
+            JSONObject registryConfig = new JSONObject();
+            JSONObject configs = new JSONObject();
+            registryConfig.put("configs", configs);
+            for (Credentials c : DockerConfig.getDefault().getAllCredentials()) {
+                configs.put(c.getRegistry(), createAuthObject(c));
+            }
+
+            if (!configs.isEmpty()) {
+                request.append("X-Registry-Config: ")
+                        .append(HttpParsingUtils.encodeBase64(registryConfig.toJSONString()))
+                        .append("\r\n");
+            }
             request.append("Transfer-Encoding: chunked\r\n");
             request.append("Content-Type: application/tar\r\n");
-            request.append("Content-Encoding: gzip\r\n\r\n");
+            request.append("Content-Encoding: gzip\r\n");
+            request.append("\r\n");
 
             OutputStream os = s.getOutputStream();
             os.write(request.toString().getBytes("ISO-8859-1"));
@@ -1121,7 +1135,7 @@ public class DockerAction {
         return new URL(realUrl);
     }
 
-    private static String createXRegistryAuth(Credentials credentials) {
+    private static JSONObject createAuthObject(Credentials credentials) {
         if (credentials == null) {
             return null;
         }
@@ -1131,11 +1145,7 @@ public class DockerAction {
         value.put("email", credentials.getEmail());
         value.put("serveraddress", credentials.getRegistry());
         value.put("auth", "");
-        try {
-            return Base64.getEncoder().encodeToString(value.toJSONString().getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            throw new IllegalStateException(ex);
-        }
+        return value;
     }
 
     private static DockerException codeToException(int code, String message) {
