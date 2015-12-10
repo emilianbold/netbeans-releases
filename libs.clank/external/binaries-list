@@ -1,7 +1,7 @@
-#changeset:   16136:e37bd83e761f
+#changeset:   16140:2f2c02743ab3
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Wed Dec 09 23:15:37 2015 +0300
-#summary:     fixing #256912 - [newcodemodel]There is no code model when project is placed in folder with non-ASCII symbols in path
-0D4518D2333C10CCC835FAE5D8AA64D7FAC39C71 clank_0.3.6.zip
+#date:        Thu Dec 10 18:33:33 2015 +0300
+#summary:     fixed #256630 - [newcodemodel] AssertionError: must be non negative -2)
+C4A42A2F313CE41D5F2F50D30E694C495EC69355 clank_0.3.6.zip
 
