@@ -98,7 +98,6 @@ import org.netbeans.modules.docker.DockerActionAccessor;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.StreamResult;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
