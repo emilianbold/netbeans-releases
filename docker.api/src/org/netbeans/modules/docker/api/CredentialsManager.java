@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.docker.api;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.docker.DockerConfig;
 
@@ -53,15 +51,10 @@ import org.netbeans.modules.docker.DockerConfig;
  */
 public final class CredentialsManager {
 
-    private static final Logger LOGGER = Logger.getLogger(CredentialsManager.class.getName());
-
     private static final CredentialsManager INSTANCE = new CredentialsManager();
-
-    private final DockerConfig config;
 
     private CredentialsManager() {
         super();
-        config = new DockerConfig(new File(System.getProperty("user.home"), ".dockercfg")); // NOI18N
     }
 
     public static CredentialsManager getDefault() {
@@ -70,13 +63,13 @@ public final class CredentialsManager {
 
     public Credentials getCredentials(String registry) throws IOException {
         assert !SwingUtilities.isEventDispatchThread();
-        return config.load(registry);
+        return DockerConfig.getDefault().getCredentials(registry);
     }
 
     public Credentials createCredentials(String registry, String username, char[] password, String email) throws IOException {
         assert !SwingUtilities.isEventDispatchThread();
         Credentials credentials = new Credentials(registry, username, password, email);
-        config.save(credentials);
+        //DockerConfig.getDefault().setCredentials(credentials);
         return credentials;
     }
 }
