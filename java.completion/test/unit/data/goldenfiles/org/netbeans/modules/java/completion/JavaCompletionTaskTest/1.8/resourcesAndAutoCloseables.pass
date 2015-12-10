@@ -1,4 +1,3 @@
-FileWriter fw
 final
 new
 AutoCloseable
