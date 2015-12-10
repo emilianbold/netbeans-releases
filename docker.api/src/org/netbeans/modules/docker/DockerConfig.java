@@ -122,30 +122,12 @@ public class DockerConfig {
             if (value == null) {
                 continue;
             }
-
-            byte[] auth = Base64.getDecoder().decode((String) value.get("auth")); // NOI18N
-            CharBuffer chars = Charset.forName("UTF-8").newDecoder().decode(ByteBuffer.wrap(auth)); // NOI18N
-            int index = -1;
-            for (int i = 0; i < chars.length(); i++) {
-                if (chars.get(i) == ':') {
-                    index = i;
-                    break;
-                }
-            }
-            if (index < 0) {
-                throw new IOException("Malformed registry authentication record");
-            }
-            String username = new String(chars.array(), 0, index);
-            char[] password = new char[chars.length() - index - 1];
-            if (password.length > 0) {
-                System.arraycopy(chars.array(), index + 1, password, 0, password.length);
-            }
-            ret.add(new Credentials(registry, username, password, (String) value.get("email"))); // NOI18N
+            ret.add(createCredentials(registry, value)); // NOI18N
         }
 
         return ret;
     }
-    
+
     public Credentials getCredentials(String registry) throws IOException {
         JSONObject currentAuths;
         synchronized (this) {
@@ -163,24 +145,7 @@ public class DockerConfig {
             return null;
         }
 
-        byte[] auth = Base64.getDecoder().decode((String) value.get("auth")); // NOI18N
-        CharBuffer chars = Charset.forName("UTF-8").newDecoder().decode(ByteBuffer.wrap(auth)); // NOI18N
-        int index = -1;
-        for (int i = 0; i < chars.length(); i++) {
-            if (chars.get(i) == ':') {
-                index = i;
-                break;
-            }
-        }
-        if (index < 0) {
-            throw new IOException("Malformed registry authentication record");
-        }
-        String username = new String(chars.array(), 0, index);
-        char[] password = new char[chars.length() - index - 1];
-        if (password.length > 0) {
-            System.arraycopy(chars.array(), index + 1, password, 0, password.length);
-        }
-        return new Credentials(registry, username, password, (String) value.get("email")); // NOI18N
+        return createCredentials(registry, value);
     }
 
     public Map<String, String> getHttpHeaders() throws IOException {
@@ -265,6 +230,31 @@ public class DockerConfig {
         synchronized (this) {
             auths = null;
         }
+    }
+
+    private static Credentials createCredentials(String registry, JSONObject value) throws IOException {
+        if (value == null) {
+            return null;
+        }
+
+        byte[] auth = Base64.getDecoder().decode((String) value.get("auth")); // NOI18N
+        CharBuffer chars = Charset.forName("UTF-8").newDecoder().decode(ByteBuffer.wrap(auth)); // NOI18N
+        int index = -1;
+        for (int i = 0; i < chars.length(); i++) {
+            if (chars.get(i) == ':') {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) {
+            throw new IOException("Malformed registry authentication record");
+        }
+        String username = new String(chars.array(), 0, index);
+        char[] password = new char[chars.length() - index - 1];
+        if (password.length > 0) {
+            System.arraycopy(chars.array(), index + 1, password, 0, password.length);
+        }
+        return new Credentials(registry, username, password, (String) value.get("email")); // NOI18N
     }
 
     private static Pair<File, Boolean> getConfigFile() {
