@@ -199,6 +199,14 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         }
 
         @Override
+        public FileObject getWorkDir() {
+            if (gruntfile == null) {
+                return project.getProjectDirectory();
+            }
+            return gruntfile.getParent();
+        }
+
+        @Override
         public String getIdentifier() {
             return GruntBuildTool.IDENTIFIER;
         }
@@ -207,7 +215,7 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
             "TasksMenuSupportImpl.tasks.label=&Task(s)",
             "TasksMenuSupportImpl.tasks.loading=Loading Tasks...",
             "TasksMenuSupportImpl.tasks.reload=Reload Tasks",
-            "TasksMenuSupportImpl.tasks.run.advanced=Run Task(s)",
+            "TasksMenuSupportImpl.tasks.manage.advanced=Manage Task(s)",
             "TasksMenuSupportImpl.grunt.configure=Configure Grunt...",
         })
         @Override
@@ -221,8 +229,8 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                     return Bundle.TasksMenuSupportImpl_tasks_reload();
                 case CONFIGURE_TOOL:
                     return Bundle.TasksMenuSupportImpl_grunt_configure();
-                case RUN_ADVANCED:
-                    return Bundle.TasksMenuSupportImpl_tasks_run_advanced();
+                case MANAGE_ADVANCED:
+                    return Bundle.TasksMenuSupportImpl_tasks_manage_advanced();
                 case TASKS_LABEL:
                     return Bundle.TasksMenuSupportImpl_tasks_label();
                 case BUILD_TOOL_EXEC:
@@ -231,18 +239,6 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                     assert false : "Unknown title: " + title;
             }
             return null;
-        }
-
-        @Override
-        public String getAdvancedTasksNamespace() {
-            if (gruntfile == null) {
-                return null;
-            }
-            String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), gruntfile);
-            if (relativePath != null) {
-                return relativePath;
-            }
-            return FileUtil.toFile(gruntfile).getAbsolutePath();
         }
 
         @Override
