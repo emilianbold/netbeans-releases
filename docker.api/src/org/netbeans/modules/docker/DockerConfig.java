@@ -62,7 +62,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -157,7 +156,7 @@ public final class DockerConfig {
         }
     }
 
-    public void saveCredentials(Credentials credentials) throws IOException {
+    public void setCredentials(Credentials credentials) throws IOException {
         StringBuilder sb = new StringBuilder(credentials.getUsername());
         sb.append(':');
         sb.append(credentials.getPassword());
