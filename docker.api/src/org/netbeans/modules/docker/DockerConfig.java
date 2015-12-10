@@ -46,9 +46,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -74,9 +78,7 @@ import org.openide.util.Pair;
  *
  * @author Petr Hejl
  */
-public class DockerConfig {
-
-    private static final Logger LOGGER = Logger.getLogger(DockerConfig.class.getName());
+public final class DockerConfig {
 
     private static final String DOCKER_HUB_DOMAIN = "index.docker.io";
 
@@ -155,34 +157,48 @@ public class DockerConfig {
         }
     }
 
-//    public void saveCredentials(Credentials credentials) throws IOException {
-//        StringBuilder sb = new StringBuilder(credentials.getUsername());
-//        sb.append(':');
-//        sb.append(credentials.getPassword());
-//        String auth = Base64.getEncoder().encodeToString(sb.toString().getBytes("UTF-8")); // NOI18N
-//
-//        JSONObject value = new JSONObject();
-//        value.put("auth", auth); // NOI18N
-//        value.put("email", credentials.getEmail()); // NOI18N
-//
-//        Pair<File, Boolean> fileDesc = getConfigFile();
-//
-//        JSONObject current = parse(fileDesc.first());
-//        JSONObject auths = current;
-//        if (!fileDesc.second()) {
-//            // using the new config.json
-//            auths = (JSONObject) current.get("auths"); // NOI18N
-//            if (auths == null) {
-//                auths = new JSONObject();
-//                current.put("auths", auths); // NOI18N
-//            }
-//        }
-//
-//        auths.put(credentials.getRegistry(), value);
-//        try (Writer w = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(fileDesc.first())), "UTF-8")) { // NOI18N
-//            current.writeJSONString(w);
-//        }
-//    }
+    public void saveCredentials(Credentials credentials) throws IOException {
+        StringBuilder sb = new StringBuilder(credentials.getUsername());
+        sb.append(':');
+        sb.append(credentials.getPassword());
+        String auth = Base64.getEncoder().encodeToString(sb.toString().getBytes("UTF-8")); // NOI18N
+
+        JSONObject value = new JSONObject();
+        value.put("auth", auth); // NOI18N
+        value.put("email", credentials.getEmail()); // NOI18N
+
+        Pair<File, Boolean> fileDesc = getConfigFile();
+
+        synchronized (this) {
+            try (RandomAccessFile f = new RandomAccessFile(fileDesc.first(), "rw")) {
+                try (FileChannel ch = f.getChannel()) {
+                    try (FileLock lock = ch.lock()) {
+                        JSONObject current = (JSONObject) new JSONParser().parse(Channels.newReader(ch, "UTF-8"));
+                        if (current == null) {
+                            current = new JSONObject();
+                        }
+
+                        JSONObject currentAuths = current;
+                        if (!fileDesc.second()) {
+                            currentAuths = (JSONObject) current.get("auths");
+                            if (currentAuths == null) {
+                                currentAuths = new JSONObject();
+                                current.put("auths", currentAuths);
+                            }
+                        }
+                        currentAuths.put(credentials.getRegistry(), value);
+                        ch.truncate(0);
+
+                        current.writeJSONString(Channels.newWriter(ch, "UTF-8"));
+                    } catch (ParseException ex) {
+                        throw new IOException(ex);
+                    }
+                }
+            } finally {
+                clearCache();
+            }
+        }
+    }
 
     private void init() {
         FileUtil.addFileChangeListener(listener, getNewConfigFile());
@@ -229,6 +245,28 @@ public class DockerConfig {
     private void clearCache() {
         synchronized (this) {
             auths = null;
+            httpHeaders = null;
+        }
+    }
+
+    private Pair<JSONObject, Boolean> parse() throws IOException {
+        Pair<File, Boolean> fileDesc = getConfigFile();
+        synchronized (this) {
+            if (fileDesc.first().isFile()) {
+                try (FileInputStream is = new FileInputStream(fileDesc.first())) {
+                    try (FileLock lock = is.getChannel().lock(0, Long.MAX_VALUE, true)) {
+                        Reader r = new InputStreamReader(new BufferedInputStream(is), "UTF-8");
+                        JSONObject current = (JSONObject) new JSONParser().parse(r);
+                        if (current == null) {
+                            return null;
+                        }
+                        return Pair.of(current, fileDesc.second());
+                    } catch (ParseException ex) {
+                        throw new IOException(ex);
+                    }
+                }
+            }
+            return null;
         }
     }
 
@@ -285,21 +323,6 @@ public class DockerConfig {
 
     private static File getOldConfigFile() {
         return new File(System.getProperty("user.home"), ".dockercfg");
-    }
-
-    private static Pair<JSONObject, Boolean> parse() throws IOException {
-        Pair<File, Boolean> fileDesc = getConfigFile();
-        if (fileDesc.first().isFile()) {
-            try (Reader r = new InputStreamReader(new BufferedInputStream(new FileInputStream(fileDesc.first())), "UTF-8")) { // NOI18N
-                JSONParser parser = new JSONParser();
-                try {
-                    return Pair.of((JSONObject) parser.parse(r), fileDesc.second());
-                } catch (ParseException ex) {
-                    throw new IOException(ex);
-                }
-            }
-        }
-        return null;
     }
 
     private static Set<String> generateRegistryNames(String registry) {

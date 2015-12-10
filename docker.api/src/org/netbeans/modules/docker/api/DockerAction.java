@@ -517,27 +517,10 @@ public class DockerAction {
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
-                        boolean error = false;
-                        String id = (String) o.get("id");
-                        String status = (String) o.get("status");
-                        if (status == null) {
-                            status = (String) o.get("error");
-                            error = status != null;
+                        StatusEvent e = parseStatusEvent(o);
+                        if (e != null) {
+                            listener.onEvent(e);
                         }
-                        if (status == null) {
-                            LOGGER.log(Level.INFO, "Unknown event {0}", o);
-                            continue;
-                        }
-
-                        String progress = (String) o.get("progress");
-                        StatusEvent.Progress detail = null;
-                        JSONObject detailObj = (JSONObject) o.get("progressDetail");
-                        if (detailObj != null) {
-                            long current = ((Number) getOrDefault(detailObj, "current", 1)).longValue();
-                            long total = ((Number) getOrDefault(detailObj, "total", 1)).longValue();
-                            detail = new StatusEvent.Progress(current, total);
-                        }
-                        listener.onEvent(new StatusEvent(instance, id, status, progress, error, detail));
                         parser.reset();
                     }
                 } catch (ParseException ex) {
@@ -593,27 +576,10 @@ public class DockerAction {
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
-                        boolean error = false;
-                        String id = (String) o.get("id");
-                        String status = (String) o.get("status");
-                        if (status == null) {
-                            status = (String) o.get("error");
-                            error = status != null;
+                        StatusEvent e = parseStatusEvent(o);
+                        if (e != null) {
+                            listener.onEvent(e);
                         }
-                        if (status == null) {
-                            LOGGER.log(Level.INFO, "Unknown event {0}", o);
-                            continue;
-                        }
-
-                        String progress = (String) o.get("progress");
-                        StatusEvent.Progress detail = null;
-                        JSONObject detailObj = (JSONObject) o.get("progressDetail");
-                        if (detailObj != null) {
-                            long current = ((Number) getOrDefault(detailObj, "current", 1)).longValue();
-                            long total = ((Number) getOrDefault(detailObj, "total", 1)).longValue();
-                            detail = new StatusEvent.Progress(current, total);
-                        }
-                        listener.onEvent(new StatusEvent(instance, id, status, progress, error, detail));
                         parser.reset();
                     }
                 } catch (ParseException ex) {
@@ -631,7 +597,8 @@ public class DockerAction {
 
     // this call is BLOCKING
     public DockerImage build(@NonNull File buildContext, @NullAllowed File dockerfile,
-            String repository, String tag, boolean pull, boolean noCache, final BuildEvent.Listener listener) throws DockerException {
+            String repository, String tag, boolean pull, boolean noCache,
+            final BuildEvent.Listener buildListener, final StatusEvent.Listener statusListener) throws DockerException {
 
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
@@ -698,7 +665,7 @@ public class DockerAction {
                     new IgnoreFileFilter(buildContext, dockerfile, '/'), new FolderUploader.Listener() {
                 @Override
                 public void onUpload(String path) {
-                    listener.onEvent(new BuildEvent(instance, path, false, null, true));
+                    buildListener.onEvent(new BuildEvent(instance, path, false, null, true));
                 }
             });
 
@@ -736,7 +703,12 @@ public class DockerAction {
                     JSONObject o = (JSONObject) parser.parse(line);
                     stream = (String) o.get("stream");
                     if (stream != null) {
-                        listener.onEvent(new BuildEvent(instance, stream.trim(), false, null, false));
+                        buildListener.onEvent(new BuildEvent(instance, stream.trim(), false, null, false));
+                    } else if (o.containsKey("status")) {
+                        StatusEvent e = parseStatusEvent(o);
+                        if (e != null) {
+                            statusListener.onEvent(e);
+                        }
                     } else {
                         String error = (String) o.get("error");
                         if (error != null) {
@@ -747,7 +719,7 @@ public class DockerAction {
                                 String mesage = (String) detailObj.get("message");
                                 detail = new BuildEvent.Error(code, mesage);
                             }
-                            listener.onEvent(new BuildEvent(instance, error, true, detail, false));
+                            buildListener.onEvent(new BuildEvent(instance, error, true, detail, false));
                         } else {
                             LOGGER.log(Level.INFO, "Unknown event {0}", o);
                         }
@@ -1087,6 +1059,30 @@ public class DockerAction {
         } catch (IOException e) {
             throw new DockerException(e);
         }
+    }
+
+    private StatusEvent parseStatusEvent(JSONObject o) {
+        boolean error = false;
+        String id = (String) o.get("id");
+        String status = (String) o.get("status");
+        if (status == null) {
+            status = (String) o.get("error");
+            error = status != null;
+        }
+        if (status == null) {
+            LOGGER.log(Level.INFO, "Unknown event {0}", o);
+            return null;
+        }
+
+        String progress = (String) o.get("progress");
+        StatusEvent.Progress detail = null;
+        JSONObject detailObj = (JSONObject) o.get("progressDetail");
+        if (detailObj != null) {
+            long current = ((Number) getOrDefault(detailObj, "current", 1)).longValue();
+            long total = ((Number) getOrDefault(detailObj, "total", 1)).longValue();
+            detail = new StatusEvent.Progress(current, total);
+        }
+        return new StatusEvent(instance, id, status, progress, error, detail);
     }
 
     private Socket createSocket(URL url) throws IOException {
