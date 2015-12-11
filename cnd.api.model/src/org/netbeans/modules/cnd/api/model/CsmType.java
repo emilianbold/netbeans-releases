@@ -90,6 +90,9 @@ public interface CsmType extends CsmOffsetable {
     
     boolean isConst();
     
+    /* if this type is a pack expansion (pattern...) */
+    boolean isPackExpansion();
+    
     // TODO: [] and * are the same? 
     // is there a connection between isPointer() and isReference()
     

@@ -168,4 +168,9 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
     public void testBug252597() throws Exception {
         performTest("bug252597.cpp", 25, 12, "bug252597.cpp", 20, 5);
     }
+    
+    public void testBug257038() throws Exception {
+        // Bug 257038 - C++14: make_unique and unresolved identifier
+        performTest("bug257038.cpp", 45, 14, "bug257038.cpp", 40, 9);
+    }
 }

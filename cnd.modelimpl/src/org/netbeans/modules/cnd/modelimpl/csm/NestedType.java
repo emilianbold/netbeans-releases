@@ -76,13 +76,13 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 public final class NestedType extends TypeImpl {
     private final CsmType parentType;
 
-    private NestedType(CsmType parent, CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
-        super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+    private NestedType(CsmType parent, CsmFile file, boolean packExpansion, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+        super(file, packExpansion, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
         this.parentType = parent;
     }
 
-    public static NestedType create(CsmType parent, CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
-        return new NestedType(parent, file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+    public static NestedType create(CsmType parent, CsmFile file, boolean packExpansion, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+        return new NestedType(parent, file, packExpansion, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
     }
     
     private NestedType(CsmType parent, CsmType type) {
