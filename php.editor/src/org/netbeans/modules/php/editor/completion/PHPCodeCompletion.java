@@ -129,6 +129,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.openide.filesystems.FileObject;
 
 import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
@@ -1091,14 +1092,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         final ElementFilter forCurrentFile = ElementFilter.forFiles(fileObject);
         completionResult.addAll(getVariableProposals(request, forCurrentFile.reverseFilter(globalVariables)));
 
-        // Special keywords applicable only inside a class
-        final ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
-        if (classDecl != null) {
-            final String className = CodeUtils.extractClassName(classDecl);
-            if (className != null) {
-                for (final String keyword : PHP_CLASS_KEYWORDS) {
-                    if (startsWith(keyword, request.prefix)) {
-                        completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(className, keyword, request));
+        // Special keywords applicable only inside a class or trait
+        final TypeDeclaration typeDecl = findEnclosingType(request.info, lexerToASTOffset(request.result, request.anchor));
+        if (typeDecl != null) {
+            if (typeDecl instanceof ClassDeclaration || typeDecl instanceof TraitDeclaration) {
+                final String typeName = CodeUtils.extractTypeName(typeDecl);
+                if (typeName != null) {
+                    for (final String keyword : PHP_CLASS_KEYWORDS) {
+                        if (startsWith(keyword, request.prefix)) {
+                            completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(typeName, keyword, request));
+                        }
                     }
                 }
             }
