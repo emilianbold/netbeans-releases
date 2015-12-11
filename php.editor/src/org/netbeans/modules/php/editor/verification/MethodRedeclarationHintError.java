@@ -85,6 +85,7 @@ public class MethodRedeclarationHintError extends HintErrorRule {
             conditionStatements = checkVisitor.getConditionStatements();
             checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope));
             checkTypeScopes(ModelUtils.getDeclaredInterfaces(fileScope));
+            checkTypeScopes(ModelUtils.getDeclaredTraits(fileScope));
             checkDeclaredFunctions(ModelUtils.getDeclaredFunctions(fileScope));
         }
     }

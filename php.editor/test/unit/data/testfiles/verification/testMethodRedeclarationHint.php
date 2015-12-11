@@ -25,6 +25,21 @@ interface MethodRedeclarationInterfaceName {
     function ifaceFunctionName($param);
 }
 
+trait MethodRedeclarationTraitName {
+
+    function traitFunctionNameSame($param) {
+
+    }
+
+    function traitFunctionNameSame($param) {
+
+    }
+
+    function traitFunctionName($param) {
+
+    }
+}
+
 function globalFunctionNameSame($param) {
 }
 
