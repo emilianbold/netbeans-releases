@@ -806,6 +806,11 @@ abstract public class CsmCompletion {
         }
 
         @Override
+        public boolean isPackExpansion() {
+            return false;
+        }
+
+        @Override
         public CharSequence getText() {
             return format(true);
         }
@@ -952,6 +957,11 @@ abstract public class CsmCompletion {
         @Override
         public boolean isConst() {
             return delegate.isConst();
+        }
+
+        @Override
+        public boolean isPackExpansion() {
+            return delegate.isPackExpansion();
         }
 
         @Override
