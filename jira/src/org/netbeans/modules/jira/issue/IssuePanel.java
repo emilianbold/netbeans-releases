@@ -3485,13 +3485,31 @@ public class IssuePanel extends javax.swing.JPanel {
     
     private Map<Component, Boolean> enableMap = new HashMap<>();
     private void enableComponents(boolean enable) {
+        enableComponents(this, enable);
         if (enable) {
-            for (Map.Entry<Component, Boolean> e : enableMap.entrySet()) {
-                e.getKey().setEnabled(e.getValue());
-            }
             enableMap.clear();
-        } else {
-            disableComponents(this);
+        }
+    }
+    private void enableComponents(Component comp, boolean enable) {
+        if (comp instanceof Container) {
+            for (Component subComp : ((Container)comp).getComponents()) {
+                enableComponents(subComp, enable);
+            }
+        }
+        if ((comp instanceof JComboBox)
+                || ((comp instanceof JTextComponent) && ((JTextComponent)comp).isEditable())
+                || (comp instanceof AbstractButton) || (comp instanceof JList)) {
+            if (enable) {
+                Boolean b = enableMap.get(comp);
+                if (b != null) {
+                    comp.setEnabled(b);
+                } else {
+                    comp.setEnabled(true);
+                }
+            } else {
+                enableMap.put(comp, comp.isEnabled());
+                comp.setEnabled(false);
+            }
         }
     }
 
