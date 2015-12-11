@@ -810,6 +810,11 @@ public class OperatorGenerator implements CodeGenerator {
                 }
 
                 @Override
+                public boolean isPackExpansion() {
+                    return false;
+                }
+
+                @Override
                 public boolean isBuiltInBased(boolean resolveTypeChain) {
                     return false;
                 }
