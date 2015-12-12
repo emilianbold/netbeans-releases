@@ -86,9 +86,9 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         
         final File jvmTempLocation = new File(System.getProperty("java.home"));
         final FilesList filesList = product.getInstalledFiles();
-
+       
         try {
-            FilesList copiedFiles = FileUtils.copyFile(jvmTempLocation, installLocation, true, progress);
+            FilesList copiedFiles = FileUtils.copyNestedJRE(jvmTempLocation, installLocation, progress);
 
             List<File> deletedFiles = deletePacks(copiedFiles);
             List<File> files = copiedFiles.toList();
