@@ -295,7 +295,13 @@ public final class JavaPluginUtils {
             final ClassPath mergedModuleCompilePath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.MODULE_COMPILE), ClassPath.getClassPath(file, JavaClassPathConstants.MODULE_COMPILE_PATH));
             final ClassPath mergedModuleClassPath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.MODULE_CLASS), ClassPath.getClassPath(file, JavaClassPathConstants.MODULE_CLASS_PATH));
             final ClassPath mergedSourcePath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.SOURCE), ClassPath.getClassPath(file, ClassPath.SOURCE));
-            final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedModulePlatformPath, mergedCompilePath, mergedModuleCompilePath, mergedModuleClassPath, mergedSourcePath);
+            final ClasspathInfo mergedInfo = new ClasspathInfo.Builder(mergedPlatformPath)
+                    .setModuleBootPath(mergedModulePlatformPath)
+                    .setClassPath(mergedCompilePath)
+                    .setModuleCompilePath(mergedModuleCompilePath)
+                    .setModuleClassPath(mergedModuleClassPath)
+                    .setSourcePath(mergedSourcePath)
+                    .build();
             source = JavaSource.create(mergedInfo, new FileObject[]{tph.getFileObject()});
         } else {
             source = JavaSource.create(cpInfo);
