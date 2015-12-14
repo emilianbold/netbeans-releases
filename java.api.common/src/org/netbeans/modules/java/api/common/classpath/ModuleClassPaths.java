@@ -83,12 +83,16 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileAttributeEvent;
@@ -253,12 +257,13 @@ final class ModuleClassPaths {
                             Arrays.stream(PropertyUtils.tokenizePath(path));
                     })
                     .map((part)->PropertyUtils.resolveFile(projectDir, part))
-                    .flatMap((modulesFolder)-> {
-                        modulePathRoots.add(modulesFolder);
-                        File[] modules = modulesFolder.listFiles();
-                        return modules == null ?
-                           Collections.<File>emptyList().stream():
-                           Arrays.stream(modules);
+                    .flatMap((modulesFolder) -> {
+                        Stream<File> jars = findProjectModules(modulesFolder);
+                        if (jars == null) {
+                            jars = findModules(modulesFolder);
+                            modulePathRoots.add(modulesFolder);
+                        }
+                        return jars;
                     })
                     .forEach((file)->{
                         URL url = FileUtil.urlForArchiveOrDir(file);
@@ -324,6 +329,36 @@ final class ModuleClassPaths {
 
         @Override
         public void fileChanged(FileEvent fe) {
+        }
+
+        @CheckForNull
+        private static Stream<File> findProjectModules(@NonNull final File modulesFolder) {
+            //Todo: when jar files will be allowed on module path, use jar as a project
+            //artefact and remove and update this.
+            final Optional<Stream<File>> mayBeRes = Optional.ofNullable(FileOwnerQuery.getOwner(BaseUtilities.toURI(modulesFolder)))
+                    .map((p)->p.getLookup().lookup(AntArtifactProvider.class))
+                    .map((aap)-> {
+                        for (AntArtifact aa : aap.getBuildArtifacts()) {
+                            final URI buildScript = BaseUtilities.toURI(aa.getScriptLocation());
+                            for (URI relPath : aa.getArtifactLocations()) {
+                                final File artifact = BaseUtilities.toFile(buildScript.resolve(relPath));
+                                if (modulesFolder.equals(artifact.getParentFile())) {
+                                    return Stream.of(artifact);
+                                }
+                            }
+                        }
+                        return null;
+                    });
+            return mayBeRes.orElse(null);
+        }
+
+        @NonNull
+        private static Stream<File> findModules(@NonNull final File modulesFolder) {
+            //No project's dist folder do File.list
+            File[] modules = modulesFolder.listFiles();
+            return modules == null ?
+               Collections.<File>emptyList().stream():
+               Arrays.stream(modules);
         }
     }
 
