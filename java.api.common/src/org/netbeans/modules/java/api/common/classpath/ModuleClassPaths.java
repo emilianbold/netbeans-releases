@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayDeque;
@@ -74,14 +75,17 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -323,7 +327,7 @@ final class ModuleClassPaths {
         }
     }
 
-    private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener {
+    private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener, ClassIndexListener {
 
         private static final String MODULE_INFO_JAVA = "module-info.java";   //NOI18N
         private static final String MOD_JAVA_BASE = "java.base";    //NOI18N
@@ -333,6 +337,8 @@ final class ModuleClassPaths {
         private final ClassPath systemModules;
         private final ThreadLocal<Object[]> selfRes;
 
+        //@GuardedBy("this")
+        private ClasspathInfo activeProjectSourceRoots;
         //@GuardedBy("this")
         private Collection<File> moduleInfos;
 
@@ -349,9 +355,6 @@ final class ModuleClassPaths {
             this.selfRes = new ThreadLocal<>();
             this.moduleInfos = Collections.emptyList();
             this.base.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
-            if (this.systemModules != null) {
-                this.systemModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.systemModules));
-            }
             this.sources.addPropertyChangeListener(WeakListeners.propertyChange(this, this.sources));
         }
 
@@ -373,7 +376,29 @@ final class ModuleClassPaths {
                 return (List<? extends PathResourceImplementation>) bestSoFar[0];
             }
             final Collection<File> newModuleInfos = new ArrayDeque<>();
-            final Map<String,URL> modulesByName = getModulesByName(base);
+            final List<URL> newActiveProjectSourceRoots = new ArrayList<>();
+            final Map<String,URL> modulesByName = getModulesByName(base, newActiveProjectSourceRoots);
+            synchronized (this) {
+                if (activeProjectSourceRoots != null) {
+                    activeProjectSourceRoots.getClassIndex().removeClassIndexListener(this);
+                    activeProjectSourceRoots = null;
+                }
+                if (!newActiveProjectSourceRoots.isEmpty()) {
+                    activeProjectSourceRoots = ClasspathInfo.create(
+                            ClassPath.EMPTY,
+                            ClassPath.EMPTY,
+                            org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(newActiveProjectSourceRoots.toArray(new URL[newActiveProjectSourceRoots.size()])));
+                    activeProjectSourceRoots.getClassIndex().addClassIndexListener(this);
+                    LOG.log(
+                        Level.FINER,
+                        "{0} for {1} listening on: {2}",    //NOI18N
+                        new Object[]{
+                            getClass().getSimpleName(),
+                            base,
+                            newActiveProjectSourceRoots
+                        });
+                }
+            }
             res = new ArrayList<>(modulesByName.size());
             modulesByName.values().stream()
                     .map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
@@ -381,18 +406,34 @@ final class ModuleClassPaths {
             final List<PathResourceImplementation> selfResResources;
             final ClassPath bootModules;
             final ClassPath bootCp;
-
             if (systemModules != null) {
                 selfResResources = Collections.emptyList();
                 bootModules = systemModules;
                 bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(
-                    findJavaBase(getModulesByName(systemModules)));
-
+                    findJavaBase(getModulesByName(systemModules, null)));
             } else {
                 selfResResources = findJavaBase(modulesByName);
                 bootModules = base;
                 bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(selfResResources);
             }
+            LOG.log(
+                Level.FINER,
+                "{0} for {1} self resources: {2}",    //NOI18N
+                new Object[]{
+                    ModuleInfoClassPathImplementation.class.getSimpleName(),
+                    base,
+                    selfResResources
+                });
+            LOG.log(
+                Level.FINEST,
+                "{0} for {1} bootModules: {2}, bootCp: {3},  modules: {4}",    //NOI18N
+                new Object[]{
+                    ModuleInfoClassPathImplementation.class.getSimpleName(),
+                    base,
+                    bootModules,
+                    bootCp,
+                    modulesByName
+                });
             selfRes.set(new Object[]{
                 selfResResources,
                 needToFire});
@@ -454,6 +495,15 @@ final class ModuleClassPaths {
                 assert res != null;
                 List<PathResourceImplementation> ccv = getCache();
                 if (ccv == null || ccv == TOMBSTONE) {
+                    LOG.log(
+                        Level.FINE,
+                        "{0} for {1} setting results: {2}, listening on: {3}",    //NOI18N
+                        new Object[]{
+                            getClass().getSimpleName(),
+                            base,
+                            res,
+                            newModuleInfos
+                        });
                     setCache(res);
                     final Collection<File> added = new ArrayList<>(newModuleInfos);
                     added.removeAll(moduleInfos);
@@ -513,12 +563,64 @@ final class ModuleClassPaths {
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
+        @Override
+        public void rootsAdded(final RootsEvent event) {
+            final ClasspathInfo info;
+            synchronized (this) {
+                info = activeProjectSourceRoots;
+            }
+            if (info != null) {
+                try {
+                    JavaSource.create(info).runWhenScanFinished((cc)->{
+                            LOG.log(
+                                Level.FINER,
+                                "{0} for {1} got class index event: {2}",    //NOI18N
+                                new Object[]{
+                                    ModuleInfoClassPathImplementation.class.getSimpleName(),
+                                    base,
+                                    event
+                                });
+                            resetCache(TOMBSTONE, true);
+                        },
+                        true);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+        }
+
+        @Override
+        public void rootsRemoved(RootsEvent event) {
+        }
+
+        @Override
+        public void typesAdded(TypesEvent event) {
+        }
+
+        @Override
+        public void typesRemoved(TypesEvent event) {
+        }
+
+        @Override
+        public void typesChanged(TypesEvent event) {
+        }
+
         @NonNull
-        private static Map<String,URL> getModulesByName(@NonNull final ClassPath cp) {
+        private static Map<String,URL> getModulesByName(
+                @NonNull final ClassPath cp,
+                @NullAllowed final Collection<URL> projectSourceRoots) {
             final Map<String,URL> res = new HashMap<>();
             cp.entries().stream()
                     .map((entry)->entry.getURL())
                     .forEach((url)-> {
+                        if (projectSourceRoots != null) {
+                            final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(url);
+                            if (sfbqRes.preferSources()) {
+                                Arrays.stream(sfbqRes.getRoots())
+                                        .map((fo)->fo.toURL())
+                                        .forEach(projectSourceRoots::add);
+                            }
+                        }
                         final String moduleName = SourceUtils.getModuleName(url);
                         if (moduleName != null) {
                             res.put(moduleName, url);
