@@ -724,9 +724,13 @@ public class RefactoringUtils {
             compile = nullPath;
         }
         compile = merge(compile, ClassPathSupport.createClassPath(dependentCompileRoots.toArray(new URL[dependentCompileRoots.size()])));
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot == null? nullPath : boot, moduleBoot == null ? boot == null? nullPath : boot : moduleBoot, compile == null? nullPath : compile,
-                moduleCompile == null ? nullPath : moduleCompile, moduleClass == null ? nullPath : moduleClass, rcp);
-        return cpInfo;
+        return new ClasspathInfo.Builder(boot == null ? nullPath : boot)
+                .setModuleBootPath(moduleBoot == null ? boot == null? nullPath : boot : moduleBoot)
+                .setClassPath(compile)
+                .setModuleCompilePath(moduleCompile)
+                .setModuleClassPath(moduleClass)
+                .setSourcePath(rcp).
+                build();
     }
 
 
