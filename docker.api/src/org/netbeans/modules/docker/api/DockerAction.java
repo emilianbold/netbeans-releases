@@ -124,6 +124,8 @@ public class DockerAction {
 
     private static final Set<Integer> REMOVE_IMAGE_CODES = new HashSet<>();
 
+    private static final Pair<String, String> ACCEPT_JSON_HEADER = Pair.of("Accept", "application/json");
+
     static {
         DockerActionAccessor.setDefault(new DockerActionAccessor() {
             @Override
@@ -406,8 +408,7 @@ public class DockerAction {
 
     public void remove(DockerTag tag) throws DockerException {
         String id = getImage(tag);
-        JSONArray value = (JSONArray) doDeleteRequest(instance.getUrl(), "/images/" + id, true,
-                REMOVE_IMAGE_CODES);
+        doDeleteRequest(instance.getUrl(), "/images/" + id, true, REMOVE_IMAGE_CODES);
 
         // XXX to be precise we should emit DELETE event if we
         // delete the last image, but for our purpose this is enough
@@ -448,7 +449,11 @@ public class DockerAction {
             os.write(("POST /containers/" + container.getId()
                     + "/attach?logs=" + (logs ? 1 : 0)
                     + "&stream=1&stdout=1&stdin="+ (stdin ? 1 : 0)
-                    + "&stderr=1 HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
+                    + "&stderr=1 HTTP/1.1\r\n").getBytes("ISO-8859-1"));
+            HttpUtils.configureHeaders(os, DockerConfig.getDefault().getHttpHeaders(),
+                    Pair.of("Connection", "Upgrade"),
+                    Pair.of("Upgrade", "tcp"));
+            os.write("\r\n".getBytes("ISO-8859-1"));
             os.flush();
 
             InputStream is = s.getInputStream();
@@ -500,11 +505,13 @@ public class DockerAction {
             HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("POST");
+                Pair<String, String> authHeader = null;
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
                 if (auth != null) {
-                    conn.setRequestProperty("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
+                    authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
                 }
-                conn.setRequestProperty("Accept", "application/json");
+                HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(),
+                        ACCEPT_JSON_HEADER, authHeader);
 
                 if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     String error = HttpUtils.readError(conn);
@@ -559,11 +566,13 @@ public class DockerAction {
             HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("POST");
+                Pair<String, String> authHeader = null;
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
                 if (auth != null) {
-                    conn.setRequestProperty("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
+                    authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
                 }
-                conn.setRequestProperty("Accept", "application/json");
+                HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(),
+                        ACCEPT_JSON_HEADER, authHeader);
 
                 if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     String error = HttpUtils.readError(conn);
@@ -644,14 +653,15 @@ public class DockerAction {
                 configs.put(c.getRegistry(), createAuthObject(c));
             }
 
+            Pair<String, String> configHeader = null;
             if (!configs.isEmpty()) {
-                request.append("X-Registry-Config: ")
-                        .append(HttpUtils.encodeBase64(registryConfig.toJSONString()))
-                        .append("\r\n");
+                configHeader = Pair.of("X-Registry-Config", HttpUtils.encodeBase64(registryConfig.toJSONString()));
             }
-            request.append("Transfer-Encoding: chunked\r\n");
-            request.append("Content-Type: application/tar\r\n");
-            request.append("Content-Encoding: gzip\r\n");
+            HttpUtils.configureHeaders(request, DockerConfig.getDefault().getHttpHeaders(),
+                    configHeader,
+                    Pair.of("Transfer-Encoding", "chunked"),
+                    Pair.of("Content-Type", "application/tar"),
+                    Pair.of("Content-Encoding", "gzip"));
             request.append("\r\n");
 
             OutputStream os = s.getOutputStream();
@@ -770,8 +780,9 @@ public class DockerAction {
             s = createSocket(url);
 
             OutputStream os = s.getOutputStream();
-            os.write(("GET /containers/" + container.getId()
-                    + "/logs?stderr=1&stdout=1&timestamps=1&follow=1 HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
+            os.write(("GET /containers/" + container.getId() + "/logs?stderr=1&stdout=1&timestamps=1&follow=1 HTTP/1.1\r\n").getBytes("ISO-8859-1"));
+            HttpUtils.configureHeaders(os, DockerConfig.getDefault().getHttpHeaders());
+            os.write("\r\n".getBytes("ISO-8859-1"));
             os.flush();
 
             InputStream is = s.getInputStream();
@@ -822,11 +833,14 @@ public class DockerAction {
             s = createSocket(url);
 
             byte[] data = configuration.toJSONString().getBytes("UTF-8");
+            Map<String, String> defaultHeaders = DockerConfig.getDefault().getHttpHeaders();
 
             OutputStream os = s.getOutputStream();
-            os.write(("POST " + (name != null ? "/containers/create?name=" + HttpUtils.encodeParameter(name) : "/containers/create") + " HTTP/1.1\r\n"
-                    + "Content-Type: application/json\r\n"
-                    + "Content-Length: " + data.length + "\r\n\r\n").getBytes("ISO-8859-1"));
+            os.write(("POST " + (name != null ? "/containers/create?name=" + HttpUtils.encodeParameter(name) : "/containers/create") + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
+            HttpUtils.configureHeaders(os, defaultHeaders,
+                    Pair.of("Content-Type", "application/json"),
+                    Pair.of("Content-Length", Integer.toString(data.length)));
+            os.write("\r\n".getBytes("ISO-8859-1"));
             os.write(data);
             os.flush();
 
@@ -857,7 +871,9 @@ public class DockerAction {
                     DockerContainer.Status.STOPPED);
             ActionStreamResult r = attach(container, true, true);
 
-            os.write(("POST /containers/" + id + "/start HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
+            os.write(("POST /containers/" + id + "/start HTTP/1.1\r\n").getBytes("ISO-8859-1"));
+            HttpUtils.configureHeaders(os, defaultHeaders);
+            os.write("\r\n".getBytes("ISO-8859-1"));
             os.flush();
 
             response = HttpUtils.readResponse(is);
@@ -942,14 +958,14 @@ public class DockerAction {
     }
 
     private Object doGetRequest(@NonNull String url, @NonNull String action, Set<Integer> okCodes) throws DockerException {
-        //assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
             URL httpUrl = createURL(url, action);
             HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("GET");
-                conn.setRequestProperty("Accept", "application/json");
+                HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(), ACCEPT_JSON_HEADER);
 
                 if (!okCodes.contains(conn.getResponseCode())) {
                     String error = HttpUtils.readError(conn);
@@ -984,7 +1000,8 @@ public class DockerAction {
             HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
+                HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(),
+                        Pair.of("Content-Type", "application/json"));
 
                 if (data != null) {
                     conn.setDoOutput(true);
@@ -1029,9 +1046,7 @@ public class DockerAction {
             HttpURLConnection conn = createConnection(httpUrl);
             try {
                 conn.setRequestMethod("DELETE");
-                conn.setRequestProperty("Accept", "application/json");
-                conn.setRequestProperty("Content-Type",
-                        "application/x-www-form-urlencoded" );
+                HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(), ACCEPT_JSON_HEADER);
 
                 if (!okCodes.contains(conn.getResponseCode())) {
                     String error = HttpUtils.readError(conn);

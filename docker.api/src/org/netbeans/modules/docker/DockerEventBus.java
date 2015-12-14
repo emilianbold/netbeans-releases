@@ -68,13 +68,13 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, Connecti
 
     private final RequestProcessor processor = new RequestProcessor(DockerEventBus.class);
 
-    final DockerInstance instance;
+    private final DockerInstance instance;
 
     private final List<DockerEvent.Listener> imageListeners = new ArrayList<>();
 
     private final List<DockerEvent.Listener> containerListeners = new ArrayList<>();
 
-    Socket socket;
+    private Socket socket;
 
     private DockerEvent lastEvent;
 
