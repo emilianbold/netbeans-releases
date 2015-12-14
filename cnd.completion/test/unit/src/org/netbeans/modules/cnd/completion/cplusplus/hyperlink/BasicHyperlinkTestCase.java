@@ -1159,6 +1159,15 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug256296.cpp", 8, 32, "bug256296.cpp", 3, 9);
     }
     
+    public void testBug257031() throws Exception {
+        // Bug 257031 - Unresolved identifiers in ternary operator (
+        performTest("bug257031.cpp", 10, 29, "bug257031.cpp", 2, 20);
+        performTest("bug257031.cpp", 10, 34, "bug257031.cpp", 2, 20);
+        performTest("bug257031.cpp", 10, 39, "bug257031.cpp", 2, 28);
+        performTest("bug257031.cpp", 15, 47, "bug257031.cpp", 14, 13);
+        performTest("bug257031.cpp", 15, 52, "bug257031.cpp", 14, 21);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
