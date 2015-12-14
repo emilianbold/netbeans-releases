@@ -240,6 +240,10 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/bug244777.cpp", 15, 32, "src/bug244777.cpp", 6, 9);
     }    
     
+    public void testBug257032() throws Exception {
+        performTest("src/bug257032.cpp", 6, 10, "sys_include/bug257032.h", 2, 3);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

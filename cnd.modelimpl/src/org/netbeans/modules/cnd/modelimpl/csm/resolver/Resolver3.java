@@ -103,6 +103,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.BaseUtilitiesProviderImpl;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MutableObject;
 import org.openide.util.CharSequences;
 
 /**
@@ -445,20 +446,37 @@ public final class Resolver3 implements Resolver {
     
     private CsmObject resolveInUsingDeclarations(CsmObject result, CsmNamespace containingNS, CharSequence nameToken, AtomicBoolean outVisibility) {
         if (result == null || !outVisibility.get()) {
+            MutableObject<CsmObject> usedDecl = new MutableObject<>();
             Collection<CsmDeclaration> decls = CsmUsingResolver.getDefault().findUsedDeclarations(containingNS, nameToken);//, nameToken);
-            for (CsmDeclaration decl : decls) {
-                if (CharSequences.comparator().compare(nameToken, decl.getName()) == 0) {
-                    if (CsmKindUtilities.isClassifier(decl) && needClassifiers()) {
-                        result = decl;
-                        break;
-                    } else if (CsmKindUtilities.isClass(decl) && needClasses()) {
-                        result = decl;
-                        break;
+            if (resolveInUsingDeclarations(decls, nameToken, usedDecl)) {
+                return usedDecl.value;
+            }
+            for (CsmProject library : project.getLibraries()) {
+                CsmNamespace libNs = library.findNamespace(containingNS.getQualifiedName());
+                if (libNs != null) {
+                    decls = CsmUsingResolver.getDefault().findUsedDeclarations(libNs, nameToken);
+                    if (resolveInUsingDeclarations(decls, nameToken, usedDecl)) {
+                        return usedDecl.value;
                     }
                 }
             }
         }
         return result;
+    }
+    
+    private boolean resolveInUsingDeclarations(Collection<CsmDeclaration> decls, CharSequence nameToken, MutableObject<CsmObject> usedDecl) {
+        for (CsmDeclaration decl : decls) {
+            if (CharSequences.comparator().compare(nameToken, decl.getName()) == 0) {
+                if (CsmKindUtilities.isClassifier(decl) && needClassifiers()) {
+                    usedDecl.value = decl;
+                    return true;
+                } else if (CsmKindUtilities.isClass(decl) && needClasses()) {
+                    usedDecl.value = decl;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private CsmObject resolveInInlinedNamespaces(CsmObject result, CsmNamespace namespace, CharSequence nameToken, AtomicBoolean outVisibility) {
@@ -468,18 +486,18 @@ public final class Resolver3 implements Resolver {
     private CsmObject resolveInInlinedNamespaces(CsmObject result, Set<CharSequence> checked, CsmNamespace namespace, CharSequence nameToken, AtomicBoolean outVisibility) {
         if (result == null || !outVisibility.get()) {
             for (CsmNamespace ns : namespace.getInlinedNamespaces()) {
-                result = resolveInInlinedNamespace(ns, checked, nameToken, outVisibility);
-                if (result != null && outVisibility.get()) {
-                    return result;
+                CsmObject fromInlined = resolveInInlinedNamespace(ns, checked, nameToken, outVisibility);
+                if (fromInlined != null && outVisibility.get()) {
+                    return fromInlined;
                 }
             }
             for (CsmProject library : project.getLibraries()) {
                 CsmNamespace libNs = library.findNamespace(namespace.getQualifiedName());
                 if (libNs != null) {
                     for (CsmNamespace ns : libNs.getInlinedNamespaces()) {
-                        result = resolveInInlinedNamespace(ns, checked, nameToken, outVisibility);
-                        if (result != null && outVisibility.get()) {
-                            return result;
+                        CsmObject fromInlined = resolveInInlinedNamespace(ns, checked, nameToken, outVisibility);
+                        if (fromInlined != null && outVisibility.get()) {
+                            return fromInlined;
                         }
                     }
                 }
@@ -684,8 +702,8 @@ public final class Resolver3 implements Resolver {
             result = findClassifier(containingNS, name, resultIsVisible);
             if (!canStop(result, resultIsVisible, backupResult) && containingNS != null) {
                 result = resolveInUsingDirectives(containingNS, name, resultIsVisible);
-                result = resolveInUsingDeclarations(result, containingNS, name, resultIsVisible);
                 result = resolveInInlinedNamespaces(result, containingNS, name, resultIsVisible);
+                result = resolveInUsingDeclarations(result, containingNS, name, resultIsVisible);
             }
         }
         if (result == null && needNamespaces()) {
@@ -749,8 +767,8 @@ public final class Resolver3 implements Resolver {
                             }
                             if (!canStop(result, resultIsVisible, backupResult)) {
                                 result = resolveInUsingDirectives(ns, name, resultIsVisible);
-                                result = resolveInUsingDeclarations(result, ns, name, resultIsVisible);
                                 result = resolveInInlinedNamespaces(result, ns, name, resultIsVisible);
+                                result = resolveInUsingDeclarations(result, ns, name, resultIsVisible);
                             }
                         }
                     }
@@ -917,8 +935,8 @@ public final class Resolver3 implements Resolver {
                             sb.append(nameTokens[j]);
                         }
                         result = resolveInUsingDirectives(ns, sb, resultIsVisible);
-                        result = resolveInUsingDeclarations(result, ns, sb, resultIsVisible);
                         result = resolveInInlinedNamespaces(result, ns, sb, resultIsVisible);
+                        result = resolveInUsingDeclarations(result, ns, sb, resultIsVisible);
                     }
                 }
             }
