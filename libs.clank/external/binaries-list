@@ -1,7 +1,7 @@
-#changeset:   16140:2f2c02743ab3
+#changeset:   16165:8edef61eced6
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Dec 10 18:33:33 2015 +0300
-#summary:     fixed #256630 - [newcodemodel] AssertionError: must be non negative -2)
-C4A42A2F313CE41D5F2F50D30E694C495EC69355 clank_0.3.6.zip
+#date:        Mon Dec 14 20:18:44 2015 +0300
+#summary:     fixing #256279 - [newcodemodel] unresolved #include "/abs/path" in full remote project
+9EA7BE392AAB45D52319C994A11CC94AF431929E clank_0.3.6.zip
 
