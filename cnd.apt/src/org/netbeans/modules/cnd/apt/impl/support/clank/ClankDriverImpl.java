@@ -52,9 +52,7 @@ import java.util.Map;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.ClankPreprocessorServices;
 import org.clang.tools.services.ClankRunPreprocessorSettings;
-import org.clang.tools.services.support.ClangFileSystemProvider;
 import org.clang.tools.services.support.PrintWriter_ostream;
-import org.llvm.adt.StringRef;
 import org.llvm.support.MemoryBuffer;
 import org.llvm.support.llvm;
 import org.llvm.support.raw_ostream;
@@ -86,10 +84,6 @@ public class ClankDriverImpl {
 
     static final boolean TRACE = false;
     
-    static {
-        ClangFileSystemProvider.setImplementation(new ClankFileSystemProviderImpl());
-    }
-
     public static void invalidateImpl(FileSystem fs, CharSequence absPath) {
         if (APTTraceFlags.USE_CLANK) {
             ClankPreprocessorServices.invalidate(CndFileSystemProvider.toUrl(fs, absPath));

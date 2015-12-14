@@ -161,6 +161,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             builder.addUserMacroDef(macro);
         }
 
+        builder.setFileSystem(ClankFileSystemProviderImpl.getInstance().getFileSystem());
         return builder.createDataBaseEntry();
     }
 
