@@ -306,6 +306,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                     } finally {
                         if (finished) {
                             JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, null);
+                        } else {
+                            txCtx.get(CacheAttributesTransaction.class).setInvalid(true);
                         }
                     }
                 }

@@ -74,12 +74,14 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -110,8 +112,9 @@ final class ModuleClassPaths {
     @NonNull
     static ClassPathImplementation createModuleInfoBasedPath(
             @NonNull final ClassPath base,
-            @NonNull final SourceRoots sourceRoots) {
-        return new ModuleInfoClassPathImplementation(base, sourceRoots);
+            @NonNull final SourceRoots sourceRoots,
+            @NullAllowed final ClassPath systemModules) {
+        return new ModuleInfoClassPathImplementation(base, sourceRoots, systemModules);
     }
 
     @NonNull
@@ -327,6 +330,7 @@ final class ModuleClassPaths {
         private static final List<PathResourceImplementation> TOMBSTONE = Collections.unmodifiableList(new ArrayList<>());
         private final ClassPath base;
         private final SourceRoots sources;
+        private final ClassPath systemModules;
         private final ThreadLocal<Object[]> selfRes;
 
         //@GuardedBy("this")
@@ -334,15 +338,20 @@ final class ModuleClassPaths {
 
         ModuleInfoClassPathImplementation(
                 @NonNull final ClassPath base,
-                @NonNull final SourceRoots sources) {
+                @NonNull final SourceRoots sources,
+                @NullAllowed final ClassPath systemModules) {
             super(null);
             Parameters.notNull("base", base);       //NOI18N
             Parameters.notNull("sources", sources); //NOI18N
             this.base = base;
             this.sources = sources;
+            this.systemModules = systemModules;
             this.selfRes = new ThreadLocal<>();
             this.moduleInfos = Collections.emptyList();
             this.base.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
+            if (this.systemModules != null) {
+                this.systemModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.systemModules));
+            }
             this.sources.addPropertyChangeListener(WeakListeners.propertyChange(this, this.sources));
         }
 
@@ -369,11 +378,23 @@ final class ModuleClassPaths {
             modulesByName.values().stream()
                     .map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
                     .forEach(res::add);
+            final List<PathResourceImplementation> selfResResources;
+            final ClassPath bootModules;
+            final ClassPath bootCp;
+
+            if (systemModules != null) {
+                selfResResources = Collections.emptyList();
+                bootModules = systemModules;
+                bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(
+                    findJavaBase(getModulesByName(systemModules)));
+
+            } else {
+                selfResResources = findJavaBase(modulesByName);
+                bootModules = base;
+                bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(selfResResources);
+            }
             selfRes.set(new Object[]{
-                Optional.ofNullable(modulesByName.get(MOD_JAVA_BASE))
-                    .map(org.netbeans.spi.java.classpath.support.ClassPathSupport::createResource)
-                    .map(Collections::singletonList)
-                    .orElseGet(Collections::emptyList),
+                selfResResources,
                 needToFire});
             try {
                 boolean found = false;
@@ -385,7 +406,11 @@ final class ModuleClassPaths {
                             final FileObject modules = FileUtil.toFileObject(moduleInfo);
                             if (modules != null) {
                                 found = true;
-                                final JavaSource src = JavaSource.forFileObject(modules);
+                                final JavaSource src = JavaSource.create(
+                                    new ClasspathInfo.Builder(bootCp)
+                                            .setModuleBootPath(bootModules)
+                                            .build(),
+                                    modules);
                                 if (src != null) {
                                     try {
                                         final List<List<PathResourceImplementation>> resInOut = new ArrayList<>(1);
@@ -489,7 +514,7 @@ final class ModuleClassPaths {
         }
 
         @NonNull
-        private Map<String,URL> getModulesByName(@NonNull final ClassPath cp) {
+        private static Map<String,URL> getModulesByName(@NonNull final ClassPath cp) {
             final Map<String,URL> res = new HashMap<>();
             cp.entries().stream()
                     .map((entry)->entry.getURL())
@@ -500,6 +525,14 @@ final class ModuleClassPaths {
                         }
                     });
             return res;
+        }
+
+        @NonNull
+        private static List<PathResourceImplementation> findJavaBase(final Map<String,URL> modulesByName) {
+            return Optional.ofNullable(modulesByName.get(MOD_JAVA_BASE))
+                .map(org.netbeans.spi.java.classpath.support.ClassPathSupport::createResource)
+                .map(Collections::singletonList)
+                .orElseGet(Collections::emptyList);
         }
 
         @NonNull
@@ -524,7 +557,7 @@ final class ModuleClassPaths {
                 for (ModuleElement.Directive directive : module.getDirectives()) {
                     if (directive.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         ModuleElement.RequiresDirective req = (ModuleElement.RequiresDirective) directive;
-                        if (topLevel ||req.isPublic()) {
+                        if (topLevel || req.isPublic()) {
                             final ModuleElement dependency = req.getDependency();
                             boolean add = true;
                             if (transitive) {

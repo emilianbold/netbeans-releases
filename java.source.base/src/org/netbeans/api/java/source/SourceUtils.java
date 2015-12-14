@@ -145,7 +145,6 @@ import org.openide.util.BaseUtilities;
  */
 public class SourceUtils {
 
-    private static final String MODULE_INFO = "module-info";   //NOI18N
     private static final String MODULE_NAME = "moduleName";   //NOI18N
     private static final java.util.regex.Pattern AUTO_NAME_PATTERN = java.util.regex.Pattern.compile("-(\\d+(\\.|$))"); //NOI18N
     private static final Logger LOG = Logger.getLogger(SourceUtils.class.getName());
@@ -517,7 +516,7 @@ public class SourceUtils {
                 pkgName = FileObjects.convertPackage2Folder(signature[0]);
             } else if (handle.getKind() == ElementKind.MODULE) {
                 pkgName = "";   //NOI18N
-                className = MODULE_INFO;
+                className = FileObjects.MODULE_INFO;
             } else {
                 int index = signature[0].lastIndexOf('.');                          //NOI18N
                 if (index<0) {
@@ -1264,7 +1263,7 @@ public class SourceUtils {
                 //Folder
                 final FileObject root = URLMapper.findFileObject(rootUrl);
                 if (root != null) {
-                    if (root.getFileObject(MODULE_INFO, FileObjects.CLASS) != null) {
+                    if (root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS) != null) {
                         final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(rootUrl);
                         if (sfbqRes.preferSources()) {
                             //Build folder of the project
@@ -1288,7 +1287,7 @@ public class SourceUtils {
                         //Cache folder
                         try {
                             final URL srcRoot = JavaIndex.getSourceRootForClassFolder(rootUrl);
-                            if (srcRoot != null) {
+                            if (srcRoot != null && JavaIndex.hasSourceCache(srcRoot,true)) {
                                 String moduleName = JavaIndex.getAttribute(srcRoot, MODULE_NAME, null);
                                 if (moduleName != null) {
                                     //Has module-info
@@ -1310,7 +1309,7 @@ public class SourceUtils {
                 //Jar
                 final FileObject root = URLMapper.findFileObject(rootUrl);
                 if (root != null) {
-                    final FileObject moduleInfo = root.getFileObject(MODULE_INFO, FileObjects.CLASS);
+                    final FileObject moduleInfo = root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS);
                     if (moduleInfo != null) {
                         try {
                             return readModuleName(moduleInfo);
@@ -1585,7 +1584,7 @@ public class SourceUtils {
         try (final InputStream in = new BufferedInputStream(moduleInfo.getInputStream())) {
             final ClassFile clz = new ClassFile(in, false);
             final String name = clz.getName().getExternalName(true);
-            return name.substring(0, name.length() - (MODULE_INFO.length()+1));
+            return name.substring(0, name.length() - (FileObjects.MODULE_INFO.length()+1));
         }
     }
 

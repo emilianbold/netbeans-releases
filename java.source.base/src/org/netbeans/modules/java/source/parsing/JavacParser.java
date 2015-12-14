@@ -84,11 +84,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -706,13 +709,20 @@ public class JavacParser extends Parser {
                 LOGGER.log(Level.FINE, null, ex);
             }
         }
+        final Set<ConfigFlags> flags = EnumSet.noneOf(ConfigFlags.class);
+        final Optional<JavacParser> mayBeParser = Optional.ofNullable(parser);
+        if (mayBeParser.filter((p)->p.sourceCount>1).isPresent()) {
+            flags.add(ConfigFlags.MULTI_SOURCE);
+        }
+        if (mayBeParser.map(p->(p.file)).filter((f)->FileObjects.MODULE_INFO.equals(f.getName())).isPresent()) {
+            flags.add(ConfigFlags.MODULE_INFO);
+        }
         final JavacTaskImpl javacTask = createJavacTask(
                 cpInfo,
                 diagnosticListener,
                 sourceLevel != null ? sourceLevel.getSourceLevel() : null,
                 sourceLevel != null ? sourceLevel.getProfile() : null,
-                false,
-                parser != null && parser.sourceCount > 1,
+                flags,
                 oraculum,
                 dcc,
                 parser == null ? null : new DefaultCancelService(parser),
@@ -731,7 +741,22 @@ public class JavacParser extends Parser {
             @NullAllowed final DuplicateClassChecker dcc,
             @NullAllowed final CancelService cancelService,
             @NullAllowed final APTUtils aptUtils) {
-        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, sourceProfile, true, true, cnih, dcc, cancelService, aptUtils);
+        return createJavacTask(
+                cpInfo,
+                diagnosticListener,
+                sourceLevel,
+                sourceProfile,
+                EnumSet.of(ConfigFlags.BACKGROUND_COMPILATION, ConfigFlags.MULTI_SOURCE),
+                cnih,
+                dcc,
+                cancelService,
+                aptUtils);
+    }
+
+    private static enum ConfigFlags {
+        BACKGROUND_COMPILATION,
+        MULTI_SOURCE,
+        MODULE_INFO
     }
 
     private static JavacTaskImpl createJavacTask(
@@ -739,15 +764,19 @@ public class JavacParser extends Parser {
             @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnosticListener,
             @NullAllowed final String sourceLevel,
             @NullAllowed SourceLevelQuery.Profile sourceProfile,
-            final boolean backgroundCompilation,
-            final boolean multiSource,
+            @NonNull final Set<? extends ConfigFlags> flags,
             @NullAllowed final ClassNamesForFileOraculum cnih,
             @NullAllowed final DuplicateClassChecker dcc,
             @NullAllowed final CancelService cancelService,
             @NullAllowed final APTUtils aptUtils) {
+        final boolean backgroundCompilation = flags.contains(ConfigFlags.BACKGROUND_COMPILATION);
+        final boolean multiSource = flags.contains(ConfigFlags.MULTI_SOURCE);
         final List<String> options = new ArrayList<>();
         String lintOptions = CompilerSettings.getCommandLine(cpInfo);
-        com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
+        com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(
+                sourceLevel,
+                cpInfo,
+                flags.contains(ConfigFlags.MODULE_INFO));
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
@@ -855,7 +884,8 @@ public class JavacParser extends Parser {
     public static boolean DISABLE_SOURCE_LEVEL_DOWNGRADE = false;
     static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(
             @NullAllowed String sourceLevel,
-            @NonNull final ClasspathInfo cpInfo) {
+            @NonNull final ClasspathInfo cpInfo,
+            final boolean isModuleInfo) {
         ClassPath bootClassPath = cpInfo.getClassPath(PathKind.BOOT);
         ClassPath classPath = null;
         ClassPath srcClassPath = cpInfo.getClassPath(PathKind.SOURCE);
@@ -870,7 +900,7 @@ public class JavacParser extends Parser {
         }
         for (com.sun.tools.javac.code.Source source : sources) {
             if (source.name.equals(sourceLevel)) {
-                if (DISABLE_SOURCE_LEVEL_DOWNGRADE) {
+                if (DISABLE_SOURCE_LEVEL_DOWNGRADE || isModuleInfo) {
                     return source;
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {

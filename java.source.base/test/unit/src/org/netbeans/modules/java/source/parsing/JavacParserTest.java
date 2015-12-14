@@ -356,7 +356,7 @@ public class JavacParserTest extends NbTestCase {
             ClassPathSupport.createClassPath(src.toURI().toURL())
         );
         
-        return JavacParser.validateSourceLevel("1.7", info);
+        return JavacParser.validateSourceLevel("1.7", info, false);
     }
     
     private FileObject createFile(String path, String content) throws Exception {

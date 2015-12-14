@@ -92,7 +92,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     public void rootAdded(@NonNull final URL root) {
         checkClosedTx();
         assert root != null;
-        assert addedRoot == null;
+        assert addedRoot == null || addedRoot.equals(root);
         assert changesInRoot == null || changesInRoot.equals(root);
         addedRoot = root;
     }
@@ -224,17 +224,23 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
                 }
             } finally {
                 final ClassIndexManager ciManager = ClassIndexManager.getDefault();
+                ClassIndexImpl ci = addedRoot == null ? null : ciManager.getUsagesQuery(addedRoot, false);
+                final Set<URL> added = ci != null && ci.getState() == ClassIndexImpl.State.INITIALIZED ?
+                        Collections.singleton(addedRoot):
+                        Collections.emptySet();
                 ciManager.fire(
-                    addedRoot == null ? Collections.<URL>emptySet() : Collections.<URL>singleton(addedRoot),
+                    added,
                     Collections.unmodifiableSet(removedRoots));
-                final ClassIndexImpl ci = changesInRoot == null ?
-                    null:
-                    ciManager.getUsagesQuery(changesInRoot, false);
-                if (ci != null) {
-                    ci.typesEvent(
-                        Collections.unmodifiableCollection(addedTypes),
-                        Collections.unmodifiableCollection(removedTypes),
-                        Collections.unmodifiableCollection(changedTypes));
+                if (changesInRoot != null) {
+                    if (ci == null) {
+                        ci = ciManager.getUsagesQuery(changesInRoot, false);
+                    }
+                    if (ci != null) {
+                        ci.typesEvent(
+                            Collections.unmodifiableCollection(addedTypes),
+                            Collections.unmodifiableCollection(removedTypes),
+                            Collections.unmodifiableCollection(changedTypes));
+                    }
                 }
             }
         } finally {
