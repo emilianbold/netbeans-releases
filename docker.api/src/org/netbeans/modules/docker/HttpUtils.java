@@ -45,6 +45,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.openide.util.Pair;
 
 /**
  *
@@ -154,6 +156,43 @@ public final class HttpUtils {
 
     public static String encodeBase64(String value) throws UnsupportedEncodingException {
         return Base64.getEncoder().encodeToString(value.getBytes("UTF-8"));
+    }
+
+    public static void configureHeaders(OutputStream os, Map<String, String> defaultHeaders,
+            Pair<String, String>... headers) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        configureHeaders(sb, defaultHeaders, headers);
+        os.write(sb.toString().getBytes("ISO-8859-1")); // NOI18N
+    }
+
+    public static void configureHeaders(StringBuilder sb, Map<String, String> defaultHeaders,
+            Pair<String, String>... headers) throws IOException {
+        Map<String, String> toUse = new HashMap<>(defaultHeaders);
+        for (Pair<String, String> h : headers) {
+            if (h == null) {
+                continue;
+            }
+            toUse.put(h.first(), h.second());
+        }
+
+        for (Map.Entry<String, String> e : toUse.entrySet()) {
+            sb.append(e.getKey()).append(":").append(" "); // NOI18N
+            sb.append(e.getValue()).append("\r\n"); // NOI18N
+        }
+    }
+
+    public static void configureHeaders(HttpURLConnection conn, Map<String, String> defaultHeaders,
+            Pair<String, String>... headers) {
+
+        for (Map.Entry<String, String> e : defaultHeaders.entrySet()) {
+            conn.setRequestProperty(e.getKey(), e.getValue());
+        }
+        for (Pair<String, String> h : headers) {
+            if (h == null) {
+                continue;
+            }
+            conn.setRequestProperty(h.first(), h.second());
+        }
     }
 
     static String readResponseLine(InputStream is) throws IOException {
