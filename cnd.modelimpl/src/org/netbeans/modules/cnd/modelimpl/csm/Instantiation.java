@@ -1872,6 +1872,11 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
 
         @Override
+        public boolean isPackExpansion() {
+            return instantiatedType.isPackExpansion();
+        }
+
+        @Override
         public boolean hasInstantiationParams() {
             return instantiatedType.hasInstantiationParams();
         }

@@ -691,22 +691,32 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     }
 
     private boolean isTemplateAmbiguity(Token<TokenId> token) {
-        if(supportTemplates && (token.id() == CppTokenId.LT ||
+        if (supportTemplates && (token.id() == CppTokenId.LT ||
                 (!tplLookaheadTokens.isEmpty() && tplLookaheadTokens.get(0).token.id() == CppTokenId.LT))) {
-            CsmCompletionExpression top = peekExp();
-            if(top != null) {
-                // from rule about generic types in tokenImpl
-                switch(top.getExpID()) {
-                    case VARIABLE:
-                    case DOT:
-                    case ARROW:
-                    case SCOPE:
-                    case MEMBER_POINTER:
-                        return true;
-
-                    default:
-                        break;
-                }
+            return canTemplateAmbiguityHappen();
+        }
+        return false;
+    }
+    
+    private boolean canTemplateAmbiguityHappen() {
+        CsmCompletionExpression top = peekExp();
+        if (top != null) {
+            // from rule about generic types in tokenImpl
+            switch (top.getExpID()) {
+                case VARIABLE:
+                case ARROW:
+                case MEMBER_POINTER:
+                    return true;
+                    
+                case DOT:
+                case SCOPE:
+                    if (top.getParameterCount() > 0) {
+                        CsmCompletionExpression lastParam = top.getParameter(top.getParameterCount() - 1);
+                        if (getValidExpID(lastParam) == CsmCompletionExpression.METHOD) {
+                            return false;
+                        }
+                    }
+                    return true;
             }
         }
         return false;
@@ -916,7 +926,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                     case LPAREN:
                                         break;
                                     case LT:
-                                        if(supportTemplates) {
+                                        if (supportTemplates && canTemplateAmbiguityHappen()) {
                                             break;
                                         }
                                     default:
@@ -1600,24 +1610,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
             case LT: {
                 boolean genericType = false;
-                if (supportTemplates) { // special treatment of Java 1.5 features
-                    switch (topID) {
-                        case VARIABLE:
-                        case DOT:
-                        case ARROW:
-                        case SCOPE:
-                        case MEMBER_POINTER:
-                            popExp(); // pop the top expression
-                            CsmCompletionExpression genExp = createTokenExp(GENERIC_TYPE_OPEN);
-                            genExp.addParameter(top);
-                            pushExp(genExp);
-                            genericType = true; // handled successfully as generic type
-                            break;
-
-                        default:
-                            // could possibly still be acceptable as operator '<'
-                            break;
-                    }
+                if (supportTemplates && canTemplateAmbiguityHappen()) { // special treatment of Java 1.5 features
+                    popExp(); // pop the top expression
+                    CsmCompletionExpression genExp = createTokenExp(GENERIC_TYPE_OPEN);
+                    genExp.addParameter(top);
+                    pushExp(genExp);
+                    genericType = true; // handled successfully as generic type
                 }
 
                 if (topID == CONVERSION_OPEN) {
@@ -1625,6 +1623,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     break;
                 }
 
+                // could possibly still be acceptable as operator '<'
                 if (!errorState && !genericType) { // not generics -> handled compatibly
                     // Operator handling
                     switch (topID) {
