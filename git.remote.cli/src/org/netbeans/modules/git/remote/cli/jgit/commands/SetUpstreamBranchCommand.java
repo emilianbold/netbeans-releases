@@ -79,8 +79,8 @@ public class SetUpstreamBranchCommand extends GitCommand {
         super.prepare();
         addArgument(0, "branch"); //NOI18N
         addArgument(0, "--set-upstream"); //NOI18N
+        addArgument(0, localBranchName); // This is depricated since 1.8. Use: --set-upstream-to=trackedBranchName localBranchName
         addArgument(0, trackedBranchName);
-        addArgument(0, localBranchName);
 
         addArgument(1, "branch"); //NOI18N
         addArgument(1, "-v"); //NOI18N
@@ -95,6 +95,12 @@ public class SetUpstreamBranchCommand extends GitCommand {
             monitor.setCancelDelegate(canceled);
         }
         try {
+            //JGitConfig cfg = getRepository().getConfig();
+            //cfg.load();
+            //String[] origin = trackedBranchName.split("/");
+            //cfg.setString(JGitConfig.CONFIG_BRANCH_SECTION, localBranchName, JGitConfig.CONFIG_KEY_REMOTE, origin[0]);
+            //cfg.setString(JGitConfig.CONFIG_BRANCH_SECTION, localBranchName, JGitConfig.CONFIG_KEY_MERGE, GitConstants.R_HEADS+localBranchName);
+            //cfg.save();
             new Runner(canceled, 0){
 
                 @Override
@@ -102,7 +108,7 @@ public class SetUpstreamBranchCommand extends GitCommand {
                 }
                 
             }.runCLI();
-            final Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
+            final Map<String, GitBranch> branches = new LinkedHashMap<>();
             new Runner(canceled, 1) {
 
                 @Override
@@ -118,43 +124,7 @@ public class SetUpstreamBranchCommand extends GitCommand {
             } else {
                 throw new GitException(t);
             }
-        }        
-//        Repository repository = getRepository().getRepository();
-//        
-//        try {
-//            Ref ref = repository.getRef(trackedBranchName);
-//            if (ref == null) {
-//                throw new GitException(MessageFormat.format(Utils.getBundle(SetUpstreamBranchCommand.class)
-//                        .getString("MSG_Error_UpdateTracking_InvalidReference"), trackedBranchName)); //NOI18N)
-//            }
-//            String remote = null;
-//            String branchName = ref.getName();
-//            StoredConfig config = repository.getConfig();
-//            if (branchName.startsWith(Constants.R_REMOTES)) {
-//                String[] elements = branchName.split("/", 4);
-//                remote = elements[2];
-//                if (config.getSubsections(ConfigConstants.CONFIG_REMOTE_SECTION).contains(remote)) {
-//                    branchName = Constants.R_HEADS + elements[3];
-//                } else {
-//                    // remote not yet set
-//                    remote = null;
-//                }
-//            }
-//            if (remote == null) {
-//                remote = "."; //NOI18N
-//            }
-//            config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, localBranchName,
-//                    ConfigConstants.CONFIG_KEY_REMOTE, remote);
-//            config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, localBranchName,
-//                    ConfigConstants.CONFIG_KEY_MERGE, branchName);
-//            config.save();
-//        } catch (IOException ex) {
-//            throw new GitException(ex);
-//        }
-//        ListBranchCommand branchCmd = new ListBranchCommand(getRepository(), getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
-//        branchCmd.run();
-//        Map<String, GitBranch> branches = branchCmd.getBranches();
-//        branch = branches.get(localBranchName);
+        }
     }
     
 }
