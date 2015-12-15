@@ -96,6 +96,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Utilities;
 import static org.clang.basic.ClangGlobals.*;
+import org.clank.support.NativePointer;
 import static org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileSystemProviderImpl.RFS_PREFIX;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -310,7 +311,7 @@ public final class ClankPPCallback extends FileInfoCallback {
                 if (headerPath.endsWith(FileNameStr) && (headerPath.length() > FileNameStr.length())) {
                     headerPath = CndFileSystemProvider.toUrl(path).toString();
                     String recoveryDir = headerPath.substring(0, headerPath.length() - FileNameStr.length()-1/*slash*/);
-                    RecoveryPath.$assign(recoveryDir);
+                    RecoveryPath.$assign(NativePointer.create_char$ptr_utf8(recoveryDir));
                     return true;
                 } else {
                     // FIXME: we found file, but can not correctly detect recovery dir

@@ -88,7 +88,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     
 
     TypeFunPtrImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
-        super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+        super(file, false, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
         functionParameters = null;
         returnType = null;
     }
@@ -119,7 +119,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     
     // package-local - for facory only
     TypeFunPtrImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset, Collection<CsmParameter> parameters, CsmType returnType) {
-        super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+        super(file, false, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
         this.functionParameters = parameters;
         this.returnType = returnType;
     }    

@@ -2317,7 +2317,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         }
                     }
                     
-                    makeThreadCurrent(curThread);
+                    if (curThread != null) {
+                        makeThreadCurrent(curThread);
+                    } else {
+                        CndUtils.assertTrueInConsole(false, "curThread shouldn't be null!\n" + threads.toString()); // NOI18N
+                    }
 
                     finish();
                 }

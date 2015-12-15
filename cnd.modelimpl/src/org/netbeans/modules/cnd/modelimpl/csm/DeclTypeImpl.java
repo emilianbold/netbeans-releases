@@ -83,8 +83,8 @@ public class DeclTypeImpl extends TypeImpl {
     private volatile CsmType cachedType; // TODO: use CsmCacheManager to cache type
     
 
-    DeclTypeImpl(AST ast, CsmFile file, CsmScope scope, int pointerDepth, int reference, int arrayDepth, int constQualifiers, int startOffset, int endOffset) {
-        super(file, pointerDepth, reference, arrayDepth, constQualifiers, startOffset, endOffset);
+    DeclTypeImpl(AST ast, CsmFile file, CsmScope scope, boolean packExpansion, int pointerDepth, int reference, int arrayDepth, int constQualifiers, int startOffset, int endOffset) {
+        super(file, packExpansion, pointerDepth, reference, arrayDepth, constQualifiers, startOffset, endOffset);
         AST expressionAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_EXPRESSION);
         this.typeExpression = ExpressionsFactory.create(expressionAst, file, scope);
     }
