@@ -1,7 +1,6 @@
-#changeset:   16165:8edef61eced6
+#changeset:   16167:933dd965f35a
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Dec 14 20:18:44 2015 +0300
-#summary:     fixing #256279 - [newcodemodel] unresolved #include "/abs/path" in full remote project
-9EA7BE392AAB45D52319C994A11CC94AF431929E clank_0.3.6.zip
-
+#date:        Tue Dec 15 13:53:30 2015 +0300
+#summary:     fixed #256933 - [newcodemodel] IDE cannot resolve include paths with non ASCII chars
+6AE76DCC58313A6B48DDDDE3D19011AA4BE343CF clank_0.3.6.zip
