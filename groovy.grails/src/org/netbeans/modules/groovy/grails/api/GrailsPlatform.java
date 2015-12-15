@@ -504,7 +504,11 @@ public final class GrailsPlatform {
         public static final Version VERSION_DEFAULT = new Version(1, null, null, null, null);
 
         public static final Version VERSION_1_1 = new Version(1, 1, null, null, null);
-
+        
+        public static final Version VERSION_2 = new Version(2, null, null, null, null);
+        
+        public static final Version VERSION_3 = new Version(3, null, null, null, null);
+        
         private final int major;
 
         private final Integer minor;
@@ -708,9 +712,17 @@ public final class GrailsPlatform {
 
         @Override
         public Process call() throws Exception {
-            File grailsExecutable = RuntimeHelper.getGrailsExecutable(
-                    new File(GrailsSettings.getInstance().getGrailsBase()), descriptor.isDebug());
-
+            
+            Version platformVersion = GrailsPlatform.getDefault().getVersion();
+            File grailsExecutable = null;
+            //if we're still using grails 1 we have a special debug command:
+            if (platformVersion.compareTo(Version.VERSION_2) < 0) {
+                grailsExecutable = RuntimeHelper.getGrailsExecutable(
+                    new File(GrailsSettings.getInstance().getGrailsBase()), true);
+            } else {
+                grailsExecutable = RuntimeHelper.getGrailsExecutable(
+                    new File(GrailsSettings.getInstance().getGrailsBase()), false);
+            }
             if (grailsExecutable == null || !grailsExecutable.exists()) {
                 LOGGER.log(Level.WARNING, "Executable doesn''t exist: {0}", grailsExecutable.getAbsolutePath());
 
@@ -745,7 +757,14 @@ public final class GrailsPlatform {
                 command.append(" ").append(env.toString());
             }
             command.append(" ").append(descriptor.getName());
-            command.append(" ").append(createCommandArguments(descriptor.getArguments()));
+            if (descriptor.isDebug()) {                
+                if (platformVersion.compareTo(Version.VERSION_3) >= 0) {
+                    command.append(" ").append("--debug-jvm"); // NOI18N
+                } else if (platformVersion.compareTo(Version.VERSION_2) >= 0) {
+                    command.append(" ").append("--debug-fork"); // NOI18N
+                }
+            }
+            command.append(" ").append(createCommandArguments(descriptor.getArguments()));            
 
             String preProcessUUID = UUID.randomUUID().toString();
 
