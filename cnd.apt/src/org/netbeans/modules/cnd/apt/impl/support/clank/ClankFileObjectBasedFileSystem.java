@@ -47,9 +47,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.clang.basic.vfs.File;
 import org.clang.basic.vfs.Status;
 import org.clang.basic.vfs.directory_iterator;
+import org.clang.tools.services.support.ClangUtilities;
 import org.clank.java.std;
 import org.clank.java.std_errors;
 import org.clank.java.std_ptr;
+import org.clank.support.Casts;
 import static org.clank.support.Casts.$char;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.SmallString;
@@ -179,15 +181,10 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
         int Len = StrRef.size();
         if (BufString.size() > 0) {
             assert Len == BufString.size();
-            byte[] $array = BufString.$array();
-            for (int i = 0; i < Len; i++) {
-                BufBuilder.append($char($array[i]));
-            }
+            BufString.toStringBuilder(BufBuilder);
         } else {
             char$ptr data = StrRef.data();
-            for (int i = 0; i < Len; i++) {
-                BufBuilder.append($char(data.$at(i)));
-            }
+            Casts.toStringBuilder(BufBuilder, data, Len);
         }
         return BufBuilder;
     }
@@ -237,7 +234,7 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
             // TODO: should we set errno?
             return new ErrorOr(std_errors.errc.no_such_file_or_directory);
         } else {
-            StringRef name = new StringRef(CndFileSystemProvider.toUrl(FSPath.toFSPath(fo)));
+            StringRef name = ClangUtilities.createPathStringRef(CndFileSystemProvider.toUrl(FSPath.toFSPath(fo)));
             UniqueID uid = getUniqueID(fo);
             if (uid == null) {
                 return new ErrorOr(std_errors.errc.io_error);

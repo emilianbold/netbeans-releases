@@ -161,6 +161,11 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             builder.addUserMacroDef(macro);
         }
 
+        builder.setFileSystem(ClankFileSystemProviderImpl.getInstance().getFileSystem());
+        if (CndFileSystemProvider.isRemote(startEntry.getFileSystem())) {
+            CharSequence prefix = CndFileSystemProvider.toUrl(startEntry.getFileSystem(), "/"); //NOI18N
+            builder.setAbsPathLookupPrefix(prefix);
+        }        
         return builder.createDataBaseEntry();
     }
 

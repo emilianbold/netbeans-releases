@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
-import java.util.Collection;
 import org.clang.basic.vfs.FileSystem;
-import org.clang.tools.services.ClankCompilationDataBase;
-import org.clang.tools.services.support.ClangFileSystemProvider;
 import org.llvm.adt.IntrusiveRefCntPtr;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
@@ -54,45 +51,24 @@ import org.openide.util.Utilities;
  *
  * @author vkvashin
  */
-public class ClankFileSystemProviderImpl extends ClangFileSystemProvider {
+public class ClankFileSystemProviderImpl {
     
     public static final String RFS_PREFIX = "rfs:"; //NOI18N
 
-    
-    @Override
-    public IntrusiveRefCntPtr<FileSystem> getFileSystemImpl(ClankCompilationDataBase.Entry entry) {
+    private static final ClankFileSystemProviderImpl INSTANCE = new ClankFileSystemProviderImpl();
+
+    public static ClankFileSystemProviderImpl getInstance() {
+        return INSTANCE;
+    }
+
+    public IntrusiveRefCntPtr<FileSystem> getFileSystem() {
         boolean useFS;
         if (APTTraceFlags.ALWAYS_USE_NB_FS || Utilities.isWindows()) {
             useFS = true;
         } else {
-            if (isFullRemote(entry)) {
-                useFS = true;
-            } else if (isMixedOrSimpleRemote(entry)) {
-                useFS = true;
-            } else {
-                useFS = false;
-            }
+            useFS = false;
         }
         return useFS ? new IntrusiveRefCntPtr<FileSystem>(ClankFileObjectBasedFileSystem.getInstance()) : null;
-    }
-
-    private boolean isMixedOrSimpleRemote(ClankCompilationDataBase.Entry entry) {
-        for (CharSequence sysIncludePath : entry.getPredefinedSystemIncludePaths()) {
-            if (CharSequenceUtils.startsWith(sysIncludePath, RFS_PREFIX)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isFullRemote(ClankCompilationDataBase.Entry entry) {
-        Collection<CharSequence> compiledFiles = entry.getCompiledFiles();
-        if (compiledFiles != null && !compiledFiles.isEmpty()) {
-            if (CharSequenceUtils.startsWith(compiledFiles.iterator().next(), RFS_PREFIX)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static String getPathFromUrl(String path) {

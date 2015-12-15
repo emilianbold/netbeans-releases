@@ -1,6 +1,6 @@
-#changeset:   15931:45ed0d72f72e
+#changeset:   16167:933dd965f35a
 #tag:         tip
-#user:        Alexander Simon <alexvsimon@netbeans.org>
-#date:        Tue Nov 17 14:08:02 2015 +0300
-#summary:     fixed Bug 22187443 "The file is not a binary" dialog window in valid case
-9A133B99ABDA40B3A17B23DFA79A91AF5FC429B1 clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Tue Dec 15 13:53:30 2015 +0300
+#summary:     fixed #256933 - [newcodemodel] IDE cannot resolve include paths with non ASCII chars
+6AE76DCC58313A6B48DDDDE3D19011AA4BE343CF clank_0.3.6.zip

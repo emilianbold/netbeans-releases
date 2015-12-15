@@ -113,7 +113,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_TYPE_WITH_CLASSIFIER = 1 << 3;
     private static final byte FLAGS_RVALREFERENCE = 1 << 4;
-    protected static final int LAST_USED_FLAG_INDEX = 5;
+    private static final byte FLAGS_PACK_EXPANSION = 1 << 5;
+    protected static final int LAST_USED_FLAG_INDEX = 6;
     
     private final byte pointerDepth;
     
@@ -185,12 +186,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }  
     
     // package-local - for facory only
-    TypeImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
-        this(file, pointerDepth, reference, arrayDepth, _const ? 1 : 0, startOffset, endOffset);
+    TypeImpl(CsmFile file, boolean packExpansion, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+        this(file, packExpansion, pointerDepth, reference, arrayDepth, _const ? 1 : 0, startOffset, endOffset);
     }    
     
     // package-local - for facory only
-    TypeImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, int _constQualifiers, int startOffset, int endOffset) {
+    TypeImpl(CsmFile file, boolean packExpansion, int pointerDepth, int reference, int arrayDepth, int _constQualifiers, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.classifierText = NON_INITIALIZED_CLASSIFIER_TEXT;
         this.pointerDepth = (byte) pointerDepth;
@@ -202,6 +203,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, ((_constQualifiers & 1) != 0)); // this is mistake (first const qualifier is the deepest one)
+        setFlags(FLAGS_PACK_EXPANSION, packExpansion);
         trimInstantiationParams();
     }       
 
@@ -419,6 +421,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return pointerDepth > 0;
     }
 
+    @Override
+    public boolean isPackExpansion() {
+        return hasFlags(FLAGS_PACK_EXPANSION);
+    }
+
     private boolean isTypeOfTypedef() {
         return hasFlags(FLAGS_TYPE_OF_TYPEDEF);
     }
@@ -509,6 +516,22 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                            tokenType == CPPTokenTypes.CSM_ARRAY_DECLARATION ||
                                tokenType == CPPTokenTypes.CSM_QUALIFIED_ID) {
                     return false;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public static boolean initIsPackExpansion(AST node) {
+        if (node != null) {
+            for (AST token = node; token != null; token = token.getNextSibling()) {
+                int tokenType = token.getType();
+                if (tokenType == CPPTokenTypes.ELLIPSIS) {
+                    return true;
+                } else if (tokenType == CPPTokenTypes.CSM_VARIABLE_DECLARATION
+                    || tokenType == CPPTokenTypes.CSM_ARRAY_DECLARATION) {
+                    return token.getFirstChild() != null 
+                        && token.getFirstChild().getType() == CPPTokenTypes.ELLIPSIS;
                 }
             }
         }
