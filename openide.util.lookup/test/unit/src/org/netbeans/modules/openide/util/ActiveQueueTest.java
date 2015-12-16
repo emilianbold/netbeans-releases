@@ -100,11 +100,13 @@ public class ActiveQueueTest extends NbTestCase{
             ref.wait();
             assertTrue("Run method has been executed", ref.executed);
         }
+        /* We can not expect to have the ActiveQueue GC'ed after fix of issue #256943.
         Reference<?> r = new WeakReference<Object>(u2);
         q = null;
         u2 = null;
         l = null;
         assertGC("#86625: Utilities.class can also be collected now", r);
+        */
     }
 
 

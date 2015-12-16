@@ -899,7 +899,7 @@ public class JavacParser extends Parser {
             warnLevel = Level.WARNING;
         }
         for (com.sun.tools.javac.code.Source source : sources) {
-            if (source.name.equals(sourceLevel)) {
+            if (source == com.sun.tools.javac.code.Source.lookup(sourceLevel)) {
                 if (DISABLE_SOURCE_LEVEL_DOWNGRADE || isModuleInfo) {
                     return source;
                 }

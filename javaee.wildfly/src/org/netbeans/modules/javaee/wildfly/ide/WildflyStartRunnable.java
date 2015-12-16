@@ -269,13 +269,17 @@ class WildflyStartRunnable implements Runnable {
     }
 
     private static StartupExtender.StartMode getMode(WildflyStartServer.MODE jbMode) {
-        if (WildflyStartServer.MODE.PROFILE.equals(jbMode)) {
-            return StartupExtender.StartMode.PROFILE;
-        } else if (WildflyStartServer.MODE.DEBUG.equals(jbMode)) {
-            return StartupExtender.StartMode.DEBUG;
-        } else {
-            return StartupExtender.StartMode.NORMAL;
+        if (null != jbMode) {
+            switch (jbMode) {
+                case PROFILE:
+                    return StartupExtender.StartMode.PROFILE;
+                case DEBUG:
+                    return StartupExtender.StartMode.DEBUG;
+                default:
+                    return StartupExtender.StartMode.NORMAL;
+            }
         }
+        return StartupExtender.StartMode.NORMAL;
     }
 
     private boolean checkPorts(final InstanceProperties ip) {

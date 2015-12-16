@@ -44,15 +44,23 @@ package org.netbeans.spi.java.project.support;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -132,6 +140,27 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         
 
     }
+
+    public void testMissingEvents() throws Exception {
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        ProviderImpl defaultCP = new ProviderImpl();
+
+        final URL root1 = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(getWorkDir(),"root1")));
+        final URL root2 = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(getWorkDir(),"root2")));
+        final MutableCPImpl cpImpl = new MutableCPImpl(root1);
+
+        defaultCP.paths.put(ClassPath.COMPILE, ClassPathFactory.createClassPath(cpImpl));
+        ClassPathProviderMerger instance = new ClassPathProviderMerger(defaultCP);
+        ClassPathProvider result = instance.merge(lookup);
+
+        ClassPath compile = result.findClassPath(null, ClassPath.COMPILE);
+        assertNotNull(compile);
+        assertEquals(1, compile.entries().size());
+
+        cpImpl.add(root2);
+        assertEquals(2, compile.entries().size());
+    }
     
     
     private static URL createURLReference(String path) {
@@ -149,7 +178,41 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         }
         
     }
-            
+
+    private static final class MutableCPImpl implements ClassPathImplementation {
+        private final List<PathResourceImplementation> roots;
+        private final PropertyChangeSupport support;
+
+
+        MutableCPImpl(URL... urls) {
+            roots = new ArrayList<>();
+            this.support = new PropertyChangeSupport(this);
+            add(urls);
+        }
+
+        void add(URL... urls) {
+            for (URL url : urls) {
+                roots.add(ClassPathSupport.createResource(url));
+            }
+            support.firePropertyChange(PROP_RESOURCES, null, null);
+        }
+
+        @Override
+        public List<? extends PathResourceImplementation> getResources() {
+            return roots;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            support.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            support.removePropertyChangeListener(listener);
+        }
+
+    }
 
 }
 

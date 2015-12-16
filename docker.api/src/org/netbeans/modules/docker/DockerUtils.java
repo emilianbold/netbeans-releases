@@ -42,7 +42,7 @@
 package org.netbeans.modules.docker;
 
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.docker.api.ContainerStatus;
+import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerEntity;
 import org.netbeans.modules.docker.api.DockerEvent;
 import static org.netbeans.modules.docker.api.DockerEvent.Status.DIE;
@@ -89,35 +89,35 @@ public final class DockerUtils {
         return repository + ":" + tag;
     }
 
-    public static ContainerStatus getContainerStatus(String status) {
+    public static DockerContainer.Status getContainerStatus(String status) {
         if (status == null) {
-            return ContainerStatus.STOPPED;
+            return DockerContainer.Status.STOPPED;
         }
         if (!status.startsWith("Up")) { // NOI18N
-            return ContainerStatus.STOPPED;
+            return DockerContainer.Status.STOPPED;
         }
         if (!status.contains("Paused")) { // NOI18N
-            return ContainerStatus.RUNNING;
+            return DockerContainer.Status.RUNNING;
         }
-        return ContainerStatus.PAUSED;
+        return DockerContainer.Status.PAUSED;
     }
 
     @CheckForNull
-    public static ContainerStatus getContainerStatus(DockerEvent event) {
+    public static DockerContainer.Status getContainerStatus(DockerEvent event) {
         return getContainerStatus(event.getStatus());
     }
 
     @CheckForNull
-    public static ContainerStatus getContainerStatus(DockerEvent.Status status) {
+    public static DockerContainer.Status getContainerStatus(DockerEvent.Status status) {
         switch (status) {
             case DIE:
-                return ContainerStatus.STOPPED;
+                return DockerContainer.Status.STOPPED;
             case START:
-                return ContainerStatus.RUNNING;
+                return DockerContainer.Status.RUNNING;
             case PAUSE:
-                return ContainerStatus.PAUSED;
+                return DockerContainer.Status.PAUSED;
             case UNPAUSE:
-                return ContainerStatus.RUNNING;
+                return DockerContainer.Status.RUNNING;
             default:
                 return null;
         }

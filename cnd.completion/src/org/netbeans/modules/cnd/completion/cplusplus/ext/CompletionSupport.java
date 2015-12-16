@@ -65,6 +65,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
@@ -112,6 +113,8 @@ import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities.ClassifiersEqualizer;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities.EqualResult;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities.TypeInfoCollector;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -121,6 +124,7 @@ import org.openide.loaders.DataObject;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.iterateTypeChain;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.howMany;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.Qualificator;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities.QualifiersEqualizer;
 import org.openide.util.Pair;
 
 /**
@@ -532,9 +536,10 @@ public final class CompletionSupport implements DocumentListener {
                         for (CsmParameter param : constructor.getParameters()) {
                             if (first) {
                                 first = false;
-                                if (!CsmKindUtilities.isTemplateParameterType(param.getType())) {
+                                CsmType paramType = param.getType();
+                                if (paramType != null && !CsmKindUtilities.isTemplateParameterType(paramType)) {
                                     TypeInfoCollector paramInfo = new TypeInfoCollector();
-                                    CsmType paramType = iterateTypeChain(param.getType(), paramInfo);
+                                    paramType = iterateTypeChain(paramType, paramInfo);
                                     CsmClassifier paramCls = paramType.getClassifier();
                                     if (!isViableClassifier(paramCls, true)) {
                                         appropriate = false;
@@ -680,10 +685,11 @@ public final class CompletionSupport implements DocumentListener {
                                                                           boolean acceptMoreParameters,
                                                                           boolean acceptIfSameNumberParams)
     {
-        Collection<T> result = filterMethods(ctx, methodList, paramsPerMethod, acceptMoreParameters, acceptIfSameNumberParams, false);
+        boolean mustBeTemplate = (exp != null) ? exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE : false;
+        Collection<T> result = filterMethods(ctx, methodList, paramsPerMethod, mustBeTemplate, acceptMoreParameters, acceptIfSameNumberParams, false);
         if (result.size() > 1) {
             // it seems that this call couldn't filter anything
-            result = filterMethods(ctx, result, paramsPerMethod, acceptMoreParameters, acceptIfSameNumberParams, true);
+            result = filterMethods(ctx, result, paramsPerMethod, mustBeTemplate, acceptMoreParameters, acceptIfSameNumberParams, true);
 
             // perform more accurate filtering if it is a strict request (for navigation probably)
             if (!acceptMoreParameters && acceptIfSameNumberParams) {
@@ -694,7 +700,7 @@ public final class CompletionSupport implements DocumentListener {
     }
 
     private static <T extends CsmFunctional> Collection<T> filterMethods(Context ctx, Collection<T> methodList, Map<T, List<CsmType>> paramTypesPerMethod,
-            boolean acceptMoreParameters, boolean acceptIfSameNumberParams, boolean ignoreConstAndRef) {
+            boolean mustBeTemplate, boolean acceptMoreParameters, boolean acceptIfSameNumberParams, boolean ignoreConstAndRef) {
         assert (methodList != null);
         if (paramTypesPerMethod == null) {
             return methodList;
@@ -709,13 +715,16 @@ public final class CompletionSupport implements DocumentListener {
             CsmParameter[] methodParms = m.getParameters().toArray(new CsmParameter[m.getParameters().size()]);
             int minParamLenght = 0;
             for (CsmParameter parameter : methodParms) {
-                if(parameter.getInitialValue() == null) {
-                    minParamLenght++;
+                if (parameter.getInitialValue() == null) {
+                    CsmType paramType = parameter.getType();
+                    if (paramType != null && !paramType.isPackExpansion()) {
+                        minParamLenght++;
+                    }
                 }
             }
             if ((methodParms.length >= parmTypeCnt && minParamLenght <= parmTypeCnt) || (acceptMoreParameters && methodParms.length >= parmTypeCnt)) {
                 boolean accept = true;
-                boolean bestMatch = !acceptMoreParameters;
+                boolean bestMatch = !acceptMoreParameters && canBeBestMatch(m, mustBeTemplate);
                 int matched = 0;
                 for (int j = 0; accept && j < parmTypeCnt; j++) {
                     if (methodParms[j] == null) {
@@ -781,6 +790,15 @@ public final class CompletionSupport implements DocumentListener {
         }
         return ret;
     }
+    
+    private static boolean canBeBestMatch(CsmFunctional fun, boolean mustBeTemplate) {
+        if (mustBeTemplate) {
+            // Template functions still must be checked for viability,
+            // non-template functions are definetely not the best match
+            return false;
+        }
+        return !isTemplateFunction(fun);
+    }
 
     /**
      * Perform more accurate filtering. Could be used for navigation tasks.
@@ -809,7 +827,10 @@ public final class CompletionSupport implements DocumentListener {
             int minParamLenght = 0;
             for (CsmParameter parameter : methodParams) {
                 if (parameter.getInitialValue() == null) {
-                    minParamLenght++;
+                    CsmType paramType = parameter.getType();
+                    if (paramType != null && !paramType.isPackExpansion()) {
+                        minParamLenght++;
+                    }
                 }
             }
 
@@ -818,7 +839,7 @@ public final class CompletionSupport implements DocumentListener {
 
                 for (int j = 0; j < paramsCnt; j++) {
                     CsmType methodParamType = methodParams[j].getType();
-                    CsmType paramType =paramTypes.get(j);
+                    CsmType paramType = paramTypes.get(j);
                     if (paramType != null && methodParamType != null) {
                         conversions.add(new Conversion(ctx, paramType, methodParamType));
                     } else if (paramType != null && methodParamType == null) {
@@ -948,16 +969,19 @@ public final class CompletionSupport implements DocumentListener {
 
         private int calcTemplateScore(CsmType from, CsmType to, ConversionCategory category) {
             if (ConversionCategory.Template.equals(category)) {
-                int score = 0;
+                CsmType origToType = CsmInstantiationProvider.getDefault().getOriginalType(to);
+                if (origToType != null) {
+                    int score = 0;
 
-                if (from.isConst() && to.isConst()) {
-                    score++;
-                }
-                if (from.isPointer() && to.isPointer()) {
-                    score++;
-                }
+                    if (from.isConst() && origToType.isConst()) {
+                        score++;
+                    }
+                    if (from.isPointer() && origToType.isPointer()) {
+                        score++;
+                    }
 
-                return score;
+                    return score;
+                }
             }
             return 0;
         }
@@ -970,10 +994,10 @@ public final class CompletionSupport implements DocumentListener {
         Identity(1),
         Qualification(1),
         Template(1),
-        Promotion(2),
-        StandardConversion(3),
-        UserDefinedConversion(4),
-        VarArgConversion(5),
+        Promotion(3),
+        StandardConversion(4),
+        UserDefinedConversion(5),
+        VarArgConversion(6),
         NotConvertable(100);
 
         public int getRank() {
@@ -981,14 +1005,28 @@ public final class CompletionSupport implements DocumentListener {
         }
 
         public static ConversionCategory getWorstConversion(Context ctx, CsmType from, CsmType to) {
-            if (CsmUtilities.checkTypesEqual(from, from.getContainingFile(), to, to.getContainingFile(), new CsmUtilities.ExactMatchQualsEqualizer())) {
-                return ConversionCategory.Identity;
-            } else if (CsmUtilities.checkTypesEqual(from, from.getContainingFile(), to, to.getContainingFile(), new CsmUtilities.AssignableQualsEqualizer())) {
-                return ConversionCategory.Qualification;
-            } else if (CsmKindUtilities.isTemplateParameterType(to)) {
+            // if parameter of a function is a template parameter, then conversion should be marked as template
+            if (CsmKindUtilities.isTemplateParameterType(to)) {
                 return ConversionCategory.Template;
             }
+            
+            ClassifiersEqualizer clsEqualizer = new InstantiatedClassifiersEqualizer();
+            QualifiersEqualizer strongQualsEqualizer = new CsmUtilities.ExactMatchQualsEqualizer();
+            QualifiersEqualizer softQualsEqualizer = new CsmUtilities.AssignableQualsEqualizer();
+            
+            EqualResult res = CsmUtilities.checkTypesEqual(from, from.getContainingFile(), to, to.getContainingFile(), clsEqualizer, strongQualsEqualizer, true);
+            if (res == EqualResult.EQUAL) {
+                // qualifiers and classifiers are identical
+                return ConversionCategory.Identity;
+            } else if (res == EqualResult.QUALS_NOT_EQUAL) {
+                res = CsmUtilities.checkTypesEqual(from, from.getContainingFile(), to, to.getContainingFile(), clsEqualizer, softQualsEqualizer, true);
+                if (res == EqualResult.EQUAL) {
+                    // qualifiers are not identical, classifiers are identical
+                    return ConversionCategory.Qualification;
+                }
+            }
 
+            // try to convert "from" type to the "to" type.
             if (isAssignable(ctx, from, to)) {
                 CsmClassifier fromCls = from.getClassifier();
                 CsmClassifier toCls = to.getClassifier();
@@ -1125,6 +1163,42 @@ public final class CompletionSupport implements DocumentListener {
             }
             return qualConversions;
         }
+    }
+    
+    private static final class InstantiatedClassifiersEqualizer implements CsmUtilities.ClassifiersEqualizer {
+
+        @Override
+        public boolean areClassifiersEqual(CsmType type1, CsmClassifier cls1, CsmType type2, CsmClassifier cls2) {
+            if (CsmKindUtilities.isInstantiation(cls1) && CsmKindUtilities.isInstantiation(cls2)) {
+                if (CharSequenceUtilities.textEquals(cls1.getQualifiedName(), cls2.getQualifiedName())) {
+                    CharSequence instText1 = CsmInstantiationProvider.getDefault().getInstantiatedText(type1);
+                    int lt1 = CharSequenceUtilities.indexOf(instText1, CppTokenId.LT.fixedText());
+                    int gt1 = CharSequenceUtilities.lastIndexOf(instText1, CppTokenId.GT.fixedText());
+                    CharSequence instText2 = CsmInstantiationProvider.getDefault().getInstantiatedText(type2);
+                    int lt2 = CharSequenceUtilities.indexOf(instText2, CppTokenId.LT.fixedText());
+                    int gt2 = CharSequenceUtilities.lastIndexOf(instText2, CppTokenId.GT.fixedText());
+                    if (lt1 >= 0 && gt1 >= lt1 && lt2 >= 0 && gt2 >= lt2 && (gt1 - lt1) == (gt2 - lt2)) {
+                        for (int i = 0; i < (gt1 - lt1); ++i) {
+                            if (instText1.charAt(lt1 + i) != instText2.charAt(lt2 + i)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return CharSequenceUtilities.textEquals(cls1.getQualifiedName(), cls2.getQualifiedName());
+        }
+        
+    }
+    
+    private static boolean isTemplateFunction(CsmFunctional fun) {
+        if (CsmKindUtilities.isTemplate(fun)) {
+            List<CsmTemplateParameter> templateParameters = ((CsmTemplate) fun).getTemplateParameters();
+            return templateParameters != null && !templateParameters.isEmpty();
+        }
+        return false;
     }
 
     ////////////////////////////////////////////////

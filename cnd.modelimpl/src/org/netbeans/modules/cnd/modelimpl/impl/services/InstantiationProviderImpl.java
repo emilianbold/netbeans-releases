@@ -425,6 +425,16 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     @Override
+    public CsmType getOriginalType(CsmType type) {
+        return Instantiation.unfoldOriginalType(type);
+    }
+
+    @Override
+    public CsmType getInstantiatedType(CsmType type) {
+        return Instantiation.unfoldInstantiatedType(type);
+    }
+
+    @Override
     public boolean isViableInstantiation(CsmInstantiation instantiation, boolean acceptTemplateParams) {
         List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params = getInstantiationParams(instantiation);
         InstantiationParametersInfo paramsInfo = new InstantiationParametersInfoImpl(instantiation, params);

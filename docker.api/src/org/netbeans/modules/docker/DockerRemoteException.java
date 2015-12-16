@@ -52,7 +52,7 @@ public class DockerRemoteException extends DockerException {
     private final int code;
 
     public DockerRemoteException(int code, String message) {
-        super(message);
+        super(code + ": " + message);
         this.code = code;
     }
 

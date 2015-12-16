@@ -911,13 +911,16 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final ElementFilter publicOnly = ElementFilter.forPublicModifiers(true);
         final ElementFilter publicAndProtectedOnly = ElementFilter.forPrivateModifiers(false);
         final ElementFilter fromEnclosingType = ElementFilter.forMembersOfType(enclosingType);
+        // #253290 check used traits except for them of the inherited class
+        final Set<TypeElement> usedTraits = getAllUsedTraits(enclosingType);
+
         return new ElementFilter() {
             private ElementFilter[] subtypesFilters = null;
             @Override
             public boolean isAccepted(final PhpElement element) {
                 if (element instanceof TypeMemberElement && !element.getPhpElementKind().equals(PhpElementKind.TYPE_CONSTANT)) {
                     if (enclosingType != null) {
-                        return isFromEnclosingType(element)
+                        return isFromEnclosingType(element) || isFromTraitOfEnclosingType(element)
                                 ? true
                                 : (isFromSubclassOfEnclosingType(element) ? publicAndProtectedOnly.isAccepted(element) : publicOnly.isAccepted(element));
                     }
@@ -929,6 +932,18 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             private boolean isFromEnclosingType(final PhpElement element) {
                 return fromEnclosingType.isAccepted(element);
             }
+
+            private boolean isFromTraitOfEnclosingType(final PhpElement element) {
+                if (!usedTraits.isEmpty()) {
+                    for (TypeElement nextType : inheritedTypes) {
+                        if (nextType.isTrait() && usedTraits.contains(nextType) && ElementFilter.forMembersOfType(nextType).isAccepted(element)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
             private boolean isFromSubclassOfEnclosingType(final PhpElement element) {
                 for (TypeElement nextType : inheritedTypes) {
                     if (ElementFilter.forMembersOfType(nextType).isAccepted(element)) {
@@ -954,6 +969,39 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 return filters.toArray(new ElementFilter[filters.size()]);
             }
         };
+    }
+
+    /**
+     * Get all traits directly used from a class or trait recursively.
+     *
+     * @param typeElement the type element
+     * @return Used traits
+     */
+    private static Set<TypeElement> getAllUsedTraits(TypeElement typeElement) {
+        final Set<TypeElement> usedTraits = new HashSet<>();
+        if (typeElement instanceof TraitedElement) {
+            TraitedElement traitedElement = (TraitedElement) typeElement;
+            Collection<QualifiedName> traits = traitedElement.getUsedTraits();
+            if (!traits.isEmpty()) {
+                addAllUsedTraits(usedTraits, traitedElement, traits);
+            }
+        }
+        return usedTraits;
+    }
+
+    private static void addAllUsedTraits(final Set<TypeElement> traits, TraitedElement traitedElement, final Collection<QualifiedName> usedTraits) {
+        ElementQuery elementQuery = traitedElement.getElementQuery();
+        if (elementQuery.getQueryScope().isIndexScope()) {
+            final ElementQuery.Index elementQueryIndex = (ElementQuery.Index) elementQuery;
+            for (QualifiedName usedTrait : usedTraits) {
+                Set<TraitElement> usedTraitElements = elementQueryIndex.getTraits(NameKind.exact(usedTrait));
+                traits.addAll(usedTraitElements);
+                for (TraitElement usedTraitElement : usedTraitElements) {
+                    // add traits recursively
+                    addAllUsedTraits(traits, usedTraitElement, usedTraitElement.getUsedTraits());
+                }
+            }
+        }
     }
 
     @Override

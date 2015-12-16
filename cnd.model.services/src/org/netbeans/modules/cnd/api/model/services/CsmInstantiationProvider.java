@@ -187,6 +187,22 @@ public abstract class CsmInstantiationProvider {
     public abstract List<CsmInstantiation> getInstantiatedTypeInstantiations(CsmType type);
     
     /**
+     * Returns the most basic original type.
+     * 
+     * @param type
+     * @return unfolded original type
+     */
+    public abstract CsmType getOriginalType(CsmType type);
+    
+    /**
+     * Returns the most basic instantiated type.
+     * 
+     * @param type
+     * @return unfolded instantiated type
+     */
+    public abstract CsmType getInstantiatedType(CsmType type);
+    
+    /**
      * Return true if instantiation is viable (e.g. it's instantiation parameters are resolved)
      * 
      * @param instantiation
@@ -356,6 +372,16 @@ public abstract class CsmInstantiationProvider {
 
         @Override
         public List<CsmInstantiation> getInstantiatedTypeInstantiations(CsmType type) {
+            return null;
+        }
+
+        @Override
+        public CsmType getOriginalType(CsmType type) {
+            return null;
+        }
+
+        @Override
+        public CsmType getInstantiatedType(CsmType type) {
             return null;
         }
 

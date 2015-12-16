@@ -96,6 +96,27 @@ public class UtilitiesActiveQueueTest extends NbTestCase {
         }
     }
     
+    public void testManyReferencesProcessed() throws InterruptedException {
+        int n = 10;
+        Object[] objects = new Object[n];
+        ExpensiveRef[] refs = new ExpensiveRef[n];
+        for (int i = 0; i < n; i++) {
+            objects[i] = new Object();
+            refs[i] = new ExpensiveRef(objects[i], Integer.toString(i));
+        }
+        objects = null;
+        for (int i = 0; i < n; i++) {
+            assertGC("is GC'ed", refs[i]);
+        }
+        for (int i = 0; i < n; i++) {
+            synchronized (refs[i]) {
+                while (!refs[i].executed) {
+                    refs[i].wait();
+                }
+            }
+        }
+    }
+    
     public void testCallingPublicMethodsThrowsExceptions () {
         try {
             BaseUtilities.activeReferenceQueue().poll();
@@ -141,6 +162,29 @@ public class UtilitiesActiveQueueTest extends NbTestCase {
             executed = true;
             
             notifyAll ();
+        }
+    }
+    
+    private static class ExpensiveRef extends WeakReference<Object>
+    implements Runnable {
+        public boolean executed;
+        private final String name;
+        
+        public ExpensiveRef (Object o, String name) {
+            super(o, BaseUtilities.activeReferenceQueue());
+            this.name = name;
+        }
+        
+        @Override
+        public synchronized void run () {
+            executed = true;
+            try {
+                Thread.sleep(10);
+                System.gc();
+                Thread.sleep(10);
+            } catch (InterruptedException iex) {}
+            notifyAll ();
+            System.err.println(name+" executed.");
         }
     }
 }

@@ -239,6 +239,10 @@ public class CompletionTestBase extends NbTestCase {
     }
     
     protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName, String sourceLevel) throws Exception {
+        String version = System.getProperty("java.specification.version");
+        if (com.sun.tools.javac.code.Source.lookup(version).compareTo(com.sun.tools.javac.code.Source.lookup(sourceLevel)) < 0) {
+            sourceLevel = com.sun.tools.javac.code.Source.lookup(version).name;
+        }
         this.sourceLevel.set(sourceLevel);
         File testSource = new File(getWorkDir(), "test/Test.java");
         testSource.getParentFile().mkdirs();
@@ -275,9 +279,8 @@ public class CompletionTestBase extends NbTestCase {
             }
         }
         
-        String version = System.getProperty("java.specification.version") + "/";
         
-        File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/completion/JavaCompletionTaskTest/" + version + goldenFileName);
+        File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/completion/JavaCompletionTaskTest/" + version + "/" + goldenFileName);
         File diffFile = new File(getWorkDir(), getName() + ".diff");        
         assertFile(output, goldenFile, diffFile);
         

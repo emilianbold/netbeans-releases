@@ -1253,31 +1253,34 @@ public final class VariousUtils {
     }
 
     private static String translateSpecialClassName(Scope scp, String clsName) {
-        ClassScope classScope = null;
-        if (scp instanceof ClassScope) {
-            classScope = (ClassScope) scp;
+        TypeScope typeScope = null;
+        if (scp instanceof ClassScope || scp instanceof TraitScope) {
+            typeScope = (TypeScope) scp;
         } else if (scp instanceof MethodScope) {
             MethodScope msi = (MethodScope) scp;
             Scope inScope = msi.getInScope();
-            if (inScope instanceof ClassScope) {
-                classScope = (ClassScope) inScope;
+            if (inScope instanceof ClassScope || inScope instanceof TraitScope) {
+                typeScope = (TypeScope) inScope;
             }
         }
-        if (classScope != null) {
+        if (typeScope != null) {
             switch (clsName) {
                 case "self": //NOI18N
                 case "this": //NOI18N
                 case "static": //NOI18N
-                    clsName = classScope.getName();
+                    clsName = typeScope.getName();
                     break;
                 case "parent": //NOI18N
-                    QualifiedName fullyQualifiedName = ModelUtils.getFirst(classScope.getPossibleFQSuperClassNames());
-                    if (fullyQualifiedName != null) {
-                        clsName = fullyQualifiedName.toString();
-                    } else {
-                        ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
-                        if (clzScope != null) {
-                            clsName = clzScope.getName();
+                    if (typeScope instanceof ClassScope) {
+                        ClassScope classScope = (ClassScope) typeScope;
+                        QualifiedName fullyQualifiedName = ModelUtils.getFirst(classScope.getPossibleFQSuperClassNames());
+                        if (fullyQualifiedName != null) {
+                            clsName = fullyQualifiedName.toString();
+                        } else {
+                            ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
+                            if (clzScope != null) {
+                                clsName = clzScope.getName();
+                            }
                         }
                     }
                     break;

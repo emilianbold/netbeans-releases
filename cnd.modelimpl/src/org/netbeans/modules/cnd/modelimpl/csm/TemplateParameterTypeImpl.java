@@ -181,6 +181,11 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     }
 
     @Override
+    public boolean isPackExpansion() {
+        return type.isPackExpansion();
+    }
+
+    @Override
     public List<CsmSpecializationParameter> getInstantiationParams() {
         return type.getInstantiationParams();
     }

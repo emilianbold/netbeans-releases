@@ -199,6 +199,14 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         }
 
         @Override
+        public FileObject getWorkDir() {
+            if (gulpfile == null) {
+                return project.getProjectDirectory();
+            }
+            return gulpfile.getParent();
+        }
+
+        @Override
         public String getIdentifier() {
             return GulpBuildTool.IDENTIFIER;
         }
@@ -207,7 +215,7 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
             "TasksMenuSupportImpl.tasks.label=&Task(s)",
             "TasksMenuSupportImpl.tasks.loading=Loading Tasks...",
             "TasksMenuSupportImpl.tasks.reload=Reload Tasks",
-            "TasksMenuSupportImpl.tasks.run.advanced=Run Task(s)",
+            "TasksMenuSupportImpl.tasks.manage.advanced=Manage Task(s)",
             "TasksMenuSupportImpl.gulp.configure=Configure Gulp...",
         })
         @Override
@@ -221,8 +229,8 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
                     return Bundle.TasksMenuSupportImpl_tasks_reload();
                 case CONFIGURE_TOOL:
                     return Bundle.TasksMenuSupportImpl_gulp_configure();
-                case RUN_ADVANCED:
-                    return Bundle.TasksMenuSupportImpl_tasks_run_advanced();
+                case MANAGE_ADVANCED:
+                    return Bundle.TasksMenuSupportImpl_tasks_manage_advanced();
                 case TASKS_LABEL:
                     return Bundle.TasksMenuSupportImpl_tasks_label();
                 case BUILD_TOOL_EXEC:
@@ -231,18 +239,6 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
                     assert false : "Unknown title: " + title;
             }
             return null;
-        }
-
-        @Override
-        public String getAdvancedTasksNamespace() {
-            if (gulpfile == null) {
-                return null;
-            }
-            String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), gulpfile);
-            if (relativePath != null) {
-                return relativePath;
-            }
-            return FileUtil.toFile(gulpfile).getAbsolutePath();
         }
 
         @Override

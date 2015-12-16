@@ -151,6 +151,7 @@ CLASS      Barrr                           [PUBLIC]   test204104.php
 CLASS      Barrr                           [PUBLIC]   test204104_02.php
 CLASS      Base                            [PUBLIC]   issue208193.php
 CLASS      BaseClass                       [PUBLIC]   FrontSpace
+CLASS      BaseClass                       [PUBLIC]   issue253290.php
 CLASS      BaseClass                       [PUBLIC]   traits.php
 CLASS      BaseFrontClass                  [PUBLIC]   FrontSpace
 CLASS      BasePresenter                   [PUBLIC]   issue208784.php
@@ -243,6 +244,7 @@ CLASS      Exception                       [PUBLIC]   issue201310.php
 CLASS      Exception                       [PUBLIC]   issue243458.php
 CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
+CLASS      ExtendedClass                   [PUBLIC]   issue253290.php
 CLASS      Fac                             [PUBLIC]   Third
 CLASS      Fac2                            [PUBLIC]   Third
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
@@ -406,6 +408,7 @@ CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
 CLASS      ThirdC                          [PUBLIC]   First\Second
 CLASS      ThirdI                          [PUBLIC]   First\Second
 CLASS      TraitedClass                    [PUBLIC]   traits.php
+CLASS      TraitedExtendedClass            [PUBLIC]   issue253290.php
 CLASS      Types                           [PUBLIC]   Package1
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php
 CLASS      Url                             [PUBLIC]   foo\lib\url

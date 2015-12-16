@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.pull;
 
+import org.netbeans.modules.docker.ui.StatusOutputListener;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -126,8 +127,9 @@ public class PullImageAction extends NodeAction {
                     io.getOut().reset();
                     io.select();
                     DockerAction facade = new DockerAction(instance);
-                    facade.pull(image, new PullOutputListener(io));
+                    facade.pull(image, new StatusOutputListener(io));
                 } catch (DockerException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
                     io.getErr().println(ex.getMessage());
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);

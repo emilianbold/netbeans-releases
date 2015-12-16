@@ -57,6 +57,8 @@ import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.BuildEvent;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.api.StatusEvent;
+import org.netbeans.modules.docker.ui.StatusOutputListener;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -172,11 +174,10 @@ public class BuildImageWizard {
                                 io.getOut().println(event.getMessage());
                             }
                         }
-
-                    });
+                    }, new StatusOutputListener(io));
                 } catch (DockerException ex) {
-                    io.getErr().println(ex.getMessage());
                     LOGGER.log(Level.INFO, null, ex);
+                    io.getErr().println(ex.getMessage());
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                 } finally {

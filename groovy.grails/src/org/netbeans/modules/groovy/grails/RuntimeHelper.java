@@ -43,12 +43,17 @@
 package org.netbeans.modules.groovy.grails;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -136,6 +141,26 @@ public final class RuntimeHelper {
         if (!isValidRuntime(grailsBase)) {
             return null;
         }
+        
+        String version = getRuntimeVersionFromProperties(grailsBase);
+        
+        if (version == null) {
+            version = getRuntimeVersionFromInvocation(grailsBase);
+        }
+
+        return version;
+    }
+    
+    /**
+     * This method gets the grails runtime version reading the build.properties
+     * file.
+     * This approach for getting the runtime version works with grails versions
+     * 1 and 2 but not with version 3.
+     * 
+     * @param grailsBase The base grails installation directory
+     * @return the version
+     */
+    private static String getRuntimeVersionFromProperties(File grailsBase) {
         Properties props = new Properties();
         try {
             BufferedInputStream is = new BufferedInputStream(new FileInputStream(
@@ -153,8 +178,61 @@ public final class RuntimeHelper {
             LOGGER.log(Level.INFO, null, ex);
             return null;
         }
-
+        
         return props.getProperty("grails.version"); // NOI18N
+    }
+    
+    /**
+     * This method gets the grails runtime version invoking the grails command.
+     * This approach for getting the runtime version works with grails versions
+     * 2 and 3 but not with version 1.
+     * 
+     * @param grailsBase The base grails installation directory
+     * @return the version
+     */
+    private static String getRuntimeVersionFromInvocation(File grailsBase) {
+        
+        File grailsExecutable = RuntimeHelper.getGrailsExecutable(
+                grailsBase, false);
+        
+        NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(
+                    grailsExecutable.getAbsolutePath(), "--version"); // NOI18N
+        
+        String[] envp = new String[] {
+                "GRAILS_HOME=" + grailsBase.getAbsolutePath(), // NOI18N
+                "JAVA_HOME=" + System.getProperty("java.home") // NOI18N                
+            };
+        
+        Process process = null;
+        String preProcessUUID = UUID.randomUUID().toString();
+        try {
+            process = new WrapperProcess(
+                    grailsProcessDesc.exec(null, envp, true, grailsBase),
+                    preProcessUUID);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return null;
+        }
+        
+        try {
+            process.waitFor();
+            InputStream stdout = process.getInputStream();
+            BufferedReader reader = new BufferedReader (new InputStreamReader(stdout));
+
+            String line;
+            while ( (line = reader.readLine() ) != null) {
+                if (line.toLowerCase().contains("grails version:")) { // NOI18N
+                    String version = line.split(":")[1]; // NOI18N
+                    return version.trim();
+                }
+            }
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }       
+        
+        return null;
     }
 
 }

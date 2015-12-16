@@ -109,14 +109,14 @@ public class ChunkedInputStream extends FilterInputStream {
         if (remaining == 0) {
             if (started) {
                 // read end of previous chunk
-                String line = HttpParsingUtils.readResponseLine(in);
+                String line = HttpUtils.readResponseLine(in);
                 if (!line.isEmpty()) {
                     throw new IOException("Chunk content has additional data: " + line);
                 }
             } else {
                 started = true;
             }
-            String line = HttpParsingUtils.readResponseLine(in);
+            String line = HttpUtils.readResponseLine(in);
             if (line == null) {
                 finished = true;
                 return -1;
@@ -129,7 +129,7 @@ public class ChunkedInputStream extends FilterInputStream {
                 remaining = Integer.parseInt(line, 16);
                 if (remaining == 0) {
                     // end of chunk stream
-                    line = HttpParsingUtils.readResponseLine(in);
+                    line = HttpUtils.readResponseLine(in);
                     if (!line.isEmpty()) {
                         throw new IOException("End of chunk stream contains additional data: " + line);
                     }

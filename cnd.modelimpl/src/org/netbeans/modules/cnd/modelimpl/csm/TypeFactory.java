@@ -256,17 +256,66 @@ public class TypeFactory {
         AST typeStart = AstRenderer.getFirstSiblingSkipQualifiers(ast);
         
         if (typeStart != null && typeStart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND && DeclTypeImpl.isDeclType(typeStart.getFirstChild())) {
-            type = new DeclTypeImpl(typeStart.getFirstChild(), file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), TypeImpl.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+            type = new DeclTypeImpl(
+                typeStart.getFirstChild(), 
+                file, 
+                scope, 
+                TypeImpl.initIsPackExpansion(ast),
+                pointerDepth, 
+                refence, 
+                arrayDepth, 
+                TypeImpl.initConstQualifiers(ast), 
+                TypeImpl.getStartOffset(ast), 
+                TypeImpl.getEndOffset(ast, inFunctionParameters)
+            );
         } else if (DeclTypeImpl.isDeclType(typeStart)) {
-            type = new DeclTypeImpl(typeStart, file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), TypeImpl.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+            type = new DeclTypeImpl(
+                typeStart, 
+                file, 
+                scope, 
+                TypeImpl.initIsPackExpansion(ast),
+                pointerDepth, 
+                refence, 
+                arrayDepth, 
+                TypeImpl.initConstQualifiers(ast), 
+                TypeImpl.getStartOffset(ast), 
+                TypeImpl.getEndOffset(ast, inFunctionParameters)
+            );
         } else if (parent != null) {
-            type = NestedType.create(parent, file, parent.getPointerDepth(), getReferenceValue(parent), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
+            type = NestedType.create(
+                parent, 
+                file, 
+                parent.isPackExpansion(),
+                parent.getPointerDepth(), 
+                getReferenceValue(parent), 
+                parent.getArrayDepth(), 
+                parent.isConst(), 
+                parent.getStartOffset(), 
+                parent.getEndOffset()
+            );
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(asts, inFunctionParameters, inTypedef)) {
-            type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), TypeImpl.getStartOffset(ast), TypeFunPtrImpl.getEndOffset(ast));
+            type = new TypeFunPtrImpl(
+                file,
+                returnTypePointerDepth,
+                refence,
+                arrayDepth, 
+                TypeImpl.initIsConst(ast), 
+                TypeImpl.getStartOffset(ast),
+                TypeFunPtrImpl.getEndOffset(ast)
+            );
             ((TypeFunPtrImpl)type).init(asts, scope, inFunctionParameters, inTypedef);
             functionPointerType = true;
         } else {
-            type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), TypeImpl.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+            type = new TypeImpl(
+                file, 
+                TypeImpl.initIsPackExpansion(ast),
+                pointerDepth, 
+                refence, 
+                arrayDepth, 
+                TypeImpl.initConstQualifiers(ast), 
+                TypeImpl.getStartOffset(ast), 
+                TypeImpl.getEndOffset(ast, inFunctionParameters)
+            );
         }
 
         // TODO: pass extra parameters to the constructor insdead of calling methods!!!
@@ -310,7 +359,7 @@ public class TypeFactory {
                     } else {
                         //Check for global type
                         if (tokFirstId.getType() ==  CPPTokenTypes.SCOPE) {
-                            type = NestedType.create(null, file, type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
+                            type = NestedType.create(null, file, type.isPackExpansion(), type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
                             tokFirstId = tokFirstId.getNextSibling();
                         }
                         //TODO: we have AstRenderer.getNameTokens, it is better to use it here
@@ -472,13 +521,13 @@ public class TypeFactory {
                     if(first) {
                         first = false;
                         List<CharSequence> nameList = new ArrayList<>();
-                        type = new TypeImpl(getFile(), pointerDepth, reference, arrayDepth, _const, getStartOffset(), getEndOffset());
+                        type = new TypeImpl(getFile(), false, pointerDepth, reference, arrayDepth, _const, getStartOffset(), getEndOffset());
                         nameList.add(namePart.getPart());
                         type.setClassifierText(namePart.getPart());
                         type.setQName(nameList.toArray(new CharSequence[nameList.size()]));
                     } else {
                         List<CharSequence> nameList = new ArrayList<>();
-                        type = NestedType.create(TemplateUtils.checkTemplateType(type, scope), getFile(), type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
+                        type = NestedType.create(TemplateUtils.checkTemplateType(type, scope), getFile(), false, type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
                         nameList.add(namePart.getPart());
                         type.setClassifierText(namePart.getPart());
                         type.setQName(nameList.toArray(new CharSequence[nameList.size()]));                    
@@ -551,7 +600,7 @@ public class TypeFactory {
     }
 
     public static CsmType createSimpleType(CsmClassifier cls, CsmFile file, int startOffset, int endOffset) {
-        TypeImpl type = new TypeImpl(file, 0, 0, 0, false, startOffset, endOffset);
+        TypeImpl type = new TypeImpl(file, false, 0, 0, 0, false, startOffset, endOffset);
         type.setClassifierText(cls.getName());
         List<CharSequence> l = new ArrayList<>();
         l.add(cls.getName());
@@ -622,6 +671,11 @@ public class TypeFactory {
         @Override
         public List<CsmSpecializationParameter> getInstantiationParams() {
             return type.getInstantiationParams();
+        }
+
+        @Override
+        public boolean isPackExpansion() {
+            return type.isPackExpansion();
         }
 
         @Override

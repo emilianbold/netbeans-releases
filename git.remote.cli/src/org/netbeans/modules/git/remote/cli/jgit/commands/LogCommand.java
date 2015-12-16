@@ -132,12 +132,20 @@ public class LogCommand extends GitCommand {
             if (criteria.getRevisionFrom().equals(criteria.getRevisionTo())) {
                 addArgument(0, criteria.getRevisionFrom());
             } else {
-                addArgument(0, criteria.getRevisionFrom()+"^.."+criteria.getRevisionTo());
+                if (criteria.isAddSelfFrom()) {
+                    addArgument(0, criteria.getRevisionFrom()+"^.."+criteria.getRevisionTo());
+                } else {
+                    addArgument(0, criteria.getRevisionFrom()+".."+criteria.getRevisionTo());
+                }
             }
         } else if (criteria != null && criteria.getRevisionTo() != null) {
             addArgument(0, criteria.getRevisionTo());
         } else if (criteria != null && criteria.getRevisionFrom() != null) {
-            addArgument(0, criteria.getRevisionFrom()+"^..");
+            if (criteria.isAddSelfFrom()) {
+                addArgument(0, criteria.getRevisionFrom()+"^..");
+            } else {
+                addArgument(0, criteria.getRevisionFrom()+"..");
+            }
         } else {
             addArgument(0, "--all");
         }

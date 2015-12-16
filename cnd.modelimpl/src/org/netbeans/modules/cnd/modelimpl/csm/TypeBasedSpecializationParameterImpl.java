@@ -153,6 +153,11 @@ public final class TypeBasedSpecializationParameterImpl extends OffsetableBase i
     }
 
     @Override
+    public boolean isPackExpansion() {
+        return type.isPackExpansion();
+    }
+
+    @Override
     public int getPointerDepth() {
         return type.getPointerDepth();
     }

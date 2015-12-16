@@ -39,14 +39,38 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api;
+package org.netbeans.modules.docker.ui;
+
+import org.netbeans.modules.docker.api.StatusEvent;
+import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Petr Hejl
  */
-public enum ContainerStatus {
-    RUNNING,
-    PAUSED,
-    STOPPED
+public class StatusOutputListener implements StatusEvent.Listener {
+
+    private final InputOutput io;
+
+    public StatusOutputListener(InputOutput io) {
+        this.io = io;
+    }
+
+    @Override
+    public void onEvent(StatusEvent event) {
+        StringBuilder sb = new StringBuilder();
+        if (event.getId() != null) {
+            sb.append(event.getId()).append(": ");
+        }
+        sb.append(event.getMessage());
+        if (event.getProgress() != null) {
+            sb.append(" ").append(event.getProgress());
+        }
+        if (event.isError()) {
+            io.getErr().println(sb.toString());
+        } else {
+            io.getOut().println(sb.toString());
+        }
+    }
+
 }

@@ -56,6 +56,7 @@ import org.netbeans.modules.web.clientproject.build.ui.TasksMenu;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 import org.netbeans.modules.web.clientproject.spi.build.CustomizerPanelImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
@@ -210,7 +211,7 @@ public final class BuildTools {
             LOADING_TASKS,
             RELOAD_TASKS,
             CONFIGURE_TOOL,
-            RUN_ADVANCED,
+            MANAGE_ADVANCED,
             TASKS_LABEL,
             BUILD_TOOL_EXEC,
         }
@@ -222,6 +223,15 @@ public final class BuildTools {
          */
         @NonNull
         Project getProject();
+
+        /**
+         * Gets working directory. This path is used for storing/loading
+         * advanced tasks.
+         * @return working directory, never {@code null}
+         * @since 1.103
+         */
+        @NonNull
+        FileObject getWorkDir();
 
         /**
          * Gets unique identifier, <b>non-localized</b> identifier of the build tool.
@@ -239,15 +249,6 @@ public final class BuildTools {
          */
         @NonNull
         String getTitle(@NonNull Title title);
-
-        /**
-         * Gets namespace for advanced tasks. This namespace is used for storing/loading
-         * advanced tasks.
-         * @return namespace for advanced tasks; can be {@code null} for no namespace
-         * @since 1.100
-         */
-        @CheckForNull
-        String getAdvancedTasksNamespace();
 
         /**
          * Gets default task name (typically "default"); can be {@code null} if not supported.

@@ -39,38 +39,37 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.pull;
+package org.netbeans.modules.docker.api;
 
-import org.netbeans.modules.docker.api.StatusEvent;
-import org.openide.windows.InputOutput;
+import java.io.IOException;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.docker.DockerConfig;
 
 /**
  *
  * @author Petr Hejl
  */
-public class PullOutputListener implements StatusEvent.Listener {
+public final class CredentialsManager {
 
-    private final InputOutput io;
+    private static final CredentialsManager INSTANCE = new CredentialsManager();
 
-    public PullOutputListener(InputOutput io) {
-        this.io = io;
+    private CredentialsManager() {
+        super();
     }
 
-    @Override
-    public void onEvent(StatusEvent event) {
-        StringBuilder sb = new StringBuilder();
-        if (event.getId() != null) {
-            sb.append(event.getId()).append(": ");
-        }
-        sb.append(event.getMessage());
-        if (event.getProgress() != null) {
-            sb.append(" ").append(event.getProgress());
-        }
-        if (event.isError()) {
-            io.getErr().println(sb.toString());
-        } else {
-            io.getOut().println(sb.toString());
-        }
+    public static CredentialsManager getDefault() {
+        return INSTANCE;
     }
 
+    public Credentials getCredentials(String registry) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread();
+        return DockerConfig.getDefault().getCredentials(registry);
+    }
+
+    public Credentials createCredentials(String registry, String username, char[] password, String email) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread();
+        Credentials credentials = new Credentials(registry, username, password, email);
+        DockerConfig.getDefault().setCredentials(credentials);
+        return credentials;
+    }
 }
