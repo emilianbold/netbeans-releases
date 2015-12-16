@@ -111,6 +111,7 @@ import org.netbeans.api.editor.document.AtomicLockListener;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -768,8 +769,8 @@ public final class EditorCaret implements Caret {
     private boolean updateCaretBounds() {
         final JTextComponent c = component;
         final boolean[] ret = { false };
-        if (c != null) {
-            AbstractDocument doc = activeDoc;
+        AbstractDocument doc;
+        if (c != null && (doc = activeDoc) != null) {
             doc.readLock();
             try {
                 for (CaretInfo caret : carets) {
@@ -857,8 +858,9 @@ public final class EditorCaret implements Caret {
             }
         }
 
-        // EditorCaret only installs successfully into AbstractDocument based documents
-        if (newDoc instanceof AbstractDocument) {
+        // EditorCaret only installs successfully into AbstractDocument based documents that carry a mime-type
+        String mimeType;
+        if ((newDoc instanceof AbstractDocument) && (mimeType = DocumentUtilities.getMimeType(newDoc)) != null) {
             activeDoc = (AbstractDocument) newDoc;
             DocumentUtilities.addDocumentListener(
                     newDoc, listenerImpl, DocumentListenerPriority.CARET_UPDATE);
@@ -868,7 +870,7 @@ public final class EditorCaret implements Caret {
             }
 
             // Leave caretPos and markPos null => offset==0
-            prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(newDoc)).lookup(Preferences.class);
+            prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
             if (prefs != null) {
                 weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, listenerImpl, prefs);
                 prefs.addPreferenceChangeListener(weakPrefsListener);
