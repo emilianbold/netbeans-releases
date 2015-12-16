@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.25
+#Version 8.32.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -90,7 +90,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 
 CLSS public abstract static org.openide.util.Lookup$Item<%0 extends java.lang.Object>
@@ -211,6 +211,7 @@ meth public static org.openide.util.Lookup metaInfServices(java.lang.ClassLoader
 meth public static org.openide.util.Lookup metaInfServices(java.lang.ClassLoader,java.lang.String)
 meth public static org.openide.util.Lookup proxy(org.openide.util.Lookup$Provider)
 meth public static org.openide.util.Lookup singleton(java.lang.Object)
+meth public static void executeWith(org.openide.util.Lookup,java.lang.Runnable)
 supr java.lang.Object
 hcls LookupItem
 

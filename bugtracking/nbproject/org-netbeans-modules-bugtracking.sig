@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.102
+#Version 1.108.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -169,6 +169,7 @@ supr java.lang.Object
 hfds instance
 
 CLSS public final org.netbeans.modules.bugtracking.api.Util
+meth public static boolean edit(org.netbeans.modules.bugtracking.api.Repository)
 meth public static int[] getIssueSpans(java.lang.String)
 meth public static java.lang.String getIssueId(java.lang.String)
 meth public static java.util.List<org.netbeans.modules.bugtracking.api.Issue> getRecentIssues()
@@ -179,7 +180,6 @@ meth public static void createIssue(org.netbeans.modules.bugtracking.api.Reposit
 meth public static void createNewIssue(org.netbeans.modules.bugtracking.api.Repository)
 meth public static void createNewQuery(org.netbeans.modules.bugtracking.api.Repository)
 meth public static void createNewQuery(org.netbeans.modules.bugtracking.api.Repository,boolean)
-meth public static void edit(org.netbeans.modules.bugtracking.api.Repository)
 meth public static void openIssue(org.netbeans.modules.bugtracking.api.Repository,java.lang.String)
 meth public static void openIssue(org.openide.filesystems.FileObject,java.lang.String)
 meth public static void selectQuery(org.netbeans.modules.bugtracking.api.Query)
@@ -209,6 +209,7 @@ meth public org.netbeans.modules.bugtracking.api.Repository createRepository({or
 meth public void addToCategory({org.netbeans.modules.bugtracking.spi.BugtrackingSupport%0},{org.netbeans.modules.bugtracking.spi.BugtrackingSupport%2})
 meth public void editQuery({org.netbeans.modules.bugtracking.spi.BugtrackingSupport%0},{org.netbeans.modules.bugtracking.spi.BugtrackingSupport%1})
 meth public void openIssue({org.netbeans.modules.bugtracking.spi.BugtrackingSupport%0},{org.netbeans.modules.bugtracking.spi.BugtrackingSupport%2})
+meth public void setQueryAutoRefresh({org.netbeans.modules.bugtracking.spi.BugtrackingSupport%0},{org.netbeans.modules.bugtracking.spi.BugtrackingSupport%1},boolean)
 supr java.lang.Object
 hfds issueProvider,queryProvider,repositoryProvider
 

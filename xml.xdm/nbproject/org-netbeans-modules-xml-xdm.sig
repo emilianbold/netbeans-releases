@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.29.0
+#Version 1.32.1
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -144,7 +144,7 @@ meth public {java.util.HashMap%1} get(java.lang.Object)
 meth public {java.util.HashMap%1} put({java.util.HashMap%0},{java.util.HashMap%1})
 meth public {java.util.HashMap%1} remove(java.lang.Object)
 supr java.util.AbstractMap<{java.util.HashMap%0},{java.util.HashMap%1}>
-hfds ALTERNATIVE_HASHING_THRESHOLD_DEFAULT,DEFAULT_INITIAL_CAPACITY,DEFAULT_LOAD_FACTOR,MAXIMUM_CAPACITY,entrySet,hashSeed,loadFactor,modCount,serialVersionUID,size,table,threshold,useAltHashing
+hfds ALTERNATIVE_HASHING_THRESHOLD_DEFAULT,DEFAULT_INITIAL_CAPACITY,DEFAULT_LOAD_FACTOR,EMPTY_TABLE,MAXIMUM_CAPACITY,entrySet,hashSeed,loadFactor,modCount,serialVersionUID,size,table,threshold
 hcls Entry,EntryIterator,EntrySet,HashIterator,Holder,KeyIterator,KeySet,ValueIterator,Values
 
 CLSS public java.util.HashSet<%0 extends java.lang.Object>

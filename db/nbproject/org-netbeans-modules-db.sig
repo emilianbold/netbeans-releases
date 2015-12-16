@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.61.0
+#Version 1.64.1
 
 CLSS public java.beans.FeatureDescriptor
 cons public init()
@@ -286,7 +286,7 @@ meth public void refresh()
 meth public void setPropertyValue(org.openide.nodes.Node$Property,java.lang.Object)
 meth public void update()
 supr org.openide.nodes.AbstractNode
-hfds actionRegistry,childNodeFactory,dataLookup,firePropChangeAfterRefresh,nodeProvider,nodeRegistry,propMap,props,refreshing
+hfds childNodeFactory,dataLookup,firePropChangeAfterRefresh,layerEntry,nodeProvider,nodeRegistry,propMap,refreshing
 
 CLSS public org.netbeans.api.db.explorer.node.ChildNodeFactory
 cons public init(org.openide.util.Lookup)
@@ -530,7 +530,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

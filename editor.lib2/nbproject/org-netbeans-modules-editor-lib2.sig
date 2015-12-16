@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.85.0
+#Version 2.4.1
 
 CLSS public abstract interface java.awt.event.ActionListener
 intf java.util.EventListener
@@ -101,6 +101,27 @@ meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeLis
 meth public abstract void putValue(java.lang.String,java.lang.Object)
 meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public abstract void setEnabled(boolean)
+
+CLSS public abstract interface javax.swing.text.Document
+fld public final static java.lang.String StreamDescriptionProperty = "stream"
+fld public final static java.lang.String TitleProperty = "title"
+meth public abstract int getLength()
+meth public abstract java.lang.Object getProperty(java.lang.Object)
+meth public abstract java.lang.String getText(int,int) throws javax.swing.text.BadLocationException
+meth public abstract javax.swing.text.Element getDefaultRootElement()
+meth public abstract javax.swing.text.Element[] getRootElements()
+meth public abstract javax.swing.text.Position createPosition(int) throws javax.swing.text.BadLocationException
+meth public abstract javax.swing.text.Position getEndPosition()
+meth public abstract javax.swing.text.Position getStartPosition()
+meth public abstract void addDocumentListener(javax.swing.event.DocumentListener)
+meth public abstract void addUndoableEditListener(javax.swing.event.UndoableEditListener)
+meth public abstract void getText(int,int,javax.swing.text.Segment) throws javax.swing.text.BadLocationException
+meth public abstract void insertString(int,java.lang.String,javax.swing.text.AttributeSet) throws javax.swing.text.BadLocationException
+meth public abstract void putProperty(java.lang.Object,java.lang.Object)
+meth public abstract void remove(int,int) throws javax.swing.text.BadLocationException
+meth public abstract void removeDocumentListener(javax.swing.event.DocumentListener)
+meth public abstract void removeUndoableEditListener(javax.swing.event.UndoableEditListener)
+meth public abstract void render(java.lang.Runnable)
 
 CLSS public abstract javax.swing.text.TextAction
 cons public init(java.lang.String)
@@ -210,9 +231,124 @@ meth public javax.swing.text.JTextComponent getComponent()
 supr java.lang.Object
 hfds compRef,navigationHistory,pos,rawIndex,url
 
+CLSS public abstract interface org.netbeans.api.editor.document.AtomicLockDocument
+meth public abstract javax.swing.text.Document getDocument()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void addAtomicLockListener(org.netbeans.api.editor.document.AtomicLockListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void atomicUndo()
+meth public abstract void removeAtomicLockListener(org.netbeans.api.editor.document.AtomicLockListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void runAtomic(java.lang.Runnable)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void runAtomicAsUser(java.lang.Runnable)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public org.netbeans.api.editor.document.AtomicLockEvent
+cons public init(javax.swing.text.Document)
+meth public javax.swing.text.Document getDocument()
+meth public org.netbeans.api.editor.document.AtomicLockDocument getAtomicLock()
+supr java.util.EventObject
+
+CLSS public abstract interface org.netbeans.api.editor.document.AtomicLockListener
+intf java.util.EventListener
+meth public abstract void atomicLock(org.netbeans.api.editor.document.AtomicLockEvent)
+meth public abstract void atomicUnlock(org.netbeans.api.editor.document.AtomicLockEvent)
+
+CLSS public abstract interface org.netbeans.api.editor.document.DocumentLockState
+meth public abstract boolean isReadLocked()
+meth public abstract boolean isWriteLocked()
+
 CLSS public final org.netbeans.api.editor.document.EditorDocumentUtils
+meth public static org.openide.filesystems.FileObject getFileObject(javax.swing.text.Document)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static void runExclusive(javax.swing.text.Document,java.lang.Runnable)
 supr java.lang.Object
+hfds LOG
+
+CLSS public final org.netbeans.api.editor.document.EditorMimeTypes
+fld public final static java.lang.String PROP_SUPPORTED_MIME_TYPES = "supportedMimeTypes"
+meth public java.util.Set<java.lang.String> getSupportedMimeTypes()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.api.editor.document.EditorMimeTypes getDefault()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds impl,instance,listener,listeners
+
+CLSS public abstract interface org.netbeans.api.editor.document.LineDocument
+intf javax.swing.text.Document
+meth public abstract javax.swing.text.Element getParagraphElement(int)
+meth public abstract javax.swing.text.Position createPosition(int,javax.swing.text.Position$Bias) throws javax.swing.text.BadLocationException
+
+CLSS public final org.netbeans.api.editor.document.LineDocumentUtils
+meth public static <%0 extends java.lang.Object> {%%0} as(javax.swing.text.Document,java.lang.Class<{%%0}>)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+meth public static <%0 extends java.lang.Object> {%%0} asRequired(javax.swing.text.Document,java.lang.Class<{%%0}>)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static boolean isLineEmpty(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static boolean isLineWhitespace(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getLineCount(org.netbeans.api.editor.document.LineDocument)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getLineCount(org.netbeans.api.editor.document.LineDocument,int,int)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getLineEnd(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getLineFirstNonWhitespace(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getLineIndex(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getLineLastNonWhitespace(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getLineStart(org.netbeans.api.editor.document.LineDocument,int)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getLineStartFromIndex(org.netbeans.api.editor.document.LineDocument,int)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getNextNonNewline(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getNextNonWhitespace(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getNextNonWhitespace(org.netbeans.api.editor.document.LineDocument,int,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getNextWhitespace(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getNextWhitespace(org.netbeans.api.editor.document.LineDocument,int,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getNextWordStart(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getPreviousNonNewline(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getPreviousNonWhitespace(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getPreviousNonWhitespace(org.netbeans.api.editor.document.LineDocument,int,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getPreviousWhitespace(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getPreviousWhitespace(org.netbeans.api.editor.document.LineDocument,int,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getPreviousWordEnd(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getPreviousWordStart(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getWordEnd(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static int getWordStart(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static java.lang.String getWord(org.netbeans.api.editor.document.LineDocument,int) throws javax.swing.text.BadLocationException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.api.editor.document.LineDocument createDocument(java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds NOT_FOUND,WRONG_POSITION_LOCALE
+hcls V
 
 CLSS public abstract org.netbeans.modules.editor.lib2.document.DocumentSpiPackageAccessor
 cons public init()
@@ -285,6 +421,25 @@ meth public abstract void runTaskWithinContext(org.openide.util.Lookup,org.netbe
 CLSS public abstract interface static org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider$Task
  outer org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider
 meth public abstract void run(org.openide.util.Lookup)
+
+CLSS public abstract interface org.netbeans.spi.editor.document.DocumentFactory
+meth public abstract javax.swing.text.Document createDocument(java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract javax.swing.text.Document getDocument(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract org.openide.filesystems.FileObject getFileObject(javax.swing.text.Document)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public abstract interface org.netbeans.spi.editor.document.EditorMimeTypesImplementation
+fld public final static java.lang.String PROP_SUPPORTED_MIME_TYPES = "supportedMimeTypes"
+meth public abstract java.util.Set<java.lang.String> getSupportedMimeTypes()
+meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface org.netbeans.spi.editor.document.OnSaveTask
 innr public abstract interface static Factory
@@ -369,6 +524,10 @@ meth public abstract boolean moveNext()
 meth public abstract int getEndOffset()
 meth public abstract int getStartOffset()
 meth public abstract javax.swing.text.AttributeSet getAttributes()
+
+CLSS public abstract interface org.netbeans.spi.editor.highlighting.ReleasableHighlightsContainer
+intf org.netbeans.spi.editor.highlighting.HighlightsContainer
+meth public abstract void released()
 
 CLSS public final org.netbeans.spi.editor.highlighting.ZOrder
 fld public final static org.netbeans.spi.editor.highlighting.ZOrder BOTTOM_RACK

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.51
+#Version 1.54.1
 
 CLSS public abstract java.awt.AWTEvent
 cons public init(java.awt.Event)
@@ -776,7 +776,7 @@ meth public void setAccessibleDescription(java.lang.String)
 meth public void setAccessibleName(java.lang.String)
 meth public void setAccessibleParent(javax.accessibility.Accessible)
 supr java.lang.Object
-hfds accessibleChangeSupport,nativeAXResource,relationSet
+hfds accessibleChangeSupport,nativeAXResource,relationSet,targetAppContext
 
 CLSS public abstract interface javax.accessibility.AccessibleExtendedComponent
 intf javax.accessibility.AccessibleComponent
@@ -1089,6 +1089,8 @@ meth public void firePropertyChange(java.lang.String,boolean,boolean)
 meth public void firePropertyChange(java.lang.String,char,char)
 meth public void firePropertyChange(java.lang.String,int,int)
 meth public void grabFocus()
+meth public void hide()
+ anno 0 java.lang.Deprecated()
 meth public void paint(java.awt.Graphics)
 meth public void paintImmediately(int,int,int,int)
 meth public void paintImmediately(java.awt.Rectangle)
@@ -1142,7 +1144,6 @@ hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
 CLSS public abstract javax.swing.JComponent$AccessibleJComponent
  outer javax.swing.JComponent
 cons protected init(javax.swing.JComponent)
-fld protected java.awt.event.ContainerListener accessibleContainerHandler
 fld protected java.awt.event.FocusListener accessibleFocusHandler
 innr protected AccessibleContainerHandler
 innr protected AccessibleFocusHandler

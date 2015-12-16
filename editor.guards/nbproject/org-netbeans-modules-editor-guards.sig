@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.26
+#Version 1.31.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -14,6 +14,11 @@ meth public final void wait(long) throws java.lang.InterruptedException
 meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
+
+CLSS public abstract interface org.netbeans.api.editor.guards.DocumentGuards
+meth public abstract boolean isPositionGuarded(int,boolean)
+meth public abstract int adjustPosition(int,boolean)
+meth public abstract int findNextBlock(int,boolean)
 
 CLSS public abstract org.netbeans.api.editor.guards.GuardedSection
 meth public boolean contains(javax.swing.text.Position,boolean)
@@ -56,6 +61,10 @@ supr org.netbeans.api.editor.guards.GuardedSection
 
 CLSS public abstract interface org.netbeans.spi.editor.guards.GuardedEditorSupport
 meth public abstract javax.swing.text.StyledDocument getDocument()
+
+CLSS public abstract interface org.netbeans.spi.editor.guards.GuardedRegionMarker
+meth public abstract void protectRegion(int,int)
+meth public abstract void unprotectRegion(int,int)
 
 CLSS public abstract org.netbeans.spi.editor.guards.GuardedSectionsFactory
 cons public init()

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.30
+#Version 1.32.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -542,6 +542,8 @@ meth public void firePropertyChange(java.lang.String,boolean,boolean)
 meth public void firePropertyChange(java.lang.String,char,char)
 meth public void firePropertyChange(java.lang.String,int,int)
 meth public void grabFocus()
+meth public void hide()
+ anno 0 java.lang.Deprecated()
 meth public void paint(java.awt.Graphics)
 meth public void paintImmediately(int,int,int,int)
 meth public void paintImmediately(java.awt.Rectangle)
@@ -1177,7 +1179,7 @@ meth public void tableChanged(javax.swing.event.TableModelEvent)
 meth public void unsetQuickFilter()
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.JTable
-hfds ACTION_FOCUS_NEXT,COMPUTING_TOOLTIP,DEFAULT,DEFAULT_COLUMNS_ICON,FULLY_EDITABLE,FULLY_NONEDITABLE,SEARCH_COLUMN,SEARCH_FIELD_PREFERRED_SIZE,SEARCH_FIELD_SPACE,columnHidingAllowed,columnSelectionMouseListener,columnSelectionOnMouseClick,columnSelectionOnMouseClickLock,columnSelector,defaultColumnSelector,editing,filteredRowCount,headerMouseListener,heightOfTextField,inEditRequest,inRemoveRequest,maxPrefix,quickFilterColumn,quickFilterFormatStrings,quickFilterObject,searchColumn,searchCombo,searchPanel,searchTextField,selectVisibleColumnsLabel,sortable
+hfds ACTION_FOCUS_NEXT,COMPUTING_TOOLTIP,DEFAULT,DEFAULT_COLUMNS_ICON,FULLY_EDITABLE,FULLY_NONEDITABLE,LOG,SEARCH_COLUMN,SEARCH_FIELD_PREFERRED_SIZE,SEARCH_FIELD_SPACE,columnHidingAllowed,columnSelectionMouseListener,columnSelectionOnMouseClick,columnSelectionOnMouseClickLock,columnSelector,defaultColumnSelector,editing,filteredRowCount,headerMouseListener,heightOfTextField,inEditRequest,inRemoveRequest,maxPrefix,quickFilterColumn,quickFilterFormatStrings,quickFilterObject,searchColumn,searchCombo,searchPanel,searchTextField,selectVisibleColumnsLabel,selectedColumnWhenTableChanged,selectedRowsWhenTableChanged,sortable,sortingPermutationsWhenTableChanged
 hcls CTRLTabAction,CancelEditAction,ColumnSelectionMouseListener,CompareQuickFilter,EditAction,EnterAction,EqualsQuickFilter,HeaderMouseListener,NavigationAction,OriginalRowComparator,STPolicy,SearchComboListener,SearchFieldListener,SearchTextField,SelectedRows
 
 CLSS public final static !enum org.netbeans.swing.etable.ETable$ColumnSelection
@@ -1306,8 +1308,8 @@ meth public final void setBorder(javax.swing.border.Border)
 meth public java.awt.Component getTableCellRendererComponent(javax.swing.JTable,java.lang.Object,boolean,boolean,int,int)
 meth public java.lang.String getToolTipText()
 supr javax.swing.table.DefaultTableCellRenderer
-hfds checkBox,expanded,expansionBorder,expansionHandleHeight,expansionHandleWidth,fakeCellRendererPane,htmlRenderer,htmlRendererClass,lastRenderedValueRef,lastRendererRef,leaf,nestingDepth,showHandle,swingRendering,theCheckBox
-hcls ExpansionHandleBorder,HtmlRenderer
+hfds checkBox,expanded,expansionBorder,expansionHandleHeight,expansionHandleWidth,fakeCellRendererPane,htmlRenderer,htmlRendererClass,labelTextGap,lastRenderedValueRef,lastRendererRef,leaf,nestingDepth,showHandle,swingRendering,theCheckBox
+hcls ExpansionHandleBorder,HtmlRenderer,RestrictedInsetsBorder
 
 CLSS public org.netbeans.swing.outline.DefaultOutlineModel
 cons protected init(javax.swing.tree.TreeModel,javax.swing.table.TableModel,boolean,java.lang.String)
@@ -1379,7 +1381,7 @@ meth public void setRowHeight(int)
 meth public void setRowHeight(int,int)
 meth public void tableChanged(javax.swing.event.TableModelEvent)
 supr org.netbeans.swing.etable.ETable
-hfds cachedRootVisible,componentListener,initialized,lastEditPosition,lastProcessedKeyStroke,renderDataProvider,rowHeightIsSet,selectedRow,selectionDisabled,tempSortMap,tempSortMapLock,toolTip
+hfds MAX_TOOLTIP_LENGTH,cachedRootVisible,componentListener,initialized,lastEditPosition,lastProcessedKeyStroke,renderDataProvider,rowHeightIsSet,selectedRow,selectionDisabled,tempSortMap,tempSortMapLock,toolTip
 hcls ExpandAction,ND,SizeManager,TreeCellEditorBorder
 
 CLSS protected org.netbeans.swing.outline.Outline$OutlineColumn

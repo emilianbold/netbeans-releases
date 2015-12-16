@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.52
+#Version 1.58.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -87,11 +87,13 @@ fld public final static java.lang.String DEBUG = "classpath/debug"
  anno 0 java.lang.Deprecated()
 fld public final static java.lang.String EXECUTE = "classpath/execute"
 fld public final static java.lang.String PROP_ENTRIES = "entries"
+fld public final static java.lang.String PROP_FLAGS = "flags"
 fld public final static java.lang.String PROP_INCLUDES = "includes"
 fld public final static java.lang.String PROP_ROOTS = "roots"
 fld public final static java.lang.String SOURCE = "classpath/source"
 fld public final static org.netbeans.api.java.classpath.ClassPath EMPTY
 innr public final Entry
+innr public final static !enum Flag
 innr public final static !enum PathConversionMode
 meth public boolean equals(java.lang.Object)
 meth public final boolean contains(org.openide.filesystems.FileObject)
@@ -109,6 +111,8 @@ meth public int hashCode()
 meth public java.lang.String toString()
 meth public java.lang.String toString(org.netbeans.api.java.classpath.ClassPath$PathConversionMode)
 meth public java.util.List<org.netbeans.api.java.classpath.ClassPath$Entry> entries()
+meth public java.util.Set<org.netbeans.api.java.classpath.ClassPath$Flag> getFlags()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.openide.filesystems.FileObject[] getRoots()
 meth public static org.netbeans.api.java.classpath.ClassPath getClassPath(org.openide.filesystems.FileObject,java.lang.String)
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
@@ -134,6 +138,13 @@ meth public org.openide.filesystems.FileObject getRoot()
 supr java.lang.Object
 hfds filter,isDataResult,lastError,root,url
 
+CLSS public final static !enum org.netbeans.api.java.classpath.ClassPath$Flag
+ outer org.netbeans.api.java.classpath.ClassPath
+fld public final static org.netbeans.api.java.classpath.ClassPath$Flag INCOMPLETE
+meth public static org.netbeans.api.java.classpath.ClassPath$Flag valueOf(java.lang.String)
+meth public static org.netbeans.api.java.classpath.ClassPath$Flag[] values()
+supr java.lang.Enum<org.netbeans.api.java.classpath.ClassPath$Flag>
+
 CLSS public final static !enum org.netbeans.api.java.classpath.ClassPath$PathConversionMode
  outer org.netbeans.api.java.classpath.ClassPath
 fld public final static org.netbeans.api.java.classpath.ClassPath$PathConversionMode FAIL
@@ -146,15 +157,22 @@ supr java.lang.Enum<org.netbeans.api.java.classpath.ClassPath$PathConversionMode
 
 CLSS public final org.netbeans.api.java.classpath.GlobalPathRegistry
 meth public java.util.Set<org.netbeans.api.java.classpath.ClassPath> getPaths(java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.Set<org.openide.filesystems.FileObject> getSourceRoots()
 meth public org.openide.filesystems.FileObject findResource(java.lang.String)
 meth public static org.netbeans.api.java.classpath.GlobalPathRegistry getDefault()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public void addGlobalPathRegistryListener(org.netbeans.api.java.classpath.GlobalPathRegistryListener)
 meth public void register(java.lang.String,org.netbeans.api.java.classpath.ClassPath[])
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public void removeGlobalPathRegistryListener(org.netbeans.api.java.classpath.GlobalPathRegistryListener)
 meth public void unregister(java.lang.String,org.netbeans.api.java.classpath.ClassPath[])
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds DEFAULT,LOG,classpathListener,listeners,paths,resetCount,resultListener,results,sourceRoots
+hfds LOG,classpathListener,instances,listeners,resetCount,resultListener,results,sourceRoots,spi
 hcls SFBQListener
 
 CLSS public final org.netbeans.api.java.classpath.GlobalPathRegistryEvent
@@ -231,7 +249,7 @@ CLSS public org.netbeans.api.java.queries.JavadocForBinaryQuery
 innr public abstract interface static Result
 meth public static org.netbeans.api.java.queries.JavadocForBinaryQuery$Result findJavadoc(java.net.URL)
 supr java.lang.Object
-hfds EMPTY_RESULT,ERR,implementations
+hfds EMPTY_RESULT,LOG,implementations
 hcls EmptyResult
 
 CLSS public abstract interface static org.netbeans.api.java.queries.JavadocForBinaryQuery$Result
@@ -350,6 +368,31 @@ CLSS public abstract interface org.netbeans.spi.java.classpath.FilteringPathReso
 fld public final static java.lang.String PROP_INCLUDES = "includes"
 intf org.netbeans.spi.java.classpath.PathResourceImplementation
 meth public abstract boolean includes(java.net.URL,java.lang.String)
+
+CLSS public abstract interface org.netbeans.spi.java.classpath.FlaggedClassPathImplementation
+fld public final static java.lang.String PROP_FLAGS = "flags"
+intf org.netbeans.spi.java.classpath.ClassPathImplementation
+meth public abstract java.util.Set<org.netbeans.api.java.classpath.ClassPath$Flag> getFlags()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public abstract org.netbeans.spi.java.classpath.GlobalPathRegistryImplementation
+cons public init()
+meth protected abstract java.util.Set<org.netbeans.api.java.classpath.ClassPath> clear()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth protected abstract java.util.Set<org.netbeans.api.java.classpath.ClassPath> getPaths(java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth protected abstract java.util.Set<org.netbeans.api.java.classpath.ClassPath> register(java.lang.String,org.netbeans.api.java.classpath.ClassPath[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+meth protected abstract java.util.Set<org.netbeans.api.java.classpath.ClassPath> unregister(java.lang.String,org.netbeans.api.java.classpath.ClassPath[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds owner
+hcls AccessorImpl
 
 CLSS public abstract interface org.netbeans.spi.java.classpath.PathResourceImplementation
 fld public final static java.lang.String PROP_ROOTS = "roots"

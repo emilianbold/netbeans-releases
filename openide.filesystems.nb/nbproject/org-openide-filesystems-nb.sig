@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.11
+#Version 9.7.1
 
 CLSS public java.io.IOException
 cons public init()
@@ -11,11 +11,8 @@ hfds serialVersionUID
 
 CLSS public abstract interface java.io.Serializable
 
-CLSS public abstract interface !annotation java.lang.Deprecated
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
-intf java.lang.annotation.Annotation
+CLSS public abstract interface java.lang.AutoCloseable
+meth public abstract void close() throws java.lang.Exception
 
 CLSS public java.lang.Exception
 cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
@@ -101,28 +98,6 @@ meth public java.lang.String toString()
 supr java.lang.Object
 hfds serialVersionUID
 
-CLSS public abstract javax.annotation.processing.AbstractProcessor
-cons protected init()
-fld protected javax.annotation.processing.ProcessingEnvironment processingEnv
-intf javax.annotation.processing.Processor
-meth protected boolean isInitialized()
-meth public abstract boolean process(java.util.Set<? extends javax.lang.model.element.TypeElement>,javax.annotation.processing.RoundEnvironment)
-meth public java.lang.Iterable<? extends javax.annotation.processing.Completion> getCompletions(javax.lang.model.element.Element,javax.lang.model.element.AnnotationMirror,javax.lang.model.element.ExecutableElement,java.lang.String)
-meth public java.util.Set<java.lang.String> getSupportedAnnotationTypes()
-meth public java.util.Set<java.lang.String> getSupportedOptions()
-meth public javax.lang.model.SourceVersion getSupportedSourceVersion()
-meth public void init(javax.annotation.processing.ProcessingEnvironment)
-supr java.lang.Object
-hfds initialized
-
-CLSS public abstract interface javax.annotation.processing.Processor
-meth public abstract boolean process(java.util.Set<? extends javax.lang.model.element.TypeElement>,javax.annotation.processing.RoundEnvironment)
-meth public abstract java.lang.Iterable<? extends javax.annotation.processing.Completion> getCompletions(javax.lang.model.element.Element,javax.lang.model.element.AnnotationMirror,javax.lang.model.element.ExecutableElement,java.lang.String)
-meth public abstract java.util.Set<java.lang.String> getSupportedAnnotationTypes()
-meth public abstract java.util.Set<java.lang.String> getSupportedOptions()
-meth public abstract javax.lang.model.SourceVersion getSupportedSourceVersion()
-meth public abstract void init(javax.annotation.processing.ProcessingEnvironment)
-
 CLSS public abstract org.openide.filesystems.AbstractFileSystem
 cons public init()
 fld protected org.openide.filesystems.AbstractFileSystem$Attr attr
@@ -134,6 +109,7 @@ innr public abstract interface static Attr
 innr public abstract interface static Change
 innr public abstract interface static Info
 innr public abstract interface static List
+innr public abstract interface static SymlinkInfo
 innr public abstract interface static Transfer
 meth protected <%0 extends org.openide.filesystems.FileObject> java.lang.ref.Reference<{%%0}> createReference({%%0})
 meth protected boolean canRead(java.lang.String)
@@ -147,13 +123,11 @@ meth protected final void refreshResource(java.lang.String,boolean)
 meth protected final void setRefreshTime(int)
 meth protected void markImportant(java.lang.String,boolean)
 meth public abstract java.lang.String getDisplayName()
-meth public org.openide.filesystems.FileObject find(java.lang.String,java.lang.String,java.lang.String)
- anno 0 java.lang.Deprecated()
 meth public org.openide.filesystems.FileObject findResource(java.lang.String)
 meth public org.openide.filesystems.FileObject getRoot()
 meth public void refresh(boolean)
 supr org.openide.filesystems.FileSystem
-hfds NO_SYSTEM_ACTIONS,SYSTEM_ACTIONS,lastEnum,refresher,root,serialVersionUID
+hfds lastEnum,refresher,root,serialVersionUID
 
 CLSS public abstract interface static org.openide.filesystems.AbstractFileSystem$Attr
  outer org.openide.filesystems.AbstractFileSystem
@@ -198,6 +172,13 @@ fld public final static long serialVersionUID = -6242105832891012528
  anno 0 java.lang.Deprecated()
 intf java.io.Serializable
 meth public abstract java.lang.String[] children(java.lang.String)
+
+CLSS public abstract interface static org.openide.filesystems.AbstractFileSystem$SymlinkInfo
+ outer org.openide.filesystems.AbstractFileSystem
+intf java.io.Serializable
+meth public abstract boolean isSymbolicLink(java.lang.String) throws java.io.IOException
+meth public abstract java.lang.String getCanonicalName(java.lang.String) throws java.io.IOException
+meth public abstract java.lang.String readSymbolicLink(java.lang.String) throws java.io.IOException
 
 CLSS public abstract interface static org.openide.filesystems.AbstractFileSystem$Transfer
  outer org.openide.filesystems.AbstractFileSystem
@@ -320,7 +301,9 @@ CLSS public org.openide.filesystems.FileLock
 cons public init()
 fld protected java.lang.Throwable lockedBy
 fld public final static org.openide.filesystems.FileLock NONE
+intf java.lang.AutoCloseable
 meth public boolean isValid()
+meth public void close()
 meth public void finalize()
 meth public void releaseLock()
 supr java.lang.Object
@@ -329,6 +312,7 @@ hfds locked
 CLSS public abstract org.openide.filesystems.FileObject
 cons public init()
 fld public final static java.lang.String DEFAULT_LINE_SEPARATOR_ATTR = "default-line-separator"
+fld public final static java.lang.String DEFAULT_PATHNAME_SEPARATOR_ATTR = "default-pathname-separator"
 intf java.io.Serializable
 intf org.openide.util.Lookup$Provider
 meth protected void fireFileAttributeChangedEvent(java.util.Enumeration<org.openide.filesystems.FileChangeListener>,org.openide.filesystems.FileAttributeEvent)
@@ -370,6 +354,7 @@ meth public boolean canRead()
 meth public boolean canWrite()
 meth public boolean existsExt(java.lang.String)
 meth public boolean isLocked()
+meth public boolean isSymbolicLink() throws java.io.IOException
 meth public boolean isVirtual()
 meth public byte[] asBytes() throws java.io.IOException
 meth public final boolean canRevert()
@@ -391,6 +376,7 @@ meth public java.lang.String getPackageName(char)
 meth public java.lang.String getPackageNameExt(char,char)
  anno 0 java.lang.Deprecated()
 meth public java.lang.String getPath()
+meth public java.lang.String readSymbolicLinkPath() throws java.io.IOException
 meth public java.lang.String toString()
 meth public java.util.Enumeration<? extends org.openide.filesystems.FileObject> getChildren(boolean)
 meth public java.util.Enumeration<? extends org.openide.filesystems.FileObject> getData(boolean)
@@ -399,8 +385,10 @@ meth public java.util.List<java.lang.String> asLines() throws java.io.IOExceptio
 meth public java.util.List<java.lang.String> asLines(java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject copy(org.openide.filesystems.FileObject,java.lang.String,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject createData(java.lang.String) throws java.io.IOException
+meth public org.openide.filesystems.FileObject getCanonicalFileObject() throws java.io.IOException
 meth public org.openide.filesystems.FileObject getFileObject(java.lang.String)
 meth public org.openide.filesystems.FileObject move(org.openide.filesystems.FileLock,org.openide.filesystems.FileObject,java.lang.String,java.lang.String) throws java.io.IOException
+meth public org.openide.filesystems.FileObject readSymbolicLink() throws java.io.IOException
 meth public org.openide.util.Lookup getLookup()
 meth public void addRecursiveListener(org.openide.filesystems.FileChangeListener)
 meth public void refresh()
@@ -480,16 +468,23 @@ meth public org.openide.filesystems.FileObject createTempFile(org.openide.filesy
 meth public org.openide.filesystems.FileObject find(java.lang.String,java.lang.String,java.lang.String)
  anno 0 java.lang.Deprecated()
 meth public org.openide.filesystems.FileObject getTempFolder() throws java.io.IOException
+meth public org.openide.filesystems.StatusDecorator getDecorator()
+meth public org.openide.util.Lookup findExtrasFor(java.util.Set<org.openide.filesystems.FileObject>)
 meth public void addNotify()
 meth public void refresh(boolean)
 meth public void removeNotify()
 supr java.lang.Object
-hfds LOG,PROP_CAPABILITIES,SFS_STATUS,STATUS_NONE,assigned,capability,capabilityListener,changeSupport,fclSupport,fileStatusList,hidden,internLock,repository,serialVersionUID,systemName,thrLocal,valid,vetoableChangeList
+hfds LOG,SFS_STATUS,STATUS_NONE,assigned,changeSupport,defFS,fclSupport,fileStatusList,internLock,repository,serialVersionUID,statusResult,systemName,thrLocal,valid,vetoableChangeList
 hcls AsyncAtomicAction,EventDispatcher,FileStatusDispatcher
 
 CLSS public abstract interface static org.openide.filesystems.FileSystem$AtomicAction
  outer org.openide.filesystems.FileSystem
 meth public abstract void run() throws java.io.IOException
+
+CLSS public final org.openide.filesystems.FileUIUtils
+meth public static org.openide.filesystems.ImageDecorator getImageDecorator(org.openide.filesystems.FileSystem)
+supr java.lang.Object
+hfds DUMMY_DECORATOR
 
 CLSS public final org.openide.filesystems.FileUtil
 meth public !varargs static java.lang.String getMIMEType(org.openide.filesystems.FileObject,java.lang.String[])
@@ -497,10 +492,12 @@ meth public !varargs static void refreshFor(java.io.File[])
 meth public final static void runAtomicAction(java.lang.Runnable)
 meth public final static void runAtomicAction(org.openide.filesystems.FileSystem$AtomicAction) throws java.io.IOException
 meth public static <%0 extends java.lang.Object> {%%0} getConfigObject(java.lang.String,java.lang.Class<{%%0}>)
+meth public static <%0 extends java.lang.Object> {%%0} getSystemConfigObject(java.lang.String,java.lang.Class<{%%0}>)
 meth public static boolean affectsOrder(org.openide.filesystems.FileAttributeEvent)
 meth public static boolean isArchiveFile(java.net.URL)
 meth public static boolean isArchiveFile(org.openide.filesystems.FileObject)
 meth public static boolean isParentOf(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject)
+meth public static boolean isRecursiveSymbolicLink(org.openide.filesystems.FileObject) throws java.io.IOException
 meth public static java.io.File archiveOrDirForURL(java.net.URL)
 meth public static java.io.File normalizeFile(java.io.File)
 meth public static java.io.File toFile(org.openide.filesystems.FileObject)
@@ -532,6 +529,8 @@ meth public static org.openide.filesystems.FileObject getArchiveFile(org.openide
 meth public static org.openide.filesystems.FileObject getArchiveRoot(org.openide.filesystems.FileObject)
 meth public static org.openide.filesystems.FileObject getConfigFile(java.lang.String)
 meth public static org.openide.filesystems.FileObject getConfigRoot()
+meth public static org.openide.filesystems.FileObject getSystemConfigFile(java.lang.String)
+meth public static org.openide.filesystems.FileObject getSystemConfigRoot()
 meth public static org.openide.filesystems.FileObject moveFile(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public static org.openide.filesystems.FileObject toFileObject(java.io.File)
 meth public static org.openide.filesystems.FileObject[] fromFile(java.io.File)
@@ -557,7 +556,10 @@ meth public static void setMIMEType(java.lang.String,java.lang.String)
 meth public static void setOrder(java.util.List<org.openide.filesystems.FileObject>) throws java.io.IOException
 supr java.lang.Object
 hfds LOG,REFRESH_RP,ZIP_HEADER_1,ZIP_HEADER_2,archiveFileCache,diskFileSystem,normalizedRef,refreshTask,transientAttributes
-hcls NonCanonicalizingFile,NonCanonicalizingFileSystemView
+hcls NonCanonicalizingFile
+
+CLSS public abstract interface org.openide.filesystems.ImageDecorator
+meth public abstract java.awt.Image annotateIcon(java.awt.Image,int,java.util.Set<? extends org.openide.filesystems.FileObject>)
 
 CLSS public org.openide.filesystems.JarFileSystem
 cons public init()
@@ -659,11 +661,15 @@ cons public init(org.openide.filesystems.LocalFileSystem)
 intf org.openide.filesystems.AbstractFileSystem$Change
 intf org.openide.filesystems.AbstractFileSystem$Info
 intf org.openide.filesystems.AbstractFileSystem$List
+intf org.openide.filesystems.AbstractFileSystem$SymlinkInfo
 meth public boolean folder(java.lang.String)
+meth public boolean isSymbolicLink(java.lang.String) throws java.io.IOException
 meth public boolean readOnly(java.lang.String)
 meth public java.io.InputStream inputStream(java.lang.String) throws java.io.FileNotFoundException
 meth public java.io.OutputStream outputStream(java.lang.String) throws java.io.IOException
+meth public java.lang.String getCanonicalName(java.lang.String) throws java.io.IOException
 meth public java.lang.String mimeType(java.lang.String)
+meth public java.lang.String readSymbolicLink(java.lang.String) throws java.io.IOException
 meth public java.lang.String[] children(java.lang.String)
 meth public java.util.Date lastModified(java.lang.String)
 meth public long size(java.lang.String)
@@ -761,8 +767,10 @@ hfds MASK,WRITE_SYSTEM_INDEX,insideWritableLayer,propagateMasks,root,rootAttribu
 CLSS public org.openide.filesystems.Repository
 cons public init(org.openide.filesystems.FileSystem)
 innr public abstract static LayerProvider
+innr public abstract static LocalProvider
 intf java.io.Serializable
 meth protected final java.util.List<? extends java.net.URL> findLayers(org.openide.filesystems.Repository$LayerProvider)
+meth protected final static void provideLayers(java.lang.ClassLoader,java.util.List<java.net.URL>) throws java.io.IOException
 meth protected void refreshAdditionalLayers()
 meth public final java.util.Enumeration<? extends org.openide.filesystems.FileObject> findAll(java.lang.String,java.lang.String,java.lang.String)
  anno 0 java.lang.Deprecated()
@@ -802,7 +810,7 @@ meth public final void writeExternal(java.io.ObjectOutput) throws java.io.IOExce
  anno 0 java.lang.Deprecated()
 meth public static org.openide.filesystems.Repository getDefault()
 supr java.lang.Object
-hfds ADD_FS,fclSupport,fileSystems,fileSystemsClone,listeners,names,propListener,repository,serialVersionUID,system,vetoListener
+hfds ADD_FS,NO_PROVIDER,fclSupport,fileSystems,fileSystemsClone,lastDefLookup,lastLocalProvider,listeners,names,propListener,repository,serialVersionUID,system,vetoListener
 hcls MainFS,Replacer
 
 CLSS public abstract static org.openide.filesystems.Repository$LayerProvider
@@ -810,6 +818,13 @@ CLSS public abstract static org.openide.filesystems.Repository$LayerProvider
 cons public init()
 meth protected abstract void registerLayers(java.util.Collection<? super java.net.URL>)
 meth protected final void refresh()
+supr java.lang.Object
+
+CLSS public abstract static org.openide.filesystems.Repository$LocalProvider
+ outer org.openide.filesystems.Repository
+cons public init()
+meth protected final org.openide.filesystems.Repository delayFilesystemAttach(java.util.concurrent.Callable<org.openide.filesystems.Repository>) throws java.io.IOException
+meth public abstract org.openide.filesystems.Repository getRepository() throws java.io.IOException
 supr java.lang.Object
 
 CLSS public org.openide.filesystems.RepositoryAdapter
@@ -840,6 +855,10 @@ meth public int[] getPermutation()
 meth public org.openide.filesystems.Repository getRepository()
 supr java.util.EventObject
 hfds perm,serialVersionUID
+
+CLSS public abstract interface org.openide.filesystems.StatusDecorator
+meth public abstract java.lang.String annotateName(java.lang.String,java.util.Set<? extends org.openide.filesystems.FileObject>)
+meth public abstract java.lang.String annotateNameHtml(java.lang.String,java.util.Set<? extends org.openide.filesystems.FileObject>)
 
 CLSS public abstract org.openide.filesystems.URLMapper
 cons public init()
@@ -905,69 +924,6 @@ meth public void writeAttribute(java.lang.String,java.lang.String,java.lang.Obje
 supr java.lang.Object
 hfds fs,serialVersionUID
 
-CLSS public final org.openide.filesystems.annotations.LayerBuilder
-innr public final File
-meth public javax.tools.FileObject validateResource(java.lang.String,javax.lang.model.element.Element,java.lang.annotation.Annotation,java.lang.String,boolean) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File file(java.lang.String)
-meth public org.openide.filesystems.annotations.LayerBuilder$File folder(java.lang.String)
-meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String,java.lang.Class<?>) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String,java.lang.Class<?>,java.lang.annotation.Annotation,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String,java.lang.annotation.Annotation,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File shadowFile(java.lang.String,java.lang.String,java.lang.String)
-meth public static java.lang.String absolutizeResource(javax.lang.model.element.Element,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
-supr java.lang.Object
-hfds doc,originatingElement,processingEnv,unwrittenFiles
-
-CLSS public final org.openide.filesystems.annotations.LayerBuilder$File
- outer org.openide.filesystems.annotations.LayerBuilder
-meth public java.lang.String getPath()
-meth public org.openide.filesystems.annotations.LayerBuilder write()
-meth public org.openide.filesystems.annotations.LayerBuilder$File boolvalue(java.lang.String,boolean)
-meth public org.openide.filesystems.annotations.LayerBuilder$File bundlevalue(java.lang.String,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File bundlevalue(java.lang.String,java.lang.String,java.lang.String)
-meth public org.openide.filesystems.annotations.LayerBuilder$File bundlevalue(java.lang.String,java.lang.String,java.lang.annotation.Annotation,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File bytevalue(java.lang.String,byte)
-meth public org.openide.filesystems.annotations.LayerBuilder$File charvalue(java.lang.String,char)
-meth public org.openide.filesystems.annotations.LayerBuilder$File contents(java.lang.String)
-meth public org.openide.filesystems.annotations.LayerBuilder$File doublevalue(java.lang.String,double)
-meth public org.openide.filesystems.annotations.LayerBuilder$File floatvalue(java.lang.String,float)
-meth public org.openide.filesystems.annotations.LayerBuilder$File instanceAttribute(java.lang.String,java.lang.Class<?>) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File instanceAttribute(java.lang.String,java.lang.Class<?>,java.lang.annotation.Annotation,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File intvalue(java.lang.String,int)
-meth public org.openide.filesystems.annotations.LayerBuilder$File longvalue(java.lang.String,long)
-meth public org.openide.filesystems.annotations.LayerBuilder$File methodvalue(java.lang.String,java.lang.String,java.lang.String)
-meth public org.openide.filesystems.annotations.LayerBuilder$File newvalue(java.lang.String,java.lang.String)
-meth public org.openide.filesystems.annotations.LayerBuilder$File position(int)
-meth public org.openide.filesystems.annotations.LayerBuilder$File serialvalue(java.lang.String,byte[])
-meth public org.openide.filesystems.annotations.LayerBuilder$File shortvalue(java.lang.String,short)
-meth public org.openide.filesystems.annotations.LayerBuilder$File stringvalue(java.lang.String,java.lang.String)
-meth public org.openide.filesystems.annotations.LayerBuilder$File url(java.lang.String)
-meth public org.openide.filesystems.annotations.LayerBuilder$File urlvalue(java.lang.String,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File urlvalue(java.lang.String,java.net.URI) throws org.openide.filesystems.annotations.LayerGenerationException
-supr java.lang.Object
-hfds attrs,contents,folder,path,url
-
-CLSS public abstract org.openide.filesystems.annotations.LayerGeneratingProcessor
-cons protected init()
-meth protected !varargs final org.openide.filesystems.annotations.LayerBuilder layer(javax.lang.model.element.Element[])
-meth protected abstract boolean handleProcess(java.util.Set<? extends javax.lang.model.element.TypeElement>,javax.annotation.processing.RoundEnvironment) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public final boolean process(java.util.Set<? extends javax.lang.model.element.TypeElement>,javax.annotation.processing.RoundEnvironment)
-supr javax.annotation.processing.AbstractProcessor
-hfds ENTITY_RESOLVER,ERROR_HANDLER,GENERATED_LAYER,LOCAL_DTD_RESOURCE,NETWORK_DTD_URL,PUBLIC_DTD_ID,createdBuilders,generatedLayerByProcessor,originatingElementsByProcessor
-
-CLSS public org.openide.filesystems.annotations.LayerGenerationException
-cons public init(java.lang.String)
-cons public init(java.lang.String,javax.lang.model.element.Element)
-cons public init(java.lang.String,javax.lang.model.element.Element,javax.annotation.processing.ProcessingEnvironment,java.lang.annotation.Annotation)
-cons public init(java.lang.String,javax.lang.model.element.Element,javax.annotation.processing.ProcessingEnvironment,java.lang.annotation.Annotation,java.lang.String)
-cons public init(java.lang.String,javax.lang.model.element.Element,javax.lang.model.element.AnnotationMirror)
-cons public init(java.lang.String,javax.lang.model.element.Element,javax.lang.model.element.AnnotationMirror,javax.lang.model.element.AnnotationValue)
-supr java.lang.Exception
-hfds erroneousAnnotation,erroneousAnnotationValue,erroneousElement
-
-CLSS abstract interface org.openide.filesystems.annotations.package-info
-
 CLSS public abstract org.openide.util.Lookup
 cons public init()
 fld public final static org.openide.util.Lookup EMPTY
@@ -982,7 +938,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

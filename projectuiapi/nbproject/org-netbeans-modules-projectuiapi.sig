@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.77.0
+#Version 1.86.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -95,7 +95,7 @@ meth public void removeProjectGroupChangeListener(org.netbeans.api.project.ui.Pr
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void setMainProject(org.netbeans.api.project.Project)
 supr java.lang.Object
-hfds INSTANCE,LOG,trampoline
+hfds LOG,instances,trampoline
 
 CLSS public final org.netbeans.api.project.ui.ProjectGroup
 meth public boolean equals(java.lang.Object)
@@ -149,6 +149,40 @@ meth public abstract org.openide.nodes.Node findPath(org.openide.nodes.Node,java
 
 CLSS public abstract interface org.netbeans.spi.project.ui.PrivilegedTemplates
 meth public abstract java.lang.String[] getPrivilegedTemplates()
+
+CLSS public abstract interface org.netbeans.spi.project.ui.ProjectConvertor
+innr public abstract interface static !annotation Registration
+innr public final static Result
+meth public abstract org.netbeans.spi.project.ui.ProjectConvertor$Result isProject(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public abstract interface static !annotation org.netbeans.spi.project.ui.ProjectConvertor$Registration
+ outer org.netbeans.spi.project.ui.ProjectConvertor
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.String requiredPattern()
+
+CLSS public final static org.netbeans.spi.project.ui.ProjectConvertor$Result
+ outer org.netbeans.spi.project.ui.ProjectConvertor
+cons public init(org.openide.util.Lookup,java.util.concurrent.Callable<? extends org.netbeans.api.project.Project>,java.lang.String,javax.swing.Icon)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+ anno 4 org.netbeans.api.annotations.common.NullAllowed()
+intf org.openide.util.Lookup$Provider
+meth public java.lang.String getDisplayName()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public javax.swing.Icon getIcon()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public org.netbeans.api.project.Project createProject() throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public org.openide.util.Lookup getLookup()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds displayName,icon,lkp,projectFactory
 
 CLSS public abstract org.netbeans.spi.project.ui.ProjectOpenedHook
 cons protected init()
@@ -246,8 +280,11 @@ meth public abstract java.lang.String[] getRecommendedTypes()
 CLSS public final org.netbeans.spi.project.ui.support.BuildExecutionSupport
 innr public abstract interface static ActionItem
 innr public abstract interface static Item
+meth public static org.netbeans.spi.project.ui.support.BuildExecutionSupport$Item getLastFinishedItem()
+meth public static void addChangeListener(javax.swing.event.ChangeListener)
 meth public static void registerFinishedItem(org.netbeans.spi.project.ui.support.BuildExecutionSupport$Item)
 meth public static void registerRunningItem(org.netbeans.spi.project.ui.support.BuildExecutionSupport$Item)
+meth public static void removeChangeListener(javax.swing.event.ChangeListener)
 supr java.lang.Object
 
 CLSS public abstract interface static org.netbeans.spi.project.ui.support.BuildExecutionSupport$ActionItem
@@ -265,6 +302,8 @@ meth public abstract void stopRunning()
 
 CLSS public org.netbeans.spi.project.ui.support.CommonProjectActions
 fld public final static java.lang.String EXISTING_SOURCES_FOLDER = "existingSourcesFolder"
+fld public final static java.lang.String INITIAL_VALUE_PROPERTIES = "initialValueProperties"
+fld public final static java.lang.String PRESELECT_CATEGORY = "PRESELECT_CATEGORY"
 fld public final static java.lang.String PROJECT_PARENT_FOLDER = "projdir"
 meth public static javax.swing.Action closeProjectAction()
 meth public static javax.swing.Action copyProjectAction()
@@ -273,6 +312,7 @@ meth public static javax.swing.Action deleteProjectAction()
 meth public static javax.swing.Action moveProjectAction()
 meth public static javax.swing.Action newFileAction()
 meth public static javax.swing.Action newProjectAction()
+meth public static javax.swing.Action newProjectAction(java.lang.String,java.util.Map<java.lang.String,java.lang.Object>)
 meth public static javax.swing.Action openSubprojectsAction()
 meth public static javax.swing.Action renameProjectAction()
 meth public static javax.swing.Action setAsMainProjectAction()
@@ -344,6 +384,22 @@ meth public static java.io.File getProjectsFolder()
 meth public static javax.swing.JFileChooser projectChooser()
 meth public static void setProjectsFolder(java.io.File)
 supr java.lang.Object
+
+CLSS public final org.netbeans.spi.project.ui.support.ProjectConvertors
+meth public !varargs static org.openide.util.Lookup createProjectConvertorLookup(java.lang.Object[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static boolean isConvertorProject(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.api.project.Project getNonConvertorOwner(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.spi.queries.FileEncodingQueryImplementation createFileEncodingQuery()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static void unregisterConvertorProject(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hcls CloseableLookup,ConvertorFileEncodingQuery
 
 CLSS public final org.netbeans.spi.project.ui.support.ProjectCustomizer
 innr public abstract interface static CategoryComponentProvider
@@ -475,4 +531,25 @@ meth public org.netbeans.spi.project.ui.templates.support.Templates$SimpleTarget
 meth public org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> create()
 supr java.lang.Object
 hfds bottomPanel,folders,freeFileExtension,project
+
+CLSS public abstract org.openide.util.Lookup
+cons public init()
+fld public final static org.openide.util.Lookup EMPTY
+innr public abstract interface static Provider
+innr public abstract static Item
+innr public abstract static Result
+innr public final static Template
+meth public <%0 extends java.lang.Object> java.util.Collection<? extends {%%0}> lookupAll(java.lang.Class<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookupResult(java.lang.Class<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
+meth public static org.openide.util.Lookup getDefault()
+supr java.lang.Object
+hfds LOG,defaultLookup,defaultLookupProvider
+hcls DefLookup,Empty
+
+CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
+meth public abstract org.openide.util.Lookup getLookup()
 
