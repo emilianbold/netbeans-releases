@@ -422,7 +422,11 @@ public class GdbDisassembly extends Disassembly {
                 //do nothing
             }
             this.offset = tmpOffset;
-            this.instruction = readValue(INSTR_HEADER, msg, pos);
+            String inst = readValue(INSTR_HEADER, msg, pos);
+            if (inst.contains("\\t")) { //NOI18N
+                inst = inst.replace("\\t", "\t"); //NOI18N
+            }
+            this.instruction = inst;
         }
 
         @Override
