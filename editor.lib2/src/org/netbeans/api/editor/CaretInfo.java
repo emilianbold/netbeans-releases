@@ -63,19 +63,17 @@ public final class CaretInfo {
     // -J-Dorg.netbeans.api.editor.CaretInfo.EDT.level=FINE - check that setDot() and other operations in EDT only
     private static final Logger LOG_EDT = Logger.getLogger(CaretInfo.class.getName() + ".EDT");
 
-    static {
-        // Compatibility debugging flags mapping to logger levels
-        if (Boolean.getBoolean("netbeans.debug.editor.caret.focus") && LOG.getLevel().intValue() < Level.FINE.intValue())
-            LOG.setLevel(Level.FINE);
-        if (Boolean.getBoolean("netbeans.debug.editor.caret.focus.extra") && LOG.getLevel().intValue() < Level.FINER.intValue())
-            LOG.setLevel(Level.FINER);
-    }
-    
     private final EditorCaret parent;
-    protected Position dotPos;
-    protected Position markPos;
+
+    private Position dotPos;
+
+    private Position markPos;
+
     private Point magicCaretPosition;
-    private boolean invalid;
+
+    private char dotChar; // Used internally by EditorCaret
+
+    private Rectangle caretBounds; // Used internally by EditorCaret
 
     public CaretInfo(EditorCaret parent) {
         this.parent = parent;
@@ -117,7 +115,7 @@ public final class CaretInfo {
         return (markPos != null) ? markPos.getOffset() : 0;
     }
     
-    public void setDot(int offset) {
+    public void setDot(int offset) { // TODO move to transaction context
         if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new IllegalStateException("CaretInfo.setDot() not in EDT: offset=" + offset); // NOI18N
@@ -134,7 +132,7 @@ public final class CaretInfo {
         parent.setDotCaret(offset, this, true);
     }
 
-    public void moveDot(int offset) {
+    public void moveDot(int offset) { // TODO move to transaction context
         if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
             if (!SwingUtilities.isEventDispatchThread()) {
                 throw new IllegalStateException("CaretInfo.moveDot() not in EDT: offset=" + offset); // NOI18N
@@ -146,18 +144,6 @@ public final class CaretInfo {
         }
 
         parent.moveDotCaret(offset, this);
-    }
-
-    /**
-     * Determine if this caret is still valid.
-     * <br/>
-     * The caret may become invalid by automatic caret merging by document removals
-     * or as an effect of {@link EditorCaret#removeLastCaret() }
-     * or {@link EditorCaret#replaceCarets(java.util.List) }.
-     * @return true if this caret is valid or false otherwise.
-     */
-    public boolean isValid() {
-        return !invalid;
     }
 
     /**
@@ -175,31 +161,36 @@ public final class CaretInfo {
         return dotPos; // TBD - possibly inspect virtual columns etc.
     }
     
-    public void setMagicCaretPosition(Point newMagicCaretPosition) {
-        this.magicCaretPosition = newMagicCaretPosition;
-    }
-
     public Point getMagicCaretPosition() {
         return magicCaretPosition;
     }
     
-    /* Remove from CaretInfo ? */
-    public void setDotPos(Position dotPos) { this.dotPos = dotPos; }
-    public void setMarkPos(Position markPos) { this.markPos = markPos; }
+    void setDotPos(Position dotPos) {
+        this.dotPos = dotPos;
+    }
+
+    void setMarkPos(Position markPos) {
+        this.markPos = markPos;
+    }
+
+    public void setMagicCaretPosition(Point newMagicCaretPosition) { // [TODO] move to transaction context
+        this.magicCaretPosition = newMagicCaretPosition;
+    }
+
     
-    private char dotChar;
-    public void setDotChar(char dotChar) {
+    void setDotChar(char dotChar) {
         this.dotChar = dotChar;
     }
-    public char getDotChar() {
+
+    char getDotChar() {
         return this.dotChar;
     }
 
-    private Rectangle caretBounds;
-    public void setCaretBounds(Rectangle newCaretBounds) {
+    void setCaretBounds(Rectangle newCaretBounds) {
         this.caretBounds = newCaretBounds;
     }
-    public Rectangle getCaretBounds() {
+
+    Rectangle getCaretBounds() {
         return this.caretBounds;
     }
 }

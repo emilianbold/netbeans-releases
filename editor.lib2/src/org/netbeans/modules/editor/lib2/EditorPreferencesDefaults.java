@@ -58,7 +58,19 @@ public final class EditorPreferencesDefaults {
         // no-op
     }
 
-    public static final String LINE_CARET = "line-caret";
+    /**
+     * One dot thin line compatible with Swing default caret.
+     */
+    public static final String THIN_LINE_CARET = "thin-line-caret"; // NOI18N
+
+    /**
+     * Two dots line - the default for the editor.
+     */
+    public static final String THICK_LINE_CARET = "thick-line-caret"; // NOI18N
+
+    /**
+     * Rectangle covering character to possibly be overwritten.
+     */
     public static final String BLOCK_CARET = "block-caret";
     
     public static final boolean defaultToolbarVisible = true; // Currently unused - see ToggleAction in editor.actions
@@ -100,7 +112,7 @@ public final class EditorPreferencesDefaults {
 
     public static final boolean defaultExpandTabs = true;
 
-    public static final String defaultCaretTypeInsertMode = LINE_CARET;
+    public static final String defaultCaretTypeInsertMode = THICK_LINE_CARET;
     public static final String defaultCaretTypeOverwriteMode = BLOCK_CARET;
     public static final boolean defaultCaretItalicInsertMode = false;
     public static final boolean defaultCaretItalicOverwriteMode = false;

@@ -100,6 +100,7 @@ import javax.swing.text.View;
 import org.netbeans.api.editor.CaretInfo;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
@@ -552,7 +553,7 @@ public class BaseKit extends DefaultEditorKit {
 
     /** Create caret to navigate through document */
     public @Override Caret createCaret() {
-        return new BaseCaret();
+        return new EditorCaret();
     }
 
     /** Create empty document */
@@ -1118,8 +1119,8 @@ public class BaseKit extends DefaultEditorKit {
                             }
                         });
                         Caret caret = target.getCaret();
-                        if (caret instanceof BaseCaret) {
-                            ((BaseCaret)caret).setRectangularSelectionToDotAndMark();
+                        if (caret instanceof EditorCaret) {
+                            ((EditorCaret)caret).setRectangularSelectionToDotAndMark();
                         }
                         if (changed[0]) {
                             return;
@@ -1127,7 +1128,7 @@ public class BaseKit extends DefaultEditorKit {
                     }
 
                     try {
-                        for (final CaretInfo caret : ((BaseCaret)target.getCaret()).getCarets()) {
+                        for (final CaretInfo caret : ((EditorCaret)target.getCaret()).getCarets()) {
                     final Position insertionOffset = doc.createPosition(computeInsertionOffset(caret), Position.Bias.Backward);
                     String replacedText = "";
                     if (target.getCaret().isSelectionVisible() && caret.getDotPosition() != caret.getMarkPosition()) {
@@ -1557,10 +1558,10 @@ public class BaseKit extends DefaultEditorKit {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
-                                if(caret instanceof BaseCaret) {
-                                    BaseCaret baseCaret = (BaseCaret) caret;
-                                    for (CaretInfo editorCaret : baseCaret.getCarets()) {
-                                    if (caret.isSelectionVisible() && editorCaret.getDot() != editorCaret.getMark()) { // block selected
+                                if(caret instanceof EditorCaret) {
+                                    EditorCaret editorCaret = (EditorCaret) caret;
+                                    for (CaretInfo caret : editorCaret.getCarets()) {
+                                    if (editorCaret.isSelectionVisible() && caret.getDot() != caret.getMark()) { // block selected
                                         try {
                                             int start = Math.min(caret.getDot(), caret.getMark());
                                             int end = Math.max(caret.getDot(), caret.getMark());
@@ -1586,7 +1587,7 @@ public class BaseKit extends DefaultEditorKit {
                                             LOG.log(Level.WARNING, null, e);
                                         }
                                     } else { // no selected text
-                                        int dotPos = editorCaret.getDot();
+                                        int dotPos = caret.getDot();
                                         try {
                                             // is there any char on this line before cursor?
                                             int indent = Utilities.getRowIndent(doc, dotPos);
@@ -1599,15 +1600,15 @@ public class BaseKit extends DefaultEditorKit {
 
                                                 indenter.reindent(dotPos);                                        
 
-                                                dotPos = editorCaret.getDot();
+                                                dotPos = caret.getDot();
                                                 int newCaretCol = Utilities.getVisualColumn(doc, dotPos);
                                                 if (newCaretCol <= caretCol) {
                                                     // find indent of the first previous non-white row
                                                     int upperCol = Utilities.getRowIndent(doc, dotPos, false);
                                                     changeRowIndent(doc, dotPos, upperCol > nextTabCol ? upperCol : nextTabCol);
                                                     // Fix of #32240
-                                                    dotPos = editorCaret.getDot();
-                                                    editorCaret.setDot(Utilities.getRowEnd(doc, dotPos));
+                                                    dotPos = caret.getDot();
+                                                    caret.setDot(Utilities.getRowEnd(doc, dotPos));
                                                 }
                                             } else { // already chars on the line
                                                 insertTabString(doc, dotPos);
@@ -1878,9 +1879,9 @@ public class BaseKit extends DefaultEditorKit {
 
 		final BaseDocument doc = (BaseDocument)target.getDocument();
 		final Caret caret = target.getCaret();
-                if(caret instanceof BaseCaret) {
-                    BaseCaret baseCaret = (BaseCaret) caret;
-                    for (CaretInfo caretData : baseCaret.getCarets()) {
+                if(caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    for (CaretInfo caretData : editorCaret.getCarets()) {
                         final int dot = caretData.getDot();
                         final int mark = caretData.getMark();
 
@@ -1894,8 +1895,8 @@ public class BaseKit extends DefaultEditorKit {
                                             if (!RectangularSelectionUtils.removeSelection(target)) {
                                                 RectangularSelectionUtils.removeChar(target, nextChar);
                                             }
-                                            if (caret instanceof BaseCaret) {
-                                                ((BaseCaret)caret).setRectangularSelectionToDotAndMark();
+                                            if (caret instanceof EditorCaret) {
+                                                ((EditorCaret)caret).setRectangularSelectionToDotAndMark();
                                             }
                                         } else {
                                             doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
@@ -1975,8 +1976,8 @@ public class BaseKit extends DefaultEditorKit {
                                     if (!RectangularSelectionUtils.removeSelection(target)) {
                                         RectangularSelectionUtils.removeChar(target, nextChar);
                                     }
-                                    if (caret instanceof BaseCaret) {
-                                        ((BaseCaret)caret).setRectangularSelectionToDotAndMark();
+                                    if (caret instanceof EditorCaret) {
+                                        ((EditorCaret)caret).setRectangularSelectionToDotAndMark();
                                     }
                                 } else {
                                     doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
@@ -2378,17 +2379,17 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
-                if(caret instanceof BaseCaret) {
-                    BaseCaret baseCaret = (BaseCaret) caret;
-                    for (CaretInfo editorCaret : baseCaret.getCarets()) {
+                if(caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    for (CaretInfo caretInfo : editorCaret.getCarets()) {
                         try {
-                            int dot = editorCaret.getDot();
-                            Point p = editorCaret.getMagicCaretPosition();
+                            int dot = caretInfo.getDot();
+                            Point p = caretInfo.getMagicCaretPosition();
                             if (p == null) {
                                 Rectangle r = target.modelToView(dot);
                                 if (r != null) {
                                     p = new Point(r.x, r.y);
-                                    editorCaret.setMagicCaretPosition(p);
+                                    caretInfo.setMagicCaretPosition(p);
                                 } else {
                                     return; // model to view failed
                                 }
@@ -2397,12 +2398,12 @@ public class BaseKit extends DefaultEditorKit {
                                 dot = Utilities.getPositionAbove(target, dot, p.x);
                                 boolean select = selectionUpAction.equals(getValue(Action.NAME));
                                 if (select) {
-                                    editorCaret.moveDot(dot);
+                                    caretInfo.moveDot(dot);
                                     if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                        baseCaret.updateRectangularUpDownSelection();
+                                        editorCaret.updateRectangularUpDownSelection();
                                     }
                                 } else {
-                                    editorCaret.setDot(dot);
+                                    caretInfo.setDot(dot);
                                 }
                             } catch (BadLocationException e) {
                                 // the position stays the same
@@ -2430,8 +2431,8 @@ public class BaseKit extends DefaultEditorKit {
                         if (select) {
                             caret.moveDot(dot);
                             if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                if (caret instanceof BaseCaret) {
-                                    ((BaseCaret) caret).updateRectangularUpDownSelection();
+                                if (caret instanceof EditorCaret) {
+                                    ((EditorCaret) caret).updateRectangularUpDownSelection();
                                 }
                             }
                         } else {
@@ -2463,17 +2464,17 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
-                if (caret instanceof BaseCaret) {
-                    BaseCaret baseCaret = (BaseCaret) caret;
-                    for (CaretInfo editorCaret : baseCaret.getCarets()) {
+                if (caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    for (CaretInfo caretInfo : editorCaret.getCarets()) {
                     try {
-                        int dot = editorCaret.getDot();
-                        Point p = editorCaret.getMagicCaretPosition();
+                        int dot = caretInfo.getDot();
+                        Point p = caretInfo.getMagicCaretPosition();
                         if (p == null) {
                             Rectangle r = target.modelToView(dot);
                             if (r != null) {
                                 p = new Point(r.x, r.y);
-                                editorCaret.setMagicCaretPosition(p);
+                                caretInfo.setMagicCaretPosition(p);
                             } else {
                                 return; // model to view failed
                             }
@@ -2482,12 +2483,12 @@ public class BaseKit extends DefaultEditorKit {
                             dot = Utilities.getPositionBelow(target, dot, p.x);
                             boolean select = selectionDownAction.equals(getValue(Action.NAME));
                             if (select) {
-                                editorCaret.moveDot(dot);
+                                caretInfo.moveDot(dot);
                                 if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                    baseCaret.updateRectangularUpDownSelection();
+                                    editorCaret.updateRectangularUpDownSelection();
                                 }
                             } else {
-                                editorCaret.setDot(dot);
+                                caretInfo.setDot(dot);
                             }
                         } catch (BadLocationException e) {
                             // position stays the same
@@ -2515,8 +2516,8 @@ public class BaseKit extends DefaultEditorKit {
                         if (select) {
                             caret.moveDot(dot);
                             if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                if (caret instanceof BaseCaret) {
-                                    ((BaseCaret)caret).updateRectangularUpDownSelection();
+                                if (caret instanceof EditorCaret) {
+                                    ((EditorCaret)caret).updateRectangularUpDownSelection();
                                 }
                             }
                         } else {
@@ -2550,10 +2551,10 @@ public class BaseKit extends DefaultEditorKit {
             if (target != null) {
                 try {
                     Caret caret = target.getCaret();
-                    if(caret instanceof BaseCaret) {
-                        BaseCaret baseCaret = (BaseCaret) caret;
-                        for (CaretInfo editorCaret : baseCaret.getCarets()) {
-                            int caretOffset = editorCaret.getDot();
+                    if(caret instanceof EditorCaret) {
+                        EditorCaret editorCaret = (EditorCaret) caret;
+                        for (CaretInfo caretInfo : editorCaret.getCarets()) {
+                            int caretOffset = caretInfo.getDot();
                             Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
                             if (caretBounds == null) {
                                 return; // Cannot continue reasonably
@@ -2562,7 +2563,7 @@ public class BaseKit extends DefaultEditorKit {
                             // Retrieve caret magic position and attempt to retain
                             // the x-coordinate information and use it
                             // for setting of the new caret position
-                            Point magicCaretPosition = editorCaret.getMagicCaretPosition();
+                            Point magicCaretPosition = caretInfo.getMagicCaretPosition();
                             if (magicCaretPosition == null) {
                                 magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
                             }
@@ -2625,14 +2626,14 @@ public class BaseKit extends DefaultEditorKit {
 
                             boolean select = selectionPageUpAction.equals(getValue(Action.NAME));
                             if (select) {
-                                editorCaret.moveDot(newCaretOffset);
+                                caretInfo.moveDot(newCaretOffset);
                             } else {
-                                editorCaret.setDot(newCaretOffset);
+                                caretInfo.setDot(newCaretOffset);
                             }
 
                             // Update magic caret position
                             magicCaretPosition.y = newCaretBounds.y;
-                            editorCaret.setMagicCaretPosition(magicCaretPosition);
+                            caretInfo.setMagicCaretPosition(magicCaretPosition);
                         }
                     } else {
                     int caretOffset = caret.getDot();
@@ -2739,34 +2740,34 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
-                if (caret instanceof BaseCaret) {
-                    BaseCaret baseCaret = (BaseCaret) caret;
-                    for (CaretInfo editorCaret : baseCaret.getCarets()) {
+                if (caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    for (CaretInfo caretInfo : editorCaret.getCarets()) {
                         try {
                             int pos;
                             boolean select = selectionForwardAction.equals(getValue(Action.NAME));
                             if (!select && Utilities.isSelectionShowing(caret)) {
                                 pos = target.getSelectionEnd();
-                                if (pos != editorCaret.getDot()) {
+                                if (pos != caretInfo.getDot()) {
                                     pos--;
                                 } else {
                                     // clear the selection, but do not move the cursor
-                                    editorCaret.setDot(pos);
+                                    caretInfo.setDot(pos);
                                     return;
                                 }
                             } else {
-                                pos = editorCaret.getDot();
+                                pos = caretInfo.getDot();
                             }
                             int dot = target.getUI().getNextVisualPositionFrom(target,
                                     pos, Position.Bias.Forward, SwingConstants.EAST, null);
                             if (select) {
                                 if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                    ((BaseCaret) caret).extendRectangularSelection(true, false);
+                                    ((EditorCaret) caret).extendRectangularSelection(true, false);
                                 } else {
-                                    editorCaret.moveDot(dot);
+                                    caretInfo.moveDot(dot);
                                 }
                             } else {
-                                editorCaret.setDot(dot);
+                                caretInfo.setDot(dot);
                             }
                         } catch (BadLocationException ex) {
                             target.getToolkit().beep();
@@ -2792,8 +2793,8 @@ public class BaseKit extends DefaultEditorKit {
                     int dot = target.getUI().getNextVisualPositionFrom(target,
                               pos, Position.Bias.Forward, SwingConstants.EAST, null);
                     if (select) {
-                        if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                            ((BaseCaret)caret).extendRectangularSelection(true, false);
+                        if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                            ((EditorCaret)caret).extendRectangularSelection(true, false);
                         } else {
                             caret.moveDot(dot);
                         }
@@ -2826,10 +2827,10 @@ public class BaseKit extends DefaultEditorKit {
             if (target != null) {
                 try {
                     Caret caret = target.getCaret();
-                    if(caret instanceof BaseCaret) {
-                        BaseCaret baseCaret = (BaseCaret) caret;
-                        for (CaretInfo editorCaret : baseCaret.getCarets()) {
-                            int caretOffset = editorCaret.getDot();
+                    if(caret instanceof EditorCaret) {
+                        EditorCaret editorCaret = (EditorCaret) caret;
+                        for (CaretInfo caretInfo : editorCaret.getCarets()) {
+                            int caretOffset = caretInfo.getDot();
                             Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
                             if (caretBounds == null) {
                                 return; // Cannot continue reasonably
@@ -2838,7 +2839,7 @@ public class BaseKit extends DefaultEditorKit {
                             // Retrieve caret magic position and attempt to retain
                             // the x-coordinate information and use it
                             // for setting of the new caret position
-                            Point magicCaretPosition = editorCaret.getMagicCaretPosition();
+                            Point magicCaretPosition = caretInfo.getMagicCaretPosition();
                             if (magicCaretPosition == null) {
                                 magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
                             }
@@ -2896,14 +2897,14 @@ public class BaseKit extends DefaultEditorKit {
 
                             boolean select = selectionPageDownAction.equals(getValue(Action.NAME));
                             if (select) {
-                                editorCaret.moveDot(newCaretOffset);
+                                caretInfo.moveDot(newCaretOffset);
                             } else {
-                                editorCaret.setDot(newCaretOffset);
+                                caretInfo.setDot(newCaretOffset);
                             }
 
                             // Update magic caret position
                             magicCaretPosition.y = newCaretBounds.y;
-                            editorCaret.setMagicCaretPosition(magicCaretPosition);
+                            caretInfo.setMagicCaretPosition(magicCaretPosition);
                         }
                     } else {
                     int caretOffset = caret.getDot();
@@ -3005,8 +3006,8 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
-                if(caret instanceof BaseCaret) {
-                    for (CaretInfo editorCaret : ((BaseCaret) caret).getCarets()) {
+                if(caret instanceof EditorCaret) {
+                    for (CaretInfo editorCaret : ((EditorCaret) caret).getCarets()) {
                         try {
                             int pos;
                             boolean select = selectionBackwardAction.equals(getValue(Action.NAME));
@@ -3052,8 +3053,8 @@ public class BaseKit extends DefaultEditorKit {
                         int dot = target.getUI().getNextVisualPositionFrom(target,
                                 pos, Position.Bias.Backward, SwingConstants.WEST, null);
                         if (select) {
-                            if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                                ((BaseCaret) caret).extendRectangularSelection(false, false);
+                            if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                                ((EditorCaret) caret).extendRectangularSelection(false, false);
                             } else {
                                 caret.moveDot(dot);
                             }
@@ -3101,8 +3102,8 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
-                if(caret instanceof BaseCaret) {
-                    for (CaretInfo editorCaret : ((BaseCaret) caret).getCarets()) {
+                if(caret instanceof EditorCaret) {
+                    for (CaretInfo editorCaret : ((EditorCaret) caret).getCarets()) {
                         try {
                             int dot = editorCaret.getDot();
                             // #232675: if bounds are defined, use them rather than line start/end
@@ -3244,8 +3245,8 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
-                if(caret instanceof BaseCaret) {
-                    for (CaretInfo editorCaret : ((BaseCaret) caret).getCarets()) {
+                if(caret instanceof EditorCaret) {
+                    for (CaretInfo editorCaret : ((EditorCaret) caret).getCarets()) {
                         try {
                             // #232675: if bounds are defined, use them rather than line start/end
                             Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
@@ -3418,14 +3419,14 @@ public class BaseKit extends DefaultEditorKit {
                     int newDotOffset = getNextWordOffset(target);
                     boolean select = selectionNextWordAction.equals(getValue(Action.NAME));
                     if (select) {
-                        if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                            ((BaseCaret) caret).extendRectangularSelection(true, true);
+                        if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                            ((EditorCaret) caret).extendRectangularSelection(true, true);
                         } else {
                             caret.moveDot(newDotOffset);
                         }
                     } else {
-                        if (caret instanceof BaseCaret) {
-                            ((BaseCaret)caret).setDot(newDotOffset, false);
+                        if (caret instanceof EditorCaret) {
+                            ((EditorCaret)caret).setDot(newDotOffset, false);
                         } else {
                             caret.setDot(newDotOffset);
                         }
@@ -3464,14 +3465,14 @@ public class BaseKit extends DefaultEditorKit {
                     int newDotOffset = getPreviousWordOffset(target);
                     boolean select = selectionPreviousWordAction.equals(getValue(Action.NAME));
                     if (select) {
-                        if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                            ((BaseCaret) caret).extendRectangularSelection(false, true);
+                        if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                            ((EditorCaret) caret).extendRectangularSelection(false, true);
                         } else {
                             caret.moveDot(newDotOffset);
                         }
                     } else {
-                        if (caret instanceof BaseCaret) {
-                            ((BaseCaret)caret).setDot(newDotOffset, false);
+                        if (caret instanceof EditorCaret) {
+                            ((EditorCaret)caret).setDot(newDotOffset, false);
                         } else {
                             caret.setDot(newDotOffset);
                         }

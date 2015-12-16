@@ -90,6 +90,7 @@ import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.progress.ProgressUtils;
@@ -854,7 +855,9 @@ public class ActionFactory {
         }
     }
 
-    /** Switch to overwrite mode or back to insert mode */
+    /** Switch to overwrite mode or back to insert mode
+     * @deprecated Replaced by ToggleTypingModeAction in editor.actions module
+     */
     @EditorActionRegistration(name = BaseKit.toggleTypingModeAction)
     public static class ToggleTypingModeAction extends LocalBaseAction {
 
@@ -866,12 +869,11 @@ public class ActionFactory {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                EditorUI editorUI = Utilities.getEditorUI(target);
-                Boolean overwriteMode = (Boolean)editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                Boolean overwriteMode = (Boolean) target.getClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY);
                 // Now toggle
                 overwriteMode = (overwriteMode == null || !overwriteMode.booleanValue())
                                 ? Boolean.TRUE : Boolean.FALSE;
-                editorUI.putProperty(EditorUI.OVERWRITE_MODE_PROPERTY, overwriteMode);
+                target.putClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY, overwriteMode);
             }
         }
     }

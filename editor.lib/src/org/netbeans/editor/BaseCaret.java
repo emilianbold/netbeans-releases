@@ -77,9 +77,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -108,8 +105,6 @@ import javax.swing.event.EventListenerList;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
-import org.netbeans.api.editor.CaretInfo;
-import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -134,7 +129,7 @@ import org.openide.util.WeakListeners;
 */
 
 @SuppressWarnings("ClassWithMultipleLoggers")
-public class BaseCaret extends EditorCaret implements
+public class BaseCaret implements Caret,
 MouseListener, MouseMotionListener, PropertyChangeListener,
 DocumentListener, ActionListener, 
 AtomicLockListener, FoldHierarchyListener {
@@ -142,14 +137,14 @@ AtomicLockListener, FoldHierarchyListener {
     /** Caret type representing block covering current character */
     public static final String BLOCK_CARET = EditorPreferencesDefaults.BLOCK_CARET; // NOI18N
 
-    /** Default caret type */
-    public static final String LINE_CARET = EditorPreferencesDefaults.LINE_CARET; // NOI18N
-
     /** One dot thin line compatible with Swing default caret */
-    public static final String THIN_LINE_CARET = "thin-line-caret"; // NOI18N
+    public static final String THIN_LINE_CARET = EditorPreferencesDefaults.THIN_LINE_CARET; // NOI18N
 
     /** @since 1.23 */
-    public static final String THICK_LINE_CARET = "thick-line-caret"; // NOI18N
+    public static final String THICK_LINE_CARET = EditorPreferencesDefaults.THICK_LINE_CARET; // NOI18N
+
+    /** Default caret type */
+    public static final String LINE_CARET = THICK_LINE_CARET; // NOI18N
 
     /** Boolean property defining whether selection is being rectangular in a particular text component. */
     private static final String RECTANGULAR_SELECTION_PROPERTY = "rectangular-selection"; // NOI18N
@@ -176,6 +171,26 @@ AtomicLockListener, FoldHierarchyListener {
      */
     private final ListenerImpl listenerImpl;
     
+    /**
+     * Present bounds of the caret. This rectangle needs to be repainted
+     * prior the caret gets repainted elsewhere.
+     */
+    private volatile Rectangle caretBounds;
+
+    /** Component this caret is bound to */
+    protected JTextComponent component;
+
+    /** Position of the caret on the screen. This helps to compute
+    * caret position on the next after jump.
+    */
+    Point magicCaretPosition;
+
+    /** Position of caret. */
+    Position caretPos;
+
+    /** Position of selection mark. */
+    Position markPos;
+
     /** Is the caret visible */
     boolean caretVisible;
 
@@ -209,6 +224,9 @@ AtomicLockListener, FoldHierarchyListener {
 
     /** Change event. Only one instance needed because it has only source property */
     protected ChangeEvent changeEvent;
+
+    /** Dot array of one character under caret */
+    protected char dotChar[] = {' '};
 
     private boolean overwriteMode;
 
@@ -326,7 +344,6 @@ AtomicLockListener, FoldHierarchyListener {
      */
     private boolean showingTextCursor = true;
     
-    
     public BaseCaret() {
         listenerImpl = new ListenerImpl();
     }
@@ -391,71 +408,44 @@ AtomicLockListener, FoldHierarchyListener {
             doc.render(new Runnable() {
                 @Override
                 public void run() {
-                    if(carets.isEmpty()) {
-                        // There needs be at least one caret in the document.
-                        carets.add(new CaretInfo(BaseCaret.this));
+                    int offset = getDot();
+                    if (offset > doc.getLength()) {
+                        offset = doc.getLength();
                     }
-                    for (CaretInfo caret : carets) {
-                        ret[0] |= updateRealCaretBounds(caret, doc, c);
+                    if (doc != null) {
+                        CharSequence docText = DocumentUtilities.getText(doc);
+                        dotChar[0] = docText.charAt(offset);
                     }
-                }
-            });
-        }
-        LOG.log(Level.FINE, "updateCaretBounds: no change, old={0}", carets); //NOI18N
-        return ret[0];
-    }
-    
-    private boolean updateCaretBounds(final CaretInfo caret) {
-        final JTextComponent c = component;
-        final boolean[] ret = { false };
-        if (c != null) {
-            final Document doc = c.getDocument();
-            doc.render(new Runnable() {
-                @Override
-                public void run() {
-                    ret[0] |= updateRealCaretBounds(caret, doc, c);
-                }
-            });
-        }
-        LOG.log(Level.FINE, "updateCaretBounds: no change, old={0}", carets); //NOI18N
-        return ret[0];
-    }
-    
-    private boolean updateRealCaretBounds(CaretInfo caret, Document doc, JTextComponent c) {
-        Position dotPos = caret.getDotPosition();
-        int offset = dotPos == null? 0 : dotPos.getOffset();
-        if (offset > doc.getLength()) {
-            offset = doc.getLength();
-        }
-        CharSequence docText = DocumentUtilities.getText(doc);
-        caret.setDotChar(docText.charAt(offset));
-        Rectangle newCaretBounds;
-        try {
-            DocumentView docView = DocumentView.get(c);
-            if (docView != null) {
-                // docView.syncViewsRebuild(); // Make sure pending views changes are resolved
-            }
-            newCaretBounds = c.getUI().modelToView(
-                    c, offset, Position.Bias.Forward);
-            // [TODO] Temporary fix - impl should remember real bounds computed by paintCustomCaret()
-            if (newCaretBounds != null) {
-                newCaretBounds.width = Math.max(newCaretBounds.width, 2);
-            }
+                    Rectangle newCaretBounds;
+                    try {
+                        DocumentView docView = DocumentView.get(c);
+                        if (docView != null) {
+                            // docView.syncViewsRebuild(); // Make sure pending views changes are resolved
+                        }
+                        newCaretBounds = c.getUI().modelToView(
+                                c, offset, Position.Bias.Forward);
+                        // [TODO] Temporary fix - impl should remember real bounds computed by paintCustomCaret()
+                        if (newCaretBounds != null) {
+                            newCaretBounds.width = Math.max(newCaretBounds.width, 2);
+                        }
 
-        } catch (BadLocationException e) {
-            newCaretBounds = null;
-            Utilities.annotateLoggable(e);
+                    } catch (BadLocationException e) {
+                        newCaretBounds = null;
+                        Utilities.annotateLoggable(e);
+                    }
+                    if (newCaretBounds != null) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "updateCaretBounds: old={0}, new={1}, offset={2}",
+                                    new Object[]{caretBounds, newCaretBounds, offset}); //NOI18N
+                        }
+                        caretBounds = newCaretBounds;
+                        ret[0] = true;
+                    }
+                }
+            });
         }
-        if (newCaretBounds != null) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "updateCaretBounds: old={0}, new={1}, offset={2}",
-                        new Object[]{caret.getCaretBounds(), newCaretBounds, offset}); //NOI18N
-            }
-            caret.setCaretBounds(newCaretBounds);
-            return true;
-        } else {
-            return false;
-        }
+        LOG.log(Level.FINE, "updateCaretBounds: no change, old={0}", caretBounds); //NOI18N
+        return ret[0];
     }
 
     /** Called when UI is being installed into JTextComponent */
@@ -478,7 +468,7 @@ AtomicLockListener, FoldHierarchyListener {
         // is not yet added to the component hierarchy.
         updateCaretBounds();
         
-        if(carets.isEmpty() || carets.getLast().getCaretBounds() == null) {
+        if (caretBounds == null) {
             // For null bounds wait for the component to get resized
             // and attempt to recompute bounds then
             component.addComponentListener(listenerImpl);
@@ -513,7 +503,7 @@ AtomicLockListener, FoldHierarchyListener {
         }
         
         component = null; // invalidate
-        carets.clear();
+        caretBounds = null;
 
         // No idea why the sync is done the way how it is, but the locks must
         // always be acquired in the same order otherwise the code will deadlock
@@ -549,7 +539,8 @@ AtomicLockListener, FoldHierarchyListener {
                     oldDoc, this, DocumentListenerPriority.CARET_UPDATE);
             oldDoc.removeAtomicLockListener(this);
 
-            carets.clear();
+            caretPos = null;
+            markPos = null;
 
             listenDoc = null;
             if (prefs != null && weakPrefsListener != null) {
@@ -586,67 +577,62 @@ AtomicLockListener, FoldHierarchyListener {
     public @Override void paint(Graphics g) {
         JTextComponent c = component;
         if (c == null) return;
-        
-        CaretInfo lastCaret = getLastCaret();
 
         // #70915 Check whether the caret was moved but the component was not
         // validated yet and therefore the caret bounds are still null
         // and if so compute the bounds and scroll the view if necessary.
-        if (getDot() != 0 && lastCaret.getCaretBounds() == null) {
+        if (getDot() != 0 && caretBounds == null) {
             update(true);
         }
-        
-        for (CaretInfo caret : carets) {
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.finest("BaseCaret.paint(): caretBounds=" + caret.getCaretBounds() + dumpVisibility() + '\n');
-            }
-            if (caret.getCaretBounds() != null && isVisible() && blinkVisible) {
-                paintCustomCaret(g, caret);
-            }
-            if (rectangularSelection && rsPaintRect != null && g instanceof Graphics2D) {
-                Graphics2D g2d = (Graphics2D) g;
-                Stroke stroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {4, 2}, 0);
-                Stroke origStroke = g2d.getStroke();
-                Color origColor = g2d.getColor();
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.finest("BaseCaret.paint(): caretBounds=" + caretBounds + dumpVisibility() + '\n');
+        }
+        if (caretBounds != null && isVisible() && blinkVisible) {
+            paintCustomCaret(g);
+        }
+        if (rectangularSelection && rsPaintRect != null && g instanceof Graphics2D) {
+            Graphics2D g2d = (Graphics2D) g;
+            Stroke stroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {4, 2}, 0);
+            Stroke origStroke = g2d.getStroke();
+            Color origColor = g2d.getColor();
+            try {
+                // Render translucent rectangle
+                Color selColor = c.getSelectionColor();
+                g2d.setColor(selColor);
+                Composite origComposite = g2d.getComposite();
                 try {
-                    // Render translucent rectangle
-                    Color selColor = c.getSelectionColor();
-                    g2d.setColor(selColor);
-                    Composite origComposite = g2d.getComposite();
-                    try {
-                        g2d.setComposite(AlphaComposite.SrcOver.derive(0.2f));
-                        g2d.fill(rsPaintRect);
-                    } finally {
-                        g2d.setComposite(origComposite);
-                    }
-                    // Paint stroked line around rectangular selection rectangle
-                    g.setColor(c.getCaretColor());
-                    g2d.setStroke(stroke);
-                    Rectangle onePointSmallerRect = new Rectangle(rsPaintRect);
-                    onePointSmallerRect.width--;
-                    onePointSmallerRect.height--;
-                    g2d.draw(onePointSmallerRect);
-
+                    g2d.setComposite(AlphaComposite.SrcOver.derive(0.2f));
+                    g2d.fill(rsPaintRect);
                 } finally {
-                    g2d.setStroke(origStroke);
-                    g2d.setColor(origColor);
+                    g2d.setComposite(origComposite);
                 }
+                // Paint stroked line around rectangular selection rectangle
+                g.setColor(c.getCaretColor());
+                g2d.setStroke(stroke);
+                Rectangle onePointSmallerRect = new Rectangle(rsPaintRect);
+                onePointSmallerRect.width--;
+                onePointSmallerRect.height--;
+                g2d.draw(onePointSmallerRect);
+
+            } finally {
+                g2d.setStroke(origStroke);
+                g2d.setColor(origColor);
             }
         }
     }
 
-    protected void paintCustomCaret(Graphics g, CaretInfo caret) {
+    protected void paintCustomCaret(Graphics g) {
         JTextComponent c = component;
         if (c != null) {
             EditorUI editorUI = Utilities.getEditorUI(c);
             g.setColor(c.getCaretColor());
             if (THIN_LINE_CARET.equals(type)) { // thin line caret
-                int upperX = caret.getCaretBounds().x;
+                int upperX = caretBounds.x;
                 if (beforeCaretFont != null && beforeCaretFont.isItalic() && italic) {
-                    upperX += Math.tan(beforeCaretFont.getItalicAngle()) * caret.getCaretBounds().height;
+                    upperX += Math.tan(beforeCaretFont.getItalicAngle()) * caretBounds.height;
                 }
-                g.drawLine((int)upperX, caret.getCaretBounds().y, caret.getCaretBounds().x,
-                        (caret.getCaretBounds().y + caret.getCaretBounds().height - 1));
+                g.drawLine((int)upperX, caretBounds.y, caretBounds.x,
+                        (caretBounds.y + caretBounds.height - 1));
             } else if (THICK_LINE_CARET.equals(type)) { // thick caret
                 int blkWidth = this.width;
                 if (blkWidth <= 0) blkWidth = 5; // sanity check
@@ -655,59 +641,59 @@ AtomicLockListener, FoldHierarchyListener {
                 if (textBackgroundColor != null) {
                     g.setXORMode( textBackgroundColor);
                 }
-//                g.fillRect(caretBounds.x, caretBounds.y, blkWidth, caretBounds.height - 1);
+                g.fillRect(caretBounds.x, caretBounds.y, blkWidth, caretBounds.height - 1);
             } else if (BLOCK_CARET.equals(type)) { // block caret
                 if (afterCaretFont != null) g.setFont(afterCaretFont);
                 if (afterCaretFont != null && afterCaretFont.isItalic() && italic) { // paint italic caret
-                    int upperX = (int)(caret.getCaretBounds().x
-                            + Math.tan(afterCaretFont.getItalicAngle()) * caret.getCaretBounds().height);
+                    int upperX = (int)(caretBounds.x
+                            + Math.tan(afterCaretFont.getItalicAngle()) * caretBounds.height);
                     xPoints[0] = upperX;
-                    yPoints[0] = caret.getCaretBounds().y;
-                    xPoints[1] = upperX + caret.getCaretBounds().width;
-                    yPoints[1] = caret.getCaretBounds().y;
-                    xPoints[2] = caret.getCaretBounds().x + caret.getCaretBounds().width;
-                    yPoints[2] = caret.getCaretBounds().y + caret.getCaretBounds().height - 1;
-                    xPoints[3] = caret.getCaretBounds().x;
-                    yPoints[3] = caret.getCaretBounds().y + caret.getCaretBounds().height - 1;
+                    yPoints[0] = caretBounds.y;
+                    xPoints[1] = upperX + caretBounds.width;
+                    yPoints[1] = caretBounds.y;
+                    xPoints[2] = caretBounds.x + caretBounds.width;
+                    yPoints[2] = caretBounds.y + caretBounds.height - 1;
+                    xPoints[3] = caretBounds.x;
+                    yPoints[3] = caretBounds.y + caretBounds.height - 1;
                     g.fillPolygon(xPoints, yPoints, 4);
 
                 } else { // paint non-italic caret
-                    g.fillRect(caret.getCaretBounds().x, caret.getCaretBounds().y, caret.getCaretBounds().width, caret.getCaretBounds().height);
+                    g.fillRect(caretBounds.x, caretBounds.y, caretBounds.width, caretBounds.height);
                 }
                 
-                if (!Character.isWhitespace(caret.getDotChar())) {
+                if (!Character.isWhitespace(dotChar[0])) {
                     Color textBackgroundColor = c.getBackground();
                     if (textBackgroundColor != null)
                         g.setColor(textBackgroundColor);
                     // int ascent = FontMetricsCache.getFontMetrics(afterCaretFont, c).getAscent();
-                    g.drawChars(new char[]{caret.getDotChar()}, 0, 1, caret.getCaretBounds().x,
-                            caret.getCaretBounds().y + editorUI.getLineAscent());
+                    g.drawChars(dotChar, 0, 1, caretBounds.x,
+                            caretBounds.y + editorUI.getLineAscent());
                 }
 
             } else { // two dot line caret
                 int blkWidth = 2;
                 if (beforeCaretFont != null && beforeCaretFont.isItalic() && italic) {
-                    int upperX = (int)(caret.getCaretBounds().x 
-                            + Math.tan(beforeCaretFont.getItalicAngle()) * caret.getCaretBounds().height);
+                    int upperX = (int)(caretBounds.x 
+                            + Math.tan(beforeCaretFont.getItalicAngle()) * caretBounds.height);
                     xPoints[0] = upperX;
-                    yPoints[0] = caret.getCaretBounds().y;
+                    yPoints[0] = caretBounds.y;
                     xPoints[1] = upperX + blkWidth;
-                    yPoints[1] = caret.getCaretBounds().y;
-                    xPoints[2] = caret.getCaretBounds().x + blkWidth;
-                    yPoints[2] = caret.getCaretBounds().y + caret.getCaretBounds().height - 1;
-                    xPoints[3] = caret.getCaretBounds().x;
-                    yPoints[3] = caret.getCaretBounds().y + caret.getCaretBounds().height - 1;
+                    yPoints[1] = caretBounds.y;
+                    xPoints[2] = caretBounds.x + blkWidth;
+                    yPoints[2] = caretBounds.y + caretBounds.height - 1;
+                    xPoints[3] = caretBounds.x;
+                    yPoints[3] = caretBounds.y + caretBounds.height - 1;
                     g.fillPolygon(xPoints, yPoints, 4);
 
                 } else { // paint non-italic caret
-                    g.fillRect(caret.getCaretBounds().x, caret.getCaretBounds().y, blkWidth, caret.getCaretBounds().height - 1);
+                    g.fillRect(caretBounds.x, caretBounds.y, blkWidth, caretBounds.height - 1);
                 }
             }
         }
     }
 
     /** Update the caret's visual position */
-    protected void dispatchUpdate(final boolean scrollViewToCaret) {
+    void dispatchUpdate(final boolean scrollViewToCaret) {
         /* After using SwingUtilities.invokeLater() due to fix of #18860
          * there is another fix of #35034 which ensures that the caret's
          * document listener will be added AFTER the views hierarchy's
@@ -755,115 +741,112 @@ AtomicLockListener, FoldHierarchyListener {
             BaseTextUI ui = (BaseTextUI)c.getUI();
             BaseDocument doc = Utilities.getDocument(c);
             if (doc != null) {
-                if(carets.isEmpty()) {
-                    carets.add(new CaretInfo(this));
-                }
-                for (CaretInfo caret : carets) {
-                    Rectangle oldCaretBounds = caret.getCaretBounds(); // no need to deep copy
-                    if (oldCaretBounds != null) {
-                        if (italic) { // caret is italic - add char height to the width of the rect
-                            oldCaretBounds.width += oldCaretBounds.height;
-                        }
-                        c.repaint(oldCaretBounds);
+                Rectangle oldCaretBounds = caretBounds; // no need to deep copy
+                if (oldCaretBounds != null) {
+                    if (italic) { // caret is italic - add char height to the width of the rect
+                        oldCaretBounds.width += oldCaretBounds.height;
                     }
+                    c.repaint(oldCaretBounds);
+                }
 
-                    // note - the order is important ! caret bounds must be updated even if the fold flag is true.
-                    if (updateCaretBounds(caret) || updateAfterFoldHierarchyChange) {
-                        Rectangle scrollBounds = new Rectangle(caret.getCaretBounds());
-
-                        // Optimization to avoid extra repaint:
-                        // If the caret bounds were not yet assigned then attempt
-                        // to scroll the window so that there is an extra vertical space 
-                        // for the possible horizontal scrollbar that may appear
-                        // if the line-view creation process finds line-view that
-                        // is too wide and so the horizontal scrollbar will appear
-                        // consuming an extra vertical space at the bottom.
-                        if (oldCaretBounds == null) {
-                            Component viewport = c.getParent();
-                            if (viewport instanceof JViewport) {
-                                Component scrollPane = viewport.getParent();
-                                if (scrollPane instanceof JScrollPane) {
-                                    JScrollBar hScrollBar = ((JScrollPane) scrollPane).getHorizontalScrollBar();
-                                    if (hScrollBar != null) {
-                                        int hScrollBarHeight = hScrollBar.getPreferredSize().height;
-                                        Dimension extentSize = ((JViewport) viewport).getExtentSize();
-                                        // If the extent size is high enough then extend
-                                        // the scroll region by extra vertical space
-                                        if (extentSize.height >= caret.getCaretBounds().height + hScrollBarHeight) {
-                                            scrollBounds.height += hScrollBarHeight;
-                                        }
+                // note - the order is important ! caret bounds must be updated even if the fold flag is true.
+                if (updateCaretBounds() || updateAfterFoldHierarchyChange) {
+                    Rectangle scrollBounds = new Rectangle(caretBounds);
+                    
+                    // Optimization to avoid extra repaint:
+                    // If the caret bounds were not yet assigned then attempt
+                    // to scroll the window so that there is an extra vertical space 
+                    // for the possible horizontal scrollbar that may appear
+                    // if the line-view creation process finds line-view that
+                    // is too wide and so the horizontal scrollbar will appear
+                    // consuming an extra vertical space at the bottom.
+                    if (oldCaretBounds == null) {
+                        Component viewport = c.getParent();
+                        if (viewport instanceof JViewport) {
+                            Component scrollPane = viewport.getParent();
+                            if (scrollPane instanceof JScrollPane) {
+                                JScrollBar hScrollBar = ((JScrollPane)scrollPane).getHorizontalScrollBar();
+                                if (hScrollBar != null) {
+                                    int hScrollBarHeight = hScrollBar.getPreferredSize().height;
+                                    Dimension extentSize = ((JViewport)viewport).getExtentSize();
+                                    // If the extent size is high enough then extend
+                                    // the scroll region by extra vertical space
+                                    if (extentSize.height >= caretBounds.height + hScrollBarHeight) {
+                                        scrollBounds.height += hScrollBarHeight;
                                     }
                                 }
                             }
                         }
-
-                        Rectangle visibleBounds = c.getVisibleRect();
-
-                        // If folds have changed attempt to scroll the view so that 
-                        // relative caret's visual position gets retained
-                        // (the absolute position will change because of collapsed/expanded folds).
-                        boolean doScroll = scrollViewToCaret;
-                        boolean explicit = false;
-                        if (oldCaretBounds != null && (!scrollViewToCaret || updateAfterFoldHierarchyChange)) {
-                            int oldRelY = oldCaretBounds.y - visibleBounds.y;
-                            // Only fix if the caret is within visible bounds and the new x or y coord differs from the old one
-                            if (LOG.isLoggable(Level.FINER)) {
-                                LOG.log(Level.FINER, "oldCaretBounds: {0}, visibleBounds: {1}, caretBounds: {2}",
-                                        new Object[]{oldCaretBounds, visibleBounds, caret.getCaretBounds()});
-                            }
-                            if (oldRelY >= 0 && oldRelY < visibleBounds.height
-                                    && (oldCaretBounds.y != caret.getCaretBounds().y || oldCaretBounds.x != caret.getCaretBounds().x)) {
-                                doScroll = true; // Perform explicit scrolling
-                                explicit = true;
-                                int oldRelX = oldCaretBounds.x - visibleBounds.x;
-                                // Do not retain the horizontal caret bounds by scrolling
-                                // since many modifications do not explicitly say that they are typing modifications
-                                // and this would cause problems like #176268
-//                            scrollBounds.x = Math.max(caretBounds.x - oldRelX, 0);
-                                scrollBounds.y = Math.max(caret.getCaretBounds().y - oldRelY, 0);
-//                            scrollBounds.width = visibleBounds.width;
-                                scrollBounds.height = visibleBounds.height;
-                            }
+                    }
+                    
+                    Rectangle visibleBounds = c.getVisibleRect();
+                    
+                    // If folds have changed attempt to scroll the view so that 
+                    // relative caret's visual position gets retained
+                    // (the absolute position will change because of collapsed/expanded folds).
+                    boolean doScroll = scrollViewToCaret;
+                    boolean explicit = false;
+                    if (oldCaretBounds != null && (!scrollViewToCaret || updateAfterFoldHierarchyChange)) {
+                        int oldRelY = oldCaretBounds.y - visibleBounds.y;
+                        // Only fix if the caret is within visible bounds and the new x or y coord differs from the old one
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.log(Level.FINER, "oldCaretBounds: {0}, visibleBounds: {1}, caretBounds: {2}",
+                                    new Object[] { oldCaretBounds, visibleBounds, caretBounds });
                         }
-
-                        // Historically the caret is expected to appear
-                        // in the middle of the window if setDot() gets called
-                        // e.g. by double-clicking in Navigator.
-                        // If the caret bounds are more than a caret height below the present
-                        // visible view bounds (or above the view bounds)
-                        // then scroll the window so that the caret is in the middle
-                        // of the visible window to see the context around the caret.
-                        // This should work fine with PgUp/Down because these
-                        // scroll the view explicitly.
-                        if (scrollViewToCaret
-                                && !explicit
-                                && // #219580: if the preceding if-block computed new scrollBounds, it cannot be offset yet more
-                                /* # 70915 !updateAfterFoldHierarchyChange && */ (caret.getCaretBounds().y > visibleBounds.y + visibleBounds.height + caret.getCaretBounds().height
-                                || caret.getCaretBounds().y + caret.getCaretBounds().height < visibleBounds.y - caret.getCaretBounds().height)) {
-                            // Scroll into the middle
-                            scrollBounds.y -= (visibleBounds.height - caret.getCaretBounds().height) / 2;
+                        if (oldRelY >= 0 && oldRelY < visibleBounds.height &&
+                                (oldCaretBounds.y != caretBounds.y || oldCaretBounds.x != caretBounds.x))
+                        {
+                            doScroll = true; // Perform explicit scrolling
+                            explicit = true;
+                            int oldRelX = oldCaretBounds.x - visibleBounds.x;
+                            // Do not retain the horizontal caret bounds by scrolling
+                            // since many modifications do not explicitly say that they are typing modifications
+                            // and this would cause problems like #176268
+//                            scrollBounds.x = Math.max(caretBounds.x - oldRelX, 0);
+                            scrollBounds.y = Math.max(caretBounds.y - oldRelY, 0);
+//                            scrollBounds.width = visibleBounds.width;
                             scrollBounds.height = visibleBounds.height;
                         }
-                        if (LOG.isLoggable(Level.FINER)) {
-                            LOG.finer("Resetting fold flag, current: " + updateAfterFoldHierarchyChange);
-                        }
-                        updateAfterFoldHierarchyChange = false;
-
-                        // Ensure that the viewport will be scrolled either to make the caret visible
-                        // or to retain cart's relative visual position against the begining of the viewport's visible rectangle.
-                        if (doScroll) {
-                            if (LOG.isLoggable(Level.FINER)) {
-                                LOG.finer("Scrolling to: " + scrollBounds);
-                            }
-                            c.scrollRectToVisible(scrollBounds);
-                            if (!c.getVisibleRect().intersects(scrollBounds)) {
-                                // HACK: see #219580: for some reason, the scrollRectToVisible may fail.
-                                c.scrollRectToVisible(scrollBounds);
-                            }
-                        }
-                        resetBlink();
-                        c.repaint(caret.getCaretBounds());
                     }
+
+                    // Historically the caret is expected to appear
+                    // in the middle of the window if setDot() gets called
+                    // e.g. by double-clicking in Navigator.
+                    // If the caret bounds are more than a caret height below the present
+                    // visible view bounds (or above the view bounds)
+                    // then scroll the window so that the caret is in the middle
+                    // of the visible window to see the context around the caret.
+                    // This should work fine with PgUp/Down because these
+                    // scroll the view explicitly.
+                    if (scrollViewToCaret && 
+                        !explicit && // #219580: if the preceding if-block computed new scrollBounds, it cannot be offset yet more
+                        /* # 70915 !updateAfterFoldHierarchyChange && */
+                        (caretBounds.y > visibleBounds.y + visibleBounds.height + caretBounds.height
+                            || caretBounds.y + caretBounds.height < visibleBounds.y - caretBounds.height)
+                    ) {
+                        // Scroll into the middle
+                        scrollBounds.y -= (visibleBounds.height - caretBounds.height) / 2;
+                        scrollBounds.height = visibleBounds.height;
+                    }
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("Resetting fold flag, current: " + updateAfterFoldHierarchyChange);
+                    }
+                    updateAfterFoldHierarchyChange = false;
+                    
+                    // Ensure that the viewport will be scrolled either to make the caret visible
+                    // or to retain cart's relative visual position against the begining of the viewport's visible rectangle.
+                    if (doScroll) {
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.finer("Scrolling to: " + scrollBounds);
+                        }
+                        c.scrollRectToVisible(scrollBounds);
+                        if (!c.getVisibleRect().intersects(scrollBounds)) {
+                            // HACK: see #219580: for some reason, the scrollRectToVisible may fail.
+                            c.scrollRectToVisible(scrollBounds);
+                        }
+                    }
+                    resetBlink();
+                    c.repaint(caretBounds);
                 }
             }
         }
@@ -1030,15 +1013,13 @@ AtomicLockListener, FoldHierarchyListener {
             caretVisible = v;
         }
         JTextComponent c = component;
-        for (CaretInfo caret : carets) {
-            if (c != null && caret.getCaretBounds() != null) {
-                Rectangle repaintRect = caret.getCaretBounds();
-                if (italic) {
-                    repaintRect = new Rectangle(repaintRect); // copy
-                    repaintRect.width += repaintRect.height; // ensure enough horizontally
-                }
-                c.repaint(repaintRect);
+        if (c != null && caretBounds != null) {
+            Rectangle repaintRect = caretBounds;
+            if (italic) {
+                repaintRect = new Rectangle(repaintRect); // copy
+                repaintRect.width += repaintRect.height; // ensure enough horizontally
             }
+            c.repaint(repaintRect);
         }
     }
 
@@ -1119,16 +1100,12 @@ AtomicLockListener, FoldHierarchyListener {
     * @param p  the Point to use for the saved position
     */
     public @Override void setMagicCaretPosition(Point p) {
-        if(carets.isEmpty()) {
-            // There needs be at least one caret in the document.
-            carets.add(new CaretInfo(this));
-        }
-        carets.getLast().setMagicCaretPosition(p);
+        magicCaretPosition = p;
     }
 
     /** Get position used to mark begining of the selected block */
     public @Override final Point getMagicCaretPosition() {
-        return carets.isEmpty() && carets.size() > 0 ? carets.iterator().next().getMagicCaretPosition() : null;
+        return magicCaretPosition;
     }
 
     /** Sets the caret blink rate.
@@ -1171,6 +1148,25 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
 
+    /** Gets the current position of the caret */
+    public @Override int getDot() {
+        if (component != null) {
+            return (caretPos != null) ? caretPos.getOffset() : 0;
+        }
+        return 0;
+    }
+
+    /** Gets the current position of the selection mark.
+    * If there's a selection this position will be different
+    * from the caret position.
+    */
+    public @Override int getMark() {
+        if (component != null) {
+            return (markPos != null) ? markPos.getOffset() : 0;
+        }
+        return 0;
+    }
+
     /**
      * Assign the caret a new offset in the underlying document.
      * <br/>
@@ -1187,12 +1183,13 @@ AtomicLockListener, FoldHierarchyListener {
         // In such case the component listener listens for resizing
         // of the editor component and reassigns the caretBounds
         // once the component gets resized.
-        setDot(offset, null, EditorUI.SCROLL_DEFAULT);
+        setDot(offset, caretBounds, EditorUI.SCROLL_DEFAULT);
     }
 
     public void setDot(int offset, boolean expandFold) {
-        setDot(offset, null, EditorUI.SCROLL_DEFAULT, expandFold);
+        setDot(offset, caretBounds, EditorUI.SCROLL_DEFAULT, expandFold);
     }
+    
     
     /** Sets the caret position to some position. This
      * causes removal of the active selection. If expandFold set to true
@@ -1224,19 +1221,7 @@ AtomicLockListener, FoldHierarchyListener {
                 LOG.log(Level.INFO, "setDot call stack", new Exception());
             }
         }
-        CaretInfo caret;
-        if(carets.isEmpty()) {
-            caret = new CaretInfo(this);
-        } else {
-            caret = carets.iterator().next();
-            carets.clear();
-        }
-        carets.add(caret);
         
-        setDotCaret(offset, caret, expandFold);
-    }
-
-    public void addCaret(int offset) {
         JTextComponent c = component;
         if (c != null) {
             BaseDocument doc = (BaseDocument)c.getDocument();
@@ -1246,7 +1231,23 @@ AtomicLockListener, FoldHierarchyListener {
                 if (doc != null && offset >= 0 && offset <= doc.getLength()) {
                     dotChanged = true;
                     try {
-                        carets.add(new CaretInfo(this, doc.createPosition(offset), doc.createPosition(offset)));
+                        caretPos = doc.createPosition(offset);
+                        markPos = doc.createPosition(offset);
+
+                        Callable<Boolean> cc = (Callable<Boolean>)c.getClientProperty("org.netbeans.api.fold.expander");
+                        if (cc != null && expandFold) {
+                            // the caretPos/markPos were already called.
+                            // nothing except the document is locked at this moment.
+                            try {
+                                cc.call();
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        if (rectangularSelection) {
+                            setRectangularSelectionToDotAndMark();
+                        }
+                        
                     } catch (BadLocationException e) {
                         throw new IllegalStateException(e.toString());
                         // setting the caret to wrong position leaves it at current position
@@ -1282,7 +1283,7 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     public @Override void moveDot(int offset) {
-        moveDot(offset, null, EditorUI.SCROLL_MOVE);
+        moveDot(offset, caretBounds, EditorUI.SCROLL_MOVE);
     }
 
     /** Makes selection by moving dot but leaving mark.
@@ -1308,31 +1309,18 @@ AtomicLockListener, FoldHierarchyListener {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("moveDot: offset=" + offset); //NOI18N
         }
-        
-        CaretInfo caret;
-        if(carets.isEmpty()) {
-            caret = new CaretInfo(this);
-        } else {
-            caret = carets.iterator().next();
-            carets.clear();
-        }
-        carets.add(caret);
 
-        moveDotCaret(offset, caret);
-    }
-
-    protected void moveDotCaret(int offset, CaretInfo caret) throws IllegalStateException {
         JTextComponent c = component;
         if (c != null) {
             BaseDocument doc = (BaseDocument)c.getDocument();
             if (doc != null && offset >= 0 && offset <= doc.getLength()) {
                 doc.readLock();
                 try {
-                    int oldCaretPos = caret.getDot();
+                    int oldCaretPos = getDot();
                     if (offset == oldCaretPos) { // no change
                         return;
                     }
-                    caret.setDotPos(doc.createPosition(offset));
+                    caretPos = doc.createPosition(offset);
                     if (selectionVisible) { // selection already visible
                         Utilities.getEditorUI(c).repaintBlock(oldCaretPos, offset);
                     }
@@ -1357,7 +1345,7 @@ AtomicLockListener, FoldHierarchyListener {
             dispatchUpdate(true);
         }
     }
-    
+
     // DocumentListener methods
     public @Override void insertUpdate(DocumentEvent evt) {
         JTextComponent c = component;
@@ -1365,21 +1353,19 @@ AtomicLockListener, FoldHierarchyListener {
             int offset = evt.getOffset();
             int endOffset = offset + evt.getLength();
             if (evt.getOffset() == 0) {
-                for (CaretInfo caret : carets) {
-                    // Insert at offset 0 the marks would stay at offset == 0
-                    if (caret.getMarkPosition() == null || caret.getMarkPosition().getOffset() == 0) {
-                        try {
-                            caret.setMarkPos(listenDoc.createPosition(endOffset));
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                // Insert at offset 0 the marks would stay at offset == 0
+                if (getMark() == 0) {
+                    try {
+                        markPos = listenDoc.createPosition(endOffset);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                    if (caret.getDotPosition() == null || caret.getDotPosition().getOffset() == 0) {
-                        try {
-                            caret.setDotPos(listenDoc.createPosition(endOffset));
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                }
+                if (getDot() == 0) {
+                    try {
+                        caretPos = listenDoc.createPosition(endOffset);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }
@@ -1500,10 +1486,7 @@ AtomicLockListener, FoldHierarchyListener {
                         c.requestFocus();
                     }
                     c.setDragEnabled(true);
-                    if (evt.isAltDown() && evt.isShiftDown()) {
-                        mouseState = MouseState.CHAR_SELECTION;
-                        addCaret(offset);
-                    } else if (evt.isShiftDown()) { // Select till offset
+                    if (evt.isShiftDown()) { // Select till offset
                         moveDot(offset);
                         adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
                         mouseState = MouseState.CHAR_SELECTION;
@@ -1580,12 +1563,8 @@ AtomicLockListener, FoldHierarchyListener {
                 break;
 
             case CHAR_SELECTION:
-                if(evt.isAltDown() && evt.isShiftDown()) {
-                    moveDotCaret(offset, getLastCaret());
-                } else {
-                    moveDot(offset); // Will do setDot() if no selection
-                    adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
-                }
+                moveDot(offset); // Will do setDot() if no selection
+                adjustRectangularSelectionMouseX(evt.getX(), evt.getY()); // also fires state change
                 break;
         }
         // Set DEFAULT state; after next mouse press the state may change
@@ -1739,12 +1718,8 @@ AtomicLockListener, FoldHierarchyListener {
                         break;
                     
                     case CHAR_SELECTION:
-                        if(evt.isAltDown() && evt.isShiftDown()) {
-                            moveDotCaret(offset, getLastCaret());
-                        } else {
-                            moveDot(offset);
-                            adjustRectangularSelectionMouseX(evt.getX(), evt.getY());
-                        }
+                        moveDot(offset);
+                        adjustRectangularSelectionMouseX(evt.getX(), evt.getY());
                         break; // Use the offset under mouse pointer
 
                     
@@ -1974,7 +1949,7 @@ AtomicLockListener, FoldHierarchyListener {
     private boolean isLeftMouseButtonExt(MouseEvent evt) {
         return (SwingUtilities.isLeftMouseButton(evt)
                 && !(evt.isPopupTrigger())
-                && (evt.getModifiers() & (InputEvent.META_MASK/* | InputEvent.ALT_MASK*/)) == 0);
+                && (evt.getModifiers() & (InputEvent.META_MASK | InputEvent.ALT_MASK)) == 0);
     }
     
     private boolean isMiddleMouseButtonExt(MouseEvent evt) {
@@ -2119,15 +2094,13 @@ AtomicLockListener, FoldHierarchyListener {
         JTextComponent c = component;
         if (c != null) {
             blinkVisible = !blinkVisible;
-            for (CaretInfo caret : carets) {
-                if (caret.getCaretBounds() != null) {
-                    Rectangle repaintRect = caret.getCaretBounds();
-                    if (italic) {
-                        repaintRect = new Rectangle(repaintRect); // clone
-                        repaintRect.width += repaintRect.height;
-                    }
-                    c.repaint(repaintRect);
+            if (caretBounds != null) {
+                Rectangle repaintRect = caretBounds;
+                if (italic) {
+                    repaintRect = new Rectangle(repaintRect); // clone
+                    repaintRect.width += repaintRect.height;
                 }
+                c.repaint(repaintRect);
             }
         }
     }
@@ -2155,98 +2128,6 @@ AtomicLockListener, FoldHierarchyListener {
             });
         }
     }
-
-//    public class EditorCaretData {
-//
-//        public EditorCaretData() {
-//        }
-//
-//        public EditorCaretData(Position caretPos, Position markPos) {
-//            this.caretPos = caretPos;
-//            this.markPos = markPos;
-//        }
-//        
-//        /**
-//         * Position of the caret on the screen. This helps to compute caret
-//         * position on the next after jump.
-//         */
-//        Point magicCaretPosition;
-//
-//        /**
-//         * Position of caret.
-//         */
-//        Position caretPos;
-//
-//        /**
-//         * Position of selection mark.
-//         */
-//        Position markPos;
-//        
-//        /** Dot array of one character under caret */
-//        protected char dotChar[] = {' '};
-//        
-//        /**
-//         * Present bounds of the caret. This rectangle needs to be repainted
-//         * prior the caret gets repainted elsewhere.
-//         */
-//        private volatile Rectangle caretBounds;
-//        
-//        public int getDot() {
-//            return (caretPos != null) ? caretPos.getOffset() : 0;
-//        }
-//
-//        public int getMark() {
-//            return (markPos != null) ? markPos.getOffset() : 0;
-//        }
-//
-//        public void setDot(int offset) {
-//            if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
-//                if (!SwingUtilities.isEventDispatchThread()) {
-//                    throw new IllegalStateException("BaseCaret.setDot() not in EDT: offset=" + offset); // NOI18N
-//                }
-//            }
-//
-//            if (LOG.isLoggable(Level.FINE)) {
-//                LOG.fine("setDot: offset=" + offset); //NOI18N
-//                if (LOG.isLoggable(Level.FINEST)) {
-//                    LOG.log(Level.INFO, "setDot call stack", new Exception());
-//                }
-//            }
-//
-//            setDotReal(offset, this, true);
-//        }
-//        
-//        public void moveDot(int offset) {
-//            if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
-//                if (!SwingUtilities.isEventDispatchThread()) {
-//                    throw new IllegalStateException("BaseCaret.moveDot() not in EDT: offset=" + offset); // NOI18N
-//                }
-//            }
-//
-//            if (LOG.isLoggable(Level.FINE)) {
-//                LOG.fine("moveDot: offset=" + offset); //NOI18N
-//            }
-//
-//            moveCaret(offset, this);
-//        }
-//        
-//        /**
-//         * Saves the current caret position. This is used when caret up or down
-//         * actions occur, moving between lines that have uneven end positions.
-//         *
-//         * @param p the Point to use for the saved position
-//         */
-//        public void setMagicCaretPosition(Point p) {
-//            magicCaretPosition = p;
-//        }
-//
-//        /**
-//         * Get position used to mark begining of the selected block
-//         */
-//        public final Point getMagicCaretPosition() {
-//            return magicCaretPosition;
-//        }
-//    }
     
     private class ListenerImpl extends ComponentAdapter
     implements FocusListener, ViewHierarchyListener {
@@ -2308,24 +2189,18 @@ AtomicLockListener, FoldHierarchyListener {
             Component hScrollBar = e.getComponent();
             if (hScrollBar != component) { // really called for horizontal scrollbar
                 Component scrollPane = hScrollBar.getParent();
-                boolean needsUpdate = false;
-                for (CaretInfo caret : carets) { // TODO This is wrong, but a quick prototype
-                    if (caret.getCaretBounds() != null && scrollPane instanceof JScrollPane) {
-                        Rectangle viewRect = ((JScrollPane)scrollPane).getViewport().getViewRect();
-                        Rectangle hScrollBarRect = new Rectangle(
-                                viewRect.x,
-                                viewRect.y + viewRect.height,
-                                hScrollBar.getWidth(),
-                                hScrollBar.getHeight()
-                                );
-                        if (hScrollBarRect.intersects(caret.getCaretBounds())) {
-                            // Update caret's position
-                            needsUpdate = true;
-                        }
+                if (caretBounds != null && scrollPane instanceof JScrollPane) {
+                    Rectangle viewRect = ((JScrollPane)scrollPane).getViewport().getViewRect();
+                    Rectangle hScrollBarRect = new Rectangle(
+                            viewRect.x,
+                            viewRect.y + viewRect.height,
+                            hScrollBar.getWidth(),
+                            hScrollBar.getHeight()
+                            );
+                    if (hScrollBarRect.intersects(caretBounds)) {
+                        // Update caret's position
+                        dispatchUpdate(true); // should be visible so scroll the view
                     }
-                }
-                if(needsUpdate) {
-                    dispatchUpdate(true); // should be visible so scroll the view
                 }
             }
         }
@@ -2340,10 +2215,9 @@ AtomicLockListener, FoldHierarchyListener {
                 // In case the caretBounds are still null
                 // (component not connected to hierarchy yet or it has zero size
                 // so the modelToView() returned null) re-attempt to compute the bounds.
-                CaretInfo caret = getLastCaret();
-                if (caret.getCaretBounds() == null) {
+                if (caretBounds == null) {
                     dispatchUpdate(true);
-                    if (caret.getCaretBounds() != null) { // detach the listener - no longer necessary
+                    if (caretBounds != null) { // detach the listener - no longer necessary
                         c.removeComponentListener(this);
                     }
                 }
@@ -2388,8 +2262,7 @@ AtomicLockListener, FoldHierarchyListener {
      * @param retainInView true to scroll only if the caret was visible. False to refresh regardless of visibility.
      */
     public void refresh(boolean retainInView) {
-        CaretInfo caret = getLastCaret();
-        Rectangle b = caret.getCaretBounds();
+        Rectangle b = caretBounds;
         updateAfterFoldHierarchyChange = b != null;
         boolean wasInView = b != null && component.getVisibleRect().intersects(b);
         
