@@ -73,7 +73,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -111,7 +111,6 @@ import org.netbeans.api.editor.document.AtomicLockListener;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -131,6 +130,7 @@ import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
+import org.openide.util.Pair;
 
 /**
  * Extension to standard Swing caret used by all NetBeans editors.
@@ -425,7 +425,7 @@ public final class EditorCaret implements Caret {
 
     /**
      * Create a new caret at the given position with a possible selection.
-     * <br/>
+     * <br>
      * The caret will become the last caret of the list returned by {@link #getCarets() }.
      * 
      * @param dotPos position of the newly created caret.
@@ -440,6 +440,8 @@ public final class EditorCaret implements Caret {
             carets.add(caret);
             // Add to sorted carets too
         }
+        fireStateChanged();
+        dispatchUpdate(true);
         return caret;
     }
     
@@ -453,8 +455,16 @@ public final class EditorCaret implements Caret {
      *  if the particular caret has no selection). The list must have even size.
      * @return list of caret infos. It has a half of the size of the dotAndSelectionStartPosPairs list.
      */
-    public @NonNull List<CaretInfo> addCarets(@NonNull List<Position> dotAndSelectionStartPosPairs) {
-        return Collections.emptyList(); // TBD
+    public @NonNull List<CaretInfo> addCarets(@NonNull List<Pair<Position, Position>> dotAndSelectionStartPosPairs) {
+        List<CaretInfo> created = new LinkedList<>();
+        for (Pair<Position, Position> dotPos : dotAndSelectionStartPosPairs) {
+            CaretInfo caretInfo = new CaretInfo(this, dotPos.first(), dotPos.second());
+            created.add(caretInfo);
+            carets.add(caretInfo);
+        }
+        fireStateChanged();
+        dispatchUpdate(true);
+        return created;
     }
 
     /**
@@ -464,8 +474,17 @@ public final class EditorCaret implements Caret {
      *  if the particular caret has no selection). The list must have even size.
      * @return list of caret infos. It has a half of the size of the dotAndSelectionStartPosPairs list.
      */
-    public @NonNull List<CaretInfo> replaceCarets(@NonNull List<Position> dotAndSelectionStartPosPairs) {
-        return Collections.emptyList(); // TBD
+    public @NonNull List<CaretInfo> replaceCarets(@NonNull List<Pair<Position, Position>> dotAndSelectionStartPosPairs) {
+        List<CaretInfo> created = new LinkedList<>();
+        carets.clear();
+        for (Pair<Position, Position> dotPos : dotAndSelectionStartPosPairs) {
+            CaretInfo caretInfo = new CaretInfo(this, dotPos.first(), dotPos.second());
+            created.add(caretInfo);
+            carets.add(caretInfo);
+        }
+        fireStateChanged();
+        dispatchUpdate(true);
+        return created;
     }
 
     /**

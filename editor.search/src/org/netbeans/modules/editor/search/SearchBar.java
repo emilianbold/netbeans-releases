@@ -63,6 +63,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.*;
+import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -81,6 +82,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 
 /**
@@ -111,6 +113,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private boolean hadFocusOnIncSearchTextField = false;
     private final JButton findNextButton;
     private final JButton findPreviousButton;
+    private final JButton selectAllButton;
     private final JToggleButton matchCase;
     private final JToggleButton wholeWords;
     private final JToggleButton regexp;
@@ -206,6 +209,17 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             }
         });
         add(findNextButton);
+        
+        selectAllButton = SearchButton.createButton("org/netbeans/modules/editor/search/resources/select_all.png", "CTL_SelectAll"); // NOI18N
+        selectAllButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_SelectAllText")); //NOI18N
+        selectAllButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectAll();
+            }
+        });
+        add(selectAllButton);
         
         final JToolBar.Separator rightSeparator = new JToolBar.Separator();
         rightSeparator.setOrientation(SwingConstants.VERTICAL);
@@ -892,6 +906,39 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
     void findPrevious() {
         find(false);
+    }
+    
+    void selectAll() {
+        EditorFindSupport findSupport = EditorFindSupport.getInstance();
+        JTextComponent textComponent = getActualTextComponent();
+        Document doc = textComponent.getDocument();
+        Caret caret = textComponent.getCaret();
+        if(caret instanceof EditorCaret) {
+            EditorCaret editorCaret = (EditorCaret) caret;
+            try {
+                int[] blocks = findSupport.getBlocks(new int[]{-1, -1}, doc, 0, doc.getLength());
+                if(blocks[0] >= 0 && blocks.length % 2 == 0) {
+                    List<Pair<Position, Position>> newCarets = new LinkedList<>();
+                    
+                    for (int i = 0; i < blocks.length; i += 2) {
+                        int start = blocks[i];
+                        int end = blocks[i+1];
+                        if(start == -1 || end == -1) {
+                            break;
+                        }
+                        Position startPos = doc.createPosition(start);
+                        Position endPos = doc.createPosition(end);
+                        newCarets.add(Pair.of(startPos, endPos));
+                    }
+                    
+                    editorCaret.replaceCarets(newCarets);
+                    
+                    textComponent.requestFocusInWindow();
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     public int getNumOfMatches() {
