@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.prefs.PreferenceChangeEvent;
 import javax.swing.Action;
 import javax.swing.InputMap;
@@ -97,6 +98,10 @@ import static javax.swing.text.DefaultEditorKit.selectionUpAction;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import javax.swing.text.View;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.CaretInfo;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
@@ -130,6 +135,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
@@ -205,6 +211,10 @@ public class BaseKit extends DefaultEditorKit {
     public static final String moveSelectionElseLineUpAction = "move-selection-else-line-up"; // NOI18N
     
     public static final String moveSelectionElseLineDownAction = "move-selection-else-line-down"; // NOI18N
+    
+    public static final String addSelectionElseCaretUpAction = "add-selection-else-caret-up"; // NOI18N
+    
+    public static final String addSelectionElseCaretDownAction = "add-selection-else-caret-down"; // NOI18N
     
     public static final String copySelectionElseLineUpAction = "copy-selection-else-line-up"; // NOI18N
     
@@ -1128,68 +1138,169 @@ public class BaseKit extends DefaultEditorKit {
                     }
 
                     try {
-                        for (final CaretInfo caret : ((EditorCaret)target.getCaret()).getCarets()) {
-                    final Position insertionOffset = doc.createPosition(computeInsertionOffset(caret), Position.Bias.Backward);
-                    String replacedText = "";
-                    if (target.getCaret().isSelectionVisible() && caret.getDotPosition() != caret.getMarkPosition()) {
-                        int p0 = Math.min(caret.getDot(), caret.getMark());
-                        int p1 = Math.max(caret.getDot(), caret.getMark());
-                        replacedText = doc.getText(p0, p1 - p0);
-                    }
-                    final TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
-                            target, insertionOffset, cmd, replacedText);
-                    
-                    try {
-                        if (!transaction.beforeInsertion()) {
-                            final Object [] result = new Object [] { Boolean.FALSE, "" }; //NOI18N
-                            doc.runAtomicAsUser (new Runnable () {
-                                public void run () {
-                                    boolean alreadyBeeped = false;
-                                    if (target.getCaret().isSelectionVisible() && caret.getDot() != caret.getMark()) { // valid selection
-                                        EditorUI editorUI = Utilities.getEditorUI(target);
-                                        Boolean overwriteMode = (Boolean) editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
-                                        boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+//                        for (final CaretInfo caret : ((EditorCaret)target.getCaret()).getCarets()) {
+//                    final Position insertionOffset = doc.createPosition(computeInsertionOffset(caret), Position.Bias.Backward);
+//                    String replacedText = "";
+//                    if (target.getCaret().isSelectionVisible() && caret.getDotPosition() != caret.getMarkPosition()) {
+//                        int p0 = Math.min(caret.getDot(), caret.getMark());
+//                        int p1 = Math.max(caret.getDot(), caret.getMark());
+//                        replacedText = doc.getText(p0, p1 - p0);
+//                    }
+//                    final TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
+//                            target, insertionOffset, cmd, replacedText);
+//                    
+//                    try {
+//                        if (!transaction.beforeInsertion()) {
+//                            final Object [] result = new Object [] { Boolean.FALSE, "" }; //NOI18N
+//                            doc.runAtomicAsUser (new Runnable () {
+//                                public void run () {
+//                                    boolean alreadyBeeped = false;
+//                                    if (target.getCaret().isSelectionVisible() && caret.getDot() != caret.getMark()) { // valid selection
+//                                        EditorUI editorUI = Utilities.getEditorUI(target);
+//                                        Boolean overwriteMode = (Boolean) editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+//                                        boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+                        final Caret[] caret = {target.getCaret()};
+                        
+                        if(caret[0] instanceof EditorCaret) {
+                            EditorCaret editorCaret = (EditorCaret) caret[0];
+                            final List<CaretInfo> carets = editorCaret.getCarets();
+                            if(carets.size() > 1) {
+                                doc.runAtomicAsUser(new Runnable() {
+                                    public void run() {
+                                        boolean alreadyBeeped = false;
+                                        DocumentUtilities.setTypingModification(doc, true);
                                         try {
-                                            doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
-                                            replaceSelection(target, insertionOffset.getOffset(), target.getCaret(), "", ovr);
+                                        List<Pair<Position, Position>>  offsets = new LinkedList<>();
+                                        for (CaretInfo c : carets) {
+                                            offsets.add(Pair.of(c.getDotPosition(), c.getMarkPosition()));
+                                            if (c.isSelection()) { // valid selection
+                                                int p0 = Math.min(c.getDot(), c.getMark());
+                                                int p1 = Math.max(c.getDot(), c.getMark());
+                                                String replacedText = null;
+                                                try {
+                                                    replacedText = doc.getText(p0, p1 - p0);
+                                                } catch (BadLocationException ble) {
+                                                    LOG.log(Level.FINE, null, ble);
+                                                    if (!alreadyBeeped) {
+                                                        target.getToolkit().beep();
+                                                    }
+                                                    alreadyBeeped = true;
+                                                }
+                                                EditorUI editorUI = Utilities.getEditorUI(target);
+                                                Boolean overwriteMode = (Boolean) editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                                                boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+                                                try {
+                                                    doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
+                                                    doc.remove(p0, p1 - p0);
+                                                } catch (BadLocationException ble) {
+                                                    LOG.log(Level.FINE, null, ble);
+                                                    if (!alreadyBeeped) {
+                                                        target.getToolkit().beep();
+                                                    }
+                                                    alreadyBeeped = true;
+                                                } finally {
+                                                    doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
+                                                }
+                                            }
+                                            try {
+//                                                TBD: Mark for the last caret?
+//                                                try {
+//                                                    NavigationHistory.getEdits().markWaypoint(target, insertionOffset, false, true);
+//                                                } catch (BadLocationException e) {
+//                                                    LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+//                                                }
+                                                
+                                                final BaseDocument doc = (BaseDocument) target.getDocument();
+                                                EditorUI editorUI = Utilities.getEditorUI(target);
+                                                editorUI.getWordMatch().clear(); // reset word matching
+                                                
+                                                int insertionOffset = c.getDot();
+                                                Boolean overwriteMode = (Boolean) editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                                                boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+                                                if (ovr && insertionOffset < doc.getLength() && doc.getChars(insertionOffset, 1)[0] != '\n') { //NOI18N
+                                                    // overwrite current char
+                                                    doc.remove(insertionOffset, 1);
+                                                    doc.insertString(insertionOffset, cmd, null);
+                                                } else { // insert mode
+                                                    doc.insertString(insertionOffset, cmd, null);
+                                                }
+                                            } catch (BadLocationException ble) {
+                                                LOG.log(Level.FINE, null, ble);
+                                                if (!alreadyBeeped) {
+                                                    target.getToolkit().beep();
+                                                }
+                                            }
+                                        }
+                                        doc.addUndoableEdit(new CaretEdit(offsets, target));
+                                        } finally {
+                                            DocumentUtilities.setTypingModification(doc, false);
+                                        }
+                                    }
+                                });
+                                return;
+                            }
+                        }
+                        
+                        final Position insertionOffset = doc.createPosition(computeInsertionOffset(caret[0]), Position.Bias.Backward);
+                        String replacedText = "";
+                        if (target.getCaret().isSelectionVisible() && caret[0].getDot() != caret[0].getMark()) {
+                            int p0 = Math.min(caret[0].getDot(), caret[0].getMark());
+                            int p1 = Math.max(caret[0].getDot(), caret[0].getMark());
+                            replacedText = doc.getText(p0, p1 - p0);
+                        }
+                        final TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
+                                target, insertionOffset, cmd, replacedText);
+
+                        try {
+                            if (!transaction.beforeInsertion()) {
+                                final Object[] result = new Object[]{Boolean.FALSE, ""}; //NOI18N
+                                doc.runAtomicAsUser(new Runnable() {
+                                    public void run() {
+                                        boolean alreadyBeeped = false;
+                                        if (target.getCaret().isSelectionVisible() && caret[0].getDot() != caret[0].getMark()) { // valid selection
+                                            EditorUI editorUI = Utilities.getEditorUI(target);
+                                            Boolean overwriteMode = (Boolean) editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                                            boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+                                            try {
+                                                doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
+                                                replaceSelection(target, insertionOffset.getOffset(), target.getCaret(), "", ovr);
+                                            } catch (BadLocationException ble) {
+                                                LOG.log(Level.FINE, null, ble);
+                                                target.getToolkit().beep();
+                                                alreadyBeeped = true;
+                                            } finally {
+                                                doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
+                                            }
+                                        }
+                                        Object[] r = transaction.textTyped();
+                                        String insertionText = r == null ? cmd : (String) r[0];
+                                        int caretPosition = r == null ? -1 : (Integer) r[1];
+
+                                        try {
+                                            performTextInsertion(target, insertionOffset.getOffset(), insertionText, caretPosition);
+                                            result[0] = Boolean.TRUE;
+                                            result[1] = insertionText;
                                         } catch (BadLocationException ble) {
                                             LOG.log(Level.FINE, null, ble);
-                                            target.getToolkit().beep();
-                                            alreadyBeeped = true;
-                                        }
-                                        finally {
-                                            doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
+                                            if (!alreadyBeeped) {
+                                                target.getToolkit().beep();
+                                            }
                                         }
                                     }
-                                    Object [] r = transaction.textTyped();
-                                    String insertionText = r == null ? cmd : (String) r[0];
-                                    int caretPosition = r == null ? -1 : (Integer) r[1];
-                                    
-                                    try {
-                                        performTextInsertion(target, insertionOffset.getOffset(), insertionText, caretPosition);
-                                        result[0] = Boolean.TRUE;
-                                        result[1] = insertionText;
-                                    } catch (BadLocationException ble) {
-                                        LOG.log(Level.FINE, null, ble);
-                                        if (!alreadyBeeped)
-                                            target.getToolkit().beep();
-                                    }
-                                }
-                            });
-                            
-                            if (((Boolean)result[0]).booleanValue()) {
-                                transaction.afterInsertion();
+                                });
 
-                                // XXX: this is potentially wrong and we may need to call this with
-                                // the original cmd; or maybe only if insertionText == cmd; but maybe
-                                // it does not matter, because nobody seems to be overwriting this method anyway
-                                checkIndent(target, (String)result[1]);
-                            } // else text insertion failed
+                                if (((Boolean) result[0]).booleanValue()) {
+                                    transaction.afterInsertion();
+
+                                    // XXX: this is potentially wrong and we may need to call this with
+                                    // the original cmd; or maybe only if insertionText == cmd; but maybe
+                                    // it does not matter, because nobody seems to be overwriting this method anyway
+                                    checkIndent(target, (String) result[1]);
+                                } // else text insertion failed
+                            }
+                        } finally {
+                            transaction.close();
                         }
-                    } finally {
-                        transaction.close();
-                    }
-                    }
                     } catch (BadLocationException ble) {
                         LOG.log(Level.FINE, null, ble);
                         target.getToolkit().beep();
@@ -1312,12 +1423,12 @@ public class BaseKit extends DefaultEditorKit {
             }
         }
 
-        private int computeInsertionOffset(CaretInfo caret) {
-//            if (Utilities.isSelectionShowing(caret)) {
-//                return Math.min(caret.getMark(), caret.getDot());
-//            } else {
+        private int computeInsertionOffset(Caret caret) {
+            if (Utilities.isSelectionShowing(caret)) {
+                return Math.min(caret.getMark(), caret.getDot());
+            } else {
                 return caret.getDot();
-//            }
+            }
         }
     } // End of DefaultKeyTypedAction class
 
@@ -1879,90 +1990,84 @@ public class BaseKit extends DefaultEditorKit {
 
 		final BaseDocument doc = (BaseDocument)target.getDocument();
 		final Caret caret = target.getCaret();
-                if(caret instanceof EditorCaret) {
-                    EditorCaret editorCaret = (EditorCaret) caret;
-                    for (CaretInfo caretData : editorCaret.getCarets()) {
-                        final int dot = caretData.getDot();
-                        final int mark = caretData.getMark();
-
-                        if (dot != mark) {
-                            // remove selection
-                            doc.runAtomicAsUser (new Runnable () {
-                                public void run () {
-                                    DocumentUtilities.setTypingModification(doc, true);
-                                    try {
-                                        if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                            if (!RectangularSelectionUtils.removeSelection(target)) {
-                                                RectangularSelectionUtils.removeChar(target, nextChar);
-                                            }
-                                            if (caret instanceof EditorCaret) {
-                                                ((EditorCaret)caret).setRectangularSelectionToDotAndMark();
+                if (caret instanceof EditorCaret) {
+                    EditorCaret baseCaret = (EditorCaret) caret;
+                    final List<CaretInfo> carets = baseCaret.getCarets();
+                    if (carets.size() > 1) {
+                        doc.runAtomicAsUser(new Runnable() {
+                            public void run() {
+                                
+                                boolean alreadyBeeped = false;
+                                DocumentUtilities.setTypingModification(doc, true);
+                                try {
+                                    List<Pair<Position, Position>>  offsets = new LinkedList<>();
+                                    for (CaretInfo c : carets) {
+                                        offsets.add(Pair.of(c.getDotPosition(), c.getMarkPosition()));
+                                        if (c.isSelection()) {
+                                            // remove selection
+                                            final int dot = c.getDot();
+                                            final int mark = c.getMark();
+                                            try {
+                                                if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                                                    if (!RectangularSelectionUtils.removeSelection(target)) {
+                                                        RectangularSelectionUtils.removeChar(target, nextChar);
+                                                    }
+                                                    if (caret instanceof BaseCaret) {
+                                                        ((BaseCaret) caret).setRectangularSelectionToDotAndMark();
+                                                    }
+                                                } else {
+                                                    doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
+                                                }
+                                            } catch (BadLocationException ble) {
+                                                LOG.log(Level.FINE, null, ble);
+                                                if (!alreadyBeeped) {
+                                                    target.getToolkit().beep();
+                                                }
+                                                alreadyBeeped = true;
                                             }
                                         } else {
-                                            doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
-                                        }
-                                    } catch (BadLocationException e) {
-                                        target.getToolkit().beep();
-                                    } finally {
-                                        DocumentUtilities.setTypingModification(doc, false);
-                                    }
-                                }
-                            });
-                        } else {
-                            char [] removedChar = null;
+                                            final int dot = c.getDot();
+                                            char[] removedChar = null;
 
-                            try {
-                                removedChar = nextChar ? 
-                                dot < doc.getLength() ? doc.getChars(dot, 1) : null : 
-                                dot > 0 ? doc.getChars(dot - 1, 1) : null;
-                            } catch (BadLocationException ble) {
-                                target.getToolkit().beep();
-                            }
+                                            try {
+                                                removedChar = nextChar
+                                                        ? dot < doc.getLength() ? doc.getChars(dot, 1) : null
+                                                        : dot > 0 ? doc.getChars(dot - 1, 1) : null;
+                                            } catch (BadLocationException ble) {
+                                                LOG.log(Level.FINE, null, ble);
+                                                if (!alreadyBeeped) {
+                                                    target.getToolkit().beep();
+                                                }
+                                                alreadyBeeped = true;
+                                            }
 
-                            if (removedChar != null) {
-                                final String removedText = String.valueOf(removedChar);
-                                final DeletedTextInterceptorsManager.Transaction t = DeletedTextInterceptorsManager.getInstance().openTransaction(target, dot, removedText, !nextChar);
-                                try {
-                                    if (!t.beforeRemove()) {
-                                        final boolean [] result = new boolean [] { false };
-                                        doc.runAtomicAsUser (new Runnable () {
-                                            public void run () {
-                                                DocumentUtilities.setTypingModification(doc, true);
+                                            if (removedChar != null) {
+                                                final String removedText = String.valueOf(removedChar);
                                                 try {
                                                     if (nextChar) { // remove next char
                                                         doc.remove(dot, 1);
                                                     } else { // remove previous char
                                                         doc.remove(dot - 1, 1);
                                                     }
-
-                                                    t.textDeleted();
-
-                                                    if (nextChar) {
-                                                        charDeleted(doc, dot, caret, removedText.charAt(0));
-                                                    } else {
-                                                        charBackspaced(doc, dot - 1, caret, removedText.charAt(0));
+                                                } catch (BadLocationException ble) {
+                                                    LOG.log(Level.FINE, null, ble);
+                                                    if (!alreadyBeeped) {
+                                                        target.getToolkit().beep();
                                                     }
-
-                                                    result[0] = true;
-                                                } catch (BadLocationException e) {
-                                                    target.getToolkit().beep();
-                                                } finally {
-                                                    DocumentUtilities.setTypingModification(doc, false);
+                                                    alreadyBeeped = true;
                                                 }
                                             }
-                                        });
-
-                                        if (result[0]) {
-                                            t.afterRemove();
                                         }
                                     }
+                                    doc.addUndoableEdit(new CaretEdit(offsets, target));
                                 } finally {
-                                    t.close();
+                                    DocumentUtilities.setTypingModification(doc, false);
                                 }
                             }
-                        }
+                        });
+                        return;
                     }
-                } else {
+                }
 		final int dot = caret.getDot();
 		final int mark = caret.getMark();
                 
@@ -1972,6 +2077,9 @@ public class BaseKit extends DefaultEditorKit {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
+                                List<Pair<Position, Position>>  offsets = new LinkedList<>();
+                                offsets.add(Pair.of(doc.createPosition(caret.getDot()),
+                                            doc.createPosition(caret.getMark())));
                                 if (RectangularSelectionUtils.isRectangularSelection(target)) {
                                     if (!RectangularSelectionUtils.removeSelection(target)) {
                                         RectangularSelectionUtils.removeChar(target, nextChar);
@@ -1982,6 +2090,7 @@ public class BaseKit extends DefaultEditorKit {
                                 } else {
                                     doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
                                 }
+                                doc.addUndoableEdit(new CaretEdit(offsets, target));
                             } catch (BadLocationException e) {
                                 target.getToolkit().beep();
                             } finally {
@@ -2042,7 +2151,6 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     }
                 }
-            }
             }
         }
 
@@ -3738,6 +3846,29 @@ public class BaseKit extends DefaultEditorKit {
             }
         }
     } // End of DefaultSyntaxTokenContext class
+
+    private static class CaretEdit extends AbstractUndoableEdit {
+
+        private final JTextComponent target;
+        private final List<Pair<Position, Position>> offsets;
+
+        public CaretEdit(List<Pair<Position, Position>>  offsets, JTextComponent target) {
+            this.target = target;
+            this.offsets = offsets;
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            EditorCaret caret = (EditorCaret) target.getCaret();
+            caret.replaceCarets(offsets);
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            EditorCaret caret = (EditorCaret) target.getCaret();
+            caret.replaceCarets(offsets);
+        }
+    }
     
     private class KeybindingsAndPreferencesTracker implements LookupListener, PreferenceChangeListener {
         

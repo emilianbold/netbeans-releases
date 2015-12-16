@@ -134,10 +134,16 @@ made subject to such option by the copyright holder.
     <bind actionName="remove-line" key="D-E"/>
     <!-- <bind actionName="remove-line-begin" key="D-U"/> -->
     <bind actionName="remove-tab" key="S-TAB"/>
+<!--
     <bind actionName="move-selection-else-line-up" key="OS-UP"/>
     <bind actionName="move-selection-else-line-up" key="OS-KP_UP"/>
     <bind actionName="move-selection-else-line-down" key="OS-DOWN"/>
     <bind actionName="move-selection-else-line-down" key="OS-KP_DOWN"/>
+    -->
+    <bind actionName="add-selection-else-caret-up" key="OS-UP"/>
+    <bind actionName="add-selection-else-caret-up" key="OS-KP_UP"/>
+    <bind actionName="add-selection-else-caret-down" key="OS-DOWN"/>
+    <bind actionName="add-selection-else-caret-down" key="OS-KP_DOWN"/>
     <bind actionName="move-code-element-up" key="OS-PAGE_UP"/>
     <bind actionName="move-code-element-down" key="OS-PAGE_DOWN"/>
     <bind actionName="copy-selection-else-line-up" key="DS-UP"/>
