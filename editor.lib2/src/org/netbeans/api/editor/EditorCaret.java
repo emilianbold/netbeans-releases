@@ -183,8 +183,17 @@ public abstract class EditorCaret implements Caret {
      *  if the particular caret has no selection). The list must have even size.
      * @return list of caret infos. It has a half of the size of the dotAndSelectionStartPosPairs list.
      */
-    public @NonNull List<CaretInfo> replaceCarets(@NonNull List<Position> dotAndSelectionStartPosPairs) {
-        return Collections.emptyList(); // TBD
+    public @NonNull List<CaretInfo> replaceCarets(@NonNull List<Pair<Position, Position>> dotAndSelectionStartPosPairs) {
+        List<CaretInfo> created = new LinkedList<>();
+        carets.clear();
+        for (Pair<Position, Position> dotPos : dotAndSelectionStartPosPairs) {
+            CaretInfo caretInfo = new CaretInfo(this, dotPos.first(), dotPos.second());
+            created.add(caretInfo);
+            carets.add(caretInfo);
+        }
+        fireStateChanged();
+        dispatchUpdate(true);
+        return created;
     }
 
     /**
