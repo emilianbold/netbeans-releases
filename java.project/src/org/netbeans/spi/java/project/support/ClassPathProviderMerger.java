@@ -135,7 +135,6 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
         private LookupListener lookupList;
         private Lookup.Result<ClassPathProvider> providers;
         private ClassPathProvider mainProvider;
-        private PropertyChangeListener classPathsListener;
         private FileObject file;
         private String type;
         private boolean hasAny = false;
@@ -146,8 +145,7 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
             this.file = fo;
             mainProvider = dominant;
             providers = context.lookupResult(ClassPathProvider.class);
-            classPathsListener = new DelegatesListener();
-            
+
             checkProviders();
             lookupList = new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
@@ -245,14 +243,6 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
                 for (PropertyChangeListener l : _listeners) {
                     l.propertyChange(event);
                 }
-        }
-
-        private class DelegatesListener implements PropertyChangeListener {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                PropertyChangeEvent event = new PropertyChangeEvent(ProxyClassPathImplementation.this, evt.getPropertyName(), null, null);
-                firePropertyChange(event);
-            }
         }
     }
     
