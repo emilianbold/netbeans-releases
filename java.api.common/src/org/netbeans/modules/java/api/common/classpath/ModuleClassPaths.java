@@ -285,6 +285,14 @@ final class ModuleClassPaths {
                             FileUtil.addFileChangeListener(this, f);
                             listensOn.add(f);
                         }
+                        LOG.log(
+                            Level.FINE,
+                            "{0} setting results: {1}, listening on: {2}",    //NOI18N
+                            new Object[]{
+                                getClass().getSimpleName(),
+                                res,
+                                listensOn
+                            });
                         setCache(res);
                     } else {
                         res = cv;
@@ -298,28 +306,35 @@ final class ModuleClassPaths {
         public void propertyChange(@NonNull final PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
             if (propName == null || props.contains(propName)) {
+                LOG.log(
+                    Level.FINER,
+                    "{0} propertyChange: {1}",    //NOI18N
+                    new Object[]{
+                        getClass().getSimpleName(),
+                        propName
+                    });
                 resetCache(true);
             }
         }
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            resetCache(true);
+            handleFileEvent(fe);
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            resetCache(true);
+            handleFileEvent(fe);
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            resetCache(true);
+            handleFileEvent(fe);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            resetCache(true);
+            handleFileEvent(fe);
         }
 
         @Override
@@ -328,6 +343,17 @@ final class ModuleClassPaths {
 
         @Override
         public void fileChanged(FileEvent fe) {
+        }
+
+        private void handleFileEvent(@NonNull final FileEvent fe) {
+            LOG.log(
+                Level.FINER,
+                "{0} file event: {1}",    //NOI18N
+                new Object[]{
+                    getClass().getSimpleName(),
+                    fe.getFile()
+                });
+            resetCache(true);
         }
 
         @CheckForNull
