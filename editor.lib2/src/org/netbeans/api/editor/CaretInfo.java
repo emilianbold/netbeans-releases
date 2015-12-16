@@ -193,4 +193,10 @@ public final class CaretInfo {
     Rectangle getCaretBounds() {
         return this.caretBounds;
     }
+
+    @Override
+    public String toString() {
+        return "dotPos=" + dotPos + ", markPos=" + markPos + ", magicCaretPosition=" + magicCaretPosition; // NOI18N
+    }
+    
 }

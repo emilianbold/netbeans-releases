@@ -203,7 +203,7 @@ public final class EditorCaret implements Caret {
     private Timer flasher;
 
     /** Width of caret */
-    private int width;
+    private int thickCaretWidth;
     
     private Action selectWordAction;
     private Action selectLineAction;
@@ -378,8 +378,8 @@ public final class EditorCaret implements Caret {
     
     public void addCaret(int offset) {
         JTextComponent c = component;
-        if (c != null) {
-            AbstractDocument doc = (AbstractDocument) c.getDocument();
+        AbstractDocument doc;
+        if (c != null && (doc = activeDoc) != null) {
             boolean dotChanged = false;
             doc.readLock();
             try {
@@ -749,7 +749,7 @@ public final class EditorCaret implements Caret {
             }
             
             this.type = CaretType.decode(newTypeStr);
-            this.width = newWidth;
+            this.thickCaretWidth = newWidth;
             c.setCaretColor(caretColor);
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.finer("Updating caret color:" + caretColor + '\n'); // NOI18N
@@ -787,8 +787,8 @@ public final class EditorCaret implements Caret {
     private boolean updateCaretBounds(CaretInfo caret) {
         JTextComponent c = component;
         boolean ret = false;
-        if (c != null) {
-            AbstractDocument doc = activeDoc;
+        AbstractDocument doc;
+        if (c != null && (doc = activeDoc) != null) {
             doc.readLock();
             try {
                 ret = updateRealCaretBounds(caret, doc, c);
@@ -946,16 +946,10 @@ public final class EditorCaret implements Caret {
         JTextComponent c = component;
         if (c != null) {
             g.setColor(c.getCaretColor());
-            Color textBackgroundColor = c.getBackground();
+            Rectangle caretBounds = caret.getCaretBounds();
             switch (type) {
                 case THICK_LINE_CARET:
-                    int blkWidth = this.width;
-                    if (blkWidth <= 0) {
-                        blkWidth = 5; // sanity check
-                    }
-                    if (textBackgroundColor != null) {
-                        g.setXORMode(textBackgroundColor);
-                    }
+                    g.fillRect(caretBounds.x, caretBounds.y, this.thickCaretWidth, caretBounds.height - 1);
                     break;
 
                 case THIN_LINE_CARET:
@@ -1281,9 +1275,9 @@ public final class EditorCaret implements Caret {
     }
 
     void setDotCaret(final int offset, final CaretInfo caret, final boolean expandFold) throws IllegalStateException {
-        final JTextComponent c = component;
-        if (c != null) {
-            AbstractDocument doc = activeDoc;
+        JTextComponent c = component;
+        AbstractDocument doc;
+        if (c != null && (doc = activeDoc) != null) {
             doc.readLock();
             try {
                 boolean dotChanged = false;
@@ -1326,9 +1320,9 @@ public final class EditorCaret implements Caret {
     
     void moveDotCaret(int offset, CaretInfo caret) throws IllegalStateException {
         JTextComponent c = component;
-        if (c != null) {
-            AbstractDocument doc = (AbstractDocument) c.getDocument();
-            if (doc != null && offset >= 0 && offset <= doc.getLength()) {
+        AbstractDocument doc;
+        if (c != null && (doc = activeDoc) != null) {
+            if (offset >= 0 && offset <= doc.getLength()) {
                 doc.readLock();
                 try {
                     int oldCaretPos = caret.getDot();

@@ -117,7 +117,7 @@ public final class EditorPreferencesDefaults {
     public static final boolean defaultCaretItalicInsertMode = false;
     public static final boolean defaultCaretItalicOverwriteMode = false;
     /** @since 1.23 */
-    public static final int defaultThickCaretWidth = 5;
+    public static final int defaultThickCaretWidth = 2;
     public static final Acceptor defaultAbbrevExpandAcceptor = AcceptorFactory.WHITESPACE;
     public static final Acceptor defaultAbbrevAddTypedCharAcceptor = AcceptorFactory.NL;
     public static final Acceptor defaultAbbrevResetAcceptor = AcceptorFactory.NON_JAVA_IDENTIFIER;
