@@ -119,7 +119,7 @@ public class SourceForBinaryQueryTest extends NbTestCase {
         res = SourceForBinaryQuery.findSourceRoots2(Utilities.toURI(getWorkDir()).toURL());
         assertNotNull(res);
         assertEquals(0, res.getRoots().length);
-        assertTrue(res.preferSources());        
+        assertFalse(res.preferSources());
     }
     
     public void testSFBQImpl2 () throws Exception {
@@ -139,7 +139,7 @@ public class SourceForBinaryQueryTest extends NbTestCase {
         res = SourceForBinaryQuery.findSourceRoots2(Utilities.toURI(getWorkDir()).toURL());
         assertNotNull(res);
         assertEquals(0, res.getRoots().length);
-        assertTrue(res.preferSources());        
+        assertFalse(res.preferSources());
         
     }
     
@@ -162,7 +162,7 @@ public class SourceForBinaryQueryTest extends NbTestCase {
         res = SourceForBinaryQuery.findSourceRoots2(Utilities.toURI(getWorkDir()).toURL());
         assertNotNull(res);
         assertEquals(0, res.getRoots().length);
-        assertTrue(res.preferSources());        
+        assertFalse(res.preferSources());
         
     }
     
@@ -185,7 +185,7 @@ public class SourceForBinaryQueryTest extends NbTestCase {
         res = SourceForBinaryQuery.findSourceRoots2(Utilities.toURI(getWorkDir()).toURL());
         assertNotNull(res);
         assertEquals(0, res.getRoots().length);
-        assertTrue(res.preferSources());                
+        assertFalse(res.preferSources());
     }
     
     

@@ -142,7 +142,7 @@ public class SourceForBinaryQuery {
             }
         }
         LOG.log(Level.FINE, "findSourceRoots2({0}) -> nil", binaryRoot);
-        return EMPTY_RESULT2;
+        return EMPTY_RESULT;
         
     }
 
@@ -228,17 +228,20 @@ public class SourceForBinaryQuery {
             return this.delegate.preferSources();
         }
     }
-    
-    private static final Result EMPTY_RESULT = new EmptyResult();
-    private static final Result2 EMPTY_RESULT2 = new Result2 (new SFBQImpl2Result(EMPTY_RESULT));
-    private static final class EmptyResult implements Result {
+
+    private static final Result2 EMPTY_RESULT = new Result2 (new EmptyResult());
+    private static final class EmptyResult implements SourceForBinaryQueryImplementation2.Result {
         private static final FileObject[] NO_ROOTS = new FileObject[0];
         EmptyResult() {}
         public FileObject[] getRoots() {
             return NO_ROOTS;
         }
+        @Override
+        public boolean preferSources() {
+            return false;
+        }
         public void addChangeListener(ChangeListener l) {}
         public void removeChangeListener(ChangeListener l) {}
-    }    
+    }
 
 }
