@@ -369,6 +369,7 @@ public final class EditorCaret implements Caret {
                 LOG.log(Level.INFO, "setDot call stack", new Exception());
             }
         }
+        carets.remove(0, carets.size()-1);
         setDotCaret(offset, getLastCaret(), true);
     }
 
