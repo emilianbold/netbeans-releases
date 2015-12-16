@@ -76,6 +76,7 @@ import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope.NamedImportScope;
 import com.sun.tools.javac.code.Scope.StarImportScope;
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.Type;
@@ -87,6 +88,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.util.stream.Collectors;
 import javax.lang.model.SourceVersion;
 
 import javax.swing.SwingUtilities;
@@ -102,6 +104,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.matching.Matcher;
@@ -109,6 +112,7 @@ import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
@@ -1251,62 +1255,42 @@ public class SourceUtils {
      */
     @CheckForNull
     public static String getModuleName(@NonNull final URL rootUrl) {
+        return getModuleName(rootUrl, false);
+    }
+
+    /**
+     * Returns the name of the module.
+     * @param rootUrl the binary root
+     * @param canUseSources
+     * @return the module name or null when no or invalid module
+     * @since 2.9.0
+     */
+    @CheckForNull
+    public static String getModuleName(
+            @NonNull final URL rootUrl,
+            @NonNull final boolean canUseSources) {
         if (FileObjects.PROTO_NBJRT.equals(rootUrl.getProtocol())) {
             //Platform
             final String path = rootUrl.getPath();
             int endIndex = path.length() - 1;
             int startIndex = path.lastIndexOf('/', endIndex - 1);   //NOI18N
             return path.substring(startIndex+1, endIndex);
+        }
+        final URL srcRootURL = JavaIndex.getSourceRootForClassFolder(rootUrl);
+        if (srcRootURL != null) {
+            //Cache folder
+            return getProjectModuleName(Collections.singletonList(srcRootURL), canUseSources);
+        }
+        final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(rootUrl);
+        if (sfbqRes.preferSources()) {
+            //Project binary
+            return getProjectModuleName(
+                    Arrays.stream(sfbqRes.getRoots()).map(FileObject::toURL).collect(Collectors.toList()),
+                    canUseSources);
         } else {
-            final URL fileUrl = FileUtil.getArchiveFile(rootUrl);
-            if (fileUrl == null) {
-                //Folder
-                final FileObject root = URLMapper.findFileObject(rootUrl);
-                if (root != null) {
-                    if (root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS) != null) {
-                        final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(rootUrl);
-                        if (sfbqRes.preferSources()) {
-                            //Build folder of the project
-                            for (FileObject srcRoot : sfbqRes.getRoots()) {
-                                try {
-                                    final String moduleName = JavaIndex.getAttribute(srcRoot.toURL(), MODULE_NAME, null);
-                                    if (moduleName != null) {
-                                        return moduleName;
-                                    }
-                                } catch (IOException ioe) {
-                                    Exceptions.printStackTrace(ioe);
-                                }
-                            }
-                        }
-                        //Regular module folder
-                        final String moduleName = root.getNameExt();
-                        if (SourceVersion.isName(moduleName)) {
-                            return moduleName;
-                        }
-                    } else {
-                        //Cache folder
-                        try {
-                            final URL srcRoot = JavaIndex.getSourceRootForClassFolder(rootUrl);
-                            if (srcRoot != null && JavaIndex.hasSourceCache(srcRoot,true)) {
-                                String moduleName = JavaIndex.getAttribute(srcRoot, MODULE_NAME, null);
-                                if (moduleName != null) {
-                                    //Has module-info
-                                    return moduleName;
-                                }
-                                //No module -> automatic module
-                                for (URL binRoot : BinaryForSourceQuery.findBinaryRoots(srcRoot).getRoots()) {
-                                    if (FileObjects.JAR.equals(binRoot.getProtocol())) {
-                                        return autoName(FileObjects.stripExtension(FileUtil.archiveOrDirForURL(binRoot).getName()));
-                                    }
-                                }
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
-            } else {
-                //Jar
+            //Binary
+            if (FileUtil.isArchiveArtifact(rootUrl)) {
+                //Archive
                 final FileObject root = URLMapper.findFileObject(rootUrl);
                 if (root != null) {
                     final FileObject moduleInfo = root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS);
@@ -1323,9 +1307,18 @@ public class SourceUtils {
                         return autoName(file.getName());
                     }
                 }
+            } else {
+                //Regular module folder//Folder
+                final FileObject root = URLMapper.findFileObject(rootUrl);
+                if (root != null && root.getFileObject(FileObjects.MODULE_INFO, FileObjects.CLASS) != null) {
+                    final String moduleName = root.getNameExt();
+                    if (SourceVersion.isName(moduleName)) {
+                        return moduleName;
+                    }
+                }
             }
-            return null;
         }
+        return null;
     }
 
     // --------------- Helper methods of getFile () -----------------------------
@@ -1560,6 +1553,80 @@ public class SourceUtils {
             res.add(fo.toURL());
         }
         return res;
+    }
+
+    @CheckForNull
+    private static String getProjectModuleName(
+            @NonNull final List<URL> srcRootURLs,
+            final boolean canUseSources) {
+        if (srcRootURLs.isEmpty()) {
+            return null;
+        }
+        if (srcRootURLs.stream().allMatch((srcRootURL)->JavaIndex.hasSourceCache(srcRootURL,true))) {
+            //scanned
+            String moduleName = null;
+            for (URL srcRootURL : srcRootURLs) {
+                try {
+                    moduleName = JavaIndex.getAttribute(srcRootURL, MODULE_NAME, null);
+                    if (moduleName != null) {
+                        break;
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+            if (moduleName != null) {
+                //Has module-info
+                return moduleName;
+            }
+            //No module -> automatic module
+            for (URL binRoot : BinaryForSourceQuery.findBinaryRoots(srcRootURLs.get(0)).getRoots()) {
+                if (FileObjects.JAR.equals(binRoot.getProtocol())) {
+                    return autoName(FileObjects.stripExtension(FileUtil.archiveOrDirForURL(binRoot).getName()));
+                }
+            }
+        } else if (canUseSources) {
+            FileObject moduleInfo = null;
+            FileObject root = null;
+            for (URL srcRootUrl : srcRootURLs) {
+                final FileObject srcRoot = URLMapper.findFileObject(srcRootUrl);
+                if (srcRoot != null) {
+                    moduleInfo = srcRoot.getFileObject(FileObjects.MODULE_INFO, FileObjects.JAVA);
+                    if (moduleInfo != null) {
+                        root = srcRoot;
+                        break;
+                    }
+                }
+            }
+            if (moduleInfo != null) {
+                final JavacTaskImpl jt = JavacParser.createJavacTask(
+                        new ClasspathInfo.Builder(ClassPath.EMPTY).build(),
+                        null,
+                        Source.JDK1_9.name,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+                try {
+                    final CompilationUnitTree cu =  jt.parse(FileObjects.fileObjectFileObject(
+                            moduleInfo,
+                            root,
+                            null,
+                            FileEncodingQuery.getEncoding(moduleInfo))).iterator().next();
+                    final List<? extends Tree> typeDecls = cu.getTypeDecls();
+                    if (!typeDecls.isEmpty()) {
+                        final Tree typeDecl = typeDecls.get(0);
+                        if (typeDecl.getKind() == Tree.Kind.MODULE) {
+                            return ((ModuleTree)typeDecl).getName().toString();
+                        }
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+        }
+        return null;
     }
 
     @CheckForNull

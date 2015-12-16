@@ -84,7 +84,6 @@ import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -656,7 +655,7 @@ final class ModuleClassPaths {
                                         .forEach(projectSourceRoots::add);
                             }
                         }
-                        final String moduleName = SourceUtils.getModuleName(url);
+                        final String moduleName = SourceUtils.getModuleName(url, true);
                         if (moduleName != null) {
                             res.put(moduleName, url);
                         }
