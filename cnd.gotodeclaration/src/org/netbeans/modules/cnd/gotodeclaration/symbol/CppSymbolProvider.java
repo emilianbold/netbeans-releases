@@ -532,8 +532,31 @@ public class CppSymbolProvider implements SymbolProvider {
          */
         private void addDeclarationIfNeed(CsmOffsetableDeclaration decl, CsmSelect.CsmFilter classesOrMembers, CsmSelect.CsmFilter nameFilter) {
             if (nameAcceptor.accept(decl.getName())) {
-                if(CsmVisibilityQuery.isVisible(decl)) {
-                    addResult(new CppSymbolDescriptor(decl));
+                if (CsmKindUtilities.isFunction(decl)) {
+                    // do not add declarations if their definitions exist
+                    if (CsmKindUtilities.isFunctionDefinition(decl)) {
+                        if(CsmVisibilityQuery.isVisible(decl)) {
+                            addResult(new CppSymbolDescriptor(decl));
+                        }
+                    } else {
+                        boolean added = false;
+                        CsmFunctionDefinition definition = ((CsmFunction) decl).getDefinition();
+                        if (definition != null) {
+                            if(CsmVisibilityQuery.isVisible(definition)) {
+                                added = true;
+                                addResult(new CppSymbolDescriptor(definition));
+                            }
+                        }
+                        if (!added) {
+                            if(CsmVisibilityQuery.isVisible(decl)) {
+                                addResult(new CppSymbolDescriptor(decl));
+                            }
+                        }
+                    }
+                } else {
+                    if(CsmVisibilityQuery.isVisible(decl)) {
+                        addResult(new CppSymbolDescriptor(decl));
+                    }
                 }
             }
             if (CsmKindUtilities.isClass(decl)) {
