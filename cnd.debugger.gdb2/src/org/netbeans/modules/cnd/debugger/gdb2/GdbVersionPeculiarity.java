@@ -87,7 +87,7 @@ public class GdbVersionPeculiarity {
 
         @Override
         public String toString() {
-            return String.format("%d.%d", before, after);
+            return String.format("%d.%d", before, after); // NOI18N
         }
     }
 
