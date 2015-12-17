@@ -49,6 +49,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.ui.node.CachedDockerContainer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -73,14 +74,14 @@ public class RenameContainerAction extends NodeAction {
     })
     @Override
     protected void performAction(Node[] activatedNodes) {
-        DockerContainer container = activatedNodes[0].getLookup().lookup(DockerContainer.class);
+        CachedDockerContainer container = activatedNodes[0].getLookup().lookup(CachedDockerContainer.class);
         if (container != null) {
             JButton renameButton = new JButton();
             Mnemonics.setLocalizedText(renameButton, Bundle.LBL_Rename());
             RenamePanel panel = new RenamePanel(renameButton);
 
             DialogDescriptor descriptor
-                    = new DialogDescriptor(panel, Bundle.LBL_RenameContainer(container.getName()),
+                    = new DialogDescriptor(panel, Bundle.LBL_RenameContainer(container.getDetail().getName()),
                             true, new Object[] {renameButton, DialogDescriptor.CANCEL_OPTION}, renameButton,
                             DialogDescriptor.DEFAULT_ALIGN, null, null);
             descriptor.setClosingOptions(new Object[] {renameButton, DialogDescriptor.CANCEL_OPTION});
@@ -106,15 +107,15 @@ public class RenameContainerAction extends NodeAction {
         "# {0} - container name",
         "MSG_Renaming=Renaming {0}"
     })
-    private void perform(final DockerContainer container, final String name) {
+    private void perform(final CachedDockerContainer container, final String name) {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_Renaming(container.getName()));
+                ProgressHandle handle = ProgressHandle.createHandle(Bundle.MSG_Renaming(container.getDetail().getName()));
                 handle.start();
                 try {
-                    DockerAction facade = new DockerAction(container.getInstance());
-                    facade.rename(container, name);
+                    DockerAction facade = new DockerAction(container.getContainer().getInstance());
+                    facade.rename(container.getContainer(), name);
                 } catch (DockerException ex) {
                     // FIXME inform user
                     LOGGER.log(Level.INFO, null, ex);
@@ -130,7 +131,7 @@ public class RenameContainerAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return activatedNodes[0].getLookup().lookup(DockerContainer.class) != null;
+        return activatedNodes[0].getLookup().lookup(CachedDockerContainer.class) != null;
     }
 
     @NbBundle.Messages("LBL_RenameContainerAction=Rename...")

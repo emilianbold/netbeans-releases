@@ -42,7 +42,7 @@
 package org.netbeans.modules.docker.ui.build2;
 
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.ui.node.CheckedDockerInstance;
+import org.netbeans.modules.docker.ui.node.CachedDockerInstance;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -66,7 +66,7 @@ public final class BuildImageAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        CheckedDockerInstance checked = activatedNodes[0].getLookup().lookup(CheckedDockerInstance.class);
+        CachedDockerInstance checked = activatedNodes[0].getLookup().lookup(CachedDockerInstance.class);
         if (checked == null || !checked.isAvailable()) {
             return false;
         }

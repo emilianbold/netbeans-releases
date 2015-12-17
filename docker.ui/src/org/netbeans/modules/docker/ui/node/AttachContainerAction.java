@@ -72,11 +72,11 @@ public class AttachContainerAction extends AbstractContainerAction {
     protected void performAction(DockerContainer container) throws DockerException {
         DockerAction facade = new DockerAction(container.getInstance());
         DockerContainerDetail info = facade.getDetail(container);
-        UiUtils.openTerminal(container, null, info.isOpenStdin(), false);
+        UiUtils.openTerminal(container, null, info.isStdin(), false);
     }
 
     @Override
-    protected boolean isEnabled(DockerContainer container) {
-        return container.getStatus() == DockerContainer.Status.RUNNING;
+    protected boolean isEnabled(DockerContainerDetail detail) {
+        return detail.getStatus() == DockerContainer.Status.RUNNING;
     }
 }

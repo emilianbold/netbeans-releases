@@ -52,19 +52,20 @@ import org.openide.util.WeakListeners;
  *
  * @author Petr Hejl
  */
-public class CheckedDockerInstance implements Refreshable {
+public class CachedDockerInstance implements Refreshable {
 
-    private static final RequestProcessor RP = new RequestProcessor(CheckedDockerInstance.class);
+    private static final RequestProcessor RP = new RequestProcessor(CachedDockerInstance.class);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final AtomicBoolean available = new AtomicBoolean();
+    // FIXME default value
+    private final AtomicBoolean available = new AtomicBoolean(true);
 
     private final InstanceListener listener = new InstanceListener();
 
     private final DockerInstance instance;
 
-    public CheckedDockerInstance(DockerInstance instance) {
+    public CachedDockerInstance(DockerInstance instance) {
         this.instance = instance;
         instance.addConnectionListener(
                 WeakListeners.create(DockerInstance.ConnectionListener.class, listener, instance));

@@ -101,25 +101,4 @@ public final class DockerUtils {
         }
         return DockerContainer.Status.PAUSED;
     }
-
-    @CheckForNull
-    public static DockerContainer.Status getContainerStatus(DockerEvent event) {
-        return getContainerStatus(event.getStatus());
-    }
-
-    @CheckForNull
-    public static DockerContainer.Status getContainerStatus(DockerEvent.Status status) {
-        switch (status) {
-            case DIE:
-                return DockerContainer.Status.STOPPED;
-            case START:
-                return DockerContainer.Status.RUNNING;
-            case PAUSE:
-                return DockerContainer.Status.PAUSED;
-            case UNPAUSE:
-                return DockerContainer.Status.RUNNING;
-            default:
-                return null;
-        }
-    }
 }

@@ -157,7 +157,7 @@ public final class DockerNode extends AbstractNode {
 
         @Override
         protected Node createNodeForKey(DockerInstance key) {
-            return new DockerInstanceNode(new CheckedDockerInstance(key));
+            return new DockerInstanceNode(new CachedDockerInstance(key));
         }
 
         @Override

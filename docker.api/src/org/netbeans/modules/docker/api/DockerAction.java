@@ -330,14 +330,29 @@ public class DockerAction {
     public DockerContainerDetail getDetail(DockerContainer container) throws DockerException {
         JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
                 "/containers/" + container.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
+        String name = (String) value.get("Name");
+        DockerContainer.Status status = DockerContainer.Status.STOPPED;
+        JSONObject state = (JSONObject) value.get("State");
+        if (state != null) {
+            boolean paused = (Boolean) getOrDefault(state, "Paused", false);
+            if (paused) {
+                status = DockerContainer.Status.PAUSED;
+            } else {
+                boolean running = (Boolean) getOrDefault(state, "Running", false);
+                if (running) {
+                    status = DockerContainer.Status.RUNNING;
+                }
+            }
+        }
+
         boolean tty = false;
-        boolean openStdin = false;
+        boolean stdin = false;
         JSONObject config = (JSONObject) value.get("Config");
         if (config != null) {
             tty = (boolean) getOrDefault(config, "Tty", false);
-            openStdin = (boolean) getOrDefault(config, "OpenStdin", false);
+            stdin = (boolean) getOrDefault(config, "OpenStdin", false);
         }
-        return new DockerContainerDetail(openStdin, tty);
+        return new DockerContainerDetail(name, status, stdin, tty);
     }
 
     public DockerImageDetail getDetail(DockerImage image) throws DockerException {

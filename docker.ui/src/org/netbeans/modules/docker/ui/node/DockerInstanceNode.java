@@ -60,9 +60,9 @@ public class DockerInstanceNode extends AbstractNode {
 
     private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_instance.png"; // NOI18N
 
-    private final CheckedDockerInstance instance;
+    private final CachedDockerInstance instance;
 
-    public DockerInstanceNode(CheckedDockerInstance instance) {
+    public DockerInstanceNode(CachedDockerInstance instance) {
         super(Children.create(new DockerInstanceChildFactory(instance), true),
                 Lookups.fixed(instance.getInstance(), instance));
         this.instance = instance;
