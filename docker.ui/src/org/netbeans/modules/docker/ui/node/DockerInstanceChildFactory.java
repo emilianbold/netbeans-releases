@@ -39,60 +39,51 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.build2;
+package org.netbeans.modules.docker.ui.node;
 
+import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.ui.node.CheckedDockerInstance;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
+/**
+ *
+ * @author Petr Hejl
+ */
+public class DockerInstanceChildFactory extends ChildFactory<Boolean> {
 
-public final class BuildImageAction extends NodeAction {
+    private final CheckedDockerInstance instance;
 
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        for (Node node : activatedNodes) {
-            DockerInstance instance = node.getLookup().lookup(DockerInstance.class);
-            if (instance != null) {
-                perform(instance);
+    public DockerInstanceChildFactory(CheckedDockerInstance instance) {
+        this.instance = instance;
+
+        instance.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                refresh(false);
             }
+        });
+        instance.refresh();
+    }
+
+    @Override
+    protected Node[] createNodesForKey(Boolean key) {
+        if (key) {
+            DockerInstance dockerInstance = instance.getInstance();
+            DockerImagesChildFactory factoryRepo = new DockerImagesChildFactory(dockerInstance);
+            DockerContainersChildFactory factoryCont = new DockerContainersChildFactory(dockerInstance);
+            return new Node[]{new DockerImagesNode(dockerInstance, factoryRepo),
+                new DockerContainersNode(dockerInstance, factoryCont)};
+        } else {
+            return new Node[] {};
         }
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        CheckedDockerInstance checked = activatedNodes[0].getLookup().lookup(CheckedDockerInstance.class);
-        if (checked == null || !checked.isAvailable()) {
-            return false;
-        }
-
-        return activatedNodes[0].getLookup().lookup(DockerInstance.class) != null;
+    protected boolean createKeys(List<Boolean> toPopulate) {
+        toPopulate.add(instance.isAvailable());
+        return true;
     }
-
-    @NbBundle.Messages("LBL_BuildImageAction=Build...")
-    @Override
-    public String getName() {
-        return Bundle.LBL_BuildImageAction();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    private void perform(DockerInstance instance) {
-        BuildImageWizard wizard = new BuildImageWizard(instance);
-        wizard.show();
-    }
-
 }
