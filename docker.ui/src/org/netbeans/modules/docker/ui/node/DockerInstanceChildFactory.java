@@ -41,40 +41,49 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
-import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerException;
-import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.api.DockerContainerDetail;
-import org.openide.util.NbBundle;
+import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.api.DockerInstance;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StartContainerAction extends AbstractContainerAction {
+public class DockerInstanceChildFactory extends ChildFactory<Boolean> {
 
-    @NbBundle.Messages("LBL_StartContainerAction=Start")
-    public StartContainerAction() {
-        super(Bundle.LBL_StartContainerAction());
-    }
+    private final CachedDockerInstance instance;
 
-    @NbBundle.Messages({
-        "# {0} - container id",
-        "MSG_StartingContainer=Starting container {0}"
-    })
-    @Override
-    protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_StartingContainer(container.getShortId());
-    }
+    public DockerInstanceChildFactory(CachedDockerInstance instance) {
+        this.instance = instance;
 
-    @Override
-    protected void performAction(DockerContainer container) throws DockerException {
-        DockerAction facade = new DockerAction(container.getInstance());
-        facade.start(container);
+        instance.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                refresh(false);
+            }
+        });
+        instance.refresh();
     }
 
     @Override
-    protected boolean isEnabled(DockerContainerDetail detail) {
-        return detail.getStatus() == DockerContainer.Status.STOPPED;
+    protected Node[] createNodesForKey(Boolean key) {
+        if (key) {
+            DockerInstance dockerInstance = instance.getInstance();
+            DockerImagesChildFactory factoryRepo = new DockerImagesChildFactory(dockerInstance);
+            DockerContainersChildFactory factoryCont = new DockerContainersChildFactory(dockerInstance);
+            return new Node[]{new DockerImagesNode(dockerInstance, factoryRepo),
+                new DockerContainersNode(dockerInstance, factoryCont)};
+        } else {
+            return new Node[] {};
+        }
+    }
+
+    @Override
+    protected boolean createKeys(List<Boolean> toPopulate) {
+        toPopulate.add(instance.isAvailable());
+        return true;
     }
 }

@@ -330,14 +330,29 @@ public class DockerAction {
     public DockerContainerDetail getDetail(DockerContainer container) throws DockerException {
         JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
                 "/containers/" + container.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
+        String name = (String) value.get("Name");
+        DockerContainer.Status status = DockerContainer.Status.STOPPED;
+        JSONObject state = (JSONObject) value.get("State");
+        if (state != null) {
+            boolean paused = (Boolean) getOrDefault(state, "Paused", false);
+            if (paused) {
+                status = DockerContainer.Status.PAUSED;
+            } else {
+                boolean running = (Boolean) getOrDefault(state, "Running", false);
+                if (running) {
+                    status = DockerContainer.Status.RUNNING;
+                }
+            }
+        }
+
         boolean tty = false;
-        boolean openStdin = false;
+        boolean stdin = false;
         JSONObject config = (JSONObject) value.get("Config");
         if (config != null) {
             tty = (boolean) getOrDefault(config, "Tty", false);
-            openStdin = (boolean) getOrDefault(config, "OpenStdin", false);
+            stdin = (boolean) getOrDefault(config, "OpenStdin", false);
         }
-        return new DockerContainerDetail(openStdin, tty);
+        return new DockerContainerDetail(name, status, stdin, tty);
     }
 
     public DockerImageDetail getDetail(DockerImage image) throws DockerException {
@@ -896,6 +911,26 @@ public class DockerAction {
         }
     }
 
+    boolean ping() {
+        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+        try {
+            URL httpUrl = createURL(instance.getUrl(), "/_ping");
+            HttpURLConnection conn = createConnection(httpUrl);
+            try {
+                conn.setRequestMethod("GET");
+                return conn.getResponseCode() == HttpURLConnection.HTTP_OK;
+            } finally {
+                conn.disconnect();
+            }
+
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+        return false;
+    }
+
     // this call is BLOCKING
     private void events(Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
@@ -943,12 +978,13 @@ public class DockerAction {
                     }
                 } catch (ParseException ex) {
                     throw new DockerException(ex);
+                } finally {
+                    if (connectionListener != null) {
+                        connectionListener.onDisconnect();
+                    }
                 }
             } finally {
                 closeSocket(s);
-                if (connectionListener != null) {
-                    connectionListener.onDisconnect();
-                }
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);

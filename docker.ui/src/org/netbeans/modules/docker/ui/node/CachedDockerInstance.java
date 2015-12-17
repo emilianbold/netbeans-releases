@@ -41,40 +41,79 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
-import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerException;
-import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.api.DockerContainerDetail;
-import org.openide.util.NbBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.api.DockerInstance;
+import org.openide.util.ChangeSupport;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StartContainerAction extends AbstractContainerAction {
+public class CachedDockerInstance implements Refreshable {
 
-    @NbBundle.Messages("LBL_StartContainerAction=Start")
-    public StartContainerAction() {
-        super(Bundle.LBL_StartContainerAction());
+    private static final RequestProcessor RP = new RequestProcessor(CachedDockerInstance.class);
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    // FIXME default value
+    private final AtomicBoolean available = new AtomicBoolean(true);
+
+    private final InstanceListener listener = new InstanceListener();
+
+    private final DockerInstance instance;
+
+    public CachedDockerInstance(DockerInstance instance) {
+        this.instance = instance;
+        instance.addConnectionListener(
+                WeakListeners.create(DockerInstance.ConnectionListener.class, listener, instance));
     }
 
-    @NbBundle.Messages({
-        "# {0} - container id",
-        "MSG_StartingContainer=Starting container {0}"
-    })
-    @Override
-    protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_StartingContainer(container.getShortId());
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    public DockerInstance getInstance() {
+        return instance;
+    }
+
+    public boolean isAvailable() {
+        return available.get();
     }
 
     @Override
-    protected void performAction(DockerContainer container) throws DockerException {
-        DockerAction facade = new DockerAction(container.getInstance());
-        facade.start(container);
+    public void refresh() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                update(instance.isAvailable());
+            }
+        });
     }
 
-    @Override
-    protected boolean isEnabled(DockerContainerDetail detail) {
-        return detail.getStatus() == DockerContainer.Status.STOPPED;
+    private void update(boolean newValue) {
+        boolean oldValue = available.getAndSet(newValue);
+        if (oldValue != newValue) {
+            changeSupport.fireChange();
+        }
+    }
+
+    private class InstanceListener implements DockerInstance.ConnectionListener {
+
+        @Override
+        public void onConnect() {
+            update(true);
+        }
+
+        @Override
+        public void onDisconnect() {
+            update(false);
+        }
     }
 }

@@ -97,14 +97,14 @@ public final class DockerNode extends AbstractNode {
             ChildFactory factory = new ChildFactory(DockerIntegration.getDefault());
             factory.init();
 
-            node = new DockerNode(factory, 
+            node = new DockerNode(factory,
                     NbBundle.getMessage(DockerNode.class, "Docker_Root_Node_Name"),
                     NbBundle.getMessage(DockerNode.class, "Docker_Root_Node_Short_Description"),
                     DOCKER_ICON);
         }
         return node;
     }
-    
+
     @Override
     public Action[] getActions(boolean context) {
         return Utilities.actionsForPath("Docker/Actions").toArray(new Action[0]); // NOI18N
@@ -157,7 +157,7 @@ public final class DockerNode extends AbstractNode {
 
         @Override
         protected Node createNodeForKey(DockerInstance key) {
-            return new DockerInstanceNode(key);
+            return new DockerInstanceNode(new CachedDockerInstance(key));
         }
 
         @Override

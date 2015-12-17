@@ -106,7 +106,7 @@ public class DockerContainersChildFactory extends ChildFactory<DockerContainer> 
 
     @Override
     protected Node createNodeForKey(DockerContainer key) {
-        return new DockerContainerNode(key);
+        return new DockerContainerNode(new CachedDockerContainer(key));
     }
 
     @Override

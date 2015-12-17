@@ -44,6 +44,7 @@ package org.netbeans.modules.docker.ui.node;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.api.DockerContainerDetail;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,7 +74,7 @@ public class UnpauseContainerAction extends AbstractContainerAction {
     }
 
     @Override
-    protected boolean isEnabled(DockerContainer container) {
-        return container.getStatus() == DockerContainer.Status.PAUSED;
+    protected boolean isEnabled(DockerContainerDetail detail) {
+        return detail.getStatus() == DockerContainer.Status.PAUSED;
     }
 }

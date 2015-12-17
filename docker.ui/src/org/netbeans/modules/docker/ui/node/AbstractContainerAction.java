@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.api.DockerContainer;
+import org.netbeans.modules.docker.api.DockerContainerDetail;
 import org.netbeans.modules.docker.api.DockerException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -73,22 +74,22 @@ public abstract class AbstractContainerAction extends NodeAction {
 
     protected abstract String getProgressMessage(DockerContainer container);
 
-    protected boolean isEnabled(DockerContainer container) {
+    protected boolean isEnabled(DockerContainerDetail detail) {
         return true;
     }
 
     @Override
     protected final void performAction(Node[] activatedNodes) {
         for (final Node node : activatedNodes) {
-            final DockerContainer container = node.getLookup().lookup(DockerContainer.class);
+            final CachedDockerContainer container = node.getLookup().lookup(CachedDockerContainer.class);
             if (container != null) {
-                final ProgressHandle handle = ProgressHandle.createHandle(getProgressMessage(container));
+                final ProgressHandle handle = ProgressHandle.createHandle(getProgressMessage(container.getContainer()));
                 handle.start();
                 Runnable task = new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            performAction(container);
+                            performAction(container.getContainer());
                         } catch (Exception ex) {
                             LOGGER.log(Level.INFO, null, ex);
                             String msg = ex.getLocalizedMessage();
@@ -107,8 +108,8 @@ public abstract class AbstractContainerAction extends NodeAction {
     @Override
     protected final boolean enable(Node[] activatedNodes) {
         for (Node node : activatedNodes) {
-            DockerContainer container = node.getLookup().lookup(DockerContainer.class);
-            if (container == null || !isEnabled(container)) {
+            CachedDockerContainer container = node.getLookup().lookup(CachedDockerContainer.class);
+            if (container == null || !isEnabled(container.getDetail())) {
                 return false;
             }
         }

@@ -43,11 +43,12 @@ package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.ui.pull.PullImageAction;
 import javax.swing.Action;
-import org.netbeans.modules.docker.api.DockerInstance;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.ui.build2.BuildImageAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -59,13 +60,34 @@ public class DockerInstanceNode extends AbstractNode {
 
     private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_instance.png"; // NOI18N
 
-    private final DockerInstance instance;
+    private final CachedDockerInstance instance;
 
-    public DockerInstanceNode(DockerInstance instance) {
-        super(createChildren(instance), Lookups.fixed(instance));
+    public DockerInstanceNode(CachedDockerInstance instance) {
+        super(Children.create(new DockerInstanceChildFactory(instance), true),
+                Lookups.fixed(instance.getInstance(), instance));
         this.instance = instance;
-        setDisplayName(instance.getDisplayName());
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
+
+        instance.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                fireDisplayNameChange(null, null);
+            }
+        });
+        instance.refresh();
+    }
+
+    @NbBundle.Messages({
+        "# {0} - instance name",
+        "LBL_Offline={0} [offline]"
+    })
+    @Override
+    public String getDisplayName() {
+        String displayName = instance.getInstance().getDisplayName();
+        if (instance.isAvailable()) {
+            return displayName;
+        }
+        return Bundle.LBL_Offline(displayName);
     }
 
     @Override
@@ -75,16 +97,9 @@ public class DockerInstanceNode extends AbstractNode {
             null,
             SystemAction.get(BuildImageAction.class),
             null,
+            SystemAction.get(RefreshAction.class),
+            null,
             SystemAction.get(RemoveInstanceAction.class)
         };
-    }
-
-    private static Children.Array createChildren(DockerInstance instance) {
-        Children.Array ret = new Children.Array();
-        DockerImagesChildFactory factoryRepo = new DockerImagesChildFactory(instance);
-        DockerContainersChildFactory factoryCont = new DockerContainersChildFactory(instance);
-        ret.add(new Node[] {new DockerImagesNode(instance, factoryRepo),
-            new DockerContainersNode(instance, factoryCont)});
-        return ret;
     }
 }
