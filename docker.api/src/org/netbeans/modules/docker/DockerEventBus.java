@@ -70,6 +70,8 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, Connecti
 
     private final DockerInstance instance;
 
+    private final List<DockerInstance.ConnectionListener> connectionListeners = new ArrayList<>();
+
     private final List<DockerEvent.Listener> imageListeners = new ArrayList<>();
 
     private final List<DockerEvent.Listener> containerListeners = new ArrayList<>();
@@ -86,11 +88,23 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, Connecti
         this.instance = instance;
     }
 
+    public void addConnectionListener(DockerInstance.ConnectionListener listener) {
+        synchronized (this) {
+            checkStart();
+            connectionListeners.add(listener);
+        }
+    }
+
+    public void removeConnectionListener(DockerInstance.ConnectionListener listener) {
+        synchronized (this) {
+            connectionListeners.remove(listener);
+            checkStop();
+        }
+    }
+
     public void addImageListener(DockerEvent.Listener listener) {
         synchronized (this) {
-            if (imageListeners.isEmpty() && containerListeners.isEmpty()) {
-                start();
-            }
+            checkStart();
             imageListeners.add(listener);
         }
     }
@@ -98,17 +112,13 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, Connecti
     public void removeImageListener(DockerEvent.Listener listener) {
         synchronized (this) {
             imageListeners.remove(listener);
-            if (imageListeners.isEmpty() && containerListeners.isEmpty()) {
-                stop();
-            }
+            checkStop();
         }
     }
 
     public void addContainerListener(DockerEvent.Listener listener) {
         synchronized (this) {
-            if (imageListeners.isEmpty() && containerListeners.isEmpty()) {
-                start();
-            }
+            checkStart();
             containerListeners.add(listener);
         }
     }
@@ -116,9 +126,7 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, Connecti
     public void removeContainerListener(DockerEvent.Listener listener) {
         synchronized (this) {
             containerListeners.remove(listener);
-            if (imageListeners.isEmpty() && containerListeners.isEmpty()) {
-                stop();
-            }
+            checkStop();
         }
     }
 
@@ -166,19 +174,42 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, Connecti
 
     @Override
     public void onConnect(Socket s) {
+        List<DockerInstance.ConnectionListener> toFire;
         synchronized (this) {
             this.socket = s;
+            toFire = new ArrayList<>(connectionListeners);
+        }
+        for (DockerInstance.ConnectionListener l : toFire) {
+            l.onConnect();
         }
     }
 
     @Override
     public void onDisconnect() {
-        // noop
+        List<DockerInstance.ConnectionListener> toFire;
+        synchronized (this) {
+            toFire = new ArrayList<>(connectionListeners);
+        }
+        for (DockerInstance.ConnectionListener l : toFire) {
+            l.onDisconnect();
+        }
     }
 
     @Override
     public void close() {
         stop();
+    }
+
+    private void checkStart() {
+        if (connectionListeners.isEmpty() && imageListeners.isEmpty() && containerListeners.isEmpty()) {
+            start();
+        }
+    }
+
+    private void checkStop() {
+        if (connectionListeners.isEmpty() && imageListeners.isEmpty() && containerListeners.isEmpty()) {
+            stop();
+        }
     }
 
     private void start() {

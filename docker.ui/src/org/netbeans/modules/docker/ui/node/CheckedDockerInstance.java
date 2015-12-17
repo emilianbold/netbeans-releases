@@ -39,60 +39,80 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.build2;
+package org.netbeans.modules.docker.ui.node;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.ui.node.CheckedDockerInstance;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.ChangeSupport;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
+/**
+ *
+ * @author Petr Hejl
+ */
+public class CheckedDockerInstance implements Refreshable {
 
-public final class BuildImageAction extends NodeAction {
+    private static final RequestProcessor RP = new RequestProcessor(CheckedDockerInstance.class);
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private final AtomicBoolean available = new AtomicBoolean();
+
+    private final InstanceListener listener = new InstanceListener();
+
+    private final DockerInstance instance;
+
+    public CheckedDockerInstance(DockerInstance instance) {
+        this.instance = instance;
+        instance.addConnectionListener(
+                WeakListeners.create(DockerInstance.ConnectionListener.class, listener, instance));
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    public DockerInstance getInstance() {
+        return instance;
+    }
+
+    public boolean isAvailable() {
+        return available.get();
+    }
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        for (Node node : activatedNodes) {
-            DockerInstance instance = node.getLookup().lookup(DockerInstance.class);
-            if (instance != null) {
-                perform(instance);
+    public void refresh() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                update(instance.isAvailable());
             }
+        });
+    }
+
+    private void update(boolean newValue) {
+        boolean oldValue = available.getAndSet(newValue);
+        if (oldValue != newValue) {
+            changeSupport.fireChange();
         }
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        CheckedDockerInstance checked = activatedNodes[0].getLookup().lookup(CheckedDockerInstance.class);
-        if (checked == null || !checked.isAvailable()) {
-            return false;
+    private class InstanceListener implements DockerInstance.ConnectionListener {
+
+        @Override
+        public void onConnect() {
+            update(true);
         }
 
-        return activatedNodes[0].getLookup().lookup(DockerInstance.class) != null;
+        @Override
+        public void onDisconnect() {
+            update(false);
+        }
     }
-
-    @NbBundle.Messages("LBL_BuildImageAction=Build...")
-    @Override
-    public String getName() {
-        return Bundle.LBL_BuildImageAction();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    private void perform(DockerInstance instance) {
-        BuildImageWizard wizard = new BuildImageWizard(instance);
-        wizard.show();
-    }
-
 }
