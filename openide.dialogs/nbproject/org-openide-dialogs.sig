@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.37
+#Version 7.41.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -118,6 +118,7 @@ CLSS public abstract org.openide.DialogDisplayer
 cons protected init()
 meth public abstract java.awt.Dialog createDialog(org.openide.DialogDescriptor)
 meth public abstract java.lang.Object notify(org.openide.NotifyDescriptor)
+meth public java.awt.Dialog createDialog(org.openide.DialogDescriptor,java.awt.Frame)
 meth public static org.openide.DialogDisplayer getDefault()
 meth public void notifyLater(org.openide.NotifyDescriptor)
 supr java.lang.Object

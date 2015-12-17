@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.44
+#Version 2.51.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -75,7 +75,7 @@ hcls ContextAware
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ui.AttachType$Registration
  outer org.netbeans.spi.debugger.ui.AttachType
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault int position()
 meth public abstract java.lang.String displayName()
@@ -99,11 +99,84 @@ hcls ContextAware
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ui.BreakpointType$Registration
  outer org.netbeans.spi.debugger.ui.BreakpointType
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault int position()
 meth public abstract !hasdefault java.lang.String path()
 meth public abstract java.lang.String displayName()
+
+CLSS public final org.netbeans.spi.debugger.ui.CodeEvaluator
+innr public abstract static EvaluatorService
+innr public final static DefaultExpressionsHistoryPersistence
+innr public final static Result
+meth public static org.netbeans.spi.debugger.ui.CodeEvaluator getDefault()
+meth public void open()
+meth public void requestFocus()
+meth public void setExpression(java.lang.String)
+supr java.lang.Object
+hfds INSTANCE
+
+CLSS public final static org.netbeans.spi.debugger.ui.CodeEvaluator$DefaultExpressionsHistoryPersistence
+ outer org.netbeans.spi.debugger.ui.CodeEvaluator
+meth public java.util.List<java.lang.String> getExpressions()
+meth public static org.netbeans.spi.debugger.ui.CodeEvaluator$DefaultExpressionsHistoryPersistence create(java.lang.String)
+meth public void addExpression(java.lang.String)
+supr java.lang.Object
+hfds NUM_HISTORY_ITEMS,editItemsList,editItemsSet,engineName
+
+CLSS public abstract static org.netbeans.spi.debugger.ui.CodeEvaluator$EvaluatorService
+ outer org.netbeans.spi.debugger.ui.CodeEvaluator
+cons public init()
+fld public final static java.lang.String PROP_CAN_EVALUATE = "canEvaluate"
+fld public final static java.lang.String PROP_EXPRESSIONS_HISTORY = "expressionsHistory"
+innr public abstract interface static !annotation Registration
+meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public abstract boolean canEvaluate()
+meth public abstract java.util.List<java.lang.String> getExpressionsHistory()
+meth public abstract void evaluate(java.lang.String)
+meth public abstract void setupContext(javax.swing.JEditorPane,java.lang.Runnable)
+meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr java.lang.Object
+hfds pchs
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ui.CodeEvaluator$EvaluatorService$Registration
+ outer org.netbeans.spi.debugger.ui.CodeEvaluator$EvaluatorService
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.String path()
+
+CLSS public final static org.netbeans.spi.debugger.ui.CodeEvaluator$Result<%0 extends java.lang.Object, %1 extends java.lang.Object>
+ outer org.netbeans.spi.debugger.ui.CodeEvaluator
+innr public abstract interface static Listener
+innr public final static DefaultHistoryItem
+meth public java.lang.String getExpression()
+meth public java.util.List<{org.netbeans.spi.debugger.ui.CodeEvaluator$Result%1}> getHistoryItems()
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.spi.debugger.ui.CodeEvaluator$Result<{%%0},{%%1}> get(org.netbeans.api.debugger.DebuggerEngine)
+meth public void addListener(org.netbeans.spi.debugger.ui.CodeEvaluator$Result$Listener<{org.netbeans.spi.debugger.ui.CodeEvaluator$Result%0}>)
+meth public void removeListener(org.netbeans.spi.debugger.ui.CodeEvaluator$Result$Listener<{org.netbeans.spi.debugger.ui.CodeEvaluator$Result%0}>)
+meth public void setAndOpen(java.lang.String,{org.netbeans.spi.debugger.ui.CodeEvaluator$Result%0},{org.netbeans.spi.debugger.ui.CodeEvaluator$Result%1})
+meth public void setMaxHistoryItems(int)
+meth public {org.netbeans.spi.debugger.ui.CodeEvaluator$Result%0} getResult()
+supr java.lang.Object
+hfds ENGINE_HASH_MAP,engine,expression,historyItems,historyItemsRO,lastHistoryItem,listeners,maxHistoryItems,preferences,result,resultView
+
+CLSS public final static org.netbeans.spi.debugger.ui.CodeEvaluator$Result$DefaultHistoryItem
+ outer org.netbeans.spi.debugger.ui.CodeEvaluator$Result
+cons public init(java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+meth public java.lang.String getExpression()
+meth public java.lang.String getToStringValue()
+meth public java.lang.String getTooltip()
+meth public java.lang.String getType()
+meth public java.lang.String getValue()
+supr java.lang.Object
+hfds expression,toStringValue,tooltip,type,value
+
+CLSS public abstract interface static org.netbeans.spi.debugger.ui.CodeEvaluator$Result$Listener<%0 extends java.lang.Object>
+ outer org.netbeans.spi.debugger.ui.CodeEvaluator$Result
+meth public abstract void resultChanged({org.netbeans.spi.debugger.ui.CodeEvaluator$Result$Listener%0})
 
 CLSS public abstract interface !annotation org.netbeans.spi.debugger.ui.ColumnModelRegistration
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
@@ -277,6 +350,8 @@ meth public int getCurrentLineNumber()
 meth public int getMostRecentLineNumber()
 meth public java.lang.String getCurrentURLAsString()
 meth public java.lang.String getMostRecentURLAsString()
+meth public java.util.Set<java.lang.String> getMIMETypesOnCurrentLine()
+meth public java.util.Set<java.lang.String> getMIMETypesOnLine(org.openide.text.Line)
 meth public javax.swing.JEditorPane getCurrentEditor()
 meth public javax.swing.JEditorPane getMostRecentEditor()
 meth public org.openide.filesystems.FileObject getCurrentFile()
@@ -349,6 +424,12 @@ meth public int getEndOffset()
 meth public int getStartOffset()
 supr java.lang.Object
 hfds endOffset,startOffset
+
+CLSS public abstract interface org.netbeans.spi.debugger.ui.PersistentController
+intf org.netbeans.spi.debugger.ui.Controller
+meth public abstract boolean load(org.netbeans.api.debugger.Properties)
+meth public abstract java.lang.String getDisplayName()
+meth public abstract void save(org.netbeans.api.debugger.Properties)
 
 CLSS public org.netbeans.spi.debugger.ui.ViewFactory
 meth public javax.swing.JComponent createViewComponent(java.lang.String,java.lang.String,java.lang.String,java.lang.String)

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.46
+#Version 1.52.1
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -113,6 +113,17 @@ fld public final static java.lang.String PROP_ACTION_STATE_CHANGED = "actionStat
 intf java.util.EventListener
 meth public abstract void actionPerformed(java.lang.Object)
 meth public abstract void actionStateChanged(java.lang.Object,boolean)
+
+CLSS public final org.netbeans.api.debugger.ActiveBreakpoints
+fld public final static java.lang.String PROP_BREAKPOINTS_ACTIVE = "breakpointsActive"
+meth public boolean areBreakpointsActive()
+meth public boolean canDeactivateBreakpoints()
+meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public static org.netbeans.api.debugger.ActiveBreakpoints get(org.netbeans.api.debugger.DebuggerEngine)
+meth public void setBreakpointsActive(boolean)
+supr java.lang.Object
+hfds UNSUPPORTED,aBreakpoints,bap,dEngines
 
 CLSS public abstract org.netbeans.api.debugger.Breakpoint
 cons public init()
@@ -243,7 +254,7 @@ meth public void removeDebuggerListener(org.netbeans.api.debugger.DebuggerManage
 meth public void reorderWatches(int[])
 meth public void setCurrentSession(org.netbeans.api.debugger.Session)
 supr java.lang.Object
-hfds actionsManager,breakpoints,breakpointsByClassLoaders,breakpointsInitialized,breakpointsInitializing,createdBreakpoints,currentEngine,currentSession,debuggerManager,engines,listeners,listenersLookupList,listenersMap,loadedListeners,lookup,sessionListener,sessions,watches,watchesInitialized,watchesInitializing
+hfds actionsManager,breakpoints,breakpointsByClassLoaders,breakpointsInitialized,breakpointsInitializing,createdBreakpoints,currentEngine,currentSession,debuggerManager,engines,listeners,listenersLookupList,listenersMap,loadedListeners,loadedListenersLock,lookup,sessionListener,sessions,watches,watchesInitialized,watchesInitializing
 hcls SessionListener
 
 CLSS public org.netbeans.api.debugger.DebuggerManagerAdapter
@@ -330,7 +341,7 @@ meth public static org.netbeans.api.debugger.Properties getDefault()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds defaultProperties
+hfds LOG,defaultProperties
 hcls DelegatingProperties,PrimitiveRegister,PropertiesImpl
 
 CLSS public abstract interface static org.netbeans.api.debugger.Properties$Initializer
@@ -365,6 +376,19 @@ meth public void removePropertyChangeListener(java.lang.String,java.beans.Proper
 meth public void setCurrentLanguage(java.lang.String)
 supr java.lang.Object
 hfds currentDebuggerEngine,currentLanguage,engines,enginesLookups,languages,locationName,lookup,name,pcs,privateLookup
+
+CLSS public final org.netbeans.api.debugger.SessionBridge
+innr public abstract interface static SessionChanger
+meth public boolean isChangerFor(java.lang.String)
+meth public boolean suggestChange(org.netbeans.api.debugger.Session,java.lang.String,java.util.Map<java.lang.Object,java.lang.Object>)
+meth public static org.netbeans.api.debugger.SessionBridge getDefault()
+supr java.lang.Object
+hfds instance,lookupSessionChangers,sessionChangers
+
+CLSS public abstract interface static org.netbeans.api.debugger.SessionBridge$SessionChanger
+ outer org.netbeans.api.debugger.SessionBridge
+meth public abstract java.util.Set<java.lang.String> getActions()
+meth public abstract org.netbeans.api.debugger.Session changeSuggested(org.netbeans.api.debugger.Session,java.lang.String,java.util.Map<java.lang.Object,java.lang.Object>)
 
 CLSS public final org.netbeans.api.debugger.Watch
 fld public final static java.lang.String PROP_ENABLED = "enabled"
@@ -424,6 +448,12 @@ meth public final void addActionsProviderListener(org.netbeans.spi.debugger.Acti
 meth public final void removeActionsProviderListener(org.netbeans.spi.debugger.ActionsProviderListener)
 supr org.netbeans.spi.debugger.ActionsProvider
 hfds enabled,listeners
+
+CLSS public abstract interface org.netbeans.spi.debugger.BreakpointsActivationProvider
+meth public abstract boolean areBreakpointsActive()
+meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void setBreakpointsActive(boolean)
 
 CLSS public abstract interface org.netbeans.spi.debugger.ContextAwareService<%0 extends java.lang.Object>
 meth public abstract {org.netbeans.spi.debugger.ContextAwareService%0} forContext(org.netbeans.spi.debugger.ContextProvider)

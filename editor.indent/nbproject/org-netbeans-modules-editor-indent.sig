@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.37
+#Version 1.42.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -106,12 +106,4 @@ meth public abstract void reformat() throws javax.swing.text.BadLocationExceptio
 CLSS public abstract interface static org.netbeans.modules.editor.indent.spi.ReformatTask$Factory
  outer org.netbeans.modules.editor.indent.spi.ReformatTask
 meth public abstract org.netbeans.modules.editor.indent.spi.ReformatTask createTask(org.netbeans.modules.editor.indent.spi.Context)
-
-CLSS public final org.netbeans.modules.editor.indent.spi.support.AutomatedIndenting
-cons public init()
-meth public !varargs static org.netbeans.spi.editor.typinghooks.TypedTextInterceptor createHotCharsIndenter(java.util.regex.Pattern[])
-meth public static org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Factory createHotCharsIndenter(java.util.Map<java.lang.Object,java.lang.Object>)
-supr java.lang.Object
-hfds LOG
-hcls RegExBasedIndenter
 

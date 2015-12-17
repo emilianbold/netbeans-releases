@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.84
+#Version 1.86.1
 
 CLSS public java.io.IOException
 cons public init()
@@ -23,6 +23,12 @@ cons public init(java.lang.String,java.lang.Throwable)
 cons public init(long)
 supr java.lang.Error
 hfds serialVersionUID
+
+CLSS public abstract interface !annotation java.lang.Deprecated
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
+intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Error
 cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
@@ -153,6 +159,7 @@ meth public void run(junit.framework.TestResult)
 supr junit.framework.Assert
 
 CLSS public junit.framework.Assert
+ anno 0 java.lang.Deprecated()
 cons protected init()
 meth public static java.lang.String format(java.lang.String,java.lang.Object,java.lang.Object)
 meth public static void assertEquals(boolean,boolean)
@@ -216,6 +223,44 @@ meth public int countTestCases()
 meth public java.lang.String getName()
 meth public java.lang.String toString()
 meth public junit.framework.TestResult run()
+meth public static java.lang.String format(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void assertEquals(boolean,boolean)
+meth public static void assertEquals(byte,byte)
+meth public static void assertEquals(char,char)
+meth public static void assertEquals(double,double,double)
+meth public static void assertEquals(float,float,float)
+meth public static void assertEquals(int,int)
+meth public static void assertEquals(java.lang.Object,java.lang.Object)
+meth public static void assertEquals(java.lang.String,boolean,boolean)
+meth public static void assertEquals(java.lang.String,byte,byte)
+meth public static void assertEquals(java.lang.String,char,char)
+meth public static void assertEquals(java.lang.String,double,double,double)
+meth public static void assertEquals(java.lang.String,float,float,float)
+meth public static void assertEquals(java.lang.String,int,int)
+meth public static void assertEquals(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void assertEquals(java.lang.String,java.lang.String)
+meth public static void assertEquals(java.lang.String,java.lang.String,java.lang.String)
+meth public static void assertEquals(java.lang.String,long,long)
+meth public static void assertEquals(java.lang.String,short,short)
+meth public static void assertEquals(long,long)
+meth public static void assertEquals(short,short)
+meth public static void assertFalse(boolean)
+meth public static void assertFalse(java.lang.String,boolean)
+meth public static void assertNotNull(java.lang.Object)
+meth public static void assertNotNull(java.lang.String,java.lang.Object)
+meth public static void assertNotSame(java.lang.Object,java.lang.Object)
+meth public static void assertNotSame(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void assertNull(java.lang.Object)
+meth public static void assertNull(java.lang.String,java.lang.Object)
+meth public static void assertSame(java.lang.Object,java.lang.Object)
+meth public static void assertSame(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void assertTrue(boolean)
+meth public static void assertTrue(java.lang.String,boolean)
+meth public static void fail()
+meth public static void fail(java.lang.String)
+meth public static void failNotEquals(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void failNotSame(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void failSame(java.lang.String)
 meth public void run(junit.framework.TestResult)
 meth public void runBare() throws java.lang.Throwable
 meth public void setName(java.lang.String)

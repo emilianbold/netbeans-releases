@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.38.0
+#Version 1.42.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -82,8 +82,8 @@ meth public java.util.concurrent.Future<java.lang.String> getTextAsync()
 meth public javax.swing.Action getGotoSourceAction()
 meth public org.netbeans.api.java.source.ui.ElementJavadoc resolveLink(java.lang.String)
 supr java.lang.Object
-hfds API,ASSOCIATE_JDOC,CODE_TAG,DEPRECATED_TAG,INHERIT_DOC_TAG,LANGS,LINKPLAIN_TAG,LITERAL_TAG,PARAM_TAG,RETURN_TAG,RP,SEE_TAG,SINCE_TAG,THROWS_TAG,VALUE_TAG,cancel,content,cpInfo,docURL,goToSource,handle,linkCounter,links
-hcls Now,RemoteJavadocException
+hfds API,APINOTE_TAG,ASSOCIATE_JDOC,CODE_TAG,DEPRECATED_TAG,IMPLNOTE_TAG,IMPLSPEC_TAG,INHERIT_DOC_TAG,LANGS,LINKPLAIN_TAG,LITERAL_TAG,PARAM_TAG,RETURN_TAG,RP,SEE_TAG,SINCE_TAG,THROWS_TAG,VALUE_TAG,cancel,content,cpInfo,docURL,fileObject,goToSource,handle,linkCounter,links
+hcls Now
 
 CLSS public final org.netbeans.api.java.source.ui.ElementOpen
 meth public static boolean open(org.netbeans.api.java.source.ClasspathInfo,javax.lang.model.element.Element)

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.46
+#Version 1.50.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -97,6 +97,23 @@ fld public final static org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL 
 meth public static org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL valueOf(java.lang.String)
 meth public static org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL[] values()
 supr java.lang.Enum<org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL>
+
+CLSS public abstract org.netbeans.spi.viewmodel.CachedChildrenTreeModel
+cons public init()
+intf org.netbeans.spi.viewmodel.AsynchronousModelFilter
+intf org.netbeans.spi.viewmodel.TreeModel
+meth protected abstract java.lang.Object[] computeChildren(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth protected boolean cacheChildrenOf(java.lang.Object)
+meth protected final void clearCache()
+meth protected final void recomputeChildren() throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth protected final void recomputeChildren(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth protected final void refreshCache(java.lang.Object)
+meth protected java.lang.Object[] reorder(java.lang.Object[])
+meth public final java.lang.Object[] getChildren(java.lang.Object,int,int) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public java.util.concurrent.Executor asynchronous(java.util.concurrent.Executor,org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+supr java.lang.Object
+hfds childrenCache,childrenToRefresh
+hcls ChildrenTree
 
 CLSS public abstract interface org.netbeans.spi.viewmodel.CheckNodeModel
 intf org.netbeans.spi.viewmodel.NodeModel

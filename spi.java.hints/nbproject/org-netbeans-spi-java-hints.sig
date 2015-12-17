@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.21.0
+#Version 1.27.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -232,11 +232,22 @@ meth public static boolean matches(org.netbeans.spi.java.hints.HintContext,com.s
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
  anno 3 org.netbeans.api.annotations.common.NonNull()
+meth public static boolean matches(org.netbeans.spi.java.hints.HintContext,com.sun.source.util.TreePath,java.lang.String,java.util.Map<java.lang.String,com.sun.source.util.TreePath>,java.util.Map<java.lang.String,java.util.Collection<? extends com.sun.source.util.TreePath>>,java.util.Map<java.lang.String,java.lang.String>,java.util.Map<java.lang.String,javax.lang.model.type.TypeMirror>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public static boolean matches(org.netbeans.spi.java.hints.HintContext,java.util.Collection<? extends com.sun.source.util.TreePath>,java.lang.String,java.util.Map<java.lang.String,com.sun.source.util.TreePath>,java.util.Map<java.lang.String,java.util.Collection<? extends com.sun.source.util.TreePath>>,java.util.Map<java.lang.String,java.lang.String>)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
  anno 3 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
+
+CLSS public abstract interface !annotation org.netbeans.spi.java.hints.TriggerOptions
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[METHOD])
+fld public final static java.lang.String PROCESS_GUARDED = "processGuarded"
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.String[] value()
 
 CLSS public abstract interface !annotation org.netbeans.spi.java.hints.TriggerPattern
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)

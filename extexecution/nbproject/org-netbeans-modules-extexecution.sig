@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.42
+#Version 1.47.1
 
 CLSS public abstract interface java.io.Closeable
 intf java.lang.AutoCloseable
@@ -79,7 +79,9 @@ meth public abstract {java.util.concurrent.Callable%0} call() throws java.lang.E
 CLSS public final org.netbeans.api.extexecution.ExecutionDescriptor
 cons public init()
 innr public abstract interface static InputProcessorFactory
+innr public abstract interface static InputProcessorFactory2
 innr public abstract interface static LineConvertorFactory
+innr public abstract interface static RerunCallback
 innr public abstract interface static RerunCondition
 meth public org.netbeans.api.extexecution.ExecutionDescriptor charset(java.nio.charset.Charset)
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
@@ -96,6 +98,10 @@ meth public org.netbeans.api.extexecution.ExecutionDescriptor errLineBased(boole
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.extexecution.ExecutionDescriptor errProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor$InputProcessorFactory)
+ anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+meth public org.netbeans.api.extexecution.ExecutionDescriptor errProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor$InputProcessorFactory2)
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
@@ -130,11 +136,19 @@ meth public org.netbeans.api.extexecution.ExecutionDescriptor outProcessorFactor
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
+meth public org.netbeans.api.extexecution.ExecutionDescriptor outProcessorFactory(org.netbeans.api.extexecution.ExecutionDescriptor$InputProcessorFactory2)
+ anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
 meth public org.netbeans.api.extexecution.ExecutionDescriptor postExecution(java.lang.Runnable)
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
 meth public org.netbeans.api.extexecution.ExecutionDescriptor preExecution(java.lang.Runnable)
+ anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+meth public org.netbeans.api.extexecution.ExecutionDescriptor rerunCallback(org.netbeans.api.extexecution.ExecutionDescriptor$RerunCallback)
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
@@ -149,7 +163,7 @@ meth public org.netbeans.api.extexecution.ExecutionDescriptor showSuspended(bool
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds charset,controllable,errConvertorFactory,errLineBased,errProcessorFactory,front,frontWindowOnError,input,inputOutput,noReset,optionsPath,outConvertorFactory,outLineBased,outProcessorFactory,postExecution,preExecution,progress,rerunCondition,suspend
+hfds LOGGER,charset,controllable,errConvertorFactory,errLineBased,errProcessorFactory,errProcessorFactory2,front,frontWindowOnError,input,inputOutput,noReset,optionsPath,outConvertorFactory,outLineBased,outProcessorFactory,outProcessorFactory2,postExecution,preExecution,progress,rerunCallback,rerunCondition,suspend
 hcls DescriptorData
 
 CLSS public abstract interface static org.netbeans.api.extexecution.ExecutionDescriptor$InputProcessorFactory
@@ -158,10 +172,20 @@ meth public abstract org.netbeans.api.extexecution.input.InputProcessor newInput
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 
+CLSS public abstract interface static org.netbeans.api.extexecution.ExecutionDescriptor$InputProcessorFactory2
+ outer org.netbeans.api.extexecution.ExecutionDescriptor
+meth public abstract org.netbeans.api.extexecution.base.input.InputProcessor newInputProcessor(org.netbeans.api.extexecution.base.input.InputProcessor)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
 CLSS public abstract interface static org.netbeans.api.extexecution.ExecutionDescriptor$LineConvertorFactory
  outer org.netbeans.api.extexecution.ExecutionDescriptor
 meth public abstract org.netbeans.api.extexecution.print.LineConvertor newLineConvertor()
  anno 0 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public abstract interface static org.netbeans.api.extexecution.ExecutionDescriptor$RerunCallback
+ outer org.netbeans.api.extexecution.ExecutionDescriptor
+meth public abstract void performed(java.util.concurrent.Future<java.lang.Integer>)
 
 CLSS public abstract interface static org.netbeans.api.extexecution.ExecutionDescriptor$RerunCondition
  outer org.netbeans.api.extexecution.ExecutionDescriptor
@@ -180,8 +204,8 @@ meth public static org.netbeans.api.extexecution.ExecutionService newService(jav
  anno 2 org.netbeans.api.annotations.common.NonNull()
  anno 3 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds EXECUTOR_SERVICE,EXECUTOR_SHUTDOWN_SLICE,LOGGER,RUNNING_PROCESSES,descriptor,originalDisplayName,processCreator
-hcls ProgressAction,ProgressCancellable,WrappedException
+hfds LOGGER,descriptor,originalDisplayName,processCreator
+hcls ProgressAction,ProgressCancellable
 
 CLSS public final org.netbeans.api.extexecution.ExternalProcessBuilder
 cons public init(java.lang.String)
@@ -269,8 +293,6 @@ meth public static org.netbeans.api.extexecution.input.InputProcessor printing(o
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
 supr java.lang.Object
-hfds LOGGER
-hcls AnsiStrippingInputProcessor,Bridge,CopyingInputProcessor,PrintingInputProcessor,ProxyInputProcessor
 
 CLSS public abstract interface org.netbeans.api.extexecution.input.InputReader
 intf java.io.Closeable
@@ -292,7 +314,8 @@ meth public static org.netbeans.api.extexecution.input.InputReaderTask newTask(o
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
 meth public void run()
 supr java.lang.Object
-hfds DELAY_INCREMENT,LOGGER,MAX_DELAY,MIN_DELAY,cancelled,draining,inputProcessor,inputReader,running
+hfds delegate
+hcls BaseInputReader
 
 CLSS public final org.netbeans.api.extexecution.input.InputReaders
 innr public final static FileInput
@@ -353,8 +376,7 @@ meth public static org.netbeans.api.extexecution.input.LineProcessor printing(or
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
 supr java.lang.Object
-hfds LOGGER
-hcls PrintingLineProcessor,ProxyLineProcessor,WaitingLineProcessor
+hcls BaseLineProcessor,DelegatingLineProcessor
 
 CLSS abstract interface org.netbeans.api.extexecution.input.package-info
 
@@ -371,6 +393,18 @@ meth public static org.netbeans.api.extexecution.print.ConvertedLine forText(jav
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
 supr java.lang.Object
 hfds listener,text
+
+CLSS public final org.netbeans.api.extexecution.print.InputProcessors
+meth public static org.netbeans.api.extexecution.base.input.InputProcessor printing(org.openide.windows.OutputWriter,boolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.api.extexecution.base.input.InputProcessor printing(org.openide.windows.OutputWriter,org.netbeans.api.extexecution.print.LineConvertor,boolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+supr java.lang.Object
+hfds LOGGER
+hcls PrintingInputProcessor
 
 CLSS public abstract interface org.netbeans.api.extexecution.print.LineConvertor
 meth public abstract java.util.List<org.netbeans.api.extexecution.print.ConvertedLine> convert(java.lang.String)
@@ -398,6 +432,18 @@ CLSS public abstract interface static org.netbeans.api.extexecution.print.LineCo
 meth public abstract org.openide.filesystems.FileObject find(java.lang.String)
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public final org.netbeans.api.extexecution.print.LineProcessors
+meth public static org.netbeans.api.extexecution.base.input.LineProcessor printing(org.openide.windows.OutputWriter,boolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.api.extexecution.base.input.LineProcessor printing(org.openide.windows.OutputWriter,org.netbeans.api.extexecution.print.LineConvertor,boolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+supr java.lang.Object
+hfds LOGGER
+hcls PrintingLineProcessor
 
 CLSS abstract interface org.netbeans.api.extexecution.print.package-info
 

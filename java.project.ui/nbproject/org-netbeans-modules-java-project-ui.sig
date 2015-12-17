@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.59
+#Version 1.66.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -153,7 +153,7 @@ meth public static org.openide.filesystems.FileObject findJavadocRoot(org.openid
 meth public static org.openide.filesystems.FileObject findPackageRoot(org.openide.filesystems.FileObject)
 meth public static org.openide.filesystems.FileObject findSourceRoot(org.openide.filesystems.FileObject)
 supr java.lang.Object
-hfds HOW_MANY_DIRS_TO_TRAVERSE_DEEP,JAVA_FILE,LOG,PACKAGE_INFO
+hfds JAVADOC_TRAVERSE_DEEPTH,JAVA_FILE,LOG,PACKAGE_INFO,SRC_TRAVERSE_DEEPTH
 
 CLSS public final org.netbeans.spi.java.project.support.LookupMergerSupport
 cons public init()
@@ -280,6 +280,9 @@ hfds PROP_ACTIONS,PROP_HELPER,PROP_JAR_REFS,PROP_LAST_SHARABLE,PROP_LIBRARIES,PR
 hcls CopyIterator,CopyJars,CopyLibraryJars,ErrorProvider,KeepJarAtLocation,KeepLibraryAtLocation
 
 CLSS public org.netbeans.spi.java.project.support.ui.templates.JavaTemplates
+fld public final static java.lang.String ANNOTATION_TYPE_ICON = "org/netbeans/spi/java/project/support/ui/templates/annotation.png"
+fld public final static java.lang.String ENUM_ICON = "org/netbeans/spi/java/project/support/ui/templates/enum.png"
+fld public final static java.lang.String INTERFACE_ICON = "org/netbeans/spi/java/project/support/ui/templates/interface.png"
 fld public final static java.lang.String JAVA_ICON = "org/netbeans/spi/java/project/support/ui/templates/class.png"
 meth public static org.openide.WizardDescriptor$InstantiatingIterator<org.openide.WizardDescriptor> createJavaTemplateIterator()
 meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createPackageChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[])
