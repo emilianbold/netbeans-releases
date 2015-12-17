@@ -366,7 +366,7 @@ public class AstRenderer {
             } catch (AstRendererException e) {
                 if (!SKIP_AST_RENDERER_EXCEPTIONS) {
                     // In MySQL related tests we see endless "empty function name" exceptions
-                    if (CndUtils.isUnitTestMode() && e.getMessage().startsWith("Empty function name")) { // NOI18N
+                    if (CndUtils.isUnitTestMode() && e.getMessage().contains("Empty function name")) { // NOI18N
                         try {
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
                             PrintStream ps = new PrintStream(baos, true, "UTF8"); // NOI18N
