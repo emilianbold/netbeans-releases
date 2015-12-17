@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.47
+#Version 1.51.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -179,8 +179,13 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract {org.netbeans.spi.project.libraries.LibraryProvider%0}[] getLibraries()
 
 CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryStorageArea
+fld public final static org.netbeans.spi.project.libraries.LibraryStorageArea GLOBAL
 meth public abstract java.lang.String getDisplayName()
 meth public abstract java.net.URL getLocation()
+
+CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryStorageAreaCache
+meth public abstract java.util.Collection<? extends java.net.URL> getCachedAreas()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryTypeProvider
 intf org.openide.util.Lookup$Provider
@@ -200,22 +205,11 @@ meth public abstract java.lang.String getDisplayName()
 meth public abstract void setDisplayName(java.lang.String)
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
 
-CLSS public final org.netbeans.spi.project.libraries.support.LibrariesSupport
-meth public !varargs static org.netbeans.spi.project.libraries.LibraryImplementation3 createLibraryImplementation3(java.lang.String,java.lang.String[])
- anno 0 org.netbeans.api.annotations.common.NonNull()
- anno 1 org.netbeans.api.annotations.common.NonNull()
- anno 2 org.netbeans.api.annotations.common.NonNull()
-meth public static java.lang.String convertURIToFilePath(java.net.URI)
-meth public static java.net.URI convertFilePathToURI(java.lang.String)
- anno 1 org.netbeans.api.annotations.common.NonNull()
-meth public static java.net.URI getArchiveFile(java.net.URI)
-meth public static java.net.URI getArchiveRoot(java.net.URI)
-meth public static java.net.URI resolveLibraryEntryURI(java.net.URL,java.net.URI)
-meth public static org.netbeans.spi.project.libraries.LibraryImplementation createLibraryImplementation(java.lang.String,java.lang.String[])
-meth public static org.netbeans.spi.project.libraries.LibraryTypeProvider getLibraryTypeProvider(java.lang.String)
-meth public static org.netbeans.spi.project.libraries.LibraryTypeProvider[] getLibraryTypeProviders()
-meth public static org.openide.filesystems.FileObject resolveLibraryEntryFileObject(java.net.URL,java.net.URI)
-supr java.lang.Object
+CLSS public abstract interface org.netbeans.spi.project.libraries.WritableLibraryProvider<%0 extends org.netbeans.spi.project.libraries.LibraryImplementation>
+intf org.netbeans.spi.project.libraries.LibraryProvider<{org.netbeans.spi.project.libraries.WritableLibraryProvider%0}>
+meth public abstract boolean addLibrary({org.netbeans.spi.project.libraries.WritableLibraryProvider%0}) throws java.io.IOException
+meth public abstract boolean removeLibrary({org.netbeans.spi.project.libraries.WritableLibraryProvider%0}) throws java.io.IOException
+meth public abstract boolean updateLibrary({org.netbeans.spi.project.libraries.WritableLibraryProvider%0},{org.netbeans.spi.project.libraries.WritableLibraryProvider%0}) throws java.io.IOException
 
 CLSS public abstract org.openide.util.Lookup
 cons public init()
@@ -231,7 +225,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

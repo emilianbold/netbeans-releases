@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.47
+#Version 1.51.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -73,7 +73,10 @@ hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 CLSS public final org.netbeans.api.autoupdate.InstallSupport
 innr public final static Installer
 innr public final static Validator
+meth public boolean isContentModified(org.netbeans.api.autoupdate.InstallSupport$Installer,org.netbeans.api.autoupdate.UpdateElement)
 meth public boolean isSigned(org.netbeans.api.autoupdate.InstallSupport$Installer,org.netbeans.api.autoupdate.UpdateElement)
+meth public boolean isSignedUnverified(org.netbeans.api.autoupdate.InstallSupport$Installer,org.netbeans.api.autoupdate.UpdateElement)
+meth public boolean isSignedVerified(org.netbeans.api.autoupdate.InstallSupport$Installer,org.netbeans.api.autoupdate.UpdateElement)
 meth public boolean isTrusted(org.netbeans.api.autoupdate.InstallSupport$Installer,org.netbeans.api.autoupdate.UpdateElement)
 meth public java.lang.String getCertificate(org.netbeans.api.autoupdate.InstallSupport$Installer,org.netbeans.api.autoupdate.UpdateElement)
 meth public org.netbeans.api.autoupdate.InstallSupport$Installer doValidate(org.netbeans.api.autoupdate.InstallSupport$Validator,org.netbeans.api.progress.ProgressHandle) throws org.netbeans.api.autoupdate.OperationException
@@ -152,6 +155,7 @@ CLSS public final static !enum org.netbeans.api.autoupdate.OperationException$ER
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE ENABLE
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE INSTALL
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE INSTALLER
+fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE MODIFIED
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE PROXY
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE UNINSTALL
 fld public final static org.netbeans.api.autoupdate.OperationException$ERROR_TYPE WRITE_PERMISSION

@@ -1,5 +1,11 @@
 #Signature file v4.1
-#Version 3.24
+#Version 3.28.1
+
+CLSS public abstract interface !annotation java.lang.Deprecated
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
+intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
 cons public init()
@@ -15,6 +21,32 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public abstract interface java.util.EventListener
 
 CLSS public abstract interface javax.swing.event.ChangeListener
@@ -22,6 +54,7 @@ intf java.util.EventListener
 meth public abstract void stateChanged(javax.swing.event.ChangeEvent)
 
 CLSS public junit.framework.Assert
+ anno 0 java.lang.Deprecated()
 cons protected init()
 meth public static java.lang.String format(java.lang.String,java.lang.Object,java.lang.Object)
 meth public static void assertEquals(boolean,boolean)
@@ -79,6 +112,44 @@ meth public int countTestCases()
 meth public java.lang.String getName()
 meth public java.lang.String toString()
 meth public junit.framework.TestResult run()
+meth public static java.lang.String format(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void assertEquals(boolean,boolean)
+meth public static void assertEquals(byte,byte)
+meth public static void assertEquals(char,char)
+meth public static void assertEquals(double,double,double)
+meth public static void assertEquals(float,float,float)
+meth public static void assertEquals(int,int)
+meth public static void assertEquals(java.lang.Object,java.lang.Object)
+meth public static void assertEquals(java.lang.String,boolean,boolean)
+meth public static void assertEquals(java.lang.String,byte,byte)
+meth public static void assertEquals(java.lang.String,char,char)
+meth public static void assertEquals(java.lang.String,double,double,double)
+meth public static void assertEquals(java.lang.String,float,float,float)
+meth public static void assertEquals(java.lang.String,int,int)
+meth public static void assertEquals(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void assertEquals(java.lang.String,java.lang.String)
+meth public static void assertEquals(java.lang.String,java.lang.String,java.lang.String)
+meth public static void assertEquals(java.lang.String,long,long)
+meth public static void assertEquals(java.lang.String,short,short)
+meth public static void assertEquals(long,long)
+meth public static void assertEquals(short,short)
+meth public static void assertFalse(boolean)
+meth public static void assertFalse(java.lang.String,boolean)
+meth public static void assertNotNull(java.lang.Object)
+meth public static void assertNotNull(java.lang.String,java.lang.Object)
+meth public static void assertNotSame(java.lang.Object,java.lang.Object)
+meth public static void assertNotSame(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void assertNull(java.lang.Object)
+meth public static void assertNull(java.lang.String,java.lang.Object)
+meth public static void assertSame(java.lang.Object,java.lang.Object)
+meth public static void assertSame(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void assertTrue(boolean)
+meth public static void assertTrue(java.lang.String,boolean)
+meth public static void fail()
+meth public static void fail(java.lang.String)
+meth public static void failNotEquals(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void failNotSame(java.lang.String,java.lang.Object,java.lang.Object)
+meth public static void failSame(java.lang.String)
 meth public void run(junit.framework.TestResult)
 meth public void runBare() throws java.lang.Throwable
 meth public void setName(java.lang.String)
@@ -519,7 +590,9 @@ cons public init(java.lang.String,java.lang.String,java.lang.String,org.netbeans
 cons public init(java.lang.String,java.lang.String,javax.swing.KeyStroke)
 cons public init(java.lang.String,java.lang.String,javax.swing.KeyStroke[])
 cons public init(java.lang.String,java.lang.String,org.netbeans.jellytools.actions.Action$Shortcut)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String,java.lang.String,org.netbeans.jellytools.actions.Action$Shortcut[])
+ anno 0 java.lang.Deprecated()
 fld protected final static long AFTER_ACTION_WAIT_TIME = 0
 fld protected final static long SELECTION_WAIT_TIME = 300
 fld protected final static long WAIT_AFTER_SHORTCUT_TIMEOUT = 0
@@ -591,10 +664,13 @@ cons public init(java.lang.String,java.lang.String,java.lang.String)
 cons public init(java.lang.String,java.lang.String,java.lang.String,javax.swing.KeyStroke)
 cons public init(java.lang.String,java.lang.String,java.lang.String,javax.swing.KeyStroke[])
 cons public init(java.lang.String,java.lang.String,java.lang.String,org.netbeans.jellytools.actions.Action$Shortcut)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String,java.lang.String,java.lang.String,org.netbeans.jellytools.actions.Action$Shortcut[])
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String,java.lang.String,javax.swing.KeyStroke)
 cons public init(java.lang.String,java.lang.String,javax.swing.KeyStroke[])
 cons public init(java.lang.String,java.lang.String,org.netbeans.jellytools.actions.Action$Shortcut)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String,java.lang.String,org.netbeans.jellytools.actions.Action$Shortcut[])
 meth public void performAPI()
 meth public void performMenu()

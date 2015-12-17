@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.62
+#Version 6.66.3
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -625,6 +625,8 @@ meth public void firePropertyChange(java.lang.String,boolean,boolean)
 meth public void firePropertyChange(java.lang.String,char,char)
 meth public void firePropertyChange(java.lang.String,int,int)
 meth public void grabFocus()
+meth public void hide()
+ anno 0 java.lang.Deprecated()
 meth public void paint(java.awt.Graphics)
 meth public void paintImmediately(int,int,int,int)
 meth public void paintImmediately(java.awt.Rectangle)
@@ -695,6 +697,10 @@ meth public abstract void remove(int,int) throws javax.swing.text.BadLocationExc
 meth public abstract void removeDocumentListener(javax.swing.event.DocumentListener)
 meth public abstract void removeUndoableEditListener(javax.swing.event.UndoableEditListener)
 meth public abstract void render(java.lang.Runnable)
+
+CLSS public abstract interface javax.swing.text.Position
+innr public final static Bias
+meth public abstract int getOffset()
 
 CLSS public abstract interface javax.swing.text.StyledDocument
 intf javax.swing.text.Document
@@ -1137,7 +1143,7 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds ERR,LOCAL_CLOSE_DOCUMENT,LOCK_PRINTING,PROP_PANE,alreadyModified,annotationsLoaded,checkModificationLock,docFilter,inUserQuestionExceptionHandler,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,listeningOnEnv,lookup,mimeType,openClose,positionManager,preventModification,printing,propertyChangeSupport,reloadDialogOpened,undoRedo,warnedClasses
+hfds ERR,LOCAL_CLOSE_DOCUMENT,LOCK_PRINTING,PROP_PANE,alreadyModified,annotationsLoaded,checkModificationLock,docFilter,inUserQuestionExceptionHandler,isSaving,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetLineVector,listener,listeners,listeningOnEnv,lookup,mimeType,openClose,positionManager,preventModification,printing,propertyChangeSupport,reloadDialogOpened,undoRedo,warnedClasses
 hcls DocFilter,Listener,PlainEditorKit
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Env
@@ -1187,7 +1193,7 @@ meth public void unmarkCurrentLine()
 meth public void unmarkError()
  anno 0 java.lang.Deprecated()
 supr org.openide.text.Line
-hfds assigned,breakpoint,current,docL,error,lineParts,listener,serialVersionUID
+hfds assigned,breakpoint,current,dlEqualsCounter,docL,error,lineParts,listener,serialVersionUID
 hcls FindAnnotationPosition,LR,Part
 
 CLSS public abstract static org.openide.text.DocumentLine$Set
@@ -1200,6 +1206,7 @@ meth public org.openide.text.Line getCurrent(int)
 meth public org.openide.text.Line getOriginal(int)
 supr org.openide.text.Line$Set
 hfds list,listener
+hcls OffsetLineCreator
 
 CLSS public org.openide.text.FilterDocument
 cons public init(javax.swing.text.Document)
@@ -1341,7 +1348,7 @@ meth public abstract org.openide.text.Line getOriginal(int)
 meth public final java.util.Date getDate()
 meth public int getOriginalLineNumber(org.openide.text.Line)
 supr java.lang.Object
-hfds date,whm
+hfds date,lineVector
 
 CLSS public final static !enum org.openide.text.Line$ShowOpenType
  outer org.openide.text.Line
@@ -1455,6 +1462,7 @@ hfds begin,end,serialVersionUID
 
 CLSS public final org.openide.text.PositionRef
 intf java.io.Serializable
+intf javax.swing.text.Position
 meth public int getColumn() throws java.io.IOException
 meth public int getLine() throws java.io.IOException
 meth public int getOffset()
@@ -1463,7 +1471,7 @@ meth public javax.swing.text.Position getPosition() throws java.io.IOException
 meth public javax.swing.text.Position$Bias getPositionBias()
 meth public org.openide.text.CloneableEditorSupport getCloneableEditorSupport()
 supr java.lang.Object
-hfds insertAfter,kind,manager,serialVersionUID
+hfds LOG,insertAfter,kind,manager,serialVersionUID
 hcls Manager
 
 CLSS public final org.openide.text.PrintPreferences
@@ -1559,7 +1567,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

@@ -1,5 +1,27 @@
 #Signature file v4.1
-#Version 1.47
+#Version 1.52.1
+
+CLSS public abstract interface java.io.Serializable
+
+CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
+meth public abstract int compareTo({java.lang.Comparable%0})
+
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected init(java.lang.String,int)
+intf java.io.Serializable
+intf java.lang.Comparable<{java.lang.Enum%0}>
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds name,ordinal
 
 CLSS public java.lang.Object
 cons public init()
@@ -140,8 +162,13 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract {org.netbeans.spi.project.libraries.LibraryProvider%0}[] getLibraries()
 
 CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryStorageArea
+fld public final static org.netbeans.spi.project.libraries.LibraryStorageArea GLOBAL
 meth public abstract java.lang.String getDisplayName()
 meth public abstract java.net.URL getLocation()
+
+CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryStorageAreaCache
+meth public abstract java.util.Collection<? extends java.net.URL> getCachedAreas()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryTypeProvider
 intf org.openide.util.Lookup$Provider
@@ -161,22 +188,117 @@ meth public abstract java.lang.String getDisplayName()
 meth public abstract void setDisplayName(java.lang.String)
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
 
+CLSS public abstract interface org.netbeans.spi.project.libraries.WritableLibraryProvider<%0 extends org.netbeans.spi.project.libraries.LibraryImplementation>
+intf org.netbeans.spi.project.libraries.LibraryProvider<{org.netbeans.spi.project.libraries.WritableLibraryProvider%0}>
+meth public abstract boolean addLibrary({org.netbeans.spi.project.libraries.WritableLibraryProvider%0}) throws java.io.IOException
+meth public abstract boolean removeLibrary({org.netbeans.spi.project.libraries.WritableLibraryProvider%0}) throws java.io.IOException
+meth public abstract boolean updateLibrary({org.netbeans.spi.project.libraries.WritableLibraryProvider%0},{org.netbeans.spi.project.libraries.WritableLibraryProvider%0}) throws java.io.IOException
+
+CLSS public org.netbeans.spi.project.libraries.support.ForwardingLibraryImplementation
+cons public init(org.netbeans.spi.project.libraries.LibraryImplementation)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+intf org.netbeans.spi.project.libraries.LibraryImplementation
+intf org.netbeans.spi.project.libraries.LibraryImplementation2
+intf org.netbeans.spi.project.libraries.LibraryImplementation3
+intf org.netbeans.spi.project.libraries.NamedLibraryImplementation
+meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+meth public final org.netbeans.spi.project.libraries.LibraryImplementation getDelegate()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.lang.String getDescription()
+meth public java.lang.String getDisplayName()
+meth public java.lang.String getLocalizingBundle()
+meth public java.lang.String getName()
+meth public java.lang.String getType()
+meth public java.util.List<java.net.URI> getURIContent(java.lang.String)
+meth public java.util.List<java.net.URL> getContent(java.lang.String)
+meth public java.util.Map<java.lang.String,java.lang.String> getProperties()
+meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void setContent(java.lang.String,java.util.List<java.net.URL>)
+meth public void setDescription(java.lang.String)
+meth public void setDisplayName(java.lang.String)
+meth public void setLocalizingBundle(java.lang.String)
+meth public void setName(java.lang.String)
+meth public void setProperties(java.util.Map<java.lang.String,java.lang.String>)
+meth public void setURIContent(java.lang.String,java.util.List<java.net.URI>)
+supr java.lang.Object
+hfds delegate,listener,support
+
 CLSS public final org.netbeans.spi.project.libraries.support.LibrariesSupport
+innr public final static !enum ConversionMode
 meth public !varargs static org.netbeans.spi.project.libraries.LibraryImplementation3 createLibraryImplementation3(java.lang.String,java.lang.String[])
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
+meth public static boolean setDisplayName(org.netbeans.spi.project.libraries.LibraryImplementation,java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+meth public static boolean setProperties(org.netbeans.spi.project.libraries.LibraryImplementation,java.util.Map<java.lang.String,java.lang.String>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+meth public static boolean setURIContent(org.netbeans.spi.project.libraries.LibraryImplementation,java.lang.String,java.util.List<java.net.URI>,org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+meth public static boolean supportsDisplayName(org.netbeans.spi.project.libraries.LibraryImplementation)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static boolean supportsProperties(org.netbeans.spi.project.libraries.LibraryImplementation)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static boolean supportsURIContent(org.netbeans.spi.project.libraries.LibraryImplementation)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static java.lang.String convertURIToFilePath(java.net.URI)
+meth public static java.lang.String getDisplayName(org.netbeans.spi.project.libraries.LibraryImplementation)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static java.lang.String getLocalizedName(org.netbeans.spi.project.libraries.LibraryImplementation)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static java.net.URI convertFilePathToURI(java.lang.String)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static java.net.URI getArchiveFile(java.net.URI)
 meth public static java.net.URI getArchiveRoot(java.net.URI)
 meth public static java.net.URI resolveLibraryEntryURI(java.net.URL,java.net.URI)
+meth public static java.util.List<java.net.URI> convertURLsToURIs(java.util.List<java.net.URL>,org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+meth public static java.util.List<java.net.URI> getURIContent(org.netbeans.spi.project.libraries.LibraryImplementation,java.lang.String,org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+meth public static java.util.List<java.net.URL> convertURIsToURLs(java.util.List<? extends java.net.URI>,org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+meth public static java.util.Map<java.lang.String,java.lang.String> getProperties(org.netbeans.spi.project.libraries.LibraryImplementation)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.project.libraries.LibraryImplementation createLibraryImplementation(java.lang.String,java.lang.String[])
+meth public static org.netbeans.spi.project.libraries.LibraryImplementation getLibraryImplementation(org.netbeans.api.project.libraries.Library)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.spi.project.libraries.LibraryStorageArea getLibraryStorageArea(org.netbeans.api.project.libraries.LibraryManager)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.project.libraries.LibraryTypeProvider getLibraryTypeProvider(java.lang.String)
 meth public static org.netbeans.spi.project.libraries.LibraryTypeProvider[] getLibraryTypeProviders()
 meth public static org.openide.filesystems.FileObject resolveLibraryEntryFileObject(java.net.URL,java.net.URI)
 supr java.lang.Object
+hfds LOG
+
+CLSS public final static !enum org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode
+ outer org.netbeans.spi.project.libraries.support.LibrariesSupport
+fld public final static org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode FAIL
+fld public final static org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode SKIP
+fld public final static org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode WARN
+meth public static org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode valueOf(java.lang.String)
+meth public static org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode[] values()
+supr java.lang.Enum<org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode>
 
 CLSS public abstract org.openide.util.Lookup
 cons public init()
@@ -192,7 +314,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

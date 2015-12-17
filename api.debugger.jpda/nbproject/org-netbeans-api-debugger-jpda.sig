@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.49
+#Version 3.3.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -188,7 +188,7 @@ hcls ClassLoadUnloadBreakpointImpl
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.ClassVariable
 intf org.netbeans.api.debugger.jpda.ObjectVariable
-meth public abstract org.netbeans.api.debugger.jpda.JPDAClassType getClassType()
+meth public abstract org.netbeans.api.debugger.jpda.JPDAClassType getReflectedType()
 
 CLSS public abstract org.netbeans.api.debugger.jpda.DeadlockDetector
 cons public init()
@@ -278,11 +278,12 @@ hcls FieldBreakpointImpl
 
 CLSS public org.netbeans.api.debugger.jpda.InvalidExpressionException
 cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 meth public java.lang.String getMessage()
 meth public java.lang.Throwable getTargetException()
 supr java.lang.Exception
-hfds throwable
+hfds message
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.JPDAArrayType
 intf org.netbeans.api.debugger.jpda.JPDAClassType
@@ -315,8 +316,12 @@ hfds EMPTY_CLASSPATH,breakpointListeners,enabled,engines,hidden,printText,sessio
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.JPDAClassType
 intf org.netbeans.api.debugger.jpda.VariableType
+meth public abstract boolean isInstanceOf(java.lang.String)
 meth public abstract java.lang.String getSourceName() throws com.sun.jdi.AbsentInformationException
 meth public abstract java.util.List<org.netbeans.api.debugger.jpda.Field> staticFields()
+meth public abstract java.util.List<org.netbeans.api.debugger.jpda.JPDAClassType> getAllInterfaces()
+meth public abstract java.util.List<org.netbeans.api.debugger.jpda.JPDAClassType> getDirectInterfaces()
+meth public abstract java.util.List<org.netbeans.api.debugger.jpda.JPDAClassType> getSubClasses()
 meth public abstract java.util.List<org.netbeans.api.debugger.jpda.ObjectVariable> getInstances(long)
 meth public abstract long getInstanceCount()
 meth public abstract org.netbeans.api.debugger.jpda.ClassVariable classObject()
@@ -511,7 +516,7 @@ meth public void setStratum(java.lang.String)
 meth public void setThreadFilters(org.netbeans.api.debugger.jpda.JPDADebugger,org.netbeans.api.debugger.jpda.JPDAThread[])
 meth public void setURL(java.lang.String)
 supr org.netbeans.api.debugger.jpda.JPDABreakpoint
-hfds className,condition,instanceFilters,lineNumber,sourceName,sourcePath,stratum,threadFilters,url
+hfds LOG,className,condition,instanceFilters,lineNumber,sourceName,sourcePath,stratum,threadFilters,url
 hcls LineBreakpointImpl
 
 CLSS public final org.netbeans.api.debugger.jpda.ListeningDICookie
@@ -717,6 +722,7 @@ innr public final static MethodArgument
 innr public final static Operation
 innr public final static Position
 meth protected final org.netbeans.spi.debugger.jpda.EditorContext$Operation createMethodOperation(org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position,java.lang.String,java.lang.String,int)
+meth protected final org.netbeans.spi.debugger.jpda.EditorContext$Operation createMethodOperation(org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position,java.lang.String,java.lang.String,int,boolean)
 meth protected final org.netbeans.spi.debugger.jpda.EditorContext$Position createPosition(int,int,int)
 meth protected final void addNextOperationTo(org.netbeans.spi.debugger.jpda.EditorContext$Operation,org.netbeans.spi.debugger.jpda.EditorContext$Operation)
 meth public abstract boolean showSource(java.lang.String,int,java.lang.Object)
@@ -769,6 +775,7 @@ hfds endPos,name,startPos,type
 CLSS public final static org.netbeans.spi.debugger.jpda.EditorContext$Operation
  outer org.netbeans.spi.debugger.jpda.EditorContext
 meth public boolean equals(java.lang.Object)
+meth public boolean isNative()
 meth public int getBytecodeIndex()
 meth public int hashCode()
 meth public java.lang.String getMethodClassType()
@@ -781,7 +788,7 @@ meth public org.netbeans.spi.debugger.jpda.EditorContext$Position getMethodStart
 meth public org.netbeans.spi.debugger.jpda.EditorContext$Position getStartPosition()
 meth public void setReturnValue(org.netbeans.api.debugger.jpda.Variable)
 supr java.lang.Object
-hfds bytecodeIndex,endPosition,methodClassType,methodDescriptor,methodEndPosition,methodName,methodStartPosition,nextOperations,returnValue,startPosition
+hfds bytecodeIndex,endPosition,isNative,methodClassType,methodDescriptor,methodEndPosition,methodName,methodStartPosition,nextOperations,returnValue,startPosition
 
 CLSS public final static org.netbeans.spi.debugger.jpda.EditorContext$Position
  outer org.netbeans.spi.debugger.jpda.EditorContext
@@ -880,3 +887,4 @@ CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String path()
+

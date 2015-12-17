@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 0.135.0
+#Version 0.149.1
 
 CLSS public abstract interface com.sun.source.tree.TreeVisitor<%0 extends java.lang.Object, %1 extends java.lang.Object>
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitAnnotatedType(com.sun.source.tree.AnnotatedTypeTree,{com.sun.source.tree.TreeVisitor%1})
@@ -274,6 +274,7 @@ CLSS public final org.netbeans.api.java.source.ClassIndex
 innr public abstract interface static SearchScopeType
 innr public abstract static !enum SearchScope
 innr public final static !enum NameKind
+innr public final static !enum ResourceType
 innr public final static !enum SearchKind
 innr public final static Symbols
 meth public !varargs static org.netbeans.api.java.source.ClassIndex$SearchScopeType createPackageSearchScope(org.netbeans.api.java.source.ClassIndex$SearchScopeType,java.lang.String[])
@@ -309,6 +310,12 @@ meth public java.util.Set<org.openide.filesystems.FileObject> getResources(org.n
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
  anno 3 org.netbeans.api.annotations.common.NonNull()
+meth public java.util.Set<org.openide.filesystems.FileObject> getResources(org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>,java.util.Set<org.netbeans.api.java.source.ClassIndex$SearchKind>,java.util.Set<? extends org.netbeans.api.java.source.ClassIndex$SearchScopeType>,java.util.Set<org.netbeans.api.java.source.ClassIndex$ResourceType>)
+ anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.Set<org.openide.filesystems.FileObject> getResourcesForPackage(org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.PackageElement>,java.util.Set<org.netbeans.api.java.source.ClassIndex$SearchKind>,java.util.Set<? extends org.netbeans.api.java.source.ClassIndex$SearchScopeType>)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
  anno 1 org.netbeans.api.annotations.common.NonNull()
@@ -335,9 +342,18 @@ meth public static org.netbeans.api.java.source.ClassIndex$NameKind valueOf(java
 meth public static org.netbeans.api.java.source.ClassIndex$NameKind[] values()
 supr java.lang.Enum<org.netbeans.api.java.source.ClassIndex$NameKind>
 
+CLSS public final static !enum org.netbeans.api.java.source.ClassIndex$ResourceType
+ outer org.netbeans.api.java.source.ClassIndex
+fld public final static org.netbeans.api.java.source.ClassIndex$ResourceType BINARY
+fld public final static org.netbeans.api.java.source.ClassIndex$ResourceType SOURCE
+meth public static org.netbeans.api.java.source.ClassIndex$ResourceType valueOf(java.lang.String)
+meth public static org.netbeans.api.java.source.ClassIndex$ResourceType[] values()
+supr java.lang.Enum<org.netbeans.api.java.source.ClassIndex$ResourceType>
+
 CLSS public final static !enum org.netbeans.api.java.source.ClassIndex$SearchKind
  outer org.netbeans.api.java.source.ClassIndex
 fld public final static org.netbeans.api.java.source.ClassIndex$SearchKind FIELD_REFERENCES
+fld public final static org.netbeans.api.java.source.ClassIndex$SearchKind FUNCTIONAL_IMPLEMENTORS
 fld public final static org.netbeans.api.java.source.ClassIndex$SearchKind IMPLEMENTORS
 fld public final static org.netbeans.api.java.source.ClassIndex$SearchKind METHOD_REFERENCES
 fld public final static org.netbeans.api.java.source.ClassIndex$SearchKind TYPE_REFERENCES
@@ -406,7 +422,7 @@ meth public void addChangeListener(javax.swing.event.ChangeListener)
 meth public void removeChangeListener(javax.swing.event.ChangeListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds EMPTY_PATH,archiveProvider,bootClassPath,cachedAptSrcClassPath,cachedBootClassPath,cachedCompileClassPath,cachedSrcClassPath,compileClassPath,cpListener,filter,fmTx,ignoreExcludes,listenerList,log,memoryFileManager,outputClassPath,pgTx,srcClassPath,usagesQuery,useModifiedFiles
+hfds archiveProvider,bootClassPath,cachedAptSrcClassPath,cachedBootClassPath,cachedCompileClassPath,cachedSrcClassPath,compileClassPath,cpListener,filter,fmTx,ignoreExcludes,listenerList,log,memoryFileManager,outputClassPath,pgTx,srcClassPath,usagesQuery,useModifiedFiles
 hcls ClassPathListener,ClasspathInfoAccessorImpl
 
 CLSS public final static !enum org.netbeans.api.java.source.ClasspathInfo$PathKind
@@ -449,6 +465,7 @@ meth public boolean alignMultilineTryResources()
 meth public boolean blankLineAfterJavadocDescription()
 meth public boolean blankLineAfterJavadocParameterDescriptions()
 meth public boolean blankLineAfterJavadocReturnTag()
+meth public boolean computeMemberDependencies()
 meth public boolean enableBlockCommentFormatting()
 meth public boolean enableJavadocFormatting()
 meth public boolean expandTabToSpaces()
@@ -513,6 +530,7 @@ meth public boolean spaceBeforeWhile()
 meth public boolean spaceBeforeWhileLeftBrace()
 meth public boolean spaceBeforeWhileParen()
 meth public boolean spaceWithinAnnotationParens()
+meth public boolean spaceWithinArrayIndexBrackets()
 meth public boolean spaceWithinArrayInitBrackets()
 meth public boolean spaceWithinBraces()
 meth public boolean spaceWithinCatchParens()
@@ -543,6 +561,7 @@ meth public int countForUsingStaticStarImport()
 meth public int getBlankLinesAfterAnonymousClassHeader()
 meth public int getBlankLinesAfterClass()
 meth public int getBlankLinesAfterClassHeader()
+meth public int getBlankLinesAfterEnumHeader()
 meth public int getBlankLinesAfterFields()
 meth public int getBlankLinesAfterImports()
 meth public int getBlankLinesAfterMethods()
@@ -550,6 +569,7 @@ meth public int getBlankLinesAfterPackage()
 meth public int getBlankLinesBeforeAnonymousClassClosingBrace()
 meth public int getBlankLinesBeforeClass()
 meth public int getBlankLinesBeforeClassClosingBrace()
+meth public int getBlankLinesBeforeEnumClosingBrace()
 meth public int getBlankLinesBeforeFields()
 meth public int getBlankLinesBeforeImports()
 meth public int getBlankLinesBeforeMethods()
@@ -852,6 +872,8 @@ hcls ElementHandleAccessorImpl
 CLSS public final org.netbeans.api.java.source.ElementUtilities
 innr public abstract interface static ElementAcceptor
 meth public boolean alreadyDefinedIn(java.lang.CharSequence,javax.lang.model.type.ExecutableType,javax.lang.model.element.TypeElement)
+meth public boolean hasGetter(javax.lang.model.element.TypeElement,javax.lang.model.element.VariableElement,org.netbeans.api.java.source.CodeStyle)
+meth public boolean hasSetter(javax.lang.model.element.TypeElement,javax.lang.model.element.VariableElement,org.netbeans.api.java.source.CodeStyle)
 meth public boolean implementsMethod(javax.lang.model.element.ExecutableElement)
 meth public boolean isEffectivelyFinal(javax.lang.model.element.VariableElement)
 meth public boolean isErroneous(javax.lang.model.element.Element)
@@ -861,10 +883,12 @@ meth public boolean isMemberOf(javax.lang.model.element.Element,javax.lang.model
 meth public boolean isSynthetic(javax.lang.model.element.Element)
 meth public boolean overridesMethod(javax.lang.model.element.ExecutableElement)
 meth public com.sun.javadoc.Doc javaDocFor(javax.lang.model.element.Element)
+meth public java.lang.CharSequence getElementName(javax.lang.model.element.Element,boolean)
 meth public java.lang.Iterable<? extends javax.lang.model.element.Element> getLocalMembersAndVars(com.sun.source.tree.Scope,org.netbeans.api.java.source.ElementUtilities$ElementAcceptor)
 meth public java.lang.Iterable<? extends javax.lang.model.element.Element> getLocalVars(com.sun.source.tree.Scope,org.netbeans.api.java.source.ElementUtilities$ElementAcceptor)
 meth public java.lang.Iterable<? extends javax.lang.model.element.Element> getMembers(javax.lang.model.type.TypeMirror,org.netbeans.api.java.source.ElementUtilities$ElementAcceptor)
 meth public java.lang.Iterable<? extends javax.lang.model.element.TypeElement> getGlobalTypes(org.netbeans.api.java.source.ElementUtilities$ElementAcceptor)
+meth public java.util.List<? extends javax.lang.model.element.ExecutableElement> findOverridableMethods(javax.lang.model.element.TypeElement)
 meth public java.util.List<? extends javax.lang.model.element.ExecutableElement> findUnimplementedMethods(javax.lang.model.element.TypeElement)
 meth public javax.lang.model.element.Element elementFor(com.sun.javadoc.Doc)
 meth public javax.lang.model.element.Element findElement(java.lang.String)
@@ -876,7 +900,8 @@ meth public javax.lang.model.element.TypeElement enclosingTypeElement(javax.lang
 meth public javax.lang.model.element.TypeElement outermostTypeElement(javax.lang.model.element.Element)
 meth public static java.lang.String getBinaryName(javax.lang.model.element.TypeElement)
 supr java.lang.Object
-hfds ctx,delegate,info
+hfds NOT_OVERRIDABLE,ctx,delegate,info
+hcls ElementNameVisitor
 
 CLSS public abstract interface static org.netbeans.api.java.source.ElementUtilities$ElementAcceptor
  outer org.netbeans.api.java.source.ElementUtilities
@@ -908,7 +933,7 @@ meth public static org.netbeans.api.java.source.GeneratorUtilities get(org.netbe
 meth public void copyComments(com.sun.source.tree.Tree,com.sun.source.tree.Tree,boolean)
 supr java.lang.Object
 hfds CLASS_NAME,DEFAULT_RETURN_TYPE_VALUE,GENERATED_METHOD_BODY,METHOD_NAME,METHOD_RETURN_TYPE,OVERRIDDEN_METHOD_BODY,SCRIPT_ENGINE_ATTR,SIMPLE_CLASS_NAME,STRING_OUTPUT_MODE_ATTR,SUPER_METHOD_CALL,copy,manager
-hcls ClassMemberComparator,ImportsComparator
+hcls ClassMemberComparator,FieldRefVisitor,ImportsComparator
 
 CLSS public abstract org.netbeans.api.java.source.JavaParserResultTask<%0 extends org.netbeans.modules.parsing.spi.Parser$Result>
 cons protected init(org.netbeans.api.java.source.JavaSource$Phase)
@@ -1023,7 +1048,7 @@ meth public static org.netbeans.api.java.source.ModificationResult runModificati
  anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public void commit() throws java.io.IOException
 supr java.lang.Object
-hfds LOG,committed,creator,diffs,lastCommitted,sources,tag2Span
+hfds LOG,committed,creator,diffs,lastCommitted,tag2Span
 hcls CreateChange,FilteringReader,FilteringWriter
 
 CLSS public static org.netbeans.api.java.source.ModificationResult$Difference
@@ -1037,12 +1062,18 @@ meth public java.lang.String getNewText()
 meth public java.lang.String getOldText()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public java.lang.String toString()
+meth public javax.swing.text.Document openDocument() throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public javax.swing.text.Position getEndPosition()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public javax.swing.text.Position getStartPosition()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.java.source.ModificationResult$Difference$Kind getKind()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public void exclude(boolean)
 meth public void setCommitToGuards(boolean)
 supr java.lang.Object
-hfds description,endPos,excluded,ignoreGuards,kind,newText,oldText,startPos
+hfds ctxLookup,description,endPos,excluded,ignoreGuards,kind,newText,oldText,sourceFile,startPos,theSource
 
 CLSS public final static !enum org.netbeans.api.java.source.ModificationResult$Difference$Kind
  outer org.netbeans.api.java.source.ModificationResult$Difference
@@ -1107,6 +1138,7 @@ meth public static java.net.URL getPreferredJavadoc(javax.lang.model.element.Ele
 meth public static java.util.Collection<? extends java.net.URL> getJavadoc(javax.lang.model.element.Element)
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static java.util.Collection<? extends javax.lang.model.element.Element> getForwardReferences(com.sun.source.util.TreePath,int,com.sun.source.util.SourcePositions,com.sun.source.util.Trees)
 meth public static java.util.Collection<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> getMainClasses(org.openide.filesystems.FileObject)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static java.util.Collection<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> getMainClasses(org.openide.filesystems.FileObject[])
@@ -1122,19 +1154,24 @@ meth public static javax.lang.model.element.TypeElement getEnclosingTypeElement(
  anno 0 java.lang.Deprecated()
 meth public static javax.lang.model.element.TypeElement getOutermostEnclosingTypeElement(javax.lang.model.element.Element)
 meth public static javax.lang.model.type.TypeMirror getBound(javax.lang.model.type.WildcardType)
+meth public static javax.lang.model.type.TypeMirror resolveCapturedType(org.netbeans.api.java.source.CompilationInfo,javax.lang.model.type.TypeMirror)
 meth public static javax.lang.model.type.WildcardType resolveCapturedType(javax.lang.model.type.TypeMirror)
 meth public static org.netbeans.api.lexer.TokenSequence<org.netbeans.api.java.lexer.JavaTokenId> getJavaTokenSequence(org.netbeans.api.lexer.TokenHierarchy,int)
 meth public static org.openide.filesystems.FileObject getFile(javax.lang.model.element.Element,org.netbeans.api.java.source.ClasspathInfo)
 meth public static org.openide.filesystems.FileObject getFile(org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>,org.netbeans.api.java.source.ClasspathInfo)
 meth public static void waitScanFinished() throws java.lang.InterruptedException
 supr java.lang.Object
-hfds LOG,MAX_LEN,VOWELS,docLet1,docLet2,jdocCache
+hfds LOG,MAX_LEN,VOWELS
 hcls CaseInsensitiveMatch,CaseSensitiveMatch,Match
 
 CLSS public abstract interface org.netbeans.api.java.source.Task<%0 extends java.lang.Object>
 meth public abstract void run({org.netbeans.api.java.source.Task%0}) throws java.lang.Exception
 
 CLSS public final org.netbeans.api.java.source.TreeMaker
+meth public <%0 extends com.sun.source.tree.Tree> {%%0} asNew({%%0})
+meth public <%0 extends com.sun.source.tree.Tree> {%%0} asRemoved({%%0})
+meth public <%0 extends com.sun.source.tree.Tree> {%%0} asReplacementOf({%%0},com.sun.source.tree.Tree)
+meth public <%0 extends com.sun.source.tree.Tree> {%%0} asReplacementOf({%%0},com.sun.source.tree.Tree,boolean)
 meth public <%0 extends com.sun.source.tree.Tree> {%%0} setInitialValue({%%0},com.sun.source.tree.ExpressionTree)
 meth public <%0 extends com.sun.source.tree.Tree> {%%0} setLabel({%%0},java.lang.CharSequence)
 meth public com.sun.source.doctree.AttributeTree Attribute(java.lang.CharSequence,com.sun.source.doctree.AttributeTree$ValueKind,java.util.List<? extends com.sun.source.doctree.DocTree>)
@@ -1429,6 +1466,8 @@ meth public com.sun.source.tree.Tree translate(com.sun.source.tree.Tree,java.uti
 meth public com.sun.source.util.DocTreePath pathFor(com.sun.source.util.DocTreePath,int)
 meth public com.sun.source.util.DocTreePath pathFor(com.sun.source.util.DocTreePath,int,com.sun.source.util.DocSourcePositions)
 meth public com.sun.source.util.DocTreePath pathFor(com.sun.source.util.TreePath,com.sun.source.doctree.DocCommentTree,int)
+meth public com.sun.source.util.TreePath getPathElementOfKind(com.sun.source.tree.Tree$Kind,com.sun.source.util.TreePath)
+meth public com.sun.source.util.TreePath getPathElementOfKind(java.util.Set<com.sun.source.tree.Tree$Kind>,com.sun.source.util.TreePath)
 meth public com.sun.source.util.TreePath pathFor(com.sun.source.util.TreePath,int)
 meth public com.sun.source.util.TreePath pathFor(com.sun.source.util.TreePath,int,com.sun.source.util.SourcePositions)
 meth public com.sun.source.util.TreePath pathFor(int)
@@ -1456,6 +1495,7 @@ meth public java.util.List<? extends com.sun.source.tree.Tree> getReferenceParam
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.List<org.netbeans.api.java.source.Comment> getComments(com.sun.source.tree.Tree,boolean)
+meth public java.util.Set<? extends javax.lang.model.element.VariableElement> getUninitializedFields(com.sun.source.util.TreePath)
 meth public java.util.Set<javax.lang.model.type.TypeMirror> getUncaughtExceptions(com.sun.source.util.TreePath)
 meth public javax.lang.model.element.Name getReferenceName(com.sun.source.util.DocTreePath)
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
@@ -1535,7 +1575,7 @@ hcls FindDeclarationVisitor
 CLSS public final static org.netbeans.api.java.source.UiUtils$PrintPart
  outer org.netbeans.api.java.source.UiUtils
  anno 0 java.lang.Deprecated()
-fld public final static java.lang.String ANNOTATIONS = "%annotations"
+fld public final static java.lang.String ANNOTATIONS = "%annotations%"
 fld public final static java.lang.String EXTENDS = "%extends%"
 fld public final static java.lang.String FLAGS = "%flags%"
 fld public final static java.lang.String IMPLEMENTS = "%implements%"
@@ -1571,8 +1611,8 @@ meth public void tag(com.sun.source.tree.Tree,java.lang.Object)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
 supr org.netbeans.api.java.source.CompilationController
-hfds REWRITE_WHOLE_FILE,afterCommit,changes,docChanges,externalChanges,instance,introducedTrees,overlay,textualChanges,tree2Tag,treeMaker,userInfo
-hcls Translator,TreeCollector
+hfds NOT_LINKED,REWRITE_WHOLE_FILE,afterCommit,changes,docChanges,externalChanges,instance,introducedTrees,overlay,rewriteHints,textualChanges,tree2Tag,treeMaker,usedComments,userInfo
+hcls CommentReplicator,Translator,TreeCollector
 
 CLSS public org.netbeans.api.java.source.matching.Matcher
 intf org.openide.util.Cancellable
