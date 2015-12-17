@@ -85,7 +85,7 @@ public class TreeModelRoot {
 
     private Models.CompoundModel model;
     private HyperCompoundModel hyperModel;
-    private ModelChangeListener[] modelListeners;
+    private final ModelChangeListener[] modelListeners;
     private TreeModelNode rootNode;
     private final WeakHashMap<Object, WeakReference<TreeModelNode>[]> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>[]>();
     private DefaultTreeFeatures treeFeatures;
@@ -279,23 +279,33 @@ public class TreeModelRoot {
     }
      */
 
-    public synchronized void destroy () {
-        if (model != null) {
+    public void destroy () {
+        boolean doRemoveModelListeners = false;
+        DefaultTreeFeatures tf = null;
+        synchronized (this) {
+            if (model != null) {
+                doRemoveModelListeners = true;
+                model = null;
+                tf = treeFeatures;
+                treeFeatures = null;
+            }
+            if (hyperModel != null) {
+                hyperModel = null;
+            }
+            synchronized (objectToNode) {
+                objectToNode.clear();
+            }
+        }
+        if (doRemoveModelListeners) {
             for (ModelChangeListener mchl : modelListeners) {
                 Models.CompoundModel cm = mchl.getModel();
                 if (cm != null) {
                     cm.removeModelListener (mchl);
                 }
             }
-            treeFeatures.destroy();
-            treeFeatures = null;
         }
-        model = null;
-        if (hyperModel != null) {
-            hyperModel = null;
-        }
-        synchronized (objectToNode) {
-            objectToNode.clear();
+        if (tf != null) {
+            tf.destroy();
         }
     }
 
