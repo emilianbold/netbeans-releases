@@ -52,8 +52,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -79,6 +83,7 @@ import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.openide.awt.Actions;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -98,6 +103,7 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
     private final Action delegate;
     private final DebugHistorySupport debugHistorySupport;
     private final AttachHistorySupport attachHistorySupport;
+    private boolean menuInitialized;
     
     /** Creates a new instance of DebugMainProjectAction */
     public DebugMainProjectAction() {
@@ -153,6 +159,13 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
                     item.setEnabled((Boolean)evt.getNewValue());
                 } else if ("menuText".equals(propName)) {
                     item.setText(Actions.cutAmpersand((String) evt.getNewValue()));
+                } else if ("selectedProjects".equals(propName)) {
+                    Project[] projects = (Project[]) evt.getNewValue();
+                    if (projects.length == 1) {
+                        debugHistorySupport.setSelectedProject(projects[0].getProjectDirectory());
+                    } else {
+                        debugHistorySupport.setSelectedProject(null);
+                    }
                 }
             }
         });
@@ -195,10 +208,14 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
     // PopupMenuListener ........................................................
 
     @Override public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-        JPopupMenu menu = (JPopupMenu)e.getSource();
-        debugHistorySupport.init(menu);
-        attachHistorySupport.init(menu);
-        menu.removePopupMenuListener(this);
+        if (!menuInitialized) {
+            JPopupMenu menu = (JPopupMenu)e.getSource();
+            debugHistorySupport.init(menu);
+            attachHistorySupport.init(menu);
+            menuInitialized = true;
+        } else {
+            debugHistorySupport.refreshItems();
+        }
     }
 
     @Override public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
@@ -214,7 +231,9 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
         private final JSeparator separator1 = new JPopupMenu.Separator();
         private final JSeparator separator2 = new JPopupMenu.Separator();
         private final BuildExecutionSupportChangeSupport besc;
-        private final LinkedList<BuildExecutionSupport.ActionItem> debugItems = new LinkedList<BuildExecutionSupport.ActionItem>();
+        private final OpenProjectsListener opl;
+        private final LinkedList<DebugActionItem> debugItems = new LinkedList<>();
+        private volatile FileObject selectedProjectRoot;
         
         private static final int MAX_ITEMS_COUNT = 7;
         private static final String DEBUG_ACTION_ITEM_PROP_NAME = "debug action item";
@@ -223,6 +242,9 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
         public DebugHistorySupport() {
             besc = new BuildExecutionSupportChangeSupport();
             besc.addChangeListener(WeakListeners.change(this, besc));
+            opl = new OpenProjectsListener();
+            OpenProjects.getDefault().addPropertyChangeListener(
+                    WeakListeners.propertyChange(opl, OpenProjects.getDefault()));
         }
         
         void init(JPopupMenu menu) {
@@ -244,13 +266,20 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
                 } else {
                     int n = debugItems.size();
                     items = new JMenuItem[n];
-                    int i = 0;
-                    for (BuildExecutionSupport.ActionItem ai : debugItems) {
-                        String dispName = ai.getDisplayName();
-                        items[i] = new JMenuItem(dispName);
-                        items[i].putClientProperty(DEBUG_ACTION_ITEM_PROP_NAME, ai);
-                        items[i].addActionListener(this);
-                        i++;
+                    int i, j;
+                    for (i = j = 0; i < n; i++) {
+                        DebugActionItem dai = debugItems.get(i);
+                        String dispName = dai.getDisplayName();
+                        if (Objects.equals(selectedProjectRoot, dai.getRoot())) {
+                            continue;
+                        }
+                        items[j] = new JMenuItem(dispName);
+                        items[j].putClientProperty(DEBUG_ACTION_ITEM_PROP_NAME, dai.getActionItem());
+                        items[j].addActionListener(this);
+                        j++;
+                    }
+                    if (j < items.length) {
+                        items = Arrays.copyOf(items, j);
                     }
                 }
             }
@@ -269,6 +298,10 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
                 }
                 menu.insert(separator2, i + 2);
             }
+        }
+        
+        private void refreshItems() {
+            computeItems();
         }
 
         @Override
@@ -293,9 +326,10 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
                 if (ActionProvider.COMMAND_DEBUG.equals(action)) { // Track debug items only
                     boolean changed = false;
                     synchronized (debugItems) {
-                        if (debugItems.isEmpty() || ai != debugItems.getFirst()) {
-                            debugItems.remove(ai); // Remove it if it's there
-                            debugItems.addFirst(ai);
+                        if (debugItems.isEmpty() || ai != debugItems.getFirst().getActionItem()) {
+                            DebugActionItem dai = new DebugActionItem(ai);
+                            debugItems.remove(dai); // Remove it if it's there
+                            debugItems.addFirst(dai);
                             if (debugItems.size() > MAX_ITEMS_COUNT) {
                                 debugItems.removeLast();
                             }
@@ -303,10 +337,76 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
                         }
                     }
                     if (changed) {
-                        computeItems();
+                        // computeItems(); - not necessary, UI items are refreshed when to be displayed
                     }
                 }
             }
+        }
+
+        private void setSelectedProject(FileObject projectDirectory) {
+            selectedProjectRoot = projectDirectory;
+        }
+        
+        private static final class DebugActionItem {
+            
+            private final BuildExecutionSupport.ActionItem ai;
+            private final FileObject prjRoot;
+            
+            DebugActionItem(BuildExecutionSupport.ActionItem ai) {
+                this.ai = ai;
+                prjRoot = ai.getProjectDirectory();
+            }
+
+            FileObject getRoot() {
+                return prjRoot;
+            }
+            
+            String getDisplayName() {
+                return ai.getDisplayName();
+            }
+            
+            BuildExecutionSupport.ActionItem getActionItem() {
+                return ai;
+            }
+            
+            @Override
+            public boolean equals(Object obj) {
+                return (obj instanceof DebugActionItem) && Objects.equals(prjRoot, ((DebugActionItem) obj).prjRoot);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(prjRoot);
+            }
+            
+        }
+        
+        private final class OpenProjectsListener implements PropertyChangeListener {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+                    Project[] opened = (Project[]) evt.getNewValue();
+                    Set<FileObject> openRoots = new HashSet<>();
+                    for (Project p : opened) {
+                        if (p != null) {
+                            openRoots.add(p.getProjectDirectory());
+                        }
+                    }
+                    synchronized (debugItems) {
+                        int n = debugItems.size();
+                        for (int i = 0; i < n; i++) {
+                            FileObject root = debugItems.get(i).getRoot();
+                            if (root != null && !openRoots.contains(root)) {
+                                // The project was closed
+                                debugItems.remove(i--);
+                                n--;
+                            }
+                        }
+                    }
+                }
+            }
+            
         }
     }
     

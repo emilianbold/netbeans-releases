@@ -35,36 +35,14 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
             return;
         }
         FileObject nbproject = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-        FileChangeListenerImpl fileChangeListener = new FileChangeListenerImpl(projectDir);
         if (nbproject != null && nbproject.isValid()) {
-            nbproject.addFileChangeListener(fileChangeListener);
+            FileChangeListenerImpl fileChangeListener = new FileChangeListenerImpl(projectDir);
+            nbproject.addRecursiveListener(fileChangeListener);
+            LaunchersRegistryFactory.getInstance(projectDir).setPrivateLaucnhersListener(fileChangeListener);  //for debugging purposes only
         }
-        initListeners(fileChangeListener, projectDir);
         reload(projectDir);
-
-
     }
     
-    private void initListeners(FileChangeListener fileChangeListener, FileObject projectDir) {
-        FileObject nbproject = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-        FileObject publicLaunchers = nbproject.getFileObject(NAME);
-        if (publicLaunchers != null) {
-            publicLaunchers.removeFileChangeListener(fileChangeListener);
-            publicLaunchers.addFileChangeListener(fileChangeListener);
-        }        
-        final FileObject privateNbFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
-        if (privateNbFolder != null && privateNbFolder.isValid()) {
-            privateNbFolder.removeFileChangeListener(fileChangeListener);
-            privateNbFolder.addFileChangeListener(fileChangeListener);
-            FileObject privateLaunchers = privateNbFolder.getFileObject(NAME);
-            if (privateLaunchers != null) {
-                privateLaunchers.removeFileChangeListener(fileChangeListener);
-                privateLaunchers.addFileChangeListener(fileChangeListener);
-                LaunchersRegistryFactory.getInstance(projectDir).setPrivateLaucnhersListener(fileChangeListener);  //for debugging purposes only
-            }
-        }
-    }
-
     @Override
     public void write(FileObject projectDir) {
     }
@@ -111,31 +89,34 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            //private folder could be created here, in this case: let's listen 
-            initListeners(this, projectDir);
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            //listen for the new file: attach listener to the file to listen for changes
-            initListeners(this, projectDir);
-            reload(projectDir);
+            if (fe.getFile().getPath().endsWith(NAME)) {
+                reload(projectDir);
+            }
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            reload(projectDir);
+            if (fe.getFile().getPath().endsWith(NAME)) {
+                reload(projectDir);
+            }
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            fe.getFile().removeFileChangeListener(this);
-            reload(projectDir);
+            if (fe.getFile().getPath().endsWith(NAME)) {
+                reload(projectDir);
+            }
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            reload(projectDir);
+            if (fe.getFile().getPath().endsWith(NAME)) {
+                reload(projectDir);
+            }
         }
 
         @Override

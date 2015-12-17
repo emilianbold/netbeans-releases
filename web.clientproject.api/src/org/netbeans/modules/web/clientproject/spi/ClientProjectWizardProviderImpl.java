@@ -49,4 +49,5 @@ import org.openide.WizardDescriptor;
  */
 public interface ClientProjectWizardProviderImpl {
     public abstract WizardDescriptor.InstantiatingIterator newClientProjectWithExtender();
+    public abstract WizardDescriptor.InstantiatingIterator existingHtml5Project();
 }

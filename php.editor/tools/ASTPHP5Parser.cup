@@ -201,6 +201,7 @@ terminal  T_FUNCTION;
 terminal  T_CONST;
 terminal  T_RETURN;
 terminal  T_YIELD;
+terminal  T_YIELD_FROM;
 terminal  T_TRY;
 terminal  T_CATCH;
 terminal  T_THROW;
@@ -351,6 +352,7 @@ non terminal List non_empty_static_array_pair_list;
 non terminal Expression expr;
 non terminal Expression expr_without_class_instance;
 non terminal Expression yield_expr;
+non terminal Expression yield_from_expr;
 non terminal Expression parenthesis_expr;
 non terminal Variable reference_variable;
 non terminal Variable variable_class_name;
@@ -414,6 +416,8 @@ non terminal Expression extends_from;
 non terminal List implements_list;
 non terminal List interface_list;
 non terminal Expression optional_class_type;
+non terminal Expression class_type;
+non terminal Expression optional_return_type;
 non terminal VariableBase r_variable;
 non terminal Integer variable_modifiers;
 non terminal VariableBase rw_variable;
@@ -444,6 +448,7 @@ precedence left T_LOGICAL_XOR;
 precedence left T_LOGICAL_AND;
 precedence right T_PRINT;
 precedence right T_YIELD;
+precedence right T_YIELD_FROM;
 precedence left T_EQUAL, T_PLUS_EQUAL,T_MINUS_EQUAL,T_MUL_EQUAL,T_DIV_EQUAL,T_CONCAT_EQUAL,T_MOD_EQUAL,T_AND_EQUAL,T_OR_EQUAL,T_XOR_EQUAL,T_SL_EQUAL,T_SR_EQUAL,T_POW_EQUAL;
 precedence right T_POW;
 precedence left T_QUESTION_MARK,T_SEMICOLON;
@@ -870,7 +875,18 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = new ReturnStatement(tokenleft, endright, expr);
 :}
 
+| T_RETURN:token yield_from_expr:expr T_SEMICOLON:end
+{:
+	RESULT = new ReturnStatement(tokenleft, endright, expr);
+:}
+
 | yield_expr:expr T_SEMICOLON:end
+{:
+    ExpressionStatement expressionStatement = new ExpressionStatement(exprleft, endright, expr);
+	RESULT = expressionStatement;
+:}
+
+| yield_from_expr:expr T_SEMICOLON:end
 {:
     ExpressionStatement expressionStatement = new ExpressionStatement(exprleft, endright, expr);
 	RESULT = expressionStatement;
@@ -1130,11 +1146,12 @@ is_variadic ::=
 unticked_function_declaration_statement ::=
 T_FUNCTION:start is_reference:isReference string_st:functionName
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
+optional_return_type:returnType
 T_CURLY_OPEN:blockStart inner_statement_list:statementList T_CURLY_CLOSE:blockEnd
 {:
 	Identifier functionId = new Identifier(functionNameleft, functionNameright, functionName);
 	Block block = new Block(blockStartleft, blockEndright, statementList);
-	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, blockEndright, functionId, paramList, block, isReference.booleanValue());
+	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, blockEndright, functionId, paramList, returnType, block, isReference.booleanValue());
 	RESULT = functionDeclaration;
 :}
 ;
@@ -1194,13 +1211,15 @@ constant_declaration:list T_SEMICOLON:end
 :}
 
 | method_modifiers:modifier T_FUNCTION:start is_reference:isReference string_st:functionName
-T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE T_SEMICOLON:end
+T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
+optional_return_type:returnType
+T_SEMICOLON:end
 {:
 	int methodStart = modifier == null ? startleft : modifierleft;
 	modifier = modifier == null ? ASTPHP5Parser.PUBLIC : modifier;
 	Identifier functionId = new Identifier(functionNameleft, functionNameright, functionName);
         Block block = new Block(endleft, endright, Collections.EMPTY_LIST, false);
-	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, endright, functionId, paramList, block, isReference.booleanValue());
+	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, endright, functionId, paramList, returnType, block, isReference.booleanValue());
 	MethodDeclaration methodDeclaration = new MethodDeclaration(methodStart, endright, modifier.intValue(), functionDeclaration, true);
 	RESULT = methodDeclaration;
 :}
@@ -1234,12 +1253,13 @@ variable_modifiers:modifier class_variable_declaration:decList T_SEMICOLON:end
 
 | method_modifiers:modifier T_FUNCTION:start is_reference:isReference string_st:functionName
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
+optional_return_type:returnType
 method_body:body
 {:
 	int methodStart = modifier == null ? startleft : modifierleft;
 	modifier = modifier == null ? ASTPHP5Parser.PUBLIC : modifier;
 	Identifier functionId = new Identifier(functionNameleft, functionNameright, functionName);
-	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, bodyright, functionId, paramList, body, isReference.booleanValue());
+	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, bodyright, functionId, paramList, returnType, body, isReference.booleanValue());
 	MethodDeclaration methodDeclaration = new MethodDeclaration(methodStart, bodyright, modifier.intValue(), functionDeclaration, true);
 	RESULT = methodDeclaration;
 :}
@@ -1623,6 +1643,16 @@ optional_class_type:classType is_variadic:isVariadic T_VARIABLE:var
 	RESULT = parameter;
 :}
 
+| optional_class_type:classType T_REFERENCE:ref T_ELLIPSIS:ell T_VARIABLE:var
+{:
+	int start = classType == null ? refleft : classTypeleft;
+	Variable v = new Variable(varleft, varright, var);
+	Variadic variadic = new Variadic(ellleft, varright, v);
+	Reference ref_var = new Reference (refleft, varright, variadic);
+	FormalParameter parameter = new FormalParameter(start, varright, classType, ref_var);
+	RESULT = parameter;
+:}
+
 | optional_class_type:classType is_variadic:isVariadic T_VARIABLE:var T_EQUAL static_scalar:scalar
 {:
 	int start = classType == null ? (isVariadic ? isVariadicleft : varleft) : classTypeleft;
@@ -1645,13 +1675,32 @@ optional_class_type:classType is_variadic:isVariadic T_VARIABLE:var
 :}
 ;
 
+optional_return_type ::=
+/* empty */
+{:
+	RESULT = null;
+:}
+
+| T_NEKUDOTAIM:e class_type:className
+{:
+	RESULT = className;
+:}
+;
+
 optional_class_type ::=
 /* empty */
 {:
 	RESULT = null;
 :}
 
-| fully_qualified_class_name:className
+| class_type:className
+{:
+	RESULT = className;
+:}
+;
+
+class_type ::=
+fully_qualified_class_name:className
 {:
 	RESULT = className;
 :}
@@ -1832,12 +1881,13 @@ variable_modifiers:modifier class_variable_declaration:decList T_SEMICOLON:end
 
 | method_modifiers:modifier T_FUNCTION:start is_reference:isReference string_st:functionName
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
+optional_return_type:returnType
 method_body:body
 {:
 	int methodStart = modifier == null ? startleft : modifierleft;
 	modifier = modifier == null ? ASTPHP5Parser.PUBLIC : modifier;
 	Identifier functionId = new Identifier(functionNameleft, functionNameright, functionName);
-	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, bodyright, functionId, paramList, body, isReference.booleanValue());
+	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, bodyright, functionId, paramList, returnType, body, isReference.booleanValue());
 	MethodDeclaration methodDeclaration = new MethodDeclaration(methodStart, bodyright, modifier.intValue(), functionDeclaration, true);
 	RESULT = methodDeclaration;
 :}
@@ -2685,18 +2735,22 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 :}
 
 | T_FUNCTION:s is_reference:isReference
-T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE lexical_vars:varsList
+T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
+optional_return_type:returnType
+lexical_vars:varsList
 T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
 {:
-	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, varsList,
+	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, returnType, varsList,
 		new Block(blockStartleft, blockEndright, list), isReference.booleanValue(), false);
 :}
 
 | T_STATIC:st T_FUNCTION:s is_reference:isReference
-T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE lexical_vars:varsList
+T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
+optional_return_type:returnType
+lexical_vars:varsList
 T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
 {:
-	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, varsList,
+	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, returnType, varsList,
 		new Block(blockStartleft, blockEndright, list), isReference.booleanValue(), true);
 :}
 
@@ -3424,6 +3478,18 @@ T_YIELD:s expr_without_variable:ewv
 | T_YIELD:s expr:e T_DOUBLE_ARROW variable:var
 {:
     RESULT = new YieldExpression(sleft, varright, e, var);
+:}
+;
+
+yield_from_expr ::=
+T_YIELD_FROM:s variable:var
+{:
+    RESULT = new YieldFromExpression(sleft, varright, var);
+:}
+
+| T_YIELD_FROM:s expr_without_variable:ewv
+{:
+    RESULT = new YieldFromExpression(sleft, ewvright, ewv);
 :}
 ;
 

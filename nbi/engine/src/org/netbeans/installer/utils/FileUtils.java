@@ -89,6 +89,7 @@ import org.netbeans.installer.utils.helper.FileEntry;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.NativeUtils;
+import org.netbeans.installer.utils.system.WindowsNativeUtils;
 
 /**
  *
@@ -1004,7 +1005,26 @@ public final class FileUtils {
                 list,
                 progress,
                 0,
-                childrenCount == 0 ? 1 : childrenCount);
+                childrenCount == 0 ? 1 : childrenCount,
+                false);
+        progress.setPercentage(Progress.COMPLETE);
+        
+        return list;
+    }
+    
+    /**
+     * Special method for copying nested JRE - #256122 - 8.1 RC2 IDE will not start unless run as admin
+     * 
+     * @param source Source JRE folder
+     * @param target Targer folder (in <installation folder>\bin\jre\)
+     * @param progress
+     * @return
+     * @throws IOException 
+     */
+    public static FilesList copyNestedJRE(final File source, final File target, final Progress progress) throws IOException {
+        final FilesList list = new FilesList();
+        
+        copyFile(source, target, true, list, progress, 0, countChildren(source), true);
         progress.setPercentage(Progress.COMPLETE);
         
         return list;
@@ -1531,7 +1551,8 @@ public final class FileUtils {
             final FilesList list,
             final Progress progress,
             final long start,
-            final long total) throws IOException {
+            final long total,
+            final boolean copyNesteJre) throws IOException {
         long count = start;
         
         if (!exists(source)) {
@@ -1568,16 +1589,33 @@ public final class FileUtils {
                         ERROR_DEST_NOT_WRITABLE_KEY, target));
             }            
             
-            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING, LinkOption.NOFOLLOW_LINKS);
+            if (copyNesteJre && SystemUtils.isWindows()) {
+                InputStream is = null;
+                OutputStream os = null;
+                try {
+                    is = new FileInputStream(source);
+                    os = new FileOutputStream(target);
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = is.read(buffer)) > 0) {
+                        os.write(buffer, 0, length);
+                    }
+                } finally {                    
+                    is.close();
+                    os.close();
+                }
+            } else {
+                Files.copy(source.toPath(), target.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING, LinkOption.NOFOLLOW_LINKS);
+            }
             list.add(target);
         } else {
             LogManager.log("copying directory: " + source + " to: " + target + (recurse ? " with recursion" : ""));
             progress.setDetail(StringUtils.format(MESSAGE_COPY_DIRECTORY, source, target));
-            
+
             list.add(mkdirs(target));
             if (recurse) {
-                for (File file: source.listFiles()) {
-                    count = copyFile(file, new File(target, file.getName()), recurse, list, progress, count, total);
+                for (File file : source.listFiles()) {
+                    count = copyFile(file, new File(target, file.getName()), recurse, list, progress, count, total, copyNesteJre);
                 }
             }
         }

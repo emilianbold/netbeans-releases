@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.51.0
+#Version 1.57.1
 
 CLSS public abstract interface com.sun.source.doctree.DocTreeVisitor<%0 extends java.lang.Object, %1 extends java.lang.Object>
 meth public abstract {com.sun.source.doctree.DocTreeVisitor%0} visitAttribute(com.sun.source.doctree.AttributeTree,{com.sun.source.doctree.DocTreeVisitor%1})
@@ -639,6 +639,7 @@ meth protected final org.netbeans.modules.refactoring.api.Problem createAndAddEl
 meth protected final org.netbeans.modules.refactoring.api.Problem createAndAddElements(java.util.Set<org.openide.filesystems.FileObject>,org.netbeans.api.java.source.CancellableTask<org.netbeans.api.java.source.WorkingCopy>,org.netbeans.modules.refactoring.spi.RefactoringElementsBag,org.netbeans.modules.refactoring.api.AbstractRefactoring,org.netbeans.api.java.source.ClasspathInfo)
 meth protected final org.netbeans.modules.refactoring.api.Problem createProblemAndLog(org.netbeans.modules.refactoring.api.Problem,java.lang.Throwable)
 meth protected final void queryFiles(java.util.Set<org.openide.filesystems.FileObject>,org.netbeans.api.java.source.CancellableTask<? extends org.netbeans.api.java.source.CompilationController>) throws java.io.IOException
+meth protected final void queryFiles(java.util.Set<org.openide.filesystems.FileObject>,org.netbeans.api.java.source.CancellableTask<? extends org.netbeans.api.java.source.CompilationController>,org.netbeans.api.java.source.ClasspathInfo) throws java.io.IOException
 meth protected org.netbeans.api.java.source.ClasspathInfo getClasspathInfo(org.netbeans.modules.refactoring.api.AbstractRefactoring)
 meth protected org.netbeans.modules.refactoring.api.Problem checkParameters(org.netbeans.api.java.source.CompilationController) throws java.io.IOException
 meth protected org.netbeans.modules.refactoring.api.Problem fastCheckParameters(org.netbeans.api.java.source.CompilationController) throws java.io.IOException
@@ -652,7 +653,7 @@ meth public static org.netbeans.modules.refactoring.spi.Transaction createTransa
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void cancelRequest()
 supr org.netbeans.modules.refactoring.spi.ProgressProviderAdapter
-hfds currentTask,workingTask
+hfds EMPTY_PATH,currentTask,workingTask
 hcls WorkingTask
 
 CLSS protected final static !enum org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin$Phase
@@ -675,8 +676,12 @@ supr java.lang.Object
 hfds treePathHandle,visitor
 
 CLSS public final !enum org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters
+fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters BINARYFILE
 fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters COMMENT
+fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters DEPENDENCY
 fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters IMPORT
+fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters PLATFORM
+fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters SOURCEFILE
 fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters TESTFILE
 innr public final static !enum ReadWrite
 meth public java.lang.String getKey()

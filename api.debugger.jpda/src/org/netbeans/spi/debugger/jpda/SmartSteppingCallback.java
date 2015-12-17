@@ -49,6 +49,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
+import java.util.Objects;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.modules.debugger.jpda.apiregistry.DebuggerProcessor;
@@ -85,6 +88,153 @@ public abstract class SmartSteppingCallback {
      */
     public abstract boolean stopHere (ContextProvider lookupProvider, JPDAThread thread, SmartSteppingFilter f);
 
+    /**
+     * This is an enhanced version of former {@link #stopHere(org.netbeans.spi.debugger.ContextProvider, org.netbeans.api.debugger.jpda.JPDAThread, org.netbeans.api.debugger.jpda.SmartSteppingFilter)}
+     * method, which is called during stepping through debugged application.
+     * The <code>frame</code> argument allows this method to be called for specific stack frames,
+     * to check if the execution could be suspended there. This is valuable e.g. for step out.
+     * When a top frame is provided, this method can suggest a specific step to continue with,
+     * in case it's not possible to stop at the given location.
+     * 
+     * The default implementation calls {@link #stopHere(org.netbeans.spi.debugger.ContextProvider, org.netbeans.api.debugger.jpda.JPDAThread, org.netbeans.api.debugger.jpda.SmartSteppingFilter)}
+     * when called with a top frame and throws an {@link UnsupportedOperationException} otherwise.
+     * 
+     * @param lookupProvider The debugger services lookup
+     * @param frame The frame in question
+     * @param f a filter
+     * @return whether the debugger can stop at this location, or whether it should continue with a step.
+     * @since 3.5
+     */
+    public StopOrStep stopAt(ContextProvider lookupProvider, CallStackFrame frame, SmartSteppingFilter f) {
+        int depth = frame.getFrameDepth();
+        if (depth > 0) {
+            throw new UnsupportedOperationException("Not supporting frames with depth > 0");
+        }
+        boolean stop = stopHere(lookupProvider, frame.getThread(), f);
+        return stop ? StopOrStep.stop() : StopOrStep.skip();
+    }
+    
+    /**
+     * Information about a possibility to stop at the given location,
+     * or suggestion to perform a step.
+     * Used by {@link #stopAt(org.netbeans.spi.debugger.ContextProvider, org.netbeans.api.debugger.jpda.CallStackFrame, org.netbeans.api.debugger.jpda.SmartSteppingFilter)}
+     * @since 3.5
+     */
+    public static final class StopOrStep {
+        
+        private static final StopOrStep STOP = new StopOrStep(true, 0, 0);
+        private static final StopOrStep SKIP = new StopOrStep(false, 0, 0);
+        
+        private final boolean stop;
+        private final int stepSize;
+        private final int stepDepth;
+        
+        /**
+         * Express the possibility to stop.
+         * @return information about a possibility to stop at the given location.
+         */
+        public static StopOrStep stop() {
+            return STOP;
+        }
+        
+        /**
+         * Express the necessity to skip the given location,
+         * using whatever the default debugger action is at the moment.
+         * @return information about the necessity to skip the given location.
+         */
+        public static StopOrStep skip() {
+            return SKIP;
+        }
+        
+        /**
+         * Express the necessity to perform a step at the given location.
+         * @param stepSize the step size,
+         *  one of {@link #JPDAStep.STEP_LINE} or {@link #JPDAStep.STEP_MIN},
+         *  or <code>0</code> for the default size.
+         * @param stepDepth the step depth,
+         *  one of {@link #JPDAStep.STEP_INTO}, {@link #JPDAStep.STEP_OVER},
+         *  {@link #JPDAStep.STEP_OUT}, or <code>0</code> for the default depth.
+         * @return the step information instance.
+         * throws {@link IllegalArgumentException} when the size or depth is wrong.
+         */
+        public static StopOrStep step(int stepSize, int stepDepth) {
+            return new StopOrStep(false, stepSize, stepDepth);
+        }
+        
+        private StopOrStep(boolean stop, int stepSize, int stepDepth) {
+            this.stop = stop;
+            switch (stepSize) {
+                case 0:
+                case JPDAStep.STEP_MIN:
+                case JPDAStep.STEP_LINE:
+                    // O.K.
+                    break;
+                default:
+                    throw new IllegalArgumentException("Wrong step size: "+stepSize);
+            }
+            switch (stepDepth) {
+                case 0:
+                case JPDAStep.STEP_INTO:
+                case JPDAStep.STEP_OVER:
+                case JPDAStep.STEP_OUT:
+                    // O.K.
+                    break;
+                default:
+                    throw new IllegalArgumentException("Wrong step depth: "+stepDepth);
+            }
+            this.stepSize = stepSize;
+            this.stepDepth = stepDepth;
+        }
+        
+        /**
+         * Whether this is a possibility to stop.
+         * If yes, values of step size and step depth are irrelevant.
+         * @return <code>true</code> if it's possible to stop, <code>false</code> otherwise.
+         */
+        public boolean isStop() {
+            return stop;
+        }
+        
+        /**
+         * Get the step size.
+         * @return One of {@link #JPDAStep.STEP_LINE} or {@link #JPDAStep.STEP_MIN},
+         *  or <code>0</code> for the default size.
+         */
+        public int getStepSize() {
+            return stepSize;
+        }
+        
+        /**
+         * Get the step depth.
+         * @return One of {@link #JPDAStep.STEP_INTO}, {@link #JPDAStep.STEP_OVER},
+         *  {@link #JPDAStep.STEP_OUT}, or <code>0</code> for the default depth.
+         */
+        public int getStepDepth() {
+            return stepDepth;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof StopOrStep)) {
+                return false;
+            }
+            StopOrStep ss = (StopOrStep) obj;
+            return stop == ss.stop &&
+                   stepSize == ss.stepSize &&
+                   stepDepth == ss.stepDepth;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(stop, stepSize, stepDepth);
+        }
+
+        @Override
+        public String toString() {
+            return "StopOrStep["+stop+","+stepSize+","+stepDepth+"]";
+        }
+        
+    }
     
     /**
      * Declarative registration of a SmartSteppingCallback implementation.

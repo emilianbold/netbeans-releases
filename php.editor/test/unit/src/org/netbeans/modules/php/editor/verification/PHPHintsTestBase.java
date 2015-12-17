@@ -78,6 +78,26 @@ public class PHPHintsTestBase extends PHPTestBase {
         checkHints(this, onLineHint, TEST_DIRECTORY + fileName, caretLine);
     }
 
+    /**
+     * Apply the hint. Run tests for the HintFix. To run the tests, need two
+     * files. The first one is the file to apply the hint, actually (e.g.
+     * testMyHint.php). The second one is the file for expected results and it
+     * has to be named [the first one's name].[test case name].fixed (e.g.
+     * testMyHint.php.testFix.fixed).
+     *
+     * @param hint Instantion of hint to test.
+     * @param fileName Name of the file which is in
+     * "<tt>testfiles/verification/</tt>" directory.
+     * @param caretLine The text contained in the line which has the caret. Add
+     * the caret position to "^". e.g. "MyC^lass"
+     * @param fixDesc The text contained in the description for the HintFix (see
+     * the implementation of {@link org.netbeans.modules.csl.api.HintFix#getDescription})
+     * @throws Exception
+     */
+    protected void applyHint(Rule hint, String fileName, String caretLine, String fixDesc) throws Exception {
+        applyHint(this, hint, TEST_DIRECTORY + fileName, caretLine, fixDesc);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

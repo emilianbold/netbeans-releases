@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
  * Represents a function declaration
- * <pre>e.g.<pre>
+ * <pre>e.g.
  * function foo() {}
  *
  * function &foo() {}
  *
  * function foo($a, int $b, $c = 5, int $d = 6) {}
  *
+ * function foo($a, int $b, $c = 5, int $d = 6): string {}
+ *
  * function foo(); -abstract function in class declaration
+ * </pre>
  */
 public class FunctionDeclaration extends Statement {
 
-    private boolean isReference;
-    private Identifier name;
+    private final boolean isReference;
+    private final Identifier name;
     private final ArrayList<FormalParameter> formalParameters = new ArrayList<>();
-    private Block body;
+    @NullAllowed
+    private final Expression returnType;
+    private final Block body;
 
-    private FunctionDeclaration(int start, int end, Identifier functionName, FormalParameter[] formalParameters, Block body, final boolean isReference) {
+
+    private FunctionDeclaration(int start, int end, Identifier functionName, FormalParameter[] formalParameters, Expression returnType, Block body, boolean isReference) {
         super(start, end);
         this.isReference = isReference;
         this.name = functionName;
         this.formalParameters.addAll(Arrays.asList(formalParameters));
+        this.returnType = returnType;
         this.body = body;
     }
 
-    public FunctionDeclaration(int start, int end, Identifier functionName, List<FormalParameter> formalParameters, Block body, final boolean isReference) {
-        this(start, end, functionName, (FormalParameter[]) formalParameters.toArray(new FormalParameter[formalParameters.size()]), body, isReference);
+    public FunctionDeclaration(int start, int end, Identifier functionName, List<FormalParameter> formalParameters, Expression returnType, Block body, boolean isReference) {
+        this(start, end, functionName, (FormalParameter[]) formalParameters.toArray(new FormalParameter[formalParameters.size()]), returnType, body, isReference);
     }
 
     /**
@@ -103,6 +112,16 @@ public class FunctionDeclaration extends Statement {
     }
 
     /**
+     * Return type of this function declaration, can be {@code null}.
+     *
+     * @return return type of this function declaration, can be {@code null}
+     */
+    @CheckForNull
+    public Expression getReturnType() {
+        return returnType;
+    }
+
+    /**
      * True if this function's return variable will be referenced
      * @return True if this function's return variable will be referenced
      */
@@ -121,7 +140,8 @@ public class FunctionDeclaration extends Statement {
         for (FormalParameter formalParameter : getFormalParameters()) {
             sb.append(formalParameter).append(","); //NOI18N
         }
-        return "function " + (isReference() ? "&" : "") + getFunctionName() + "(" + sb.toString() + ")" + getBody(); //NOI18N
+        return "function " + (isReference() ? "&" : "") + getFunctionName() + "(" + sb.toString() + ")" // NOI18N
+                + (getReturnType() != null ? ": " + getReturnType() : "") + getBody(); // NOI18N
     }
 
 }

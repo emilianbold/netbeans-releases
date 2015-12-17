@@ -49,88 +49,93 @@ import javax.xml.bind.annotation.XmlTransient;
 
 @XmlRootElement(name="history")
 public class SQLHistory implements Set<SQLHistoryEntry> {
+    // Public methods are synchronized to protect the backing set from concurrent
+    // modifications. The performance penality is considered acceptable, as this
+    // history logs SQL execution, so execution time is considered far greater
+    // than the overhead for synchronisation.
+    
     @XmlTransient
     private int historyLimit = 100;
     @XmlElement(name="sql")
     private Set<SQLHistoryEntry> history;
 
     public SQLHistory() {
-        history = new HashSet<SQLHistoryEntry>();
+        history = new HashSet<>();
     }
 
     @Override
-    public String toString() {
+    public synchronized String toString() {
         return history.toString();
     }
 
     @Override
-    public <T> T[] toArray(T[] a) {
+    public synchronized <T> T[] toArray(T[] a) {
         return history.toArray(a);
     }
 
     @Override
-    public Object[] toArray() {
+    public synchronized Object[] toArray() {
         return history.toArray();
     }
 
     @Override
-    public int size() {
+    public synchronized int size() {
         return history.size();
     }
 
     @Override
-    public boolean retainAll(Collection<?> c) {
+    public synchronized boolean retainAll(Collection<?> c) {
         return history.retainAll(c);
     }
 
     @Override
-    public boolean removeAll(Collection<?> c) {
+    public synchronized boolean removeAll(Collection<?> c) {
         return history.removeAll(c);
     }
 
     @Override
-    public boolean remove(Object o) {
+    public synchronized boolean remove(Object o) {
         return history.remove(o);
     }
 
     @Override
-    public Iterator<SQLHistoryEntry> iterator() {
+    public synchronized Iterator<SQLHistoryEntry> iterator() {
         return history.iterator();
     }
      
     @Override
-    public boolean isEmpty() {
+    public synchronized boolean isEmpty() {
         return history.isEmpty();
     }
     
     @Override
-    public int hashCode() {
+    public synchronized int hashCode() {
         return history.hashCode();
     }
     
     @Override
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-    public boolean equals(Object o) {
+    public synchronized boolean equals(Object o) {
         return history.equals(o);
     }
     
     @Override
-    public boolean containsAll(Collection<?> c) {
+    public synchronized boolean containsAll(Collection<?> c) {
         return history.containsAll(c);
     }
 
     @Override
-    public boolean contains(Object o) {
+    public synchronized boolean contains(Object o) {
         return history.contains(o);
     }
 
     @Override
-    public void clear() {
+    public synchronized void clear() {
         history.clear();
     }
      
     @Override
-    public boolean addAll(Collection<? extends SQLHistoryEntry> c) {
+    public synchronized boolean addAll(Collection<? extends SQLHistoryEntry> c) {
         boolean changed = false;
         for(SQLHistoryEntry sqe: c) {
             changed |= this.add(sqe);
@@ -139,7 +144,7 @@ public class SQLHistory implements Set<SQLHistoryEntry> {
     }
     
     @Override
-    public boolean add(SQLHistoryEntry e) {
+    public synchronized boolean add(SQLHistoryEntry e) {
         boolean result = history.add(e);
         if(! result) {
             history.remove(e);
@@ -149,9 +154,9 @@ public class SQLHistory implements Set<SQLHistoryEntry> {
         return result;
     }
     
-    public void enforceLimit() {
+    private void enforceLimit() {
         if(size() > historyLimit) {
-            List<SQLHistoryEntry> list = new ArrayList<SQLHistoryEntry>(history);
+            List<SQLHistoryEntry> list = new ArrayList<>(history);
             Collections.sort(list, new Comparator<SQLHistoryEntry>() {
                 @Override
                 public int compare(SQLHistoryEntry o1, SQLHistoryEntry o2) {
@@ -164,11 +169,11 @@ public class SQLHistory implements Set<SQLHistoryEntry> {
     }
     
     @XmlTransient
-    public int getHistoryLimit() {
+    public synchronized int getHistoryLimit() {
         return historyLimit;
     }
 
-    public void setHistoryLimit(int historyLimit) {
+    public synchronized void setHistoryLimit(int historyLimit) {
         this.historyLimit = historyLimit;
         enforceLimit();
     }

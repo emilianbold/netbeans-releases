@@ -691,22 +691,32 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     }
 
     private boolean isTemplateAmbiguity(Token<TokenId> token) {
-        if(supportTemplates && (token.id() == CppTokenId.LT ||
+        if (supportTemplates && (token.id() == CppTokenId.LT ||
                 (!tplLookaheadTokens.isEmpty() && tplLookaheadTokens.get(0).token.id() == CppTokenId.LT))) {
-            CsmCompletionExpression top = peekExp();
-            if(top != null) {
-                // from rule about generic types in tokenImpl
-                switch(top.getExpID()) {
-                    case VARIABLE:
-                    case DOT:
-                    case ARROW:
-                    case SCOPE:
-                    case MEMBER_POINTER:
-                        return true;
-
-                    default:
-                        break;
-                }
+            return canTemplateAmbiguityHappen();
+        }
+        return false;
+    }
+    
+    private boolean canTemplateAmbiguityHappen() {
+        CsmCompletionExpression top = peekExp();
+        if (top != null) {
+            // from rule about generic types in tokenImpl
+            switch (top.getExpID()) {
+                case VARIABLE:
+                case ARROW:
+                case MEMBER_POINTER:
+                    return true;
+                    
+                case DOT:
+                case SCOPE:
+                    if (top.getParameterCount() > 0) {
+                        CsmCompletionExpression lastParam = top.getParameter(top.getParameterCount() - 1);
+                        if (getValidExpID(lastParam) == CsmCompletionExpression.METHOD) {
+                            return false;
+                        }
+                    }
+                    return true;
             }
         }
         return false;
@@ -916,7 +926,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                     case LPAREN:
                                         break;
                                     case LT:
-                                        if(supportTemplates) {
+                                        if (supportTemplates && canTemplateAmbiguityHappen()) {
                                             break;
                                         }
                                     default:
@@ -1600,24 +1610,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
             case LT: {
                 boolean genericType = false;
-                if (supportTemplates) { // special treatment of Java 1.5 features
-                    switch (topID) {
-                        case VARIABLE:
-                        case DOT:
-                        case ARROW:
-                        case SCOPE:
-                        case MEMBER_POINTER:
-                            popExp(); // pop the top expression
-                            CsmCompletionExpression genExp = createTokenExp(GENERIC_TYPE_OPEN);
-                            genExp.addParameter(top);
-                            pushExp(genExp);
-                            genericType = true; // handled successfully as generic type
-                            break;
-
-                        default:
-                            // could possibly still be acceptable as operator '<'
-                            break;
-                    }
+                if (supportTemplates && canTemplateAmbiguityHappen()) { // special treatment of Java 1.5 features
+                    popExp(); // pop the top expression
+                    CsmCompletionExpression genExp = createTokenExp(GENERIC_TYPE_OPEN);
+                    genExp.addParameter(top);
+                    pushExp(genExp);
+                    genericType = true; // handled successfully as generic type
                 }
 
                 if (topID == CONVERSION_OPEN) {
@@ -1625,6 +1623,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     break;
                 }
 
+                // could possibly still be acceptable as operator '<'
                 if (!errorState && !genericType) { // not generics -> handled compatibly
                     // Operator handling
                     switch (topID) {
@@ -1954,8 +1953,33 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         CsmCompletionExpression opExp = createTokenExp(UNARY_OPERATOR);
                         pushExp(opExp); // add operator as new exp
                         break;
+                        
+                    case CONVERSION:
+                        if (top.getTokenCount() > 0) {
+                            CppTokenId firstTokId = top.getTokenID(0);
+                            if (CppTokenId.STATIC_CAST == firstTokId ||
+                                CppTokenId.DYNAMIC_CAST == firstTokId ||
+                                CppTokenId.REINTERPRET_CAST == firstTokId)
+                            {
+                                // Postfix operator
+                                opExp = createTokenExp(UNARY_OPERATOR);
+                                popExp();
+                                opExp.addParameter(top);
+                                pushExp(opExp);
+                            } else if (top.getParameterCount() > 0 && top.getParameter(0).getExpID() != TYPE) {
+                                // Postfix operator after PARENTHESIS
+                                opExp = createTokenExp(UNARY_OPERATOR);
+                                popExp();
+                                opExp.addParameter(createTokenExp(PARENTHESIS, top, true));
+                                pushExp(opExp);
+                            } else {
+                                errorState = true;
+                            }
+                        }
+                        break;
 
-                    case VARIABLE: // is it only one permitted?
+                    case PARENTHESIS:
+                    case VARIABLE:
                         // Postfix operator
                         opExp = createTokenExp(UNARY_OPERATOR);
                         popExp(); // pop top
@@ -2075,11 +2099,20 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             // create correspondent *_OPEN expression ID
                             int openExpID = tokenID2OpenExpID(tokenID);
                             CsmCompletionExpression opExp = createTokenExp(openExpID);
-                            if (topID == CONVERSION && tokenID != CppTokenId.SCOPE) {
-                                // Now we know that previous exp is PARENTHESIS, not CONVERSION.
-                                top.setExpID(PARENTHESIS);
+                            if (topID == CONVERSION) {
+                                if (tokenID != CppTokenId.SCOPE) {
+                                    // Now we know that previous exp is PARENTHESIS, not CONVERSION.
+                                    top.setExpID(PARENTHESIS);
+                                    opExp.addParameter(top);
+                                } else {
+                                    // CONVERSION should be standalone node and
+                                    // SCOPE_OPEN should start with an empty variable
+                                    pushExp(top); 
+                                    opExp.addParameter(createEmptyVariable(tokenOffset));
+                                }
+                            } else {
+                                opExp.addParameter(top);
                             }
-                            opExp.addParameter(top);
                             pushExp(opExp);
                         }
                         break;

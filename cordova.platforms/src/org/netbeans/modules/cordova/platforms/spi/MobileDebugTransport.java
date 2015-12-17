@@ -92,7 +92,7 @@ public abstract class MobileDebugTransport implements TransportImplementation {
             throw new RuntimeException(ex);
         }
     }
-
+ 
 
     /**
      * TODO: hack to workaround #221791
@@ -106,8 +106,12 @@ public abstract class MobileDebugTransport implements TransportImplementation {
     public final void setBaseUrl(String documentURL) {
         this.indexHtmlLocation = documentURL;
         if (mapper != null && documentURL != null) {
-            documentURL = documentURL.substring(0, documentURL.lastIndexOf("/www/") + "/www/".length()).replaceAll("file:///", "file:/").replaceAll("file:/", "file:///");
-            try {
+            int idx = documentURL.lastIndexOf("/www/");
+            assert idx > -1 : "document url does not contain 'www' in path: " + documentURL;
+            documentURL = documentURL.substring(0, idx + "/www/".length());
+            documentURL = documentURL.replaceAll("file:///", "file:/");
+            documentURL = documentURL.replaceAll("file:/", "file:///");
+            try { 
                 mapper.setBrowserURLRoot(WebUtils.urlToString(new URL(documentURL)));
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);

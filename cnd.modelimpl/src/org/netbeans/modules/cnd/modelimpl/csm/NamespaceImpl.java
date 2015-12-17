@@ -574,7 +574,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     public void addNamespaceDefinition(CsmNamespaceDefinition def) {
-        CsmUID<CsmNamespaceDefinition> definitionUid = RepositoryUtils.put(def);
+        CsmUID<CsmNamespaceDefinition> definitionUid = UIDCsmConverter.objectToUID(def);
         boolean add = false;
         try {
             nsDefinitionsLock.writeLock().lock();

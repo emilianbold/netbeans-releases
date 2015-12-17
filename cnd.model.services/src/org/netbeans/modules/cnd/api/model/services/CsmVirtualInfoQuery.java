@@ -204,10 +204,15 @@ public abstract class CsmVirtualInfoQuery {
         
         @Override
         public boolean isVirtual(CsmMethod method) {
-            if (method.isVirtual()) {
-                return true;
+            CsmCacheManager.enter();
+            try {
+                if (method.isVirtual()) {
+                    return true;
+                }            
+                return processClass(method, getFilterFor(method), method.getContainingClass(), new ClassifiersAntiLoop());
+            } finally {
+                CsmCacheManager.leave();
             }
-            return processClass(method, getFilterFor(method), method.getContainingClass(), new ClassifiersAntiLoop());
         }
         
         @Override
@@ -406,6 +411,15 @@ public abstract class CsmVirtualInfoQuery {
         
         @Override
         public Collection<CsmMethod> getOverriddenMethods(CsmMethod method, boolean searchFromBase) {
+            CsmCacheManager.enter();
+            try {
+                return getOverriddenMethodsImpl(method, searchFromBase);
+            } finally {
+                CsmCacheManager.leave();
+            }
+        }
+        
+        private Collection<CsmMethod> getOverriddenMethodsImpl(CsmMethod method, boolean searchFromBase) {
             Set<CsmMethod> res = new HashSet<CsmMethod>();
             CsmClass cls;
             if (searchFromBase) {

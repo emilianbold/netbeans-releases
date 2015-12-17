@@ -52,6 +52,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -99,11 +100,23 @@ public final class ModificationResult implements org.netbeans.modules.refactorin
      * to commit the changes to the source files
      */
     public void commit() throws IOException {
+        Set<Document> changedDocument = new HashSet<>(diffs.size());
         try {
+            // on commit we collect modified documents
             for (Map.Entry<FileObject, Collection<Difference>> me : diffs.entrySet()) {
-                commit(me.getKey(), me.getValue(), null);
+                Document doc = commit(me.getKey(), me.getValue(), null);
+                if (doc != null) {
+                    changedDocument.add(doc);
+                }
             }
         } finally {
+            // to minimize editStart/editStop in ModelSupport we force save all
+            // and only then clean marker
+            LifecycleManager.getDefault().saveAll();
+            for (Document doc : changedDocument) {
+                // clear marker used by ModelSupport to prevent edit start activity
+                doc.putProperty(CsmUtilities.CND_REFACTORING_MARKER, null);
+            }
             if (this.project != null) {
                 // need to reparse project
                 this.project.waitParse();
@@ -111,7 +124,7 @@ public final class ModificationResult implements org.netbeans.modules.refactorin
         }
     }
 
-    private void commit(final FileObject fo, final Collection<Difference> differences, Writer out) throws IOException {
+    private Document commit(final FileObject fo, final Collection<Difference> differences, Writer out) throws IOException {
         DataObject dObj = DataObject.find(fo);
         EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
         // if editor cookie was found and user does not provided his own
@@ -152,16 +165,16 @@ public final class ModificationResult implements org.netbeans.modules.refactorin
                     }
                 };
                 if (doc instanceof BaseDocument) {
-                    doc.putProperty("cnd.refactoring.modification.event", Boolean.TRUE); // NOI18N
+                    // set marker used by ModelSupport to prevent edit start activity
+                    doc.putProperty(CsmUtilities.CND_REFACTORING_MARKER, Boolean.TRUE); // NOI18N
                     ((BaseDocument) doc).runAtomic(runnable);
-                    doc.putProperty("cnd.refactoring.modification.event", Boolean.FALSE); // NOI18N
                 } else {
                     runnable.run();
                 }
                 if (ioe[0] != null) {
                     throw ioe[0];
                 }
-                return;
+                return doc;
             }
         }
         InputStream ins = null;
@@ -236,6 +249,7 @@ public final class ModificationResult implements org.netbeans.modules.refactorin
                 out.close();
             }
         }
+        return null;
     }
 
     private int convertToLF(byte[] buff) {

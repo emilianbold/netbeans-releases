@@ -58,7 +58,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import static junit.framework.Assert.fail;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.git.remote.cli.ApiUtils;
 import org.netbeans.modules.git.remote.cli.GitClient;
@@ -66,6 +65,7 @@ import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.GitRepository;
 import org.netbeans.modules.git.remote.cli.GitStatus;
 import org.netbeans.modules.git.remote.cli.GitStatus.Status;
+import org.netbeans.modules.git.remote.cli.jgit.commands.GitCommand;
 import org.netbeans.modules.git.remote.cli.jgit.utils.TestUtils;
 import org.netbeans.modules.git.remote.cli.progress.FileListener;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
@@ -88,6 +88,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     private JGitRepository localRepository;
     protected static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor ();
     private boolean skipTest = false;
+    private String gitPath;
 
     private enum Scope{All, Successful, Failed};
     private static final Scope TESTS_SCOPE = Scope.Successful;
@@ -98,11 +99,13 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         workDir = VCSFileProxy.createFileProxy(getWorkDir());
         repositoryLocation = VCSFileProxy.createFileProxy(workDir, "repo");
         wc = VCSFileProxy.createFileProxy(workDir, getName() + "_wc");
-        String gitPath = "/usr/bin/git";
+        gitPath = "/usr/bin/git";
+        //gitPath = "/export/home/alsimon/projects/git/git";
         FileObject git = VCSFileProxySupport.getResource(workDir, gitPath).toFileObject();
         if (git == null || !git.isValid()) {
             skipTest = true;
         }
+        GitCommand.setGitCommand(gitPath);
     }
 
     protected abstract boolean isFailed();
@@ -416,7 +419,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         String[] args = command.toArray(new String[command.size()]);
         org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(workdir);
         VCSFileProxySupport.mkdirs(workdir);
-        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, processBuilder, "git", args);
+        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, processBuilder, gitPath, args);
         return Arrays.asList(executeInDir.output.split("\n"));
     }
     

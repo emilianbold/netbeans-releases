@@ -482,7 +482,11 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                     try {
                         FileObject canonicalFO = fo.getCanonicalFileObject();
                         CndFileSystemProvider.CndStatInfo statInfo = CndFileSystemProvider.getStatInfo(canonicalFO);
-                        return FileKey.createRemote(fs, statInfo);
+                        if (statInfo.isValid()) {
+                            return FileKey.createRemote(fs, statInfo);
+                        } else {
+                            return INVALID_INODE;
+                        }
                     } catch (IOException ex) {
                         ex.printStackTrace(System.err);
                     }

@@ -79,7 +79,7 @@ public class RPMPackager implements PackagerDescriptor {
     @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         List<PackagerInfoElement> infoList = new ArrayList<>();
-        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Summary", "Sumary...", true, true)); // NOI18N
+        infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Summary", "Summary...", true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Name", packagingConfiguration.getOutputName(), true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Version", "1.0", true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Release", "1", true, true)); // NOI18N

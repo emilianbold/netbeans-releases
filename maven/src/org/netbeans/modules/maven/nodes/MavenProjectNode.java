@@ -158,6 +158,7 @@ public class MavenProjectNode extends AbstractNode {
             + "That usually means something is wrong with your pom.xml, or plugins are missing. "
             + "Select \"Show and Resolve Problems\" from the project's context menu for additional information.",
         "LBL_DefaultDescription=A Maven-based project",
+        "TXT_Loading=Loading...",
         "DESC_Project1=Location:",
         "DESC_Project2=GroupId:",
         "DESC_Project3=ArtifactId:",
@@ -169,19 +170,22 @@ public class MavenProjectNode extends AbstractNode {
     @Override public String getShortDescription() {
         StringBuilder buf = new StringBuilder();
         String desc;
-        MavenProject mp = project.getOriginalMavenProject();
-        boolean errorPlaceholder = NbMavenProject.isErrorPlaceholder(mp);
-        if (errorPlaceholder) {
-            desc = TXT_FailedProjectLoadingDesc();
+        MavenProject mp = project.isMavenProjectLoaded() ? project.getOriginalMavenProject() : null;
+        if(mp != null) {
+            if (NbMavenProject.isErrorPlaceholder(mp)) {
+                desc = TXT_FailedProjectLoadingDesc();
+            } else {
+                //TODO escape the short description
+                desc = mp.getDescription();
+                if (desc == null) {
+                    desc = LBL_DefaultDescription();
+                }
+            }            
         } else {
-            //TODO escape the short description
-            desc = mp.getDescription();
-            if (desc == null) {
-                desc = LBL_DefaultDescription();
-            }
+            desc = TXT_Loading();
         }
         buf.append("<html><i>").append(DESC_Project1()).append("</i><b> ").append(FileUtil.getFileDisplayName(project.getProjectDirectory())).append("</b><br><i>"); //NOI18N
-        if (!errorPlaceholder) {
+        if (mp != null) {
             buf.append(DESC_Project2()).append("</i><b> ").append(mp.getGroupId()).append("</b><br><i>");//NOI18N
             buf.append(DESC_Project3()).append("</i><b> ").append(mp.getArtifactId()).append("</b><br><i>");//NOI18N
             buf.append(DESC_Project4()).append("</i><b> ").append(mp.getVersion()).append("</b><br><i>");//NOI18N

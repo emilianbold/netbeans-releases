@@ -76,6 +76,7 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.KeywordCompletionType;
@@ -128,6 +129,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.openide.filesystems.FileObject;
 
 import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
@@ -191,6 +193,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         PHP_KEYWORDS.put("xor", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
         PHP_KEYWORDS.put("finally", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS); //NOI18N
         PHP_KEYWORDS.put("yield", KeywordCompletionType.CURSOR_BEFORE_ENDING_SEMICOLON); //NOI18N
+        PHP_KEYWORDS.put("yield from", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
     }
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_QUOTES = {
         "echo", "include", "include_once", "require", "require_once", "print" // NOI18N
@@ -291,7 +294,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         switch (context) {
             case DEFAULT_PARAMETER_VALUE:
                 final CaseInsensitivePrefix nameKindPrefix = NameKind.caseInsensitivePrefix(request.prefix);
-                // XXX array(), []
                 autoCompleteKeywords(completionResult, request, Arrays.asList("array")); //NOI18N
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteTypeNames(completionResult, request, null, true);
@@ -378,7 +380,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             case TYPE_NAME:
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteTypeNames(completionResult, request);
-                autoCompleteKeywords(completionResult, request, Type.getTypesForHints());
+                autoCompleteKeywords(completionResult, request, Type.getTypesForEditor());
                 break;
             case STRING:
                 // LOCAL VARIABLES
@@ -1090,14 +1092,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         final ElementFilter forCurrentFile = ElementFilter.forFiles(fileObject);
         completionResult.addAll(getVariableProposals(request, forCurrentFile.reverseFilter(globalVariables)));
 
-        // Special keywords applicable only inside a class
-        final ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
-        if (classDecl != null) {
-            final String className = CodeUtils.extractClassName(classDecl);
-            if (className != null) {
-                for (final String keyword : PHP_CLASS_KEYWORDS) {
-                    if (startsWith(keyword, request.prefix)) {
-                        completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(className, keyword, request));
+        // Special keywords applicable only inside a class or trait
+        final TypeDeclaration typeDecl = findEnclosingType(request.info, lexerToASTOffset(request.result, request.anchor));
+        if (typeDecl != null) {
+            if (typeDecl instanceof ClassDeclaration || typeDecl instanceof TraitDeclaration) {
+                final String typeName = CodeUtils.extractTypeName(typeDecl);
+                if (typeName != null) {
+                    for (final String keyword : PHP_CLASS_KEYWORDS) {
+                        if (startsWith(keyword, request.prefix)) {
+                            completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(typeName, keyword, request));
+                        }
                     }
                 }
             }
@@ -1392,7 +1396,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                     }
                     if (OptionsUtils.autoCompletionNamespaces()) {
                         if (t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
-                            return isPhp53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
+                            return isPhp53OrNewer(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
                         }
                     }
                     if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
@@ -1410,10 +1414,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         return QueryType.NONE;
     }
 
-    public static boolean isPhp53(Document document) {
+    public static boolean isPhp53OrNewer(Document document) {
         final FileObject fileObject = CodeUtils.getFileObject(document);
         assert fileObject != null;
-        return CodeUtils.isPhp53(fileObject);
+        return CodeUtils.isPhpVersionGreaterThan(fileObject, PhpVersion.PHP_5);
     }
 
     @Override

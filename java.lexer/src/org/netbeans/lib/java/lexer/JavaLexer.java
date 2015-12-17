@@ -83,7 +83,7 @@ public class JavaLexer implements Lexer<JavaTokenId> {
         assert (info.state() == null); // never set to non-null value in state()
         
         Integer ver = (Integer)info.getAttributeValue("version");
-        this.version = (ver != null) ? ver.intValue() : 8; // TODO: Java 1.8 used by default
+        this.version = (ver != null) ? ver.intValue() : 9; // TODO: Java 1.8 used by default
     }
     
     public Object state() {
@@ -927,7 +927,12 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                 case 'P': case 'Q': case 'R': case 'S': case 'T':
                 case 'U': case 'V': case 'W': case 'X': case 'Y':
                 case 'Z':
-                case '$': case '_':
+                case '$':
+                    return finishIdentifier();
+                    
+                case '_':
+                    if (this.version >= 9)
+                        return keywordOrIdentifier(JavaTokenId.UNDERSCORE);
                     return finishIdentifier();
                     
                 // All Character.isWhitespace(c) below 0x80 follow

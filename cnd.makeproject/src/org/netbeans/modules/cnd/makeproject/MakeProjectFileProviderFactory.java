@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -88,6 +89,7 @@ import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.CharSequences;
@@ -101,7 +103,7 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.file.FileProviderFactory.class, position=1000)
 public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
-    private static final ConcurrentMap<Lookup.Provider, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Lookup.Provider, ConcurrentMap<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<>();
     private static final ConcurrentMap<Lookup.Provider, ConcurrentMap<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<>();
     private static final Collection<? extends UserOptionsProvider> packageSearch = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
     private static final Logger LOG = Logger.getLogger(MakeProjectFileProviderFactory.class.getName());
@@ -114,10 +116,10 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
      * @param list
      */
     public static void updateSearchBase(Project project, Folder folder, List<CharSequence> list){
-        Map<Folder, List<CharSequence>> projectSearchBase = searchBase.get(project);
+        ConcurrentMap<Folder, List<CharSequence>> projectSearchBase = searchBase.get(project);
         if (projectSearchBase == null) {
             projectSearchBase = new ConcurrentHashMap<>();
-            Map<Folder, List<CharSequence>> old = searchBase.putIfAbsent(project, projectSearchBase);
+            ConcurrentMap<Folder, List<CharSequence>> old = searchBase.putIfAbsent(project, projectSearchBase);
             if (old != null) {
                 projectSearchBase = old;
             }
@@ -155,15 +157,17 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
     }
 
     private static void updateSearchBaseImpl(Project project, Folder folder, CharSequence item, boolean remove) {
-        Map<Folder, List<CharSequence>> projectSearchBase = searchBase.get(project);
+        ConcurrentMap<Folder, List<CharSequence>> projectSearchBase = searchBase.get(project);
         if (projectSearchBase != null) {
             synchronized (projectSearchBase) {
                 List<CharSequence> folderItems = projectSearchBase.get(folder);
                 if (folderItems != null) {
-                    if (remove) {
-                        folderItems.remove(item);
-                    } else {
-                        folderItems.add(item);
+                    synchronized(folderItems) {
+                        if (remove) {
+                            folderItems.remove(item);
+                        } else {
+                            folderItems.add(item);
+                        }
                     }
                 }
             }
@@ -255,9 +259,9 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         }
 
         @Override
-        public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+        public Collection<FSPath> searchFile(NativeProject project, String fileName) {
             if (MakeOptions.getInstance().isFixUnresolvedInclude()) {
-                Collection<CharSequence> res;
+                Collection<FSPath> res;
                 for(NativeProject np : NativeProjectRegistry.getDefault().getOpenProjects()) {
                     if (np == project) {
                         Lookup.Provider p = np.getProject();
@@ -272,11 +276,25 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             if (i >= 0) {
                                 name = fileName.substring(i+1);
                             }
-                            res = projectSearchBase.get(CharSequences.create(name));
-                            if (res != null && res.size() > 0) {
-                                return res;
-                            }
                             MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration((Project)p);
+                            List<CharSequence> list = projectSearchBase.get(CharSequences.create(name));
+                            if (list != null) {
+                                synchronized(list) {
+                                    if (list.size() > 0) {
+                                        FileSystem fileSystem;
+                                        if (conf != null) {
+                                            fileSystem = conf.getFileSystem();
+                                        } else {
+                                            fileSystem = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal());
+                                        }
+                                        res = new ArrayList<>(list.size());
+                                        for(CharSequence absPath : list) {
+                                            res.add(new FSPath(fileSystem, absPath.toString()));
+                                        }
+                                        return res;
+                                    }
+                                }
+                            }
                             ExecutionEnvironment env;
                             if (conf != null){
                                 env = conf.getDevelopmentHost().getExecutionEnvironment();
@@ -287,7 +305,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             if (res != null && res.size() > 0) {
                                 return res;
                             }
-                            return Collections.<CharSequence>emptyList();
+                            return Collections.<FSPath>emptyList();
                         }
                     }
                 }
@@ -301,11 +319,11 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     return res;
                 }
             }
-            return Collections.<CharSequence>emptyList();
+            return Collections.<FSPath>emptyList();
         }
 
-        private Collection<CharSequence> defaultSearch(NativeProject project, String fileName, ExecutionEnvironment env) {
-            Collection<CharSequence> res = null;
+        private Collection<FSPath> defaultSearch(NativeProject project, String fileName, ExecutionEnvironment env) {
+            Collection<FSPath> res = null;
             if (env == null) {
                 env = ExecutionEnvironmentFactory.getLocal();
             }
@@ -348,7 +366,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     list.add(CharSequences.create(item.getAbsPath()));
                 }
                 if (!MakeOptions.getInstance().isFullFileIndexer()) {
-                    final Map<Folder,List<CharSequence>> projectSearchBase = searchBase.get(project);
+                    final ConcurrentMap<Folder,List<CharSequence>> projectSearchBase = searchBase.get(project);
                     if (projectSearchBase != null) {
                         // create copy of data
                         Map<Folder,List<CharSequence>> copy;
@@ -357,22 +375,24 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                         }
                         for (List<CharSequence> files : copy.values()) {
                             if (files != null) {
-                                for(CharSequence path : files) {
-                                    String absPath = path.toString();
-                                    int i = absPath.lastIndexOf('/');
-                                    if (i < 0) {
-                                        i = absPath.lastIndexOf('\\');
-                                    }
-                                    if (i >= 0) {
-                                        CharSequence name = CharSequences.create(absPath.substring(i+1));
-                                        List<CharSequence> list = result.get(name);
-                                        if (list == null) {
-                                            List<CharSequence> prev = result.putIfAbsent(name, list = new ArrayList<>(1));
-                                            if (prev != null) {
-                                                list = prev;
-                                            }
+                                synchronized(files) {
+                                    for(CharSequence path : files) {
+                                        String absPath = path.toString();
+                                        int i = absPath.lastIndexOf('/');
+                                        if (i < 0) {
+                                            i = absPath.lastIndexOf('\\');
                                         }
-                                        list.add(path);
+                                        if (i >= 0) {
+                                            CharSequence name = CharSequences.create(absPath.substring(i+1));
+                                            List<CharSequence> list = result.get(name);
+                                            if (list == null) {
+                                                List<CharSequence> prev = result.putIfAbsent(name, list = new ArrayList<>(1));
+                                                if (prev != null) {
+                                                    list = prev;
+                                                }
+                                            }
+                                            list.add(path);
+                                        }
                                     }
                                 }
                             }
@@ -424,12 +444,14 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     Folder folder = entry.getKey();
                     List<CharSequence> files = entry.getValue();
                     if (files != null) {
-                        for(CharSequence name : files) {
-                            if (cancel.get()) {
-                                return;
-                            }
-                            if (matcher.accept(name.toString())) {
-                                result.addFileDescriptor(new OtherFD(name.toString(), project, baseDir, folder));
+                        synchronized(files) {
+                            for(CharSequence name : files) {
+                                if (cancel.get()) {
+                                    return;
+                                }
+                                if (matcher.accept(name.toString())) {
+                                    result.addFileDescriptor(new OtherFD(name.toString(), project, baseDir, folder));
+                                }
                             }
                         }
                     }

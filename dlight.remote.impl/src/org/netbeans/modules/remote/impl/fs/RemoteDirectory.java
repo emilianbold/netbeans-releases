@@ -1214,6 +1214,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         if (!newEntry.isDirectory() && (newEntry.getSize() != oldEntry.getSize())) {
                             changed = fire = true;// TODO: shouldn't it be the same as time stamp change?
                         }
+                        // It is unlikely that inode changed. But it can happen. Since we cache it, we need to check
+                        if (newEntry.hasINode() && !newEntry.isSameINode(oldEntry)) {
+                            changed = fire = true;
+                        }
                         if (fire) {
                             entriesToFireChanged.add(newEntry);
                         }
@@ -1330,6 +1334,18 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
             fireReadOnlyChangedEventsIfNeed(entriesToFireChangedRO);
+            // we check "org.netbeans.modules.masterfs.watcher.disable" property to be on par with masterfs,
+            // which does the same and also sets this flag in tests 
+            if (interceptor != null && !Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.disable")) {
+                try {
+                    getFileSystem().setInsideVCS(true);
+                    interceptor.refreshRecursively(FilesystemInterceptorProvider.toFileProxy(getOwnerFileObject()), 
+                            lastModified().getTime(), new LinkedList<>()); // Collections.emptyList() does not suite - implementor can add elements
+
+                } finally {
+                    getFileSystem().setInsideVCS(false);
+                }
+            }
             //fireFileChangedEvent(getListeners(), new FileEvent(this));
         }
         return storage;

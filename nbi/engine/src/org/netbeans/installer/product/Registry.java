@@ -602,12 +602,22 @@ public class Registry implements PropertyContainer {
         
         if (Boolean.getBoolean(SUGGEST_UNINSTALL_PROPERTY) ||
                 Boolean.getBoolean(FORCE_UNINSTALL_PROPERTY)) {
+            Version version = null;
             for (Product product: getProducts(Status.INSTALLED)) {
                 // we should not change the status of components that are not
                 // visible (were filtered out either at build time or runtime), as
                 // this may cause unexpected results - these components are not
                 // expected to be dealt with
-                if (product.isVisible() || product.getUid().equals("jre-nested")) {
+                if (product.isVisible()) {
+                    product.setStatus(Status.TO_BE_UNINSTALLED);
+                    if (product.getUid().equals(BASE_IDE_UID)) {
+                        version = product.getVersion();
+                    }
+                }
+            }            
+            for (Product product : getProducts(JRE_NESTED_UID)) {
+                // mark for uninstall only proper nested JRE
+                if (product.getVersion().equals(version)) {
                     product.setStatus(Status.TO_BE_UNINSTALLED);
                 }
             }
@@ -1758,6 +1768,13 @@ public class Registry implements PropertyContainer {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+    
+    public static final String BASE_IDE_UID =
+            "nb-base"; // NOI18N
+    
+    public static final String JRE_NESTED_UID =
+            "jre-nested"; // NOI18N
+    
     public static final String DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME =
             "product-cache";
     

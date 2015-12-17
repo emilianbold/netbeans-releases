@@ -86,16 +86,22 @@ public interface StartupExtenderImplementation {
         /**
          * The human readable description of the implementation. May be
          * a bundle key. For example this might be "JRebel", "Profiler" etc.
+         *
+         * @return human readable description of the implementation
          */
         String displayName();
 
         /**
          * Modes to which the provider will respond.
+         *
+         * @return modes to which the provider will respond
          */
         StartupExtender.StartMode[] startMode();
 
         /**
          * Position of the provider in the list of providers.
+         *
+         * @return position of the provider in the list of providers
          */
         int position() default Integer.MAX_VALUE;
 

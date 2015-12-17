@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.toolchain.compilers;
 
-import org.netbeans.modules.cnd.toolchain.compilers.SunCCCompiler;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -228,7 +227,7 @@ public class SunCCCCompilerTest {
         assert (golden.equals(out));
     }
     private static final class MySunCCCompiler extends SunCCCompiler {
-        Pair pair = new Pair();
+        CompilerDefinitions pair = new CompilerDefinitions();
         protected MySunCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
             super(env, flavor, kind, name, displayName, path);
         }

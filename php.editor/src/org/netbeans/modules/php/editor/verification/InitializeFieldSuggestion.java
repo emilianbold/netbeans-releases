@@ -335,6 +335,9 @@ public class InitializeFieldSuggestion extends SuggestionRule {
         } else if (parameterNameExpression instanceof Reference) {
             Reference reference = (Reference) parameterNameExpression;
             Expression expression = reference.getExpression();
+            if (expression instanceof Variadic) {
+                expression = ((Variadic) reference.getExpression()).getExpression();
+            }
             if (expression instanceof Variable) {
                 result = CodeUtils.extractVariableName((Variable) expression);
             }

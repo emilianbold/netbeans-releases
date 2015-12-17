@@ -65,13 +65,13 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public final class LazyCompoundStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
 
-    private LazyCompoundStatementImpl(CsmFile file, int start, int end, CsmFunction scope) {
-        super(file, start, end, scope);
+    private LazyCompoundStatementImpl(CsmFile file, int start, int end, int macroStartMarker, CsmFunction scope) {
+        super(file, start, end, macroStartMarker, scope);
     }
 
     public static LazyCompoundStatementImpl create(AST ast, CsmFile file, CsmFunction scope) {
         assert (ast.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY);
-        return new LazyCompoundStatementImpl(file, getStartOffset(ast), getEndOffset(ast), scope);
+        return new LazyCompoundStatementImpl(file, getStartOffset(ast), getEndOffset(ast), getMacroStartMarker(ast), scope);
     }
 
     @Override

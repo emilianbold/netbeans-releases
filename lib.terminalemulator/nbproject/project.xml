@@ -39,6 +39,7 @@
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.dlight.nativeexecution</friend>
                 <friend>org.netbeans.modules.dlight.terminal</friend>
+                <friend>org.netbeans.modules.docker.ui</friend>
                 <friend>org.netbeans.modules.terminal</friend>
                 <friend>org.netbeans.nativeexecution.terminal</friend>
                 <friend>org.netbeans.terminal.example</friend>

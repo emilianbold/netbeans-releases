@@ -68,6 +68,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
@@ -75,7 +76,6 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvert
 import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -85,9 +85,9 @@ import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Utilities;
 
@@ -106,7 +106,8 @@ public class DetectPanel extends javax.swing.JPanel {
     private enum PlatformState {
         UNKNOWN,
         VALID,
-        INVALID
+        INVALID,
+        UNSUPPORTED
     }
 
     private static final int COLS = 30;
@@ -593,8 +594,8 @@ public class DetectPanel extends javax.swing.JPanel {
             }
             final String srcStr = urlsToString(src);
             detected.set(
-                platform.isValid()?
-                    PlatformState.VALID:
+                platform.isValid() ?
+                    (isSupported(platform.getSpecification().getVersion()) ? PlatformState.VALID : PlatformState.UNSUPPORTED):
                     PlatformState.INVALID);
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -608,7 +609,7 @@ public class DetectPanel extends javax.swing.JPanel {
                     component.progressLabel.setVisible (false);
                     checkValid ();
                 }
-            });            
+            });
         }
 
 
@@ -631,6 +632,10 @@ public class DetectPanel extends javax.swing.JPanel {
                     break;
                 case VALID:
                     vld = true;
+                    break;
+                case UNSUPPORTED:
+                    this.wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(DetectPanel.class,"ERROR_UnsupportedPlatform", SourceLevelQuery.MINIMAL_SOURCE_LEVEL));         //NOI18N
+                    vld = false;
                     break;
                 default:
                     throw new IllegalStateException();
@@ -771,11 +776,18 @@ public class DetectPanel extends javax.swing.JPanel {
                         relative = "";  //NOI18N
                     } else {                
                         int index = extUrl.lastIndexOf(INNER_SEPARATOR);
-                        relative = index < 0 ? "" : extUrl.substring(index);    //NOI18N
+                        relative = index < 0 ? "" : extUrl.substring(index+INNER_SEPARATOR.length());    //NOI18N
                     }
                     final String protocol = url.getProtocol();
-                    if (Util.PROTO_FILE.equals(protocol)){
-                        userName = Utilities.toFile(url.toURI()).getAbsolutePath() + relative;
+                    if (Util.PROTO_FILE.equals(protocol)) {
+                        final String absolutePath = Utilities.toFile(url.toURI()).getAbsolutePath();
+                        final StringBuilder sb = new StringBuilder(absolutePath.length() + INNER_SEPARATOR.length() + relative.length());
+                        sb.append(absolutePath);
+                        if (!relative.isEmpty()) {
+                            sb.append(INNER_SEPARATOR);
+                            sb.append(relative);
+                        }
+                        userName = sb.toString();
                     } else if (Util.isRemoteProtocol(protocol)) {
                         userName = extUrl;
                     } else {
@@ -792,6 +804,9 @@ public class DetectPanel extends javax.swing.JPanel {
             }
             return result.toString();
         }
-        
+
+        private static boolean isSupported(@NonNull final SpecificationVersion specVersion) {
+            return SourceLevelQuery.MINIMAL_SOURCE_LEVEL.compareTo(specVersion) <= 0;
+        }
     }
 }

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.40.0
+#Version 1.45.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -573,6 +573,8 @@ meth public void firePropertyChange(java.lang.String,boolean,boolean)
 meth public void firePropertyChange(java.lang.String,char,char)
 meth public void firePropertyChange(java.lang.String,int,int)
 meth public void grabFocus()
+meth public void hide()
+ anno 0 java.lang.Deprecated()
 meth public void paint(java.awt.Graphics)
 meth public void paintImmediately(int,int,int,int)
 meth public void paintImmediately(java.awt.Rectangle)
@@ -820,6 +822,7 @@ supr org.netbeans.modules.refactoring.api.AbstractRefactoring
 hfds checkInComments
 
 CLSS public final org.netbeans.modules.refactoring.api.Scope
+meth public boolean isDependencies()
 meth public java.util.Set<org.netbeans.api.fileinfo.NonRecursiveFolder> getFolders()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.Set<org.openide.filesystems.FileObject> getFiles()
@@ -831,8 +834,13 @@ meth public static org.netbeans.modules.refactoring.api.Scope create(java.util.C
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
  anno 3 org.netbeans.api.annotations.common.NullAllowed()
+meth public static org.netbeans.modules.refactoring.api.Scope create(java.util.Collection<org.openide.filesystems.FileObject>,java.util.Collection<org.netbeans.api.fileinfo.NonRecursiveFolder>,java.util.Collection<org.openide.filesystems.FileObject>,boolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
 supr java.lang.Object
-hfds files,folders,sourceRoots
+hfds dependencies,files,folders,sourceRoots
 
 CLSS public final org.netbeans.modules.refactoring.api.SingleCopyRefactoring
 cons public init(org.openide.util.Lookup)
@@ -1095,13 +1103,16 @@ CLSS public final org.netbeans.modules.refactoring.spi.ui.ScopePanel
 cons public init()
  anno 0 java.lang.Deprecated()
 cons public init(java.lang.String,java.util.prefs.Preferences,java.lang.String)
+cons public init(java.lang.String,java.util.prefs.Preferences,java.lang.String,javax.swing.event.ChangeListener)
 meth public boolean initialize(org.openide.util.Lookup,java.util.concurrent.atomic.AtomicBoolean)
 meth public org.netbeans.modules.refactoring.api.Scope getSelectedScope()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public org.netbeans.modules.refactoring.spi.ui.ScopeProvider getSelectedScopeProvider()
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public void selectScopeById(java.lang.String)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr javax.swing.JPanel
-hfds ELLIPSIS,SCOPE_COMBOBOX_COLUMNS,btnCustomScope,id,preferences,preferencesKey,scopeCombobox,scopes
+hfds ELLIPSIS,SCOPE_COMBOBOX_COLUMNS,btnCustomScope,id,parent,preferences,preferencesKey,scopeCombobox,scopes
 hcls ScopeAction,ScopeDescriptionRenderer
 
 CLSS public abstract org.netbeans.modules.refactoring.spi.ui.ScopeProvider
@@ -1116,6 +1127,8 @@ meth public abstract org.netbeans.modules.refactoring.api.Scope getScope()
 meth public java.lang.String getDetail()
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public javax.swing.Icon getIcon()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public org.netbeans.modules.refactoring.api.Problem getProblem()
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
 supr java.lang.Object
 
@@ -1197,6 +1210,6 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 

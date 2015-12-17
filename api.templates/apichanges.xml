@@ -114,7 +114,7 @@ made subject to such option by the copyright holder.
                          source="compatible" deprecation="yes"/>
           <description>
               One new attribute 
-              <a href="@org-netbeans-api-templates@/org/netbeans/api/templates/TemplateRegistration.html#page()">
+              <a href="@org-netbeans-api-templates@/org/netbeans/api/templates/TemplateRegistration.html#page--">
 page()</a> 
               to allow usage of HTML based UI driven by Java or JavaScript.
           </description>

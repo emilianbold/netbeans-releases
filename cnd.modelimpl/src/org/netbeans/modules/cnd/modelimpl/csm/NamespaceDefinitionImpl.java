@@ -79,7 +79,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     
     // only one of namespaceRef/namespaceUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private /*final*/ NamespaceImpl namespaceRef;// can be set in onDispose or contstructor only
-    private final CsmUID<CsmNamespace> namespaceUID;
+    private volatile CsmUID<CsmNamespace> namespaceUID;
     private final int leftBracketPos;
     
     private final boolean inline;
@@ -100,10 +100,10 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
 
         // set parent ns, do it in constructor to have final fields
         namespaceUID = ((ProjectBase) file.getProject()).addNamespaceDefinition(parent, this);
-        assert namespaceUID != null;        
+        assert namespaceUID != null;
     }
-    
-    public static NamespaceDefinitionImpl findOrCreateNamespaceDefionition(MutableDeclarationsContainer container, AST ast, NamespaceImpl parentNamespace, FileImpl containerfile) {
+
+     public static NamespaceDefinitionImpl findOrCreateNamespaceDefionition(MutableDeclarationsContainer container, AST ast, NamespaceImpl parentNamespace, FileImpl containerfile) {
         int start = getStartOffset(ast);
         int end = getEndOffset(ast);
         CharSequence name = NameCache.getManager().getString(AstUtil.getText(ast)); // otherwise equals returns false

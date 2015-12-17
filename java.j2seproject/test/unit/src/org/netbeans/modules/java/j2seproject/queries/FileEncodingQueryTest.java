@@ -85,7 +85,7 @@ public class FileEncodingQueryTest extends NbTestCase {
         scratch = FileUtil.toFileObject(wd);
         assertNotNull(wd);
         projdir = scratch.createFolder("proj");
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.6"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null, false);
         Project p = FileOwnerQuery.getOwner(projdir);
         assertNotNull(p);

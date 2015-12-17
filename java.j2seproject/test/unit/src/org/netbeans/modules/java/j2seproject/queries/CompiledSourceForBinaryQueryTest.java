@@ -103,7 +103,7 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     private void prepareProject () throws IOException {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.6"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null, false);
         J2SEProjectGenerator.setDefaultSourceLevel(null);   //NOI18N
         pm = ProjectManager.getDefault();

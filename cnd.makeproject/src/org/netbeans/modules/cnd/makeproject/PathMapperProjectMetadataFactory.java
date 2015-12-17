@@ -29,29 +29,32 @@ public class PathMapperProjectMetadataFactory implements ProjectMetadataFactory 
     @Override
     public void read(FileObject projectDir) {
         FileObject nbproject = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-        FileChangeListenerImpl fileChangeListener = new FileChangeListenerImpl(projectDir);
-        nbproject.addFileChangeListener(fileChangeListener);
-        initListeners(fileChangeListener, projectDir);
-        reload(projectDir);
-
-
+        // check nbproject in case it was deleted while opening
+        if (nbproject != null && nbproject.isValid()) {
+            FileChangeListenerImpl fileChangeListener = new FileChangeListenerImpl(projectDir);
+            nbproject.addFileChangeListener(fileChangeListener);
+            initListeners(fileChangeListener, projectDir);
+            reload(projectDir);
+        }
     }
 
     private void initListeners(FileChangeListener fileChangeListener, FileObject projectDir) {
         FileObject nbproject = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-        FileObject publicPathMapper = nbproject.getFileObject(NAME);
-        if (publicPathMapper != null) {
-            publicPathMapper.removeFileChangeListener(fileChangeListener);
-            publicPathMapper.addFileChangeListener(fileChangeListener);
-        }        
-        final FileObject privateNbFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
-        if (privateNbFolder != null && privateNbFolder.isValid()) {
-            privateNbFolder.removeFileChangeListener(fileChangeListener);
-            privateNbFolder.addFileChangeListener(fileChangeListener);
-            FileObject privatePathMapper = privateNbFolder.getFileObject(NAME);
-            if (privatePathMapper != null) {
-                privatePathMapper.removeFileChangeListener(fileChangeListener);
-                privatePathMapper.addFileChangeListener(fileChangeListener);
+        if (nbproject != null && nbproject.isValid()) {
+            FileObject publicPathMapper = nbproject.getFileObject(NAME);
+            if (publicPathMapper != null) {
+                publicPathMapper.removeFileChangeListener(fileChangeListener);
+                publicPathMapper.addFileChangeListener(fileChangeListener);
+            }
+            final FileObject privateNbFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
+            if (privateNbFolder != null && privateNbFolder.isValid()) {
+                privateNbFolder.removeFileChangeListener(fileChangeListener);
+                privateNbFolder.addFileChangeListener(fileChangeListener);
+                FileObject privatePathMapper = privateNbFolder.getFileObject(NAME);
+                if (privatePathMapper != null) {
+                    privatePathMapper.removeFileChangeListener(fileChangeListener);
+                    privatePathMapper.addFileChangeListener(fileChangeListener);
+                }
             }
         }
     }

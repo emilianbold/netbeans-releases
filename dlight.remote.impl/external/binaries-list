@@ -1,6 +1,13 @@
-#source change:
-#changeset:   292853:94e815a553de
+#changeset:   304539:4b9dbf5eed77
+#branch:      release81
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Fri Oct 09 23:32:45 2015 +0300
-#summary:     addfix (increment fs_server version) #255826 - Open Remote File/Project Dialog is empty in certain cases
-51AC4960C19CF4C2CCA636765BFBC09A5029BFC5 fs_server-1.0.zip
+#date:        Mon Nov 30 18:51:38 2015 +0300
+#summary:     Always use Studio when building for Solaris(#256855 - Fix security issues in fs_server that were discovered by dynamic tests)
+#
+#changeset:   304538:a977dda5c330
+#branch:      release81
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Mon Nov 30 18:50:12 2015 +0300
+#summary:     fixed #256855 - Fix security issues in fs_server that were discovered by dynamic tests
+D84D17804FB0587297CCB4CFF3918561212671A0 fs_server-1.0.zip
+

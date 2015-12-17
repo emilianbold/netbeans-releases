@@ -78,7 +78,7 @@ import org.openide.nodes.Node;
  * @author Jiri Rechtacek
  */
 @ActionID(id = "org.netbeans.modules.templates.actions.TemplatesAction", category = "System")
-@ActionRegistration(displayName = "#LBL_TemplatesAction_Name", iconInMenu=false, asynchronous=true)
+@ActionRegistration(displayName = "#LBL_TemplatesAction_Name", iconInMenu=false, asynchronous=false)
 @ActionReference(position = 1000, path = "Menu/Tools")
 public class TemplatesAction extends AbstractAction { // XXX could be ActionListener if not using SHORT_DESCRIPTION, or maybe alwaysEnabled should support that as an option?
 

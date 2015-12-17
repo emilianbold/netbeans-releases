@@ -53,12 +53,13 @@ final class ClankMemoryBufferImpl extends MemoryBuffer {
         array[nullTermIndex] = 0;
         char$ptr start = NativePointer.create_char$ptr(array);
         char$ptr end = start.$add(nullTermIndex);
-        return new ClankMemoryBufferImpl(url, start, end, true);
+        ClankMemoryBufferImpl out = new ClankMemoryBufferImpl(url, start, end, true);
+        return out;
     }    
 
     private ClankMemoryBufferImpl(CharSequence url, char$ptr start, char$ptr end, boolean RequiresNullTerminator) {
         super();
-        this.fileUrl = NativePointer.create_char$ptr(url);
+        this.fileUrl = NativePointer.create_char$ptr_utf8(url);
         init(start, end, RequiresNullTerminator);
     }
 

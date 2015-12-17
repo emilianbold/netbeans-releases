@@ -187,6 +187,22 @@ public abstract class CsmInstantiationProvider {
     public abstract List<CsmInstantiation> getInstantiatedTypeInstantiations(CsmType type);
     
     /**
+     * Returns the most basic original type.
+     * 
+     * @param type
+     * @return unfolded original type
+     */
+    public abstract CsmType getOriginalType(CsmType type);
+    
+    /**
+     * Returns the most basic instantiated type.
+     * 
+     * @param type
+     * @return unfolded instantiated type
+     */
+    public abstract CsmType getInstantiatedType(CsmType type);
+    
+    /**
      * Return true if instantiation is viable (e.g. it's instantiation parameters are resolved)
      * 
      * @param instantiation
@@ -237,6 +253,12 @@ public abstract class CsmInstantiationProvider {
      * @return specialization parameter
       */
     public abstract CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmScope scope, CsmFile file, int start, int end);
+    
+    /**
+     * returns text of original type
+     */
+    public abstract CharSequence getOriginalText(CsmType type);
+    
     /**
      * returns instantiated text if possible to resolve all instantiation mappings
      */
@@ -354,6 +376,16 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
+        public CsmType getOriginalType(CsmType type) {
+            return null;
+        }
+
+        @Override
+        public CsmType getInstantiatedType(CsmType type) {
+            return null;
+        }
+
+        @Override
         public boolean isViableInstantiation(CsmInstantiation instantiation, boolean acceptTemplateParams) {
             return false;
         }
@@ -376,6 +408,11 @@ public abstract class CsmInstantiationProvider {
         @Override
         public CsmVariadicSpecializationParameter createVariadicSpecializationParameter(List<CsmSpecializationParameter> args, CsmFile file, int start, int end) {
             return null;
+        }
+
+        @Override
+        public CharSequence getOriginalText(CsmType type) {
+            return type.getText();
         }
 
         @Override

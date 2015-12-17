@@ -161,11 +161,11 @@ if [ -z "$jdkhome" ] ; then
         Darwin*)
         # read Java Preferences
         if [ -x "/usr/libexec/java_home" ]; then
-            jdkhome=`/usr/libexec/java_home --version 1.7.0_10+ --failfast`
+            jdkhome=`/usr/libexec/java_home --version 1.8.0+ --failfast`
 
-        # JDK1.7 Update 10 as a fallback
-        elif [ -f "/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home/bin/java" ] ; then
-            jdkhome="/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home"
+        # JDK1.8 as a fallback
+        elif [ -f "/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/bin/java" ] ; then
+            jdkhome="/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home"
         fi         
    
         # JRE fallback

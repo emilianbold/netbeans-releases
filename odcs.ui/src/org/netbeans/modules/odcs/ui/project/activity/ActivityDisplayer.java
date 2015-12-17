@@ -56,6 +56,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
+import oracle.clouddev.server.profile.activity.client.api.Author;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -84,6 +86,11 @@ public abstract class ActivityDisplayer {
     public abstract JComponent getDetailsComponent();
 
     abstract String getUserName();
+
+    static String getUserNameFromActivity(Activity activity) {
+        Author author = activity.getAuthor();
+        return author != null ? author.getFullname() : "SYSTEM"; // NOI18N
+    }
 
     public JComponent getTitleComponent() {
         JPanel panel = new JPanel(new GridBagLayout());

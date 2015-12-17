@@ -1141,6 +1141,33 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug249752_1.cpp", 5, 56, "bug249752_1.cpp", 5, 15);
     }
     
+    public void testBug246684() throws Exception {
+        performTest("bug246684.cpp", 5, 29, "bug246684.cpp", 1, 1);
+        performTest("bug246684.cpp", 6, 33, "bug246684.cpp", 1, 1);
+        performTest("bug246684.cpp", 7, 39, "bug246684.cpp", 1, 1);
+    }
+    
+    public void testBug255900() throws Exception {
+        // Bug 255900 - Unresolved static function in generated header file
+        performTest("bug255900.h", 2, 9, "bug255900.cpp", 2, 1);
+        performTest("bug255900.h", 3, 9, "bug255900.cpp", 3, 1);
+        performTest("bug255900.h", 4, 9, "bug255900.cpp", 1, 1);
+    }
+    
+    public void testBug256296() throws Exception {
+        // Bug 256296 - Additional parens in expression break parser
+        performTest("bug256296.cpp", 8, 32, "bug256296.cpp", 3, 9);
+    }
+    
+    public void testBug257031() throws Exception {
+        // Bug 257031 - Unresolved identifiers in ternary operator (
+        performTest("bug257031.cpp", 10, 29, "bug257031.cpp", 2, 20);
+        performTest("bug257031.cpp", 10, 34, "bug257031.cpp", 2, 20);
+        performTest("bug257031.cpp", 10, 39, "bug257031.cpp", 2, 28);
+        performTest("bug257031.cpp", 15, 47, "bug257031.cpp", 14, 13);
+        performTest("bug257031.cpp", 15, 52, "bug257031.cpp", 14, 21);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

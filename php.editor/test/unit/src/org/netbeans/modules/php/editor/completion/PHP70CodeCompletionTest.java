@@ -130,4 +130,120 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/scalarTypeHints.php", "function __construct(boo^l $arg) {", false);
     }
 
+    public void testReturnType01() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function current(): ^Comment;", false);
+    }
+
+    public void testReturnType02() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function current(): Comm^ent;", false);
+    }
+
+    public void testReturnType03() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &my_array_sort(array &$data): ^array {", false);
+    }
+
+    public void testReturnType04() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &my_array_sort(array &$data): arr^ay {", false);
+    }
+
+    public void testReturnType05() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function foo(): ^Comment {", false);
+    }
+
+    public void testReturnType06() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function foo(): Comm^ent {", false);
+    }
+
+    public void testReturnType07() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): ^\\My\\Firm\\Comment {", false);
+    }
+
+    public void testReturnType08() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): \\^My\\Firm\\Comment {", false);
+    }
+
+    public void testReturnType09() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): \\My\\Fi^rm\\Comment {", false);
+    }
+
+    public void testReturnType10() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): \\My\\Firm\\^Comment {", false);
+    }
+
+    public void testReturnType11() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function &bar(): \\My\\Firm\\Comm^ent {", false);
+    }
+
+    public void testReturnType12() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function baz($data): ^Comment {", false);
+    }
+
+    public void testReturnType13() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function bazz(...$data): ^Comment {", false);
+    }
+
+    public void testReturnType14() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypes.php", "function bazz(&...$data): ^Comment {", false);
+    }
+
+    public void testReturnTypesTyping01() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping01.php", "function mytest():^", false);
+    }
+
+    public void testReturnTypesTyping02() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping02.php", "function mytest(): ^", false);
+    }
+
+    public void testReturnTypesTyping03() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping03.php", "function mytest():^{", false);
+    }
+
+    public void testReturnTypesTyping04a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping04.php", "function mytest():^ {", false);
+    }
+
+    public void testReturnTypesTyping04b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping04.php", "function mytest(): ^{", false);
+    }
+
+    public void testReturnTypesTyping05() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping05.php", "    function current():^", false);
+    }
+
+    public void testReturnTypesTyping06() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping06.php", "    function current(): ^", false);
+    }
+
+    public void testReturnTypesTyping07() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping07.php", "    function current():^;", false);
+    }
+
+    public void testReturnTypesTyping08a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping08.php", "    function current():^ ;", false);
+    }
+
+    public void testReturnTypesTyping08b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping08.php", "    function current(): ^;", false);
+    }
+
+    public void testReturnTypesTyping09() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping09.php", "    function current():^", false);
+    }
+
+    public void testReturnTypesTyping10() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping10.php", "    function current(): ^", false);
+    }
+
+    public void testReturnTypesTyping11() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping11.php", "    function current():^{", false);
+    }
+
+    public void testReturnTypesTyping12a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping12.php", "    function current():^ {", false);
+    }
+
+    public void testReturnTypesTyping12b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/returnTypesTyping12.php", "    function current(): ^{", false);
+    }
+
 }

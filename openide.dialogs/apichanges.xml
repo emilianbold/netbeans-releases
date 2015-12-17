@@ -308,7 +308,7 @@ made subject to such option by the copyright holder.
              Now it is simple to display a message box described by
              <a href="@TOP@/org/openide/NotifyDescriptor.html">NotifyDescriptor</a>
              asynchronously using
-             <a href="@TOP@/org/openide/DialogDisplayer.html#notifyLater(org.openide.NotifyDescriptor)">
+             <a href="@TOP@/org/openide/DialogDisplayer.html#notifyLater-org.openide.NotifyDescriptor-">
                  DialogDisplayer.notifyLater
              </a>.
            </description>

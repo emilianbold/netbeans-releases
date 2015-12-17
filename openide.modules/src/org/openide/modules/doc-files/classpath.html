@@ -459,7 +459,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
   </pre>
   <p>
    This class loader is also the
-   <a href="@JDK@/java/lang/Thread.html#getContextClassLoader()">context class loader</a>
+   <a href="@JDK@/java/lang/Thread.html#getContextClassLoader--">context class loader</a>
    for every thread in the NetBeans VM, unless that thread (or a parent)
    explicitly set some other context class loader. Since many libraries which are
    independent of NetBeans (including in the JRE) are written to assume that all
@@ -521,7 +521,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
    There is also a related protocol <code>nbresloc</code> which loads from the
    system class loader but additionally performs automatic localization and
    branding of the resource you specify. Various
-   <a href="@org-openide-util@/org/openide/util/NbBundle.html#getLocalizingSuffixes()">suffixes</a>
+   <a href="@org-openide-util@/org/openide/util/NbBundle.html#getLocalizingSuffixes--">suffixes</a>
    are inserted between the base name and the extension of the resource
    (beginning with the last dot in the path, if it is in the last path
    component), according to the current locale and branding. For example:

@@ -323,7 +323,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
         if (key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key)) {
             String nue = prefs.get(SimpleValueNames.TEXT_LINE_WRAP, getDef(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
-            if (nue != cboLineWrap.getSelectedItem()) {
+            if (!cboLineWrap.getSelectedItem().equals(nue)) {
                 cboLineWrap.setSelectedItem(nue);
             }
             needsRefresh = true;

@@ -169,7 +169,24 @@ final class FolderOrder extends Object implements Comparator<Object> {
             }
 
             // compare by the provided comparator
-            return ((FolderComparator)(getSortMode())).doCompare(obj1, obj2);
+            SortMode comparator = getSortMode();
+            if (comparator instanceof FolderComparator) {
+                return ((FolderComparator) comparator).doCompare(obj1, obj2);
+            } else if ((obj1 instanceof DataObject) // Also support custom
+                    && (obj2 instanceof DataObject)) { // comparators, #242226.
+                return comparator.compare(
+                        (DataObject) obj1, (DataObject) obj2);
+            } else {
+                FileObject fo1 = FolderComparator.findFileObject(obj1);
+                FileObject fo2 = FolderComparator.findFileObject(obj2);
+                try {
+                    return comparator.compare(
+                            DataObject.find(fo1), DataObject.find(fo2));
+                } catch (DataObjectNotFoundException ex) {
+                    throw new IllegalArgumentException("Expected "      //NOI18N
+                            + "DataObjects or Nodes.");                 //NOI18N
+                }
+            }
         } else {
             if (i2 == null) {
                 return -1;

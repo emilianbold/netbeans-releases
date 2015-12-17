@@ -50,7 +50,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -74,7 +73,6 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -92,7 +90,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -205,15 +202,16 @@ public final class VCSFileProxySupport {
                 }
                 return res;
             } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, null, ex);
             } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, null, ex);
             }
             return null;
         }
     }
 
-    private static FileObject findExistingParent(URI uri, List<String> segments) throws MalformedURLException, URISyntaxException {
+    private static FileObject findExistingParent(URI first, List<String> segments) throws MalformedURLException, URISyntaxException {
+        URI uri = first;
         while (true) {
             URL url =  uri.toURL();
             FileObject fo = URLMapper.findFileObject(url);
@@ -221,12 +219,12 @@ public final class VCSFileProxySupport {
                 return fo;
             }
             String path = uri.getPath();
-            int i = path.indexOf('/');
+            int i = path.lastIndexOf('/'); //NOI18N
             if (i < 0) {
-                i = path.indexOf('\\');
+                i = path.lastIndexOf('\\'); //NOI18N
             }
-            if (i <= 0) {
-                throw new MalformedURLException();
+            if (i < 0) {
+                throw new MalformedURLException("URI "+first.toString()); //NOI18N
             }
             segments.add(path.substring(i+1));
             path = path.substring(0, i);
@@ -254,9 +252,9 @@ public final class VCSFileProxySupport {
             }
             return res;
         } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, null, ex);
         } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, null, ex);
         }
         return null;
     }
@@ -613,7 +611,6 @@ public final class VCSFileProxySupport {
     }
     
     public static FileSystem getDefaultFileSystem() {
-        // TODO: remove dependencies!
         return RemoteVcsSupport.getDefaultFileSystem();
     }
 

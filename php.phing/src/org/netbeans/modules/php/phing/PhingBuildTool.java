@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phing;
 
+import java.util.Iterator;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.phing.exec.PhingExecutable;
 import org.netbeans.modules.php.phing.file.PhingTargets;
@@ -60,7 +66,9 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 @ProjectServiceProvider(
@@ -76,16 +84,18 @@ public final class PhingBuildTool implements BuildToolImplementation {
     public static final String IDENTIFIER = "Phing"; // NOI18N
 
     private final Project project;
-    private final BuildXml buildXml;
-    private final PhingTargets phingTargets;
+    private final BuildXml projectBuildXml;
+    private final PhingTargets projectPhingTargets;
     private final PhingPreferences phingPreferences;
+    final ConcurrentMap<FileObject, PhingTargets> phingTargets = new ConcurrentHashMap<>();
+    private final ChangeListener cleanupListener = new CleanupListener();
 
 
     public PhingBuildTool(Project project) {
         assert project != null;
         this.project = project;
-        buildXml = new BuildXml(project.getProjectDirectory());
-        phingTargets = PhingTargets.create(project, buildXml);
+        projectBuildXml = new BuildXml(project.getProjectDirectory());
+        projectPhingTargets = PhingTargets.create(project, projectBuildXml);
         phingPreferences = new PhingPreferences(project);
     }
 
@@ -113,12 +123,31 @@ public final class PhingBuildTool implements BuildToolImplementation {
         return Bundle.PhingBuildTool_name();
     }
 
-    public BuildXml getBuildXml() {
-        return buildXml;
+    public BuildXml getProjectBuildXml() {
+        return projectBuildXml;
     }
 
-    public PhingTargets getPhingTargets() {
-        return phingTargets;
+    public PhingTargets getProjectPhingTargets() {
+        return projectPhingTargets;
+    }
+
+    public PhingTargets getPhingTargets(@NullAllowed FileObject buildXml) {
+        if (buildXml == null) {
+            return getProjectPhingTargets();
+        }
+        PhingTargets targets = phingTargets.get(buildXml);
+        if (targets != null) {
+            return targets;
+        }
+        BuildXml file = new BuildXml(buildXml.getParent());
+        targets = PhingTargets.create(project, file);
+        PhingTargets currentTargets = phingTargets.putIfAbsent(buildXml, targets);
+        if (currentTargets != null) {
+            return currentTargets;
+        }
+        // register listener
+        file.addChangeListener(WeakListeners.change(cleanupListener, file));
+        return targets;
     }
 
     public PhingPreferences getPhingPreferences() {
@@ -127,14 +156,14 @@ public final class PhingBuildTool implements BuildToolImplementation {
 
     @Override
     public boolean isEnabled() {
-        return buildXml.exists();
+        return projectBuildXml.exists();
     }
 
     @NbBundle.Messages("PhingBuildTool.configure=Do you want to configure project actions to call Phing targets?")
     @Override
     public boolean run(String commandId, boolean waitFinished, boolean warnUser) {
         assert isEnabled() : project.getProjectDirectory().getNameExt();
-        assert buildXml.exists() : project.getProjectDirectory().getNameExt();
+        assert projectBuildXml.exists() : project.getProjectDirectory().getNameExt();
         String phingBuild = phingPreferences.getTarget(commandId);
         if (phingBuild != null) {
             PhingExecutable phing = PhingExecutable.getDefault(project, warnUser);
@@ -165,6 +194,24 @@ public final class PhingBuildTool implements BuildToolImplementation {
             }
         }
         return true;
+    }
+
+    //~ Inner classes
+
+    private final class CleanupListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            Iterator<FileObject> iterator = phingTargets.keySet().iterator();
+            while (iterator.hasNext()) {
+                FileObject buildXml = iterator.next();
+                if (!buildXml.isValid()) {
+                    LOGGER.log(Level.FINE, "Removing invalid phing file {0}", buildXml);
+                    iterator.remove();
+                }
+            }
+        }
+
     }
 
 }

@@ -724,6 +724,23 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
     }
 
+    // for testing only
+    void waitEmptyRefreshQueue() {
+        while(true) {
+            if (refreshTask.isFinished()) {
+                if (filesToRefresh.isEmpty()) {
+                    //System.err.println("Refresh Queue is empty");
+                    return;
+                }
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+            }
+        }
+    }
+
+
     final ProgressMonitor.DefaultProgressMonitor shutdownMonitor = new ProgressMonitor.DefaultProgressMonitor();
     private class RefreshTask implements Runnable {
         

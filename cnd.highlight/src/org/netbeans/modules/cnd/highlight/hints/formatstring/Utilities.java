@@ -56,22 +56,32 @@ import org.openide.util.NbBundle;
  *
  * @author Danila Sergeyev
  */
-class Utilities {
-    
-    // check if object is a function which accepted format string
-    static boolean isFormattedPrintFunction(CsmObject object) {
+class Utilities {    
+    // check if object is a function which accepts format string
+    // return the position of format string in list of arguments
+    // returns -1 if function does not accepts format string
+    static int checkFormattedPrintFunction(CsmObject object) {
+        int position = -1;
         if (CsmKindUtilities.isFunction(object)) {
             CsmFunction function = (CsmFunction) object;
-            if (function.getName().toString().endsWith("printf")) {  // NOI18N
+            String functionName = function.getName().toString();
+            if (functionName.equals("printf") || functionName.equals("vprintf")) {  // NOI18N
+                position = 0;
+            } else if (functionName.equals("snprintf") || functionName.equals("vsnprintf")) {  // NOI18N
+                position = 2;
+            } else if (functionName.endsWith("printf")) {  // NOI18N
+                position = 1;
+            }
+            if (position != -1) {
                 CsmFile srcFile = function.getContainingFile();
                 for (CsmInclude include : CsmFileInfoQuery.getDefault().getIncludeStack(srcFile)) {
                     if (include.getIncludeName().toString().equals("stdio.h")) {  // NOI18N
-                        return true;
+                        return position;
                     }
                 }
             }
         }
-        return false;
+        return -1;
     }
     
     // take const modifier into account
@@ -117,10 +127,10 @@ class Utilities {
                 return Arrays.asList("c");                                // NOI18N
             } else if (type.contains("short")) {                          // NOI18N
                 return Arrays.asList("hd", "hi");                         // NOI18N
-            } else if (type.contains("intmax_t")) {                       // NOI18N
-                return Arrays.asList("jd", "ji");                         // NOI18N
             } else if (type.contains("uintmax_t")) {                      // NOI18N
                 return Arrays.asList("jo", "ju", "jx", "jX");             // NOI18N
+            } else if (type.contains("intmax_t")) {                       // NOI18N
+                return Arrays.asList("jd", "ji");                         // NOI18N
             } else if (type.contains("size_t")) {                         // NOI18N
                 return Arrays.asList("zd", "zi","zo", "zu", "zx", "zX");  // NOI18N
             } else if (type.contains("ptrdiff_t")) {                      // NOI18N

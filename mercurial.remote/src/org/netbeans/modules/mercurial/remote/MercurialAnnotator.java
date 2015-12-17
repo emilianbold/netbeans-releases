@@ -98,6 +98,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -149,6 +150,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
     private static final Logger LOG = Logger.getLogger(MercurialAnnotator.class.getName());
     
     private final Map<FileSystem, AnnotationFormat> annotationFormat = new HashMap<>();
+    private final RequestProcessor rp = new RequestProcessor("MercurialRemoteRefresh", 1); //NOI18N
 
     public static final class AnnotationFormat {
         private MessageFormat format;
@@ -157,17 +159,18 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
 
     MercurialAnnotator(FileStatusCache cache) {
         this.cache = cache;
-        initDefaults();
-    }
-    
-    private void initDefaults() {
         refresh();
     }
-
+    
     public void refresh() {
-        for(FileSystem fileSystem : VCSFileProxySupport.getConnectedFileSystems()) {
-            initFormat(fileSystem);
-        }
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                for(FileSystem fileSystem : VCSFileProxySupport.getConnectedFileSystems()) {
+                    initFormat(fileSystem);
+                }
+            }
+        });
     }
 
     private AnnotationFormat initFormat(FileSystem fileSystem) {
@@ -359,16 +362,19 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             // XXX use Actions.forID
             Action a;
             if (noneVersioned) {
-                a = Utils.getAcceleratedAction("Actions/MercurialRemote/org-netbeans-modules-mercurial-remote-ui-create-CreateAction.instance"); //NOI18N
-                if(a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
-                }
-                if(a != null) {
-                    actions.add(a);
-                }
-                a = (Action) Utils.getAcceleratedAction("Actions/MercurialRemote/org-netbeans-modules-mercurial-remote-ui-clone-CloneExternalAction.instance"); //NOI18N
-                if(a != null) {
-                    actions.add(a);
+                FileSystem defaultFileSystem = VCSFileProxySupport.getDefaultFileSystem();
+                if (defaultFileSystem != null) {
+                    a = Utils.getAcceleratedAction("Actions/MercurialRemote/org-netbeans-modules-mercurial-remote-ui-create-CreateAction.instance"); //NOI18N
+                    if(a instanceof ContextAwareAction) {
+                        a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
+                    }
+                    if(a != null) {
+                        actions.add(a);
+                    }
+                    a = (Action) Utils.getAcceleratedAction("Actions/MercurialRemote/org-netbeans-modules-mercurial-remote-ui-clone-CloneExternalAction.instance"); //NOI18N
+                    if(a != null) {
+                        actions.add(a);
+                    }
                 }
             } else {
                 actions.add(SystemAction.get(StatusAction.class));
@@ -395,12 +401,14 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                Action a = Actions.forID("MercurialRemote", "org.netbeans.modules.mercurial.remote.ui.create.CreateAction"); //NOI18N
-                if(a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
-                }            
-                if(a != null) {
-                    actions.add(a);
+                if (files.size() > 0 && files.iterator().next().toFile() == null) {
+                    Action a = Actions.forID("MercurialRemote", "org.netbeans.modules.mercurial.remote.ui.create.CreateAction"); //NOI18N
+                    if(a instanceof ContextAwareAction) {
+                        a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed(files.toArray()));
+                    }
+                    if(a != null) {
+                        actions.add(a);
+                    }
                 }
             } else {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context)); //NOI18N

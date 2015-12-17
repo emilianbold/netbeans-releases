@@ -58,6 +58,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroupModifier;
@@ -246,6 +247,11 @@ public class J2SEProjectBuilder {
      * @return the builder
      */
     public J2SEProjectBuilder setSourceLevel (final @NullAllowed SpecificationVersion sourceLevel) {
+        if (sourceLevel != null && SourceLevelQuery.MINIMAL_SOURCE_LEVEL.compareTo(sourceLevel) > 0) {
+            throw new IllegalArgumentException(String.format(
+                    "Source level less than %s is unsupported.",       //NOI18N
+                    SourceLevelQuery.MINIMAL_SOURCE_LEVEL));
+        }
         this.defaultSourceLevel = sourceLevel;
         return this;
     }

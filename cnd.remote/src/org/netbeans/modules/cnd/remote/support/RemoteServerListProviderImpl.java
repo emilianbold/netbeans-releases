@@ -65,4 +65,9 @@ public class RemoteServerListProviderImpl implements RemoteServerListProvider {
         }
         return res;
     }    
+
+    @Override
+    public ExecutionEnvironment getDefailtServer() {
+        return RemoteServerList.getInstance().getDefaultRecord().getExecutionEnvironment();
+    }    
 }

@@ -46,9 +46,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 
@@ -57,7 +59,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration
  * @author Radek Matous
  */
 public class LambdaFunctionDeclarationInfo extends ASTNodeInfo<LambdaFunctionDeclaration> {
-    Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
+
+    private final Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
+
 
     protected LambdaFunctionDeclarationInfo(LambdaFunctionDeclaration node) {
         super(node);
@@ -97,6 +101,15 @@ public class LambdaFunctionDeclarationInfo extends ASTNodeInfo<LambdaFunctionDec
             retval.add(parameterInfo.toParameter());
         }
         return retval;
+    }
+
+    @CheckForNull
+    public QualifiedName getReturnType() {
+        Expression returnType = getOriginalNode().getReturnType();
+        if (returnType == null) {
+            return null;
+        }
+        return QualifiedName.create(returnType);
     }
 
 }

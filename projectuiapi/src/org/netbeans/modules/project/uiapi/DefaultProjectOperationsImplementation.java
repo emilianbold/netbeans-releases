@@ -756,23 +756,32 @@ public final class DefaultProjectOperationsImplementation {
         if (projectNameText.indexOf('/') != -1 || projectNameText.indexOf('\\') != -1) {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Not_Valid_Filename", projectNameText);
         }
+        if (hasTrailingWhiteSpace(projectNameText)) {
+            return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Trailing_Whitespace", projectNameText); //NOI18N
+        }
 
         if (location == null) {
             return null; // #199241: skip other checks for remote projects
         }
 
         File parent = location;
+        String checkFileRes = null; // result of check of last path segment
         if (!location.exists()) {
             //if some dirs in teh chain are not created, consider it ok.
+            checkFileRes = checkFileOrFolderName(parent);
             parent = location.getParentFile();
-            while (parent != null && !parent.exists()) {
+            while (parent != null && !parent.exists() && checkFileRes == null) {
+                checkFileRes = checkFileOrFolderName(parent);
                 parent = parent.getParentFile();
             }
             if (parent == null) {
                 return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Does_Not_Exist");
             }
         }
-        
+        if (checkFileRes != null) {
+            return checkFileRes;
+        }
+
         if (!parent.canWrite()) {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Read_Only");
         }
@@ -790,7 +799,26 @@ public final class DefaultProjectOperationsImplementation {
         
         return null;
     }
-    
+
+    private static boolean hasTrailingWhiteSpace(String s) {
+        return s.matches("(^\\s.*)|(.*\\s$)");                          //NOI18N
+    }
+
+    private static String checkFileOrFolderName(File f) {
+        String n = f.getName();
+        if (hasTrailingWhiteSpace(n)) {
+            return NbBundle.getMessage(
+                    DefaultProjectOperationsImplementation.class,
+                    "ERR_Trailing_Whitespace", n);                      //NOI18N
+        } else if (n.contains("/") || n.contains("\\")) {               //NOI18N
+            return NbBundle.getMessage(
+                    DefaultProjectOperationsImplementation.class,
+                    "ERR_Not_Valid_Foldername", n);                     //NOI18N
+        } else {
+            return null;
+        }
+    }
+
     private static void close(final Project prj) {
         LifecycleManager.getDefault().saveAll();
         OpenProjects.getDefault().close(new Project[] {prj});

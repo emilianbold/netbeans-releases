@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil.ASTTokensStringizer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -102,7 +104,10 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             isLambda = true;
         }        
         if (name.length() == 0) {
-            throw AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
+            ASTTokensStringizer stringizer = new ASTTokensStringizer();
+            AstUtil.visitAST(stringizer, ast);
+            String expanded = stringizer.getText();
+            throw AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name: " + expanded); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
         

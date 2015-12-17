@@ -1219,6 +1219,15 @@ class CustomCodeView extends javax.swing.JPanel {
         if (ignoreComboAction)
             return; // not invoked by user, ignore
 
+        if (evt.getSource() == finalCheckBox) {
+            if (finalCheckBox.isSelected()) {
+                volatileCheckBox.setSelected(false);
+            }
+        } else if (evt.getSource() == volatileCheckBox) {
+            if (volatileCheckBox.isSelected()) {
+                finalCheckBox.setSelected(false);
+            }
+        }
         changed = true;
         controller.declarationChanged();
     }//GEN-LAST:event_declControlActionPerformed

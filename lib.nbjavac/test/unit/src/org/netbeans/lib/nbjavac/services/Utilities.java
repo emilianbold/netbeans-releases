@@ -44,7 +44,7 @@ package org.netbeans.lib.nbjavac.services;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTool;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javadoc.JavadocClassReader;
+import com.sun.tools.javadoc.JavadocClassFinder;
 import com.sun.tools.javadoc.Messager;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -79,7 +79,7 @@ public class Utilities {
         NBTreeMaker.preRegister(context);
         NBJavadocEnter.preRegister(context);
         PrintWriter w = new PrintWriter(System.out);
-        JavadocClassReader.preRegister(context, true);
+        JavadocClassFinder.preRegister(context, true);
         return task;
     }
     
@@ -99,7 +99,7 @@ public class Utilities {
         }
     }
 
-    private static final PrintWriter DEV_NULL = new PrintWriter(new NullWriter(), false);
+    public static final PrintWriter DEV_NULL = new PrintWriter(new NullWriter(), false);
 
     private static class NullWriter extends Writer {
 

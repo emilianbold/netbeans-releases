@@ -90,6 +90,7 @@ public interface NativeDebugger extends BreakpointProvider {
     public NativeSession session();
 
     public void addStateListener(StateListener sl);
+    public void removeStateListener(StateListener sl);
     public State state();
 
     public FileMapper fmap();

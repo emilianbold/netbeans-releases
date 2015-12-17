@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.38
+#Version 1.46.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -14,6 +14,18 @@ meth public final void wait(long) throws java.lang.InterruptedException
 meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
+
+CLSS public final org.netbeans.api.progress.BaseProgressUtils
+meth public static <%0 extends java.lang.Object> java.util.concurrent.Future<{%%0}> showProgressDialogAndRunLater(org.netbeans.api.progress.ProgressRunnable<{%%0}>,org.netbeans.api.progress.ProgressHandle,boolean)
+meth public static <%0 extends java.lang.Object> {%%0} showProgressDialogAndRun(org.netbeans.api.progress.ProgressRunnable<{%%0}>,java.lang.String,boolean)
+meth public static void runOffEventDispatchThread(java.lang.Runnable,java.lang.String,java.util.concurrent.atomic.AtomicBoolean,boolean)
+meth public static void runOffEventDispatchThread(java.lang.Runnable,java.lang.String,java.util.concurrent.atomic.AtomicBoolean,boolean,int,int)
+meth public static void runOffEventThreadWithProgressDialog(java.lang.Runnable,java.lang.String,org.netbeans.api.progress.ProgressHandle,boolean,int,int)
+meth public static void showProgressDialogAndRun(java.lang.Runnable,java.lang.String)
+meth public static void showProgressDialogAndRun(java.lang.Runnable,org.netbeans.api.progress.ProgressHandle,boolean)
+supr java.lang.Object
+hfds DISPLAY_DIALOG_MS,DISPLAY_WAIT_CURSOR_MS,PROVIDER,TRIVIAL
+hcls CancellableRunnableWrapper,RunnableWrapper,Trivial
 
 CLSS public final org.netbeans.api.progress.ProgressHandle
 meth public final void finish()
@@ -39,25 +51,6 @@ hcls Accessor
 CLSS public abstract interface org.netbeans.api.progress.ProgressRunnable<%0 extends java.lang.Object>
 meth public abstract {org.netbeans.api.progress.ProgressRunnable%0} run(org.netbeans.api.progress.ProgressHandle)
 
-CLSS public final org.netbeans.api.progress.BaseProgressUtils
-meth public static <%0 extends java.lang.Object> java.util.concurrent.Future<{%%0}> showProgressDialogAndRunLater(org.netbeans.api.progress.ProgressRunnable<{%%0}>,org.netbeans.api.progress.ProgressHandle,boolean)
-meth public static <%0 extends java.lang.Object> {%%0} showProgressDialogAndRun(org.netbeans.api.progress.ProgressRunnable<{%%0}>,java.lang.String,boolean)
-meth public static void runOffEventDispatchThread(java.lang.Runnable,java.lang.String,java.util.concurrent.atomic.AtomicBoolean,boolean)
-meth public static void runOffEventDispatchThread(java.lang.Runnable,java.lang.String,java.util.concurrent.atomic.AtomicBoolean,boolean,int,int)
-meth public static void runOffEventThreadWithProgressDialog(java.lang.Runnable,java.lang.String,org.netbeans.api.progress.ProgressHandle,boolean,int,int)
-meth public static void showProgressDialogAndRun(java.lang.Runnable,java.lang.String)
-meth public static void showProgressDialogAndRun(java.lang.Runnable,org.netbeans.api.progress.ProgressHandle,boolean)
-supr java.lang.Object
-hfds DISPLAY_DIALOG_MS,DISPLAY_WAIT_CURSOR_MS,PROVIDER
-hcls CancellableRunnableWrapper,RunnableWrapper,Trivial
-
-CLSS public org.netbeans.api.progress.aggregate.BasicAggregateProgressFactory
-cons public init()
-meth protected static org.netbeans.api.progress.ProgressHandle getProgressHandle(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
-meth public static org.netbeans.api.progress.aggregate.AggregateProgressHandle createHandle(java.lang.String,org.netbeans.api.progress.aggregate.ProgressContributor[],org.openide.util.Cancellable)
-meth public static org.netbeans.api.progress.aggregate.ProgressContributor createProgressContributor(java.lang.String)
-supr java.lang.Object
-
 CLSS public final org.netbeans.api.progress.aggregate.AggregateProgressHandle
 meth public void addContributor(org.netbeans.api.progress.aggregate.ProgressContributor)
 meth public void finish()
@@ -69,6 +62,14 @@ meth public void start(long)
 meth public void suspend(java.lang.String)
 supr java.lang.Object
 hfds LOG,WORKUNITS,contributors,current,displayName,finished,handle,monitor
+
+CLSS public org.netbeans.api.progress.aggregate.BasicAggregateProgressFactory
+cons public init()
+meth protected static org.netbeans.api.progress.ProgressHandle getProgressHandle(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
+meth protected static org.netbeans.api.progress.aggregate.AggregateProgressHandle doCreateHandle(java.lang.String,org.netbeans.api.progress.aggregate.ProgressContributor[],org.openide.util.Cancellable,boolean,org.netbeans.api.progress.ProgressHandle)
+meth public static org.netbeans.api.progress.aggregate.AggregateProgressHandle createHandle(java.lang.String,org.netbeans.api.progress.aggregate.ProgressContributor[],org.openide.util.Cancellable)
+meth public static org.netbeans.api.progress.aggregate.ProgressContributor createProgressContributor(java.lang.String)
+supr java.lang.Object
 
 CLSS public final org.netbeans.api.progress.aggregate.ProgressContributor
 meth public java.lang.String getTrackingId()
@@ -89,29 +90,37 @@ CLSS public org.netbeans.modules.progress.spi.Controller
 cons public init(org.netbeans.modules.progress.spi.ProgressUIWorker)
 fld public final static int INITIAL_DELAY = 500
 fld public static org.netbeans.modules.progress.spi.Controller defaultInstance
+meth protected final org.netbeans.modules.progress.spi.ProgressUIWorker getProgressUIWorker()
+meth protected java.util.concurrent.Executor getEventExecutor()
+meth protected org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel createWorker()
 meth protected void resetTimer(int,boolean)
+meth protected void runEvents()
 meth public org.netbeans.modules.progress.spi.TaskModel getModel()
 meth public static org.netbeans.modules.progress.spi.Controller getDefault()
 meth public void runNow()
 supr java.lang.Object
-hfds TIMER_QUANTUM,component,dispatchRunning,eventQueue,model,timerStart
+hfds RQ,TIMER_QUANTUM,component,dispatchRunning,eventQueue,model,task,taskDelay,timerStart
 
-CLSS public final org.netbeans.modules.progress.spi.InternalHandle
+CLSS public org.netbeans.modules.progress.spi.InternalHandle
+cons protected init(java.lang.String,org.openide.util.Cancellable,boolean)
 fld public final static int NO_INCREASE = -2
 fld public final static int STATE_FINISHED = 2
 fld public final static int STATE_INITIALIZED = 0
 fld public final static int STATE_REQUEST_STOP = 3
 fld public final static int STATE_RUNNING = 1
+meth protected final void setController(org.netbeans.modules.progress.spi.Controller)
 meth public boolean isAllowCancel()
 meth public boolean isAllowView()
 meth public boolean isCustomPlaced()
 meth public boolean isInSleepMode()
-meth public boolean isUserInitialized()
 meth public double getPercentageDone()
+meth public final boolean isUserInitialized()
+meth public final org.netbeans.api.progress.ProgressHandle createProgressHandle()
 meth public int getInitialDelay()
 meth public int getState()
 meth public int getTotalUnits()
 meth public java.lang.String getDisplayName()
+meth public long getLastPingTime()
 meth public long getTimeStampStarted()
 meth public org.netbeans.modules.progress.spi.ProgressEvent requestStateSnapshot()
 meth public void finish()
@@ -126,7 +135,11 @@ meth public void toDeterminate(int,long)
 meth public void toIndeterminate()
 meth public void toSilent(java.lang.String)
 supr java.lang.Object
-hfds LOG,cancelable,component,controller,currentUnit,customPlaced1,customPlaced2,customPlaced3,displayName,initialDelay,initialEstimate,lastMessage,state,timeLastProgress,timeSleepy,timeStarted,totalUnits,userInitiated,viewAction
+hfds LOG,cancelable,compatInit,controller,currentUnit,del,displayName,initialDelay,initialEstimate,lastMessage,state,timeLastProgress,timeSleepy,timeStarted,totalUnits,userInitiated
+
+CLSS public abstract interface org.netbeans.modules.progress.spi.ProgressEnvironment
+meth public abstract org.netbeans.api.progress.ProgressHandle createHandle(java.lang.String,org.openide.util.Cancellable,boolean)
+meth public abstract org.netbeans.modules.progress.spi.Controller getController()
 
 CLSS public final org.netbeans.modules.progress.spi.ProgressEvent
 cons public init(org.netbeans.modules.progress.spi.InternalHandle,int,boolean)
@@ -194,7 +207,7 @@ meth public void removeHandle(org.netbeans.modules.progress.spi.InternalHandle)
 meth public void removeListDataListener(javax.swing.event.ListDataListener)
 meth public void removeListSelectionListener(javax.swing.event.ListSelectionListener)
 supr java.lang.Object
-hfds dataListeners,explicit,model,selectionListeners,selectionModel
+hfds dataListeners,eventExecutor,explicit,model,selectionListeners,selectionModel
 hcls TaskListener
 
 CLSS abstract interface org.netbeans.modules.progress.spi.package-info

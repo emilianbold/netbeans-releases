@@ -56,10 +56,10 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -71,22 +71,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.filesystems.spi.ArchiveRootProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.implspi.NamedServicesProvider;
 
 /** Common utilities for handling files.
@@ -99,11 +103,6 @@ public final class FileUtil extends Object {
 
     private static final Logger LOG = Logger.getLogger(FileUtil.class.getName());
 
-    /** Normal header for ZIP files. */
-    private static byte[] ZIP_HEADER_1 = {0x50, 0x4b, 0x03, 0x04};
-    /** Also seems to be used at least in apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform/random/modules/ext/stuff.jar; not known why */
-    private static byte[] ZIP_HEADER_2 = {0x50, 0x4b, 0x05, 0x06};
-    
     /** transient attributes which should not be copied
     * of type Set<String>
     */
@@ -125,8 +124,6 @@ public final class FileUtil extends Object {
         transientAttributes.add(MultiFileObject.WEIGHT_ATTRIBUTE); // NOI18N
     }
 
-    /** Cache for {@link #isArchiveFile(FileObject)}. */
-    private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
     private static FileSystem diskFileSystem;
 
     static String toDebugString(File file) {
@@ -1835,35 +1832,41 @@ public final class FileUtil extends Object {
      * Returns a FileObject representing the root folder of an archive.
      * Clients may need to first call {@link #isArchiveFile(FileObject)} to determine
      * if the file object refers to an archive file.
-     * @param fo a ZIP- (or JAR-) format archive file
+     * @param fo a java archive file, by default ZIP and JAR are supported
      * @return a virtual archive root folder, or null if the file is not actually an archive
      * @since 4.48
      */
     public static FileObject getArchiveRoot(FileObject fo) {
-        URL archiveURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-
-        if (archiveURL == null) {
-            return null;
+        for (ArchiveRootProvider provider : getArchiveRootProviders()) {
+            if (provider.isArchiveFile(fo, false)) {
+                final FileObject root = provider.getArchiveRoot(fo);
+                if (root != null) {
+                    return root;
+                }
+            }
         }
-
-        return URLMapper.findFileObject(getArchiveRoot(archiveURL));
+        return null;
     }
 
     /**
      * Returns a URL representing the root of an archive.
      * Clients may need to first call {@link #isArchiveFile(URL)} to determine if the URL
      * refers to an archive file.
-     * @param url of a ZIP- (or JAR-) format archive file
-     * @return the <code>jar</code>-protocol URL of the root of the archive
+     * @param url of a java archive file, by default ZIP and JAR are supported
+     * @return the archive (eg. <code>jar</code>) protocol URL of the root of the archive.
      * @since 4.48
      */
     public static URL getArchiveRoot(URL url) {
-        try {
-            // XXX TBD whether the url should ever be escaped...
-            return new URL("jar:" + url + "!/"); // NOI18N
-        } catch (MalformedURLException e) {
-            throw new AssertionError(e);
+        for (ArchiveRootProvider provider : getArchiveRootProviders()) {
+            if (provider.isArchiveFile(url, false)) {
+                final URL root = provider.getArchiveRoot(url);
+                if (root != null) {
+                    return root;
+                }
+            }
         }
+        //For compatibility reason never return null but return the jar URL.
+        return getArchiveRootProviders().iterator().next().getArchiveRoot(url);
     }
 
     /**
@@ -1871,161 +1874,107 @@ public final class FileUtil extends Object {
      * FileObject given by the parameter.
      * <strong>Remember</strong> that any path within the archive is discarded
      * so you may need to check for non-root entries.
-     * @param fo a file in a JAR filesystem
+     * @param fo a file in an archive filesystem
      * @return the file corresponding to the archive itself,
      *         or null if <code>fo</code> is not an archive entry
      * @since 4.48
      */
     public static FileObject getArchiveFile(FileObject fo) {
         Parameters.notNull("fo", fo);   //NOI18N
-        try {
-            FileSystem fs = fo.getFileSystem();
-
-            if (fs instanceof JarFileSystem) {
-                File jarFile = ((JarFileSystem) fs).getJarFile();
-
-                return toFileObject(jarFile);
+        for (ArchiveRootProvider provider : getArchiveRootProviders()) {
+            if (provider.isArchiveArtifact(fo)) {
+                final FileObject file = provider.getArchiveFile(fo);
+                if (file != null) {
+                    return file;
+                }
             }
-        } catch (FileStateInvalidException e) {
-            Exceptions.printStackTrace(e);
         }
-
         return null;
     }
 
     /**
      * Returns the URL of the archive file containing the file
-     * referred to by a <code>jar</code>-protocol URL.
+     * referred to by an archive (eg. <code>jar</code>) protocol URL.
      * <strong>Remember</strong> that any path within the archive is discarded
      * so you may need to check for non-root entries.
      * @param url a URL
-     * @return the embedded archive URL, or null if the URL is not a
-     *         <code>jar</code>-protocol URL containing <code>!/</code>
+     * @return the embedded archive URL, or null if the URL is not an
+     *         archive protocol URL containing <code>!/</code>
      * @since 4.48
      */
     public static URL getArchiveFile(URL url) {
-        String protocol = url.getProtocol();
-
-        if ("jar".equals(protocol)) { //NOI18N
-
-            String path = url.getPath();
-            int index = path.indexOf("!/"); //NOI18N
-
-            if (index >= 0) {
-                String jarPath = null;
-                try {
-                    jarPath = path.substring(0, index);
-                    if (jarPath.indexOf("file://") > -1 && jarPath.indexOf("file:////") == -1) {  //NOI18N
-                        /* Replace because JDK application classloader wrongly recognizes UNC paths. */
-                        jarPath = jarPath.replaceFirst("file://", "file:////");  //NOI18N
-                    }
-                    return new URL(jarPath);
-
-                } catch (MalformedURLException mue) {                    
-                    LOG.log(
-                        Level.WARNING,
-                        "Invalid URL ({0}): {1}, jarPath: {2}", //NOI18N
-                        new Object[] {
-                            mue.getMessage(),
-                            url.toExternalForm(),
-                            jarPath
-                        });
+        for (ArchiveRootProvider provider : getArchiveRootProviders()) {
+            if (provider.isArchiveArtifact(url)) {
+                final URL file = provider.getArchiveFile(url);
+                if (file != null) {
+                    return file;
                 }
             }
         }
-
         return null;
     }
 
     /**
-     * Tests if a file represents a JAR or ZIP archive.
+     * Tests if a file represents a java archive.
+     * By default the JAR or ZIP archives are supported.
      * @param fo the file to be tested
-     * @return true if the file looks like a ZIP-format archive
+     * @return true if the file looks like a java archive
      * @since 4.48
      */
     public static boolean isArchiveFile(FileObject fo) {
         Parameters.notNull("fileObject", fo);  //NOI18N
-
-        if (!fo.isValid()) {
-            return isArchiveFile(fo.getPath());
-        }
-        // XXX Special handling of virtual file objects: try to determine it using its name, but don't cache the
-        // result; when the file is checked out the more correct method can be used
-        if (fo.isVirtual()) {
-            return isArchiveFile(fo.getPath());
-        }
-
-        if (fo.isFolder()) {
-            return false;
-        }
-
-        // First check the cache.
-        Boolean b = archiveFileCache.get(fo);
-
-        if (b == null) {
-            // Need to check it.
-            try {
-                InputStream in = fo.getInputStream();
-
-                try {
-                    byte[] buffer = new byte[4];
-                    int len = in.read(buffer, 0, 4);
-
-                    if (len == 4) {
-                        // Got a header, see if it is a ZIP file.
-                        b = Boolean.valueOf(Arrays.equals(ZIP_HEADER_1, buffer) || Arrays.equals(ZIP_HEADER_2, buffer));
-                    } else {
-                        //If the length is less than 4, it can be either
-                        //broken (empty) archive file or other empty file.
-                        //Return false and don't cache it, when the archive
-                        //file will be written and closed its length will change
-                        return false;
-                    }
-                } finally {
-                    in.close();
-                }
-            } catch (IOException ioe) {
-                // #160507 - ignore exception (e.g. permission denied)
-                LOG.log(Level.FINE, null, ioe);
+        for (ArchiveRootProvider provider : getArchiveRootProviders()) {
+            if (provider.isArchiveFile(fo, true)) {
+                return true;
             }
-
-            if (b == null) {
-                b = isArchiveFile(fo.getPath());
-            }
-
-            archiveFileCache.put(fo, b);
         }
-
-        return b.booleanValue();
+        return false;
     }
 
     /**
-     * Tests if a URL represents a JAR or ZIP archive.
+     * Tests if a URL represents a java archive.
+     * By default the JAR or ZIP archives are supported.
      * If there is no such file object, the test is done by heuristic: any URL with an extension is
      * treated as an archive.
      * @param url a URL to a file
-     * @return true if the URL seems to represent a ZIP-format archive
+     * @return true if the URL seems to represent a java archive
      * @since 4.48
      */
     public static boolean isArchiveFile(URL url) {
         Parameters.notNull("url", url);  //NOI18N
+        return isArchiveFileImpl(url, true);
+    }
 
-        if ("jar".equals(url.getProtocol())) { //NOI18N
-
-            //Already inside archive, return false
-            return false;
-        }
-
-        FileObject fo = URLMapper.findFileObject(url);
-
-        if ((fo != null) && !fo.isVirtual()) {
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.log(Level.FINEST, "isArchiveFile_FILE_RESOLVED", fo); //NOI18N, used by FileUtilTest.testIsArchiveFileRace
+    /**
+     * Tests if an file is inside an archive.
+     * @param fo the file to be tested
+     * @return true if the file is inside an archive
+     * @since 9.10
+     */
+    public static boolean isArchiveArtifact(FileObject fo) {
+        Parameters.notNull("fileObject", fo);  //NOI18N
+        for (ArchiveRootProvider provider : getArchiveRootProviders()) {
+            if (provider.isArchiveArtifact(fo)) {
+                return true;
             }
-            return isArchiveFile(fo);
-        } else {
-            return isArchiveFile(url.getPath());
         }
+        return false;
+    }
+
+    /**
+     * Tests if an {@link URL} denotes a file inside an archive.
+     * @param url the url to be tested
+     * @return true if the url points inside an archive
+     * @since 9.10
+     */
+    public static boolean isArchiveArtifact(URL url) {
+        Parameters.notNull("url", url);  //NOI18N
+        for (ArchiveRootProvider provider : getArchiveRootProviders()) {
+            if (provider.isArchiveArtifact(url)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -2048,7 +1997,7 @@ public final class FileUtil extends Object {
                 u = BaseUtilities.toURI(entry).toURL();
                 isDir = entry.isDirectory();
             } while (wasDir ^ isDir);
-            if (isArchiveFile(u) || entry.isFile() && entry.length() < 4) {
+            if (isArchiveFileImpl(u, false)) {
                 return getArchiveRoot(u);
             } else if (isDir) {
                 assert u.toExternalForm().endsWith("/");    //NOI18N
@@ -2078,9 +2027,23 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.8
      */
     public static File archiveOrDirForURL(URL entry) {
-        String u = entry.toString();
-        if (u.startsWith("jar:file:") && u.endsWith("!/")) { // NOI18N
-            return BaseUtilities.toFile(URI.create(u.substring(4, u.length() - 2)));
+        final String u = entry.toString();
+        if (isArchiveArtifact(entry)) {
+            entry = getArchiveFile(entry);
+            try {
+                return u.endsWith("!/") && entry != null && "file".equals(entry.getProtocol()) ?  //NOI18N
+                    BaseUtilities.toFile(entry.toURI()):
+                    null;
+            } catch (URISyntaxException e) {
+                LOG.log(
+                        Level.WARNING,
+                        "Invalid URI: {0} ({1})",   //NOI18N
+                        new Object[]{
+                            entry,
+                            e.getMessage()
+                        });
+                return null;
+            }
         } else if (u.startsWith("file:")) { // NOI18N
             return BaseUtilities.toFile(URI.create(u));
         } else {
@@ -2361,13 +2324,27 @@ public final class FileUtil extends Object {
         }
     }
 
-    /**
-     * Tests if a non existent path represents a file.
-     * @param path to be tested, separated by '/'.
-     * @return true if the file has '.' after last '/'.
-     */
-    private static boolean isArchiveFile (final String path) {
-        int index = path.lastIndexOf('.');  //NOI18N
-        return (index != -1) && (index > path.lastIndexOf('/') + 1);    //NOI18N
+    private static boolean isArchiveFileImpl(final URL url, final boolean strict) {
+        for (ArchiveRootProvider provider : getArchiveRootProviders()) {
+            if (provider.isArchiveFile(url, strict)) {
+                return true;
+            }
+        }
+        return false;
     }
+
+    private static Iterable<? extends ArchiveRootProvider> getArchiveRootProviders() {
+        Lookup.Result<ArchiveRootProvider> res = archiveRootProviders.get();
+        if (res == null) {
+            res = new ProxyLookup(
+                Lookups.singleton(new JarArchiveRootProvider()),
+                Lookup.getDefault()).lookupResult(ArchiveRootProvider.class);
+            if (!archiveRootProviders.compareAndSet(null, res)) {
+                res = archiveRootProviders.get();
+            }
+        }
+        return res.allInstances();
+    }
+
+    private static final AtomicReference<Lookup.Result<ArchiveRootProvider>> archiveRootProviders = new AtomicReference<>();
 }

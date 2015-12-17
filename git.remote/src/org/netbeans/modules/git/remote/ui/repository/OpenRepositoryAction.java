@@ -73,14 +73,20 @@ public class OpenRepositoryAction extends AbstractAction {
     public OpenRepositoryAction () {
         super(Bundle.LBL_OpenRepositoryAction_PopupName());
     }
-    
+
     @Override
     public void actionPerformed (ActionEvent event) {
-        FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
-        if (fileSystems.length == 0) {
+        //TODO: provide file system chooser
+        //FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
+        //if (fileSystems.length == 0) {
+        //    return;
+        //}
+        // Now use default FS
+        FileSystem defaultFileSystem = VCSFileProxySupport.getDefaultFileSystem();
+        if (defaultFileSystem == null) {
             return;
         }
-        VCSFileProxy root = VCSFileProxy.createFileProxy(fileSystems[0].getRoot());
+        VCSFileProxy root = VCSFileProxy.createFileProxy(defaultFileSystem.getRoot());
         JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(root);
         fileChooser.setDialogTitle(Bundle.CTL_OpenRepository_ACSD());
         fileChooser.setMultiSelectionEnabled(false);

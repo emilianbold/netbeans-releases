@@ -48,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -238,6 +239,10 @@ public class LayerBuilderTest extends NbTestCase {
             public @Override Element getEnclosingElement() {return null;}
             public @Override List<? extends Element> getEnclosedElements() {return null;}
             public @Override <R, P> R accept(ElementVisitor<R, P> v, P p) {return null;}
+            @Override
+            public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationType) {
+                return (A[]) Array.newInstance(annotationType, 0);
+            }
         }, null);
         b.folder("f").write();
         assertEquals("<filesystem><folder name='f'><!--originating.Type--></folder></filesystem>", dump());

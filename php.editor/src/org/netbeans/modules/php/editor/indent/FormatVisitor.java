@@ -50,6 +50,7 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -1060,12 +1061,14 @@ public class FormatVisitor extends DefaultVisitor {
             ts.movePrevious();
             addListOfNodes(parameters, FormatToken.Kind.WHITESPACE_IN_PARAMETER_LIST);
         }
+        addReturnType(node.getReturnType());
         scan(node.getBody());
     }
 
     @Override
     public void visit(LambdaFunctionDeclaration node) {
         scan(node.getFormalParameters());
+        addReturnType(node.getReturnType());
         scan(node.getLexicalVariables());
         Block body = node.getBody();
         if (body != null) {
@@ -1078,6 +1081,18 @@ public class FormatVisitor extends DefaultVisitor {
                 formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), options.continualIndentSize));
             }
         }
+    }
+
+    private void addReturnType(@NullAllowed Expression returnType) {
+        if (returnType == null) {
+            return;
+        }
+        while (ts.moveNext()
+                && ts.offset() < returnType.getEndOffset()
+                && lastIndex < ts.index()) {
+            addFormatToken(formatTokens);
+        }
+        ts.movePrevious();
     }
 
     @Override
@@ -1726,6 +1741,16 @@ public class FormatVisitor extends DefaultVisitor {
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_COMMA, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_COMMA, ts.offset() + ts.token().length()));
+                } else if (":".equals(text)) { // NOI18N
+                    if (parent instanceof FunctionDeclaration
+                            || parent instanceof MethodDeclaration
+                            || parent instanceof LambdaFunctionDeclaration) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_RETURN_TYPE_SEPARATOR, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_RETURN_TYPE_SEPARATOR, ts.offset() + ts.token().length()));
+                    } else {
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    }
                 } else {
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 }

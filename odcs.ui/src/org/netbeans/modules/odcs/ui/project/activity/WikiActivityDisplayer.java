@@ -91,7 +91,7 @@ public final class WikiActivityDisplayer extends ActivityDisplayer {
 
     @Override
     String getUserName() {
-        return activity.getAuthor().getFullname();
+        return getUserNameFromActivity(activity);
     }
 
     @Override

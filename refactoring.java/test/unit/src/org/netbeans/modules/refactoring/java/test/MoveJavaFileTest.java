@@ -165,7 +165,7 @@ public class MoveJavaFileTest extends RefactoringTestBase {
         performMoveClass(Lookups.singleton(src.getFileObject("u/B.java")), new URL(src.getURL(), "t/"));
         verifyContent(src,
                       new File("t/package-info.java", "package t;"),
-                      new File("A.java", " import t.B; public class A { public void foo() { int d = B.c; } }"),
+                      new File("A.java", "import t.B; public class A { public void foo() { int d = B.c; } }"),
                       new File("t/B.java", "package t; public class B { public static int c = 5; }"));
     }
     

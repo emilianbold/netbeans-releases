@@ -68,7 +68,6 @@ import org.netbeans.modules.php.editor.model.nodes.UseStatementPartInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
@@ -104,7 +103,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
 
     FunctionScopeImpl createElement(Program program, FunctionDeclaration node) {
         FunctionScopeImpl retval = new FunctionScopeImpl(this, FunctionDeclarationInfo.create(program, node),
-                VariousUtils.getReturnTypeFromPHPDoc(program, node), VariousUtils.isDeprecatedFromPHPDoc(program, node));
+                VariousUtils.getReturnType(program, node), VariousUtils.isDeprecatedFromPHPDoc(program, node));
         return retval;
     }
 

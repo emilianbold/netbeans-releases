@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -65,7 +66,6 @@ import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
-import sun.security.tools.KeyTool;
 
 /**
  *
@@ -160,14 +160,21 @@ public class JarFileSystemHidden extends NbTestCase {
         }
         try {
             // create a key store
-            KeyTool.main(new String[]{"-genkey",
+            final String[] args = new String[]{"-genkey",
                 "-alias", "t_alias",
                 "-keyalg", "RSA",
                 "-storepass", "testpass",
                 "-keypass", "testpass",
                 "-dname", "CN=Test, OU=QA, O=Test Org, L=Test Village,"
                 + " S=Testonia, C=Test Republic",
-                "-keystore", keystoreFile.getAbsolutePath()});
+                "-keystore", keystoreFile.getAbsolutePath()};
+            //sun.security.tools.keytool.Main not public API and no more in
+            //ct.sym, compilation requires -XDignore.symbol.file which will not work in JDK 9.
+            //Better to use reflection
+            final Class<?> clz = Class.forName("sun.security.tools.keytool.Main");
+            final Method m = clz.getDeclaredMethod("main", args.getClass());
+            m.setAccessible(true);  //JDK9 requires
+            m.invoke(null, (Object)args);
         } catch (Exception ex) {
             ex.printStackTrace(System.out);
             return;
@@ -175,7 +182,7 @@ public class JarFileSystemHidden extends NbTestCase {
 
         // sign the jar
         try {
-            sun.security.tools.JarSigner.main(new String[]{
+            sun.security.tools.jarsigner.Main.main(new String[]{
                 "-keystore", keystoreFile.getAbsolutePath(),
                 "-storepass", "testpass",
                 jarFile.getAbsolutePath(),

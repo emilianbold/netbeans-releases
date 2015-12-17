@@ -44,6 +44,8 @@
 package org.netbeans.modules.mercurial.ui.annotate;
 
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * One line of annotation, this is copied from CVS so that other support classes stay the same.
@@ -62,11 +64,13 @@ public class AnnotateLine {
     private int prevLineNum;
 
     private String commitMessage;
+    private static final Pattern validUserFormat = Pattern.compile("(.+)\\<(.*)\\>.*"); //NOI18N
     
     /**
      * The default is true to enable rollback even if we were unable to determine the correct value.  
      */ 
     private boolean canBeRolledBack = true;
+    private String username;
 
     public String getCommitMessage() {
         return commitMessage;
@@ -88,6 +92,7 @@ public class AnnotateLine {
      */
     public void setAuthor(String author) {
         this.author = author;
+        this.username = parseUsername(author);
     }
 
     /**
@@ -199,5 +204,48 @@ public class AnnotateLine {
      */
     public void setPrevLineNum (int lineNum) {
         this.prevLineNum = lineNum;
+    }
+    
+    public String getUsername () {
+        if (username == null) {
+            return "";
+        } else {
+            String shortened = username;
+            if (shortened.length() > 15) {
+                shortened = shortened.substring(0, 12) + "..."; //NOI18N
+            }
+            return shortened;
+        }
+    }
+    
+    private String parseUsername (String author) {
+        if (author == null) {
+            return null;
+        } else {
+            String shortened = null;
+            String email = parseEmail(author);
+            int pos;
+            if (email != null && !email.isEmpty()) { 
+                if ((pos = email.indexOf('@')) > -1) {
+                    shortened = email.substring(0, pos);
+                } else {
+                    shortened = email;
+                }
+            }
+            if (shortened == null) {
+                shortened = author;
+            }
+            return shortened;
+        }
+    }
+
+    private String parseEmail (String author) {
+        String mail = author;
+        Matcher m = validUserFormat.matcher(author.trim());
+        if (m.matches()) {
+            mail = m.groupCount() > 1 ? (m.group(2) != null ? m.group(2) : "") : ""; //NOI18N
+            mail = mail.trim();
+        }
+        return mail;
     }
 }

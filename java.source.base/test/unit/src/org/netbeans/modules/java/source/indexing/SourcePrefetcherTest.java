@@ -258,7 +258,7 @@ public class SourcePrefetcherTest extends NbTestCase {
         if (!(fo instanceof FileObjects.FileBase)) {
             throw new IllegalArgumentException(fo.getClass().getName());
         }
-        final Class<?> c = fo.getClass();
+        final Class<?> c = fo.getClass().getSuperclass();
         final Field f = c.getDeclaredField("data"); //NOI18N
         f.setAccessible(true);
         return (CharSequence) f.get(fo);

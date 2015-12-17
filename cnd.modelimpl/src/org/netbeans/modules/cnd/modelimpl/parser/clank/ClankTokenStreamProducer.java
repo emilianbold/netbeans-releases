@@ -574,7 +574,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             } else {
                 assert exitedFrom != null;
                 assert seenInterestedFileInfo != null || waitExitFromThisFileInfo != null || (state == State.SEEK_ENTER_TO_INCLUDED_FILE) : 
-                        "in state " + state + " we exit from enexpected include branch ? " + exitedFrom + "\nback to\n" + exitedTo;            
+                        "in state " + state + " we exit from enexpected include branch ? " + exitedFrom + "\nback to\n" + exitedTo; // NOI18N         
                 if (exitedFrom == seenInterestedFileInfo) {
                     assert waitExitFromThisFileInfo == null;
                     // stop all activity on exit from interested file
@@ -601,6 +601,13 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                         insideInterestedFile = true;
                     }
                     continuePreprocessing = true;
+                } else if (state == State.SEEK_ENTER_TO_INCLUDED_FILE) {
+                    // we were seeking for onEnter into deeper level, but instead got earlier onExit
+                    // it could be the case when inside included file there is no more #include 
+                    // directives and we exit from just entered file;
+                    // this is corrupted include stack, we don't want to go this way anymore;
+                    state = State.CORRUPTED_INCLUDE_CHAIN;
+                    continuePreprocessing = false;
                 } else {
                     // in all other cases exit but continue 
                     // till we meet FileInfoForExitFrom or seenInterestedFile
@@ -771,23 +778,41 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             assert exitedFromFileImpl != null;
             ClankDriver.ClankInclusionDirective exitedInclusion = exitedFrom.getInclusionDirective();
             assert (exitedInclusion == null) == (exitedTo == null) : "inclusion directive is null if and only if exiting main file " + exitedTo + " vs. " + exitedInclusion;
+            if (state == State.CORRUPTED_INCLUDE_CHAIN) {
+                // nothing can be done
+                return false;
+            }
+            CharSequence exitedFromFileImplPath = exitedFromFileImpl.getAbsolutePath();
+            CharSequence exitedFromFileInfoPath = exitedFrom.getFilePath();
+            if (!CharSequenceUtils.contentEquals(exitedFromFileImplPath, exitedFromFileInfoPath)) {
+                CndUtils.assertPathsEqualInConsole(exitedFromFileImplPath, exitedFromFileInfoPath, "Expected Exit From {0}\n got {1}", exitedFromFileImpl, exitedFrom);
+                // nothing can be done in corrupted stack
+                return false;
+            }
             if (CndUtils.isDebugMode()) {                
-                CndUtils.assertPathsEqualInConsole(exitedFromFileImpl.getAbsolutePath(), exitedFrom.getFilePath(), "Expected Exit From {0}\n got {1}", exitedFromFileImpl, exitedFrom);
                 if (exitedTo != null) {
-                    FileImpl exitedToFileImpl = getCurFile(false);
-                    CndUtils.assertPathsEqualInConsole(exitedToFileImpl.getAbsolutePath(), exitedTo.getFilePath(), "Expected Exit To {0}\n got {1}", exitedToFileImpl, exitedTo);
+                    if (curFiles.size() > 0) {
+                        FileImpl exitedToFileImpl = getCurFile(false);
+                        CndUtils.assertPathsEqualInConsole(exitedToFileImpl.getAbsolutePath(), exitedTo.getFilePath(), "Expected Exit To {0}\n got {1}", exitedToFileImpl, exitedTo);
+                    } else {
+                        CndUtils.assertTrueInConsole(false, "no more files in stack for ", exitedTo);
+                    }
                 } else {
                     assert exitedFromFileImpl == startFile : "exited from " + exitedFromFileImpl + "\nexpected " + startFile;
                 }
                 if (exitingFromInterestedFile) {
                     // on exit must always be correct, otherwise on enter hasn't tracked correctly erroneous enter
-                    CndUtils.assertPathsEqualInConsole(exitedFrom.getFilePath(), interestedFile.getAbsolutePath(),
+                    CndUtils.assertPathsEqualInConsole(exitedFromFileInfoPath, interestedFile.getAbsolutePath(),
                             "Expected {0}\n got {1}", interestedFile, exitedFrom);// NOI18N
                     assert state == State.DONE : "expected DONE instead of " + state + " for " + this.interestedFile;
                 }
             }
             if (exitedInclusion != null) {
-                // the exit from #include 
+                // if already done, then just exit
+                if (state == State.DONE && !exitingFromInterestedFile) {
+                    return true;
+                }
+                // the exit from #include
                 return postIncludeAction(exitedFromFileImpl, exitedFrom);
             } else {
                 // just exit from start file

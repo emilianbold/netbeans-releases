@@ -537,7 +537,8 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         // should not happen, setFieldValue either runs with model lock
         // or it is called from issue editor in AWT - the editor could not be closed by user in the meantime
         // (or it could. see issue #254373 -> reload attributes called setFV)
-        assert m != null || !getController().getComponent().isShowing();
+        boolean isshowing = getController().getComponent().isShowing();
+        assert m != null || !isshowing : "isShowing=" + isshowing + ", model=" + m;
         if(m != null) {
             TaskData taskData = m.getLocalTaskData();
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
@@ -1649,8 +1650,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             return id;
         }
 
-        public String getIsDeprected() {
-            return isDeprected;
+        @Override
+        public boolean isDeprecated() {
+            return "1".equals(isDeprected);
         }
 
         public String getSize() {

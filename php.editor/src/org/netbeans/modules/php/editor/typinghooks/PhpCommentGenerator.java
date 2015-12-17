@@ -97,6 +97,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -226,14 +227,14 @@ public final class PhpCommentGenerator {
             String name = "";
             Expression expr = p.getParameterName();
             Variable var = null;
+            if (expr instanceof Reference) {
+                 expr = ((Reference) expr).getExpression();
+            }
+            if (expr instanceof Variadic) {
+                expr = ((Variadic) expr).getExpression();
+            }
             if (expr instanceof Variable) {
                 var = (Variable) expr;
-            }
-            if (expr instanceof Reference) {
-                Reference ref = (Reference) expr;
-                if (ref.getExpression() instanceof Variable) {
-                    var = (Variable) ref.getExpression();
-                }
             }
             if (var != null && var.getName() instanceof Identifier) {
                 name = ((Identifier) var.getName()).getName();

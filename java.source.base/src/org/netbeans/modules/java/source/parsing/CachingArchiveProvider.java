@@ -52,6 +52,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -132,7 +133,7 @@ public final class CachingArchiveProvider {
             archive = archives.get(rootURI);
         }
         if (archive == null) {
-            final Pair<Archive,URI> becomesArchive = create(root, cacheFile);
+            final Pair<Archive,URI> becomesArchive = create(Pair.of(root, rootURI), cacheFile);
             archive = becomesArchive.first();
             URI uriToCtSym = becomesArchive.second();
             if (archive != null) {
@@ -261,10 +262,10 @@ public final class CachingArchiveProvider {
     /** Creates proper archive for given file.
      */
     @NonNull
-    private Pair<Archive,URI> create( URL root, boolean cacheFile ) {
-        String protocol = root.getProtocol();
+    private Pair<Archive,URI> create( Pair<URL,URI> root, boolean cacheFile ) {
+        String protocol = root.first().getProtocol();
         if ("file".equals(protocol)) {      //NOI18N
-            File f = BaseUtilities.toFile(URI.create(root.toExternalForm()));
+            File f = BaseUtilities.toFile(root.second());
             if (f.isDirectory()) {
                 return Pair.<Archive,URI>of(new FolderArchive (f), null);
             }
@@ -273,7 +274,7 @@ public final class CachingArchiveProvider {
             }
         }
         if ("jar".equals(protocol)) {       //NOI18N
-            URL inner = FileUtil.getArchiveFile(root);
+            URL inner = FileUtil.getArchiveFile(root.first());
             protocol = inner.getProtocol();
             if ("file".equals(protocol)) {  //NOI18N
                 File f = BaseUtilities.toFile(URI.create(inner.toExternalForm()));
@@ -307,12 +308,20 @@ public final class CachingArchiveProvider {
                 }
             }
         }
-        //Slow
-        FileObject fo = URLMapper.findFileObject(root);
+        final FileObject fo = URLMapper.findFileObject(root.first());
         if (fo != null) {
-            return Pair.<Archive,URI>of(new FileObjectArchive (fo), null);
-        }
-        else {
+            final Object attr = fo.getAttribute(Path.class.getName());
+            if (attr instanceof Path) {
+                return Pair.<Archive,URI>of(
+                        cacheFile ?
+                            new CachingPathArchive((Path)attr, root.second()) :
+                            new PathArchive((Path)attr, root.second()),
+                        null);
+            } else {
+                //Slow
+                return Pair.<Archive,URI>of(new FileObjectArchive (fo), null);
+            }
+        } else {
             return EMPTY;
         }
     }

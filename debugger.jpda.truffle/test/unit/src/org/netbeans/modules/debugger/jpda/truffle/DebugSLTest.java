@@ -91,13 +91,25 @@ public class DebugSLTest extends NbTestCase {
         return JPDASupport.createTestSuite(DebugSLTest.class);
     }
 
-    public void testStepIntoSL() throws Exception {
+    public void testStepIntoMainSL() throws Exception {
+        doStepIntoSL(0, "main", 1);
+    }
+    
+    public void testStepIntoInvokeAs() throws Exception {
+        doStepIntoSL(1, "init", 6);
+    }
+    
+    public void testStepIntoDynamicInterface() throws Exception {
+        doStepIntoSL(2, "main", 1);
+    }
+    
+    private void doStepIntoSL(int bpNum, String methodName, int lineNo) throws Exception {
         try {
             JPDASupport.removeAllBreakpoints();
             org.netbeans.api.debugger.jpda.Utils.BreakPositions bp = org.netbeans.api.debugger.jpda.Utils.getBreakPositions(
                 sourceRoot
                 + "org/netbeans/modules/debugger/jpda/truffle/testapps/SLApp.java");
-            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
+            LineBreakpoint lb = bp.getLineBreakpoints().get(bpNum);
             dm.addBreakpoint(lb);
             support = JPDASupport.attach("org.netbeans.modules.debugger.jpda.truffle.testapps.SLApp",
                 new String[0],
@@ -119,6 +131,12 @@ public class DebugSLTest extends NbTestCase {
             Field haltedMethodField = TruffleAccess.class.getDeclaredField("METHOD_EXEC_HALTED");
             haltedMethodField.setAccessible(true);
             String haltedMethod = (String) haltedMethodField.get(null);
+            /* Debug where it's stopped at:
+            System.err.println("Stopped in "+frame.getClassName()+"."+frame.getMethodName()+"()");
+            CallStackFrame[] callStack = frame.getThread().getCallStack();
+            for (CallStackFrame sf : callStack) {
+                System.err.println("  at "+sf.getClassName()+"."+sf.getMethodName()+"():"+sf.getLineNumber(null)+"  stratum: "+sf.getDefaultStratum());
+            }*/
             assertEquals("Stopped in Truffle halted class", haltedClass, frame.getClassName());
             assertEquals("Stopped in Truffle halted method", haltedMethod, frame.getMethodName());
             assertEquals("Unexpected stratum", TruffleStrataProvider.TRUFFLE_STRATUM, frame.getDefaultStratum());
@@ -129,8 +147,8 @@ public class DebugSLTest extends NbTestCase {
             assertNotNull("No top frame", topFrame);
             SourcePosition sourcePosition = topFrame.getSourcePosition();
             assertEquals("Bad source", "Meaning of world.sl", sourcePosition.getSource().getName());
-            assertEquals("Bad line", 1, sourcePosition.getLine());
-            assertEquals("Bad method name", "main", topFrame.getMethodName());
+            assertEquals("Bad line", lineNo, sourcePosition.getLine());
+            assertEquals("Bad method name", methodName, topFrame.getMethodName());
             
             support.doContinue();
             support.waitState(JPDADebugger.STATE_DISCONNECTED);

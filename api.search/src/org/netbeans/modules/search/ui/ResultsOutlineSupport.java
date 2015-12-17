@@ -480,7 +480,7 @@ public class ResultsOutlineSupport {
             return new Node[]{createNodeForMatchingObject(key)};
         }
 
-        private synchronized void update() {
+        private void update() {
             setKeys(resultModel.getMatchingObjects());
         }
     }

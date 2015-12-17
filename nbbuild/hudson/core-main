@@ -1,7 +1,7 @@
 #!/bin/sh
 set -x
 
-ANT_OPTS="$ANT_OPTS -Xmx512m -XX:MaxPermSize=256m"
+ANT_OPTS="$ANT_OPTS -Xmx1G"
 
 if [ ! -z $NB_PROXY_HOST ] && [ ! -z $NB_PROXY_PORT ]; then
     ANT_OPTS="$ANT_OPTS -Dhttp.proxyHost=$NB_PROXY_HOST -Dhttp.proxyPort=$NB_PROXY_PORT"

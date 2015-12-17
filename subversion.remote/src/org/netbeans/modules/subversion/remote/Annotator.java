@@ -125,7 +125,7 @@ public class Annotator extends VCSAnnotator {
 
     public static final List<String> LABELS = Collections.unmodifiableList(Arrays.asList(ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE, ANNOTATION_COMMIT_REVISION,
                                                         ANNOTATION_COMMIT_DATE, ANNOTATION_COMMIT_AUTHOR));
-    public static final String ACTIONS_PATH_PREFIX = "Actions/Subversion/";          // NOI18N
+    public static final String ACTIONS_PATH_PREFIX = "Actions/SubversionRemote/";          // NOI18N
 
     private final FileStatusCache cache;
     private final Map<FileSystem, AnnotationFormat> annotationFormat = new HashMap<>();
@@ -481,17 +481,20 @@ public class Annotator extends VCSAnnotator {
         }
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             if (noneVersioned) {
-                // XXX use Actions.forID
-                Action a = Utils.getAcceleratedAction("Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-checkout-CheckoutAction.instance"); //NOI18N
-                if(a != null) {
-                    actions.add(a);
-                }
-                a = Utils.getAcceleratedAction("Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-project-ImportAction.instance"); //NOI18N
-                if(a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed((Object[]) files));
-                }            
-                if(a != null) {
-                    actions.add(a);
+                FileSystem defaultFileSystem = VCSFileProxySupport.getDefaultFileSystem();
+                if (defaultFileSystem != null) {
+                    // XXX use Actions.forID
+                    Action a = Utils.getAcceleratedAction("Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-checkout-CheckoutAction.instance"); //NOI18N
+                    if(a != null) {
+                        actions.add(a);
+                    }
+                    a = Utils.getAcceleratedAction("Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-project-ImportAction.instance"); //NOI18N
+                    if(a instanceof ContextAwareAction) {
+                        a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed((Object[]) files));
+                    }
+                    if(a != null) {
+                        actions.add(a);
+                    }
                 }
             } else {
                 actions.add(SystemAction.get(StatusAction.class));
@@ -522,12 +525,14 @@ public class Annotator extends VCSAnnotator {
             ResourceBundle loc = NbBundle.getBundle(Annotator.class);
             Lookup context = ctx.getElements();
             if (noneVersioned) {
-                Action a = Actions.forID("Subversion", "org.netbeans.modules.subversion.remote.ui.project.ImportAction"); //NOI18N
-                if(a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed((Object[]) files));
-                }            
-                if(a != null) {
-                    actions.add(a);
+                if (files.length > 0 && files[0].toFile() == null) {
+                    Action a = Actions.forID("SubversionRemote", "org.netbeans.modules.subversion.remote.ui.project.ImportAction"); //NOI18N
+                    if(a instanceof ContextAwareAction) {
+                        a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed((Object[]) files));
+                    }
+                    if(a != null) {
+                        actions.add(a);
+                    }
                 }
             } else {
                 Node[] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
@@ -549,7 +554,7 @@ public class Annotator extends VCSAnnotator {
                 actions.add(null);
                 
                 actions.add(new CopyMenu(destination, context));
-                Action a = Actions.forID("Subversion", "org.netbeans.modules.subversion.remote.ui.checkout.CheckoutAction"); //NOI18N
+                Action a = Actions.forID("SubversionRemote", "org.netbeans.modules.subversion.remote.ui.checkout.CheckoutAction"); //NOI18N
                 if(a != null) {
                     actions.add(a);
                 }

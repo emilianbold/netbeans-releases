@@ -64,6 +64,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -648,14 +649,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 if (branchLabel == GitBranch.NO_BRANCH) { // do not use equals
                     Map<String, GitTag> tags = info.getTags();
                     StringBuilder tagLabel = new StringBuilder(); //NOI18N
+                    String branchID = branch.getId();
                     for (GitTag tag : tags.values()) {
-                        if (tag.getTaggedObjectId().equals(branch.getId())) {
+                        if (branchID.equals(tag.getTaggedObjectId())) {
                             tagLabel.append(",").append(tag.getTagName());
                         }
                     }
                     if (tagLabel.length() <= 1) {
                         // not on a branch or tag, show at least part of commit id
-                        branchLabel = branch.getId();
+                        branchLabel = branchID;
                         if (branchLabel.length() > 7) {
                             branchLabel = branchLabel.substring(0, 7) + "..."; //NOI18N
                         }
@@ -1604,8 +1606,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 for (java.util.Map.Entry<String, GitTag> e : this.tags.entrySet()) {
                     GitTag newTagInfo = tags.get(e.getKey());
                     // do not refresh tags they keep the same
-                    if (newTagInfo != null && (newTagInfo.getTaggedObjectId().equals(e.getValue().getTaggedObjectId()) 
-                            && newTagInfo.getMessage().equals(e.getValue().getMessage()))) {
+                    if (newTagInfo != null && (Objects.equals(newTagInfo.getTaggedObjectId(), e.getValue().getTaggedObjectId()) 
+                            && Objects.equals(newTagInfo.getMessage(), e.getValue().getMessage()))) {
                         tags.remove(e.getKey());
                     }
                 }

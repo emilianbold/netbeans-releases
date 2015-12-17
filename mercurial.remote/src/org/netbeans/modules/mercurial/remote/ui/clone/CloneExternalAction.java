@@ -74,19 +74,26 @@ import org.openide.util.NbBundle.Messages;
     "CTL_MenuItem_CloneExternal=Clone Othe&r..."
 })
 public class CloneExternalAction implements ActionListener, HelpCtx.Provider {
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
-        if (fileSystems.length == 0) {
+        //TODO: provide way to select FS
+        //FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
+        //if (fileSystems.length == 0) {
+        //    return;
+        //}
+        // Now use default FS
+        FileSystem defaultFileSystem = VCSFileProxySupport.getDefaultFileSystem();
+        if (defaultFileSystem == null) {
             return;
         }
-        //TODO: provide way to select FS
-        VCSFileProxy root = VCSFileProxy.createFileProxy(fileSystems[0].getRoot());
+        final VCSFileProxy root = VCSFileProxy.createFileProxy(defaultFileSystem.getRoot());
         HgUtils.runIfHgAvailable(root, new Runnable() {
             @Override
             public void run () {
                 Utils.logVCSActionEvent("HG"); //NOI18N
                 CloneWizardAction wiz = CloneWizardAction.getInstance();
+                wiz.setRoot(root);
                 wiz.performAction();
             }
         });

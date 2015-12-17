@@ -108,7 +108,12 @@ public class ProjectUtilities {
     }
 
     public static Project[] getOpenedProjects() {
-        return OpenProjects.getDefault().getOpenProjects();
+        Set<Project> projects = new HashSet();
+        for (Project project : OpenProjects.getDefault().getOpenProjects()) // #256930
+            if (!project.getClass().getName().equals("org.netbeans.modules.project.ui.LazyProject")) // NOI18N
+                projects.add(project);
+        return projects.toArray(new Project[projects.size()]);
+//        return OpenProjects.getDefault().getOpenProjects();
     }
 
     public static boolean hasAction(Project project, String actionName) {

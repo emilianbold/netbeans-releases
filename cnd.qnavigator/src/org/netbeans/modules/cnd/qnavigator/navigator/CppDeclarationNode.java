@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
+import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -85,6 +86,10 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.netbeans.spi.editor.AbstractEditorAction;
+import org.openide.awt.Actions;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.CharSequences;
 import org.openide.util.ImageUtilities;
@@ -97,6 +102,9 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class CppDeclarationNode extends AbstractCsmNode implements Comparable<CppDeclarationNode> {
     private static final String FONT_COLORCONTROLSHADOW = "<font color='!controlShadow'>  "; // NOI18N
+    private static final byte INCLUDE_WEIGHT = 5*10+0;
+    private static final byte FUNCTION_DECLARATION_WEIGHT = 3*10+0;
+    private static final byte FUNCTION_DEFINITION_WEIGHT = 3*10+1;
     private Image icon;
     private CsmObject object;
     private CsmFile file;
@@ -251,13 +259,13 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         } else if(CsmKindUtilities.isVariableDefinition(object)) {
             return 2*10+1;
         } else if(CsmKindUtilities.isFunctionDeclaration(object)) {
-            return 3*10+0;
+            return FUNCTION_DECLARATION_WEIGHT;//3*10+0;
         } else if(CsmKindUtilities.isFunctionDefinition(object)) {
-            return 3*10+1;
+            return FUNCTION_DEFINITION_WEIGHT;//3*10+1;
         } else if(CsmKindUtilities.isMacro(object)) {
             return 4*10+0;
         } else if(CsmKindUtilities.isInclude(object)) {
-            return 5*10+0;
+            return INCLUDE_WEIGHT;//5*10+0;
         }
         return 9*10+0;
     }
@@ -469,12 +477,61 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         return null;
     }
 
+    private Action getGoToIncludedFileAction(CsmInclude include) {
+        Action a = FileUtil.getConfigObject("Editors/text/x-c++/Actions/goto-declaration.instance", Action.class); //NOI18N
+        if (a != null) {
+            Object value = a.getValue("displayName"); //NOI18N
+            if (value instanceof String) {
+                return new GoToDefinitionAction((String)value, include);
+            }
+        }
+        return null;
+    }
+
+    private Action getGoToDeclaration(CsmFunctionDefinition definition) {
+        Action a = FileUtil.getConfigObject("Editors/text/x-c++/Actions/goto-declaration.instance", Action.class); //NOI18N
+        if (a != null) {
+            Object value = a.getValue("displayName"); //NOI18N
+            if (value instanceof String) {
+                return new GoToDefinitionAction((String)value, definition);
+            }
+        }
+        return null;
+    }
+
+    private Action getGoToDefinition(CsmFunction declaration) {
+        Action a = FileUtil.getConfigObject("Editors/text/x-c++/Actions/goto-declaration.instance", Action.class); //NOI18N
+        if (a != null) {
+            Object value = a.getValue("displayName"); //NOI18N
+            if (value instanceof String) {
+                return new GoToDefinitionAction((String)value, declaration);
+            }
+        }
+        return null;
+    }
+
     @Override
     public Action[] getActions(boolean context) {
         Action action = getPreferredAction();
         if (action != null){
             List<Action> list = new ArrayList<Action>();
             list.add(action);
+            if (weight == INCLUDE_WEIGHT && CsmKindUtilities.isInclude(object)) {
+                Action goToIncludedFileAction = getGoToIncludedFileAction((CsmInclude)object);
+                if (goToIncludedFileAction != null) {
+                    list.add(goToIncludedFileAction);
+                }
+            } else if (weight == FUNCTION_DECLARATION_WEIGHT && CsmKindUtilities.isFunction(object)) {
+                Action goToDefinition = getGoToDefinition((CsmFunction)object);
+                if (goToDefinition != null) {
+                    list.add(goToDefinition);
+                }
+            } else if (weight == FUNCTION_DEFINITION_WEIGHT && CsmKindUtilities.isFunctionDefinition(object)) {
+                Action goToDeclaration = getGoToDeclaration((CsmFunctionDefinition)object);
+                if (goToDeclaration != null) {
+                    list.add(goToDeclaration);
+                }
+            }
             if (CsmRefactoringActionsFactory.supportRefactoring(file)) {
                 list.add(RefactoringActionsFactory.renameAction());
                 list.add(RefactoringActionsFactory.whereUsedAction());

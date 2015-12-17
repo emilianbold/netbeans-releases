@@ -471,10 +471,10 @@ made subject to such option by the copyright holder.
  <answer id="exec-component">
   <ul>
    <li>
-    <api name="menuText" category="stable" type="export" group="property" url="@TOP@/org/openide/awt/Actions.html#connect(javax.swing.JMenuItem,%20javax.swing.Action,%20boolean)"/>
+    <api name="menuText" category="stable" type="export" group="property" url="@TOP@/org/openide/awt/Actions.html#connect-javax.swing.JMenuItem-javax.swing.Action-boolean-"/>
    </li>
    <li>
-    <api name="popupText" category="stable" type="export" group="property" url="@TOP@/org/openide/awt/Actions.html#connect(javax.swing.JMenuItem,%20javax.swing.Action,%20boolean)"/>
+    <api name="popupText" category="stable" type="export" group="property" url="@TOP@/org/openide/awt/Actions.html#connect-javax.swing.JMenuItem-javax.swing.Action-boolean-"/>
    </li>
    <li> 
     <api name="USE_MNEMONICS" category="stable" type="export" group="branding">
@@ -989,11 +989,11 @@ made subject to such option by the copyright holder.
    <api name="Actions.factories" type="export" group="layer" category="stable"
       url="@TOP@/org/openide/awt/Actions.html">
       Many action factories 
-      (<a href="org/openide/awt/Actions.html#alwaysEnabled(java.awt.event.ActionListener,%20java.lang.String,%20java.lang.String,%20boolean)">alwaysEnabled</a>,
-        <a href="org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">
+      (<a href="org/openide/awt/Actions.html#alwaysEnabled-java.awt.event.ActionListener-java.lang.String-java.lang.String-boolean-">alwaysEnabled</a>,
+        <a href="org/openide/awt/Actions.html#context-java.lang.Class-boolean-boolean-org.openide.util.ContextAwareAction-java.lang.String-java.lang.String-java.lang.String-boolean-">
         context</a>
         and
-        <a href="org/openide/awt/Actions.html#callback(java.lang.String,%20javax.swing.Action,%20boolean,%20java.lang.String,%20java.lang.String,%20boolean)">
+        <a href="org/openide/awt/Actions.html#callback-java.lang.String-javax.swing.Action-boolean-java.lang.String-java.lang.String-boolean-">
             callback</a>,
         etc.)
 

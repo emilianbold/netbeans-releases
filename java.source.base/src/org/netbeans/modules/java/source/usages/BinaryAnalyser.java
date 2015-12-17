@@ -57,6 +57,13 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -432,7 +439,10 @@ public class BinaryAnalyser {
                 final FileObject rootFo =  URLMapper.findFileObject(root);
                 if (rootFo != null) {
                     if (!isUpToDate(ROOT,rootFo.lastModified().getTime())) {
-                        return new NBFSProcessor(rootFo, ctx);
+                        final Object path = rootFo.getAttribute(Path.class.getName());
+                        return (path instanceof Path) ?
+                            new PathProcessor(root, (Path) path, ctx) :
+                            new NBFSProcessor(rootFo, ctx);
                     }
                 } else {
                     return new DeletedRootProcessor(ctx);
@@ -449,7 +459,12 @@ public class BinaryAnalyser {
         } else {
             final FileObject rootFo =  URLMapper.findFileObject(root);
             if (rootFo != null) {
-                return new NBFSProcessor(rootFo, ctx);
+                if (!isUpToDate(ROOT, rootFo.lastModified().getTime())) {
+                    final Object path = rootFo.getAttribute(Path.class.getName());
+                    return (path instanceof Path) ?
+                        new PathProcessor(root, (Path) path, ctx) :
+                        new NBFSProcessor(rootFo, ctx);
+                }
             } else {
                 return new DeletedRootProcessor(ctx);
             }
@@ -1330,6 +1345,104 @@ public class BinaryAnalyser {
         }
     }
 
+    private final class PathProcessor extends RootProcessor {
+
+        private final URL rootURL;
+        private final Path rootPath;
+
+        PathProcessor(
+            @NonNull final URL rootURL,
+            @NonNull final Path rootPath,
+            @NonNull final Context ctx) {
+            super(ctx);
+            assert rootURL != null;
+            assert rootPath != null;
+            this.rootURL = rootURL;
+            this.rootPath = rootPath;
+            markChanged();  //Always dirty, created only for dirty root
+        }
+
+        @Override
+        protected boolean executeImpl() throws IOException {
+            final boolean[] cancelled = new boolean[1];
+            final char separator = rootPath.getFileSystem().getSeparator().charAt(0);
+            Files.walkFileTree(rootPath, new FileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    final String simpleName = file.getName(file.getNameCount()-1).toString();
+                    if (accepts(simpleName)) {
+                        final String fqn = FileObjects.convertFolder2Package (
+                            FileObjects.stripExtension(rootPath.relativize(file).toString()),
+                            separator);
+                        report (
+                            ElementHandleAccessor.getInstance().create(
+                                ElementKind.OTHER,
+                                fqn),
+                            attrs.lastModifiedTime().toMillis());
+                        try (final InputStream in = new BufferedInputStream (Files.newInputStream(file, StandardOpenOption.READ))) {
+                            analyse(in);
+                        } catch (InvalidClassFormatException | RuntimeException icf) {
+                            LOGGER.log(
+                                    Level.WARNING,
+                                    "Invalid class file format: {0} in: {1}",      //NOI18N
+                                    new Object[]{
+                                        file,
+                                        rootURL,
+                                        });
+                            LOGGER.log(
+                                    Level.INFO,
+                                    "Class File Exception Details",             //NOI18N
+                                    icf);
+                        } catch (IOException x) {
+                            Exceptions.attachMessage(
+                                x,
+                                String.format(
+                                    "While scanning: %s in: %s",        //NOI18N
+                                    file,
+                                    rootURL));
+                            throw x;
+                        }
+                        if (lmListener.isLowMemory()) {
+                            flush();
+                        }
+                    }
+                    return handleCancel();
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                    LOGGER.log(
+                        Level.WARNING,
+                        "Cannot read file: {0}",      //NOI18N
+                        file);
+                    LOGGER.log(Level.FINE, null, exc);
+                    return handleCancel();
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                private FileVisitResult handleCancel() {
+                    if (isCancelled()) {
+                        cancelled[0] = true;
+                        return FileVisitResult.TERMINATE;
+                    } else {
+                        return FileVisitResult.CONTINUE;
+                    }
+                }
+            });
+            return !cancelled[0];
+        }
+
+    }
+
     private final class NBFSProcessor extends RootProcessor {
 
         private final Enumeration<? extends FileObject> todo;
@@ -1351,7 +1464,7 @@ public class BinaryAnalyser {
         protected boolean executeImpl() throws IOException {
             while (todo.hasMoreElements()) {
                 FileObject fo = todo.nextElement();
-                if (accepts(fo.getName())) {
+                if (accepts(fo.getNameExt())) {
                     final String rp = FileObjects.stripExtension(FileUtil.getRelativePath(root, fo));
                     report(
                         ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(rp)),

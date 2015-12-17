@@ -161,7 +161,9 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
         for(int i = 0; i < size; i++) {
             URI uri = (URI)in.readObject();
             VCSFileProxy root = VCSFileProxySupport.fromURI(uri);
-            rootFiles.add(root);
+            if (root != null) {
+                rootFiles.add(root);
+            }
         }
         VCSFileProxy[] files = rootFiles.toArray(new VCSFileProxy[size]);
         List<Node> nodes = new LinkedList<>();

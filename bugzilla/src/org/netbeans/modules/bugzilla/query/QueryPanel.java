@@ -1433,10 +1433,6 @@ public class QueryPanel extends javax.swing.JPanel {
                 severityLabel.setVisible(!visible);
                 severityList.setVisible(!visible);
                 severityScrollPane.setVisible(!visible);
-                
-                tmLabel.setVisible(visible);
-                tmList.setVisible(visible);
-                tmScrollPane.setVisible(visible);
             }
         });
     }

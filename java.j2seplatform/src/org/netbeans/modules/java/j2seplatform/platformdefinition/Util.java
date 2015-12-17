@@ -50,18 +50,22 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipFile;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.jrtfs.NBJRTUtil;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -71,6 +75,9 @@ public class Util {
     public static final String PROTO_HTTP = "http";              //NOI18N
     public static final String PROTO_HTTPS = "https";            //NOI18N
     public static final String PROTO_FILE = "file";              //NOI18N
+    private static final String JFXRT_PATH = "lib/jfxrt.jar";    //NOI18N
+    private static final SpecificationVersion OLD_JDK9 = new SpecificationVersion("1.9");   //NOI18N
+    private static final SpecificationVersion NEW_JDK9 = new SpecificationVersion("9");     //NOI18N
 
     private static final Logger LOG = Logger.getLogger(Util.class.getName());
     //Properties used by IDE which should be fixed not to use resolved symlink
@@ -90,35 +97,61 @@ public class Util {
         throw new IllegalStateException("No instance allowed"); //NOI18N
     }
 
-    static ClassPath createClassPath(String classpath) {
+    @NonNull
+    static ClassPath createClassPath(@NonNull final String classpath) {
         Parameters.notNull("classpath", classpath);
-        StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
         List<PathResourceImplementation> list = new ArrayList<>();
-        while (tokenizer.hasMoreTokens()) {
-            String item = tokenizer.nextToken();
-            File f = FileUtil.normalizeFile(new File(item));
-            URL url = getRootURL (f);
-            if (url!=null) {
-                list.add(ClassPathSupport.createResource(url));
-            }
-        }
+        addPath(classpath, list);
         return ClassPathSupport.createClassPath(list);
     }
 
+    @CheckForNull
+    static ClassPath createModulePath(@NonNull final Collection<FileObject> installFolders) {
+        final List<PathResourceImplementation> modules = new ArrayList<>();
+        for (FileObject installFolder : installFolders) {
+            final File installDir = FileUtil.toFile(installFolder);
+            final URI imageURI = installDir == null ?
+                    null :
+                    NBJRTUtil.getImageURI(installDir);
+            if (imageURI != null) {
+                try {
+                    final FileObject root = getModulesRoot(URLMapper.findFileObject(imageURI.toURL()));
+                    for (FileObject module : root.getChildren()) {
+                        modules.add(ClassPathSupport.createResource(module.toURL()));
+                    }
+                } catch (MalformedURLException e) {
+                    Exceptions.printStackTrace(e);
+                }
+                break;
+            }
+        }
+        if (!modules.isEmpty()) {
+            //The jfxrt.jar is not modular but it's automatically added to ext
+            //class loader by java launcher
+            final PathResourceImplementation jfx = getJfxRt(installFolders);
+            if (jfx != null) {
+                modules.add(jfx);
+            }
+            addPath(getExtensions(J2SEPlatformImpl.SYSPROP_JAVA_EXT_PATH), modules);
+            return ClassPathSupport.createClassPath(modules);
+        } else {
+            return null;
+        }
+    }
+
     // XXX this method could probably be removed... use standard FileUtil stuff
-    static URL getRootURL  (final File f) {
+    @CheckForNull
+    static URL getRootURL  (@NonNull final File f) {
         try {
             URL url = Utilities.toURI(f).toURL();
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot (url);
-            }
-            else if (!f.exists()) {
+            } else if (!f.exists()) {
                 String surl = url.toExternalForm();
                 if (!surl.endsWith("/")) {
                     url = new URL (surl+"/");
                 }
-            }
-            else if (f.isFile()) {
+            } else if (f.isFile()) {
                 //Slow but it will be called only in very rare cases:
                 //file on the classpath for which isArchiveFile returned false
                 try {
@@ -166,7 +199,7 @@ public class Util {
          if (version == null) {
              version = "1.1";
          }
-         return makeSpec(version);
+         return fixJDK9SpecVersion(makeSpec(version));
     }
 
 
@@ -359,4 +392,46 @@ public class Util {
         return new SpecificationVersion("0"); // NOI18N
     }
 
+    private static SpecificationVersion fixJDK9SpecVersion(@NonNull final SpecificationVersion version) {
+        return  OLD_JDK9.equals(version) ?
+                NEW_JDK9 :
+                version;
+    }
+
+    @CheckForNull
+    private static PathResourceImplementation getJfxRt(@NonNull final Collection<? extends FileObject> installFolders) {
+        for (FileObject installFolder : installFolders) {
+            final FileObject jfxrt = installFolder.getFileObject(JFXRT_PATH);
+            if (jfxrt != null && FileUtil.isArchiveFile(jfxrt)) {
+                return ClassPathSupport.createResource(FileUtil.getArchiveRoot(jfxrt.toURL()));
+            }
+        }
+        return null;
+    }
+
+    private static void addPath(
+            @NullAllowed final String path,
+            @NonNull final List<? super PathResourceImplementation> into) {
+        if (path != null && !path.isEmpty()) {
+            final StringTokenizer tokenizer = new StringTokenizer(path, File.pathSeparator);
+            while (tokenizer.hasMoreTokens()) {
+                String item = tokenizer.nextToken();
+                File f = FileUtil.normalizeFile(new File(item));
+                URL url = getRootURL (f);
+                if (url!=null) {
+                    into.add(ClassPathSupport.createResource(url));
+                }
+            }
+        }
+    }
+
+    @NonNull
+    private static FileObject getModulesRoot(@NonNull final FileObject jrtRoot) {
+        final FileObject modules = jrtRoot.getFileObject("modules");    //NOI18N
+        //jimage v1 - modules are located in the root
+        //jimage v2 - modules are located in "modules" folder
+        return modules == null ?
+            jrtRoot :
+            modules;
+    }
 }

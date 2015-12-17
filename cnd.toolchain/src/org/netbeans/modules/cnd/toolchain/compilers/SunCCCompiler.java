@@ -66,6 +66,7 @@ import org.openide.ErrorManager;
         if (isReady()) {
             copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
             copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+            copy.copySystemIncludeHeaders(getSystemIncludeHeaders());
         }
         return copy;
     }
@@ -80,7 +81,7 @@ import org.openide.ErrorManager;
     }
     
     @Override
-    protected void parseCompilerOutput(BufferedReader reader, Pair pair) {
+    protected void parseCompilerOutput(BufferedReader reader, CompilerDefinitions pair) {
         
         try {
             String line;

@@ -148,11 +148,19 @@ public class CppUtils {
 
     /**
      * Converts absolute Windows paths to paths without the ':'.
-     * Example: C:/abc/def.c -> /cygdrive/c/def/c
+     * Example: C:/abc/def.c -> /cygdrive/c/abs/def.c
      */
     public static String normalizeDriveLetter(CompilerSet cs, String path) {
-        if (path.length() > 1 && path.charAt(1) == ':') { // NOI18N
-            return cs.getCompilerFlavor().getToolchainDescriptor().getDriveLetterPrefix() + path.charAt(0) + path.substring(2); // NOI18N
+        if (path.length() > 1 && path.charAt(1) == ':') {// NOI18N
+            String driveLetterPrefix = cs.getCompilerFlavor().getToolchainDescriptor().getDriveLetterPrefix();
+            String res;
+            if (driveLetterPrefix != null) {
+                res = driveLetterPrefix + path.charAt(0) + path.substring(2);
+            } else {
+                // something wrong in tool clllection or project configuration
+                res = "/" + path.charAt(0) + path.substring(2);// NOI18N
+            }
+            return res.replace('\\', '/');// NOI18N
         }
         return path;
     }

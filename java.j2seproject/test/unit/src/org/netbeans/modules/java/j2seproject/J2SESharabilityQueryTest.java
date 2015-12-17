@@ -85,7 +85,7 @@ public class J2SESharabilityQueryTest extends NbTestCase {
         );
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.6"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null, false); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         sources = projdir.getFileObject("src");

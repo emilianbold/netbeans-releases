@@ -148,6 +148,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
@@ -917,6 +918,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             while (parameterName instanceof Reference) {
                 Reference ref = (Reference) parameterName;
                 Expression expression = ref.getExpression();
+                if (expression instanceof Variadic) {
+                    expression = ((Variadic) expression).getExpression();
+                }
                 if (expression instanceof Variable || expression instanceof Reference) {
                     parameterName = expression;
                 }

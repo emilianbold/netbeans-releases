@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.debug.Breakpoint;
 import com.oracle.truffle.api.debug.Debugger;
@@ -143,15 +142,6 @@ public class JPDATruffleAccessor extends Object {
         }
     }
     
-    /*
-    static JPDATruffleDebugManager setUpDebugManager() {
-        if (debugManager == null) {
-            debugManager = JPDATruffleDebugManager.setUp();
-        }
-        return debugManager;
-    }*/
-    
-    //static JPDATruffleDebugManager setUpDebugManagerFor(ScriptEngine engine) {
     static JPDATruffleDebugManager setUpDebugManagerFor(/*ExecutionEvent*/Object event, boolean doStepInto) {
         ExecutionEvent execEvent = (ExecutionEvent) event;
         Debugger debugger = execEvent.getDebugger();
@@ -211,7 +201,6 @@ public class JPDATruffleAccessor extends Object {
             case 2: evt.prepareStepOver(1);
                     break;
             case 3: evt.prepareStepOut();
-                    //System.err.println("Successful step out = "+success);
                     break;
             default:
                     throw new IllegalStateException("Unknown step command: "+stepCmd);
@@ -247,11 +236,9 @@ public class JPDATruffleAccessor extends Object {
                 return null;
             }
             
-            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguageImpl", Object.class, Class.class);
+            findLanguageMethod = Accessor.class.getDeclaredMethod("findLanguageImpl", Object.class, Class.class, String.class);
             findLanguageMethod.setAccessible(true);
-            Object tl = findLanguageMethod.invoke(spi, debugManager.getPolyglotEngine(), languageClass);
-            
-            // TODO: What to do with Env?
+            Object tl = findLanguageMethod.invoke(spi, debugManager.getPolyglotEngine(), languageClass, null);
             
             if (tl instanceof TruffleLanguage) {
                 return (TruffleLanguage) tl;
@@ -261,7 +248,10 @@ public class JPDATruffleAccessor extends Object {
         } catch (IllegalAccessException | IllegalArgumentException |
                  NoSuchFieldException | NoSuchMethodException |
                  SecurityException | InvocationTargetException ex) {
-            throw new RuntimeException(ex);
+            //throw new RuntimeException(ex);
+            // Do not break debugging:
+            ex.printStackTrace();
+            return null;
         } catch (StackOverflowError soe) {
             throw new IllegalStateException(node.toString(), soe);
         }
@@ -532,7 +522,7 @@ public class JPDATruffleAccessor extends Object {
             System.err.println("setLineBreakpoint("+source+", "+line+"): "+dex);
             return null;
         }
-        System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
+        //System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
         if (ignoreCount != 0) {
             lb.setIgnoreCount(ignoreCount);
         }
@@ -549,27 +539,6 @@ public class JPDATruffleAccessor extends Object {
     static void removeBreakpoint(Object br) {
         ((Breakpoint) br).dispose();
     }
-    
-    /*
-    static String evaluateToStr(String expression) {
-        //System.err.println("evaluate("+expression+")");
-        final Source source = Source.fromText(expression, "EVAL");
-        Object value;
-        try {
-            value = debugManager.eval(source);
-        } catch (DebugException ex) {
-            return "> "+ex.getLocalizedMessage()+" <";
-        }
-        //System.err.println("  value = "+value);
-        if (value == null) {
-            return null;
-        }
-        Visualizer visualizer = debugManager.getVisualizer();
-        String strValue = visualizer.displayValue(value, TruffleObject.DISPLAY_TRIM);
-        //System.err.println("evaluate("+expression+") = "+strValue);
-        return strValue;
-    }
-    */
     
     static Object evaluate(/*SuspendedEvent*/Object suspendedEvent, Object frameInstance, String expression) {
         //System.err.println("evaluate("+expression+")");
@@ -598,30 +567,6 @@ public class JPDATruffleAccessor extends Object {
         TruffleObject to = new TruffleObject(visualizer, strValue, value);
         return to;
     }
-    
-    /*
-    static Object evaluate(String expression, Object frameInstance) {
-        FrameInstance fi = (FrameInstance) frameInstance;
-        MaterializedFrame frame = fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true).materialize();
-        final Source source = Source.fromText(expression, "EVAL");
-        Node node = fi.getCallNode();
-        DebugSupportProvider dsp = getDebugSupport(node);
-        Visualizer visualizer = dsp.getVisualizer();
-        Object value;
-        try {
-            value = dsp.evalInContext(source, node, frame);
-            //value = debugManager.getDebugger().eval(source, fi.getCallNode(), frame);
-        } catch (DebugSupportException ex) {
-            return new TruffleObject(visualizer, ex.getLocalizedMessage(), ex);
-        }
-        if (value == null) {
-            return null;
-        }
-        String strValue = visualizer.displayValue(value, TruffleObject.DISPLAY_TRIM);
-        TruffleObject to = new TruffleObject(visualizer, strValue, value);
-        return to;
-    }
-    */
     
     static Object[] getFrameSlots(FrameInstance frameInstance) {
         FrameInstance fi = (FrameInstance) frameInstance;
@@ -668,7 +613,7 @@ public class JPDATruffleAccessor extends Object {
                     Thread.sleep(Long.MAX_VALUE);
                 } catch (InterruptedException iex) {}
                 accessLoopSleeping = false;
-                System.err.println("AccessLoop: steppingIntoTruffle = "+steppingIntoTruffle+", isSteppingInto = "+isSteppingInto+", stepIntoPrepared = "+stepIntoPrepared);
+                //System.err.println("AccessLoop: steppingIntoTruffle = "+steppingIntoTruffle+", isSteppingInto = "+isSteppingInto+", stepIntoPrepared = "+stepIntoPrepared);
                 
                 if (steppingIntoTruffle != 0) {
                     if (steppingIntoTruffle > 0) {
@@ -680,7 +625,7 @@ public class JPDATruffleAccessor extends Object {
                                 isex.printStackTrace();
                             }
                             stepIntoPrepared = true;
-                            System.err.println("Prepared step into and continue.");
+                            //System.err.println("Prepared step into and continue.");
                         }
                         isSteppingInto = true;
                     } else {
@@ -692,7 +637,7 @@ public class JPDATruffleAccessor extends Object {
                     steppingIntoTruffle = 0;
                     continue;
                 }
-                System.err.println("accessLoopRunning = "+accessLoopRunning+", possible debugger access...");
+                //System.err.println("accessLoopRunning = "+accessLoopRunning+", possible debugger access...");
                 if (accessLoopRunning) {
                     debuggerAccess();
                 }

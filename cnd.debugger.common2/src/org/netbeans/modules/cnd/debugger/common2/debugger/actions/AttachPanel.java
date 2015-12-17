@@ -97,6 +97,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.spi.UserAttachAction;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.spi.debugger.ui.PersistentController;
 import org.openide.util.Cancellable;
@@ -1165,6 +1167,13 @@ public final class AttachPanel extends TopComponent {
             Project project = executableProjectPanel.getSelectedProject();
             boolean noproject = executableProjectPanel.getNoProject();
 
+            if (project != null) {
+                MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+		if (conf != null) {
+                    path = conf.getAbsoluteOutputValue();
+                }
+            }
+            
             if (path != null) {
                 executable = path.toString();
                 // convert to world

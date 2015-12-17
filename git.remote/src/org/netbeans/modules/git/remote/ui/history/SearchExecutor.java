@@ -192,6 +192,7 @@ class SearchExecutor extends GitProgressSupport {
                     }
                     excludedCommitId = tracked.getId();
                     sc.setRevisionFrom(tracked.getName());
+                    sc.setAddSelfFrom(false);
                     break;
             }
             setDisplayName(Bundle.MSG_SearchExecutor_progress_searching());
@@ -233,19 +234,20 @@ class SearchExecutor extends GitProgressSupport {
         }
         for (int i = 0; i < logMessages.length && !monitor.isCanceled(); ++i) {
             GitRevisionInfo logMessage = logMessages[i];
-            if (logMessage.getRevision().equals(excludedCommitId)) {
+            String revision = logMessage.getRevision();
+            if (revision.equals(excludedCommitId)) {
                 continue;
             }
             RepositoryRevision rev;
             Set<GitBranch> branches = new HashSet<>();
             Set<GitTag> tags = new HashSet<>();
             for (GitBranch b : allBranches) {
-                if (b.getId().equals(logMessage.getRevision())) {
+                if (revision.equals(b.getId())) {
                     branches.add(b);
                 }
             }
             for (GitTag t : allTags) {
-                if (t.getTaggedObjectId().equals(logMessage.getRevision())) {
+                if (revision.equals(t.getTaggedObjectId())) {
                     tags.add(t);
                 }
             }

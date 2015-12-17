@@ -2860,6 +2860,9 @@ direct_declarator[int kind, int level]
             declarator_suffixes
         )   
         (options {greedy=true;} :variable_attribute_specification)?
+    |
+        // Typedef with the name as builtin type
+        {_td}? builtin_type_as_ident
 
 /* **            
              // Issue #87792  Parser reports error on declarations with name in parenthesis.
@@ -4268,10 +4271,12 @@ assignment_expression
         (
             // IZ#152872: parser error in VLC on cast expression
             // #191198 -  Parser error in buf.c
-            (cast_array_initializer_head)=>cast_array_initializer
-            |
+        (cast_array_initializer_head)=>
+            cast_array_initializer 
+            (options {greedy=true;} : lazy_expression[false, false, 0])? // see postfix-expression in C99 (works in C++ with clang and gcc as well)
+        |
             lazy_expression[false, false, 0]
-            |
+        |
             throw_expression
         )
         (options {greedy=true;}:	
@@ -4914,6 +4919,17 @@ literal_ident returns [String s = ""]
         kwd_override:LITERAL_override
         {s = kwd_override.getText();}
         {#literal_ident = #[IDENT, s, kwd_override];}
+    ;
+
+// Fix for typedefs with the name of builtin types 
+// (on some platforms those identifiers are keywords, but sometimes they are typedefs)
+protected
+builtin_type_as_ident
+{String s = "";}
+    :
+        kwd_builtin_va_list:LITERAL___builtin_va_list
+        {s = kwd_builtin_va_list.getText();}
+        {#builtin_type_as_ident = #[IDENT, s, kwd_builtin_va_list];}
     ;
 
 protected

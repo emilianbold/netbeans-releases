@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /*package*/ abstract class SunCCCCompiler extends CCCCompiler {
@@ -82,8 +81,8 @@ import org.openide.util.NbBundle;
     }
     
     @Override
-    protected Pair getFreshSystemIncludesAndDefines() {
-        Pair res = new Pair();
+    protected CompilerDefinitions getFreshCompilerDefinitions() {
+        CompilerDefinitions res = new CompilerDefinitions();
         try {
             getSystemIncludesAndDefines(getCompilerStderrCommand(), false, res);
             if (getCompilerStderrCommand2() != null) {
@@ -112,12 +111,12 @@ import org.openide.util.NbBundle;
     }
     
     @Override
-    protected MyCallable<Pair> getCallable(){
-        return new MyCallable<Pair>() {
+    protected MyCallable<CompilerDefinitions> getCallable(){
+        return new MyCallable<CompilerDefinitions>() {
 
             @Override
-            public Pair call(String p) {
-                Pair tmp = new Pair();
+            public CompilerDefinitions call(String p) {
+                CompilerDefinitions tmp = new CompilerDefinitions();
                 try {
                     getSystemIncludesAndDefines(getCompilerStderrCommand()+" "+p, false, tmp); // NOI18N
                     if (getCompilerStderrCommand2() != null) {

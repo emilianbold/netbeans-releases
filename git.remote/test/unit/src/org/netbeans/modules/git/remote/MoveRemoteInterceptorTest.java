@@ -104,7 +104,7 @@ public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {
 
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("testMoveFileToIgnoredFolder_DO","testMoveFileToIgnoredFolder_FO").contains(testName);
+        return Arrays.asList(/*"testMoveFileToIgnoredFolder_DO","testMoveFileToIgnoredFolder_FO"*/).contains(testName);
     }
 
     @Override
@@ -763,7 +763,7 @@ else    getCache().refreshAllRoots(new HashSet<>(Arrays.asList(fileA)));
         assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), info22.getStatus());
         assertEquals(fromFile11, info11.getOldFile());
         assertEquals(fromFile12, info12.getOldFile());
-        assertEquals(fromFile21, info21.getOldFile());
+        assertEquals(fromFile21, info21.getOldFile()); // It is a problem? It looks like partly statuses led to unknown rename.
         assertEquals(fromFile22, info22.getOldFile());
         assertTrue(info11.isRenamed());
         assertTrue(info12.isRenamed());

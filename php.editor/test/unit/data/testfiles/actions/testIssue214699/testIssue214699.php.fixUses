@@ -15,7 +15,7 @@ use Baz\Bat\ClassName as ClassName3;
 use Fom\Bom\ClassName;
 use Foo\Bar\ClassName as ClassName2;
 
-$a = new ClassName3();//HERE
+$a = new ClassName2();//HERE
+$b = new ClassName3();
 $b = new ClassName();
-$b = new ClassName2();
 ?>

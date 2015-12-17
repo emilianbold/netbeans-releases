@@ -94,8 +94,10 @@ public class UnbufferSupport {
                 // No unbuffer on MacOS - see IZ179172
                 return;
             case LINUX:
-                if (!hinfo.getCpuFamily().equals(CpuFamily.X86)) {
+                if (!hinfo.getCpuFamily().equals(CpuFamily.X86) && 
+                        !hinfo.getCpuFamily().equals(CpuFamily.SPARC)) {
                     // Unbuffer is available for x86 only
+                    //and now for sparc linux
                     return;
                 }
                 break;
@@ -108,11 +110,14 @@ public class UnbufferSupport {
         // Setup LD_PRELOAD to load unbuffer library...
 
         String unbufferPath = null; // NOI18N
+        String unbufferPath_64 = null; // NOI18N        
         String unbufferLib = null; // NOI18N
 
         try {
             unbufferPath = macroExpander.expandPredefinedMacros(
                     "bin/nativeexecution/$osname-$platform" + (isWindows ? "${_isa}" : "")); // NOI18N
+            unbufferPath_64 = macroExpander.expandPredefinedMacros(
+                    "bin/nativeexecution/$osname-$platform" + "${_isa}"); // NOI18N
             unbufferLib = macroExpander.expandPredefinedMacros(
                     "unbuffer.$soext"); // NOI18N
         } catch (ParseException ex) {
@@ -121,10 +126,13 @@ public class UnbufferSupport {
         if (unbufferLib != null && unbufferPath != null) {
             InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
             File file = fl.locate(unbufferPath + "/" + unbufferLib, "org.netbeans.modules.dlight.nativeexecution", false); // NOI18N
+            File file_64 = fl.locate(unbufferPath_64 + "/" + unbufferLib, "org.netbeans.modules.dlight.nativeexecution", false); // NOI18N
 
             log.log(Level.FINE, "Look for unbuffer library here: {0}/{1}", new Object[]{unbufferPath, unbufferLib}); // NOI18N
+            log.log(Level.FINE, "Look for unbuffer library here: {0}/{1}", new Object[]{unbufferPath_64, unbufferLib}); // NOI18N
 
-            if (file != null && file.exists()) {
+            if ((file != null && file.exists()) || 
+                    (file_64 != null && file_64.exists())) {
                 if (execEnv.isRemote()) {
                     String remotePath = null;
 
@@ -147,13 +155,17 @@ public class UnbufferSupport {
                             try {
                                 String remoteLib_32 = remotePath + "/" + unbufferLib; // NOI18N
                                 String remoteLib_64 = remotePath + "_64/" + unbufferLib; // NOI18N
-
-                                String fullLocalPath = file.getParentFile().getAbsolutePath(); // NOI18N
                                 Future<UploadStatus> copyTask;
-                                copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remoteLib_32, 0755, true); // NOI18N
-                                copyTask.get(); // is it OK not to check upload exit code?
-                                copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "_64/" + unbufferLib, execEnv, remoteLib_64, 0755, true); // NOI18N
-                                copyTask.get(); // is it OK not to check upload exit code?
+                                if (file != null && file.exists()) {
+                                    String fullLocalPath = file.getParentFile().getAbsolutePath(); // NOI18N                                
+                                    copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remoteLib_32, 0755, true); // NOI18N
+                                    copyTask.get(); // is it OK not to check upload exit code?
+                                }
+                                if (file_64 != null && file_64.exists()) {//we have 64 bit version only (sparc-Linux)
+                                    String fullLocalPath_64 = file_64.getParentFile().getAbsolutePath(); // NOI18N                                
+                                    copyTask = CommonTasksSupport.uploadFile(fullLocalPath_64 + "/" + unbufferLib, execEnv, remoteLib_64, 0755, true); // NOI18N
+                                    copyTask.get(); // is it OK not to check upload exit code?
+                                }
                             } catch (InterruptedException ex) {
                                 Exceptions.printStackTrace(ex);
                             } catch (ExecutionException ex) {
@@ -166,7 +178,11 @@ public class UnbufferSupport {
 
                     unbufferPath = remotePath;
                 } else {
-                    unbufferPath = new File(file.getParent()).getAbsolutePath();
+                    if (file != null) {
+                        unbufferPath = new File(file.getParent()).getAbsolutePath();
+                    } else {
+                        unbufferPath = new File(file_64.getParent()).getAbsolutePath();
+                    }
                 }
 
                 String ldPreloadEnv;

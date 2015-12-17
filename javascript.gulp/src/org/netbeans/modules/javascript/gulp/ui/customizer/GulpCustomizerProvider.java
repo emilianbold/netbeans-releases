@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.gulp.ui.customizer;
 
@@ -46,6 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.gulp.GulpBuildTool;
 import org.netbeans.modules.javascript.gulp.preferences.GulpPreferences;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
+import org.netbeans.modules.web.clientproject.spi.build.CustomizerPanelImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -58,7 +59,7 @@ public final class GulpCustomizerProvider implements ProjectCustomizer.Composite
     @NbBundle.Messages("GulpCustomizerProvider.name=Gulp")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
-        if (!GulpBuildTool.forProject(context.lookup(Project.class)).getGulpfile().exists()) {
+        if (!GulpBuildTool.forProject(context.lookup(Project.class)).getProjectGulpfile().exists()) {
             return null;
         }
         return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,
@@ -140,6 +141,11 @@ public final class GulpCustomizerProvider implements ProjectCustomizer.Composite
         public void setTask(String commandId, String task) {
             assert commandId != null;
             preferences.setTask(commandId, task);
+        }
+
+        @Override
+        public CustomizerPanelImplementation getCustomizerPanel() {
+            return null;
         }
 
     }

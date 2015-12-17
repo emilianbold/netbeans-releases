@@ -44,9 +44,6 @@ package org.openide.util.lookup.implspi;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,49 +55,23 @@ public final class ActiveQueue {
     private ActiveQueue() {}
 
     private static final Logger LOGGER = Logger.getLogger(ActiveQueue.class.getName());
-    private static final ReferenceQueue<Impl> ACTIVE = new ReferenceQueue<Impl>();
-    private static Reference<Impl> activeReferenceQueue = new WeakReference<Impl>(null);
+    private static Impl activeReferenceQueue;
 
     /**
      * Gets the active reference queue.
      * @return the singleton queue
      */
     public static synchronized ReferenceQueue<Object> queue() {
-        Impl impl = activeReferenceQueue.get();
-        if (impl == null) {
-            impl = new Impl();
-            activeReferenceQueue = new WeakReference<Impl>(impl, ACTIVE);
+        if (activeReferenceQueue == null) {
+            activeReferenceQueue = new Impl();
             Daemon.ping();
         }
-        return impl;
+        return activeReferenceQueue;
     }
 
     private static final class Impl extends ReferenceQueue<Object> {
-        private static final Field LOCK;
-        static {
-            Field f = null;
-            try {
-                f = ReferenceQueue.class.getDeclaredField("lock"); // NOI18N
-                f.setAccessible(true);
-            } catch (Throwable ex) {
-                reportError(ex);
-            }
-            LOCK = f;
-        }
-        private final Object myLock;
         
         Impl() {
-            Object l = this;
-            try {
-                if (LOCK != null) {
-                    LOCK.set(this, l = LOCK.get(ACTIVE));
-                }
-            } catch (IllegalArgumentException ex) {
-                reportError(ex);
-            } catch (IllegalAccessException ex) {
-                reportError(ex);
-            }
-            myLock = l;
         }
 
         @Override
@@ -118,12 +89,8 @@ public final class ActiveQueue {
             throw new InterruptedException();
         }
         
-        final Object lock() {
-            return myLock;
-        }
-
-        final Reference<? extends Object> pollSuper() throws IllegalArgumentException, InterruptedException {
-            return super.poll();
+        final Reference<? extends Object> removeSuper() throws InterruptedException {
+            return super.remove(0);
         }
     }
 
@@ -149,18 +116,8 @@ public final class ActiveQueue {
             return running != null;
         }
         
-        static synchronized void wakeUp() {
-            if (running != null) {
-                running.interrupt();
-            }
-        }
-        
         static synchronized Impl obtainQueue() {
-            Impl impl= activeReferenceQueue.get();
-            if (impl == null) {
-                running = null;
-            }
-            return impl;
+            return activeReferenceQueue;
         }
 
         @Override
@@ -171,18 +128,8 @@ public final class ActiveQueue {
                     if (impl == null) {
                         return;
                     }
-                    Reference<?> ref;
-                    Object lck = impl.lock();
-                    synchronized (lck) {
-                        ref = impl.pollSuper();
-                        impl = null;
-                        if (ref == null) {
-                            Reference<?> res = removeBetter(ACTIVE, lck);
-                            LOGGER.log(Level.FINE, "Got {0} with {1}", new Object[]{res, res == null ? null : res.get()});
-                            continue;
-                        }
-                    }
-                    LOGGER.finer("dequeued reference");
+                    Reference<?> ref = impl.removeSuper();
+                    LOGGER.log(Level.FINE, "Got dequeued reference {0}", new Object[] { ref });
                     if (!(ref instanceof Runnable)) {
                         LOGGER.log(Level.WARNING, "A reference not implementing runnable has been added to the Utilities.activeReferenceQueue(): {0}", ref.getClass());
                         continue;
@@ -205,32 +152,6 @@ public final class ActiveQueue {
                     continue;
                 }
             }
-        }
-    }
-    private static <T extends Throwable> T reportError(T ex) throws IllegalStateException {
-        LOGGER.log(Level.WARNING, "Cannot hack ReferenceQueue to fix bug #206621!", ex);
-        return ex;
-    }
-    
-    private static Reference<?> removeBetter(ReferenceQueue<?> q, Object lock) {
-        try {
-            Method m = q.getClass().getDeclaredMethod("reallyPoll"); // NOI18N
-            m.setAccessible(true);
-            
-            Reference<?> r = (Reference<?>) m.invoke(q);
-            if (r != null) {
-                return r;
-            }
-            for (;;) {
-                lock.wait();
-                r = (Reference<?>) m.invoke(q);
-                if (r != null) {
-                    return r;
-                }
-                return null;
-            }
-        } catch (Exception ex) {
-            return null;
         }
     }
 }

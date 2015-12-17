@@ -732,7 +732,8 @@ public class IssuePanel extends javax.swing.JPanel {
             modifiedField.setText(modifiedTxt);
             fixPrefSize(modifiedField);
             
-            privateNotesField.setText(issue.getPrivateNotes());
+            String privateNotes = issue.getPrivateNotes();                
+            setPrivateSectionLabel(privateNotes);
             privateDueDatePicker.setDate(issue.getDueDate());
             NbDateRange scheduleDate = issue.getScheduleDate();
             scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
@@ -844,6 +845,18 @@ public class IssuePanel extends javax.swing.JPanel {
         reloading = false;
     }
 
+    private void setPrivateSectionLabel(String privateNotes) {
+        if(privateNotes != null && !privateNotes.isEmpty() ) {
+            privateSection.setLabel("<html>" + // NOI18N
+                    org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateAttributesSection.label") + // NOI18N
+                    " (<i><b>" +  // NOI18N
+                    org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateAttributesSection.containsNotes") +  // NOI18N
+                    "</b></i>)</html>"); // NOI18N
+        } else {
+            privateSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateAttributesSection.label")); // NOI18N
+        }
+    }
+    
     private WikiPanel getAddCommentsPanel() {
         if(addCommentPanel == null) {
             initWikiPanels();
@@ -1599,7 +1612,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskPrivateNotes(privateNotesField.getText());
+                String txt = privateNotesField.getText();
+                issue.setTaskPrivateNotes(txt);
+                setPrivateSectionLabel(txt);
                 return true;
             }
         });
@@ -1863,6 +1878,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 Boolean b = enableMap.get(comp);
                 if (b != null) {
                     comp.setEnabled(b);
+                } else {
+                    comp.setEnabled(true);
                 }
             } else {
                 enableMap.put(comp, comp.isEnabled());

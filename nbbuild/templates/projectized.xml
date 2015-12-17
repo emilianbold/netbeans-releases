@@ -90,15 +90,15 @@ made subject to such option by the copyright holder.
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
     </target>
 
-    <target name="jdk-7-check" depends="-jdk-init" if="have-jdk-1.8" unless="permit.jdk8.builds">
+    <target name="jdk-8-check" depends="-jdk-init" if="have-jdk-1.9" unless="permit.jdk9.builds">
         <property name="user.build.properties" location="${nb_all}/nbbuild/user.build.properties"/>
         <property name=".nbbuild.properties" location="${user.home}/.nbbuild.properties"/>
-        <fail>You are attempting to build NetBeans using JDK 8 (or higher).
-This is forbidden as it may lead to accidental usage of JDK 8+ APIs.
-Either run Ant with JDK 7, or set nbjdk.home=&lt;JDK 7 home&gt; in ${user.build.properties}
+        <fail>You are attempting to build NetBeans using JDK 9 (or higher).
+This is forbidden as it may lead to accidental usage of JDK 9+ APIs.
+Either run Ant with JDK 8, or set nbjdk.home=&lt;JDK 8 home&gt; in ${user.build.properties}
 (can be set from IDE by opening a module project's Properties dialog and picking the right Java Platform in Libraries).
 You can alternatively set this property in ${.nbbuild.properties} to affect all checkouts on this machine.
-If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=true</fail>
+If you are sure you want to build with JDK 9+ anyway, use: -Dpermit.jdk9.builds=true</fail>
     </target>
 
     <target name="-define-custom-javac-task" unless="have-custom-javac-task">
@@ -106,7 +106,7 @@ If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=
         <property name="have-custom-javac-task" value="true" />
     </target>
 
-    <target name="build-init" depends="basic-init,jdk-7-check,set-buildnumber,-define-custom-javac-task">
+    <target name="build-init" depends="basic-init,jdk-8-check,set-buildnumber,-define-custom-javac-task">
         <property name="public.package.jar.dir" location="${nb.build.dir}/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
         <parseprojectxml
@@ -207,16 +207,16 @@ If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=
                 <include name="*.jar"/>
             </fileset>
         </pathconvert>
-        <!-- When requires.nb.javac property is true, prepend javac-api on bootclasspath to allow override the default annotation
-             processing API located in rt.jar. On Mac, prepend also javac-impl, so that tests are built against correct version of javac. -->
-        <condition property="bootclasspath.prepend" value="${retouche.javac.api}:${retouche.javac.impl}">
-            <and>
-                <os family="mac"/>
-                <istrue value="${requires.nb.javac}"/>
-            </and>
-        </condition>
+        <!-- When requires.nb.javac property is true, prepend javac-api and javac-impl on bootclasspath to allow override the default annotation
+             processing API located in rt.jar. -->
         <condition property="bootclasspath.prepend" value="${retouche.javac.api}">
             <istrue value="${requires.nb.javac}"/>
+        </condition>
+        <condition property="run.bootclasspath.prepend" value="${bootclasspath.prepend}${path.separator}${retouche.javac.impl}">
+            <istrue value="${requires.nb.javac}"/>
+        </condition>
+        <condition property="run.bootclasspath.prepend" value="${bootclasspath.prepend}">
+            <isset property="bootclasspath.prepend"/>
         </condition>
         <fail message="Delete standalone/suite-related metadata from netbeans.org modules">
             <condition>

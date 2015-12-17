@@ -262,7 +262,7 @@ public abstract class APTWalker {
     }
     
     protected final void pushState() {
-        visits.addLast(new WalkerState(curFile, curAPT, curWasInChild, curIncludeDirectiveFileIndex));
+        visits.addLast(new WalkerState(curFile, curAPT, curWasInChild));
     }
 
     protected void preInit() {}
@@ -275,7 +275,6 @@ public abstract class APTWalker {
         curFile = state.lastFile;
         curAPT = state.lastNode;
         curWasInChild = state.wasInChild;
-        curIncludeDirectiveFileIndex = state.curIncludeDirectiveFileIndex;
         return true;
     }
     
@@ -431,12 +430,10 @@ public abstract class APTWalker {
         private final APT lastNode;
         private final APTFile lastFile;
         private final boolean wasInChild;
-        private final int curIncludeDirectiveFileIndex;
-        private WalkerState(APTFile file, APT node, boolean wasInChildState, int curIncludeDirectiveFileIndex) {
+        private WalkerState(APTFile file, APT node, boolean wasInChildState) {
             this.lastFile = file;
             this.lastNode = node;
             this.wasInChild = wasInChildState;
-            this.curIncludeDirectiveFileIndex = curIncludeDirectiveFileIndex;
         }
     }     
 

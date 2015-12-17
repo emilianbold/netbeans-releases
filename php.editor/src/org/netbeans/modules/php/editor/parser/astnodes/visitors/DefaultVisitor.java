@@ -136,6 +136,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.Visitor;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.YieldExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.YieldFromExpression;
 
 /**
  *
@@ -654,6 +655,11 @@ public class DefaultVisitor implements Visitor {
     public void visit(YieldExpression node) {
         scan(node.getKey());
         scan(node.getValue());
+    }
+
+    @Override
+    public void visit(YieldFromExpression node) {
+        scan(node.getExpr());
     }
 
     @Override

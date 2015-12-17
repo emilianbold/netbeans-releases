@@ -247,3 +247,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-api-htmlui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-htmlui"/>
 <link href="${javadoc.docs.org-netbeans-api-knockout}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-knockout"/>
 <link href="${javadoc.docs.org-netbeans-lib-v8debug}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-lib-v8debug"/>
+<link href="${javadoc.docs.org-netbeans-modules-docker-api}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-docker-api"/>

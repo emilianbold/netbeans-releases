@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -305,9 +306,9 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
-                            PHPParseResult parserResult = (PHPParseResult) resultIterator.getParserResult();
-                            if (parserResult != null) {
-                                PHPCodeTemplateProcessor.this.info = parserResult;
+                            Parser.Result parserResult = resultIterator.getParserResult();
+                            if (parserResult instanceof PHPParseResult) {
+                                PHPCodeTemplateProcessor.this.info = (PHPParseResult) parserResult;
                             }
                         }
                     });

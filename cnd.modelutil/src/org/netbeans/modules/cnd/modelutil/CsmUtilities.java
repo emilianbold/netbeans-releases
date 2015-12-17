@@ -117,6 +117,7 @@ import org.openide.windows.WindowManager;
  * @author Vladimir Voskresensky
  */
 public class CsmUtilities {
+    public static final String CND_REFACTORING_MARKER = "cnd.refactoring.modification.event"; // NOI18N
 
     // Default classifier text for auto type
     public static final String AUTO_KEYWORD = "auto"; // NOI18N
@@ -1214,11 +1215,26 @@ public class CsmUtilities {
     public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2, QualifiersEqualizer qualsEqualizer) {
         return checkTypesEqual(type1, contextFile1, type2, contextFile2, qualsEqualizer, true);
     }
+    
+    public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2, ClassifiersEqualizer clsEqualizer, QualifiersEqualizer qualsEqualizer) {
+        return checkTypesEqual(type1, contextFile1, type2, contextFile2, clsEqualizer, qualsEqualizer, true) == EqualResult.EQUAL;
+    }
 
     public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2, QualifiersEqualizer qualsEqualizer, boolean tryResolveChain) {
+        return checkTypesEqual(type1, contextFile1, type2, contextFile2, new DefaultClassifiersEqualizer(), qualsEqualizer, tryResolveChain) == EqualResult.EQUAL;
+    }
+    
+    public static EqualResult checkTypesEqual(CsmType type1, 
+                                                CsmFile contextFile1, 
+                                                CsmType type2, 
+                                                CsmFile contextFile2, 
+                                                ClassifiersEqualizer clsEqualizer, 
+                                                QualifiersEqualizer qualsEqualizer, 
+                                                boolean tryResolveChain) 
+    {
         if (type1 != null && type2 != null) {
             if (!qualsEqualizer.areQualsEqual(type1, type2)) {
-                return false;
+                return EqualResult.QUALS_NOT_EQUAL;
             }
 
             final int itersNumber = tryResolveChain ? 2 : 1;
@@ -1231,8 +1247,8 @@ public class CsmUtilities {
                     CsmClassifier tbsp2Cls = getClassifier(type2, contextFile2, resolveTypeChain);
                     if (tbsp2Cls != null) {
                         classifiersWereResolved = true;
-                        if (CharSequenceUtilities.textEquals(tbsp1Cls.getQualifiedName(), tbsp2Cls.getQualifiedName())) {
-                            return true;
+                        if (clsEqualizer.areClassifiersEqual(type1, tbsp1Cls, type2, tbsp2Cls)) {
+                            return EqualResult.EQUAL;
                         }
                     }
                 }
@@ -1240,7 +1256,10 @@ public class CsmUtilities {
                 if (!classifiersWereResolved) {
                     // This is a fallback if at least one of classifiers was not resolved.
                     // There is no need to check again with resolveTypeChain = true, so return immediately
-                    return CharSequenceUtilities.textEquals(type1.getText(), type2.getText());
+                    if (CharSequenceUtilities.textEquals(type1.getText(), type2.getText())) {
+                        return EqualResult.EQUAL;
+                    }
+                    break;
                 }
 
                 resolveTypeChain = true;
@@ -1250,7 +1269,13 @@ public class CsmUtilities {
                 }
             }
         }
-        return false;
+        return EqualResult.CLASSIFIERS_NOT_EQUAL;
+    }
+    
+    public static enum EqualResult {
+        EQUAL,
+        QUALS_NOT_EQUAL,
+        CLASSIFIERS_NOT_EQUAL
     }
 
     private static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, boolean resolveTypeChain) {
@@ -1560,6 +1585,21 @@ public class CsmUtilities {
 
             return true;
         }
+    }
+    
+    public static interface ClassifiersEqualizer {
+        
+        boolean areClassifiersEqual(CsmType type1, CsmClassifier cls1, CsmType type2, CsmClassifier cls2);
+        
+    }
+    
+    public static class DefaultClassifiersEqualizer implements ClassifiersEqualizer {
+
+        @Override
+        public boolean areClassifiersEqual(CsmType type1, CsmClassifier cls1, CsmType type2, CsmClassifier cls2) {
+            return CharSequenceUtilities.textEquals(cls1.getQualifiedName(), cls2.getQualifiedName());
+        }
+        
     }
 
     private CsmUtilities() {

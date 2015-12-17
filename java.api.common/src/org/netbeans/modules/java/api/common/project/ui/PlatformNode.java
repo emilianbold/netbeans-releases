@@ -76,6 +76,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -306,6 +307,8 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         public PlatformProvider (PropertyEvaluator evaluator, Pair<Pair<String,String>, ClassPath> boot) {
             this.evaluator = evaluator;
             this.boot = boot;
+            final JavaPlatformManager jps = JavaPlatformManager.getDefault();
+            jps.addPropertyChangeListener(WeakListeners.propertyChange(this, jps));
             this.evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this,evaluator));
             if (this.boot.second() != null) {
                 this.boot.second().addPropertyChangeListener(WeakListeners.propertyChange(this, this.boot.second()));
@@ -354,7 +357,8 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
             if (boot.first().first().equals (propName) ||
-                ClassPath.PROP_ROOTS.equals(propName)) {
+                ClassPath.PROP_ROOTS.equals(propName) ||
+                JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(propName)) {
                 platformCache.set(null);
                 getPlatform();
             }

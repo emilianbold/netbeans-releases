@@ -364,6 +364,12 @@ public class AstRenderer {
                 if (!SKIP_AST_RENDERER_EXCEPTIONS) {
                     // In MySQL related tests we see endless "empty function name" exceptions
                     DiagnosticExceptoins.register(e);
+                    if (CndUtils.isUnitTestMode() && e.getMessage().startsWith("Empty function name")) { // NOI18N
+                        System.err.println();
+                        System.err.println("AST:"); // NOI18N
+                        AstUtil.toStream(tree, System.err);
+                        System.err.println();
+                    }
                 }
             } catch (Throwable thr) {
               CharSequence fileName = (file != null) ? file.getAbsolutePath() : "<unknown>"; // NOI18N
@@ -542,7 +548,8 @@ public class AstRenderer {
                     CsmDeclaration.Kind.FUNCTION,
                     CsmDeclaration.Kind.FUNCTION_FRIEND,
                     CsmDeclaration.Kind.VARIABLE,
-                    CsmDeclaration.Kind.VARIABLE_DEFINITION
+                    CsmDeclaration.Kind.VARIABLE_DEFINITION,
+                    CsmDeclaration.Kind.ENUMERATOR
                 );
             }
             return false;

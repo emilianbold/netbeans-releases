@@ -70,7 +70,7 @@ final class FeedbackSurvey {
             OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
             MBeanServer mserver = ManagementFactory.getPlatformMBeanServer();
             // w/o dependency on Sun's JDK
-            // long freeMem = ((com.sun.management.OperatingSystemMXBean)osBean).getTotalPhysicalMemorySize();
+            // long mem = ((com.sun.management.OperatingSystemMXBean)osBean).getTotalPhysicalMemorySize();
             mem = (Long)mserver.getAttribute(osBean.getObjectName(), "TotalPhysicalMemorySize");   // NOI18N
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);

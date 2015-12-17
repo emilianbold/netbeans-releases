@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.model.impl;
@@ -86,6 +86,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     private static final String TYPE_SEPARATOR = "|"; //NOI18N
     private static final String TYPE_SEPARATOR_REGEXP = "\\|"; //NOI18N
     private List<? extends ParameterElement> paremeters;
+    private final boolean declaredReturnType;
     //@GuardedBy("this")
     private String returnType;
 
@@ -94,23 +95,31 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody(), isDeprecated);
         this.paremeters = info.getParameters();
         this.returnType = returnType;
+        declaredReturnType = info.getReturnType() != null;
     }
 
     FunctionScopeImpl(Scope inScope, LambdaFunctionDeclarationInfo info) {
         super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody(), inScope.isDeprecated());
         this.paremeters = info.getParameters();
+        QualifiedName retType = info.getReturnType();
+        if (retType != null) {
+            this.returnType = retType.getName();
+        }
+        declaredReturnType = retType != null;
     }
 
     protected FunctionScopeImpl(Scope inScope, MethodDeclarationInfo info, String returnType, boolean isDeprecated) {
         super(inScope, info, info.getAccessModifiers(), info.getOriginalNode().getFunction().getBody(), isDeprecated);
         this.paremeters = info.getParameters();
         this.returnType = returnType;
+        declaredReturnType = info.getOriginalNode().getFunction().getReturnType() != null;
     }
 
     protected FunctionScopeImpl(Scope inScope, MagicMethodDeclarationInfo info, String returnType, boolean isDeprecated) {
         super(inScope, info, info.getAccessModifiers(), null, isDeprecated);
         this.paremeters = info.getParameters();
         this.returnType = returnType;
+        declaredReturnType = false;
     }
 
     FunctionScopeImpl(Scope inScope, BaseFunctionElement indexedFunction) {
@@ -121,6 +130,8 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         super(inScope, element, kind);
         this.paremeters = element.getParameters();
         this.returnType =  element.asString(PrintAs.ReturnSemiTypes);
+        // XXX ???
+        declaredReturnType = false;
     }
 
     public static FunctionScopeImpl createElement(Scope scope, LambdaFunctionDeclaration node) {
@@ -134,14 +145,25 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     //old contructors
 
-    public synchronized void addReturnType(String type) {
-        if (!StringUtils.hasText(returnType)) {
-            returnType = type;
-        } else {
-            Set<String> distinctTypes = new HashSet<>();
-            distinctTypes.addAll(Arrays.asList(returnType.split(TYPE_SEPARATOR_REGEXP)));
-            distinctTypes.add(type);
-            returnType = StringUtils.implode(distinctTypes, TYPE_SEPARATOR);
+    /**
+     * Add new return type but <b>only if the return type is not defined
+     * in its declaration already</b> (in such a case, this new return type
+     * is simply ignored).
+     * @param type return type to be added
+     */
+    public void addReturnType(String type) {
+        if (declaredReturnType) {
+            return;
+        }
+        synchronized (this) {
+            if (!StringUtils.hasText(returnType)) {
+                returnType = type;
+            } else {
+                Set<String> distinctTypes = new HashSet<>();
+                distinctTypes.addAll(Arrays.asList(returnType.split(TYPE_SEPARATOR_REGEXP)));
+                distinctTypes.add(type);
+                returnType = StringUtils.implode(distinctTypes, TYPE_SEPARATOR);
+            }
         }
     }
 
@@ -174,7 +196,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         assert callerTypes != null;
         String types = getReturnType();
         Collection<? extends TypeScope> result = getReturnTypesDescriptor(types, resolveSemiTypes).getModifiedResult(callerTypes);
-        updateReturnTypes(types, result);
+        if (!declaredReturnType) {
+            updateReturnTypes(types, result);
+        }
         return result;
     }
 

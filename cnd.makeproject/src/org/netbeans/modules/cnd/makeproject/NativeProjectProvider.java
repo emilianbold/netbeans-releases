@@ -45,14 +45,10 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -623,6 +619,30 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     /**
+     * Compiler pre-included system headers.
+     * I.e. files that are included in any compilation unit.
+     *
+     * @return list <FSPath> of pre-included headers
+     */
+    @Override
+    public List<FSPath> getSystemIncludeHeaders() {
+        ArrayList<FSPath> vec = new ArrayList<>();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        if (makeConfiguration != null) {
+            CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+            if (compilerSet == null) {
+                return vec;
+            }
+            AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
+            if (compiler != null) {
+                FileSystem compilerFS = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
+                vec.addAll(CndFileUtils.toFSPathList(compilerFS, compiler.getSystemIncludeHeaders()));
+            }
+        }
+        return vec;
+    }
+
+    /**
      * Returns a list <String> of user defined include paths used when parsing 'orpan' source files.
      * @return a list <String> of user defined include paths.
      * A path is always an absolute path.
@@ -656,8 +676,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     @Override
-    public List<String> getIncludeFiles() {
-        ArrayList<String> vec = new ArrayList<>();
+    public List<FSPath> getIncludeFiles() {
+        ArrayList<FSPath> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
@@ -669,10 +689,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             while (iter.hasNext()) {
                 String path = iter.next();
                 if (CndPathUtilities.isPathAbsolute(path)) {
-                    vec.add(path);
+                    vec.add(new FSPath(fs, path));
                 } else {
                     path = CndPathUtilities.toAbsolutePath(fs, getProjectRoot(), path);
-                    vec.add(path);
+                    vec.add(new FSPath(fs, path));
                 }
             }
         }

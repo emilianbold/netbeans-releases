@@ -71,7 +71,7 @@ public final class Type {
     public static final String VOID = "void"; //NOI18N
     public static final String MIXED = "mixed"; //NOI18N
 
-    private static final List<String> TYPES_FOR_HINTS = Arrays.asList(CALLABLE, BOOL, FLOAT, INT, STRING);
+    private static final List<String> TYPES_FOR_EDITOR = Arrays.asList(ARRAY, CALLABLE, BOOL, FLOAT, INT, STRING);
     private static final List<String> TYPES_FOR_PHP_DOC = Arrays.asList(STRING, INTEGER, INT, BOOLEAN, BOOL, FLOAT, DOUBLE, OBJECT, MIXED, ARRAY,
             RESOURCE, VOID, NULL, CALLBACK, "false", "true", "self"); // NOI18N
 
@@ -97,8 +97,16 @@ public final class Type {
         return result;
     }
 
-    public static List<String> getTypesForHints() {
-        return TYPES_FOR_HINTS;
+    /**
+     * Get valid types for the "editor". It means all the types
+     * that are valid to be used in source code (like "int" for PHP 7 etc.).
+     * <p>
+     * This method will be changed in the future (PHP 7.1 will have "void"
+     * as a return type but it will not be a valid scalar type).
+     * @return valid types for the "editor"
+     */
+    public static List<String> getTypesForEditor() {
+        return TYPES_FOR_EDITOR;
     }
 
     public static List<String> getTypesForPhpDoc() {

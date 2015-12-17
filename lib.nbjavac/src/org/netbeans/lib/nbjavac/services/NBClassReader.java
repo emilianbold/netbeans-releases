@@ -51,18 +51,17 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
-import com.sun.tools.javadoc.JavadocClassReader;
 
 /**
  *
  * @author lahvac
  */
-public class NBClassReader extends JavadocClassReader {
+public class NBClassReader extends ClassReader {
     
-    public static void preRegister(Context context, final boolean loadDocEnv) {
+    public static void preRegister(Context context) {
         context.put(classReaderKey, new Context.Factory<ClassReader>() {
             public ClassReader make(Context c) {
-                return new NBClassReader(c, loadDocEnv);
+                return new NBClassReader(c);
             }
         });
     }
@@ -70,8 +69,8 @@ public class NBClassReader extends JavadocClassReader {
     private final Names names;
     private final NBNames nbNames;
 
-    public NBClassReader(Context context, boolean loadDocEnv) {
-        super(context, loadDocEnv);
+    public NBClassReader(Context context) {
+        super(context);
 
         names = Names.instance(context);
         nbNames = NBNames.instance(context);

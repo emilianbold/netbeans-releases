@@ -149,17 +149,20 @@ public final class CndParserFactory extends ParserFactory {
             if (snapshot == null) {
                 return;
             }
+            boolean invalidResult;
             long oldVersion;
             CsmFile oldFile;
             CharSequence oldText;
             long oldDocVersion;
             synchronized (lock) {
                 if (this.cndParserResult == null) {
+                    invalidResult = false;
                     oldVersion = 0;
                     oldFile = null;
                     oldText = null;
                     oldDocVersion = NO_DOCUMENT_VERSION;
                 } else {
+                    invalidResult = this.cndParserResult.isInvalid();
                     oldVersion = this.cndParserResult.getFileVersion();
                     oldFile = this.cndParserResult.getCsmFile();
                     oldText = this.cndParserResult.getSnapshot().getText();
@@ -184,7 +187,7 @@ public final class CndParserFactory extends ParserFactory {
             }
             synchronized (lock) {
                 long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
-                if (oldVersion != fileVersion || !snapshot.getText().equals(oldText) || docVersion != oldDocVersion) {
+                if (invalidResult || (oldVersion != fileVersion) || !snapshot.getText().equals(oldText) || (docVersion != oldDocVersion)) {
                     if (TraceFlags.USE_PARSER_API) {
                         if (file instanceof FileImpl) {
                             FileImpl fileImpl = (FileImpl) file;

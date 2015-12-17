@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="ArchiveRootProvider">
+            <api name="filesystems"/>
+            <summary>Pluggable archive files support for FileUtil</summary>
+            <version major="9" minor="10"/>
+            <date year="2015" month="5" day="28"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" semantic="compatible" binary="compatible"/>
+            <description>
+                To support JDK 9 image file as an archive the FileUtil's method
+                <code>getArchiveFile</code>,<code>getArchiveRoot</code> and <code>isArchiveFile</code>
+                are pluggable using a new SPI <code>ArchiveFileProvider</code>.
+                In addition to these methods a new method <code>isArchiveArtifact</code> was added.
+                This method can be used if given <code>URL</code> points into an archive.
+            </description>
+            <class name="FileUtil" package="org.openide.filesystems"/>
+            <class name="ArchiveRootProvider" package="org.openide.filesystems.spi"/>
+        </change>
         <change id="repository.multiuser">
             <api name="filesystems"/>
             <summary>Support for multi-user environments</summary>
@@ -165,7 +182,7 @@ made subject to such option by the copyright holder.
                     of splitting filesystems API into UI (e.g. depending
                     on Swing) and non-UI part (that can run on JDK8 compact
                     profile). Introducing general replacement 
-                    <a href="@TOP@org/openide/filesystems/FileSystem.html#findExtrasFor(java.util.Set)">findExtrasFor</a>
+                    <a href="@TOP@org/openide/filesystems/FileSystem.html#findExtrasFor-java.util.Set-">findExtrasFor</a>
                     instead...
                 </p>
             </description>
@@ -202,7 +219,7 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" deprecation="no"/>
             <description>
                 <p>
-                    Added <a href="@org-openide-filesystems-nb@/org/openide/filesystems/FileChooserBuilder.html#setAcceptAllFileFilterUsed(boolean)">
+                    Added <a href="@org-openide-filesystems-nb@/org/openide/filesystems/FileChooserBuilder.html#setAcceptAllFileFilterUsed-boolean-">
                     new method</a> to <code>FileChooserBuilder</code> that determines whether the <code>AcceptAll FileFilter</code>
                     should be used in the created file chooser.
                 </p>
@@ -219,14 +236,14 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" deprecation="no"/>
             <description>
                 <p>
-                    Added <a href="@org-openide-filesystems-nb@/org/openide/filesystems/FileChooserBuilder.html#addDefaultFileFilters()">
+                    Added <a href="@org-openide-filesystems-nb@/org/openide/filesystems/FileChooserBuilder.html#addDefaultFileFilters--">
                     new method</a> to <code>FileChooserBuilder</code> that adds all default
                     <code>FileFilter</code>s to created file chooser.
                 </p>
                 <p>
                     Default filters are registered using new parameters in annotations
-                    <a href="@TOP@org/openide/filesystems/MIMEResolver.Registration.html#showInFileChooser()">MimeResolver.Registration</a>
-                    and <a href="@TOP@org/openide/filesystems/MIMEResolver.ExtensionRegistration.html#showInFileChooser()">MimeResolver.ExtensionRegistration</a>.
+                    <a href="@TOP@org/openide/filesystems/MIMEResolver.Registration.html#showInFileChooser--">MimeResolver.Registration</a>
+                    and <a href="@TOP@org/openide/filesystems/MIMEResolver.ExtensionRegistration.html#showInFileChooser--">MimeResolver.ExtensionRegistration</a>.
                 </p>
             </description>
             <class package="org.openide.filesystems" name="FileChooserBuilder" link="no"/>
@@ -244,7 +261,7 @@ made subject to such option by the copyright holder.
                 <p>
                     <code>FileObject</code> now implements <code>Lookup.Provider</code>
                     and thus has new
-                    <a href="@TOP@org/openide/filesystems/FileObject.html#getLookup()">
+                    <a href="@TOP@org/openide/filesystems/FileObject.html#getLookup--">
                     getLookup</a>() method.
                 </p>
             </description>
@@ -260,7 +277,7 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" deprecation="no"/>
             <description>
                 <p>
-                    Added <a href="@TOP@org/openide/filesystems/FileUtil.html#addRecursiveListener(org.openide.filesystems.FileChangeListener,%20java.io.File,%20java.io.FileFilter,%20java.util.concurrent.Callable)">
+                    Added <a href="@TOP@org/openide/filesystems/FileUtil.html#addRecursiveListener-org.openide.filesystems.FileChangeListener-java.io.File-java.io.FileFilter-java.util.concurrent.Callable-">
                     new method</a> variant to register recursive listener
                     and control whether to recurse into a subtree or not via
                     <code>FileFilter</code>.
@@ -295,7 +312,7 @@ made subject to such option by the copyright holder.
             <description>
                 <p>
                     Those who wish to influence content of 
-                    <a href="@TOP@/org/openide/filesystems/FileUtil.html#getConfigRoot()">
+                    <a href="@TOP@/org/openide/filesystems/FileUtil.html#getConfigRoot--">
                     configuration file system</a> have an easier
                     <a href="@TOP@/org/openide/filesystems/Repository.LayerProvider.html">
                     way</a> now.
@@ -421,7 +438,7 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    Introducing <a href="@TOP@/org/openide/filesystems/FileObject.html#getMIMEType(java.lang.String...)">
+                    Introducing <a href="@TOP@/org/openide/filesystems/FileObject.html#getMIMEType-java.lang.String...-">
                     FileObject.getMIMEType(String...)    
                     </a> that can be overriden by different implementations
                     of file system API.
@@ -479,7 +496,7 @@ made subject to such option by the copyright holder.
                 <p>
                     One can convert files in SystemFileSystem to Object with
                     a
-                    <a href="@TOP@org/openide/filesystems/FileUtil.html#getConfigObject(java.lang.String,%20java.lang.Class)">
+                    <a href="@TOP@org/openide/filesystems/FileUtil.html#getConfigObject-java.lang.String-java.lang.Class-">
                     single utility method</a>.
                 </p>
             </description>
@@ -496,7 +513,7 @@ made subject to such option by the copyright holder.
             <description>
                 <p>
                     Semantic of 
-                    <a href="@TOP@/org/openide/filesystems/FileObject.html#getFileObject(java.lang.String)">
+                    <a href="@TOP@/org/openide/filesystems/FileObject.html#getFileObject-java.lang.String-">
                     getFileObject
                     </a> method has been clarified to accept "..".
                 </p>
@@ -514,7 +531,7 @@ made subject to such option by the copyright holder.
             <description>
                 <p>
                     You can use prefix <code>"methodvalue:"</code> to
-                    <a href="@TOP@/org/openide/filesystems/FileObject.html#setAttribute(java.lang.String,%20java.lang.Object)">
+                    <a href="@TOP@/org/openide/filesystems/FileObject.html#setAttribute-java.lang.String-java.lang.Object-">
                     setAttribute    
                     </a>
                     with type of <a href="@JDK@/java/lang/reflect/Method.html">Method</a>.
@@ -557,7 +574,7 @@ made subject to such option by the copyright holder.
             <description>
                 <p>
                 Create a file and write its content (almost) atomically using the new
-                <a href="@TOP@/org/openide/filesystems/FileObject.html#createAndOpen(java.lang.String)">FileObject.createAndOpen</a>
+                <a href="@TOP@/org/openide/filesystems/FileObject.html#createAndOpen-java.lang.String-">FileObject.createAndOpen</a>
                 method.
                 </p>
             </description>
@@ -681,7 +698,7 @@ made subject to such option by the copyright holder.
                  <p>
                      One can register a recursive listener on a file object by
                      calling
-                     <a href="@TOP@/org/openide/filesystems/FileObject.html#addRecursiveListener(org.openide.filesystems.FileChangeListener)">FileObject.addRecursiveListener(FileChangeListener)</a>.
+                     <a href="@TOP@/org/openide/filesystems/FileObject.html#addRecursiveListener-org.openide.filesystems.FileChangeListener-">FileObject.addRecursiveListener(FileChangeListener)</a>.
                  </p>
              </description>
              <class package="org.openide.filesystems" name="FileObject"/>
@@ -750,7 +767,7 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
             <description>
                 <p>
-                    <a href="org/openide/filesystems/FileEvent.html#runWhenDeliveryOver(java.lang.Runnable)">
+                    <a href="org/openide/filesystems/FileEvent.html#runWhenDeliveryOver-java.lang.Runnable-">
                     FileEvent.runWhenDeliveryOver(Runnable)</a> method added to support
                     easier processing of <em>batch</em> sets of events.
                 </p>
@@ -785,11 +802,11 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    Added <a href="@TOP@/org/openide/filesystems/FileObject.html#asBytes()">
+                    Added <a href="@TOP@/org/openide/filesystems/FileObject.html#asBytes--">
                     asBytes()</a>,
-                    <a href="@TOP@/org/openide/filesystems/FileObject.html#asText(java.lang.String)">
+                    <a href="@TOP@/org/openide/filesystems/FileObject.html#asText-java.lang.String-">
                     asText(encoding)</a>,
-                    and <a href="@TOP@/org/openide/filesystems/FileObject.html#asLines(java.lang.String)">
+                    and <a href="@TOP@/org/openide/filesystems/FileObject.html#asLines-java.lang.String-">
                     asLines(encoding)</a> methods into
                     <a href="@TOP@/org/openide/filesystems/FileObject.html">FileObject</a>
                     to simplify reading of its content.
@@ -806,9 +823,9 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    Added <a href="@TOP@/org/openide/filesystems/FileUtil.html#addFileChangeListener(org.openide.filesystems.FileChangeListener,%20java.io.File)">
+                    Added <a href="@TOP@/org/openide/filesystems/FileUtil.html#addFileChangeListener-org.openide.filesystems.FileChangeListener-java.io.File-">
                     FileUtil.addFileChangeListener(FileChangeListener listener, File path)</a>
-                    and <a href="@TOP@/org/openide/filesystems/FileUtil.html#removeFileChangeListener(org.openide.filesystems.FileChangeListener,%20java.io.File)">
+                    and <a href="@TOP@/org/openide/filesystems/FileUtil.html#removeFileChangeListener-org.openide.filesystems.FileChangeListener-java.io.File-">
                     FileUtil.addFileChangeListener(FileChangeListener listener, File path)</a>.
                     It permits you to listen to a file which does not yet exist,
                     or continue listening to it after it is deleted and recreated, etc.
@@ -829,7 +846,7 @@ made subject to such option by the copyright holder.
                     Rather than having to call
                     <code>Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(&quot;foo/bar&quot;)</code>,
                     you can simply call
-                    <a href="@TOP@/org/openide/filesystems/FileUtil.html#getConfigFile(java.lang.String)">FileUtil.getConfigFile(&quot;foo/bar&quot;)</a>.
+                    <a href="@TOP@/org/openide/filesystems/FileUtil.html#getConfigFile-java.lang.String-">FileUtil.getConfigFile(&quot;foo/bar&quot;)</a>.
                 </p>
             </description>
             <class package="org.openide.filesystems" name="FileUtil"/>
@@ -844,11 +861,11 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" modification="yes"/>
             <description>
                 <p>
-                    Method <a href="@TOP@/org/openide/filesystems/FileUtil.html#setMIMEType(java.lang.String,%20java.lang.String)">
+                    Method <a href="@TOP@/org/openide/filesystems/FileUtil.html#setMIMEType-java.lang.String-java.lang.String-">
                     FileUtil.setMIMEType(String extension, String mimeType)</a>
                     resurrected to register file extension for specified MIME type.
                     It is persisted in userdir contrary to previous implementation.
-                    Added method <a href="@TOP@/org/openide/filesystems/FileUtil.html#getMIMETypeExtensions(java.lang.String)">
+                    Added method <a href="@TOP@/org/openide/filesystems/FileUtil.html#getMIMETypeExtensions-java.lang.String-">
                     FileUtil.getMIMETypeExtensions(String mimeType)</a>
                     to get list of file extensions associated with specified MIME type.
                 </p>
@@ -931,7 +948,7 @@ made subject to such option by the copyright holder.
             <description>
                 <p>
                     To speed up MIME type recognition it is added an extra parameter
-                    to method <a href="@TOP@/org/openide/filesystems/FileUtil.html#getMIMEType(org.openide.filesystems.FileObject,%20java.lang.String...)">FileUtil.getMIMEType(FileObject, String...)</a>.
+                    to method <a href="@TOP@/org/openide/filesystems/FileUtil.html#getMIMEType-org.openide.filesystems.FileObject-java.lang.String...-">FileUtil.getMIMEType(FileObject, String...)</a>.
                     We can supply one or more MIME types which we are only interested in.
                     Module writers have to override
                     <a href="@TOP@/org/openide/filesystems/MIMEResolver.html">MIMEResolver</a>

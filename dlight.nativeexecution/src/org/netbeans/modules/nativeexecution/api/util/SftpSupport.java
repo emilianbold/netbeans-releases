@@ -212,8 +212,8 @@ class SftpSupport {
         protected abstract String getTraceName();
 
         protected void logException(Exception ex, Writer error) {
-            if (LOG.isLoggable(Level.INFO)) {
-                LOG.log(Level.INFO, "Error " + getTraceName(), ex);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Error " + getTraceName(), ex);
             }
             if (error != null) {
                 try {

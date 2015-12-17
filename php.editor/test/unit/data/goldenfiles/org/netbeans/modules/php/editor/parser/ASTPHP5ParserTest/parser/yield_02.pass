@@ -9,7 +9,7 @@
         <token id='T_OPEN_PARENTHESE' start='15' end='16'>
             <text>(</text>
         </token>
-        <token id='unknown' start='16' end='21'>
+        <token id='T_YIELD' start='16' end='21'>
             <text>yield</text>
         </token>
         <token id='T_VARIABLE' start='22' end='28'>

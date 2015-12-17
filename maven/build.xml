@@ -52,12 +52,11 @@ made subject to such option by the copyright holder.
         <mkdir dir="build/mavenclasses"/>
         <property name="maven.embedder.dir" value="${maven.dir}"/>
         <javac srcdir="mavensrc" destdir="build/mavenclasses" 
-               debug="${build.compiler.debug}" 
-               deprecation="${build.compiler.deprecation}" 
-               source="1.5" 
-               target="1.5" 
-               includeantruntime="false"
-               excludes="org/netbeans/modules/maven/workspace/reader/*">
+            debug="${build.compiler.debug}" 
+            deprecation="${build.compiler.deprecation}" 
+            source="1.5" 
+            target="1.5" 
+            includeantruntime="false">
             <classpath>
                 <fileset dir="${maven.embedder.dir}/maven/lib">
                     <include name="*.jar"/>
@@ -65,19 +64,19 @@ made subject to such option by the copyright holder.
                 <fileset dir="${maven.embedder.dir}/maven/boot">
                     <include name="*.jar"/>
                 </fileset>
+                <pathelement location="./external/aether-api-1.0.2.v20150114.jar"/>
             </classpath>
             <classpath refid="cp"/>
         </javac>
         <copy overwrite="true" tofile="build/mavenclasses/META-INF/plexus/components.xml" file="mavensrc/org/netbeans/modules/maven/workspace/reader/components.xml">
         </copy>
         <mkdir dir="${cluster}/maven-nblib"/>
-<!--        <jar jarfile="${cluster}/maven-nblib/netbeans-cos.jar" compress="false">
+        <jar jarfile="${cluster}/maven-nblib/netbeans-cos.jar" compress="false">
             <fileset dir="build/mavenclasses" >
                 <include name="org/netbeans/modules/maven/workspace/reader/**"/>
                 <include name="META-INF/plexus/**"/>
             </fileset>
-        </jar>-->
-        <copy overwrite="true" tofile="${cluster}/maven-nblib/netbeans-cos.jar" file="./external/netbeans-cos.jar"/>
+        </jar>
         <copy overwrite="true" tofile="build/mavenclasses/META-INF/plexus/components.xml" file="mavensrc/org/netbeans/modules/maven/event/components.xml"/>
         <!-- we use jarjar to repackage simple json, to avoid clashes with 3rd party maven plugins possibly including it in their dependencies -->
         <taskdef name="jarjar" classpath="./external/jarjar-1.4.jar" classname="com.tonicsystems.jarjar.JarJarTask" loaderref="lib.path.loader"/>

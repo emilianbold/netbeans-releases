@@ -170,12 +170,12 @@ public class ExtraCatch implements ErrorRule<Void> {
                 switch (parentParent.getKind()) {
                     case BLOCK: {
                         parentBlock = (BlockTree) parentParent;
-                        statements = new ArrayList<>(parentBlock.getStatements());
+                        statements = new ArrayList<StatementTree>(parentBlock.getStatements());
                         break;
                     }
                     case CASE: {
                         parentCase = (CaseTree) parentParent;
-                        statements = new ArrayList<>(parentCase.getStatements());
+                        statements = new ArrayList<StatementTree>(parentCase.getStatements());
                         break;
                     }
                     default:

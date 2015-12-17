@@ -319,7 +319,8 @@ public final class ParameterElementImpl implements ParameterElement {
         if (forDeclaration) {
             if (isReference()) {
                 sb.append(VariableElementImpl.REFERENCE_PREFIX);
-            } else if (isVariadic()) {
+            }
+            if (isVariadic()) {
                 sb.append(VariableElementImpl.VARIADIC_PREFIX);
             }
         }

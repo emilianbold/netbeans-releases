@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.75.0
+#Version 3.79.1
 
 CLSS public java.beans.FeatureDescriptor
 cons public init()
@@ -426,7 +426,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

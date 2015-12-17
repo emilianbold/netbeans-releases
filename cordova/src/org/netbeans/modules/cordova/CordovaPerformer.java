@@ -50,9 +50,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.prefs.Preferences;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.spi.Device;
@@ -73,7 +75,6 @@ import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.cordova.project.ConfigUtils;
 import org.netbeans.modules.cordova.project.CordovaCustomizerPanel;
 import org.netbeans.modules.cordova.project.CordovaBrowserFactory;
-import org.netbeans.modules.cordova.updatetask.AndroidManifest;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
@@ -110,6 +111,8 @@ public class CordovaPerformer implements BuildPerformer {
     public static final String WWW_NB_TEMP = "www_nb_temp";
     public static final String WWW = "www";
 
+    static final String GRUNT_CUSTOMIZER_IDENT = "Grunt";
+    static final String GULP_CUSTOMIZER_IDENT = "Gulp";
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
@@ -122,7 +125,7 @@ public class CordovaPerformer implements BuildPerformer {
     
     
     public Task createPlatforms(final Project project) {
-        return perform("upgrade-to-cordova-project", project);      
+        return perform("upgrade-to-cordova-project", project, false);      
     }
     
     @NbBundle.Messages({
@@ -134,10 +137,19 @@ public class CordovaPerformer implements BuildPerformer {
             "NetBeans might require restart for changes to take effect.\n",
         "ERR_NO_Provisioning=Provisioning Profile not found.\nPlease use XCode and install valid Provisioning Profile for your device.",
         "ERR_NOT_Cordova=Create Cordova Resources and rename site root to 'www'?",
+        "CTL_SelectBuildTool=Select build tool",
+        "# {0} - project name", 
+        "# {1} - build file", 
+        "# {2} - build tool name", 
+        "MSG_SelectBuildTool=The project ''{0}'' contains ''{1}''.\nClick Ant to execute Ant targets for this project.\nClick ''{2}'' to assign IDE actions to ''{2}'' tasks.",
         "ERR_SiteRootNotDefined=Project Site Root Folder must be located in project directory"    
     })
     @Override
-    public ExecutorTask perform(final String target, final Project project) {
+    public ExecutorTask perform(final String target, final Project project) {    
+        return perform(target, project, true);
+    }
+    
+    private ExecutorTask perform(final String target, final Project project, final boolean checkOtherScripts) {    
         if ((target.startsWith("build") || target.startsWith("sim"))
                 && ClientProjectUtilities.getStartFile(project) == null) {
             DialogDisplayer.getDefault().notify(
@@ -202,6 +214,13 @@ public class CordovaPerformer implements BuildPerformer {
                         } else {
                             siteRootDOB.rename(WWW);
                         }
+                    }
+                    
+                    if(checkOtherScripts && 
+                       project.getProjectDirectory().getFileObject(PATH_BUILD_XML) == null && 
+                       checkOtherBuildScripts(project)) 
+                    {
+                        return;
                     }
                     generateBuildScripts(project);
                     FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
@@ -401,6 +420,35 @@ public class CordovaPerformer implements BuildPerformer {
         }
     }
     
+    private boolean checkOtherBuildScripts(Project project) {
+        return hasOtherBuildTool(project, "Gruntfile.js", "Grunt", () -> { project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(GRUNT_CUSTOMIZER_IDENT, null); }) ||
+               hasOtherBuildTool(project, "gulpfile.js",  "Gulp", () -> { project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(GULP_CUSTOMIZER_IDENT, null); }) 
+               ? true : false;            
+    }
+    
+    private boolean hasOtherBuildTool(Project project, String toolfile, String toolName, Runnable r) {
+        if(project.getProjectDirectory().getFileObject(toolfile) != null) {
+            ProjectInformation info = ProjectUtils.getInformation(project);
+            String name = info != null ? info.getDisplayName() : project.getProjectDirectory().getNameExt();
+            JButton tool = new JButton(toolName);
+            NotifyDescriptor desc = new NotifyDescriptor(
+                Bundle.MSG_SelectBuildTool(name, toolfile, toolName),
+                Bundle.CTL_SelectBuildTool(),
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                new Object[] {tool, new JButton("Ant"), NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.OK_OPTION);
+            DialogDisplayer.getDefault().notify(desc);
+            if(desc.getValue() == tool) {
+                r.run();
+                return true;
+            } else if (desc.getValue() == NotifyDescriptor.CANCEL_OPTION) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private static String getConfigPath(Project project) {
         final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
         String configPath = (siteRoot==null?WWW_NB_TEMP:siteRoot.getNameExt()) + "/" + NAME_CONFIG_XML; // NOI18N
@@ -456,7 +504,7 @@ public class CordovaPerformer implements BuildPerformer {
      * @return true if script was created. False if script was already there
      * @throws IOException 
      */
-    public static boolean createScript(Project project, String source, String target, boolean overwrite) throws IOException {
+    public static boolean createScript(Project project, String source, String target, boolean overwrite) throws IOException {        
         FileObject build = null;
         if (!overwrite) {
             build = project.getProjectDirectory().getFileObject(target);

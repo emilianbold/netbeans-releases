@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.apt.support;
 import org.netbeans.modules.cnd.apt.support.spi.APTFileSearchImplementation;
 import org.netbeans.modules.cnd.apt.support.spi.APTProjectFileSearchProvider;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.util.Lookup;
 
 /**
@@ -70,7 +71,7 @@ public final class APTFileSearch {
         return null;
     }
 
-    public String searchInclude(String include, CharSequence basePath) {
+    public FSPath searchInclude(String include, CharSequence basePath) {
         return impl.searchInclude(include, basePath);
     }
 

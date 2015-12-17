@@ -276,6 +276,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
             case COMPILATION_UNIT:
                 insideCompilationUnit(env);
                 break;
+            case PACKAGE:
+                insidePackage(env);
+                break;
             case IMPORT:
                 insideImport(env);
                 break;
@@ -465,6 +468,15 @@ public final class JavaCompletionTask<T> extends BaseTask {
             if (first != null && first.token().id() == JavaTokenId.SEMICOLON) {
                 addKeywordsForCU(env);
             }
+        }
+    }
+
+    private void insidePackage(Env env) {
+        int offset = env.getOffset();
+        PackageTree pt = (PackageTree) env.getPath().getLeaf();
+        SourcePositions sourcePositions = env.getSourcePositions();
+        if (offset <= sourcePositions.getStartPosition(env.getRoot(), pt.getPackageName())) {
+            addPackages(env, null, true);
         }
     }
 
@@ -1799,10 +1811,17 @@ public final class JavaCompletionTask<T> extends BaseTask {
 
     private void insideTry(Env env) throws IOException {
         CompilationController controller = env.getController();
-        addKeyword(env, FINAL_KEYWORD, SPACE, false);
-        TypeElement te = controller.getElements().getTypeElement("java.lang.AutoCloseable"); //NOI18N
-        if (te != null) {
-            addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
+        TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, env.getPath().getLeaf(), env.getOffset());
+        if (last != null && (last.token().id() == JavaTokenId.LPAREN || last.token().id() == JavaTokenId.SEMICOLON)) {
+            addKeyword(env, FINAL_KEYWORD, SPACE, false);
+            addKeyword(env, NEW_KEYWORD, SPACE, false);
+            if (controller.getSourceVersion().compareTo(SourceVersion.RELEASE_9) >= 0) {
+                addEffectivelyFinalAutoCloseables(env);
+            }
+            TypeElement te = controller.getElements().getTypeElement("java.lang.AutoCloseable"); //NOI18N
+            if (te != null) {
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
+            }
         }
     }
 
@@ -2844,6 +2863,42 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         results.add(itemFactory.createVariableItem(env.getController(), (VariableElement) e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos()));
                     }
                     break;
+            }
+        }
+    }
+
+    private void addEffectivelyFinalAutoCloseables(final Env env) throws IOException {
+        final CompilationController controller = env.getController();
+        final Elements elements = controller.getElements();
+        final TypeElement te = elements.getTypeElement("java.lang.AutoCloseable"); //NOI18N
+        if (te != null) {
+            final Types types = controller.getTypes();
+            final ElementUtilities eu = controller.getElementUtilities();
+            final Scope scope = env.getScope();
+            final Set<? extends TypeMirror> smartTypes = options.contains(Options.ALL_COMPLETION) ? null : getSmartTypes(env);
+            final TypeElement enclClass = scope.getEnclosingClass();
+            for (Element e : getLocalMembersAndVars(env)) {
+                switch (e.getKind()) {
+                    case EXCEPTION_PARAMETER:
+                    case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
+                    case PARAMETER:
+                        if (types.isSubtype(e.asType(), te.asType()) && eu.isEffectivelyFinal((VariableElement) e)) {
+                            results.add(itemFactory.createVariableItem(env.getController(), (VariableElement) e, e.asType(), anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), env.assignToVarPos()));
+                        }
+                        break;
+                    case FIELD:
+                        if (types.isSubtype(e.asType(), te.asType())) {
+                            String name = e.getSimpleName().toString();
+                            if (THIS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
+                                results.add(itemFactory.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
+                            } else {
+                                TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
+                                results.add(itemFactory.createVariableItem(env.getController(), (VariableElement) e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos()));
+                            }
+                        }
+                        break;
+                }
             }
         }
     }

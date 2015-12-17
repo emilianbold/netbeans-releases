@@ -65,6 +65,7 @@ import org.netbeans.api.java.source.ClassIndex.Symbols;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
@@ -153,6 +154,7 @@ public class ClassIndexTest extends NbTestCase {
         MockServices.setServices();
     }
 
+    @RandomlyFails
     public void testEvents () throws Exception {
         GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] {bootPath});
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {compilePath});

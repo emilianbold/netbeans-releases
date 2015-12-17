@@ -112,8 +112,8 @@ public final class ToolchainValidator {
     void applyChanges(Map<Tool, List<List<String>>> needReset, final CompilerSetManagerImpl csm) {
         for(Map.Entry<Tool, List<List<String>>> entry : needReset.entrySet()) {
             Tool tool = entry.getKey();
-            List<List<String>> pair = entry.getValue();
-            new SPICompilerAccesor(tool).applySystemIncludesAndDefines(pair);
+            List<List<String>> compilerDefinitions = entry.getValue();
+            new SPICompilerAccesor(tool).applyCompilerDefinitions(compilerDefinitions);
         }
         CompilerSetPreferences.saveToDisk(csm);
         ToolsPanelSupport.fireCodeAssistanceChange(csm);
@@ -136,9 +136,9 @@ public final class ToolchainValidator {
                 for (Tool tool : cs.getTools()) {
                     if (tool instanceof AbstractCompiler) {
                         if (tool.getKind() == PredefinedToolKind.CCompiler || tool.getKind() == PredefinedToolKind.CCCompiler) {
-                            List<List<String>> systemIncludesAndDefines = new SPICompilerAccesor(tool).getSystemIncludesAndDefines();
-                            if (!isEqualsSystemIncludesAndDefines(systemIncludesAndDefines, (AbstractCompiler) tool)) {
-                                needReset.put(tool, systemIncludesAndDefines);
+                            List<List<String>> compilerDefinitions = new SPICompilerAccesor(tool).getCompilerDefinitions();
+                            if (!isEqualsCompilerDefinitions(compilerDefinitions, (AbstractCompiler) tool)) {
+                                needReset.put(tool, compilerDefinitions);
                             } else {
 
                             }
@@ -156,16 +156,20 @@ public final class ToolchainValidator {
         }
     }
 
-    private boolean isEqualsSystemIncludesAndDefines(List<List<String>> systemIncludesAndDefines, AbstractCompiler tool) {
-        if (systemIncludesAndDefines == null) {
+    private boolean isEqualsCompilerDefinitions(List<List<String>> compilerDefinitions, AbstractCompiler tool) {
+        if (compilerDefinitions == null) {
             return true;
         }
         List<String> systemIncludeDirectories = tool.getSystemIncludeDirectories();
-        List<String> systemPreprocessorSymbols = tool.getSystemPreprocessorSymbols();
-        if (!comparePathsLists(systemIncludesAndDefines.get(0), systemIncludeDirectories, tool)) {
+        if (!comparePathsLists(compilerDefinitions.get(0), systemIncludeDirectories, tool)) {
             return false;
         }
-        if (!compareMacrosLists(systemIncludesAndDefines.get(1), systemPreprocessorSymbols, tool)) {
+        List<String> systemPreprocessorSymbols = tool.getSystemPreprocessorSymbols();
+        if (!compareMacrosLists(compilerDefinitions.get(1), systemPreprocessorSymbols, tool)) {
+            return false;
+        }
+        List<String> systemIncludeHeaders = tool.getSystemIncludeHeaders();
+        if (!comparePathsLists(compilerDefinitions.get(2), systemIncludeHeaders, tool)) {
             return false;
         }
         return true;

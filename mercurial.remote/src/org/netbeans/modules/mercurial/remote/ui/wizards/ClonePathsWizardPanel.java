@@ -78,7 +78,11 @@ public class ClonePathsWizardPanel implements WizardDescriptor.Panel {
     private HgURL pullUrl, pushUrl;
     private HgURL defaultUrl;
     private String defaultUrlString;
-    private VCSFileProxy root;
+    private final VCSFileProxy root;
+    
+    public ClonePathsWizardPanel(VCSFileProxy root) {
+        this.root = root;
+    }
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -296,7 +300,6 @@ public class ClonePathsWizardPanel implements WizardDescriptor.Panel {
         assert (settings instanceof WizardDescriptor);
 
         defaultUrl = (HgURL) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
-        root = (VCSFileProxy) ((WizardDescriptor) settings).getProperty("root"); // NOI18N
         HgURL repository = defaultUrl;
         boolean repoistoryChanged = !repository.equals(repositoryOrig);
         repositoryOrig = repository;

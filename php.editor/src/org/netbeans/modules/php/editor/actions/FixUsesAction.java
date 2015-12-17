@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.actions;
 
@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.php.api.PhpVersion;
 import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
@@ -322,7 +323,7 @@ public class FixUsesAction extends BaseAction {
             this.preferMultipleUseStatementsCombined = codeStyle.preferMultipleUseStatementsCombined();
             this.startUseWithNamespaceSeparator = codeStyle.startUseWithNamespaceSeparator();
             this.aliasesCapitalsOfNamespaces = codeStyle.aliasesFromCapitalsOfNamespaces();
-            this.isPhp56OrGreater = CodeUtils.isPhp56OrGreater(fileObject);
+            this.isPhp56OrGreater = CodeUtils.isPhpVersionGreaterThan(fileObject, PhpVersion.PHP_55);
         }
 
         public boolean preferFullyQualifiedNames() {

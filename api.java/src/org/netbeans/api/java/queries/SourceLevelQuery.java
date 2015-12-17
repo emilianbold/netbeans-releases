@@ -45,13 +45,11 @@
 package org.netbeans.api.java.queries;
 
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -77,10 +75,14 @@ import org.openide.util.WeakListeners;
  */
 public class SourceLevelQuery {
 
+    /**
+     * The minimal supported source level.
+     * @since 1.60
+     */
+    public static final SpecificationVersion MINIMAL_SOURCE_LEVEL = new SpecificationVersion("1.6");  //NOI18N
     private static final Logger LOGGER = Logger.getLogger(SourceLevelQuery.class.getName());
-
-    private static final Pattern SOURCE_LEVEL = Pattern.compile("\\d+\\.\\d+"); //NOI18N
-    private static final Pattern SYNONYM = Pattern.compile("\\d+");             //noI18N
+    private static final Pattern ORIG_VERSION_SCHEME = Pattern.compile("(\\d+)\\.(\\d+)"); //NOI18N
+    private static final Pattern VERONA_VERSION_SCHEME = Pattern.compile("(\\d+)");             //noI18N
     private static final SpecificationVersion JDK8 = new SpecificationVersion("1.8");   //NOI18N
 
     @SuppressWarnings("deprecation")
@@ -107,30 +109,38 @@ public class SourceLevelQuery {
         for (SourceLevelQueryImplementation2 sqi : implementations2.allInstances()) {
             final SourceLevelQueryImplementation2.Result result = sqi.getSourceLevel(javaFile);
             if (result != null) {
-                final String s = normalize(result.getSourceLevel());
-                if (s != null) {
-                    if (!SOURCE_LEVEL.matcher(s).matches()) {
-                        LOGGER.log(Level.WARNING, "#83994: Ignoring bogus source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi}); //NOI18N
-                        continue;
+                final String nns = result.getSourceLevel();
+                try {
+                    final String s = normalize(nns);
+                    if (s != null) {
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});     //NOI18N
+                        }
+                        return s;
                     }
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});     //NOI18N
-                    }
-                    return s;
+                } catch (IllegalArgumentException e) {
+                    LOGGER.log(
+                            Level.WARNING,
+                            "#83994: Ignoring bogus source level {0} for {1} from {2}", //NOI18N
+                            new Object[] {nns, javaFile, sqi});
                 }
             }
         }
         for  (org.netbeans.spi.java.queries.SourceLevelQueryImplementation sqi : implementations.allInstances()) {
-            final String s = normalize(sqi.getSourceLevel(javaFile));
-            if (s != null) {
-                if (!SOURCE_LEVEL.matcher(s).matches()) {
-                    LOGGER.log(Level.WARNING, "#83994: Ignoring bogus source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
-                    continue;
+            final String nns = sqi.getSourceLevel(javaFile);
+            try {
+                final String s = normalize(nns);
+                if (s != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
+                    }
+                    return s;
                 }
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
-                }
-                return s;
+            } catch (IllegalArgumentException e) {
+                LOGGER.log(
+                        Level.WARNING,
+                        "#83994: Ignoring bogus source level {0} for {1} from {2}", //NOI18N
+                        new Object[] {nns, javaFile, sqi});
             }
         }
         LOGGER.log(Level.FINE, "No source level found for {0}", javaFile);
@@ -260,9 +270,6 @@ public class SourceLevelQuery {
         public boolean isSupportedIn(@NonNull String sourceLevel) {
             Parameters.notNull("sourceLevel", sourceLevel); //NOI18N
             sourceLevel = normalize(sourceLevel);
-            if (!SOURCE_LEVEL.matcher(sourceLevel).matches()) {
-                throw new IllegalArgumentException(sourceLevel);
-            }
             return supportedFrom.compareTo(new SpecificationVersion(sourceLevel)) <= 0;
         }
 
@@ -310,18 +317,19 @@ public class SourceLevelQuery {
          */
         public @CheckForNull String getSourceLevel() {
             if (delegate.hasFirst()) {
-                String sourceLevel = normalize(delegate.first().getSourceLevel());
-                if (sourceLevel != null && !SOURCE_LEVEL.matcher(sourceLevel).matches()) {
+                final String nns = delegate.first().getSourceLevel();
+                try {
+                    return normalize(nns);
+                } catch (IllegalArgumentException e) {
                     LOGGER.log(
-                        Level.WARNING,
-                        "#83994: Ignoring bogus source level {0} from {2}",  //NOI18N
-                        new Object[] {
-                            sourceLevel,
-                            delegate.first()
-                        });
-                    sourceLevel = null;
+                            Level.WARNING,
+                            "#83994: Ignoring bogus source level {0} from {2}",  //NOI18N
+                            new Object[] {
+                                nns,
+                                delegate.first()
+                            });
+                    return null;
                 }
-                return sourceLevel;
             } else {
                 return SourceLevelQuery.getSourceLevel(delegate.second());
             }
@@ -407,13 +415,38 @@ public class SourceLevelQuery {
             return delegate.hasFirst() ? delegate.first() : null;
         }
     }
-    
+
+    /**
+     * Normalizes the source level.
+     * The source level is normalized if it has a format "1.${minor}"
+     * for minor &lt; 9 or "${minor}" for minor &gt;= 9.
+     * @param sourceLevel the source level to be normalized.
+     * @return the normalized source level.
+     * @throws IllegalArgumentException in case of wrong source level
+     */
     @CheckForNull
     private static String normalize(@NullAllowed String sourceLevel) {
-        if (sourceLevel != null && SYNONYM.matcher(sourceLevel).matches()) {
-            sourceLevel = MessageFormat.format("1.{0}", sourceLevel);   //NOI18N
+        if (sourceLevel == null) {
+            return sourceLevel;
         }
-        return sourceLevel;
+        Matcher m = VERONA_VERSION_SCHEME.matcher(sourceLevel);
+        if (m.matches()) {
+            final int major = Integer.parseInt(m.group(1));
+            if (major < 9) {
+                sourceLevel = MessageFormat.format("1.{0}", major);   //NOI18N
+            }
+            return sourceLevel;
+        }
+        m = ORIG_VERSION_SCHEME.matcher(sourceLevel);
+        if (m.matches()) {
+            final int major = Integer.parseInt(m.group(1));
+            final int minor = Integer.parseInt(m.group(2));
+            if (major == 1 && minor >= 9) {
+                sourceLevel = Integer.toString(minor);
+            }
+            return sourceLevel;
+        }
+        throw new IllegalArgumentException(sourceLevel);
     }
 
 }

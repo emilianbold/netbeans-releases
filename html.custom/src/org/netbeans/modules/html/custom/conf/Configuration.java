@@ -444,7 +444,7 @@ public class Configuration {
                 if (jsonDescription instanceof String) {
                     description = (String) jsonDescription;
                 } else {
-                    LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", DESCRIPTION);
+                    LOGGER.log(Level.WARNING, "The ''{0}'' key needs to have a string value!", DESCRIPTION);
                 }
             }
 
@@ -454,7 +454,7 @@ public class Configuration {
                 if (jsonDoc instanceof String) {
                     doc = (String) jsonDoc;
                 } else {
-                    LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", DOC);
+                    LOGGER.log(Level.WARNING, "The ''{0}'' key needs to have a string value!", DOC);
                 }
             }
 
@@ -464,7 +464,7 @@ public class Configuration {
                 if (jsonDocURL instanceof String) {
                     docURL = (String) jsonDocURL;
                 } else {
-                    LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", DOC_URL);
+                    LOGGER.log(Level.WARNING, "The ''{0}'' key needs to have a string value!", DOC_URL);
                 }
             }
 
@@ -474,7 +474,7 @@ public class Configuration {
                 if (jsonRequired instanceof String) {
                     required = Boolean.parseBoolean((String) jsonRequired);
                 } else {
-                    LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", REQUIRED);
+                    LOGGER.log(Level.WARNING, "The ''{0}'' key needs to have a string value!", REQUIRED);
                 }
             }
 
@@ -488,7 +488,7 @@ public class Configuration {
                     Collection<Tag> elements = loadTags(els, tag);
                     tag.setChildren(elements);
                 } else {
-                    LOGGER.log(Level.WARNING, "The '{0}' key needs to have a map value!", ELEMENTS);
+                    LOGGER.log(Level.WARNING, "The ''{0}'' key needs to have a map value!", ELEMENTS);
                 }
             }
 
@@ -541,7 +541,7 @@ public class Configuration {
                     if (jsonType instanceof String) {
                         type = (String) jsonType;
                     } else {
-                        LOGGER.log(Level.WARNING, "The '{0}' key needs to have string value!", TYPE);
+                        LOGGER.log(Level.WARNING, "The ''{0}'' key needs to have string value!", TYPE);
                     }
                 }
 
@@ -551,7 +551,7 @@ public class Configuration {
                     if (jsonDescription instanceof String) {
                         description = (String) jsonDescription;
                     } else {
-                        LOGGER.log(Level.WARNING, "The '{0}' key needs to have string value!", DESCRIPTION);
+                        LOGGER.log(Level.WARNING, "The ''{0}'' key needs to have string value!", DESCRIPTION);
                     }
                 }
 
@@ -561,7 +561,7 @@ public class Configuration {
                     if (jsonDoc instanceof String) {
                         doc = (String) jsonDoc;
                     } else {
-                        LOGGER.log(Level.WARNING, "The '{0}' key needs to have string value!", DOC);
+                        LOGGER.log(Level.WARNING, "The ''{0}'' key needs to have string value!", DOC);
                     }
                 }
 
@@ -571,7 +571,7 @@ public class Configuration {
                     if (jsonDocURL instanceof String) {
                         docURL = (String) jsonDocURL;
                     } else {
-                        LOGGER.log(Level.WARNING, "The '{0}' key needs to have string value!", DOC_URL);
+                        LOGGER.log(Level.WARNING, "The ''{0}'' key needs to have string value!", DOC_URL);
                     }
                 }
 
@@ -581,7 +581,7 @@ public class Configuration {
                     if (jsonRequired instanceof String) {
                         required = Boolean.parseBoolean((String) jsonRequired);
                     } else {
-                        LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", REQUIRED);
+                        LOGGER.log(Level.WARNING, "The ''{0}'' key needs to have a string value!", REQUIRED);
                     }
                 }
 

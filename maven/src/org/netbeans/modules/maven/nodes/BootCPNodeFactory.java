@@ -151,7 +151,7 @@ public class BootCPNodeFactory implements NodeFactory {
             if (root == BOOT) {
                 return new JRENode(p);
             } else {
-                return jarNode(p, root);
+                return jarNode(p, root, true);
             }
         }
 
@@ -201,7 +201,7 @@ public class BootCPNodeFactory implements NodeFactory {
         }
 
         @Override protected Node createNodeForKey(FileObject root) {
-            return jarNode(p, root);
+            return jarNode(p, root, false);
         }
 
         @Override public void propertyChange(PropertyChangeEvent evt) {
@@ -212,8 +212,12 @@ public class BootCPNodeFactory implements NodeFactory {
 
     }
 
-    private static Node jarNode(Project p, final FileObject root) {
+    private static Node jarNode(
+            final Project p,
+            final FileObject root,
+            final boolean includeEnclosingArchivePath) {
         final Node delegate = PackageView.createPackageView(new SourceGroup() {
+            private final boolean isJar = "jar".equals(root.toURL().getProtocol()); //NOI18N
             @Override public FileObject getRootFolder() {
                 return root;
             }
@@ -225,11 +229,14 @@ public class BootCPNodeFactory implements NodeFactory {
                 if (f != null) {
                     return f.getName();
                 } else {
-                    return FileUtil.getFileDisplayName(root);
+                    return includeEnclosingArchivePath ?
+                            FileUtil.getFileDisplayName(root) :
+                            root.getNameExt();
                 }
             }
             @Override public Icon getIcon(boolean opened) {
-                return ImageUtilities.loadImageIcon("org/netbeans/modules/java/api/common/project/ui/resources/jar.gif", true);
+                return isJar ? ImageUtilities.loadImageIcon("org/netbeans/modules/java/api/common/project/ui/resources/jar.gif", true):
+                        null;
             }
             @Override public boolean contains(FileObject file) {
                 return true;

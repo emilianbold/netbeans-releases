@@ -71,6 +71,9 @@ import org.openide.util.Exceptions;
 final class FileObjectKeeper implements FileChangeListener {
     private static final Logger LOG = Logger.getLogger(FileObjectKeeper.class.getName());
     private static final Object TIME_STAMP_LOCK = new Object();
+    private static final int RECURSION_LIMIT = Integer.getInteger(     //#256269
+            "org.netbeans.modules.masterfs.filebasedfs.fileobjects"     //NOI18N
+            + ".FileObjectKeeper.RECURSION_LIMIT", 128);                //NOI18N
 
     /** @GuardedBy("this") */
     private Set<FolderObj> kept;
@@ -217,7 +220,7 @@ final class FileObjectKeeper implements FileChangeListener {
         assert Thread.holdsLock(FileObjectKeeper.this);
         assert kept == null : "Already listening to " + kept + " now requested for " + root;
         kept = new HashSet<FolderObj>();
-        listenToAllRecursion(root, null, stop, filter);
+        listenToAllRecursion(root, null, stop, filter, 0);
     }
 
     /**
@@ -236,8 +239,14 @@ final class FileObjectKeeper implements FileChangeListener {
      */
     private boolean listenToAllRecursion(FolderObj obj,
             FileObjectFactory knownFactory, Callable<?> stop,
-            FileFilter filter) {
+            FileFilter filter, int level) {
 
+        if (level > RECURSION_LIMIT) {
+            LOG.log(Level.INFO, "Exiting listenToAllRecursion "         //NOI18N
+                    + "due to RECURSION_LIMIT (limit = {0}, fo = {1})", //NOI18N
+                    new Object[] {RECURSION_LIMIT, obj});
+            return true;
+        }
         List<File> it = new ArrayList<File>();
         listenTo(obj, true, it);
         FileObjectFactory factory = knownFactory;
@@ -268,7 +277,7 @@ final class FileObjectKeeper implements FileChangeListener {
                     LOG.log(Level.INFO, "addRecursiveListener to {0} interrupted", child); // NOI18N
                     return false;
                 }
-                if (!listenToAllRecursion(child, factory, stop, filter)) {
+                if (!listenToAllRecursion(child, factory, stop, filter, level + 1)) {
                     return false;
                 }
             }

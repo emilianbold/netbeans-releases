@@ -545,4 +545,19 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 254698 - java.io.UTFDataFormatException: encoded string too long: 169505 bytes
         performTest("bug254698.cpp");
     }
+    
+    public void testBug246693() throws Exception {
+        // Bug 246693 - c99 initializer, unexpected token: == 
+        performTest("bug246693.cpp");
+    }
+    
+    public void testBug256281() throws Exception {
+        // Bug 256281 - parser error in builtins.h
+        performTest("bug256281.cpp");
+    }
+    
+    public void testBug248661_2() throws Exception {
+        // Bug 248661 -  Variable with initializer is parsed as function
+        performTest("bug248661_2.cpp");
+    }
 }

@@ -15,11 +15,13 @@ PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    First                           [PUBLIC]   null
 PACKAGE    Fom                             [PUBLIC]   null
+PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    FrontSpace                      [PUBLIC]   null
 PACKAGE    Froo                            [PUBLIC]   null
 PACKAGE    God                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    More                            [PUBLIC]   null
+PACKAGE    My                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Name                            [PUBLIC]   null
@@ -63,7 +65,6 @@ PACKAGE    bar                             [PUBLIC]   null
 PACKAGE    c                               [PUBLIC]   null
 PACKAGE    d                               [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
-PACKAGE    foo                             [PUBLIC]   null
 CLASS      Book                            [PUBLIC]   issue153707.php
 VARIABLE   ? $name                         [PUBLIC]   issue153707.php
 KEYWORD    Book $this->                               null
@@ -79,6 +80,7 @@ PACKAGE    Bat                             [PUBLIC]   Baz
 PACKAGE    Bom                             [PUBLIC]   Fom
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
+PACKAGE    Firm                            [PUBLIC]   My
 PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Name                            [PUBLIC]   More
 PACKAGE    Name                            [PUBLIC]   Other
@@ -149,6 +151,7 @@ CLASS      Barrr                           [PUBLIC]   test204104.php
 CLASS      Barrr                           [PUBLIC]   test204104_02.php
 CLASS      Base                            [PUBLIC]   issue208193.php
 CLASS      BaseClass                       [PUBLIC]   FrontSpace
+CLASS      BaseClass                       [PUBLIC]   issue253290.php
 CLASS      BaseClass                       [PUBLIC]   traits.php
 CLASS      BaseFrontClass                  [PUBLIC]   FrontSpace
 CLASS      BasePresenter                   [PUBLIC]   issue208784.php
@@ -196,6 +199,17 @@ CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144830.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ClsOmg                          [PUBLIC]   Blah
+CLASS      Collection                      [PUBLIC]   byReferences.php
+CLASS      Comment                         [PUBLIC]   My\Firm
+CLASS      Comment                         [PUBLIC]   returnTypesTyping05.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping06.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping07.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping08.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping09.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping10.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping11.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping12.php
+CLASS      CommentsIterator                [PUBLIC]   My\Firm
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Control                         [PUBLIC]   Nette\Application\UI
 CLASS      Controller                      [PUBLIC]   Brite\Controller
@@ -230,6 +244,7 @@ CLASS      Exception                       [PUBLIC]   issue201310.php
 CLASS      Exception                       [PUBLIC]   issue243458.php
 CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
+CLASS      ExtendedClass                   [PUBLIC]   issue253290.php
 CLASS      Fac                             [PUBLIC]   Third
 CLASS      Fac2                            [PUBLIC]   Third
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
@@ -284,8 +299,10 @@ CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MockClass                       [PUBLIC]   MC
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
 CLASS      MyClass                         [PUBLIC]   MyClass.php
+CLASS      MyClass                         [PUBLIC]   byReferences.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
 CLASS      MyCls                           [PUBLIC]   issue236184.php
+CLASS      MyIface                         [PUBLIC]   byReferences.php
 CLASS      MyIface                         [PUBLIC]   insideInterface.php
 CLASS      MyNewClass123                   [PUBLIC]   Foo
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
@@ -391,6 +408,7 @@ CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
 CLASS      ThirdC                          [PUBLIC]   First\Second
 CLASS      ThirdI                          [PUBLIC]   First\Second
 CLASS      TraitedClass                    [PUBLIC]   traits.php
+CLASS      TraitedExtendedClass            [PUBLIC]   issue253290.php
 CLASS      Types                           [PUBLIC]   Package1
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php
 CLASS      Url                             [PUBLIC]   foo\lib\url
@@ -462,9 +480,15 @@ METHOD     aa()                            [PUBLIC]   test207188.php
 METHOD     arrayFunctionName()             [PUBLIC]   arrays.php
 METHOD     bar($x = -5)                    [PUBLIC]   issue200178.php
 METHOD     bar($x = -5, $y = 3)            [PUBLIC]   issue200178.php
+METHOD     bar()                           [PUBLIC]   My\Firm
 METHOD     bar()                           [PUBLIC]   issue141999.php
 METHOD     bar()                           [PUBLIC]   issue200178.php
 METHOD     bar(Test &$t)                   [PUBLIC]   issue142024.php
+METHOD     baz($data)                      [PUBLIC]   My\Firm
+METHOD     bazz(&...$data)                 [PUBLIC]   My\Firm
+METHOD     bazz()                          [PUBLIC]   My\Firm
+METHOD     bazz()                          [PUBLIC]   My\Firm
+METHOD     bazz(...$data)                  [PUBLIC]   My\Firm
 METHOD     boolTypeHint(bool $arg)         [PUBLIC]   scalarTypeHints.php
 METHOD     callableTypeHint(callable $arg  [PUBLIC]   callableTypeHint.php
 METHOD     cfnc2()                         [PUBLIC]   Second
@@ -494,6 +518,7 @@ METHOD     fncI()                          [PUBLIC]   typeinference.php
 METHOD     fnc_b()                         [PUBLIC]   insideClass2.php
 METHOD     foo($func_arg)                  [PUBLIC]   var_scope.php
 METHOD     foo($x = -5)                    [PUBLIC]   issue200178.php
+METHOD     foo()                           [PUBLIC]   My\Firm
 METHOD     foo()                           [PUBLIC]   issue200178.php
 METHOD     foo_TestCCOnMethods()           [PUBLIC]   test_cc_on_methods.php
 METHOD     functionName($param)            [PUBLIC]   issue202281.php
@@ -504,6 +529,23 @@ METHOD     getBookMagazine()               [PUBLIC]   mixedtypes.php
 METHOD     getBookMagazine()               [PUBLIC]   mixedtypes_1.php
 METHOD     intTypeHint(int $arg)           [PUBLIC]   scalarTypeHints.php
 METHOD     issue157534(&$var)              [PUBLIC]   issue157534.php
+METHOD     my_array_sort(array &$data)     [PUBLIC]   My\Firm
+METHOD     my_sort1(Collection $data)      [PUBLIC]   byReferences.php
+METHOD     my_sort10(array &$data1, Colle  [PUBLIC]   byReferences.php
+METHOD     my_sort11(array $data1, Collec  [PUBLIC]   byReferences.php
+METHOD     my_sort12(array $data1, Collec  [PUBLIC]   byReferences.php
+METHOD     my_sort13(array &$data1)        [PUBLIC]   byReferences.php
+METHOD     my_sort13(array &$data1, Colle  [PUBLIC]   byReferences.php
+METHOD     my_sort2(array &$data)          [PUBLIC]   byReferences.php
+METHOD     my_sort3(MyClass &$data)        [PUBLIC]   byReferences.php
+METHOD     my_sort4($data)                 [PUBLIC]   byReferences.php
+METHOD     my_sort5(&$data)                [PUBLIC]   byReferences.php
+METHOD     my_sort6(&$data)                [PUBLIC]   byReferences.php
+METHOD     my_sort7(array &$data1, Collec  [PUBLIC]   byReferences.php
+METHOD     my_sort8(array &$data1, Collec  [PUBLIC]   byReferences.php
+METHOD     my_sort9(array $data1, Collect  [PUBLIC]   byReferences.php
+METHOD     mytest()                        [PUBLIC]   returnTypesTyping03.php
+METHOD     mytest()                        [PUBLIC]   returnTypesTyping04.php
 METHOD     mytest()                        [PUBLIC]   varAssignment.php
 METHOD     paramsfnc($a, $b, $c, $d)       [PUBLIC]   paramdecltypes.php
 METHOD     parseArticles_01($articles)     [PUBLIC]   issue225687.php
@@ -605,3 +647,4 @@ KEYWORD    var                                        null
 KEYWORD    while                                      null
 KEYWORD    xor                                        null
 KEYWORD    yield                                      null
+KEYWORD    yield from                                 null

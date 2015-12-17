@@ -42,74 +42,24 @@
 
 package org.netbeans.modules.git.ui.history;
 
-import java.awt.EventQueue;
-import java.io.File;
-import org.netbeans.libs.git.GitBranch;
-import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
-import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  *
  * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.history.SearchOutgoingAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_SearchOutgoingAction_Name")
+@ActionRegistration(displayName = "#LBL_SearchOutgoingAction_Name", lazy = false)
 @NbBundle.Messages({
     "LBL_SearchOutgoingAction_Name=Show &Outgoing",
-    "LBL_SearchOutgoingAction_PopupName=Show Outgoing",
-    "# {0} - context name", "# {1} - branch name", "LBL_SearchOutgoingTopComponent.title=Show Outgoing - {0}/{1}",
-    "MSG_SearchOutgoingTopComponent.err.noBranch=Search cannot be started because you are currently not on a branch."
+    "LBL_SearchOutgoingAction_PopupName=Show Outgoing for Repository"
 })
-public class SearchOutgoingAction extends MultipleRepositoryAction {
+public class SearchOutgoingAction extends SearchOutgoing {
 
-    @Override
-    protected Task performAction (final File repository, final File[] roots, final VCSContext context) {
-        openSearch(repository, roots, Utils.getContextDisplayName(context));
-        return null;
-    }
-    
-    public void openSearch(final File repository, final File[] roots, final String contextName) {
-        String branchName = getActiveBranchName(repository);
-        if (branchName.equals(GitBranch.NO_BRANCH)) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(Bundle.MSG_SearchOutgoingTopComponent_err_noBranch(),
-                NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-            return;
-        }
-        openSearch(repository, roots, branchName, contextName);
-    }
-    
-    public void openSearch (final File repository, final File[] roots, final String branchName, final String contextName) {
-        final String title = Bundle.LBL_SearchOutgoingTopComponent_title(contextName, branchName);
-        final RepositoryInfo info = RepositoryInfo.getInstance(repository);
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run () {
-                SearchOutgoingTopComponent tc = new SearchOutgoingTopComponent(repository, info, roots);
-                tc.setBranch(branchName);
-                tc.setDisplayName(title);
-                tc.open();
-                tc.requestActive();
-                tc.search(true);
-            }
-        });
-    }
-
-    private static String getActiveBranchName (File repository) {
-        GitBranch activeBranch = RepositoryInfo.getInstance(repository).getActiveBranch();
-        String branchName = GitBranch.NO_BRANCH;
-        if (activeBranch != GitBranch.NO_BRANCH_INSTANCE) {
-            branchName = activeBranch.getName();
-        }
-        return branchName;
+    public SearchOutgoingAction () {
+        super(false);
     }
 
 }

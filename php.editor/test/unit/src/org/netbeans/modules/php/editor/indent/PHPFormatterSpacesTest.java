@@ -1036,4 +1036,65 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         options.put(FmtOptions.SPACE_AROUND_BINARY_OPS, false);
         reformatFileContents("testfiles/formatting/spaces/issue240274.php", options);
     }
+
+    public void testSpacesAroundReturnType01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType01.php", options);
+    }
+
+    public void testSpacesAroundReturnType02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType02.php", options);
+    }
+
+    public void testSpacesAroundReturnType03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType03.php", options);
+    }
+
+    public void testSpacesAroundReturnType04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType04.php", options);
+    }
+
+    public void testSpacesAroundReturnType05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType05.php", options);
+    }
+
+    public void testSpacesAroundReturnType06() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType06.php", options);
+    }
+
+    public void testSpacesAroundReturnType07() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType07.php", options);
+    }
+
+    public void testSpacesAroundReturnType08() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType08.php", options);
+    }
+
+    public void testSpacesAroundReturnType09() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType09.php", options);
+    }
+
+    public void testSpacesAroundReturnType10() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType10.php", options);
+    }
+
+    public void testSpacesAroundReturnType11() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType11.php", options);
+    }
+
+    public void testSpacesAroundReturnType12() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType12.php", options);
+    }
+
 }

@@ -66,8 +66,8 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -129,6 +129,12 @@ public class BugzillaExecutor {
             }
 
             if(ensureCredentials) {
+                if( ( cmd instanceof AddAttachmentCommand ||
+                      cmd instanceof SubmitCommand ) 
+                    && !checkAndEnsureNBCredentials()) 
+                {
+                    return;
+                }
                 repository.ensureCredentials();
             }
             
@@ -332,6 +338,20 @@ public class BugzillaExecutor {
 
     public boolean handleIOException(IOException io) {
         Bugzilla.LOG.log(Level.SEVERE, null, io);
+        return true;
+    }
+
+    @NbBundle.Messages({"MSG_MissingUsername=Missing username."})
+    private boolean checkAndEnsureNBCredentials() {
+        if( NBBugzillaUtils.isNbRepository(repository.getUrl()) && 
+            (repository.getUsername() == null || repository.getUsername().trim().equals("")) ) 
+        {
+            boolean ret = repository.authenticate(Bundle.MSG_MissingUsername());
+            if(!ret) {
+                notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
+            }
+            return ret;
+        }
         return true;
     }
 

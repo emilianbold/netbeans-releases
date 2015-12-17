@@ -43,10 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.netbeans.lib.profiler.ui.UIConstants;
-import org.netbeans.lib.profiler.ui.UIUtils;
-import org.netbeans.lib.profiler.ui.components.JExtendedTable;
-import org.netbeans.lib.profiler.ui.components.table.JExtendedTablePanel;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointFactory;
 import org.netbeans.modules.profiler.ppoints.Utils;
 import org.openide.util.HelpCtx;
@@ -55,12 +51,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -70,8 +62,9 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
-import org.netbeans.modules.profiler.api.ProjectUtilities;
+import javax.swing.table.AbstractTableModel;
+import org.netbeans.lib.profiler.ui.swing.ProfilerTable;
+import org.netbeans.lib.profiler.ui.swing.ProfilerTableContainer;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
@@ -88,16 +81,17 @@ import org.openide.util.Lookup;
     "WizardPanel1UI_PpProjectString=Profiling point &project:",
     "WizardPanel1UI_DescriptionLabelText=Description:",
     "WizardPanel1UI_SupportedModesLabelText=Supported modes:",
-    "WizardPanel1UI_MonitorModeString=Monitor",
+    "WizardPanel1UI_MonitorModeString=Telemetry",
     "WizardPanel1UI_CpuModeString=Methods",
     "WizardPanel1UI_MemoryModeString=Objects",
     "WizardPanel1UI_PpListAccessName=List of available Profiling Points",
-    "WizardPanel1UI_ProjectsListAccessName=List of open projects"
+    "WizardPanel1UI_ProjectsListAccessName=List of open projects",
+    "WizardPanel1UI_SelectProject=<Select Project>"
 })
 public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
-    private class PPointTypeTableModel extends DefaultTableModel {
+    private class PPointTypeTableModel extends AbstractTableModel {
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -137,10 +131,10 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private DefaultTableModel ppointTypeTableModel;
+    private AbstractTableModel ppointTypeTableModel;
     private Dimension initialMinSize;
-    private JComboBox ppointProjectCombo;
-    private JExtendedTable ppointTypeTable;
+    private ProjectSelector ppointProjectSelector;
+    private ProfilerTable ppointTypeTable;
     private JLabel ppointDescriptionCaptionLabel;
     private JLabel ppointEffectiveCPULabel;
     private JLabel ppointEffectiveCaptionLabel;
@@ -182,22 +176,11 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
     }
 
     public void setSelectedProject(Lookup.Provider project) {
-        if (project != null) {
-            ppointProjectCombo.setSelectedItem(project);
-        }
-        
-        if ((project == null || !project.equals(ppointProjectCombo.getSelectedItem())) && (!Bundle.WizardPanel1UI_SelectProjectString().equals(ppointProjectCombo.getItemAt(0)))) {
-            ppointProjectCombo.insertItemAt(Bundle.WizardPanel1UI_SelectProjectString(), 0);
-            ppointProjectCombo.setSelectedItem(Bundle.WizardPanel1UI_SelectProjectString());
-        }
+        ppointProjectSelector.setProject(project);
     }
 
     public Lookup.Provider getSelectedProject() {
-        if (ppointProjectCombo.getSelectedItem() instanceof Lookup.Provider) {
-            return (Lookup.Provider) ppointProjectCombo.getSelectedItem();
-        } else {
-            return null;
-        }
+        return ppointProjectSelector.getProject();
     }
     
     public boolean hasDefaultScope() {
@@ -232,9 +215,11 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         add(ppointTypeCaptionLabel, constraints);
 
         ppointTypeTableModel = new PPointTypeTableModel();
-        ppointTypeTable = new JExtendedTable(ppointTypeTableModel);
+        ppointTypeTable = new ProfilerTable(ppointTypeTableModel, false, false, null);
         ppointTypeTable.getAccessibleContext().setAccessibleName(Bundle.WizardPanel1UI_ProjectsListAccessName());
         ppointTypeCaptionLabel.setLabelFor(ppointTypeTable);
+        ppointTypeTable.setMainColumn(1);
+        ppointTypeTable.setFitWidthColumn(1);
         ppointTypeTable.setTableHeader(null);
         ppointTypeTable.setRowSelectionAllowed(true);
         ppointTypeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -243,13 +228,6 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
                     refresh();
                 }
             });
-        ppointTypeTable.setGridColor(UIConstants.TABLE_VERTICAL_GRID_COLOR);
-        ppointTypeTable.setSelectionBackground(UIConstants.TABLE_SELECTION_BACKGROUND_COLOR);
-        ppointTypeTable.setSelectionForeground(UIConstants.TABLE_SELECTION_FOREGROUND_COLOR);
-        ppointTypeTable.setShowHorizontalLines(UIConstants.SHOW_TABLE_HORIZONTAL_GRID);
-        ppointTypeTable.setShowVerticalLines(UIConstants.SHOW_TABLE_VERTICAL_GRID);
-        ppointTypeTable.setRowMargin(UIConstants.TABLE_ROW_MARGIN);
-        ppointTypeTable.setRowHeight(UIUtils.getDefaultRowHeight() + 2);
         ppointTypeTable.setDefaultRenderer(Integer.class, Utils.getScopeRenderer()); // TODO: enable once Scope is implemented
         ppointTypeTable.setDefaultRenderer(String.class, Utils.getPresenterRenderer());
         constraints = new GridBagConstraints();
@@ -261,7 +239,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         constraints.anchor = GridBagConstraints.WEST;
         constraints.fill = GridBagConstraints.BOTH;
         constraints.insets = new Insets(0, 15, 12, 10);
-        add(new JExtendedTablePanel(ppointTypeTable), constraints);
+        add(new ProfilerTableContainer(ppointTypeTable, true, null), constraints);
 
         ppointProjectLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(ppointProjectLabel, Bundle.WizardPanel1UI_PpProjectString());
@@ -274,24 +252,11 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         constraints.insets = new Insets(0, 0, 5, 10);
         add(ppointProjectLabel, constraints);
 
-        ppointProjectCombo = new JComboBox(new Object[] { Bundle.WizardPanel1UI_SelectProjectString()}) {
-                public Dimension getMaximumSize() {
-                    return getPreferredSize();
-                }
-
-                public Dimension getMinimumSize() {
-                    return getPreferredSize();
-                }
-                ;
-            };
+        ppointProjectSelector = new ProjectSelector(Bundle.WizardPanel1UI_SelectProject()) {
+            protected void selectionChanged() { refresh(); }
+        };
         ppointProjectLabel.getAccessibleContext().setAccessibleName(Bundle.WizardPanel1UI_ProjectsListAccessName());
-        ppointProjectLabel.setLabelFor(ppointProjectCombo);
-        ppointProjectCombo.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    refresh();
-                }
-            });
-        ppointProjectCombo.setRenderer(Utils.getProjectListRenderer());
+        ppointProjectLabel.setLabelFor(ppointProjectSelector);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 3;
@@ -299,7 +264,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         constraints.anchor = GridBagConstraints.WEST;
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.insets = new Insets(0, 15, 12, 10);
-        add(ppointProjectCombo, constraints);
+        add(ppointProjectSelector, constraints);
 
         ppointDescriptionCaptionLabel = new JLabel(Bundle.WizardPanel1UI_DescriptionLabelText());
         constraints = new GridBagConstraints();
@@ -417,24 +382,14 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
     }
 
     private void initProjectsCombo() {
-        ppointProjectCombo.removeAllItems();
-        
         ProfilingPointsManager manager = ProfilingPointsManager.getDefault();
         
         Lookup.Provider defaultScope = null;
-        List<Lookup.Provider> providedScopes = manager.getProvidedScopes();
-        for (Lookup.Provider providedScope : providedScopes) {
-            if (providedScope != null) {
-                if (defaultScope == null && manager.isDefaultScope(providedScope))
-                    defaultScope = providedScope;
-                ppointProjectCombo.addItem(providedScope);
+        for (Lookup.Provider providedScope : manager.getProvidedScopes()) {
+            if (providedScope != null && manager.isDefaultScope(providedScope)) {
+                defaultScope = providedScope;
+                break;
             }
-        }
-
-        Lookup.Provider[] projects =
-                ProjectUtilities.getSortedProjects(ProjectUtilities.getOpenedProjects());
-        for (Lookup.Provider project : projects) {
-            ppointProjectCombo.addItem(project);
         }
 
         hasDefaultScope = defaultScope != null;
@@ -442,10 +397,6 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
     }
 
     private void refresh() {
-        if (ppointProjectCombo.getSelectedItem() instanceof Lookup.Provider && (Bundle.WizardPanel1UI_SelectProjectString().equals(ppointProjectCombo.getItemAt(0)))) {
-            ppointProjectCombo.removeItem(Bundle.WizardPanel1UI_SelectProjectString());
-        }
-
         int selectedIndex = ppointTypeTable.getSelectedRow();
 
         if (selectedIndex != -1) {
@@ -462,8 +413,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         }
 
         boolean ppointTypeSelected = selectedIndex != -1;
-        boolean ppointProjectSelected = (ppointProjectCombo.getSelectedItem() != null)
-                                        && ppointProjectCombo.getSelectedItem() instanceof Lookup.Provider;
+        boolean ppointProjectSelected = ppointProjectSelector.getProject() != null;
         boolean isValid = ppointTypeSelected && ppointProjectSelected;
 
         if (isValid) {
@@ -476,4 +426,5 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
             }
         }
     }
+    
 }

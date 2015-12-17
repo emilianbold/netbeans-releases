@@ -1,11 +1,24 @@
 Code completion result for source line:
 function __construct(|string $arg) {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+PACKAGE    My                              [PUBLIC]   null
 CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
 CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 ------------------------------------
+PACKAGE    Firm                            [PUBLIC]   My
+CLASS      Comment                         [PUBLIC]   My\Firm
+CLASS      Comment                         [PUBLIC]   returnTypesTyping05.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping06.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping07.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping08.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping09.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping10.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping11.php
+CLASS      Comment                         [PUBLIC]   returnTypesTyping12.php
+CLASS      CommentsIterator                [PUBLIC]   My\Firm
+KEYWORD    array                                      null
 KEYWORD    bool                                       null
 KEYWORD    callable                                   null
 KEYWORD    float                                      null

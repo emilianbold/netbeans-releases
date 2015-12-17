@@ -92,7 +92,7 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
     
     private static RequestProcessor RP = new RequestProcessor(ToolTipView.class.getName());
     
-    private ActionListener listener;
+    private volatile ActionListener listener;
     public static final int ON_DISPOSE = 0;
     
     public static ToolTipView getDefault() {
@@ -137,16 +137,13 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
     }
     
     @Override
-    public void setVisible(boolean aFlag) {
-        super.setVisible(aFlag);
-        if (!aFlag) {
-            if (listener != null) {
-                listener.actionPerformed(new ActionEvent(this, ON_DISPOSE, null));
-                listener = null;
-            }
+    public void removeNotify() {
+        if (listener != null) {
+            listener.actionPerformed(new ActionEvent(this, ON_DISPOSE, null));
+            listener = null;
         }
-    }
-   
+    }    
+
     public static final class VariableNode extends AbstractNode {
 
         private Variable v;

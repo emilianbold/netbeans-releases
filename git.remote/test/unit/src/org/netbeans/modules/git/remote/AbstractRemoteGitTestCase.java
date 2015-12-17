@@ -57,8 +57,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestSuite;
 import junit.framework.Test;
 import org.netbeans.junit.MockServices;
@@ -172,6 +170,8 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("versioning.git.handleExternalEvents", "false");
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
         final String gitPath = "/usr/bin/git";
         FileObject git = rootFO.getFileObject(gitPath);
         if (git == null || !git.isValid()) {
@@ -200,8 +200,6 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
         assertTrue(repositoryMetadata.exists());
         initUser();
         MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, GitVCS.class, FilesystemInterceptorProviderImpl.class});
-        System.setProperty("versioning.git.handleExternalEvents", "false");
-        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
         Git.STATUS_LOG.setLevel(Level.ALL);
         refreshHandler = new StatusRefreshLogHandler(repositoryLocation);
         Git.STATUS_LOG.addHandler(refreshHandler);
@@ -335,23 +333,26 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
             if (!active) {
                 return;
             }
-            if (record.getMessage().contains("refreshAllRoots() roots: finished")) {
+            if (record.getMessage().equals(FileStatusCache.REFRESH_ALL_ROOTS_FINISHED)) {
                 synchronized (this) {
                     if (refreshedFiles.containsAll(filesToRefresh)) {
                         filesRefreshed = true;
                         latch.countDown();
                     }
                 }
-            } else if (record.getMessage().contains("refreshAllRoots() roots: ")) {
+            } else if (record.getMessage().equals(FileStatusCache.REFRESH_ALL_ROOTS_FILE_STATUS)) {
+                String path = (String) record.getParameters()[0];
+                //System.err.println("Refresh status for "+path);
+                interestingFiles.add(path);
+            } else if (record.getMessage().contains(FileStatusCache.REFRESH_ALL_ROOTS_PROCESSING)) {
                 synchronized (this) {
                     for (VCSFileProxy f : (Set<VCSFileProxy>) record.getParameters()[0]) {
                         if (f.getPath().startsWith(topFolder.getPath())) {
+                            //System.err.println("Refresh for "+f.getPath());
                             refreshedFiles.add(f);
                         }
                     }
                 }
-            } else if (record.getMessage().equals("refreshAllRoots() file status: {0} {1}")) {
-                interestingFiles.add((String) record.getParameters()[0]);
             }
         }
 
@@ -374,6 +375,7 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
         }
 
         public boolean waitForFilesToRefresh () throws InterruptedException {
+            Git.getInstance().waitEmptyRefreshQueue();
             return latch.await(5, TimeUnit.SECONDS);
         }
 

@@ -183,7 +183,7 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                             String possiblePath = FSCompletionUtils.removePlugin(writtenPath.substring(0, writtenPath.lastIndexOf('/')));
                             FileObject parentFO = fo.getParent();
                             FileObject targetFO = null;
-                            while (!parentFO.equals(project.getProjectDirectory())) {
+                            while (parentFO != null && !parentFO.equals(project.getProjectDirectory())) {
                                 targetFO = parentFO.getFileObject(possiblePath);
                                 if (targetFO != null && !relativeTo.contains(parentFO)) {
                                     relativeTo.add(parentFO);

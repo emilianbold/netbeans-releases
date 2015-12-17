@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
 
@@ -66,6 +66,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -159,7 +160,8 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
                         if (fileScope != null) {
                             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
                             List typeNameResolvers = new ArrayList<>();
-                            if (fileObject != null && CodeUtils.isPhp52(fileObject)) {
+                            if (fileObject != null
+                                    && CodeUtils.isPhpVersion(fileObject, PhpVersion.PHP_5)) {
                                 typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
                             } else {
                                 typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
@@ -266,7 +268,12 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
             try {
                 int rowStartOfClassEnd = LineDocumentUtils.getLineStart(doc, classScope.getBlockRange().getEnd());
                 int rowEndOfPreviousRow = rowStartOfClassEnd - 1;
-                int newMethodPossibleOffset = LineDocumentUtils.getLineStart(doc, rowEndOfPreviousRow);
+
+                // #254173 the previous row may have something to break the code
+                // e.g. "{" for the class declaration, a field accross multiple lines
+                int rowStartOfPreviousRow = LineDocumentUtils.getLineStart(doc, rowEndOfPreviousRow);
+                int newMethodPossibleOffset = rowStartOfPreviousRow < rowEndOfPreviousRow ? rowStartOfClassEnd : rowStartOfPreviousRow;
+
                 int newMethodLineOffset = LineDocumentUtils.getLineIndex(doc, newMethodPossibleOffset);
                 int classDeclarationLineOffset = LineDocumentUtils.getLineIndex(doc, classDeclarationOffset);
                 if (newMethodLineOffset == classDeclarationLineOffset) {

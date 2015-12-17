@@ -50,6 +50,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -133,7 +134,12 @@ public class AnnotationProcessorTestUtils {
         destG.mkdirs();
         scan(args, src, srcIncludes);
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        Assert.assertNotNull("no JSR 199 compiler impl found; perhaps tools.jar missing from CP?", compiler);
+        Assert.assertNotNull(String.format(
+                "No JSR 199 compiler impl found; perhaps tools.jar missing from CP? BootClassPath: %s. ClassPath: %s",
+                System.getProperty("sun.boot.class.path"),  //NOI18N
+                System.getProperty("java.class.path")       //NOI18N
+                ),
+            compiler);
         //System.err.println("running javac with args: " + args);
         return compiler.run(null, null, stderr, args.toArray(new String[args.size()])) == 0;
     }
@@ -156,8 +162,16 @@ public class AnnotationProcessorTestUtils {
         // Cannot just check for e.g. SourceVersion.RELEASE_7 because we might be running JDK 6 javac w/ JDK 7 boot CP, and that is in JRE.
         // (Anyway libs.javacapi/external/nb-javac-api.jar, in the test's normal boot CP, has this!)
         // Filter.class added in 7ae4016c5938, not long after f3323b1c65ee which we rely on for this to work.
-        // Also cannot just check Class.forName(...) since tools.jar not in CP but ToolProvider loads it specially.
-        return new URLClassLoader(new URL[] {ToolProvider.getSystemJavaCompiler().getClass().getProtectionDomain().getCodeSource().getLocation()}).findResource("com/sun/tools/javac/util/Filter.class") == null;
+        // Also cannot just check Class.forName(...) since tools.jar not in CP but ToolProvider loads it specially - not true anymore since JDK 9 ToolProvider does not look for tools.jar.
+        final String res = "com/sun/tools/javac/util/Filter.class"; //NOI18N
+        final CodeSource codeSource = ToolProvider.getSystemJavaCompiler().getClass().getProtectionDomain().getCodeSource();
+        if (codeSource != null) {
+            //Compiler from URLClassLoader - JDK7, JDK8 javac
+            return new URLClassLoader(new URL[] {codeSource.getLocation()}).findResource(res) == null;
+        } else {
+            //Compiler from Boot, Ext, System ClassLoader - JDK9 javac
+            return ClassLoader.getSystemClassLoader().getResource(res) == null;
+        }
     }
 
 }

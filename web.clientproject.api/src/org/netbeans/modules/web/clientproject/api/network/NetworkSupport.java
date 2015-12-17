@@ -245,7 +245,10 @@ public final class NetworkSupport {
                 }
             }
             checkInterrupted();
-            return Pair.of(resource.openStream(), contentLength);
+            // #255861
+            HttpURLConnection connection = (HttpURLConnection) resource.openConnection();
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0"); // NOI18N
+            return Pair.of(connection.getInputStream(), contentLength);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             throw new NetworkException(url, ex);
@@ -264,11 +267,8 @@ public final class NetworkSupport {
             checkInterrupted();
             HttpURLConnection httpUrlConnection = (HttpURLConnection) url.openConnection();
             httpUrlConnection.setRequestMethod("HEAD"); // NOI18N
-            InputStream inputStream = httpUrlConnection.getInputStream();
-            try {
+            try (InputStream inputStream = httpUrlConnection.getInputStream()) {
                 return httpUrlConnection.getContentLength();
-            } finally {
-                inputStream.close();
             }
         }
         return -1;
@@ -291,8 +291,7 @@ public final class NetworkSupport {
     }
 
     private static File copyToFile(InputStream is, File target, @NullAllowed ProgressHandle progressHandle, int contentLength) throws IOException, InterruptedException {
-        OutputStream os = new FileOutputStream(target);
-        try {
+        try (OutputStream os = new FileOutputStream(target)) {
             final byte[] buffer = new byte[65536];
             int len;
             int read = 0;
@@ -309,8 +308,6 @@ public final class NetworkSupport {
                     progressHandle.progress(read);
                 }
             }
-        } finally {
-            os.close();
         }
         return target;
     }

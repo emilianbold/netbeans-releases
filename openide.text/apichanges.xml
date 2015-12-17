@@ -171,7 +171,7 @@ made subject to such option by the copyright holder.
             <p>
                 Subclasses of <code>CloneableEditor</code> can manually request own 
                 initialization by calling its
-                <a href="@TOP@/org/openide/text/CloneableEditor.html#initializeBySupport()">initializeBySupport</a>
+                <a href="@TOP@/org/openide/text/CloneableEditor.html#initializeBySupport--">initializeBySupport</a>
                 method.
             </p>
         </description>

@@ -46,7 +46,6 @@ package org.netbeans.modules.profiler.ppoints;
 import org.netbeans.modules.profiler.ppoints.ui.TriggeredTakeSnapshotCustomizer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import java.text.MessageFormat;
 import java.util.Properties;
 import javax.swing.GrayFilter;
 import javax.swing.Icon;
@@ -115,7 +114,7 @@ public class TriggeredTakeSnapshotProfilingPointFactory extends CodeProfilingPoi
     }
 
     public boolean supportsCPU() {
-        return false;
+        return true;
     }
 
     public boolean supportsMemory() {
@@ -123,7 +122,7 @@ public class TriggeredTakeSnapshotProfilingPointFactory extends CodeProfilingPoi
     }
 
     public boolean supportsMonitor() {
-        return false;
+        return true;
     }
 
     protected Class getProfilingPointsClass() {

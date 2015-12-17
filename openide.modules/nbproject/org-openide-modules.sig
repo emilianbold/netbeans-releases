@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.43
+#Version 7.47.1
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -50,6 +50,12 @@ CLSS public abstract interface !annotation java.lang.annotation.Target
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
+
+CLSS public abstract interface !annotation org.openide.modules.ConstructorDelegate
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=CLASS)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int[] delegateParams()
 
 CLSS public final org.openide.modules.Dependency
 fld public final static int COMPARE_ANY = 3
@@ -150,6 +156,13 @@ CLSS public abstract interface !annotation org.openide.modules.OnStop
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation org.openide.modules.PatchFor
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=CLASS)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+fld public final static java.lang.String MANIFEST_FRAGMENT_HOST = "OpenIDE-Module-Fragment-Host"
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.Class<?> value()
 
 CLSS public abstract interface !annotation org.openide.modules.PatchedPublic
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=CLASS)

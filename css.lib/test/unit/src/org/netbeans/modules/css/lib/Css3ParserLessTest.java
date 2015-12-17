@@ -921,4 +921,22 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "}\n"
                 );
     }
+    
+    public void testIdentInterpolation() {
+        assertParses(".prefix(@property,@value) {\n"
+                + " -moz-border-radius: @radius;\n"
+                + "	-moz-@{property}: @value;\n"
+                + "	-webkit-@{property}: @value;\n"
+                + "	-ms-@{property}: @value;\n"
+                + "  @{property}: @value;\n"
+                + "}");
+    }
+    
+    public void testDefineVariableByVariableName() {
+        assertParses("@fnord:  \"I am fnord.\";\n"
+                + "@var:    \"fnord\";\n"
+                + ".test {\n"
+                + "    content: @@var;\n"
+                + "}");
+    }
 }

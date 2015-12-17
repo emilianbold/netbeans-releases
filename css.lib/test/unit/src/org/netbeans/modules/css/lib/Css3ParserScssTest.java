@@ -1873,4 +1873,69 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testMathExpWithUnits() {
         assertParses("$fa-li-width: (30em / 14) !default;");
     }
+    
+    public void testExtendPlaceHolderWithInterpolation() {
+        assertParses("%at-contactformelement-skin-default {\n"
+                + "  margin-top: 6rem;\n"
+                + "}\n"
+                + "\n"
+                + "@mixin contactformelement($selector, $skin: default) {\n"
+                + "  #{$selector} {\n"
+                + "    @extend %at-contactformelement-skin-#{$skin} !optional;\n"
+                + "  }\n"
+                + "}");
+    }
+    
+    public void testSpacesInSassInterpolation() {
+        assertParses(".test {\n"
+                + "    &.#{ $active_class } > a {\n"
+                + "        background: $active-bg;\n"
+                + "    }\n"
+                + "}");
+    }
+    
+    public void testMathExpressionInPropertyValue() {
+        assertParses("@mixin dropdown-container($content:list, $triangle:true, $max-width:$f-dropdown-max-width) {\n"
+                + "    &:before {\n"
+                + "      @include css-triangle($f-dropdown-triangle-size, $f-dropdown-triangle-color, #{$opposite-direction});\n"
+                + "      position: absolute;\n"
+                + "      top: $f-dropdown-triangle-side-offset;\n"
+                + "      #{$default-float}: -($f-dropdown-triangle-size * 2);\n"
+                + "      z-index: 89;\n"
+                + "    }\n"
+                + "}");
+    }
+    
+    public void testPropertyDeclarationWithExpression() {
+        assertParses("@media only screen and (min-width: $media-xs)\n"
+                + "{\n"
+                + "    width: calc(100% - #{$left-column-width});\n"
+                + "}");
+    }
+    
+    public void testURLinScss() {
+        assertParses("@function oj-image-url($path){\n"
+                + " @return url($imageDir + $path);\n"
+                + "}");
+        assertParses(".xxx {\n"
+                + "    content: url($imagesDir + \"functional/func_back_24_ena.png\"); \n"
+                + "}");
+        assertParses("@function composeURL($a, $b)\n"
+                + "{\n"
+                + "    @return url($a + $b);\n"
+                + "}");
+        assertParses("@each $ord in 1, 2, 3, 4 {\n"
+                + "	\n"
+                + "	body._#{$ord} #page {\n"
+                + "		background: $page-bg url(#{$scssDir}/images/bg#{$ord}-squares-blue.png);\n"
+                + "	}\n"
+                + "	\n"
+                + "}");
+        assertParses("li {\n"
+                + "    background: transparent url(@{img_path}list-bullet.png) no-repeat 0 0;\n"
+                + "				padding-left: 14px;\n"
+                + "				margin-bottom: 5px;\n"
+                + "}");
+        
+    }
 }

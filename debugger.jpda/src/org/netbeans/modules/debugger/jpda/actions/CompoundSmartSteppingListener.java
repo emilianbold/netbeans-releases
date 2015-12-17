@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
@@ -90,7 +91,7 @@ public final class CompoundSmartSteppingListener extends SmartSteppingCallback {
         SmartSteppingFilter smartSteppingFilter
     ) {
         if (logger.isLoggable(Level.FINE))
-            logger.fine("\nSS  CompoundSmartSteppingListener.stopHere? : " + 
+            logger.fine("\nSS  CompoundSmartSteppingListener.stopHere? : " +
                 t.getClassName () + '.' +
                 t.getMethodName () + ':' +
                 t.getLineNumber (null)
@@ -105,5 +106,62 @@ public final class CompoundSmartSteppingListener extends SmartSteppingCallback {
         }
         return stop;
     }
+
+    @Override
+    public StopOrStep stopAt(ContextProvider lookupProvider,
+                                CallStackFrame frame,
+                                SmartSteppingFilter f) {
+        if (logger.isLoggable(Level.FINE))
+            logger.fine("\nSS  CompoundSmartSteppingListener.canStopAt? : " +
+                frame.getClassName () + '.' +
+                frame.getMethodName () + ':' +
+                frame.getLineNumber (null)
+            );
+        StopOrStep ss = null;
+        for (SmartSteppingCallback ssc : smartSteppings) {
+            StopOrStep s = ssc.stopAt(lookupProvider, frame, f);
+            if (ss == null) {
+                ss = s;
+            } else {
+                if (!ss.equals(s)) {
+                    boolean stop = ss.isStop() && s.isStop();
+                    int ssi = ss.getStepSize();
+                    int ssd = ss.getStepDepth();
+                    int si = s.getStepSize();
+                    int sd = s.getStepDepth();
+                    int stepSize;
+                    int stepDepth;
+                    if (ssi == 0) {
+                        stepSize = si;
+                    } else if (si == 0) {
+                        stepSize = ssi;
+                    } else {
+                        stepSize = Math.max(ssi, si); // The size is negative, the greater is the shorter
+                    }
+                    if (ssd == 0) {
+                        stepDepth = sd;
+                    } else if (sd == 0) {
+                        stepDepth = ssd;
+                    } else {
+                        stepDepth = Math.min(ssd, sd); // The depth is positive, the smaller is hit sooner
+                    }
+                    if (stop || stepSize == 0 && stepDepth == 0) {
+                        ss = (stop) ? StopOrStep.stop() : StopOrStep.skip();
+                    } else {
+                        ss = StopOrStep.step(stepSize, stepDepth);
+                    }
+                }
+            }
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("SS    " + ssc.getClass () + " = " + s);
+            }
+        }
+        if (ss == null) {
+            ss = StopOrStep.stop();
+        }
+        logger.log(Level.FINE, "SS  stop or step: {0}", ss);
+        return ss;
+    }
+    
 }
 

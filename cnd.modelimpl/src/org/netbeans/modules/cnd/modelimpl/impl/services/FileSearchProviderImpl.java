@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.apt.support.spi.APTProjectFileSearchProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  *
@@ -85,29 +86,29 @@ public class FileSearchProviderImpl implements APTProjectFileSearchProvider {
         }
 
         @Override
-        public String searchInclude(String include, CharSequence basePath) {
+        public FSPath searchInclude(String include, CharSequence basePath) {
             NativeFileSearch provider = NativeProjectSupport.getNativeFileSearch(project);
             if (provider != null) {
-                Collection<CharSequence> searchFile = provider.searchFile(project, include);
+                Collection<FSPath> searchFile = provider.searchFile(project, include);
                 if (searchFile.size() > 0) {
                     include = trimUpFolder(include);
-                    List<CharSequence> candidates = new ArrayList<>(1);
-                    for(CharSequence p : searchFile) {
-                        String path = p.toString();
+                    List<FSPath> candidates = new ArrayList<>(1);
+                    for(FSPath p : searchFile) {
+                        String path = p.getPath();
                         path = path.replace('\\', '/');
                         if (path.endsWith(include)) {
                             candidates.add(p);
                         }
                     }
                     if (candidates.size() == 1) {
-                        return candidates.get(0).toString();
+                        return candidates.get(0);
                     } else if (candidates.size() > 1) {
                         int best = -1;
-                        CharSequence candidate = null;
+                        FSPath candidate = null;
                         String from = basePath.toString();
                         from = from.replace('\\', '/');
-                        for(CharSequence p : candidates) {
-                            String path = p.toString();
+                        for(FSPath p : candidates) {
+                            String path = p.getPath();
                             path = path.replace('\\', '/');
                             int dist = distance(from, path);
                             if (best < dist) {
@@ -115,7 +116,7 @@ public class FileSearchProviderImpl implements APTProjectFileSearchProvider {
                                 best = dist;
                             }
                         }
-                        return candidate.toString();
+                        return candidate;
                     }
                 }
             }

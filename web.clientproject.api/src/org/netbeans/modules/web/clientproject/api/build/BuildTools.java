@@ -51,10 +51,12 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.build.ui.CustomizerPanel;
-import org.netbeans.modules.web.clientproject.api.build.ui.TasksMenu;
+import org.netbeans.modules.web.clientproject.build.ui.CustomizerPanel;
+import org.netbeans.modules.web.clientproject.build.ui.TasksMenu;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
+import org.netbeans.modules.web.clientproject.spi.build.CustomizerPanelImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
@@ -186,6 +188,13 @@ public final class BuildTools {
          */
         void setTask(@NonNull String commandId, @NullAllowed String task);
 
+        /**
+         * Get panel for extending the existing build tool customizer.
+         * @return panel for extending the existing build tool customizer, can be {@code null}
+         * @since 1.102
+         */
+        @CheckForNull
+        CustomizerPanelImplementation getCustomizerPanel();
     }
 
     /**
@@ -202,7 +211,7 @@ public final class BuildTools {
             LOADING_TASKS,
             RELOAD_TASKS,
             CONFIGURE_TOOL,
-            RUN_ADVANCED,
+            MANAGE_ADVANCED,
             TASKS_LABEL,
             BUILD_TOOL_EXEC,
         }
@@ -214,6 +223,15 @@ public final class BuildTools {
          */
         @NonNull
         Project getProject();
+
+        /**
+         * Gets working directory. This path is used for storing/loading
+         * advanced tasks.
+         * @return working directory, never {@code null}
+         * @since 1.103
+         */
+        @NonNull
+        FileObject getWorkDir();
 
         /**
          * Gets unique identifier, <b>non-localized</b> identifier of the build tool.

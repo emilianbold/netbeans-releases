@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.source.indexing;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.model.JavacElements;
 
 import java.io.File;
 import java.io.IOException;
@@ -218,7 +219,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        TypeElement jc = (TypeElement) jt.getElements().getTypeElementByBinaryName(fqn);
+        TypeElement jc = (TypeElement) ((JavacElements)jt.getElements()).getTypeElementByBinaryName(fqn);
         if (jc != null) {
             List<ExecutableElement> methods = ElementFilter.methodsIn(jt.getElements().getAllMembers(jc));
             for (ExecutableElement method : methods) {

@@ -62,6 +62,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
         if (isReady()) {
             copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
             copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+            copy.copySystemIncludeHeaders(getSystemIncludeHeaders());
         }
         return copy;
     }

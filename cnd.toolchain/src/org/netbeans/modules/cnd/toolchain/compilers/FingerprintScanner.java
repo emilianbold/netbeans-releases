@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 
 /**
  *
- * @author alsimon
+ * @author Alexander Simon
  */
 public class FingerprintScanner {
     public static final String OUTPUT_FORMAT_VERSION = "__output_format_version"; //NOI18N
@@ -52,13 +52,14 @@ public class FingerprintScanner {
     public static final String TOOL_BUILD_NUMBER = "__tool_build_number"; //NOI18N
     public static final String SYSTEM_MACRO = "__system_macro"; //NOI18N
     public static final String SYSTEM_INCLUDE = "__system_include"; //NOI18N
-    
+    public static final String SYSTEM_INCLUDE_HEADER = "__dash_include"; //NOI18N
     
     public enum Kind {
         SystemMacro,
         UserMacro,
         SystemPath,
-        UsetPath
+        UserPath,
+        SystemIncludeHeader
     }
     
     public interface Result {
@@ -85,6 +86,9 @@ public class FingerprintScanner {
                 }
                 return new ResultImpl(Kind.SystemMacro, line);
             }
+        } else if (line.startsWith(SYSTEM_INCLUDE_HEADER)) {
+            line = line.substring(SYSTEM_INCLUDE_HEADER.length()).trim();
+            return new ResultImpl(Kind.SystemIncludeHeader, removeQuotes(line));
         }
         return null;
     }

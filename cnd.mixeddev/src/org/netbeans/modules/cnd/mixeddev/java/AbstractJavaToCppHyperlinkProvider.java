@@ -46,9 +46,11 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
@@ -94,13 +96,19 @@ public abstract class AbstractJavaToCppHyperlinkProvider implements HyperlinkPro
     }
 
     @Override
-    public void performClickAction(Document doc, int offset, HyperlinkType type) {
-        if (!navigate(doc, offset)) {
-            HyperlinkProviderExt defaultProvider = getDelegate();
-            if (defaultProvider != null) {
-                defaultProvider.performClickAction(doc, offset, type);
+    public void performClickAction(final Document doc, final int offset, final HyperlinkType type) {
+        final AtomicBoolean cancel = new AtomicBoolean();
+        BaseProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!navigate(doc, offset)) {
+                    HyperlinkProviderExt defaultProvider = getDelegate();
+                    if (defaultProvider != null) {
+                        defaultProvider.performClickAction(doc, offset, type);
+                    }
+                }
             }
-        }
+        }, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.go_to_declaration"), cancel, false);  // NOI18N
     }
 
     @Override

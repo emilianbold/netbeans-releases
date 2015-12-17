@@ -54,4 +54,10 @@ public abstract class ClientProjectWizardProvider {
         ClientProjectWizardProviderImpl wiz = Lookup.getDefault().lookup(ClientProjectWizardProviderImpl.class);
         return wiz.newClientProjectWithExtender();
     }
+    
+    public static WizardDescriptor.InstantiatingIterator existingHtml5Project() {
+        ClientProjectWizardProviderImpl wiz = Lookup.getDefault().lookup(ClientProjectWizardProviderImpl.class);
+        return wiz.existingHtml5Project();
+    }
 }
+ 

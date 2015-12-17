@@ -147,24 +147,34 @@ void soft_assert(int condition, char* format, ...) {
     }
 }
 
-void mutex_lock(pthread_mutex_t *mutex) {
+void mutex_lock_wrapper(pthread_mutex_t *mutex) {
     if (pthread_mutex_lock(mutex)) {
         report_error("error locking mutex: %s\n", strerror(errno));
         exit(FAILURE_LOCKING_MUTEX);
     }
 }
 
-void mutex_unlock(pthread_mutex_t *mutex) {
+void mutex_unlock_wrapper(pthread_mutex_t *mutex) {
     if (pthread_mutex_unlock(mutex)) {
         report_error("error unlocking mutex: %s\n", strerror(errno));
         exit(FAILURE_UNLOCKING_MUTEX);
     }
 }
 
-const char* get_home_dir() {
+bool get_home_dir(char* home, int size) {
     uid_t uid = getuid();
-    struct passwd *pw = getpwuid(uid);
-    return pw ? pw->pw_dir: NULL;
+    int bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufsize < 0) {
+        return false;
+    }
+    char buffer[bufsize];
+    struct passwd pwd;
+    struct passwd *result;
+    if(getpwuid_r(uid, &pwd, buffer, bufsize, &result) == 0) {
+        strncpy_w_zero(home, pwd.pw_dir, size);
+        return true;
+    }
+    return false;
 }
 
 bool file_exists(const char* path) {

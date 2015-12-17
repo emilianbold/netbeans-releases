@@ -117,6 +117,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         implements CsmFunction, Disposable, RawNamable, CsmTemplate {
     
     private static final Logger LOG = Logger.getLogger(FunctionImpl.class.getName());
+    
+    protected static final int UID_EXTRA_SUFFIX_MAX_LENGTH = 64;
+    
+    protected static final String UID_EXTRA_SUFFIX_TOO_LONG = "<truncated>"; // NOI18N
      
     /*package*/ static final String OPERATOR = "operator"; // NOI18N;
 
@@ -216,11 +220,17 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                         stopAt = AstUtil.findChildOfType(param, CPPTokenTypes.CSM_PARMLIST);
                     }
                     ASTSignatureStringizer stringizer = new ASTSignatureStringizer(stopAt);
-                    AstUtil.visitAST(stringizer, param);                    
+                    AstUtil.visitAST(stringizer, param);
                     if (!first) {
                         sb.append(","); // NOI18N
                     }
-                    sb.append(stringizer.getText());
+                    String stringParam = stringizer.getText();
+                    if ((sb.length() + stringParam.length()) < UID_EXTRA_SUFFIX_MAX_LENGTH) {
+                        sb.append(stringParam);
+                    } else {
+                        sb.append(UID_EXTRA_SUFFIX_TOO_LONG);
+                        break;
+                    }
                     first = false;
                 } while ((param = AstUtil.findSiblingOfType(param.getNextSibling(), CPPTokenTypes.CSM_PARAMETER_DECLARATION)) != null);
                 sb.append(")"); // NOI18N
@@ -369,7 +379,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return AstUtil.getRawNameInChildren(ast);
     }
 
-    protected boolean isCStyleStatic() {
+    public boolean isCStyleStatic() {
         return isStatic() && CsmKindUtilities.isFile(getScope());
     }
 

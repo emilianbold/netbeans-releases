@@ -158,6 +158,11 @@ public class NoType implements CsmType {
     }
 
     @Override
+    public boolean isPackExpansion() {
+        return false;
+    }
+
+    @Override
     public boolean isTemplateBased() {
         return false;
     }

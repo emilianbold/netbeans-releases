@@ -363,7 +363,9 @@ abstract class BaseTask extends UserTask {
                     if (blockPath.getParentPath().getLeaf().getKind() == Tree.Kind.METHOD
                             || TreeUtilities.CLASS_TREE_KINDS.contains(blockPath.getParentPath().getLeaf().getKind())) {
                         final int blockPos = (int) sourcePositions.getStartPosition(root, blockPath.getLeaf());
-                        final String blockText = controller.getText().substring(blockPos, (int) sourcePositions.getEndPosition(root, blockPath.getLeaf()));
+                        final String blockText = upToOffset && caretOffset > offset
+                                ? controller.getText().substring(blockPos, offset) + whitespaceString(caretOffset - offset) + controller.getText().substring(caretOffset, (int) sourcePositions.getEndPosition(root, blockPath.getLeaf()))
+                                : controller.getText().substring(blockPos, (int) sourcePositions.getEndPosition(root, blockPath.getLeaf()));
                         final SourcePositions[] sp = new SourcePositions[1];
                         final StatementTree block = (((BlockTree) blockPath.getLeaf()).isStatic() ? tu.parseStaticBlock(blockText, sp) : tu.parseStatement(blockText, sp));
                         if (block == null) {
@@ -535,6 +537,14 @@ abstract class BaseTask extends UserTask {
             return new Env(offset, prefix, controller, path, sourcePositions, scope);
         }
         return null;
+    }
+    
+    private static String whitespaceString(int length) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(' ');
+        }
+        return sb.toString();
     }
 
     private static class SourcePositionsImpl extends TreeScanner<Void, Tree> implements SourcePositions {

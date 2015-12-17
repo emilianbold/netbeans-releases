@@ -69,6 +69,7 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.util.Position.LineMapImpl;
+import com.sun.tools.javadoc.JavadocClassFinder;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -820,7 +821,8 @@ public class JavacParser extends Parser {
         if (aptEnabled) {
             task.setProcessors(processors);
         }
-        NBClassReader.preRegister(context, !backgroundCompilation);
+        NBClassReader.preRegister(context);
+        JavadocClassFinder.preRegister(context, !backgroundCompilation);
         if (cnih != null) {
             context.put(ClassNamesForFileOraculum.class, cnih);
         }
@@ -867,7 +869,7 @@ public class JavacParser extends Parser {
             warnLevel = Level.WARNING;
         }
         for (com.sun.tools.javac.code.Source source : sources) {
-            if (source.name.equals(sourceLevel)) {
+            if (source == com.sun.tools.javac.code.Source.lookup(sourceLevel)) {
                 if (DISABLE_SOURCE_LEVEL_DOWNGRADE) {
                     return source;
                 }
@@ -908,6 +910,14 @@ public class JavacParser extends Parser {
                                "Changing source level to 1.7",  //NOI18N
                                new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
                     return com.sun.tools.javac.code.Source.JDK1_7;
+                }
+                if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_9) >= 0 &&
+                    !hasResource("java/util/zip/CRC32C", bootClassPath, classPath, srcClassPath)) { //NOI18N
+                    LOGGER.log(warnLevel,
+                               "Even though the source level of {0} is set to: {1}, java.util.zip.CRC32C cannot be found on the bootclasspath: {2}\n" +   //NOI18N
+                               "Changing source level to 1.8",  //NOI18N
+                               new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                    return com.sun.tools.javac.code.Source.JDK1_8;
                 }
                 return source;
             }

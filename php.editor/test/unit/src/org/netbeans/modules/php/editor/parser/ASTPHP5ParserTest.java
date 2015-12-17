@@ -512,6 +512,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/testVariadicFunctions_01");
     }
 
+    public void testVariadicFunctions_02() throws Exception {
+        performTest("parser/testVariadicFunctions_02");
+    }
+
     public void testArgumentUnpacking_01() throws Exception {
         performTest("parser/argumentUnpacking_01");
     }
@@ -534,6 +538,47 @@ public class ASTPHP5ParserTest extends ParserTestBase {
 
     public void testCoalesce02() throws Exception {
         performTest("parser/coalesce_02");
+    }
+
+    public void testReturnTypes01() throws Exception {
+        performTest("parser/returnTypes_01");
+    }
+
+    public void testReturnTypes02() throws Exception {
+        performTest("parser/returnTypes_02");
+    }
+
+    public void testReturnTypes03() throws Exception {
+        performTest("parser/returnTypes_03");
+    }
+
+    public void testReturnTypes04() throws Exception {
+        performTest("parser/returnTypes_04");
+    }
+
+    public void testYieldFrom01() throws Exception {
+        performTest("parser/yieldFrom_01");
+    }
+
+    public void testYieldFrom02() throws Exception {
+        performTest("parser/yieldFrom_02");
+    }
+
+    public void testYieldFrom03() throws Exception {
+        performTest("parser/yieldFrom_03");
+    }
+
+    // XXX
+//    public void testYieldFrom04() throws Exception {
+//        performTest("parser/yieldFrom_04");
+//    }
+
+    public void testYieldFrom05() throws Exception {
+        performTest("parser/yieldFrom_05");
+    }
+
+    public void testYieldFrom06() throws Exception {
+        performTest("parser/yieldFrom_06");
     }
 
     @Override

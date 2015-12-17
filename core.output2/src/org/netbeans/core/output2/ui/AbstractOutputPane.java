@@ -792,6 +792,41 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             case KeyEvent.VK_ENTER:
                 enterPressed();
                 break;
+            case KeyEvent.VK_C:
+                if (keyEvent.isControlDown()) {
+                    askTerminate(keyEvent); // see bug 250245
+                }
+                break;
+        }
+    }
+
+    @NbBundle.Messages({
+        "MSG_TerminateProcess=Terminate the process?"
+    })
+    private void askTerminate(KeyEvent keyEvent) {
+        Container parent = getParent();
+        if (parent instanceof AbstractOutputTab) {
+            Caret c = getCaret();
+            if (c.getDot() != c.getMark()) {
+                return; // some text is selected, copy action will handle this
+            }
+            AbstractOutputTab tab = (AbstractOutputTab) parent;
+            Action[] actions = tab.getToolbarActions();
+            for (Action a : actions) {
+                if ("stop".equals(a.getValue("OUTPUT_ACTION_TYPE"))     //NOI18N
+                        && a.isEnabled()) {
+                    NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                            Bundle.MSG_TerminateProcess(),
+                            NotifyDescriptor.YES_NO_OPTION);
+                    Object res = DialogDisplayer.getDefault().notify(desc);
+                    if (NotifyDescriptor.YES_OPTION.equals(res)) {
+                        a.actionPerformed(
+                                new ActionEvent(this, 0, "stop"));      //NOI18N
+                    }
+                    keyEvent.consume();
+                    break;
+                }
+            }
         }
     }
 

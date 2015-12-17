@@ -340,7 +340,7 @@ public final class ProjectImpl implements ProjectProperties {
         private ItemWrapper(Item item) {
             this.item = item;
             userIncludePaths = convertFSPaths(item.getUserIncludePaths());
-            userIncludeFiles = new ArrayList<>(item.getIncludeFiles());
+            userIncludeFiles = convertFSPaths(item.getIncludeFiles());
             userMacroDefinitions =  convertToMap(item.getUserMacroDefinitions());
             userUndefinesMacros =  new ArrayList<>(item.getUndefinedMacros());
             importantFlags = item.getImportantFlags();

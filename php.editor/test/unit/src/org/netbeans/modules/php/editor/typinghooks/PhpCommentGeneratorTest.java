@@ -46,8 +46,6 @@ import java.util.concurrent.Future;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.php.editor.csl.PHPNavTestBase;
@@ -305,6 +303,52 @@ public class PhpCommentGeneratorTest extends PHPNavTestBase {
                 "    public function getSomething(SomeClassAlias $someClass) {}\n" +
                 "}";
         insertBreak(original, expected);
+    }
+
+    public void testIssue248213Variadic() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "/**^\n"
+                + "function foo(...$i) {\n"
+                + "}\n"
+                + "?>\n",
+
+                // expected
+                "<?php\n"
+                + "/**\n"
+                + " * \n"
+                + " * @param " + PhpCommentGenerator.TYPE_PLACEHOLDER + " $i^\n"
+                + " */\n"
+                + "function foo(...$i) {\n"
+                + "}\n"
+                + "?>\n"
+        );
+    }
+
+    public void testIssue248213ReferenceVariadic() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "class foo {\n"
+                + "    /**^\n"
+                + "    function bar(&...$par) {\n"
+                + "    }\n"
+                + "}\n"
+                + "?>\n",
+
+                // expected
+                "<?php\n"
+                + "class foo {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param " + PhpCommentGenerator.TYPE_PLACEHOLDER + " $par^\n"
+                + "     */\n"
+                + "    function bar(&...$par) {\n"
+                + "    }\n"
+                + "}\n"
+                + "?>\n"
+        );
     }
 
     @Override

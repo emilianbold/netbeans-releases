@@ -84,6 +84,7 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        getWorkDir().toPath();  //Initialize FileSystems with correct OS.
         System.setProperty("org.netbeans.core.modules.NbInstaller.noAutoDeps", "true");
         
         clearWorkDir();
@@ -94,7 +95,12 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         f.setAccessible(true);
         f.set(null, -1);
     }
-    
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
     public void testWindows2000() throws Exception {
         System.setProperty("os.name", "Windows 2000");
         assertTrue("We are on windows", Utilities.isWindows());

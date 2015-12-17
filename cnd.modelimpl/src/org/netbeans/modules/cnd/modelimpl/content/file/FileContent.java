@@ -542,7 +542,8 @@ public final class FileContent implements MutableDeclarationsContainer {
         fileComponentInstantiations = Union2.createSecond(new WeakContainer<FileComponentInstantiations>(owner, fileInstantiationsKey));
         
         this.errors = createErrors(Collections.<ErrorDirectiveImpl>emptySet());
-        PersistentUtils.readErrorDirectives(this.errors, input);
+        // ErrorDirectiveImpl does not have UID, so deserialize using containingFile directly
+        PersistentUtils.readErrorDirectives(this.errors, file, input);
         parserErrorsCount = input.readInt();
         
         this.fakeIncludeRegistrations = createFakeIncludes(Collections.<FakeIncludePair>emptyList());

@@ -65,14 +65,14 @@ public class SearchOutgoingTopComponent extends TopComponent {
     private final File repository;
     private final RepositoryInfo info;
     
-    public SearchOutgoingTopComponent (File repository, RepositoryInfo info, File[] files) {
+    public SearchOutgoingTopComponent (File repository, RepositoryInfo info, File[] files, boolean searchInContext) {
         this.repository = repository;
         this.info = info;
         this.files = files;
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchOutgoingTopComponent.class, "ACSN_SearchOutgoingT_Top_Component")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchOutgoingTopComponent.class, "ACSD_SearchOutgoingT_Top_Component")); // NOI18N
         initComponents();
-        scp.setupRemoteSearch(SearchExecutor.Mode.REMOTE_OUT);
+        scp.setupRemoteSearch(SearchExecutor.Mode.REMOTE_OUT, searchInContext);
     }
 
     public void search (boolean showCriteria) {

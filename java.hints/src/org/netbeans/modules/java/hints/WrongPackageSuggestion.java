@@ -55,6 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -95,15 +96,24 @@ public class WrongPackageSuggestion extends AbstractHint {
     }
     
     public Set<Kind> getTreeKinds() {
-        return Collections.singleton(Kind.COMPILATION_UNIT);
+        return EnumSet.of(Kind.COMPILATION_UNIT, Kind.PACKAGE);
     }
 
     public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
         Tree t = treePath.getLeaf();
         
-        assert t.getKind() == Kind.COMPILATION_UNIT;
+        CompilationUnitTree tree = null;
+        switch (t.getKind()) {
+            case COMPILATION_UNIT:
+                tree = (CompilationUnitTree)t;
+                break;
+            case PACKAGE:
+                tree = treePath.getCompilationUnit();
+                break;
+            default:
+                return null;
+        }
         
-        CompilationUnitTree tree = (CompilationUnitTree) t;
         StringBuffer packageNameBuffer = new StringBuffer();
         boolean hasPackageClause = tree.getPackageName() != null;
         

@@ -192,7 +192,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
             public @Override void run() {
 
         Project mainProject = OpenProjectList.getDefault().getMainProject();
-        Project[] projects = selection(mainProject, context);
+        final Project[] projects = selection(mainProject, context);
 
         final String presenterName = getPresenterName(name, mainProject, projects);
         final boolean enabled;
@@ -215,6 +215,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
 
         Mutex.EVENT.writeAccess(new Runnable() {
             public @Override void run() {
+        putValue("selectedProjects", projects);
         putValue("menuText", presenterName);
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
         setEnabled(enabled);

@@ -1007,7 +1007,7 @@ public class ConvertToLambdaTest extends NbTestCase {
     }
 
     static {
-        TestCompilerSettings.commandLine = "-XDidentifyLambdaCandidate=true -XDfindDiamond";
+        TestCompilerSettings.commandLine = "-XDfind=lambda";
         JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
 }

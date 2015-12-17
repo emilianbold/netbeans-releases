@@ -238,7 +238,7 @@ public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorPr
         }
 
         @Override
-        public long listFiles(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children) {
+        public long refreshRecursively(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children) {
             refreshRecursivelyFiles.add(dir);
             return -1;
         }

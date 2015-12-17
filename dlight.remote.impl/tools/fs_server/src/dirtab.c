@@ -203,9 +203,9 @@ static bool load_table(dirtab_watch_state default_watch_state) {
     if (!file_exists(dirtab_file_path)) {
         return false;
     }
-    mutex_lock(&table.mutex);
+    mutex_lock_wrapper(&table.mutex);
     bool result = load_impl(default_watch_state);
-    mutex_unlock(&table.mutex);
+    mutex_unlock_wrapper(&table.mutex);
     return result;    
 }
 
@@ -253,7 +253,7 @@ void dirtab_set_state(dirtab_element *el, dirtab_state state) {
 }
 
 bool dirtab_flush() {
-    mutex_lock(&table.mutex);
+    mutex_lock_wrapper(&table.mutex);
     bool result;
     if (table.dirty) {
         result = flush_impl();
@@ -261,7 +261,7 @@ bool dirtab_flush() {
     } else {
         result = true;
     }
-    mutex_unlock(&table.mutex);
+    mutex_unlock_wrapper(&table.mutex);
     return result;
 }
 
@@ -307,8 +307,8 @@ static void mkdir_or_die_recursive(const char *path, int exit_code_fail_create, 
 }
 
 static void fill_default_root() {
-    const char* home = get_home_dir();
-    if (!home) {
+    char home[PATH_MAX + 1];
+    if (!get_home_dir(home, sizeof home)) {
         report_error("can't determine home directory\n");
         exit(FAILURE_GETTING_HOME_DIR);
     }
@@ -371,13 +371,13 @@ void dirtab_init(bool clear_persistence, dirtab_watch_state default_watch_state)
 }
 
 void dirtab_free() {
-    mutex_lock(&table.mutex);
+    mutex_lock_wrapper(&table.mutex);
     for (int i = 0; i < table.size; i++) {
         free(table.paths[i]);
     }
     table.size = 0;
     free(table.paths);
-    mutex_unlock(&table.mutex);
+    mutex_unlock_wrapper(&table.mutex);
     free(root);
     free(temp_path);
     free(cache_path);
@@ -391,7 +391,7 @@ void dirtab_free() {
 
 dirtab_element *dirtab_get_element(const char* abspath) {
 
-    mutex_lock(&table.mutex);
+    mutex_lock_wrapper(&table.mutex);
 
     dirtab_element *el;
 
@@ -428,7 +428,7 @@ dirtab_element *dirtab_get_element(const char* abspath) {
         table.size++;
     }
 
-    mutex_unlock(&table.mutex);
+    mutex_unlock_wrapper(&table.mutex);
 
     return el;    
 }
@@ -440,13 +440,13 @@ static void trace_lock_unlock(dirtab_element *el, bool lock) {
 /** just a wrapper for tracing/logging/debugging */
 void dirtab_lock(dirtab_element *el) {
     trace_lock_unlock(el, true);
-    mutex_lock(&el->mutex);
+    mutex_lock_wrapper(&el->mutex);
 }
 
 /** just a wrapper for tracing/logging/debugging */
 void dirtab_unlock(dirtab_element *el) {
     trace_lock_unlock(el, false);
-    mutex_unlock(&el->mutex);
+    mutex_unlock_wrapper(&el->mutex);
 }
 
 const char*  dirtab_get_element_cache_path(dirtab_element *el) {
@@ -454,12 +454,12 @@ const char*  dirtab_get_element_cache_path(dirtab_element *el) {
 }
 
 void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el, void *data), void *data) {
-    mutex_lock(&table.mutex);
+    mutex_lock_wrapper(&table.mutex);
     int size = table.size;
     int mem_size = size * sizeof(dirtab_element**);
     dirtab_element** paths = malloc(mem_size);
     memcpy(paths, table.paths, mem_size);
-    mutex_unlock(&table.mutex);
+    mutex_unlock_wrapper(&table.mutex);
     for (int i = 0; i < size; i++) {
         dirtab_element* el = paths[i];
         bool proceed = visitor(el->abspath, el->index, el, data);
@@ -471,9 +471,9 @@ void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* 
 }
 
 bool dirtab_is_empty() {
-    mutex_lock(&table.mutex);
+    mutex_lock_wrapper(&table.mutex);
     int size = table.size;
-    mutex_unlock(&table.mutex);
+    mutex_unlock_wrapper(&table.mutex);
     return size == 0;
 }
 

@@ -154,8 +154,7 @@ import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbComponentNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyJaxrsResourceNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyWebModuleNode;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.javaee.wildfly.util.PathUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
 
@@ -312,8 +311,8 @@ public class WildflyClient {
                     && !CONTROLLER_PROCESS_STATE_STOPPING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)))) {
                 Pair<String, String> paths = getServerPaths(cl);
                 if (paths != null) {
-                    String homeDirNorm = homeDir == null ? null : FileUtil.normalizePath(homeDir);
-                    String configFileNorm = configFile == null ? null : FileUtil.normalizePath(configFile);
+                    String homeDirNorm = homeDir == null ? null : PathUtil.normalizePath(homeDir);
+                    String configFileNorm = configFile == null ? null : PathUtil.normalizePath(configFile);
                     return paths.first().equals(homeDirNorm) && paths.second().equals(configFileNorm);
                 }
                 return true;
@@ -705,7 +704,7 @@ public class WildflyClient {
                 String configDir = modelNodeAsString(cl, getModelNodeChild(cl, environment, "config-file"));
 
                 if (homeDir != null && configDir != null) {
-                    return Pair.of(FileUtil.normalizePath(homeDir), FileUtil.normalizePath(configDir));
+                    return Pair.of(PathUtil.normalizePath(homeDir), PathUtil.normalizePath(configDir));
                 }
             }
             return null;
@@ -947,16 +946,19 @@ public class WildflyClient {
             if (isSuccessfulOutcome(cl, response)) {
                 String serverUrl = "http://" + serverAddress + ':' + ip.getProperty(WildflyPluginProperties.PROPERTY_PORT);
                 // List<ModelNode>
-                List names = modelNodeAsList(cl, readResult(cl, response));
-                for (Object jaxrsResource : names) {
-                    String resourceClass = modelNodeAsString(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_CLASSNAME));
-                    String resourcePath = modelNodeAsString(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_PATH));
-                    List methods = modelNodeAsList(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_METHODS));
-                    String key = resourceClass + "___" + resourcePath;
-                    if(jaxrsResources.containsKey(key)) {
-                        jaxrsResources.get(key).addMethods(methods);
-                    } else {
-                        jaxrsResources.put(key, new WildflyJaxrsResource(resourceClass, resourcePath, serverUrl, methods));
+                Object result = readResult(cl, response);
+                if(modelNodeIsDefined(cl, result)) {
+                    List names = modelNodeAsList(cl, result);
+                    for (Object jaxrsResource : names) {
+                        String resourceClass = modelNodeAsString(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_CLASSNAME));
+                        String resourcePath = modelNodeAsString(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_PATH));
+                        List methods = modelNodeAsList(cl, getModelNodeChild(cl, jaxrsResource, Constants.JAXRS_RESOURCE_METHODS));
+                        String key = resourceClass + "___" + resourcePath;
+                        if(jaxrsResources.containsKey(key)) {
+                            jaxrsResources.get(key).addMethods(methods);
+                        } else {
+                            jaxrsResources.put(key, new WildflyJaxrsResource(resourceClass, resourcePath, serverUrl, methods));
+                        }
                     }
                 }
             }

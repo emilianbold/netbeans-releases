@@ -170,6 +170,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
                 "&bug_status=NEW" +
                 "&resolution=FIXED" +
                 "&priority=P1" +
+                "&target_milestone=" +
                 "&emailassigned_to1=1&emailreporter1=1&emailcc1=1&emaillongdesc1=1&emailtype1=substring&email1=xxx" +
                 "&chfieldfrom=2009-01-01&chfieldto=Now" +
                     "&chfield=[Bug+creation]" +

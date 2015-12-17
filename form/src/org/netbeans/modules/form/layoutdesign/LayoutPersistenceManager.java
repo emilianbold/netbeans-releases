@@ -411,6 +411,7 @@ class LayoutPersistenceManager implements LayoutConstants {
         }
 
         correctMissingName(); // recover from missing component name if needed
+        checkMissingComponentsInDimension(); // check if the container layout is valid - all components having intervals in both dimensions
     }
 
     /**
@@ -735,5 +736,33 @@ class LayoutPersistenceManager implements LayoutConstants {
         layoutModel.removeComponent(TEMPORARY_ID, true);
         throw new java.io.IOException("Undefined component referenced in layout: " // NOI18N
                 + (missingNameH != null ? missingNameH : missingNameV));
+    }
+
+    /**
+     * This method finds components in given container that have layout interval only
+     * in one dimension. Such layout would fail to build in GroupLayout later.
+     * The form is considered corrupt, should not open.
+     */
+    private void checkMissingComponentsInDimension() throws java.io.IOException {
+        for (LayoutComponent comp : layoutContainer.getSubcomponents()) {
+            for (int dim=0; dim < DIM_COUNT; dim++) {
+                LayoutInterval li = comp.getLayoutInterval(dim);
+                if (li.getParent() == null) { // component interval not in layout
+                    LayoutInterval inOtherDim = comp.getLayoutInterval(dim^1);
+                    if (inOtherDim.getParent() != null) {
+                        // component is missing in one dimension
+                        String id = comp.getId();
+                        String name = "unknown";
+                        for (Map.Entry<String,String> e : idNameMap.entrySet()) {
+                            if (e.getValue().equals(id)) {
+                                name = e.getKey(); // idNameMap maps name->id during loading
+                                break;
+                            }
+                        }
+                        throw new java.io.IOException("Layout corrupted, component "+name+" missing in one dimension."); // NOI18N
+                    }
+                }
+            }            
+        }
     }
 }

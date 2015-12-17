@@ -88,6 +88,8 @@ public class ProfilingPointsWindow extends ProfilerTopComponent {
         windowUI = new ProfilingPointsWindowUI();
         add(windowUI, BorderLayout.CENTER);
         setFocusable(true);
+        
+        defaultInstance = this; // Bug 256689, called by window system persistence outside of getDefault()
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

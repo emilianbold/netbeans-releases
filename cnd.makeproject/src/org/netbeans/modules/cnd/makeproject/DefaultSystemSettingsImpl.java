@@ -118,6 +118,23 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings implements 
         }
     }
 
+    /**
+     * List of pre-included system headers
+     * 
+     * @param language
+     * @param project
+     * @return list <String> of pre-included system headers
+     */
+    @Override
+    public List<String> getSystemIncludeHeaders(NativeFileItem.Language language, NativeProject project) {
+        AbstractCompiler compiler = getDefaultCompiler(language, project);
+        if (compiler != null) {
+            return Collections.unmodifiableList(compiler.getSystemIncludeHeaders());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     @Override
     public List<String> getSystemMacros(NativeFileItem.Language language, NativeProject project) {
         AbstractCompiler compiler = getDefaultCompiler(language, project);

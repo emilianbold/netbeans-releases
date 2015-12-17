@@ -202,11 +202,11 @@ which means that it is possible to draw on it using a variety of
 mechanisms; typically, it is treated as a container, and its layout
 may be
 
-<a href="@JDK@/java/awt/Container.html#setLayout(java.awt.LayoutManager)">set</a>
+<a href="@JDK@/java/awt/Container.html#setLayout-java.awt.LayoutManager-">set</a>
 
 and components
 
-<a href="@JDK@/java/awt/Container.html#add(java.awt.Component,java.lang.Object)">added</a>
+<a href="@JDK@/java/awt/Container.html#add-java.awt.Component-java.lang.Object-">added</a>
 
 to it. 
 
@@ -217,29 +217,29 @@ component besides painting subcomponents on it:
 
 <li>You may set a
 
-<a href="../TopComponent.html#setName(java.lang.String)">display name</a>
+<a href="../TopComponent.html#setName-java.lang.String-">display name</a>
 
 and
 
-<a href="../TopComponent.html#setIcon(java.awt.Image)">icon</a>
+<a href="../TopComponent.html#setIcon-java.awt.Image-">icon</a>
 
 for the component, affecting its appearance in window title bars
 and tabs. These ought generally be set in the constructor.
 
-<li><a href="../TopComponent.html#getHelpCtx()"><code>TopComponent.getHelpCtx()</code></a>
+<li><a href="../TopComponent.html#getHelpCtx--"><code>TopComponent.getHelpCtx()</code></a>
 
 should be overridden to provide a help link for the component as a
 whole, if you have any context help. Or, subcomponents may have their
 own more specific help. By default, context help is taken from the activated
 node selection, if there is any to be found.
 
-<li><a href="../TopComponent.html#getUndoRedo()"><code>TopComponent.getUndoRedo()</code></a>
+<li><a href="../TopComponent.html#getUndoRedo--"><code>TopComponent.getUndoRedo()</code></a>
 
 allows you to associate undo/redo actions with the component, so
 that these actions will work properly when your component is
 focussed.
 
-<li><a href="../TopComponent.html#getActions()"><code>TopComponent.getActions()</code></a>
+<li><a href="../TopComponent.html#getActions--"><code>TopComponent.getActions()</code></a>
 
 permits you to provide a list of actions which will appear in a
 popup menu, e.g. on a tab for the component. The system should
@@ -259,7 +259,7 @@ Finding <a href="#overview-top">modes</a> is straightforward.
 <p>You cannot create mode directly, however you can specify
 new mode in XML layer. Then you can find such a mode by call
 
-<a href="../WindowManager.html#findMode(java.lang.String)"><code>WindowManager.findMode(String)</code></a>
+<a href="../WindowManager.html#findMode-java.lang.String-"><code>WindowManager.findMode(String)</code></a>
 
 . Do not keep references to modes, Rather use the above method to access them.
 Modes could be removed from window system inbetween, thus manipulating with such
@@ -267,7 +267,7 @@ a mode wouldn't achieve desired goal.
 
 <p>To add top components to a mode, just call
 
-<a href="../Mode.html#dockInto(org.openide.windows.TopComponent)"><code>Mode.dockInto(TopComponent)</code></a>.
+<a href="../Mode.html#dockInto-org.openide.windows.TopComponent-"><code>Mode.dockInto(TopComponent)</code></a>.
 
 For example:
 
@@ -311,12 +311,12 @@ Just by subclassing
 you can create a component which is capable of <em>cloning</em>
 itself, like the Editor does with the popup action "Clone View". If
 
-<a href="@JDK@/java/lang/Object.html#clone()"><code>Object.clone()</code></a>
+<a href="@JDK@/java/lang/Object.html#clone--"><code>Object.clone()</code></a>
 
 takes care of all of your instance state satisfactorily, then you
 need do little more; otherwise, you can override
 
-<a href="../CloneableTopComponent.html#createClonedObject()"><code>CloneableTopComponent.createClonedObject()</code></a>
+<a href="../CloneableTopComponent.html#createClonedObject--"><code>CloneableTopComponent.createClonedObject()</code></a>
 
 to specify exactly what fields should be shared with the original
 top component. Typically all clones of a component should share any
@@ -326,7 +326,7 @@ different display parameters or other noncritical settings.
 <p>You may specify how these cloned windows act when they are
 closed, by overriding
 
-<a href="../CloneableTopComponent.html#closeLast()"><code>CloneableTopComponent.closeLast()</code></a>.
+<a href="../CloneableTopComponent.html#closeLast--"><code>CloneableTopComponent.closeLast()</code></a>.
 
 (There are more general methods for all top components pertaining
 to closing them; this method is specific to cloneable top
@@ -356,15 +356,15 @@ window has the activated component on its selected tab.
 
 <p>You can explicitly request that a top component be activated by calling
 
-<a href="../TopComponent.html#requestActive()"><code>TopComponent.requestActive()</code></a>.
+<a href="../TopComponent.html#requestActive--"><code>TopComponent.requestActive()</code></a>.
 
 (It should be opened first.)
 
-<a href="../TopComponent.html#getRegistry()"><code>TopComponent.getRegistry()</code></a>
+<a href="../TopComponent.html#getRegistry--"><code>TopComponent.getRegistry()</code></a>
 
 and then
 
-<a href="../TopComponent.Registry.html#getActivated()"><code>TopComponent.Registry.getActivated()</code></a>
+<a href="../TopComponent.Registry.html#getActivated--"><code>TopComponent.Registry.getActivated()</code></a>
 
 correspondingly finds the last-activated component.
 
@@ -388,7 +388,7 @@ pay attention to it.
 
 <p>The selection may be set using
 
-<a href="../TopComponent.html#setActivatedNodes(org.openide.nodes.Node[])"><code>TopComponent.setActivatedNodes(...)</code></a>.
+<a href="../TopComponent.html#setActivatedNodes-org.openide.nodes.Node:A-"><code>TopComponent.setActivatedNodes(...)</code></a>.
 
 <p>Explorer views embedded in as described at
 
@@ -578,41 +578,41 @@ A few method calls may be used to find modes, groups and top components:
 
 <li><code>WindowManager</code> instance is obtained by
 
-<a href="../WindowManager.html#getDefault()"><code>WindowManager.getDefault()</code></a>.
+<a href="../WindowManager.html#getDefault--"><code>WindowManager.getDefault()</code></a>.
 
 <li>The modes in a window systeme may be gotten
 with
 
-<a href="../WindowManager.html#getModes()"><code>WindowManager.getModes()</code></a>
+<a href="../WindowManager.html#getModes--"><code>WindowManager.getModes()</code></a>
 
 or
 
-<a href="../WindowManager.html#findMode(java.lang.String)"><code>WindowManager.findMode(String)</code></a>
+<a href="../WindowManager.html#findMode-java.lang.String-"><code>WindowManager.findMode(String)</code></a>
 
 (or also
 
-<a href="../WindowManager.html#findMode(org.openide.windows.TopComponent)"><code>WindowManager.findMode(TopComponent)</code></a>).
+<a href="../WindowManager.html#findMode-org.openide.windows.TopComponent-"><code>WindowManager.findMode(TopComponent)</code></a>).
 
 
 <li>Each mode has some top components in it, obtainable with
 
-<a href="../Mode.html#getTopComponents()"><code>Mode.getTopComponents()</code></a>.
+<a href="../Mode.html#getTopComponents--"><code>Mode.getTopComponents()</code></a>.
 
 <li>Groups can be retrieved via
 
-<a href="../WindowManager.html#findTopComponentGroup(java.lang.String)"><code>WindowManager.findTopComponentGroup(String)</code></a>
+<a href="../WindowManager.html#findTopComponentGroup-java.lang.String-"><code>WindowManager.findTopComponentGroup(String)</code></a>
 
 <li>To get the currently selected top component, use
 
-<a href="../TopComponent.html#getRegistry()"><code>TopComponent.getRegistry()</code></a>
+<a href="../TopComponent.html#getRegistry--"><code>TopComponent.getRegistry()</code></a>
 
 followed by
 
-<a href="../TopComponent.Registry.html#getActivated()"><code>TopComponent.Registry.getActivated()</code></a>.
+<a href="../TopComponent.Registry.html#getActivated--"><code>TopComponent.Registry.getActivated()</code></a>.
 
 You can also get all opened components with
 
-<a href="../TopComponent.Registry.html#getOpened()"><code>TopComponent.Registry.getOpened()</code></a>.
+<a href="../TopComponent.Registry.html#getOpened--"><code>TopComponent.Registry.getOpened()</code></a>.
 
 </ul>
 
@@ -620,11 +620,11 @@ You can also get all opened components with
 
 Any top component may be activated just by calling
 
-<a href="../TopComponent.html#requestActive()"><code>TopComponent.requestActive()</code></a>.
+<a href="../TopComponent.html#requestActive--"><code>TopComponent.requestActive()</code></a>.
 
 <p>To close a top component programmatically, call
 
-<a href="../TopComponent.html#close()"><code>TopComponent.close()</code></a>.
+<a href="../TopComponent.html#close--"><code>TopComponent.close()</code></a>.
 
 <h3><a name="listen">Listening to window system events</a></h3>
 
@@ -637,12 +637,12 @@ possible too.
 
 <li>All properties of the window manager (i.e. contained modes) may be listened to with
 
-<a href="../WindowManager.html#addPropertyChangeListener(java.beans.PropertyChangeListener)"><code>WindowManager.addPropertyChangeListener(PropertyChangeListener)</code></a>.
+<a href="../WindowManager.html#addPropertyChangeListener-java.beans.PropertyChangeListener-"><code>WindowManager.addPropertyChangeListener(PropertyChangeListener)</code></a>.
 
 <li>All properties of the top component registry (i.e. available
 and selected components, and the node selection) may be listened to with
 
-<a href="../TopComponent.Registry.html#addPropertyChangeListener(java.beans.PropertyChangeListener)"><code>TopComponent.Registry.addPropertyChangeListener(PropertyChangeListener)</code></a>.
+<a href="../TopComponent.Registry.html#addPropertyChangeListener-java.beans.PropertyChangeListener-"><code>TopComponent.Registry.addPropertyChangeListener(PropertyChangeListener)</code></a>.
 
 
 <!-- No longer exists...why?

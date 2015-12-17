@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.21
+#Version 1.32.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -90,8 +90,32 @@ meth public org.netbeans.libs.git.GitBranch getTrackedBranch()
 supr java.lang.Object
 hfds active,id,name,remote,trackedBranch
 
+CLSS public final org.netbeans.libs.git.GitCherryPickResult
+innr public final static !enum CherryPickStatus
+meth public java.util.Collection<java.io.File> getConflicts()
+meth public java.util.Collection<java.io.File> getFailures()
+meth public org.netbeans.libs.git.GitCherryPickResult$CherryPickStatus getCherryPickStatus()
+meth public org.netbeans.libs.git.GitRevisionInfo getCurrentHead()
+meth public org.netbeans.libs.git.GitRevisionInfo[] getCherryPickedCommits()
+supr java.lang.Object
+hfds cherryPickedCommits,conflicts,currentHead,failures,status
+
+CLSS public final static !enum org.netbeans.libs.git.GitCherryPickResult$CherryPickStatus
+ outer org.netbeans.libs.git.GitCherryPickResult
+fld public final static org.netbeans.libs.git.GitCherryPickResult$CherryPickStatus ABORTED
+fld public final static org.netbeans.libs.git.GitCherryPickResult$CherryPickStatus CONFLICTING
+fld public final static org.netbeans.libs.git.GitCherryPickResult$CherryPickStatus FAILED
+fld public final static org.netbeans.libs.git.GitCherryPickResult$CherryPickStatus OK
+fld public final static org.netbeans.libs.git.GitCherryPickResult$CherryPickStatus UNCOMMITTED
+meth public static org.netbeans.libs.git.GitCherryPickResult$CherryPickStatus valueOf(java.lang.String)
+meth public static org.netbeans.libs.git.GitCherryPickResult$CherryPickStatus[] values()
+supr java.lang.Enum<org.netbeans.libs.git.GitCherryPickResult$CherryPickStatus>
+
 CLSS public final org.netbeans.libs.git.GitClient
+fld public final static java.lang.String INDEX = "INDEX"
+fld public final static java.lang.String WORKING_TREE = "WORKING_TREE"
 innr public final static !enum DiffMode
+innr public static !enum CherryPickOperation
 innr public static !enum RebaseOperationType
 innr public static !enum ResetType
 meth public boolean catFile(java.io.File,java.lang.String,java.io.OutputStream,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
@@ -116,10 +140,13 @@ meth public java.util.Map<java.lang.String,org.netbeans.libs.git.GitTransportUpd
 meth public org.netbeans.libs.git.GitBlameResult blame(java.io.File,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitBranch createBranch(java.lang.String,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitBranch setUpstreamBranch(java.lang.String,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public org.netbeans.libs.git.GitCherryPickResult cherryPick(org.netbeans.libs.git.GitClient$CherryPickOperation,java.lang.String[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public org.netbeans.libs.git.GitMergeResult merge(java.lang.String,org.netbeans.libs.git.GitRepository$FastForwardOption,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitMergeResult merge(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitPullResult pull(java.lang.String,java.util.List<java.lang.String>,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitPushResult push(java.lang.String,java.util.List<java.lang.String>,java.util.List<java.lang.String>,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRebaseResult rebase(org.netbeans.libs.git.GitClient$RebaseOperationType,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public org.netbeans.libs.git.GitRefUpdateResult updateReference(java.lang.String,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRemoteConfig getRemote(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRepositoryState getRepositoryState(org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevertResult revert(java.lang.String,java.lang.String,boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
@@ -128,8 +155,10 @@ meth public org.netbeans.libs.git.GitRevisionInfo commit(java.io.File[],java.lan
 meth public org.netbeans.libs.git.GitRevisionInfo getCommonAncestor(java.lang.String[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevisionInfo getPreviousRevision(java.io.File,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevisionInfo log(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public org.netbeans.libs.git.GitRevisionInfo stashSave(java.lang.String,boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevisionInfo[] log(org.netbeans.libs.git.SearchCriteria,boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevisionInfo[] log(org.netbeans.libs.git.SearchCriteria,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public org.netbeans.libs.git.GitRevisionInfo[] stashList(org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitTag createTag(java.lang.String,java.lang.String,java.lang.String,boolean,boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitUser getUser() throws org.netbeans.libs.git.GitException
 meth public void add(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
@@ -141,6 +170,7 @@ meth public void copyAfter(java.io.File,java.io.File,org.netbeans.libs.git.progr
 meth public void deleteBranch(java.lang.String,boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public void deleteTag(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public void exportCommit(java.lang.String,java.io.OutputStream,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public void exportDiff(java.io.File[],java.lang.String,java.lang.String,java.io.OutputStream,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public void exportDiff(java.io.File[],org.netbeans.libs.git.GitClient$DiffMode,java.io.OutputStream,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public void init(org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public void release()
@@ -152,9 +182,22 @@ meth public void reset(java.io.File[],java.lang.String,boolean,org.netbeans.libs
 meth public void reset(java.lang.String,org.netbeans.libs.git.GitClient$ResetType,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public void setCallback(org.netbeans.libs.git.GitClientCallback)
 meth public void setRemote(org.netbeans.libs.git.GitRemoteConfig,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public void stashApply(int,boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public void stashDrop(int,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public void stashDropAll(org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 supr java.lang.Object
 hfds credentialsProvider,delegateListener,gitFactory,gitRepository,listeners
 hcls DelegateListener
+
+CLSS public static !enum org.netbeans.libs.git.GitClient$CherryPickOperation
+ outer org.netbeans.libs.git.GitClient
+fld public final static org.netbeans.libs.git.GitClient$CherryPickOperation ABORT
+fld public final static org.netbeans.libs.git.GitClient$CherryPickOperation BEGIN
+fld public final static org.netbeans.libs.git.GitClient$CherryPickOperation CONTINUE
+fld public final static org.netbeans.libs.git.GitClient$CherryPickOperation QUIT
+meth public static org.netbeans.libs.git.GitClient$CherryPickOperation valueOf(java.lang.String)
+meth public static org.netbeans.libs.git.GitClient$CherryPickOperation[] values()
+supr java.lang.Enum<org.netbeans.libs.git.GitClient$CherryPickOperation>
 
 CLSS public final static !enum org.netbeans.libs.git.GitClient$DiffMode
  outer org.netbeans.libs.git.GitClient
@@ -286,6 +329,7 @@ hfds base,conflicts,failures,mergeStatus,mergedCommits,newHead,workDir
 
 CLSS public static !enum org.netbeans.libs.git.GitMergeResult$MergeStatus
  outer org.netbeans.libs.git.GitMergeResult
+fld public final static org.netbeans.libs.git.GitMergeResult$MergeStatus ABORTED
 fld public final static org.netbeans.libs.git.GitMergeResult$MergeStatus ALREADY_UP_TO_DATE
 fld public final static org.netbeans.libs.git.GitMergeResult$MergeStatus CONFLICTING
 fld public final static org.netbeans.libs.git.GitMergeResult$MergeStatus FAILED
@@ -378,15 +422,28 @@ supr java.lang.Object
 hfds fetchSpecs,pushSpecs,pushUris,remoteName,uris
 
 CLSS public final org.netbeans.libs.git.GitRepository
+innr public static !enum FastForwardOption
 meth public org.netbeans.libs.git.GitClient createClient() throws org.netbeans.libs.git.GitException
+meth public org.netbeans.libs.git.GitRepository$FastForwardOption getDefaultFastForwardOption() throws org.netbeans.libs.git.GitException
 meth public static org.netbeans.libs.git.GitRepository getInstance(java.io.File)
 supr java.lang.Object
 hfds gitRepository,repositoryLocation,repositoryPool
+
+CLSS public static !enum org.netbeans.libs.git.GitRepository$FastForwardOption
+ outer org.netbeans.libs.git.GitRepository
+fld public final static org.netbeans.libs.git.GitRepository$FastForwardOption FAST_FORWARD
+fld public final static org.netbeans.libs.git.GitRepository$FastForwardOption FAST_FORWARD_ONLY
+fld public final static org.netbeans.libs.git.GitRepository$FastForwardOption NO_FAST_FORWARD
+meth public static org.netbeans.libs.git.GitRepository$FastForwardOption valueOf(java.lang.String)
+meth public static org.netbeans.libs.git.GitRepository$FastForwardOption[] values()
+supr java.lang.Enum<org.netbeans.libs.git.GitRepository$FastForwardOption>
 
 CLSS public abstract !enum org.netbeans.libs.git.GitRepositoryState
 fld public final static org.netbeans.libs.git.GitRepositoryState APPLY
 fld public final static org.netbeans.libs.git.GitRepositoryState BARE
 fld public final static org.netbeans.libs.git.GitRepositoryState BISECTING
+fld public final static org.netbeans.libs.git.GitRepositoryState CHERRY_PICKING
+fld public final static org.netbeans.libs.git.GitRepositoryState CHERRY_PICKING_RESOLVED
 fld public final static org.netbeans.libs.git.GitRepositoryState MERGING
 fld public final static org.netbeans.libs.git.GitRepositoryState MERGING_RESOLVED
 fld public final static org.netbeans.libs.git.GitRepositoryState REBASING
@@ -529,6 +586,7 @@ hfds localName,newObjectId,oldObjectId,remoteName,result,type,uri
 CLSS public final static !enum org.netbeans.libs.git.GitTransportUpdate$Type
  outer org.netbeans.libs.git.GitTransportUpdate
 fld public final static org.netbeans.libs.git.GitTransportUpdate$Type BRANCH
+fld public final static org.netbeans.libs.git.GitTransportUpdate$Type REFERENCE
 fld public final static org.netbeans.libs.git.GitTransportUpdate$Type TAG
 meth public static org.netbeans.libs.git.GitTransportUpdate$Type valueOf(java.lang.String)
 meth public static org.netbeans.libs.git.GitTransportUpdate$Type[] values()
@@ -610,6 +668,7 @@ meth public abstract void preparationsFailed(java.lang.String)
 meth public abstract void started(java.lang.String)
 meth public void beginTask(java.lang.String,int)
 meth public void endTask()
+meth public void notifyMessage(java.lang.String)
 meth public void updateTaskState(int)
 supr java.lang.Object
 

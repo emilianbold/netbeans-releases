@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
 
@@ -45,7 +45,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
@@ -53,8 +55,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.DereferencedArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -85,8 +90,8 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
         }
     }
 
-    public static  boolean appliesTo(FileObject fobj) {
-        return !CodeUtils.isPhp54(fobj) && !CodeUtils.isPhp55(fobj) && !CodeUtils.isPhp56(fobj);
+    public static  boolean appliesTo(FileObject fileObject) {
+        return CodeUtils.isPhpVersionLessThan(fileObject, PhpVersion.PHP_54);
     }
 
     private static class CheckVisitor extends DefaultVisitor {
@@ -163,6 +168,8 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
         public void visit(LambdaFunctionDeclaration node) {
             if (node.isStatic()) {
                 createError(node);
+            } else {
+                checkCallableType(node.getFormalParameters());
             }
         }
 
@@ -174,6 +181,31 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
             } else {
                 super.visit(node);
             }
+        }
+
+        @Override
+        public void visit(FunctionDeclaration node) {
+            if (!checkCallableType(node.getFormalParameters())) {
+                super.visit(node);
+            }
+        }
+
+        @Override
+        public void visit(MethodDeclaration node) {
+            if (!checkCallableType(node.getFunction().getFormalParameters())) {
+                super.visit(node);
+            }
+        }
+
+        private boolean checkCallableType(List<FormalParameter> formalParameters) {
+            for (FormalParameter formalParameter : formalParameters) {
+                String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
+                if (Type.CALLABLE.equals(typeName)) {
+                    createError(formalParameter);
+                    return true;
+                }
+            }
+            return false;
         }
 
         private  void createError(int startOffset, int endOffset) {

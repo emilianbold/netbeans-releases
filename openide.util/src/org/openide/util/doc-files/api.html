@@ -72,9 +72,9 @@ our sources.
     <li>
     <a href="../BaseUtilities.html"><code>BaseUtilities</code></a> which contain
     a lot of methods of possible interest. For example
-    <a href="../BaseUtilities.html#topologicalSort(java.util.Collection,%20java.util.Map)"><code>topologicalSort</code></a>,
-    <a href="../BaseUtilities.html#activeReferenceQueue()"><code>activeReferenceQueue</code></a>,
-    <a href="../BaseUtilities.html#translate(java.lang.String)"><code>translate</code></a>.
+    <a href="../BaseUtilities.html#topologicalSort-java.util.Collection-java.util.Map-"><code>topologicalSort</code></a>,
+    <a href="../BaseUtilities.html#activeReferenceQueue--"><code>activeReferenceQueue</code></a>,
+    <a href="../BaseUtilities.html#translate-java.lang.String-"><code>translate</code></a>.
     </li>
 
     <li>
@@ -432,7 +432,7 @@ wish to find the implementation of it, you
 may simply use:
 
 <pre>
-<span class="type">MyService</span> <span class="variable-name">impl</span> = (<span class="type">MyService</span>)Lookup.getDefault().<a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#lookup(java.lang.Class)">lookup</a>(MyService.<span class="keyword">class</span>);
+<span class="type">MyService</span> <span class="variable-name">impl</span> = (<span class="type">MyService</span>)Lookup.getDefault().<a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#lookup-java.lang.Class-">lookup</a>(MyService.<span class="keyword">class</span>);
 <span class="keyword">if</span> (impl == <span class="constant">null</span>) <span class="comment">/* nothing registered */</span> ...
 impl.useIt();
 </pre>
@@ -520,7 +520,7 @@ system options).
 
 However for this purpose it is simpler to use the static finder method
 
-<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#findObject(java.lang.Class,%20boolean)"><code>SharedClassObject.findObject(Class,&nbsp;true)</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#findObject-java.lang.Class-boolean-"><code>SharedClassObject.findObject(Class,&nbsp;true)</code></a>
 
 which is guaranteed to find the singleton whether it was registered in
 lookup or not (if necessary it will first
@@ -599,7 +599,7 @@ full state of the instance itself, which must be stored.
 }
 <span class="comment">// later...
 </span><span class="type">String</span> <span class="variable-name">storedID</span> = someSettings.getChosenService();
-<span class="type">Lookup.Template</span> <span class="variable-name">templ</span> = <span class="keyword">new</span> <span class="type"><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Template.html#Lookup.Template(java.lang.Class,java.lang.String,java.lang.Object)">Lookup.Template</a></span>(MyService.<span class="keyword">class</span>, storedID, <span class="constant">null</span>);
+<span class="type">Lookup.Template</span> <span class="variable-name">templ</span> = <span class="keyword">new</span> <span class="type"><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Template.html#Template-java.lang.Class-java.lang.String-java.lang.Object-">Lookup.Template</a></span>(MyService.<span class="keyword">class</span>, storedID, <span class="constant">null</span>);
 <span class="type">Iterator</span> <span class="variable-name">it</span> = Lookup.getDefault().lookup(templ).allInstances().iterator();
 <span class="keyword">if</span> (! it.hasNext()) <span class="comment">/* failed to find it... */</span>
 <span class="type">MyService</span> <span class="variable-name">instance</span> = (<span class="type">MyService</span>)it.next();
@@ -649,7 +649,7 @@ merging together the results of the delegate lookups.
 If you want to use the common mechanism of finding instances in
 folders (or subfolders) and serving these as the results,
 
-<a href="@org-openide-util-lookup@/org/openide/util/lookup/Lookups.html#forPath(java.lang.String)">Lookups.forPath(String)</a>
+<a href="@org-openide-util-lookup@/org/openide/util/lookup/Lookups.html#forPath-java.lang.String-">Lookups.forPath(String)</a>
 
 makes this possible: you need only provide a name of a folder to look in, and
 use
@@ -718,7 +718,7 @@ deregistered. Often
 is used as the content implementation. To add something to the lookup,
 simply use
 
-<a href="@org-openide-util-lookup@/org/openide/util/lookup/InstanceContent.html#add(java.lang.Object)"><code>add(Object)</code></a>
+<a href="@org-openide-util-lookup@/org/openide/util/lookup/InstanceContent.html#add-java.lang.Object-"><code>add(Object)</code></a>
 
 (and <code>remove(Object)</code> for the reverse). These may be called
 at any time and will update the set of registered instances (firing
@@ -889,7 +889,7 @@ instead).</p>
 <li>In the common case of <code>SystemOption</code>, you may simply
 call
 
-<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#findObject(java.lang.Class,%20boolean)"><code>SharedClassObject.findObject(Class,&nbsp;true)</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#findObject-java.lang.Class-boolean-"><code>SharedClassObject.findObject(Class,&nbsp;true)</code></a>
 
 which will either provide a previously initialized singleton, or find
 the setting in lookup if possible and read any customized state before

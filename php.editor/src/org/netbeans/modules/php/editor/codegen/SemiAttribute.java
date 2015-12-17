@@ -107,6 +107,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -290,6 +291,9 @@ public class SemiAttribute extends DefaultVisitor {
         if (node.getParameterName() instanceof Reference) {
             Reference ref = (Reference) node.getParameterName();
             Expression parameterName = ref.getExpression();
+            if (parameterName instanceof Variadic) {
+                parameterName = ((Variadic) parameterName).getExpression();
+            }
             if (parameterName instanceof Variable) {
                 var = (Variable) parameterName;
             }

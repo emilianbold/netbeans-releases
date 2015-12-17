@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.*;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
@@ -114,7 +115,7 @@ public class ExecuteCommand {
     }
 
     private NativeExecutionService prepare(ExecutionListener listener, Writer outputListener, List<String> additionalEnvironment) {
-        final HostInfo hostInfo;
+        HostInfo hostInfo;
         try {
             hostInfo = HostInfoUtils.getHostInfo(execEnv);
         } catch (IOException ex) {
@@ -126,6 +127,30 @@ public class ExecuteCommand {
         }
         // Executable
         String executable = hostInfo.getShell();
+        if (executable == null) {
+            if (hostInfo.getOS().getFamily() == HostInfo.OSFamily.WINDOWS) {
+                CompilerSet compilerSet = getCompilerSet();
+                if (compilerSet != null && compilerSet.getCompilerFlavor().isMinGWCompiler()) {
+                    String commandFolder = compilerSet.getCommandFolder();
+                    if (commandFolder != null) {
+                        // reinit shell
+                        WindowsSupport.getInstance().init(commandFolder);
+                        try {
+                            HostInfoUtils.updateHostInfo(execEnv);
+                            hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                            executable = hostInfo.getShell();
+                        } catch (IOException ex) {
+                        } catch (InterruptedException ex) {
+                        } catch (CancellationException ex) {
+                        }
+                    }
+                }
+            }
+            if (executable == null) {
+                ImportProject.logger.log(Level.INFO, "Shell command is null"); //NOI18N
+                return null;
+            }
+        }
         expandMacros(hostInfo, BuildSupport.MAKE_MACRO, PredefinedToolKind.MakeTool, "make"); //NOI18N
         expandMacros(hostInfo, PreBuildSupport.C_COMPILER_MACRO, PredefinedToolKind.CCompiler, "gcc"); //NOI18N
         expandMacros(hostInfo, PreBuildSupport.CPP_COMPILER_MACRO, PredefinedToolKind.CCCompiler, "g++"); //NOI18N

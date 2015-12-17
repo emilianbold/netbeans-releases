@@ -100,9 +100,10 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     private boolean valid;
     private String errorMessage;
     private WizardStepProgressSupport support;
-    private VCSFileProxy root;
+    private final VCSFileProxy root;
 
-    public CloneRepositoryWizardPanel() {
+    public CloneRepositoryWizardPanel(VCSFileProxy root) {
+        this.root = root;
         support = new RepositoryStepProgressSupport();
     }
     
@@ -113,10 +114,6 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     @Override
     public Component getComponent() {
         if (component == null) {
-            FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
-            if (fileSystems.length > 0) {
-                root = VCSFileProxy.createFileProxy(fileSystems[0].getRoot());
-            }
             component = new JPanel(new BorderLayout());
             if (root != null) {
                 repository = new Repository(
@@ -309,7 +306,6 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         if (settings instanceof WizardDescriptor) {
             try {
                 ((WizardDescriptor) settings).putProperty("repository", repository.getUrl()); // NOI18N
-                ((WizardDescriptor) settings).putProperty("root", root); // NOI18N
             } catch (URISyntaxException ex) {
                 /*
                  * The panel's data may not be validated yet (bug #163078)

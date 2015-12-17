@@ -1140,6 +1140,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 case CURSOR_INSIDE_BRACKETS:
                     name = getName();
                     builder.append(name);
+                    boolean appendBrackets = true;
                     switch (name) {
                         case "foreach": //NOI18N
                         case "for": //NOI18N
@@ -1152,7 +1153,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                             appendSpace = codeStyle.spaceBeforeSwitchParen();
                             break;
                         case "array": //NOI18N
-                            appendSpace = codeStyle.spaceBeforeArrayDeclParen();
+                            if (request.context == CompletionContext.TYPE_NAME) {
+                                // e.g. return type
+                                appendBrackets = false;
+                                appendSpace = false;
+                            } else {
+                                appendSpace = codeStyle.spaceBeforeArrayDeclParen();
+                            }
                             break;
                         case "while": //NOI18N
                             appendSpace = codeStyle.spaceBeforeWhileParen();
@@ -1166,7 +1173,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     if (appendSpace) {
                         builder.append(" "); //NOI18N
                     }
-                    builder.append("(${cursor})"); //NOI18N
+                    if (appendBrackets) {
+                        builder.append("(${cursor})"); //NOI18N
+                    }
                     break;
                 case ENDS_WITH_CURLY_BRACKETS:
                     name = getName();

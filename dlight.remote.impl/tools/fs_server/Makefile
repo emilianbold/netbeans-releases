@@ -35,16 +35,19 @@ endif
 PNAME=fs_server
 
 CC_COMMON=gcc
+
+CC_SOLARIS=cc
+
 CC_Linux-x86      = $(CC_COMMON)
 CC_Linux-x86_64   = $(CC_COMMON)
 CC_Linux-arm      = $(CC_COMMON)
 CC_Linux-sparc    = $(CC_COMMON)
 CC_MacOSX-x86     = clang 
 CC_MacOSX-x86_64  = clang 
-CC_SunOS-sparc    = $(CC_COMMON)
-CC_SunOS-sparc_64 = $(CC_COMMON)
-CC_SunOS-x86      = $(CC_COMMON)
-CC_SunOS-x86_64   = $(CC_COMMON)
+CC_SunOS-sparc    = $(CC_SOLARIS)
+CC_SunOS-sparc_64 = $(CC_SOLARIS)
+CC_SunOS-x86      = $(CC_SOLARIS)
+CC_SunOS-x86_64   = $(CC_SOLARIS)
 CC_Windows-x86    = $(CC_COMMON)
 CC_Windows-x86_64 = $(CC_COMMON)
 CC_FreeBSD-x86    = $(CC_COMMON)
@@ -53,6 +56,14 @@ CC=$(CC_$(CONF))
 
 ifdef PARFAIT
    CC=parfait-gcc
+endif
+
+ifdef PREVISE
+    PREVISE_FLAG = -xprevise=yes 
+    CODEAN_TARGET = codean
+else
+    PREVISE_FLAG = 
+    CODEAN_TARGET = 
 endif
 
 SOURCES=\
@@ -77,16 +88,18 @@ EXEC=$(DIST_DIR)/$(PNAME)
 
 #CF_COMMON         = --std=c99 -s -O2
 CF_COMMON         = --std=c99 -g -Wall -Werror -D_REENTRANT
+CF_SOLARIS         = -std=c99 -g -errwarn -D_REENTRANT
+
 CF_Linux-arm      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
 CF_Linux-sparc    = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
 CF_MacOSX-x86     = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m32
 CF_MacOSX-x86_64  = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m64
-CF_SunOS-sparc    = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
-CF_SunOS-sparc_64 = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
-CF_SunOS-x86      = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
-CF_SunOS-x86_64   = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
+CF_SunOS-sparc    = $(CF_SOLARIS) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
+CF_SunOS-sparc_64 = $(CF_SOLARIS) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
+CF_SunOS-x86      = $(CF_SOLARIS) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
+CF_SunOS-x86_64   = $(CF_SOLARIS) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
 CF_Windows-x86    = $(CF_COMMON) -DWINDOWS -m32
 CF_Windows-x86_64 = $(CF_COMMON) -DWINDOWS -m32
 CF_FreeBSD-x86    = $(CF_COMMON) -D_GNU_SOURCE -m32
@@ -96,10 +109,16 @@ LF_Linux-x86      = $(LF_COMMON)
 LF_Linux-x86_64   = $(LF_COMMON)
 LF_Linux-arm      = $(LF_COMMON) -static
 
-CFLAGS=$(CF_$(CONF))
-LDFLAGS=$(LF_$(CONF))
+CFLAGS=$(CF_$(CONF)) ${PREVISE_FLAG}
+LDFLAGS=$(LF_$(CONF)) ${PREVISE_FLAG}
 
-all: $(EXEC) strip summarise
+ifdef PREVISE
+  STRIP = @echo "Not stripping" 
+else
+  STRIP = strip $(EXEC)
+endif
+
+all: $(EXEC) strip summarise ${CODEAN_TARGET}
 
 all-debug: $(EXEC) summarise
 
@@ -113,7 +132,13 @@ summarise:
 	@$(LINE) =
 
 strip:
-	strip $(EXEC)
+	$(STRIP) 
+
+codean:
+	@(echo; echo "========== $(EXEC) static analysis =========="; echo)
+	@codean -s $(EXEC)
+	@(echo; echo HTML results are:)
+	@(cd ${DIST}; ls $(EXEC).static.html)
 
 parfait: all
 	@echo Processing parfait output. This can take a while...

@@ -161,6 +161,10 @@ public class LastTargetExecuted implements BuildExecutionSupport.ActionItem {
 
     @Override
     public FileObject getProjectDirectory() {
+        String wd = this.properties.get("work.dir");
+        if (wd != null) {
+            return FileUtil.toFileObject(FileUtil.normalizeFile(new File(wd)));
+        }
         return FileUtil.toFileObject(buildScript.getParentFile());
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.grunt.exec;
 
@@ -65,17 +65,17 @@ import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.GruntBuildTool;
-import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.options.GruntOptions;
 import org.netbeans.modules.javascript.grunt.options.GruntOptionsValidator;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
-import org.netbeans.modules.javascript.grunt.util.FileUtils;
 import org.netbeans.modules.javascript.grunt.util.GruntUtils;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -87,9 +87,14 @@ public class GruntExecutable {
 
     private static final String HELP_PARAM = "--help"; // NOI18N
     private static final String NO_COLOR_PARAM = "--no-color"; // NOI18N
+    private static final String TASKS_PARAM = "--tasks"; // NOI18N
 
     protected final Project project;
     protected final String gruntPath;
+    private final List<String> tasks;
+
+    @NullAllowed
+    private final File workDir;
 
 
     static {
@@ -101,14 +106,30 @@ public class GruntExecutable {
     }
 
 
-    GruntExecutable(String gruntPath, @NullAllowed Project project) {
+    GruntExecutable(String gruntPath, Project project, @NullAllowed File workDir) {
         assert gruntPath != null;
+        assert project != null;
         this.gruntPath = gruntPath;
+        this.tasks = getTasks(project, workDir);
         this.project = project;
+        this.workDir = workDir;
     }
 
     @CheckForNull
-    public static GruntExecutable getDefault(@NullAllowed Project project, boolean showOptions) {
+    public static GruntExecutable getDefault(Project project, boolean showOptions) {
+        return createExecutable(project, null, showOptions);
+    }
+
+    @CheckForNull
+    public static GruntExecutable getDefault(Project project, File workDir, boolean showOptions) {
+        assert workDir != null;
+        assert workDir.exists() : workDir;
+        return createExecutable(project, workDir, showOptions);
+    }
+
+    @CheckForNull
+    private static GruntExecutable createExecutable(Project project, @NullAllowed File workDir, boolean showOptions) {
+        assert project != null;
         ValidationResult result = new GruntOptionsValidator()
                 .validateGrunt()
                 .getResult();
@@ -118,14 +139,11 @@ public class GruntExecutable {
             }
             return null;
         }
-        return createExecutable(GruntOptions.getInstance().getGrunt(), project);
-    }
-
-    private static GruntExecutable createExecutable(String grunt, Project project) {
+        String grunt = GruntOptions.getInstance().getGrunt();
         if (Utilities.isMac()) {
-            return new MacGruntExecutable(grunt, project);
+            return new MacGruntExecutable(grunt, project, workDir);
         }
-        return new GruntExecutable(grunt, project);
+        return new GruntExecutable(grunt, project, workDir);
     }
 
     String getCommand() {
@@ -151,7 +169,7 @@ public class GruntExecutable {
         final GruntTasksLineProcessor gruntTasksLineProcessor = new GruntTasksLineProcessor();
         Future<Integer> task = getExecutable("list grunt tasks") // NOI18N
                 .noInfo(true)
-                .additionalParameters(Arrays.asList(NO_COLOR_PARAM, HELP_PARAM))
+                .additionalParameters(getParams(getListTasksParams()))
                 .redirectErrorStream(false)
                 .run(getSilentDescriptor(), new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override
@@ -160,7 +178,7 @@ public class GruntExecutable {
                     }
                 });
         assert task != null : gruntPath;
-        return new TaskList(task, gruntTasksLineProcessor);
+        return new TaskList(this, task, gruntTasksLineProcessor);
     }
 
     private ExternalExecutable getExecutable(String title) {
@@ -199,16 +217,13 @@ public class GruntExecutable {
     }
 
     private File getWorkDir() {
-        if (project == null) {
-            return FileUtils.TMP_DIR;
+        if (workDir != null
+                && workDir.exists()) {
+            return workDir;
         }
-        Gruntfile gruntfile = GruntBuildTool.forProject(project).getGruntfile();
-        if (gruntfile.exists()) {
-            return gruntfile.getFile().getParentFile();
-        }
-        File workDir = FileUtil.toFile(project.getProjectDirectory());
-        assert workDir != null : project.getProjectDirectory();
-        return workDir;
+        File dir = FileUtil.toFile(project.getProjectDirectory());
+        assert dir != null : project.getProjectDirectory();
+        return dir;
     }
 
     private List<String> getRunParams(String... args) {
@@ -217,7 +232,13 @@ public class GruntExecutable {
 
     List<String> getParams(List<String> params) {
         assert params != null;
-        return params;
+        List<String> allParams = new ArrayList<>(tasks.size() * 2 + params.size());
+        for (String task : tasks) {
+            allParams.add(TASKS_PARAM);
+            allParams.add(task.trim());
+        }
+        allParams.addAll(params);
+        return allParams;
     }
 
     @CheckForNull
@@ -231,6 +252,22 @@ public class GruntExecutable {
         return result.getFirstWarningMessage();
     }
 
+    static List<String> getListTasksParams() {
+        return Arrays.asList(NO_COLOR_PARAM, HELP_PARAM);
+    }
+
+    /**
+     * Gets tasks but only for project Gruntfile.js.
+     */
+    private List<String> getTasks(Project project, @NullAllowed File workDir) {
+        if (workDir == null
+                || workDir.equals(FileUtil.toFile(project.getProjectDirectory()))) {
+            return StringUtilities.explode(GruntBuildTool.forProject(project).getGruntPreferences().getTasks(), ","); // NOI18N
+        }
+        // not project grunt
+        return Collections.emptyList();
+    }
+
     //~ Inner classes
 
     private static final class MacGruntExecutable extends GruntExecutable {
@@ -238,8 +275,8 @@ public class GruntExecutable {
         private static final String BASH_COMMAND = "/bin/bash -lc"; // NOI18N
 
 
-        MacGruntExecutable(String gruntPath, Project project) {
-            super(gruntPath, project);
+        MacGruntExecutable(String gruntPath, Project project, File workDir) {
+            super(gruntPath, project, workDir);
         }
 
         @Override
@@ -265,9 +302,10 @@ public class GruntExecutable {
         private static final String AVAILABLE_TASKS = "Available tasks"; // NOI18N
         private static final String NO_TASKS = "(no tasks found)"; // NOI18N
 
+        // @GuardedBy("tasks")
         final List<String> tasks = new ArrayList<>();
 
-        private int state = 0;
+        private volatile int state = 0;
         private int spaceIndex = -1;
 
 
@@ -293,7 +331,9 @@ public class GruntExecutable {
                         }
                         String task = line.substring(0, spaceIndex).trim();
                         if (StringUtilities.hasText(task)) {
-                            tasks.add(task);
+                            synchronized (tasks) {
+                                tasks.add(task);
+                            }
                         }
                     }
                     break;
@@ -312,14 +352,23 @@ public class GruntExecutable {
             // noop
         }
 
+        public boolean errorOccurred() {
+            return state == 0;
+        }
+
         public List<String> getTasks() {
-            return Collections.unmodifiableList(tasks);
+            synchronized (tasks) {
+                return new ArrayList<>(tasks);
+            }
         }
 
     }
 
     private static final class TaskList implements Future<List<String>> {
 
+        private static final RequestProcessor RP = new RequestProcessor(TaskList.class);
+
+        final GruntExecutable grunt;
         private final Future<Integer> task;
         private final GruntTasksLineProcessor convertor;
 
@@ -327,9 +376,11 @@ public class GruntExecutable {
         private List<String> gruntTasks = null;
 
 
-        TaskList(Future<Integer> task, GruntTasksLineProcessor convertor) {
+        TaskList(GruntExecutable grunt, Future<Integer> task, GruntTasksLineProcessor convertor) {
+            assert grunt != null;
             assert task != null;
             assert convertor != null;
+            this.grunt = grunt;
             this.task = task;
             this.convertor = convertor;
         }
@@ -371,8 +422,20 @@ public class GruntExecutable {
             return getGruntTasks();
         }
 
+        @NbBundle.Messages("TaskList.error=Cannot get Grunt tasks.")
         private synchronized List<String> getGruntTasks() {
             if (gruntTasks != null) {
+                return Collections.unmodifiableList(gruntTasks);
+            }
+            if (convertor.errorOccurred()) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        grunt.run(getListTasksParams().toArray(new String[0]));
+                    }
+                });
+                StatusDisplayer.getDefault().setStatusText(Bundle.TaskList_error());
+                gruntTasks = Collections.emptyList();
                 return Collections.unmodifiableList(gruntTasks);
             }
             List<String> tasks = new ArrayList<>(convertor.getTasks());

@@ -80,6 +80,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -87,8 +88,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.java.project.ui.FixProjectSourceLevel;
-import org.netbeans.modules.java.project.ui.ProfileProblemsProviderImpl;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -109,6 +108,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -1008,7 +1008,66 @@ public class ProjectProblemsProviders {
 
 
     }
-        
+
+    private static class UpgradeSourceTargetResolver implements ProjectProblemResolver {
+        private final AntProjectHelper helper;
+        private final Collection<? extends String> invalidVersionProps;
+        private final SpecificationVersion minSourceVersion;
+
+        UpgradeSourceTargetResolver(
+                @NonNull final AntProjectHelper helper,
+                @NonNull final Collection<? extends String> invalidVersionProps,
+                @NonNull final SpecificationVersion minSourceVersion) {
+            assert helper != null;
+            assert invalidVersionProps != null;
+            assert minSourceVersion != null;
+            this.helper = helper;
+            this.invalidVersionProps = invalidVersionProps;
+            this.minSourceVersion = minSourceVersion;
+        }
+
+        @Override
+        @NbBundle.Messages({
+            "TITLE_UpgradeSourceLevel=Upgrade Source/Binary Format - \"{0}\" Project",
+            "MSG_UpgradeSourceLevel=Upgrade the project source/binary format to the minimal supported one ({0})."
+        })
+        public Future<Result> resolve() {
+            final Project project = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+            final Object option = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                    MSG_UpgradeSourceLevel(minSourceVersion),
+                    TITLE_UpgradeSourceLevel(ProjectUtils.getInformation(project).getDisplayName()),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE));
+            if (option == NotifyDescriptor.OK_OPTION) {
+                return RP.submit(new Callable<ProjectProblemsProvider.Result>(){
+                    @Override
+                    @NonNull
+                    public Result call() throws Exception {
+                        return ProjectManager.mutex().writeAccess(new Mutex.Action<ProjectProblemsProvider.Result>() {
+                            @Override
+                            @NonNull
+                            public ProjectProblemsProvider.Result run() {
+                                try {
+                                    final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                    for (String prop : invalidVersionProps) {
+                                        ep.setProperty(prop, minSourceVersion.toString());
+                                    }
+                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                                    ProjectManager.getDefault().saveProject(project);
+                                    return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED);
+                                } catch (IOException ioe) {
+                                    return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED, ioe.getMessage());
+                                }
+                            }
+                        });
+                    }
+                });
+            } else {
+                return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
+            }
+        }
+    }
+
     private static final class Done implements Future<ProjectProblemsProvider.Result> {
 
         private final ProjectProblemsProvider.Result result;
@@ -1268,7 +1327,9 @@ public class ProjectProblemsProviders {
         @Override
         @NbBundle.Messages({
             "LBL_Invalid_JDK_Version=Invalid Java Platform Version",
-            "HINT_Invalid_JDK_Vernsion=The active project platform is an older version than it's required by project source/binary format."
+            "HINT_Invalid_JDK_Vernsion=The active project platform is an older version than it's required by project source/binary format.",
+            "LBL_Unsupported_Source=Unsupported source/binary format.",
+            "HINT_Unsupported_Source=The project source/binary format is older than minimal supported one ({0})."
         })
         public Collection<? extends ProjectProblem> getProblems() {
             return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
@@ -1286,8 +1347,8 @@ public class ProjectProblemsProviders {
                                     SpecificationVersion minVersion = getInvalidJdkVersion(
                                             platformVersion,
                                             invalidVersionProps);
-                                    return minVersion != null ?
-                                        Collections.singleton(ProjectProblem.createError(
+                                    if (minVersion != null) {
+                                        return Collections.singleton(ProjectProblem.createError(
                                             LBL_Invalid_JDK_Version(),
                                             HINT_Invalid_JDK_Vernsion(),
                                             new SourceTargetResolver(
@@ -1297,8 +1358,20 @@ public class ProjectProblemsProviders {
                                                 platformProp,
                                                 invalidVersionProps,
                                                 minVersion,
-                                                platformVersion))) :
-                                        Collections.<ProjectProblem>emptySet();
+                                                platformVersion)));
+                                    }
+                                    invalidVersionProps.clear();
+                                    if (getOutdatedJdkVersion(invalidVersionProps, SourceLevelQuery.MINIMAL_SOURCE_LEVEL)) {
+                                        return Collections.singleton(ProjectProblem.createError(
+                                                LBL_Unsupported_Source(),
+                                                HINT_Unsupported_Source(SourceLevelQuery.MINIMAL_SOURCE_LEVEL),
+                                                new UpgradeSourceTargetResolver(
+                                                    helper,
+                                                    invalidVersionProps,
+                                                    SourceLevelQuery.MINIMAL_SOURCE_LEVEL)
+                                                ));
+                                    }
+                                    return Collections.<ProjectProblem>emptySet();
                                 }
                         });
                     return currentProblems;
@@ -1356,6 +1429,34 @@ public class ProjectProblemsProviders {
                 }
             }
             return minVersion;
+        }
+
+        private boolean getOutdatedJdkVersion(
+                @NonNull final Collection<? super String> invalidVersionProps,
+                @NonNull final SpecificationVersion minVersion) {
+            boolean res = false;
+            for (String vp : versionProps) {
+                final String value = this.eval.getProperty(vp);
+                if (value == null || value.isEmpty()) {
+                    continue;
+                }
+                try {
+                    final SpecificationVersion vpVersion = new SpecificationVersion(value);
+                    if (vpVersion.compareTo(minVersion) < 0) {
+                        invalidVersionProps.add(vp);
+                        res = true;
+                    }
+                } catch (NumberFormatException nfe) {
+                    LOG.log(
+                        Level.WARNING,
+                        "Property: {0} holds non valid version: {1}",  //NOI18N
+                        new Object[]{
+                            vp,
+                            value
+                        });
+                }
+            }
+            return res;
         }
 
         @CheckForNull

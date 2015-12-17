@@ -50,6 +50,7 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.TypeVar;
+import com.sun.tools.javac.code.TypeMetadata;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.code.Types.DefaultTypeVisitor;
@@ -289,7 +290,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                         resolvedBounds = resolvedBounds.prepend((Type) resolved);
                     }
 
-                    Type ct = t.makeCompoundType(resolvedBounds.reverse());
+                    Type ct = t.makeIntersectionType(resolvedBounds.reverse());
                     ct.getTypeArguments(); //initialize typarams_field
                     return (T) ct;
                 }
@@ -401,7 +402,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 
                 t = Types.instance(info.impl.getJavacTask().getContext());
                 
-                return (T) t.makeCompoundType(resolvedBounds.toList());
+                return (T) t.makeIntersectionType(resolvedBounds.toList());
             default:
                 throw new IllegalStateException("Internal error: unknown TypeHandle kind: " + kind);
         }
@@ -426,12 +427,23 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         private Type delegate = null;
         
         public PlaceholderType() {
-            super(null);
+            this(TypeMetadata.EMPTY);
+        }       
+
+        public PlaceholderType(TypeMetadata md) {
+            super(null, md);
         }       
 
         @Override
         public TypeTag getTag() {
             return TypeTag.UNKNOWN;
+        }
+
+        @Override
+        public Type cloneWithMetadata(TypeMetadata md) {
+            PlaceholderType out = new PlaceholderType(md);
+            out.delegate = delegate;
+            return out;
         }
     }
     

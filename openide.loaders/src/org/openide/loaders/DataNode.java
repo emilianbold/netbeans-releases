@@ -650,7 +650,7 @@ public class DataNode extends AbstractNode {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
                     return;
                 }
-                DataNodeUtils.reqProcessor().post(new Runnable() { // #232671
+                DataNodeUtils.reqProcessor(obj.getPrimaryFile()).post(new Runnable() { // #232671
                     @Override
                     public void run() {
                         setNewExt(newExt);
@@ -909,20 +909,36 @@ public class DataNode extends AbstractNode {
         
         if ( refresh ) {
             // refresh current nodes display name
-            DataNodeUtils.reqProcessor().post(new Runnable() {
-                @Override
-                public void run () { 
-                    Iterator it = DataObjectPool.getPOOL().getActiveDataObjects();
-                    while ( it.hasNext() ) {
-                        DataObject obj = ((DataObjectPool.Item)it.next()).getDataObjectOrNull();
-                        if ( obj != null && obj.getNodeDelegate() instanceof DataNode ) {
-                            ((DataNode)obj.getNodeDelegate()).updateDisplayName();            
-                        }
-                    }        
+            Map<RequestProcessor, List<DataObject>> mapping
+                    = new HashMap<RequestProcessor, List<DataObject>>();
+            Iterator it = DataObjectPool.getPOOL().getActiveDataObjects();
+
+            // Assign DataNodes to RequestProcessors. See bug 252073 comment 17.
+            while (it.hasNext()) {
+                DataObject obj = ((DataObjectPool.Item) it.next()).getDataObjectOrNull();
+                if (obj != null && obj.getNodeDelegate() instanceof DataNode) {
+                    RequestProcessor rp = DataNodeUtils.reqProcessor(obj.getPrimaryFile());
+                    List<DataObject> list = mapping.get(rp);
+                    if (list == null) {
+                        list = new ArrayList<DataObject>();
+                        mapping.put(rp, list);
+                    }
+                    list.add(obj);
                 }
-            }, 300, Thread.MIN_PRIORITY);                    
-        }        
-        
+            }
+
+            for (Map.Entry<RequestProcessor, List<DataObject>> e : mapping.entrySet()) {
+                final List<DataObject> list = e.getValue();
+                e.getKey().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (DataObject obj: list) {
+                            ((DataNode) obj.getNodeDelegate()).updateDisplayName();
+                        }
+                    }
+                }, 300, Thread.MIN_PRIORITY);
+            }
+        }
     }
 
     private static Class defaultLookup;
@@ -1073,14 +1089,55 @@ public class DataNode extends AbstractNode {
                 }
                 refreshNamesIconsRunning = false;
             }
-            for (int i = 0; i < _refreshNameNodes.length; i++) {
-                _refreshNameNodes[i].fireChangeAccess(false, true);
+            // refresh name nodes
+            for (final Map.Entry<RequestProcessor, List<DataNode>> e
+                    : groupByRP(_refreshNameNodes).entrySet()) {
+                e.getKey().post(new Runnable() { // post list to assigned RP
+                    @Override
+                    public void run() {
+                        for (DataNode n: e.getValue()) {
+                            n.fireChangeAccess(false, true);
+                        }
+                    }
+                });
             }
-            for (int i = 0; i < _refreshIconNodes.length; i++) {
-                _refreshIconNodes[i].fireChangeAccess(true, false);
+            // refresh icon nodes
+            for (final Map.Entry<RequestProcessor, List<DataNode>> e
+                    : groupByRP(_refreshIconNodes).entrySet()) {
+                e.getKey().post(new Runnable() { // post list to assigned RP
+                    @Override
+                    public void run() {
+                        for (DataNode n: e.getValue()) {
+                            n.fireChangeAccess(true, false);
+                        }
+                    }
+                });
             }
         }
-        
+
+        /**
+         * Group array of nodes by assigned RequestProcessors.
+         *
+         * @param nodes
+         * @return Mapping from RequestProcessor to list of nodes assigned to
+         * it.
+         */
+        private Map<RequestProcessor, List<DataNode>> groupByRP(DataNode nodes[]) {
+            Map<RequestProcessor, List<DataNode>> mapping
+                    = new HashMap<RequestProcessor, List<DataNode>>();
+            for (DataNode node : nodes) {
+                DataObject dob = node.getDataObject();
+                FileObject fo = dob == null ? null : dob.getPrimaryFile();
+                RequestProcessor rp = DataNodeUtils.reqProcessor(fo);
+                List<DataNode> set = mapping.get(rp);
+                if (set == null) {
+                    set = new ArrayList<DataNode>();
+                    mapping.put(rp, set);
+                }
+                set.add(node);
+            }
+            return mapping;
+        }
     }
 
     /** Handle for data object nodes */

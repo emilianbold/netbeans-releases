@@ -76,6 +76,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="SourceLevelQuery-MINIMAL_SOURCE_LEVEL">
+            <api name="queries"/>
+            <summary>Added <code>MINIMAL_SOURCE_LEVEL</code> into <code>SourceLevelQuery</code></summary>
+            <version major="1" minor="60"/>
+            <date day="15" month="6" year="2015"/>
+            <author login="tzezula"/>
+            <compatibility semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added the <code>MINIMAL_SOURCE_LEVEL</code> constant into the <code>SourceLevelQuery</code>
+                    specifying the minimal supported source level.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="SourceLevelQuery"/>
+        </change>
         <change id="SourceJavadocAttacherImplementation-Definer">
             <api name="queries"/>
             <summary>Added extension to the default SourceJavadocAttacherImplementation</summary>

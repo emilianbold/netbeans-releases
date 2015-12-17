@@ -53,10 +53,56 @@ ifeq (armv, $(shell expr substr `arch` 1 4))
     FLAG64:=
 else	
     FLAG64:=$(shell (echo ${PLATFORM_DIR} | grep 64 >/dev/null && echo -m64) || echo -m32)
-endif	
+endif
 
-CFLAGS := $(CFLAGS-$(OSFAMILY))
-LDFLAGS := $(LDFLAGS-$(OSFAMILY))
+_OS = $(shell uname -s)
+_OS:sh = uname -s
+ifeq (CYGWIN, $(shell expr substr `uname -s` 1 6))
+    OS=Windows
+else
+    OS=$(_OS)
+endif
+ARCH = $(shell arch)
+ARCH:sh = arch
+
+ifeq (armv, $(shell expr substr `arch` 1 4))
+    OS_ARCH = $(OS)-arm
+else 
+  ifeq (sun4, $(ARCH))
+    OS_ARCH = $(OS)-sparc
+  else 
+    ifeq (sparc64, $(ARCH))
+      OS_ARCH = $(OS)-sparc
+    else
+      OS_ARCH = $(OS)-x86
+    endif
+  endif
+endif
+
+CF_Linux-x86      = -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700
+CF_Linux-sparc    = -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700
+CF_Linux-arm      = -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -std=c99
+CF_MacOSX-x86     = -DMAXOSX  -D_DARWIN_C_SOURCE
+CF_SunOS-sparc    = -DSOLARIS -D__EXTENSIONS__
+CF_SunOS-x86      = -DSOLARIS
+CF_Windows-x86    = -DWINDOWS
+
+LF_Windows-x86    = --static-libgcc
+LF_Windows-x86_64 = --static-libgcc
+
+CFLAGS := $(CF_$(OS_ARCH)) $(CFLAGS_EXTRA)
+LDFLAGS := $(LF_$(OS_ARCH)) $(LDFLAGS_EXTRA)
+
+CC=gcc
+
+CFLAGS += $(CFLAGS-$(OSFAMILY))
+LDFLAGS += $(LDFLAGS-$(OSFAMILY))
+
+ifndef NOSTRIP
+    CFLAGS += -s 
+else 
+    CFLAGS += -g
+endif
 
 DIST=../release/bin/nativeexecution
 BUILD=./build
@@ -66,24 +112,19 @@ APP_PATH=${DIST}/${PLATFORM_DIR}
 all: init privp process_start pty_open sigqueue stat
 
 privp: init
-	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
-	strip ${APP_PATH}/$@
+	${CC} ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
 process_start: init
-	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
-	strip ${APP_PATH}/$@
+	${CC} ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
 pty_open: init
-	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
-	strip ${APP_PATH}/$@
+	${CC} ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
 sigqueue: init
-	gcc ${CFLAGS} ${FLAG64} ${LDFLAGS} -o ${APP_PATH}/$@ $@.c
-	strip ${APP_PATH}/$@
+	${CC} ${CFLAGS} ${FLAG64} ${LDFLAGS} -o ${APP_PATH}/$@ $@.c
 
 stat: init
-	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
-	strip ${APP_PATH}/$@
+	${CC} ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
 clean:
 	rm -rf ${APP_PATH} ${DIST}/${PLATFORM_DIR}

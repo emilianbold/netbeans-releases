@@ -317,8 +317,8 @@ public class TraceModelBase {
                     : files.get(0).getParentFile().getAbsolutePath();
             np = NativeProjectProvider.createProject(projectRoot, files,
                     libProjectsPaths,
-                    getSystemIncludes(), quoteIncludePaths, currentIncludeFiles, getSysMacros(),
-                    macros, undefinedMacros, pathsRelCurFile);
+                    getSystemIncludes(), quoteIncludePaths, getSystemIncludeHeaders(), currentIncludeFiles,
+                    getSysMacros(), macros, undefinedMacros, pathsRelCurFile);
         }
         ProjectBase out = model.addProject(np, np.getProjectDisplayName(), true);
         waitProjectParsed(out, false);
@@ -381,6 +381,10 @@ public class TraceModelBase {
             all.add("/usr/include"); // NOI18N
         }
         return new ArrayList<>(all);
+    }
+
+    private List<String> getSystemIncludeHeaders() {
+        return new ArrayList();
     }
 
     protected List<String> getSysMacros() {

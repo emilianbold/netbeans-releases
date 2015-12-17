@@ -96,7 +96,7 @@ public class RepositoryAccessTestBase  extends ModelImplBaseTestCase {
     protected static ProjectBase createExtraProject(TraceModelBase traceModel, List<File> files, String name) throws IOException {
 	NativeProject nativeProject = NativeProjectProvider.createProject(name, files, 
                 Collections.<String>emptyList(), Collections.<String>emptyList(), 
-		Collections.<String>emptyList(), Collections.<String>emptyList(), 
+		Collections.<String>emptyList(), Collections.<String>emptyList(), Collections.<String>emptyList(), 
                 Collections.<String>emptyList(), Collections.<String>emptyList(), Collections.<String>emptyList(), true);
 	ProjectBase result = traceModel.getModel().addProject(nativeProject, name, true); // NOI18N
 	return result;
