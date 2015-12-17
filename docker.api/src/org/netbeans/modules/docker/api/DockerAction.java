@@ -963,12 +963,13 @@ public class DockerAction {
                     }
                 } catch (ParseException ex) {
                     throw new DockerException(ex);
+                } finally {
+                    if (connectionListener != null) {
+                        connectionListener.onDisconnect();
+                    }
                 }
             } finally {
                 closeSocket(s);
-                if (connectionListener != null) {
-                    connectionListener.onDisconnect();
-                }
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
