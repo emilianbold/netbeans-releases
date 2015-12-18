@@ -39,62 +39,80 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui;
+package org.netbeans.modules.docker.ui.output;
 
+import java.io.Closeable;
+import java.io.FilterInputStream;
 import java.io.IOException;
-import java.util.concurrent.Future;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.ActionChunkedResult;
-import org.netbeans.modules.docker.api.ActionChunkedResult.Chunk;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.terminal.api.IOConnect;
 import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Petr Hejl
  */
-public class LogOutputTask implements Runnable {
+public class TerminalInputStream extends FilterInputStream {
 
-    private static final Logger LOGGER = Logger.getLogger(LogOutputTask.class.getName());
-
-    private final RequestProcessor requestProcessor = new RequestProcessor(LogOutputTask.class);
+    private static final Logger LOGGER = Logger.getLogger(TerminalInputStream.class.getName());
 
     private final InputOutput io;
 
-    private final ActionChunkedResult logResult;
+    private final Closeable[] close;
 
-    public LogOutputTask(InputOutput io, ActionChunkedResult logResult) {
+    public TerminalInputStream(InputOutput io, InputStream in, Closeable... close) {
+        super(in);
         this.io = io;
-        this.logResult = logResult;
-    }
-
-    public Future start() {
-        return requestProcessor.submit(this);
+        this.close = close;
     }
 
     @Override
-    public void run() {
-        Chunk r;
+    public int read(byte[] b, int off, int len) throws IOException {
         try {
-            while ((r = logResult.fetchChunk()) != null) {
-                if (r.isError()) {
-                    io.getErr().print(r.getData());
-                } else {
-                    io.getOut().print(r.getData());
-                }
+            int i = super.read(b, off, len);
+            if (i < 0) {
+                closeTerminal();
             }
-        } finally {
-            close();
+            return i;
+        } catch (IOException ex) {
+            closeTerminal();
+            throw ex;
         }
     }
 
-    private void close() {
-        io.getOut().close();
+    @Override
+    public int read() throws IOException {
         try {
-            logResult.close();
+            int i = super.read();
+            if (i < 0) {
+                closeTerminal();
+            }
+            return i;
         } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
+            closeTerminal();
+            throw ex;
         }
     }
+
+    private void closeTerminal() {
+        for (Closeable c : close) {
+            try {
+                if (c != null) {
+                    c.close();
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            }
+        }
+        // disconnect all is needed as we call getOut().reset()
+        // because of that getOut()
+        if (IOConnect.isSupported(io)) {
+            IOConnect.disconnectAll(io, null);
+        }
+        //IOTerm.disconnect(io, null);
+        //LOGGER.log(Level.INFO, "Closing terminal", new Exception());
+    }
+
 }

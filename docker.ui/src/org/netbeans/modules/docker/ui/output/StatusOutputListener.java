@@ -39,81 +39,38 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
+package org.netbeans.modules.docker.ui.output;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.docker.api.DockerInstance;
-import org.openide.util.ChangeSupport;
-import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
+import org.netbeans.modules.docker.api.StatusEvent;
+import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Petr Hejl
  */
-public class CachedDockerInstance implements Refreshable {
+public class StatusOutputListener implements StatusEvent.Listener {
 
-    private static final RequestProcessor RP = new RequestProcessor(CachedDockerInstance.class);
+    private final InputOutput io;
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-
-    // FIXME default value
-    private final AtomicBoolean available = new AtomicBoolean(true);
-
-    private final InstanceListener listener = new InstanceListener();
-
-    private final DockerInstance instance;
-
-    public CachedDockerInstance(DockerInstance instance) {
-        this.instance = instance;
-        instance.addConnectionListener(
-                WeakListeners.create(DockerInstance.ConnectionListener.class, listener, instance));
-    }
-
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
-    public DockerInstance getInstance() {
-        return instance;
-    }
-
-    public boolean isAvailable() {
-        return available.get();
+    public StatusOutputListener(InputOutput io) {
+        this.io = io;
     }
 
     @Override
-    public void refresh() {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                update(instance.isAvailable());
-            }
-        });
-    }
-
-    private void update(boolean newValue) {
-        boolean oldValue = available.getAndSet(newValue);
-        if (oldValue != newValue) {
-            changeSupport.fireChange();
+    public void onEvent(StatusEvent event) {
+        StringBuilder sb = new StringBuilder();
+        if (event.getId() != null) {
+            sb.append(event.getId()).append(": ");
+        }
+        sb.append(event.getMessage());
+        if (event.getProgress() != null) {
+            sb.append(" ").append(event.getProgress());
+        }
+        if (event.isError()) {
+            io.getErr().println(sb.toString());
+        } else {
+            io.getOut().println(sb.toString());
         }
     }
 
-    private class InstanceListener implements DockerInstance.ConnectionListener {
-
-        @Override
-        public void onConnect() {
-            update(true);
-        }
-
-        @Override
-        public void onDisconnect() {
-            update(false);
-        }
-    }
 }

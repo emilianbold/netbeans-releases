@@ -39,38 +39,61 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui;
+package org.netbeans.modules.docker.ui.output;
 
-import org.netbeans.modules.docker.api.StatusEvent;
+import java.io.IOException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.docker.api.ActionChunkedResult;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StatusOutputListener implements StatusEvent.Listener {
+public class ChunkedResultOutputTask implements Runnable {
+
+    private static final Logger LOGGER = Logger.getLogger(ChunkedResultOutputTask.class.getName());
+
+    private final RequestProcessor requestProcessor = new RequestProcessor(ChunkedResultOutputTask.class);
 
     private final InputOutput io;
 
-    public StatusOutputListener(InputOutput io) {
+    private final ActionChunkedResult logResult;
+
+    public ChunkedResultOutputTask(InputOutput io, ActionChunkedResult logResult) {
         this.io = io;
+        this.logResult = logResult;
+    }
+
+    public Future start() {
+        return requestProcessor.submit(this);
     }
 
     @Override
-    public void onEvent(StatusEvent event) {
-        StringBuilder sb = new StringBuilder();
-        if (event.getId() != null) {
-            sb.append(event.getId()).append(": ");
-        }
-        sb.append(event.getMessage());
-        if (event.getProgress() != null) {
-            sb.append(" ").append(event.getProgress());
-        }
-        if (event.isError()) {
-            io.getErr().println(sb.toString());
-        } else {
-            io.getOut().println(sb.toString());
+    public void run() {
+        ActionChunkedResult.Chunk r;
+        try {
+            while ((r = logResult.fetchChunk()) != null) {
+                if (r.isError()) {
+                    io.getErr().print(r.getData());
+                } else {
+                    io.getOut().print(r.getData());
+                }
+            }
+        } finally {
+            close();
         }
     }
 
+    private void close() {
+        io.getOut().close();
+        try {
+            logResult.close();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+    }
 }

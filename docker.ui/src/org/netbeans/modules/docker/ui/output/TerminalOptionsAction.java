@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui;
+package org.netbeans.modules.docker.ui.output;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -54,15 +54,16 @@ import org.openide.util.NbBundle;
  */
 public class TerminalOptionsAction extends AbstractAction {
 
-    @NbBundle.Messages("LBL_TerminalOptions=Terminal Options")
+    @NbBundle.Messages(value = "LBL_TerminalOptions=Terminal Options")
     public TerminalOptionsAction() {
         setEnabled(true);
         putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/docker/ui/resources/terminal_options.png", false)); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, Bundle.LBL_TerminalOptions());
-    }
+    } // NOI18N
 
     @Override
     public void actionPerformed(ActionEvent e) {
         OptionsDisplayer.getDefault().open("Advanced/TermAdvancedOption"); //NOI18N
     }
+
 }
