@@ -41,23 +41,14 @@
  */
 package org.netbeans.modules.docker.ui.output;
 
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.Closeable;
-import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerException;
@@ -69,12 +60,10 @@ import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.netbeans.modules.docker.api.ActionChunkedResult;
 import org.netbeans.modules.docker.api.ActionStreamResult;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -83,8 +72,6 @@ import org.openide.util.ImageUtilities;
 public final class OutputUtils {
 
     private static final Logger LOGGER = Logger.getLogger(OutputUtils.class.getName());
-
-    private static final int RESIZE_DELAY = 500;
 
     private static final Map<DockerContainer, LogConnect> LOGS = new WeakHashMap<>();
 
@@ -190,140 +177,7 @@ public final class OutputUtils {
         }
     }
 
-    private static class TerminalOptionsAction extends AbstractAction {
 
-        @NbBundle.Messages("LBL_TerminalOptions=Terminal Options")
-        public TerminalOptionsAction() {
-            setEnabled(true);
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/docker/ui/resources/terminal_options.png", false)); // NOI18N
-            putValue(Action.SHORT_DESCRIPTION, Bundle.LBL_TerminalOptions());
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            OptionsDisplayer.getDefault().open("Advanced/TermAdvancedOption"); //NOI18N
-        }
-    }
-
-    private static class TerminalResizeListener implements PropertyChangeListener, Closeable {
-
-        private static final RequestProcessor RP = new RequestProcessor(TerminalResizeListener.class);
-
-        private final InputOutput io;
-
-        private final DockerContainer container;
-
-        private final RequestProcessor.Task task;
-
-        // GuardedBy("this")
-        private Dimension value;
-
-        private boolean initial = true;
-
-        public TerminalResizeListener(InputOutput io, DockerContainer container) {
-            this.io = io;
-            this.container = container;
-            this.task = RP.create(new Runnable() {
-                @Override
-                public void run() {
-                    Dimension newValue;
-                    synchronized (TerminalResizeListener.this) {
-                        newValue = value;
-                    }
-                    DockerAction remote = new DockerAction(TerminalResizeListener.this.container.getInstance());
-                    try {
-                        remote.resizeTerminal(TerminalResizeListener.this.container, newValue.height, newValue.width);
-                    } catch (DockerException ex) {
-                        LOGGER.log(Level.INFO, null, ex);
-                    }
-                }
-            }, true);
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (IOResizable.PROP_SIZE.equals(evt.getPropertyName())) {
-                IOResizable.Size newVal = (IOResizable.Size) evt.getNewValue();
-                synchronized (this) {
-                    value = newVal.cells;
-                }
-                if (initial) {
-                    initial = false;
-                    task.schedule(0);
-                } else {
-                    task.schedule(RESIZE_DELAY);
-                }
-            }
-        }
-
-        @Override
-        public void close() throws IOException {
-            task.cancel();
-            if (IONotifier.isSupported(io)) {
-                IONotifier.removePropertyChangeListener(io, this);
-            }
-        }
-    }
-
-    private static class TerminalInputStream extends FilterInputStream {
-
-        private final InputOutput io;
-
-        private final Closeable[] close;
-
-        public TerminalInputStream(InputOutput io, InputStream in, Closeable... close) {
-            super(in);
-            this.io = io;
-            this.close = close;
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            try {
-                int i = super.read(b, off, len);
-                if (i < 0) {
-                    closeTerminal();
-                }
-                return i;
-            } catch (IOException ex) {
-                closeTerminal();
-                throw ex;
-            }
-        }
-
-        @Override
-        public int read() throws IOException {
-            try {
-                int i = super.read();
-                if (i < 0) {
-                    closeTerminal();
-                }
-                return i;
-            } catch (IOException ex) {
-                closeTerminal();
-                throw ex;
-            }
-        }
-
-        private void closeTerminal() {
-            for (Closeable c : close) {
-                try {
-                    if (c != null) {
-                        c.close();
-                    }
-                } catch (IOException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                }
-            }
-            // disconnect all is needed as we call getOut().reset()
-            // because of that getOut()
-            if (IOConnect.isSupported(io)) {
-                IOConnect.disconnectAll(io, null);
-            }
-            //IOTerm.disconnect(io, null);
-            //LOGGER.log(Level.INFO, "Closing terminal", new Exception());
-        }
-    }
 
     private static class LogConnect {
 
@@ -340,7 +194,7 @@ public final class OutputUtils {
         }
 
         public synchronized void connect(ActionChunkedResult result) {
-            task = new LogOutputTask(io, result).start();
+            task = new ChunkedResultOutputTask(io, result).start();
         }
 
         public synchronized boolean isConnected() {
@@ -348,46 +202,4 @@ public final class OutputUtils {
         }
     }
 
-    private static class LogOutputTask implements Runnable {
-
-        private final RequestProcessor requestProcessor = new RequestProcessor(LogOutputTask.class);
-
-        private final InputOutput io;
-
-        private final ActionChunkedResult logResult;
-
-        public LogOutputTask(InputOutput io, ActionChunkedResult logResult) {
-            this.io = io;
-            this.logResult = logResult;
-        }
-
-        public Future start() {
-            return requestProcessor.submit(this);
-        }
-
-        @Override
-        public void run() {
-            ActionChunkedResult.Chunk r;
-            try {
-                while ((r = logResult.fetchChunk()) != null) {
-                    if (r.isError()) {
-                        io.getErr().print(r.getData());
-                    } else {
-                        io.getOut().print(r.getData());
-                    }
-                }
-            } finally {
-                close();
-            }
-        }
-
-        private void close() {
-            io.getOut().close();
-            try {
-                logResult.close();
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-        }
-    }
 }
