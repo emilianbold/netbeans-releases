@@ -150,7 +150,9 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
                 pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, trackedBranchId, activeBranch, false, false));
                 Utils.logVCSExternalRepository("GIT", uri); //NOI18N
                 if (!isCanceled()) {
-                    t[0] = SystemAction.get(PushAction.class).push(repository, uri, pushMappings,
+                    // Push command work wrongly if remote is URL (creates wrong config "branch.name.remote=.")
+                    // Change URL to remote name (origin).
+                    t[0] = SystemAction.get(PushAction.class).push(repository, cfg.getRemoteName()/*uri*/, pushMappings,
                             cfg.getFetchRefSpecs(), null, repositories, true);
                 }
             }

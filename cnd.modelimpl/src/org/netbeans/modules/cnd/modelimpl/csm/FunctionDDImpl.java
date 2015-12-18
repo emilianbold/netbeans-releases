@@ -104,7 +104,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             isLambda = true;
         }        
         if (name.length() == 0) {
-            ASTTokensStringizer stringizer = new ASTTokensStringizer();
+            ASTTokensStringizer stringizer = new ASTTokensStringizer(true);
             AstUtil.visitAST(stringizer, ast);
             String expanded = stringizer.getText();
             throw AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name: " + expanded); // NOI18N

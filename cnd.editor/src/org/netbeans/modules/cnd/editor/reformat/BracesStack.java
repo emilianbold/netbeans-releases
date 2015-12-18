@@ -359,8 +359,9 @@ class BracesStack implements Cloneable {
 
     public void popBrace(ExtendedTokenSequence ts) {
         int brace = 0;
+        StackEntry top = null;
         for (int i = stack.size() - 1; i >= 0; i--) {
-            StackEntry top = stack.get(i);
+            top = stack.get(i);
             if (top.getKind() == LBRACE) {
                 brace = i - 1;
                 stack.setSize(i);
@@ -370,6 +371,11 @@ class BracesStack implements Cloneable {
         if (brace < 0) {
             stack.setSize(0);
             return;
+        }
+        if (top != null) {
+            if (top.isLikeToArrayInitialization()) {
+                return;
+            }
         }
         popStatement(ts);
     }

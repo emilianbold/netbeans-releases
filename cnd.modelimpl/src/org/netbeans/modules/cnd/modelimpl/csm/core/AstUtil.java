@@ -428,19 +428,33 @@ public class AstUtil {
 
     public static void toStream(AST ast, final PrintStream ps) {
         ASTVisitor impl = new ASTVisitor() {
+            
+            private int depth = 0;
+            
             @Override
             public void visit(AST node) {
-		print(node, ps);
-                for( AST node2 = node; node2 != null; node2 = node2.getNextSibling() ) {
-                    if (node2.getFirstChild() != null) {
-			ps.print('>');
-                        visit(node2.getFirstChild());
-			ps.print('<');
+                final boolean hasChildren = node.getFirstChild() != null;
+                indent(ps, depth);
+                if (hasChildren) {
+                    ps.print('>');
+                }
+                print(node, ps);
+                ps.println();
+                if (hasChildren) {
+                    ++depth;
+                    for (AST node2 = node.getFirstChild(); node2 != null; node2 = node2.getNextSibling()) {
+                        visit(node2);
                     }
+                    --depth;
+                    indent(ps, depth);
+                    ps.print('<');
+                    ps.println();
                 }
             }
         };
-        impl.visit(ast);
+        for (AST node = ast; node != null; node = node.getNextSibling()) {
+            impl.visit(node);
+        }
     }
 
     /**
@@ -486,6 +500,18 @@ public class AstUtil {
         out.append(ast.getColumn());
         out.append(']');
         //out.append('\n');
+    }
+    
+    private static void printTextOnly(AST ast, PrintStream ps) {
+        ps.print('[');
+        ps.print(ast.getText());
+        ps.print(']');
+    }
+    
+    private static void indent(PrintStream ps, int depth) {
+        for (int i = 0; i < depth; ++i) {
+            ps.print("  "); // NOI18N
+        }
     }
 
     public static String getOffsetString(AST ast) {
@@ -634,13 +660,27 @@ public class AstUtil {
     }    
     
     public static class ASTTokensStringizer implements ASTTokenVisitor {
+        
+        private final boolean insertSpaces;
+        
         protected int numStringizedTokens = 0;
     
         protected final StringBuilder sb = new StringBuilder();
 
+        public ASTTokensStringizer() {
+            this(false);
+        }
+
+        public ASTTokensStringizer(boolean insertSpaces) {
+            this.insertSpaces = insertSpaces;
+        }
+
         @Override
         public Action visit(AST token) {
             if (token.getFirstChild() == null) {
+                if (insertSpaces && sb.length() > 0) {
+                    sb.append(" "); // NOI18N
+                }
                 sb.append(token.getText());
                 numStringizedTokens++;
             }

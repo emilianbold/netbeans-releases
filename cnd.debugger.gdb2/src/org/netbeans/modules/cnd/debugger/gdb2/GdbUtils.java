@@ -88,18 +88,21 @@ public class GdbUtils {
         return string;
     }
     
-    public static double parseVersionString(String msg) throws NumberFormatException {
+    public static GdbVersionPeculiarity.Version parseVersionString(String msg) throws NumberFormatException {
         int dot = msg.indexOf('.');
 
         int first = dot - 1;
         while (first > 0 && Character.isDigit(msg.charAt(first))) {
             first--;
         }
+        first = Integer.parseInt(msg.substring(first + 1, dot));
 
         int last = dot + 1;
         while (last < msg.length() && Character.isDigit(msg.charAt(last))) {
             last++;
         }
-        return Double.parseDouble(msg.substring(first+1, last));
+        last = Integer.parseInt(msg.substring(dot + 1, last));
+
+        return new GdbVersionPeculiarity.Version(first, last);
     }
 }
