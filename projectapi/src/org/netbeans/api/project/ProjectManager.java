@@ -45,6 +45,7 @@
 package org.netbeans.api.project;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +53,8 @@ import javax.swing.Icon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.projectapi.SPIAccessor;
+import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
+import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectManagerImplementation;
 import org.openide.filesystems.FileObject;
@@ -238,6 +241,12 @@ public final class ProjectManager {
      */
     public void clearNonProjectCache() {
         impl.clearNonProjectCache();
+        final Collection<? extends FileOwnerQueryImplementation> col = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
+        for (FileOwnerQueryImplementation foqi : col) {
+            if (foqi instanceof SimpleFileOwnerQueryImplementation) {
+                ((SimpleFileOwnerQueryImplementation)foqi).resetLastFoundReferences();
+            }
+        }
     }
     
     /**
