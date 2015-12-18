@@ -51,7 +51,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerException;
-import org.netbeans.modules.docker.ui.StatusOutputListener;
+import org.netbeans.modules.docker.ui.output.StatusOutputListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;

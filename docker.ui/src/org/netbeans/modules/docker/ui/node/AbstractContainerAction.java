@@ -81,7 +81,7 @@ public abstract class AbstractContainerAction extends NodeAction {
     @Override
     protected final void performAction(Node[] activatedNodes) {
         for (final Node node : activatedNodes) {
-            final CachedDockerContainer container = node.getLookup().lookup(CachedDockerContainer.class);
+            final EnhancedDockerContainer container = node.getLookup().lookup(EnhancedDockerContainer.class);
             if (container != null) {
                 final ProgressHandle handle = ProgressHandle.createHandle(getProgressMessage(container.getContainer()));
                 handle.start();
@@ -108,7 +108,7 @@ public abstract class AbstractContainerAction extends NodeAction {
     @Override
     protected final boolean enable(Node[] activatedNodes) {
         for (Node node : activatedNodes) {
-            CachedDockerContainer container = node.getLookup().lookup(CachedDockerContainer.class);
+            EnhancedDockerContainer container = node.getLookup().lookup(EnhancedDockerContainer.class);
             if (container == null || !isEnabled(container.getDetail())) {
                 return false;
             }

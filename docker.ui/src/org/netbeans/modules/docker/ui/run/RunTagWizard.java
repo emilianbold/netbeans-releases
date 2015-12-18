@@ -61,7 +61,6 @@ import org.netbeans.modules.docker.api.DockerImageDetail;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
@@ -70,6 +69,7 @@ import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.netbeans.modules.docker.api.ActionStreamResult;
+import org.netbeans.modules.docker.ui.output.OutputUtils;
 
 /**
  *
@@ -200,7 +200,7 @@ public class RunTagWizard {
                     }
                     Pair<DockerContainer, ActionStreamResult> result = remote.run(name, config);
 
-                    UiUtils.openTerminal(result.first(), result.second(), interactive, true);
+                    OutputUtils.openTerminal(result.first(), result.second(), interactive, true);
                 } catch (Exception ex) {
                     // FIXME display exception
                     Exceptions.printStackTrace(ex);

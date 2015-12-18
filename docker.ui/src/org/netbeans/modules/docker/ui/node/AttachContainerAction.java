@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
-import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerContainerDetail;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.ui.output.OutputUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,7 +72,7 @@ public class AttachContainerAction extends AbstractContainerAction {
     protected void performAction(DockerContainer container) throws DockerException {
         DockerAction facade = new DockerAction(container.getInstance());
         DockerContainerDetail info = facade.getDetail(container);
-        UiUtils.openTerminal(container, null, info.isStdin(), false);
+        OutputUtils.openTerminal(container, null, info.isStdin(), false);
     }
 
     @Override

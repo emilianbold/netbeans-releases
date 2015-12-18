@@ -110,7 +110,7 @@ public final class DockerNode extends AbstractNode {
         return Utilities.actionsForPath("Docker/Actions").toArray(new Action[0]); // NOI18N
     }
 
-    private static class ChildFactory extends org.openide.nodes.ChildFactory<DockerInstance>
+    private static class ChildFactory extends org.openide.nodes.ChildFactory<EnhancedDockerInstance>
             implements ChangeListener {
 
         private static final Comparator<DockerInstance> COMPARATOR = new InstanceComparator();
@@ -145,9 +145,6 @@ public final class DockerNode extends AbstractNode {
         }
 
         private synchronized void updateState(final ChangeEvent e) {
-            if (e.getSource() instanceof DockerIntegration) {
-
-            }
             refresh();
         }
 
@@ -156,16 +153,17 @@ public final class DockerNode extends AbstractNode {
         }
 
         @Override
-        protected Node createNodeForKey(DockerInstance key) {
-            return new DockerInstanceNode(new CachedDockerInstance(key));
+        protected Node createNodeForKey(EnhancedDockerInstance key) {
+            return new DockerInstanceNode(key);
         }
 
         @Override
-        protected boolean createKeys(List<DockerInstance> toPopulate) {
+        protected boolean createKeys(List<EnhancedDockerInstance> toPopulate) {
             List<DockerInstance> fresh = new ArrayList<>(registry.getInstances());
             Collections.sort(fresh, COMPARATOR);
-
-            toPopulate.addAll(fresh);
+            for (DockerInstance i : fresh) {
+                toPopulate.add(new EnhancedDockerInstance(i));
+            }
             return true;
         }
 

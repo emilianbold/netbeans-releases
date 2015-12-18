@@ -63,7 +63,7 @@ public class DockerContainersNode extends AbstractNode {
         setDisplayName(Bundle.LBL_Containers());
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
     }
-    
+
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] { SystemAction.get(RefreshAction.class) };
