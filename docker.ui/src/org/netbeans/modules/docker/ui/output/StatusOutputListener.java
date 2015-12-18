@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui;
+package org.netbeans.modules.docker.ui.output;
 
 import org.netbeans.modules.docker.api.StatusEvent;
 import org.openide.windows.InputOutput;

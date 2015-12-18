@@ -43,7 +43,7 @@ package org.netbeans.modules.docker.ui.node;
 
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerException;
-import org.netbeans.modules.docker.ui.UiUtils;
+import org.netbeans.modules.docker.ui.output.OutputUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,7 +68,7 @@ public class ShowLogAction extends AbstractContainerAction {
 
     @Override
     protected void performAction(DockerContainer container) throws DockerException {
-        UiUtils.openLog(container);
+        OutputUtils.openLog(container);
     }
 
 }

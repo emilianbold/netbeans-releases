@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.pull;
 
-import org.netbeans.modules.docker.ui.StatusOutputListener;
+import org.netbeans.modules.docker.ui.output.StatusOutputListener;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
