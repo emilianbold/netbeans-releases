@@ -145,9 +145,6 @@ public final class DockerNode extends AbstractNode {
         }
 
         private synchronized void updateState(final ChangeEvent e) {
-            if (e.getSource() instanceof DockerIntegration) {
-
-            }
             refresh();
         }
 

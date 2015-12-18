@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
@@ -61,7 +62,17 @@ public class CachedDockerInstance implements Refreshable {
     // FIXME default value
     private final AtomicBoolean available = new AtomicBoolean(true);
 
-    private final InstanceListener listener = new InstanceListener();
+    private final DockerInstance.ConnectionListener listener = new DockerInstance.ConnectionListener() {
+        @Override
+        public void onConnect() {
+            update(true);
+        }
+
+        @Override
+        public void onDisconnect() {
+            update(false);
+        }
+    };
 
     private final DockerInstance instance;
 
@@ -97,23 +108,35 @@ public class CachedDockerInstance implements Refreshable {
         });
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 61 * hash + Objects.hashCode(this.instance);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CachedDockerInstance other = (CachedDockerInstance) obj;
+        if (!Objects.equals(this.instance, other.instance)) {
+            return false;
+        }
+        return true;
+    }
+
     private void update(boolean newValue) {
         boolean oldValue = available.getAndSet(newValue);
         if (oldValue != newValue) {
             changeSupport.fireChange();
-        }
-    }
-
-    private class InstanceListener implements DockerInstance.ConnectionListener {
-
-        @Override
-        public void onConnect() {
-            update(true);
-        }
-
-        @Override
-        public void onDisconnect() {
-            update(false);
         }
     }
 }

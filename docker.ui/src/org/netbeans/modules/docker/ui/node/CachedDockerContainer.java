@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -51,6 +52,7 @@ import org.netbeans.modules.docker.api.DockerEvent;
 import org.netbeans.modules.docker.api.DockerException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -64,6 +66,21 @@ public class CachedDockerContainer implements Refreshable {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    private final DockerEvent.Listener listener = new DockerEvent.Listener() {
+        @Override
+        public void onEvent(DockerEvent event) {
+            if (event.getId().equals(CachedDockerContainer.this.container.getId())
+                    && event.getStatus() != DockerEvent.Status.DESTROY && event.getStatus() != DockerEvent.Status.UNTAG) {
+                DockerContainer.Status fresh = getStatus(event);
+                if (fresh != null) {
+                    update(fresh);
+                } else {
+                    refresh();
+                }
+            }
+        }
+    };
+    
     private final DockerContainer container;
 
     private DockerContainerDetail detail;
@@ -71,19 +88,8 @@ public class CachedDockerContainer implements Refreshable {
     public CachedDockerContainer(DockerContainer container) {
         this.container = container;
         this.detail = new DockerContainerDetail(container.getName(), container.getStatus(), false, false);
-        container.getInstance().addContainerListener(new DockerEvent.Listener() {
-            @Override
-            public void onEvent(DockerEvent event) {
-                if (event.getId().equals(CachedDockerContainer.this.container.getId())) {
-                    DockerContainer.Status fresh = getStatus(event);
-                    if (fresh != null) {
-                        update(fresh);
-                    } else {
-                        refresh();
-                    }
-                }
-            }
-        });
+        container.getInstance().addContainerListener(
+                WeakListeners.create(DockerEvent.Listener.class, listener, container.getInstance()));
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -117,6 +123,31 @@ public class CachedDockerContainer implements Refreshable {
                 }
             }
         });
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 71 * hash + Objects.hashCode(this.container);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CachedDockerContainer other = (CachedDockerContainer) obj;
+        if (!Objects.equals(this.container, other.container)) {
+            return false;
+        }
+        return true;
     }
 
     private void update(DockerContainer.Status status) {

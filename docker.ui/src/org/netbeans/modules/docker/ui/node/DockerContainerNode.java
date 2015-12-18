@@ -52,6 +52,7 @@ import org.netbeans.modules.docker.ui.rename.RenameContainerAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -72,6 +73,14 @@ public class DockerContainerNode extends AbstractNode {
 
     private final CachedDockerContainer container;
 
+    private final ChangeListener listener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            fireIconChange();
+            fireDisplayNameChange(null, null);
+        }
+    };
+
     public DockerContainerNode(CachedDockerContainer container) {
         super(Children.LEAF, Lookups.fixed(container.getContainer(), container));
         this.container = container;
@@ -79,13 +88,7 @@ public class DockerContainerNode extends AbstractNode {
         setShortDescription(dockerContainer.getShortId());
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
 
-        container.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                fireIconChange();
-                fireDisplayNameChange(null, null);
-            }
-        });
+        container.addChangeListener(WeakListeners.change(listener, container));
         container.refresh();
     }
 
@@ -116,6 +119,8 @@ public class DockerContainerNode extends AbstractNode {
             SystemAction.get(ShowLogAction.class),
             null,
             SystemAction.get(CopyIdAction.class),
+            null,
+            SystemAction.get(RefreshAction.class),
             null,
             SystemAction.get(RemoveContainerAction.class)
         };
