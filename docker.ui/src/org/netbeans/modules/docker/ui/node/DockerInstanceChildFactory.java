@@ -54,9 +54,9 @@ import org.openide.nodes.Node;
  */
 public class DockerInstanceChildFactory extends ChildFactory<Boolean> {
 
-    private final CachedDockerInstance instance;
+    private final EnhancedDockerInstance instance;
 
-    public DockerInstanceChildFactory(CachedDockerInstance instance) {
+    public DockerInstanceChildFactory(EnhancedDockerInstance instance) {
         this.instance = instance;
 
         instance.addChangeListener(new ChangeListener() {

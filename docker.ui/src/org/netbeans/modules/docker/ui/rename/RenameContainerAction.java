@@ -49,7 +49,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.ui.node.CachedDockerContainer;
+import org.netbeans.modules.docker.ui.node.EnhancedDockerContainer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -74,7 +74,7 @@ public class RenameContainerAction extends NodeAction {
     })
     @Override
     protected void performAction(Node[] activatedNodes) {
-        CachedDockerContainer container = activatedNodes[0].getLookup().lookup(CachedDockerContainer.class);
+        EnhancedDockerContainer container = activatedNodes[0].getLookup().lookup(EnhancedDockerContainer.class);
         if (container != null) {
             JButton renameButton = new JButton();
             Mnemonics.setLocalizedText(renameButton, Bundle.LBL_Rename());
@@ -107,7 +107,7 @@ public class RenameContainerAction extends NodeAction {
         "# {0} - container name",
         "MSG_Renaming=Renaming {0}"
     })
-    private void perform(final CachedDockerContainer container, final String name) {
+    private void perform(final EnhancedDockerContainer container, final String name) {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
@@ -131,7 +131,7 @@ public class RenameContainerAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return activatedNodes[0].getLookup().lookup(CachedDockerContainer.class) != null;
+        return activatedNodes[0].getLookup().lookup(EnhancedDockerContainer.class) != null;
     }
 
     @NbBundle.Messages("LBL_RenameContainerAction=Rename...")

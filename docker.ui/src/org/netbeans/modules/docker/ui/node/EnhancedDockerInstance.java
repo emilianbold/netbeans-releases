@@ -42,14 +42,9 @@
 package org.netbeans.modules.docker.ui.node;
 
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerContainerDetail;
-import org.netbeans.modules.docker.api.DockerEvent;
-import org.netbeans.modules.docker.api.DockerException;
+import org.netbeans.modules.docker.api.DockerInstance;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -58,38 +53,33 @@ import org.openide.util.WeakListeners;
  *
  * @author Petr Hejl
  */
-public class CachedDockerContainer implements Refreshable {
+public class EnhancedDockerInstance implements Refreshable {
 
-    private static final Logger LOGGER = Logger.getLogger(CachedDockerContainer.class.getName());
-
-    private static final RequestProcessor RP = new RequestProcessor(CachedDockerContainer.class);
+    private static final RequestProcessor RP = new RequestProcessor(EnhancedDockerInstance.class);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final DockerEvent.Listener listener = new DockerEvent.Listener() {
+    // FIXME default value
+    private final AtomicBoolean available = new AtomicBoolean(true);
+
+    private final DockerInstance.ConnectionListener listener = new DockerInstance.ConnectionListener() {
         @Override
-        public void onEvent(DockerEvent event) {
-            if (event.getId().equals(CachedDockerContainer.this.container.getId())
-                    && event.getStatus() != DockerEvent.Status.DESTROY && event.getStatus() != DockerEvent.Status.UNTAG) {
-                DockerContainer.Status fresh = getStatus(event);
-                if (fresh != null) {
-                    update(fresh);
-                } else {
-                    refresh();
-                }
-            }
+        public void onConnect() {
+            update(true);
+        }
+
+        @Override
+        public void onDisconnect() {
+            update(false);
         }
     };
-    
-    private final DockerContainer container;
 
-    private DockerContainerDetail detail;
+    private final DockerInstance instance;
 
-    public CachedDockerContainer(DockerContainer container) {
-        this.container = container;
-        this.detail = new DockerContainerDetail(container.getName(), container.getStatus(), false, false);
-        container.getInstance().addContainerListener(
-                WeakListeners.create(DockerEvent.Listener.class, listener, container.getInstance()));
+    public EnhancedDockerInstance(DockerInstance instance) {
+        this.instance = instance;
+        instance.addConnectionListener(
+                WeakListeners.create(DockerInstance.ConnectionListener.class, listener, instance));
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -100,14 +90,12 @@ public class CachedDockerContainer implements Refreshable {
         changeSupport.removeChangeListener(listener);
     }
 
-    public DockerContainer getContainer() {
-        return container;
+    public DockerInstance getInstance() {
+        return instance;
     }
 
-    public DockerContainerDetail getDetail() {
-        synchronized (this) {
-            return detail;
-        }
+    public boolean isAvailable() {
+        return available.get();
     }
 
     @Override
@@ -115,20 +103,15 @@ public class CachedDockerContainer implements Refreshable {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                DockerAction action = new DockerAction(container.getInstance());
-                try {
-                    update(action.getDetail(container));
-                } catch (DockerException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                }
+                update(instance.isAvailable());
             }
         });
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 71 * hash + Objects.hashCode(this.container);
+        int hash = 7;
+        hash = 61 * hash + Objects.hashCode(this.instance);
         return hash;
     }
 
@@ -143,40 +126,17 @@ public class CachedDockerContainer implements Refreshable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final CachedDockerContainer other = (CachedDockerContainer) obj;
-        if (!Objects.equals(this.container, other.container)) {
+        final EnhancedDockerInstance other = (EnhancedDockerInstance) obj;
+        if (!Objects.equals(this.instance, other.instance)) {
             return false;
         }
         return true;
     }
 
-    private void update(DockerContainer.Status status) {
-        synchronized (this) {
-            detail = new DockerContainerDetail(detail.getName(), status, detail.isStdin(), detail.isTty());
-        }
-        changeSupport.fireChange();
-    }
-
-    private void update(DockerContainerDetail value) {
-        synchronized (this) {
-            detail = value;
-        }
-        changeSupport.fireChange();
-    }
-
-    private static DockerContainer.Status getStatus(DockerEvent event) {
-        DockerEvent.Status status = event.getStatus();
-        switch (status) {
-            case DIE:
-                return DockerContainer.Status.STOPPED;
-            case START:
-                return DockerContainer.Status.RUNNING;
-            case PAUSE:
-                return DockerContainer.Status.PAUSED;
-            case UNPAUSE:
-                return DockerContainer.Status.RUNNING;
-            default:
-                return null;
+    private void update(boolean newValue) {
+        boolean oldValue = available.getAndSet(newValue);
+        if (oldValue != newValue) {
+            changeSupport.fireChange();
         }
     }
 }

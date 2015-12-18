@@ -54,7 +54,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.ui.node.CachedDockerInstance;
+import org.netbeans.modules.docker.ui.node.EnhancedDockerInstance;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -147,7 +147,7 @@ public class PullImageAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        CachedDockerInstance checked = activatedNodes[0].getLookup().lookup(CachedDockerInstance.class);
+        EnhancedDockerInstance checked = activatedNodes[0].getLookup().lookup(EnhancedDockerInstance.class);
         if (checked == null || !checked.isAvailable()) {
             return false;
         }

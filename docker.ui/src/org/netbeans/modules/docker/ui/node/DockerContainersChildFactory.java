@@ -64,7 +64,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Petr Hejl
  */
-public class DockerContainersChildFactory extends ChildFactory<CachedDockerContainer> implements Refreshable {
+public class DockerContainersChildFactory extends ChildFactory<EnhancedDockerContainer> implements Refreshable {
 
     private static final Logger LOGGER = Logger.getLogger(DockerContainersChildFactory.class.getName());
 
@@ -82,7 +82,7 @@ public class DockerContainersChildFactory extends ChildFactory<CachedDockerConta
         Collections.addAll(CHANGE_EVENTS, DockerEvent.Status.COPY, DockerEvent.Status.CREATE, DockerEvent.Status.DESTROY);
     }
 
-    private final Map<DockerContainer, WeakReference<CachedDockerContainer>> cache = new WeakHashMap<>();
+    private final Map<DockerContainer, WeakReference<EnhancedDockerContainer>> cache = new WeakHashMap<>();
 
     private final RequestProcessor requestProcessor = new RequestProcessor(DockerContainersChildFactory.class);
 
@@ -110,24 +110,24 @@ public class DockerContainersChildFactory extends ChildFactory<CachedDockerConta
     }
 
     @Override
-    protected Node createNodeForKey(CachedDockerContainer key) {
+    protected Node createNodeForKey(EnhancedDockerContainer key) {
         return new DockerContainerNode(key);
     }
 
     @Override
-    protected boolean createKeys(List<CachedDockerContainer> toPopulate) {
+    protected boolean createKeys(List<EnhancedDockerContainer> toPopulate) {
         DockerAction facade = new DockerAction(instance);
         List<DockerContainer> containers = new ArrayList<>(facade.getContainers());
         Collections.sort(containers, COMPARATOR);
         synchronized (cache) {
             for (DockerContainer c : containers) {
-                CachedDockerContainer cached = null;
-                WeakReference<CachedDockerContainer> ref = cache.get(c);
+                EnhancedDockerContainer cached = null;
+                WeakReference<EnhancedDockerContainer> ref = cache.get(c);
                 if (ref != null) {
                     cached = ref.get();
                 }
                 if (cached == null) {
-                    cached = new CachedDockerContainer(c);
+                    cached = new EnhancedDockerContainer(c);
                     cache.put(c, new WeakReference<>(cached));
                 } else {
                     cached.refresh();
