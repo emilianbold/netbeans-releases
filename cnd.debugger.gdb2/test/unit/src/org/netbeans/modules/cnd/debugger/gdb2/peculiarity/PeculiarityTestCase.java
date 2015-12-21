@@ -58,8 +58,9 @@ public class PeculiarityTestCase extends TestCase {
     
     @Test
     public void testGdb70SolarisCommandSet() {
-        GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(7.0, Platform.Solaris_x86);
+        GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(new GdbVersionPeculiarity.Version(7, 0), Platform.Solaris_x86);
         
+        assertTrue(peculiarity.isSupported());
         assertEquals("-environment-cd", peculiarity.environmentCdCommand());
         assertEquals("-exec-step", peculiarity.execStepCommand("0"));
         assertEquals("-exec-next", peculiarity.execNextCommand("0"));
@@ -73,8 +74,25 @@ public class PeculiarityTestCase extends TestCase {
     
     @Test
     public void testGdb77SolarisCommandSet() {
-        GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(7.7, Platform.Solaris_x86);
+        GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(new GdbVersionPeculiarity.Version(7, 7), Platform.Solaris_x86);
         
+        assertTrue(peculiarity.isSupported());
+        assertEquals("-environment-cd", peculiarity.environmentCdCommand());
+        assertEquals("-exec-step --thread 0", peculiarity.execStepCommand("0"));
+        assertEquals("-exec-next --thread 0", peculiarity.execNextCommand("0"));
+        assertEquals("-exec-step-instruction --thread 0", peculiarity.execStepInstCommand("0"));
+        assertEquals("-exec-next-instruction --thread 0", peculiarity.execNextInstCommand("0"));
+        assertEquals("-exec-finish", peculiarity.execFinishCommand("0"));
+        assertEquals("-var-list-children --all-values \"var0\" 1 100", peculiarity.listChildrenCommand("var0", 1, 100));
+        assertEquals("-var-create - @ name", peculiarity.createVarCommand("name", "0", "1"));
+        assertEquals("-stack-list-frames --thread 0", peculiarity.stackListFramesCommand("0"));
+    }
+    
+    @Test
+    public void testGdb710SolarisCommandSet() {
+        GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(new GdbVersionPeculiarity.Version(7, 10), Platform.Solaris_x86);
+        
+        assertTrue(peculiarity.isSupported());
         assertEquals("-environment-cd", peculiarity.environmentCdCommand());
         assertEquals("-exec-step --thread 0", peculiarity.execStepCommand("0"));
         assertEquals("-exec-next --thread 0", peculiarity.execNextCommand("0"));
@@ -89,9 +107,10 @@ public class PeculiarityTestCase extends TestCase {
     @Test
     public void testLldbMiMacCommandSet() {
         System.setProperty("cnd.debugger.lldb","true");
-        GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(6.8, Platform.MacOSX_x86);
+        GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(new GdbVersionPeculiarity.Version(6, 8), Platform.MacOSX_x86);
         System.setProperty("cnd.debugger.lldb","false");
         
+        assertTrue(peculiarity.isSupported());
         assertEquals("-environment-cd", peculiarity.environmentCdCommand());
         assertEquals("-exec-step --thread 0", peculiarity.execStepCommand("0"));
         assertEquals("-exec-next --thread 0", peculiarity.execNextCommand("0"));
@@ -105,8 +124,9 @@ public class PeculiarityTestCase extends TestCase {
     
     @Test
     public void testGdbMacCommandSet() {
-        GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(6.3, Platform.MacOSX_x86);
+        GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(new GdbVersionPeculiarity.Version(6, 3), Platform.MacOSX_x86);
         
+        assertTrue(peculiarity.isSupported());
         assertEquals("cd", peculiarity.environmentCdCommand());
         assertEquals("-exec-step", peculiarity.execStepCommand("0"));
         assertEquals("-exec-next", peculiarity.execNextCommand("0"));
@@ -116,5 +136,12 @@ public class PeculiarityTestCase extends TestCase {
         assertEquals("-var-list-children --all-values \"var0\"", peculiarity.listChildrenCommand("var0", 1, 100));
         assertEquals("-var-create - @ name", peculiarity.createVarCommand("name", "0", "1"));
         assertEquals("-stack-list-frames", peculiarity.stackListFramesCommand("0"));
+    }
+    
+    @Test
+    public void testUnsupportedVersion() {
+        GdbVersionPeculiarity peculiarity = GdbVersionPeculiarity.create(new GdbVersionPeculiarity.Version(6, 3), Platform.Solaris_x86);
+        
+        assertFalse(peculiarity.isSupported());
     }
 }
