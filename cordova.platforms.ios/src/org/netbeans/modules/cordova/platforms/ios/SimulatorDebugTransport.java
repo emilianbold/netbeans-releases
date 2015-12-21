@@ -62,24 +62,17 @@ import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 public class SimulatorDebugTransport extends IOSDebugTransport {
     private static final String LOCALHOST_IPV6 = "::1"; // NOI18N
     private static final int port = 27753;
-    private static final Logger LOG
-            = Logger.getLogger(SimulatorDebugTransport.class.getName());
 
     private Socket socket;
 
     @Override
     protected void sendCommand(JSONObject command) throws Exception {
-        String cmd = createJSONCommand(command);
-        if (LOG.isLoggable(Level.FINEST)) {
-            LOG.log(Level.FINEST, "\n\nSending:\n{0}\n{1}",             //NOI18N
-                    new Object[]{command.toJSONString(), cmd});
-        }
-        sendBinaryMessage(plistXmlToBinary(cmd));
+        sendBinaryMessage(plistXmlToBinary(createJSONCommand(command)));
     }
 
     @Override
     protected void sendCommand(String xml) throws Exception {
-        LOG.log(Level.FINEST, "\n\nSending:\n{0}", xml);
+        //System.out.println("sending " + xml);
         sendBinaryMessage(plistXmlToBinary(xml));
     }
 
@@ -127,7 +120,7 @@ public class SimulatorDebugTransport extends IOSDebugTransport {
         try {
             socket.close();
         } catch (Exception e) {
-            LOG.log(Level.FINE , e.getMessage(), e);
+            Logger.getLogger(SimulatorDebugTransport.class.getName()).log(Level.FINE , e.getMessage(), e);
         }
     }
 
