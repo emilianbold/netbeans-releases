@@ -336,7 +336,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     this.dispose();
                     RepositoryUtils.remove(this.getUID(), this);
                     CsmOffsetableDeclaration decl;
-                    boolean isInNamespace;
+                    boolean isGloballyVisibleInNamespace;
                     if (new AstRenderer(aFile).isFuncLikeVariable(fixFakeRegistrationAst, true, true)) {
                         boolean _static = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_static);
                         boolean _extern = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_extern);                        
@@ -344,16 +344,16 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         VariableImpl var = VariableImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), nameHolder, this.getScope(), _static, _extern, true);
                         nameHolder.addReference(fileContent, var); // TODO: move into VariableImpl.create()
                         CndUtils.assertTrueInConsole(!CsmKindUtilities.isClass(this.getScope()), "Cannot be class!"); // NOI18N
-                        isInNamespace = NamespaceImpl.isNamespaceScope(var, CsmKindUtilities.isFile(getScope())) && CsmKindUtilities.isNamespace(this.getScope());
+                        isGloballyVisibleInNamespace = NamespaceImpl.isNamespaceScope(var, CsmKindUtilities.isFile(getScope())) && CsmKindUtilities.isNamespace(this.getScope());
                         decl = var;
                     } else {
                         FunctionImpl<T> fi = FunctionImpl.create(fixFakeRegistrationAst, getContainingFile(), fileContent, null, this.getScope(), true, null);
                         fi.registerInProject();
                         CndUtils.assertTrueInConsole(!CsmKindUtilities.isClass(this.getScope()), "Cannot be class!"); // NOI18N
-                        isInNamespace = NamespaceImpl.isNamespaceScope(fi) && CsmKindUtilities.isNamespace(this.getScope());
+                        isGloballyVisibleInNamespace = NamespaceImpl.isNamespaceScope(fi) && CsmKindUtilities.isNamespace(this.getScope());
                         decl = fi;
                     }
-                    if (isInNamespace) {
+                    if (isGloballyVisibleInNamespace) {
                         ((NamespaceImpl) getScope()).addDeclaration(decl);
                         if (CsmKindUtilities.isNamespaceDefinition(container)) {
                             container.addDeclaration(decl);
@@ -361,7 +361,11 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                             fileContent.addDeclaration(decl);
                         }
                     } else {
-                        fileContent.addDeclaration(decl);
+                        if (CsmKindUtilities.isNamespaceDefinition(container)) {
+                            container.addDeclaration(decl);
+                        } else {
+                            fileContent.addDeclaration(decl);
+                        }
                     }
                     fixed = true;
                 } catch (AstRendererException e) {
