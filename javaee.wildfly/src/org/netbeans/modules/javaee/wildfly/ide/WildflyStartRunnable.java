@@ -207,7 +207,11 @@ class WildflyStartRunnable implements Runnable {
                 }
             }
         }
+        if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && !javaOptsBuilder.toString().contains("-Xverify")) { // NOI18N
+            // if in debug mode and the verify options not specified manually
+            javaOptsBuilder.append(" -Xverify:none"); // NOI18N
 
+        }
         if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && !javaOptsBuilder.toString().contains("-Xdebug")
                 && !javaOptsBuilder.toString().contains("-agentlib:jdwp")) { // NOI18N
             // if in debug mode and the debug options not specified manually
