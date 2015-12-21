@@ -64,11 +64,14 @@ import org.openide.util.NbBundle;
 )
 public class CredentialsAction implements ActionListener {
 
-    @NbBundle.Messages("LBL_Credentials=Credentials")
+    @NbBundle.Messages({
+        "LBL_Credentials=Credentials",
+        "LBL_Close=Close"
+    })
     @Override
     public void actionPerformed(ActionEvent e) {
         CredentialsPanel panel = new CredentialsPanel();
-        JButton closeButton = new JButton("Close");
+        JButton closeButton = new JButton(Bundle.LBL_Close());
         DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_Credentials(),
                         true, new Object[]{closeButton}, closeButton,
                         DialogDescriptor.DEFAULT_ALIGN, null, null);
