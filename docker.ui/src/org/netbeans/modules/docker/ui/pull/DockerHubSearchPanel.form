@@ -63,7 +63,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="imageListLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="imageListScrollPane" pref="355" max="32767" attributes="0"/>
+              <Component id="imageListScrollPane" pref="363" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="resultLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
