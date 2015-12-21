@@ -1023,7 +1023,7 @@ public abstract class CLIHandler extends Object {
         
         /** Is open? True if the connection is still alive. Can be
          * used with long running computations to find out if the
-         * consumer of the output has not been interupted.
+         * consumer of the output has not been interrupted.
          *
          * @return true if the connection is still alive
          */
