@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
@@ -156,8 +158,12 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
     private void visit(CsmStatement statement, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmReference reference = CsmReferenceResolver.getDefault().findReference(file, doc, statement.getStartOffset());
         if (reference != null) {
-            if (CsmKindUtilities.isFunction(reference.getReferencedObject())) {
-                CsmFunction function = (CsmFunction) reference.getReferencedObject();
+            if (!canBeUnsafe(reference.getText())) {
+                return;
+            }
+            CsmObject referencedObject = reference.getReferencedObject();
+            if (CsmKindUtilities.isFunction(referencedObject)) {
+                CsmFunction function = (CsmFunction) referencedObject;
                 String altText = getAlternativesIfUnsafe(function);
                 if (altText != null) {
                     CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
@@ -175,9 +181,19 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
         }
     }
     
-    private String getAlternativesIfUnsafe(CsmFunction function) {
+    private boolean canBeUnsafe(CharSequence functionName) {
         for (FunctionsXmlService.RvsdFunction unsafeFunction : category.getFunctions()) {
-            if (function.getName().toString().equals(unsafeFunction.getName())) {
+            if (CharSequenceUtils.contentEquals(functionName, unsafeFunction.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getAlternativesIfUnsafe(CsmFunction function) {
+        final CharSequence functionName = function.getName();
+        for (FunctionsXmlService.RvsdFunction unsafeFunction : category.getFunctions()) {
+            if (CharSequenceUtils.contentEquals(functionName, unsafeFunction.getName())) {
                 CsmFile srcFile = function.getContainingFile();
                 for (CsmInclude include : CsmFileInfoQuery.getDefault().getIncludeStack(srcFile)) {
                     if (include.getIncludeName().toString().equals(unsafeFunction.getHeader())) {

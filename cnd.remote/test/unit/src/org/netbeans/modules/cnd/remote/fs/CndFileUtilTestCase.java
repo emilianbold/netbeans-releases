@@ -43,15 +43,21 @@
 package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
+import java.io.OutputStreamWriter;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -72,12 +78,28 @@ public class CndFileUtilTestCase extends RemoteTestBase {
     }
 
     @ForAllEnvironments
-    public void testExists() {
+    public void testExists() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        String baseDir = FileSystemCacheProvider.getCacheRoot(execEnv);
-        String stdio_h = baseDir + "usr/include/stdio.h";
-        boolean exists = CndFileUtils.exists(new File(stdio_h));
-        assertTrue(exists);
+        FileSystem fs = FileSystemProvider.getFileSystem(execEnv);
+        String remoteTempDir = null;
+        try {
+            remoteTempDir = mkTempAndRefreshParent(true);
+            FileObject remoteProjectDirBase = getFileObject(remoteTempDir);            
+            FileObject file_1 = remoteProjectDirBase.createData("file_1");
+            boolean exists = CndFileUtils.exists(fs, file_1.getPath());
+            assertTrue(exists);
+            file_1.delete();
+            final String path_1 = file_1.getPath();
+            exists = CndFileUtils.exists(fs, path_1);
+            CndUtils.assertTrueInConsole(exists, "CndUtils should report that the file " + path_1 + " still exists");
+            CndFileUtils.clearFileExistenceCache();
+            exists = CndFileUtils.exists(fs, file_1.getPath());
+            assertFalse(exists);
+        } finally {
+            if (remoteTempDir != null) {
+                CommonTasksSupport.rmDir(execEnv, remoteTempDir, true, new OutputStreamWriter(System.err));
+            }
+        }        
     }
 
     public static Test suite() {
