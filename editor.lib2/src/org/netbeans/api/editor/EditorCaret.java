@@ -195,16 +195,16 @@ public final class EditorCaret implements Caret {
     private boolean selectionVisible;
 
     /** Type of the caret */
-    private CaretType type;
+    private CaretType type = CaretType.THICK_LINE_CARET;
 
+    /** Width of caret */
+    private int thickCaretWidth = EditorPreferencesDefaults.defaultThickCaretWidth;
+    
     private MouseState mouseState = MouseState.DEFAULT;
     
     /** Timer used for blinking the caret */
     private Timer flasher;
 
-    /** Width of caret */
-    private int thickCaretWidth;
-    
     private Action selectWordAction;
     private Action selectLineAction;
 
@@ -740,43 +740,55 @@ public final class EditorCaret implements Caret {
     }
 
     private void updateType() {
-        JTextComponent c = component;
-        if (c != null && prefs != null && !Boolean.TRUE.equals(c.getClientProperty("AsTextField"))) {
-            String newTypeStr;
-            int newWidth = 0;
-            Color caretColor = Color.black;
+        final JTextComponent c = component;
+        if (c != null) {
+            Color caretColor = null;
+            CaretType newType;
+            boolean cIsTextField = Boolean.TRUE.equals(c.getClientProperty("AsTextField"));
             
-            if (overwriteMode) {
-                newTypeStr = prefs.get(SimpleValueNames.CARET_TYPE_OVERWRITE_MODE, EditorPreferencesDefaults.defaultCaretTypeOverwriteMode);
-            } else { // insert mode
-                newTypeStr = prefs.get(SimpleValueNames.CARET_TYPE_INSERT_MODE, EditorPreferencesDefaults.defaultCaretTypeInsertMode);
-                newWidth = prefs.getInt(SimpleValueNames.THICK_CARET_WIDTH, EditorPreferencesDefaults.defaultThickCaretWidth);
+            if (cIsTextField) {
+                newType = CaretType.THIN_LINE_CARET;
+            } else if (prefs != null) {
+                String newTypeStr;
+                if (overwriteMode) {
+                    newTypeStr = prefs.get(SimpleValueNames.CARET_TYPE_OVERWRITE_MODE, EditorPreferencesDefaults.defaultCaretTypeOverwriteMode);
+                } else { // insert mode
+                    newTypeStr = prefs.get(SimpleValueNames.CARET_TYPE_INSERT_MODE, EditorPreferencesDefaults.defaultCaretTypeInsertMode);
+                    this.thickCaretWidth = prefs.getInt(SimpleValueNames.THICK_CARET_WIDTH, EditorPreferencesDefaults.defaultThickCaretWidth);
+                }
+                newType = CaretType.decode(newTypeStr);
+            } else {
+                newType = CaretType.THICK_LINE_CARET;
             }
 
-            FontColorSettings fcs = MimeLookup.getLookup(DocumentUtilities.getMimeType(c)).lookup(FontColorSettings.class);
+            String mimeType = DocumentUtilities.getMimeType(c);
+            FontColorSettings fcs = (mimeType != null) ? MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class) : null;
             if (fcs != null) {
-                if (overwriteMode) {
-                    AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_OVERWRITE_MODE); //NOI18N
-                    if (attribs != null) {
-                        caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
-                    }
-                } else {
-                    AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_INSERT_MODE); //NOI18N
-                    if (attribs != null) {
-                        caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
-                    }
+                AttributeSet attribs = fcs.getFontColors(overwriteMode
+                        ? FontColorNames.CARET_COLOR_OVERWRITE_MODE
+                        : FontColorNames.CARET_COLOR_INSERT_MODE); //NOI18N
+                if (attribs != null) {
+                    caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
                 }
             }
             
-            this.type = CaretType.decode(newTypeStr);
-            this.thickCaretWidth = newWidth;
-            c.setCaretColor(caretColor);
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer("Updating caret color:" + caretColor + '\n'); // NOI18N
-            }
+            this.type = newType;
+            final Color caretColorFinal = caretColor;
+            ViewUtils.runInEDT(
+                new Runnable() {
+                    public @Override void run() {
+                        if (caretColorFinal != null) {
+                            c.setCaretColor(caretColorFinal);
+                            if (LOG.isLoggable(Level.FINER)) {
+                                LOG.finer("Updating caret color:" + caretColorFinal + '\n'); // NOI18N
+                            }
+                        }
 
-            resetBlink();
-            dispatchUpdate(false);
+                        resetBlink();
+                        dispatchUpdate(false);
+                    }
+                }
+            );
         }
     }
 
@@ -879,8 +891,8 @@ public final class EditorCaret implements Caret {
         }
 
         // EditorCaret only installs successfully into AbstractDocument based documents that carry a mime-type
-        String mimeType;
-        if ((newDoc instanceof AbstractDocument) && (mimeType = DocumentUtilities.getMimeType(newDoc)) != null) {
+        if (newDoc instanceof AbstractDocument) {
+            String mimeType = DocumentUtilities.getMimeType(newDoc);
             activeDoc = (AbstractDocument) newDoc;
             DocumentUtilities.addDocumentListener(
                     newDoc, listenerImpl, DocumentListenerPriority.CARET_UPDATE);
@@ -890,19 +902,13 @@ public final class EditorCaret implements Caret {
             }
 
             // Leave caretPos and markPos null => offset==0
-            prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+            prefs = (mimeType != null) ? MimeLookup.getLookup(mimeType).lookup(Preferences.class) : null;
             if (prefs != null) {
                 weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, listenerImpl, prefs);
                 prefs.addPreferenceChangeListener(weakPrefsListener);
             }
             
-            ViewUtils.runInEDT(
-                new Runnable() {
-                    public @Override void run() {
-                        updateType();
-                    }
-                }
-            );
+            updateType();
         }
     }
 
