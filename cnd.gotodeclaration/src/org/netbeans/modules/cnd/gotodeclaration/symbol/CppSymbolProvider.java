@@ -544,7 +544,11 @@ public class CppSymbolProvider implements SymbolProvider {
                         if (definition != null) {
                             if(CsmVisibilityQuery.isVisible(definition)) {
                                 added = true;
-                                addResult(new CppSymbolDescriptor(definition));
+                                if (definition != decl) {
+                                    addResult(new CppSymbolDescriptor(decl, definition));
+                                } else {
+                                    addResult(new CppSymbolDescriptor(definition));
+                                }
                             }
                         }
                         if (!added) {
