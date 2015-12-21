@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.docker.ui.credentials;
 
+import javax.swing.JPasswordField;
+
 /**
  *
  * @author Petr Hejl
  */
 public class CredentialsDetailPanel extends javax.swing.JPanel {
+
+    private final JPasswordField reference = new JPasswordField();
 
     /**
      * Creates new form CredentialsDetailPanel
@@ -88,6 +92,11 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(emailLabel, org.openide.util.NbBundle.getMessage(CredentialsDetailPanel.class, "CredentialsDetailPanel.emailLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(showPasswordCheckBox, org.openide.util.NbBundle.getMessage(CredentialsDetailPanel.class, "CredentialsDetailPanel.showPasswordCheckBox.text")); // NOI18N
+        showPasswordCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                showPasswordCheckBoxItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -136,6 +145,14 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void showPasswordCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_showPasswordCheckBoxItemStateChanged
+        if (showPasswordCheckBox.isSelected()) {
+            passwordPasswordField.setEchoChar((char) 0);
+        } else {
+            passwordPasswordField.setEchoChar(reference.getEchoChar());
+        }
+    }//GEN-LAST:event_showPasswordCheckBoxItemStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
