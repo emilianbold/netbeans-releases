@@ -1038,7 +1038,7 @@ public abstract class CLIHandler extends Object {
     private static final class Server extends Thread {
         private Closeable unlock;
         private byte[] key;
-        private ServerSocket socket;
+        private volatile ServerSocket socket;
         private Integer block;
         private Collection<? extends CLIHandler> handlers;
         private Socket work;
