@@ -43,6 +43,9 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import java.util.*;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -363,12 +366,20 @@ public class AstRenderer {
             } catch (AstRendererException e) {
                 if (!SKIP_AST_RENDERER_EXCEPTIONS) {
                     // In MySQL related tests we see endless "empty function name" exceptions
-                    DiagnosticExceptoins.register(e);
-                    if (CndUtils.isUnitTestMode() && e.getMessage().startsWith("Empty function name")) { // NOI18N
-                        System.err.println();
-                        System.err.println("AST:"); // NOI18N
-                        AstUtil.toStream(tree, System.err);
-                        System.err.println();
+                    if (CndUtils.isUnitTestMode() && e.getMessage().contains("Empty function name")) { // NOI18N
+                        try {
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            PrintStream ps = new PrintStream(baos, true, "UTF8"); // NOI18N
+                            ps.println("AST:"); // NOI18N
+                            AstUtil.toStream(tree, ps);
+                            ps.println();
+                            String content = baos.toString("UTF8"); // NOI18N
+                            DiagnosticExceptoins.register(new AssertionError(e.getMessage() + " # " + content, e)); // NOI18N
+                        } catch (UnsupportedEncodingException inner) {
+                            DiagnosticExceptoins.register(new AssertionError(e.getMessage() + " # Failed to dump AST!", e)); // NOI18N
+                        }
+                    } else {
+                        DiagnosticExceptoins.register(e);
                     }
                 }
             } catch (Throwable thr) {

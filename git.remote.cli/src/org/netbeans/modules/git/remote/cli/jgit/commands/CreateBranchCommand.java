@@ -82,12 +82,10 @@ public class CreateBranchCommand extends GitCommand {
         setCommandsNumber(3);
         super.prepare();
         addArgument(0, "branch"); //NOI18N
-        addArgument(0, "--track"); //NOI18N
         addArgument(0, branchName);
         addArgument(0, revision);
         
         addArgument(1, "branch"); //NOI18N
-        addArgument(1, "--track"); //NOI18N
         addArgument(1, branchName);
         
         addArgument(2, "branch"); //NOI18N
@@ -103,7 +101,7 @@ public class CreateBranchCommand extends GitCommand {
             monitor.setCancelDelegate(canceled);
         }
         try {
-            final Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
+            final Map<String, GitBranch> branches = new LinkedHashMap<>();
             final AtomicBoolean failed = new AtomicBoolean(false);
             
             new Runner(canceled, 0){

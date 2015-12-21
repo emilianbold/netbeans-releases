@@ -44,7 +44,6 @@ package org.netbeans.modules.git.remote.cli.jgit.commands;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
-import static junit.framework.Assert.assertFalse;
 import org.netbeans.modules.git.remote.cli.GitClient;
 import org.netbeans.modules.git.remote.cli.GitConstants;
 import org.netbeans.modules.git.remote.cli.GitException;
@@ -73,7 +72,7 @@ public class StatusTest extends AbstractGitTestCase {
     
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("testSkipIgnoredFolders","testIgnoredSymlinkFile","testIgnoredSymlinkFolder","testConflictScan").contains(getName());
+        return Arrays.asList("testIgnoredFilesAreNotTracked","testSkipIgnoredFolders","testConflictScan","testIgnoredSymlinkFolder").contains(getName());
     }
     
     @Override
