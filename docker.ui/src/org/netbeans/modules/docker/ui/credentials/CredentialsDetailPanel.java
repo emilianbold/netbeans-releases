@@ -41,17 +41,24 @@
  */
 package org.netbeans.modules.docker.ui.credentials;
 
+import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JPasswordField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.docker.api.Credentials;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Hejl
  */
 public class CredentialsDetailPanel extends javax.swing.JPanel {
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
 
     private final JPasswordField reference = new JPasswordField();
 
@@ -66,6 +73,11 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
         initComponents();
 
         this.actionButton = actionButton;
+
+        DefaultDocumentListener listener = new DefaultDocumentListener();
+        registryTextField.getDocument().addDocumentListener(listener);
+        usernameTextField.getDocument().addDocumentListener(listener);
+        emailTextField.getDocument().addDocumentListener(listener);
     }
 
     public void setMessageLine(NotificationLineSupport messageLine) {
@@ -73,6 +85,11 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
         validateInput();
     }
 
+    @NbBundle.Messages({
+        "MSG_EmptyRegistry=Registry must not be empty.",
+        "MSG_EmptyUsername=Username must not be empty.",
+        "MSG_InvalidEmail=Email address does not seem to be valid"
+    })
     private void validateInput() {
         if (messageLine == null) {
             return;
@@ -80,6 +97,23 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
 
         messageLine.clearMessages();
         actionButton.setEnabled(true);
+
+        String registry = UiUtils.getValue(registryTextField);
+        if (registry == null) {
+            messageLine.setErrorMessage(Bundle.MSG_EmptyRegistry());
+            actionButton.setEnabled(false);
+            return;
+        }
+        String username = UiUtils.getValue(usernameTextField);
+        if (username == null) {
+            messageLine.setErrorMessage(Bundle.MSG_EmptyUsername());
+            actionButton.setEnabled(false);
+            return;
+        }
+        String email = UiUtils.getValue(emailTextField);
+        if (email != null && !EMAIL_PATTERN.matcher(email).matches()) {
+            messageLine.setWarningMessage(Bundle.MSG_InvalidEmail());
+        }
     }
 
     public Credentials getCredentials() {
@@ -95,6 +129,24 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
         usernameTextField.setText(credentials.getUsername());
         passwordPasswordField.setText(new String(credentials.getPassword()));
         emailTextField.setText(credentials.getEmail());
+    }
+
+    private class DefaultDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            validateInput();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            validateInput();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            validateInput();
+        }
     }
 
     /**
