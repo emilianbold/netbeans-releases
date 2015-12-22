@@ -42,6 +42,7 @@
 package org.netbeans.modules.docker.api;
 
 import java.io.IOException;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.docker.DockerConfig;
 
@@ -59,6 +60,11 @@ public final class CredentialsManager {
 
     public static CredentialsManager getDefault() {
         return INSTANCE;
+    }
+
+    public List<Credentials> getAllCredentials() throws IOException {
+        //assert !SwingUtilities.isEventDispatchThread();
+        return DockerConfig.getDefault().getAllCredentials();
     }
 
     public Credentials getCredentials(String registry) throws IOException {

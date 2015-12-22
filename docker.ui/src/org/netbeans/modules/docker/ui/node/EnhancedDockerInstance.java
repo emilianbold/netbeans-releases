@@ -78,8 +78,7 @@ public class EnhancedDockerInstance implements Refreshable {
 
     public EnhancedDockerInstance(DockerInstance instance) {
         this.instance = instance;
-        instance.addConnectionListener(
-                WeakListeners.create(DockerInstance.ConnectionListener.class, listener, instance));
+        instance.addConnectionListener(listener);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -106,6 +105,11 @@ public class EnhancedDockerInstance implements Refreshable {
                 update(instance.isAvailable());
             }
         });
+    }
+    
+    public void remove() {
+        instance.removeConnectionListener(listener);
+        instance.remove();
     }
 
     @Override
