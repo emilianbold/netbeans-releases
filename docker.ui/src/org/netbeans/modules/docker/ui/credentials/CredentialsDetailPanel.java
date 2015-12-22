@@ -45,9 +45,7 @@ import javax.swing.JButton;
 import javax.swing.JPasswordField;
 import org.netbeans.modules.docker.api.Credentials;
 import org.netbeans.modules.docker.ui.UiUtils;
-import org.netbeans.modules.docker.ui.Validations;
 import org.openide.NotificationLineSupport;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,13 +68,6 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
         this.actionButton = actionButton;
     }
 
-    public void setCredentials(Credentials credentials) {
-        registryTextField.setText(credentials.getRegistry());
-        usernameTextField.setText(credentials.getUsername());
-        passwordPasswordField.setText(new String(credentials.getPassword()));
-        emailTextField.setText(credentials.getEmail());
-    }
-
     public void setMessageLine(NotificationLineSupport messageLine) {
         this.messageLine = messageLine;
         validateInput();
@@ -96,6 +87,14 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
                 UiUtils.getValue(usernameTextField),
                 passwordPasswordField.getPassword(),
                 UiUtils.getValue(emailTextField));
+    }
+
+    public void setCredentials(Credentials credentials) {
+        registryTextField.setEditable(false);
+        registryTextField.setText(credentials.getRegistry());
+        usernameTextField.setText(credentials.getUsername());
+        passwordPasswordField.setText(new String(credentials.getPassword()));
+        emailTextField.setText(credentials.getEmail());
     }
 
     /**
