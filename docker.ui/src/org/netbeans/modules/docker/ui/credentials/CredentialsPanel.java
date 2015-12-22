@@ -44,10 +44,12 @@ package org.netbeans.modules.docker.ui.credentials;
 import java.awt.Dialog;
 import java.io.IOException;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import org.netbeans.modules.docker.api.Credentials;
 import org.netbeans.modules.docker.api.CredentialsManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -58,7 +60,7 @@ import org.openide.util.NbBundle;
 public class CredentialsPanel extends javax.swing.JPanel {
 
     private final DefaultListModel<CredentialsItem> model = new DefaultListModel<>();
-    
+
     /**
      * Creates new form CredentialsPanel
      */
@@ -109,6 +111,11 @@ public class CredentialsPanel extends javax.swing.JPanel {
         removeButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
 
+        credentialsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                credentialsListValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(credentialsList);
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.addButton.text")); // NOI18N
@@ -119,6 +126,7 @@ public class CredentialsPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.removeButton.text")); // NOI18N
+        removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
@@ -126,6 +134,7 @@ public class CredentialsPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.editButton.text")); // NOI18N
+        editButton.setEnabled(false);
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
@@ -163,18 +172,26 @@ public class CredentialsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    @NbBundle.Messages("LBL_Add=Add")
+    @NbBundle.Messages({
+        "LBL_Add=&Add",
+        "LBL_AddTitle=Add"
+    })
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        CredentialsDetailPanel panel = new CredentialsDetailPanel(null);
-        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_Add(), true,
-                DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION, null);
+        JButton actionButton = new JButton();
+        Mnemonics.setLocalizedText(actionButton, Bundle.LBL_Add());
+        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton);
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_AddTitle(), true,
+                new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION}, actionButton,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
+        descriptor.setClosingOptions(new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION});
+        panel.setMessageLine(descriptor.createNotificationLineSupport());
 
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             dlg.setVisible(true);
 
-            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            if (descriptor.getValue() == actionButton) {
                 try {
                     Credentials credentials = panel.getCredentials();
                     CredentialsManager.getDefault().setCredentials(credentials);
@@ -190,18 +207,27 @@ public class CredentialsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_addButtonActionPerformed
 
-    @NbBundle.Messages("LBL_Edit=Edit")
+    @NbBundle.Messages({
+        "LBL_OK=&OK",
+        "LBL_EditTitle=Edit"
+    })
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-        CredentialsDetailPanel panel = new CredentialsDetailPanel(credentialsList.getSelectedValue().getCredentials());
-        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_Edit(), true,
-                DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION, null);
-        
+        JButton actionButton = new JButton();
+        Mnemonics.setLocalizedText(actionButton, Bundle.LBL_OK());
+        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton);
+        panel.setCredentials(credentialsList.getSelectedValue().getCredentials());
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_EditTitle(), true,
+                new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION}, actionButton,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
+        descriptor.setClosingOptions(new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION});
+        panel.setMessageLine(descriptor.createNotificationLineSupport());
+
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             dlg.setVisible(true);
 
-            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            if (descriptor.getValue() == actionButton) {
                 try {
                     CredentialsManager.getDefault().setCredentials(panel.getCredentials());
                 } catch (IOException ex) {
@@ -225,6 +251,12 @@ public class CredentialsPanel extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_removeButtonActionPerformed
+
+    private void credentialsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_credentialsListValueChanged
+        boolean enable = !credentialsList.isSelectionEmpty();
+        editButton.setEnabled(enable);
+        removeButton.setEnabled(enable);
+    }//GEN-LAST:event_credentialsListValueChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

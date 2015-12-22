@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.docker.ui.credentials;
 
+import javax.swing.JButton;
 import javax.swing.JPasswordField;
 import org.netbeans.modules.docker.api.Credentials;
 import org.netbeans.modules.docker.ui.UiUtils;
+import org.netbeans.modules.docker.ui.Validations;
+import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,19 +57,38 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
 
     private final JPasswordField reference = new JPasswordField();
 
+    private final JButton actionButton;
+
+    private NotificationLineSupport messageLine;
+
     /**
      * Creates new form CredentialsDetailPanel
      */
-    public CredentialsDetailPanel(Credentials credentials) {
+    public CredentialsDetailPanel(JButton actionButton) {
         initComponents();
 
-        if (credentials != null) {
-            registryTextField.setEnabled(false);
-            registryTextField.setText(credentials.getRegistry());
-            usernameTextField.setText(credentials.getUsername());
-            passwordPasswordField.setText(new String(credentials.getPassword()));
-            emailTextField.setText(credentials.getEmail());
+        this.actionButton = actionButton;
+    }
+
+    public void setCredentials(Credentials credentials) {
+        registryTextField.setText(credentials.getRegistry());
+        usernameTextField.setText(credentials.getUsername());
+        passwordPasswordField.setText(new String(credentials.getPassword()));
+        emailTextField.setText(credentials.getEmail());
+    }
+
+    public void setMessageLine(NotificationLineSupport messageLine) {
+        this.messageLine = messageLine;
+        validateInput();
+    }
+
+    private void validateInput() {
+        if (messageLine == null) {
+            return;
         }
+
+        messageLine.clearMessages();
+        actionButton.setEnabled(true);
     }
 
     public Credentials getCredentials() {
