@@ -447,7 +447,7 @@ public final class CsmEventDispatcher {
         }
 
         @Override
-        public void filesPropertiesChanged() {
+        public void filesPropertiesChanged(NativeProject nativeProject) {
             registerEvents(CsmEvent.createEmptyEvent(CsmEvent.Kind.ITEMS_ALL_PROPERTY_CHANGED));
         }
 
