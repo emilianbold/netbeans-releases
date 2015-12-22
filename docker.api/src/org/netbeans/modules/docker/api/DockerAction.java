@@ -1137,13 +1137,18 @@ public class DockerAction {
     }
 
     private Socket createSocket(URL url) throws IOException {
+        assert "http".equals(url.getProtocol()) || "https".equals(url.getProtocol()); // NOI18N
         try {
             if ("https".equals(url.getProtocol())) { // NOI18N
                 SSLContext context = ContextProvider.getInstance().getSSLContext(instance);
                 return context.getSocketFactory().createSocket(url.getHost(), url.getPort());
             } else {
                 Socket s = new Socket(ProxySelector.getDefault().select(url.toURI()).get(0));
-                s.connect(new InetSocketAddress(url.getHost(), url.getPort()));
+                int port = url.getPort();
+                if (port < 0) {
+                    port = url.getDefaultPort();
+                }
+                s.connect(new InetSocketAddress(url.getHost(), port));
                 return s;
             }
         } catch (URISyntaxException ex) {
