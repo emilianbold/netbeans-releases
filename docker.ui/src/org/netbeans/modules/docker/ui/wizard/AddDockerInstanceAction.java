@@ -55,7 +55,7 @@ import org.openide.awt.ActionRegistration;
 @ActionID(id = "org.netbeans.modules.docker.ui.wizard.AddDockerInstanceAction", category = "System")
 @ActionRegistration(displayName = "#LBL_AddDockerInstanceAction")
 @ActionReferences(
-    @ActionReference(path = "Docker/Actions", position = 100)
+    @ActionReference(path = "Docker/Wizard", position = 100)
 )
 public class AddDockerInstanceAction implements ActionListener {
 

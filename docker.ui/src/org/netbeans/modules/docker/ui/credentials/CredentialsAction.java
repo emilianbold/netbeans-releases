@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 @ActionID(id = "org.netbeans.modules.docker.ui.credentials.CredentialsAction", category = "System")
 @ActionRegistration(displayName = "#LBL_CredentialsAction")
 @ActionReferences(
-    @ActionReference(path = "Docker/Actions", position = 200)
+    @ActionReference(path = "Docker/Credentials", position = 200)
 )
 public class CredentialsAction implements ActionListener {
 

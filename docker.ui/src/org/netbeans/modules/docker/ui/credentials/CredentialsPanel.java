@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.credentials;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import javax.swing.DefaultListModel;
 import org.netbeans.modules.docker.api.Credentials;
@@ -48,6 +49,7 @@ import org.netbeans.modules.docker.api.CredentialsManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,6 +57,8 @@ import org.openide.util.Exceptions;
  */
 public class CredentialsPanel extends javax.swing.JPanel {
 
+    private final DefaultListModel<CredentialsItem> model = new DefaultListModel<>();
+    
     /**
      * Creates new form CredentialsPanel
      */
@@ -62,7 +66,6 @@ public class CredentialsPanel extends javax.swing.JPanel {
         initComponents();
 
         CredentialsManager manager = CredentialsManager.getDefault();
-        DefaultListModel<CredentialsItem> model = new DefaultListModel<>();
         try {
             for (Credentials c : manager.getAllCredentials()) {
                 model.addElement(new CredentialsItem(c));
@@ -103,8 +106,8 @@ public class CredentialsPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         credentialsList = new javax.swing.JList<>();
         addButton = new javax.swing.JButton();
-        editButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
 
         jScrollPane1.setViewportView(credentialsList);
 
@@ -115,9 +118,19 @@ public class CredentialsPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.editButton.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.removeButton.text")); // NOI18N
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.editButton.text")); // NOI18N
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -129,8 +142,8 @@ public class CredentialsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(removeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(editButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(editButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -150,11 +163,68 @@ public class CredentialsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    @NbBundle.Messages("LBL_Add=Add")
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        // TODO add your handling code here:
-        DialogDescriptor descriptor = new DialogDescriptor(new CredentialsDetailPanel(), "Add", true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION, null);
-        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+        CredentialsDetailPanel panel = new CredentialsDetailPanel(null);
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_Add(), true,
+                DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION, null);
+
+        Dialog dlg = null;
+        try {
+            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.setVisible(true);
+
+            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                try {
+                    Credentials credentials = panel.getCredentials();
+                    CredentialsManager.getDefault().setCredentials(credentials);
+                    model.addElement(new CredentialsItem(credentials));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } finally {
+            if (dlg != null) {
+                dlg.dispose();
+            }
+        }
     }//GEN-LAST:event_addButtonActionPerformed
+
+    @NbBundle.Messages("LBL_Edit=Edit")
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+        CredentialsDetailPanel panel = new CredentialsDetailPanel(credentialsList.getSelectedValue().getCredentials());
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_Edit(), true,
+                DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION, null);
+        
+        Dialog dlg = null;
+        try {
+            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.setVisible(true);
+
+            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                try {
+                    CredentialsManager.getDefault().setCredentials(panel.getCredentials());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } finally {
+            if (dlg != null) {
+                dlg.dispose();
+            }
+        }
+    }//GEN-LAST:event_editButtonActionPerformed
+
+    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+        for (CredentialsItem i : credentialsList.getSelectedValuesList()) {
+            try {
+                CredentialsManager.getDefault().removeCredentials(i.getCredentials());
+                model.removeElement(i);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }//GEN-LAST:event_removeButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

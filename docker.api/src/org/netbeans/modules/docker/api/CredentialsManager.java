@@ -72,10 +72,13 @@ public final class CredentialsManager {
         return DockerConfig.getDefault().getCredentials(registry);
     }
 
-    public Credentials createCredentials(String registry, String username, char[] password, String email) throws IOException {
-        assert !SwingUtilities.isEventDispatchThread();
-        Credentials credentials = new Credentials(registry, username, password, email);
+    public void setCredentials(Credentials credentials) throws IOException {
+        //assert !SwingUtilities.isEventDispatchThread();
         DockerConfig.getDefault().setCredentials(credentials);
-        return credentials;
+    }
+
+    public void removeCredentials(Credentials credentials) throws IOException {
+        //assert !SwingUtilities.isEventDispatchThread();
+        DockerConfig.getDefault().removeCredentials(credentials);
     }
 }

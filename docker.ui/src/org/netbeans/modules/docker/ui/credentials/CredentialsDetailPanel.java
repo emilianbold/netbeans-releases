@@ -42,6 +42,8 @@
 package org.netbeans.modules.docker.ui.credentials;
 
 import javax.swing.JPasswordField;
+import org.netbeans.modules.docker.api.Credentials;
+import org.netbeans.modules.docker.ui.UiUtils;
 
 /**
  *
@@ -54,8 +56,23 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
     /**
      * Creates new form CredentialsDetailPanel
      */
-    public CredentialsDetailPanel() {
+    public CredentialsDetailPanel(Credentials credentials) {
         initComponents();
+
+        if (credentials != null) {
+            registryTextField.setEnabled(false);
+            registryTextField.setText(credentials.getRegistry());
+            usernameTextField.setText(credentials.getUsername());
+            passwordPasswordField.setText(new String(credentials.getPassword()));
+            emailTextField.setText(credentials.getEmail());
+        }
+    }
+
+    public Credentials getCredentials() {
+        return new Credentials(UiUtils.getValue(registryTextField),
+                UiUtils.getValue(usernameTextField),
+                passwordPasswordField.getPassword(),
+                UiUtils.getValue(emailTextField));
     }
 
     /**
@@ -114,12 +131,12 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
                     .addComponent(registryTextField)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(emailTextField, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(passwordPasswordField, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(usernameTextField, javax.swing.GroupLayout.Alignment.LEADING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(showPasswordCheckBox)
-                        .addGap(0, 101, Short.MAX_VALUE)))
+                        .addGap(0, 101, Short.MAX_VALUE))
+                    .addComponent(emailTextField))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
