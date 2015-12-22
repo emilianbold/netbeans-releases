@@ -1847,7 +1847,7 @@ public final class FileImpl implements CsmFile,
 
     public void setFileGuard(int guardStart, int guardEnd) {
         this.guardStart = guardStart;
-        this.guardStart = guardEnd;
+        this.guardEnd = guardEnd;
     }
 
     public boolean hasFileGuard() {
