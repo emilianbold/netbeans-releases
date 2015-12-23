@@ -66,6 +66,7 @@
 #define FAILURE_SETTING_SIGNAL_HANDLER              221
 #define FAILURE_SETTING_EXIT_FUNCTION               222
 #define FAILURE_ILLEGAL_ARGUMENT                    223
+#define FAILURE_ALLOCATE_MEMORY                     224
 
 #endif	/* EXITCODES_H */
 

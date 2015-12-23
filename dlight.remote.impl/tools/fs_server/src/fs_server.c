@@ -128,8 +128,8 @@ static const int strerr_bufsize = PATH_MAX * 2 + 128; // should it be less?
 
 static void err_init() {
     err_info.err_no = 0;
-    err_info.errmsg = malloc(thread_emsg_bufsize);
-    err_info.strerr = malloc(strerr_bufsize);
+    err_info.errmsg = malloc_wrapper(thread_emsg_bufsize);
+    err_info.strerr = malloc_wrapper(strerr_bufsize);
     *err_info.errmsg = 0; // just in case
 }
 
@@ -403,7 +403,7 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
 
 static fs_entry* create_fs_entry(fs_entry *entry2clone) {
     int sz = sizeof(fs_entry) + entry2clone->name_len + entry2clone->link_len + 2;
-    fs_entry *entry = malloc(sz);
+    fs_entry *entry = malloc_wrapper(sz);
     entry->name_len = entry2clone->name_len;
     entry->name = entry->data;
     strncpy(entry->name, entry2clone->name, entry->name_len);
@@ -605,7 +605,7 @@ static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element
     bool success = false;
     if (cache_fp) {
         int buf_size = PATH_MAX + 40;
-        char *buf = malloc(buf_size);
+        char *buf = malloc_wrapper(buf_size);
         success = read_entries_from_cache_impl(entries, cache_fp, cache_path, buf, 
                 buf_size, path, persistence_version);
         free(buf);
@@ -938,7 +938,7 @@ static void response_stat(int request_id, const char* path) {
     struct stat stat_buf;
     if (stat(path, &stat_buf) == 0) {
         int buf_size = MAXNAMLEN * 2 + 80; // *2 because of escaping. TODO: accurate size calculation
-        char* escaped_name = malloc(buf_size);
+        char* escaped_name = malloc_wrapper(buf_size);
         const char* basename = get_basename(path);
         escape_strcpy(escaped_name, basename);
         int escaped_name_size = strlen(escaped_name);
@@ -1045,7 +1045,7 @@ static bool copy_dir(const char* path, const char* path2, int id) {
         response_error(id, path2, errno, err_to_string(errno));
         return false;
     }
-    copy_dir_struct* cds = malloc(sizeof(copy_dir_struct));
+    copy_dir_struct* cds = malloc_wrapper(sizeof(copy_dir_struct));
     cds->success = true;
     cds->id = id;
 
@@ -1085,7 +1085,7 @@ static bool copy_plain_file(const char* path, const char* path2, int id) {
     bool success = false;
 
     const int buf_size = 16 * 1024;
-    buf = malloc(buf_size);
+    buf = malloc_wrapper(buf_size);
     if (buf) {
         int read_cnt;
         while ((read_cnt = fread(buf, 1, buf_size, src))) {
@@ -1124,7 +1124,7 @@ static bool copy_plain_file(const char* path, const char* path2, int id) {
 static bool copy_symlink(const char* path, const char* path2, int id) {
     bool success = false;
     const int buf_size = PATH_MAX;
-    char *link_dst = malloc(buf_size);
+    char *link_dst = malloc_wrapper(buf_size);
     ssize_t sz = readlink (path, link_dst, buf_size);
     if (sz == -1) {
         response_error(id, path, errno, err_to_string(errno));
@@ -1625,8 +1625,8 @@ static void exit_function() {
 static void main_loop() {
     //TODO: handshake with version
     int buf_size = 256 + 2 * (PATH_MAX * 2);
-    char *raw_req_buffer = malloc(buf_size);
-    char *req_buffer = malloc(buf_size);
+    char *raw_req_buffer = malloc_wrapper(buf_size);
+    char *req_buffer = malloc_wrapper(buf_size);
     while(!is_broken_pipe() &&fgets(raw_req_buffer, buf_size, stdin)) {
         trace(TRACE_FINE, "request: %s", raw_req_buffer); // no LF since buffer ends it anyhow
         log_print(raw_req_buffer);
@@ -1661,7 +1661,7 @@ static void main_loop() {
                     rp_threads[curr_thread].no = curr_thread;
                     pthread_create(&rp_threads[curr_thread].id, NULL, &rp_loop, &rp_threads[curr_thread]);
                 }
-                fs_request* new_request = malloc(request->size);
+                fs_request* new_request = malloc_wrapper(request->size);
                 clone_request(new_request, request);
                 blocking_queue_add(&req_queue, new_request);
             } else {

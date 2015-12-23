@@ -111,7 +111,7 @@ static void init_table() {
     table.dirty =  false;
     table.size =  0;
     table.limit = 1024;
-    table.paths = malloc(table.limit * (sizeof(dirtab_element*)));
+    table.paths = malloc_wrapper(table.limit * (sizeof(dirtab_element*)));
     table.next_index = 0;
 }
 
@@ -131,7 +131,7 @@ static dirtab_element *new_dirtab_element(const char* path, int index) {
     int path_len = strlen(path);
     int cache_len = strlen(cache);
     int size = sizeof(dirtab_element) + path_len + cache_len + 2;
-    dirtab_element *el = malloc(size);
+    dirtab_element *el = malloc_wrapper(size);
     el->index = index;
     el->state = DE_STATE_INITIAL;
     el->refresh_state = DRS_NONE;
@@ -152,7 +152,7 @@ static bool load_impl(dirtab_watch_state default_watch_state) {
         return false;
     }
     int max_line = PATH_MAX + 40;
-    char *line = malloc(max_line);
+    char *line = malloc_wrapper(max_line);
     table.size = 0;
     table.next_index = 0;
     while (fgets(line, max_line, f)) {
@@ -215,7 +215,7 @@ static bool flush_impl() {
         return false;
     }
     int i;
-    char* buf = malloc(PATH_MAX * 2); 
+    char* buf = malloc_wrapper(PATH_MAX * 2);
     for (i = 0; i < table.size; i++) {
         if (table.paths[i]->state != DE_STATE_REMOVED) {
             escape_strcpy(buf, table.paths[i]->abspath);
@@ -292,7 +292,7 @@ static void mkdir_or_die(const char *path, int exit_code_fail_create, int exit_c
 
 /** recursive mkdir_or_die */
 static void mkdir_or_die_recursive(const char *path, int exit_code_fail_create, int exit_code_fail_access) {
-    char* buf = malloc(PATH_MAX+1);
+    char* buf = malloc_wrapper(PATH_MAX+1);
     strncpy(buf, path, PATH_MAX);
     char* slash = strchr(buf+1, '/');
     while (slash) {
@@ -318,10 +318,10 @@ static void fill_default_root() {
 
 void dirtab_init(bool clear_persistence, dirtab_watch_state default_watch_state) {
 
-    root = malloc(PATH_MAX + 1);
-    temp_path = malloc(PATH_MAX + 1);
-    cache_path = malloc(PATH_MAX + 1);
-    dirtab_file_path = malloc(PATH_MAX + 1);
+    root = malloc_wrapper(PATH_MAX + 1);
+    temp_path = malloc_wrapper(PATH_MAX + 1);
+    cache_path = malloc_wrapper(PATH_MAX + 1);
+    dirtab_file_path = malloc_wrapper(PATH_MAX + 1);
 
     char* pdir = persistence_dir ? persistence_dir : "0";
     
@@ -456,7 +456,7 @@ void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* 
     mutex_lock_wrapper(&table.mutex);
     int size = table.size;
     int mem_size = size * sizeof(dirtab_element**);
-    dirtab_element** paths = malloc(mem_size);
+    dirtab_element** paths = malloc_wrapper(mem_size);
     memcpy(paths, table.paths, mem_size);
     mutex_unlock_wrapper(&table.mutex);
     for (int i = 0; i < size; i++) {
