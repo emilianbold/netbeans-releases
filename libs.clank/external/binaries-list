@@ -1,6 +1,6 @@
-#changeset:   16167:933dd965f35a
-#tag:         tip
+#changeset:   16179:0aadaa8f70b6
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Tue Dec 15 13:53:30 2015 +0300
-#summary:     fixed #256933 - [newcodemodel] IDE cannot resolve include paths with non ASCII chars
-6AE76DCC58313A6B48DDDDE3D19011AA4BE343CF clank_0.3.6.zip
+#date:        Thu Dec 17 21:14:24 2015 +0300
+#summary:     JAVA FIX: APInt.__toString should handle Long.MIN_VALUE in a special way (#256629 - [newcodemodel] StringIndexOutOfBoundsException: String index out of range: -8)
+#6AE76DCC58313A6B48DDDDE3D19011AA4BE343CF clank_0.3.6.zip
+BD0FF6016C9AAF367D5F01625AC4E2BDE75EB355 clank_0.3.6.zip

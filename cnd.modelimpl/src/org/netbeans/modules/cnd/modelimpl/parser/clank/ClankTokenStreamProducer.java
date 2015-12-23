@@ -763,7 +763,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 }
             }
             if (CndUtils.isDebugMode()) {
-                CndUtils.assertTrueInConsole(!isInsideInterestedFile() || this.interestedFile.equals(enteredToFileImpl), "" + isInsideInterestedFile() + ": inconsistency between " + this.interestedFile + " and ", enteredToFileImpl);
+                final boolean anAssert = !isInsideInterestedFile() || this.interestedFile.equals(enteredToFileImpl);
+                if (!anAssert) {
+                    CndUtils.assertTrueInConsole(anAssert, "" + isInsideInterestedFile() + ": inconsistency between " + this.interestedFile + " and ", enteredToFileImpl);
+                }
                 CndUtils.assertPathsEqualInConsole(enteredToFileImpl.getAbsolutePath(), enteredTo.getFilePath(), "Expected {0}\n got {1}", enteredToFileImpl, enteredTo);
             }
             pushCurrentFile(enteredToFileImpl);

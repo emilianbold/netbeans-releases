@@ -61,22 +61,47 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
  * @author Egor Ushakov
  */
 public class GdbVersionPeculiarity {
-    private final double version;
+    private final Version version;
     private final Platform platform;
     private final Set<String> features = Collections.synchronizedSet(new HashSet<String>());
     private final boolean lldb = "true".equals(System.getProperty("cnd.debugger.lldb")); // NOI18N
+    
+    public static final class Version {
 
-    private GdbVersionPeculiarity(double version, Platform platform) {
+        final int before;
+        final int after;
+
+        public Version(int before, int after) {
+            this.before = before;
+            this.after = after;
+        }
+
+        public int compareTo(int before, int after) {
+            int beforeDiff = this.before - before;
+            if (beforeDiff == 0) {
+                return this.after - after;
+            } else {
+                return beforeDiff;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%d.%d", before, after); // NOI18N
+        }
+    }
+
+    private GdbVersionPeculiarity(Version version, Platform platform) {
         this.version = version;
         this.platform = platform;
     }
 
-    public static GdbVersionPeculiarity create(double version, Platform platform) {
+    public static GdbVersionPeculiarity create(Version version, Platform platform) {
         return new GdbVersionPeculiarity(version, platform);
     }
 
     public String environmentDirectoryCommand() {
-        if (version > 6.3 || platform == Platform.MacOSX_x86) {
+        if (version.compareTo(6, 3) > 0 || platform == Platform.MacOSX_x86) {
             return "-environment-directory"; // NOI18N
         } else {
             return "directory"; // NOI18N
@@ -84,7 +109,7 @@ public class GdbVersionPeculiarity {
     }
 
     public String environmentCdCommand() {
-        if (version > 6.3) {
+        if (version.compareTo(6, 3) > 0) {
             return "-environment-cd"; // NOI18N
         } else {
              return "cd"; // NOI18N
@@ -92,7 +117,7 @@ public class GdbVersionPeculiarity {
     }
 
     public String execAbortCommand() {
-        if (version > 6.6) {
+        if (version.compareTo(6, 6) > 0) {
             return "-exec-abort"; // NOI18N
         } else {
             return "kill"; // NOI18N
@@ -100,7 +125,7 @@ public class GdbVersionPeculiarity {
     }
     
     public String execStepCommand(String thread) {
-        if (version >= 7.4 || lldb) {
+        if (version.compareTo(7, 4) >= 0 || lldb) {
             return "-exec-step --thread " + thread; // NOI18N
         } else {
             return "-exec-step"; // NOI18N
@@ -108,7 +133,7 @@ public class GdbVersionPeculiarity {
     }
     
     public String execNextCommand(String thread) {
-        if (version >= 7.4 || lldb) {
+        if (version.compareTo(7, 4) >= 0 || lldb) {
             return "-exec-next --thread " + thread; // NOI18N
         } else {
             return "-exec-next"; // NOI18N
@@ -116,7 +141,7 @@ public class GdbVersionPeculiarity {
     }
     
     public String execStepInstCommand(String thread) {
-        if (version >= 7.4 || lldb) {
+        if (version.compareTo(7, 4) >= 0 || lldb) {
             return "-exec-step-instruction --thread " + thread; // NOI18N
         } else {
             return "-exec-step-instruction"; // NOI18N
@@ -124,7 +149,7 @@ public class GdbVersionPeculiarity {
     }
     
     public String execNextInstCommand(String thread) {
-        if (version >= 7.4 || lldb) {
+        if (version.compareTo(7, 4) >= 0 || lldb) {
             return "-exec-next-instruction --thread " + thread; // NOI18N
         } else {
             return "-exec-next-instruction"; // NOI18N
@@ -147,7 +172,7 @@ public class GdbVersionPeculiarity {
             retVal.append("-var-list-children --all-values \"").append(expr).append("\""); // NOI18N
         }
         
-        if (version > 6.8) {
+        if (version.compareTo(6, 8) > 0) {
             retVal.append(" ").append(start).append(" ").append(end); // NOI18N
         }
         
@@ -171,7 +196,7 @@ public class GdbVersionPeculiarity {
     }
     
     public boolean isLocalsOutputUnusual() {
-        return platform == Platform.MacOSX_x86 && version <= 6.3;
+        return platform == Platform.MacOSX_x86 && version.compareTo(6, 3) <= 0;
     }
     
     public boolean isSyscallBreakpointsSupported() {
@@ -182,7 +207,7 @@ public class GdbVersionPeculiarity {
 
     public String breakPendingFlag() {
         if (!DISABLE_PENDING
-                && (version >= 6.8 || platform == Platform.MacOSX_x86)) {
+                && (version.compareTo(6, 8) >= 0 || platform == Platform.MacOSX_x86)) {
             return " -f"; // NOI18N
         } else {
             return "";
@@ -190,7 +215,7 @@ public class GdbVersionPeculiarity {
     }
     
     public String breakDisabledFlag() {
-        if (version >= 6.8 || platform == Platform.MacOSX_x86) {
+        if (version.compareTo(6, 8) >= 0 || platform == Platform.MacOSX_x86) {
             return " -d"; // NOI18N
         } else {
             return "";
@@ -206,7 +231,7 @@ public class GdbVersionPeculiarity {
     }
     
     public String stackListFramesCommand(String thread) {
-        if (version >= 7.4 || lldb) {
+        if (version.compareTo(7, 4) >= 0 || lldb) {
             return "-stack-list-frames --thread " + thread; // NOI18N
         } else {
             return "-stack-list-frames";  // NOI18N
@@ -218,7 +243,7 @@ public class GdbVersionPeculiarity {
     }
 
     public boolean isSupported() {
-        return (version >= 6.8) || (platform == Platform.MacOSX_x86 && version >= 6.3);
+        return (version.compareTo(6, 8) >= 0) || (platform == Platform.MacOSX_x86 && version.compareTo(6, 3) >= 0);
     }
     
     // gdb features

@@ -208,6 +208,9 @@ public class FormatStringAudit extends AbstractCodeAudit {
     private void visit(CsmStatement statement, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         CsmReference reference = CsmReferenceResolver.getDefault().findReference(file, doc, statement.getStartOffset());
         if (reference != null) {
+            if (Utilities.checkPrintf(reference.getText()) == -1) {
+                return;
+            }
             CsmObject object = reference.getReferencedObject();
             final int formatStringPosition = Utilities.checkFormattedPrintFunction(object);
             if (formatStringPosition > -1) {

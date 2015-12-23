@@ -45,6 +45,7 @@ package org.netbeans.modules.git.remote.cli.jgit.commands;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.git.remote.cli.GitConstants;
 import org.netbeans.modules.git.remote.cli.GitException;
 import org.netbeans.modules.git.remote.cli.GitPushResult;
 import org.netbeans.modules.git.remote.cli.GitRefUpdateResult;
@@ -143,6 +144,18 @@ public class PushCommand extends TransportCommand {
         //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/pdb/repo
         //-	:refs/heads/newbranch	[deleted]
         //Done
+        //===================
+        //To file:///export/home/alsimon/tmp/git-upstream-repository
+        //=	refs/heads/master:refs/remotes/origin/master	[up to date]
+        //*	refs/heads/Release:refs/heads/Release	[new branch]
+        //*	refs/heads/Release:refs/remotes/origin/Release	[new branch]
+        //Done        
+        //===================
+        //To file:///export/home/alsimon/tmp/git-upstream-repository
+        //=	refs/heads/master:refs/remotes/origin/master	[up to date]
+        // 	refs/heads/Release:refs/heads/Release	198cdfb..c4f2f6f
+        // 	refs/heads/Release:refs/remotes/origin/Release	198cdfb..c4f2f6f
+        //Done        
         String url = null;
         for (String line : output.split("\n")) { //NOI18N
             if (line.startsWith("To")) {
@@ -196,13 +209,46 @@ public class PushCommand extends TransportCommand {
                     }
                 }
                 if (remote.indexOf('/')>0) {
-                    details.remoteBranch = remote.substring(remote.lastIndexOf('/')+1);
+                    if (remote.startsWith(GitConstants.R_REMOTES)) {
+                        details.remoteBranch = remote.substring(GitConstants.R_REMOTES.length());
+                    } else if (remote.startsWith(GitConstants.R_HEADS)) {
+                        details.remoteBranch = remote.substring(GitConstants.R_HEADS.length());
+                    } else if (remote.startsWith(GitConstants.R_TAGS)) {
+                        details.remoteBranch = remote.substring(GitConstants.R_TAGS.length());
+                    } else {
+                        details.remoteBranch = remote.substring(remote.lastIndexOf('/')+1);
+                    }
                 } else {
                     details.remoteBranch = remote;
                 }
                 details.url = url;
                 details.type = GitTransportUpdate.getType(remote);
-                remoteRepositoryUpdates.put(details.remoteBranch, getClassFactory().createTransportUpdate(details));
+                if (s.length > 2) {
+                    String refs = s[2];
+                    int separator = refs.indexOf(".."); // NOI18N
+                    if (separator > 0) {
+                        details.oldID = refs.substring(0, separator);
+                        details.newID = refs.substring(separator+2);
+                    } else {
+                        int start = line.indexOf('[');
+                        int end = line.indexOf(']');
+                        if (start > 0 && end > start) {
+                            details.operation = line.substring(start+1, end);
+                        }
+                    }
+                }
+                String branch = details.remoteBranch;
+                if (branch.indexOf('/')>0) {
+                    branch = branch.substring(branch.lastIndexOf('/')+1);
+                }
+                if (remote.startsWith(GitConstants.R_REMOTES)) {
+                    String tmp = details.localBranch;
+                    details.localBranch = details.remoteBranch;
+                    details.remoteBranch = tmp;
+                    localRepositoryUpdates.put(branch, getClassFactory().createTransportUpdate(details));
+                } else {
+                    remoteRepositoryUpdates.put(branch, getClassFactory().createTransportUpdate(details));
+                }
             }
         }
     }

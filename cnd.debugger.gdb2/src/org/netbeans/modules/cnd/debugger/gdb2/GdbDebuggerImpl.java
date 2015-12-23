@@ -657,7 +657,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private static boolean warnUnsupported = false;
 
-    private void warnVersionUnsupported(double gdbVersion) {
+    private void warnVersionUnsupported(String gdbVersion) {
         if (!warnUnsupported) {
             InfoPanel panel = new InfoPanel(
                     Catalog.format("ERR_UnsupportedVersion", gdbVersion), //NOI18N
@@ -671,7 +671,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     void setGdbVersion(String version) {
-        double gdbVersion = 6.8;
+        GdbVersionPeculiarity.Version gdbVersion = new GdbVersionPeculiarity.Version(6, 8);
         try {
              gdbVersion = GdbUtils.parseVersionString(version);
         } catch (Exception e) {
@@ -679,7 +679,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
         peculiarity = GdbVersionPeculiarity.create(gdbVersion, getHost().getPlatform());
         if (!peculiarity.isSupported()) {
-            warnVersionUnsupported(gdbVersion);
+            warnVersionUnsupported(gdbVersion.toString());
         }
     }
 
