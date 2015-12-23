@@ -48,7 +48,7 @@ void array_init(array *a, int capacity) {
     assert(capacity > 0);
     a->capacity = capacity;
     a->size = 0;
-    a->data = malloc(capacity * element_size);
+    a->data = malloc_wrapper(capacity * element_size);
     // TODO: error processing (if malloc returns null)
 }
 
