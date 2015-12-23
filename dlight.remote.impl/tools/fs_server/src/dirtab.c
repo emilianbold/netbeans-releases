@@ -48,7 +48,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <ctype.h>
-#include <assert.h>
 
 static char* root = NULL;
 static char* temp_path = NULL;
