@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.maven.groovy.extender;
-
-import org.netbeans.modules.maven.api.ModelUtils;
-import org.netbeans.modules.maven.model.ModelOperation;
-import org.netbeans.modules.maven.model.pom.Dependency;
-import org.netbeans.modules.maven.model.pom.POMModel;
 
 /**
  *
- * @author Martin Janicek
+ * @author Anton V. Kirilchik
  */
-public class AddGroovyDependency implements ModelOperation<POMModel> {
+class MavenConstants {
 
-    @Override
-    public void performOperation(final POMModel model) {
-        model.refresh();
-        if (ModelUtils.hasModelDependency(model, MavenConstants.GROOVY_GROUP_ID, MavenConstants.GROOVY_ARTIFACT_ID)) {
-            return;
-        }
+    public static final String GROOVY_GROUP_ID = "org.codehaus.groovy"; // NOI18N
+    public static final String GROOVY_ARTIFACT_ID = "groovy-all";       // NOI18N
+    public static final String GROOVY_VERSION = "2.4.5";                // NOI18N
 
-        Dependency dependency = model.getFactory().createDependency();
-        dependency.setGroupId(MavenConstants.GROOVY_GROUP_ID);
-        dependency.setArtifactId(MavenConstants.GROOVY_ARTIFACT_ID);
-        dependency.setVersion(MavenConstants.GROOVY_VERSION);
+    public static final String MAVEN_COMPILER_GROUP_ID = "org.apache.maven.plugins"; // NOI18N
+    public static final String MAVEN_COMPILER_ARTIFACT_ID = "maven-compiler-plugin"; // NOI18N
+    public static final String MAVEN_COMPILER_VERSION = "3.3";                       // NOI18N
 
-        model.getProject().addDependency(dependency);
-    }
+    public static final String GROOVY_ECLIPSE_COMPILER_GROUP_ID = "org.codehaus.groovy";           // NOI18N
+    public static final String GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID = "groovy-eclipse-compiler";    // NOI18N
+    public static final String GROOVY_ECLIPSE_BATCH_ARTIFACT_ID = "groovy-eclipse-batch";          // NOI18N
+    public static final String GROOVY_ECLIPSE_COMPILER_VERSION = "2.9.2-01";                       // NOI18N
+    public static final String GROOVY_ECLIPSE_BATCH_VERSION = "2.4.3-01 ";                         // NOI18N
+    
+    public static final String COMPILER_ID_PROPERTY = "compilerId"; // NOI18N
 }

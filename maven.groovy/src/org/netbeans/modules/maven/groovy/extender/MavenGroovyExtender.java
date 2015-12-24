@@ -70,8 +70,6 @@ import org.openide.filesystems.FileSystem;
 )
 public class MavenGroovyExtender implements GroovyExtenderImplementation {
 
-    private static final String GROOVY_GROUP_ID = "org.codehaus.groovy"; // NOI18N
-    private static final String GROOVY_ARTIFACT_ID = "groovy-all";       // NOI18N
     private final FileObject pom;
 
     
@@ -91,7 +89,7 @@ public class MavenGroovyExtender implements GroovyExtenderImplementation {
 
                         @Override
                         public void performOperation(POMModel model) {
-                            if (ModelUtils.hasModelDependency(model, GROOVY_GROUP_ID, GROOVY_ARTIFACT_ID)) {
+                            if (ModelUtils.hasModelDependency(model, MavenConstants.GROOVY_GROUP_ID, MavenConstants.GROOVY_ARTIFACT_ID)) {
                                 retValue[0] = true;
                             } else {
                                 retValue[0] = false;

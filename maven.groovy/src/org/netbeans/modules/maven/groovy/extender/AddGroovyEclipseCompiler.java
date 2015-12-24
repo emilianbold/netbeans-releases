@@ -65,10 +65,6 @@ import org.netbeans.modules.maven.model.pom.Project;
  */
 public class AddGroovyEclipseCompiler implements ModelOperation<POMModel> {
 
-    private static final String GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID = "groovy-eclipse-compiler";    // NOI18N
-    private static final String GROOVY_ECLIPSE_COMPILER_GROUP_ID = "org.codehaus.groovy";           // NOI18N
-    private static final String GROOVY_ECLIPSE_COMPILER_VERSION = "2.6.0-01";                       // NOI18N
-
     @Override
     public void performOperation(POMModel model) {
         POMComponentFactory factory = model.getFactory();
@@ -81,9 +77,9 @@ public class AddGroovyEclipseCompiler implements ModelOperation<POMModel> {
         }
 
         Plugin groovyEclipseCompiler = factory.createPlugin();
-        groovyEclipseCompiler.setArtifactId(GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID);
-        groovyEclipseCompiler.setGroupId(GROOVY_ECLIPSE_COMPILER_GROUP_ID);
-        groovyEclipseCompiler.setVersion(GROOVY_ECLIPSE_COMPILER_VERSION);
+        groovyEclipseCompiler.setGroupId(MavenConstants.GROOVY_ECLIPSE_COMPILER_GROUP_ID);
+        groovyEclipseCompiler.setArtifactId(MavenConstants.GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID);
+        groovyEclipseCompiler.setVersion(MavenConstants.GROOVY_ECLIPSE_COMPILER_VERSION);
         groovyEclipseCompiler.setExtensions(Boolean.TRUE); // THIS IS THE IMPORTANT PART !
 
         if (!groovyEclipseCompilerExists(build)) {
@@ -95,8 +91,8 @@ public class AddGroovyEclipseCompiler implements ModelOperation<POMModel> {
         List<Plugin> plugins = build.getPlugins();
         if (plugins != null) {
             for (Plugin plugin : plugins) {
-                if (GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID.equals(plugin.getArtifactId()) &&
-                    GROOVY_ECLIPSE_COMPILER_GROUP_ID.equals(plugin.getVersion())) {
+                if (MavenConstants.GROOVY_ECLIPSE_COMPILER_GROUP_ID.equals(plugin.getGroupId()) &&
+                    MavenConstants.GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID.equals(plugin.getArtifactId())) {
                     return true;
                 }
             }
