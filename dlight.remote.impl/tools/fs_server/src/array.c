@@ -57,13 +57,13 @@ void array_ensure_capcity(array *a, int capacity) {
         while (a->capacity < capacity) {
             a->capacity *= 2;
         }
-        a->data = realloc(a->data, a->capacity * element_size);
+        a->data = realloc_wrapper(a->data, a->capacity * element_size);
     }
 }
 
 void array_truncate(array *a) {
     if (a->size != a->capacity) {
-        a->data = realloc(a->data, a->capacity * element_size);
+        a->data = realloc_wrapper(a->data, a->capacity * element_size);
     }
 }
 

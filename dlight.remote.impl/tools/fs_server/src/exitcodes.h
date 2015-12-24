@@ -67,6 +67,7 @@
 #define FAILURE_SETTING_EXIT_FUNCTION               222
 #define FAILURE_ILLEGAL_ARGUMENT                    223
 #define FAILURE_ALLOCATE_MEMORY                     224
+#define FAILURE_REALLOCATE_MEMORY                   225
 
 #endif	/* EXITCODES_H */
 

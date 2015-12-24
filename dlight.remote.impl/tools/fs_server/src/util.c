@@ -156,6 +156,15 @@ void *malloc_wrapper(size_t size) {
     return p;
 }
 
+void *realloc_wrapper(void *ptr, size_t size) {
+    void *p = realloc(ptr, size);
+    if (!p) {
+        report_error("can not reallocate memory\n");
+        exit(FAILURE_REALLOCATE_MEMORY);
+    }
+    return p;
+}
+
 void mutex_lock_wrapper(pthread_mutex_t *mutex) {
     if (pthread_mutex_lock(mutex)) {
         report_error("error locking mutex: %s\n", strerror(errno));
