@@ -1,8 +1,1 @@
-#changeset:   305208:f5226c964895
-#branch:      release81
-#tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Wed Dec 23 21:04:51 2015 +0300
-#summary:     source fix for #257274 - There still are security issues in fs_serve
-33D6647003681584BA91639E02ECCE47B24F0867 fs_server-1.0.zip
-
+BB83D4F8047D608858154CB041054F5CAE35B903 cnd-rfs-1.0.zip
