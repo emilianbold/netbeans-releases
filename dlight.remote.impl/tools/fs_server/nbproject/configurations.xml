@@ -113,7 +113,7 @@
           <executablePath>../../release/bin/SunOS-x86/fs_server</executablePath>
           <cTool>
             <incDir>
-              <pElem>../../../../../../.netbeans/dev-bis/var/cache/remote-files/everest.ru.oracle.com_22_vkvashin/home/vkvashin/.netbeans/dev-bis/var/cache/remote-files/everest.ru.oracle.com_22_vkvashin/home/vkvashin/.netbeans/remote/calypso-t72p-d07.us.oracle.com/vk-laptop-Linux-x86_64/home/vkvashin/src/netbeans/release81_elif/dlight.remote.impl/tools/fs_server</pElem>
+              <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
