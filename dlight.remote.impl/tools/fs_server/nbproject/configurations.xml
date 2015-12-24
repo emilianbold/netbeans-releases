@@ -52,7 +52,7 @@
           <executablePath>../../release/bin/Linux-x86/fs_server</executablePath>
           <cTool>
             <incDir>
-              <pElem>../../../../../../.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/src/netbeans/release81_elif/dlight.remote.impl/tools/fs_server</pElem>
+              <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
@@ -180,6 +180,7 @@
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
+              <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
               <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
