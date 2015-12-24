@@ -470,9 +470,12 @@
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
+              <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
+              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
+              <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
