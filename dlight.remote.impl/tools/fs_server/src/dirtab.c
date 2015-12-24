@@ -120,6 +120,7 @@ static void expand_table_if_needed() {
         table.limit *= 2;
         table.paths = realloc(table.paths, table.limit * (sizeof(dirtab_element*)));
         if (!table.paths) {
+            report_error("not enough memory to expand directory table\n");
             exit(NO_MEMORY_EXPANDING_DIRTAB);
         }
     }    
