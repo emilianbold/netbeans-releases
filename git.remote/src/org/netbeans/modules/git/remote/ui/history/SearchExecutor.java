@@ -175,6 +175,7 @@ class SearchExecutor extends GitProgressSupport {
                     }
                     excludedCommitId = branch.getId();
                     sc.setRevisionTo(fetchedHead.getCommitId());
+                    sc.setAddSelfFrom(false);
                     break;
                 case REMOTE_OUT:
                     branches = getClient().getBranches(true, getProgressMonitor());
