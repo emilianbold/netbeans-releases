@@ -1023,7 +1023,7 @@ public abstract class CLIHandler extends Object {
         
         /** Is open? True if the connection is still alive. Can be
          * used with long running computations to find out if the
-         * consumer of the output has not been interupted.
+         * consumer of the output has not been interrupted.
          *
          * @return true if the connection is still alive
          */
@@ -1038,7 +1038,7 @@ public abstract class CLIHandler extends Object {
     private static final class Server extends Thread {
         private Closeable unlock;
         private byte[] key;
-        private ServerSocket socket;
+        private volatile ServerSocket socket;
         private Integer block;
         private Collection<? extends CLIHandler> handlers;
         private Socket work;
@@ -1094,6 +1094,9 @@ public abstract class CLIHandler extends Object {
                 return;
             }
             
+            // by default wait 100ms after exception from socket.accept()
+            long acceptFailDelay = 100;
+
             while (socket != null) {
                 try {
                     enterState(65, block);
@@ -1105,9 +1108,12 @@ public abstract class CLIHandler extends Object {
                         s.close();
                         continue;
                     }
+                    acceptFailDelay = 100;
                     
                     // spans new request handler
                     new Server(s, key, block, handlers, failOnUnknownOptions);
+                    // and re-run the while loop
+                    continue;
                 } catch (InterruptedIOException ex) {
                     if (socket != null) {
                         ex.printStackTrace();
@@ -1120,6 +1126,18 @@ public abstract class CLIHandler extends Object {
                     }
                 } catch (IOException ex) {
                     ex.printStackTrace();
+                }  
+                // common error handling below
+                // socket.accept() failed with exception, wait for some time 
+                // to prevent messages.log and memory overflow caused by a large 
+                // number of ex.printStackTrace() invocations
+                if (socket != null) {
+                    try {
+                        Thread.sleep(acceptFailDelay);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                    acceptFailDelay *= 2;
                 }
             }
             
