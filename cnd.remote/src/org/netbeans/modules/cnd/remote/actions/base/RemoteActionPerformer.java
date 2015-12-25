@@ -98,6 +98,7 @@ public abstract class RemoteActionPerformer implements ActionListener, DynamicMe
             ExecutionEnvironment env = ((Lookup.Provider) e.getSource()).getLookup().lookup(ExecutionEnvironment.class);
             if (env != null) {
                 actionPerformedRemote(env, e);
+                return;
             }
         }
         actionPerformedRemote(ServerList.getDefaultRecord().getExecutionEnvironment(), e);
