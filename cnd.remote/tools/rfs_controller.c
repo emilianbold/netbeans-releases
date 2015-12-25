@@ -95,8 +95,7 @@ static bool mutex_unlock(pthread_mutex_t* mutex) {
     }
 }
 
-static void serve_connection(void* data) {
-    connection_data *conn_data = (connection_data*) data;
+static void serve_connection_impl(connection_data *conn_data) {
     trace("New connection from  %s:%d sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), conn_data->sd);
 
     const int maxsize = PATH_MAX + 32;
@@ -214,6 +213,11 @@ static void serve_connection(void* data) {
     }
     close(conn_data->sd);
     trace("Connection to %s:%d (%s) closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), requestor_id, conn_data->sd);
+}
+
+static void serve_connection(void* data) {
+    serve_connection_impl((connection_data*) data);
+    free(data);
 }
 
 static int _mkdir(const char *dir, int mask) {
