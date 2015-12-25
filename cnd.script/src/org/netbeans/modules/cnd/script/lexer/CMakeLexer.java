@@ -65,6 +65,7 @@ public class CMakeLexer implements Lexer<CMakeTokenId> {
         keywords.add ("or"); // NOI18N
         keywords.add ("equal"); // NOI18N
         keywords.add ("is_directory"); // NOI18N
+        keywords.add ("is_symlink"); // NOI18N
         keywords.add ("exists"); // NOI18N
         keywords.add ("is_absolute"); // NOI18N
         keywords.add ("command"); // NOI18N
@@ -76,20 +77,74 @@ public class CMakeLexer implements Lexer<CMakeTokenId> {
         keywords.add ("greater"); // NOI18N
         keywords.add ("strless"); // NOI18N
         keywords.add ("strequal"); // NOI18N
-        keywords.add ("strequal"); // NOI18N
-        keywords.add ("strequal"); // NOI18N
         keywords.add ("strgreater"); // NOI18N
         keywords.add ("strless"); // NOI18N
         keywords.add ("version_less"); // NOI18N
         keywords.add ("version_equal"); // NOI18N
         keywords.add ("version_greater"); // NOI18N
         keywords.add ("is_newer_than"); // NOI18N
-
+        keywords.add ("in_list"); // NOI18N
+        keywords.add ("length"); // NOI18N
+        keywords.add ("get"); // NOI18N
+        keywords.add ("find"); // NOI18N
+        keywords.add ("insert"); // NOI18N
+        keywords.add ("force"); // NOI18N
+        keywords.add ("remove_item"); // NOI18N
+        keywords.add ("args"); // NOI18N
+        keywords.add ("argn"); // NOI18N
+        keywords.add ("append"); // NOI18N
+        keywords.add ("output"); // NOI18N
+        keywords.add ("read"); // NOI18N
+        keywords.add ("write"); // NOI18N
+        keywords.add ("copy"); // NOI18N
+        keywords.add ("remove_recurse"); // NOI18N
+        keywords.add ("strings"); // NOI18N
+        keywords.add ("limit_count"); // NOI18N
+        keywords.add ("tolower"); // NOI18N
+        keywords.add ("toupper"); // NOI18N
+        keywords.add ("range"); // NOI18N
+        keywords.add ("expr"); // NOI18N
+        
+        keywords.add ("depends"); // NOI18N
+        keywords.add ("byproducts"); // NOI18N
+        keywords.add ("working_directory"); // NOI18N
+        keywords.add ("verbatim"); // NOI18N
+        keywords.add ("uses_terminal"); // NOI18N
+        keywords.add ("comment"); // NOI18N
+        
+        keywords.add ("destination"); // NOI18N
+        keywords.add ("files"); // NOI18N
+        keywords.add ("pattern"); // NOI18N
+        keywords.add ("regex"); // NOI18N
+        keywords.add ("replace"); // NOI18N
+        keywords.add ("exclude"); // NOI18N
+        keywords.add ("permissions"); // NOI18N
+        keywords.add ("file_permissions"); // NOI18N
+        keywords.add ("directory_permissions"); // NOI18N
+        keywords.add ("use_source_permissions"); // NOI18N
+        keywords.add ("no_source_permissions"); // NOI18N
+        keywords.add ("files_matching"); // NOI18N
+        keywords.add ("optional"); // NOI18N
+        
         keywords.add ("string"); // NOI18N
         keywords.add ("bool"); // NOI18N
         keywords.add ("path"); // NOI18N
         keywords.add ("filepath"); // NOI18N
 
+        keywords.add ("on"); // NOI18N
+        keywords.add ("off"); // NOI18N
+        keywords.add ("false"); // NOI18N
+        keywords.add ("true"); // NOI18N
+        keywords.add ("none"); // NOI18N
+        keywords.add ("c"); // NOI18N
+        keywords.add ("cxx"); // NOI18N
+        keywords.add ("cache"); // NOI18N
+        keywords.add ("internal"); // NOI18N
+        keywords.add ("uninitialized"); // NOI18N
+        keywords.add ("required"); // NOI18N
+        keywords.add ("all"); // NOI18N
+
+        keywords.add ("add_compile_options"); // NOI18N
         keywords.add ("add_custom_command"); // NOI18N
         keywords.add ("add_custom_target"); // NOI18N
         keywords.add ("add_definitions"); // NOI18N
@@ -106,6 +161,7 @@ public class CMakeLexer implements Lexer<CMakeTokenId> {
         keywords.add ("cmake_minimum_required"); // NOI18N
         keywords.add ("cmake_policy"); // NOI18N
         keywords.add ("configure_file"); // NOI18N
+        keywords.add ("continue"); // NOI18N
         keywords.add ("create_test_sourcelist"); // NOI18N
         keywords.add ("ctest_build"); // NOI18N
         keywords.add ("ctest_configure"); // NOI18N
@@ -119,6 +175,7 @@ public class CMakeLexer implements Lexer<CMakeTokenId> {
         keywords.add ("ctest_submit"); // NOI18N
         keywords.add ("ctest_test"); // NOI18N
         keywords.add ("ctest_update"); // NOI18N
+        keywords.add ("ctest_upload"); // NOI18N
         keywords.add ("define_property"); // NOI18N
         keywords.add ("else"); // NOI18N
         keywords.add ("elseif"); // NOI18N
@@ -183,14 +240,17 @@ public class CMakeLexer implements Lexer<CMakeTokenId> {
         keywords.add ("set_source_files_properties"); // NOI18N
         keywords.add ("set_target_properties"); // NOI18N
         keywords.add ("set_tests_properties"); // NOI18N
-        keywords.add ("set_tests_properties"); // NOI18N
         keywords.add ("site_name"); // NOI18N
         keywords.add ("source_group"); // NOI18N
         keywords.add ("string"); // NOI18N
         keywords.add ("subdir_depends"); // NOI18N
         keywords.add ("subdirs"); // NOI18N
-        keywords.add ("subdirs"); // NOI18N
+        keywords.add ("target_compile_definitions"); // NOI18N
+        keywords.add ("target_compile_features"); // NOI18N
+        keywords.add ("target_compile_options"); // NOI18N
+        keywords.add ("target_include_directories"); // NOI18N
         keywords.add ("target_link_libraries"); // NOI18N
+        keywords.add ("target_sources"); // NOI18N
         keywords.add ("try_compile"); // NOI18N
         keywords.add ("try_run"); // NOI18N
         keywords.add ("unset"); // NOI18N
@@ -200,6 +260,35 @@ public class CMakeLexer implements Lexer<CMakeTokenId> {
         keywords.add ("variable_watch"); // NOI18N
         keywords.add ("while"); // NOI18N
         keywords.add ("write_file"); // NOI18N
+        
+        keywords.add ("properties"); // NOI18N
+        keywords.add ("append_string"); // NOI18N
+        keywords.add ("property"); // NOI18N
+        
+        keywords.add ("targets"); // NOI18N
+        keywords.add ("sources"); // NOI18N
+        
+        keywords.add ("send_error"); // NOI18N
+        keywords.add ("status"); // NOI18N
+        keywords.add ("fatal_error"); // NOI18N
+        keywords.add ("aliased_target"); // NOI18N
+        keywords.add ("interface"); // NOI18N
+        keywords.add ("unknown"); // NOI18N
+        keywords.add ("imported"); // NOI18N
+        keywords.add ("before"); // NOI18N
+        keywords.add ("system"); // NOI18N
+        keywords.add ("module"); // NOI18N
+        keywords.add ("alias"); // NOI18N
+        keywords.add ("shared"); // NOI18N
+        keywords.add ("static"); // NOI18N
+        keywords.add ("object"); // NOI18N
+        keywords.add ("public"); // NOI18N
+        keywords.add ("link_public"); // NOI18N
+        keywords.add ("private"); // NOI18N
+        keywords.add ("output_variable"); // NOI18N
+        keywords.add ("result_variable"); // NOI18N
+        keywords.add ("error_variable"); // NOI18N
+        keywords.add ("return_value"); // NOI18N
 
         commands.add ("rm"); // NOI18N
         commands.add ("mv"); // NOI18N
