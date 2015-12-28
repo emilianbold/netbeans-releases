@@ -1,6 +1,7 @@
-#changeset:   305227:774ad5bda08e
+#changeset:   305242:557e519a2a66
 #branch:      release81
+#tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Fri Dec 25 10:37:09 2015 +0300
-#summary:     fixed leak in rfs_controller (fixing  #256919 - fix issues discovered in rfs_controller and rfs_preload)
-99127724436E87C18B66DAAA317CA4C2D40E92E0 cnd-rfs-1.0.zip
+#date:        Mon Dec 28 17:02:59 2015 +0300
+#summary:     additional fix for #256919 - fix issues discovered in rfs_controller and rfs_preload - source changes
+B04B2918B79C287651DDC88A9C3D115C62056F4C fs_server-1.0.zip

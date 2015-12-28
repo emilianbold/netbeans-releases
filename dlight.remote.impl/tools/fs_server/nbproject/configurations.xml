@@ -40,7 +40,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-std=c99 -g"/>
+        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -52,14 +52,16 @@
           <executablePath>../../release/bin/Linux-x86/fs_server</executablePath>
           <cTool>
             <incDir>
-              <pElem>.</pElem>
+              <pElem>../../../../../../.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/remote/calypso-t72p-d07.us.oracle.com/vk-laptop-Linux-x86_64/home/vkvashin/src/netbeans/release81_elif/dlight.remote.impl/tools/fs_server</pElem>
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
               <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
+              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
+              <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -361,13 +363,16 @@
           <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
           <cTool>
             <incDir>
-              <pElem>.</pElem>
+              <pElem>../../../../../../.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/remote/calypso-t72p-d07.us.oracle.com/vk-laptop-Linux-x86_64/home/vkvashin/src/netbeans/release81_elif/dlight.remote.impl/tools/fs_server</pElem>
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
+              <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
+              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
+              <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
