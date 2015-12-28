@@ -259,6 +259,8 @@ public class GoToSupport {
     private static ResultIterator getResultIterator(ResultIterator ri, String mimetype) {
         if (ri.getSnapshot().getMimeType().equals(mimetype)) {
             return ri;
+        } else if (ri.getSnapshot().getMimePath().getInheritedType().equals(mimetype)) {
+            return ri;
         }
         for (Embedding e : ri.getEmbeddings()) {
             ResultIterator eri = ri.getResultIterator(e);
