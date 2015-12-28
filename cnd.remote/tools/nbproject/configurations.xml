@@ -41,15 +41,14 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-g -fPIC -m64"/>
-        <element flagsID="1" commonFlags="-g -fPIC -std=c99 -m64"/>
+        <element flagsID="0" commonFlags="-g -fPIC -std=c99 -m64"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} TRACE=1 DEBUG=-g 64BITS=0 all</buildCommand>
+          <buildCommand>${MAKE} TRACE=1 DEBUG=-g all</buildCommand>
           <cleanCommand>${MAKE}  clean</cleanCommand>
           <executablePath>../release/bin/Linux-x86/rfs_controller</executablePath>
           <cTool>
@@ -80,7 +79,7 @@
         </cTool>
       </item>
       <item path="rfs_filedata.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
+        <cTool flags="0">
         </cTool>
       </item>
       <item path="rfs_preload.c" ex="false" tool="0" flavor2="3">
@@ -96,7 +95,7 @@
         </cTool>
       </item>
       <item path="rfs_test_env.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
+        <cTool flags="0">
         </cTool>
       </item>
       <item path="rfs_util.c" ex="false" tool="0" flavor2="3">
