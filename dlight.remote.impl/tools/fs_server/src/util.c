@@ -467,11 +467,11 @@ int visit_dir_entries(const char* path,
     if (!error_handler) {
         error_handler = default_error_handler;
     }
-    DIR *d = d = opendir(path);
+    DIR *d = opendir(path);
     if (d) {
-        union {
+        struct {
             struct dirent d;
-            char b[MAXNAMLEN];
+            char b[MAXNAMLEN + 1];
         } entry_buf;
         entry_buf.d.d_reclen = MAXNAMLEN + sizeof (struct dirent);
         int buf_size = PATH_MAX;
