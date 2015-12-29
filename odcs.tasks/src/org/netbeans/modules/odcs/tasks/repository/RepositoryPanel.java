@@ -127,7 +127,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
 
         progressPanel.setLayout(new java.awt.BorderLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(validateLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateLabel.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(validateLabel, "jLabel4");
 
         org.openide.awt.Mnemonics.setLocalizedText(httpCheckBox, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.httpCheckBox.text")); // NOI18N
         httpCheckBox.addActionListener(new java.awt.event.ActionListener() {

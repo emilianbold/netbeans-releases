@@ -390,7 +390,7 @@ public class NameWizardPanelGUI extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         add(btnPrivacyOrganizationPrivate, gridBagConstraints);
 
-        Mnemonics.setLocalizedText(serverLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.serverLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(serverLabel, "jLabel1");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
