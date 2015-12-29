@@ -646,7 +646,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         tableHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(tableSummaryLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.tableSummaryLabel.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tableSummaryLabel, "jLabel2");
 
         filterComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -886,7 +886,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(lastRefreshDateLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.lastRefreshDateLabel.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lastRefreshDateLabel, "jLabel4");
 
         org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshButton.text")); // NOI18N
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
@@ -895,7 +895,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.nameLabel.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, "jLabel4");
 
         org.openide.awt.Mnemonics.setLocalizedText(modifyButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.modifyButton.text")); // NOI18N
         modifyButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1032,7 +1032,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         noContentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         noContentPanel.setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(noContentLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.noContentLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(noContentLabel, "jLabel9");
         noContentPanel.add(noContentLabel, new java.awt.GridBagConstraints());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
