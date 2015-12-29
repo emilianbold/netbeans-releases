@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -121,6 +122,10 @@ public class CsmSelect {
 
     public static Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter)  {
         return getDefault().getDeclarations(namespace, filter);
+    }
+
+    public static Iterator<CsmScopeElement> getScopeDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter)  {
+        return getDefault().getScopeDeclarations(namespace, filter);
     }
 
     public static Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter)  {
@@ -406,6 +411,15 @@ public class CsmSelect {
             CsmSelectProvider service = getService();
             if (service != null) {
                 return service.getDeclarations(namespace, filter);
+            }
+            return null;
+        }
+
+        @Override
+        public Iterator<CsmScopeElement> getScopeDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter) {
+            CsmSelectProvider service = getService();
+            if (service != null) {
+                return service.getScopeDeclarations(namespace, filter);
             }
             return null;
         }
