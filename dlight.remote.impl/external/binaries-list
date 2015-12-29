@@ -1,7 +1,7 @@
-#changeset:   305218:8ff014aa246f
+#changeset:   305242:557e519a2a66
 #branch:      release81
-#parent:      305213:e39fdc2d876a
+#tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Dec 24 12:28:18 2015 +0300
-#summary:     additional fix for #257274 - There still are security issues in fs_server
-EB465D0BF087296BD37057366E19FE076C85132B fs_server-1.0.zip
+#date:        Mon Dec 28 17:02:59 2015 +0300
+#summary:     additional fix for #256919 - fix issues discovered in rfs_controller and rfs_preload - source changes
+B04B2918B79C287651DDC88A9C3D115C62056F4C fs_server-1.0.zip
