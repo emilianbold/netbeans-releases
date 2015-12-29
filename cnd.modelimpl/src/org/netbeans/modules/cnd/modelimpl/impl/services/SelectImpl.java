@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -227,6 +228,14 @@ public class SelectImpl implements CsmSelectProvider {
             return ((NamespaceDefinitionImpl)namespace).getDeclarations(filter);
         }
         return namespace.getDeclarations().iterator();
+    }
+
+    @Override
+    public Iterator<CsmScopeElement> getScopeDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter) {
+        if (namespace instanceof NamespaceDefinitionImpl){
+            return ((NamespaceDefinitionImpl)namespace).getScopeElements(filter);
+        }
+        return namespace.getScopeElements().iterator();
     }
 
     @Override

@@ -246,6 +246,17 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
         return l;
     }
+    
+    public Iterator<CsmScopeElement> getScopeElements(CsmFilter filter) {
+        List<CsmScopeElement> l = new ArrayList<>();
+        for (Iterator<CsmOffsetableDeclaration> iter = getDeclarations(filter); iter.hasNext();) {
+            CsmDeclaration decl = iter.next();
+            if (isOfMyScope(decl)) {
+                l.add(decl);
+            }
+        }
+        return l.iterator();
+    }   
 
     private boolean isOfMyScope(CsmDeclaration decl) {
         if (decl instanceof VariableImpl<?>) {
@@ -313,8 +324,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
         return impl;
     }
-    
-    
+
     public static class NamespaceBuilder implements CsmObjectBuilder {
         
         private CharSequence name = CharSequences.empty();
