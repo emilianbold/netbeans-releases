@@ -907,7 +907,7 @@ public final class FileImpl implements CsmFile,
     }
 
     // returns parse/rearse time in milliseconds.
-    /*package*/int getLastParseTime(){
+    public int getLastParseTime(){
         return lastParseTime;
     }
 
