@@ -41,6 +41,7 @@ METHOD     findResult(Object, Closure)                Object
 METHOD     getAt(String)                              Object
 METHOD     getAuthority()                  [PUBLIC]   String
 METHOD     getBytes()                                 byte[]
+METHOD     getBytes(Map)                              byte[]
 METHOD     getClass()                      [PUBLIC]   Class<?>
 METHOD     getContent()                    [PUBLIC]   Object
 METHOD     getContent(Class[])             [PUBLIC]   Object
@@ -121,6 +122,7 @@ METHOD     with(Closure)                              Object
 METHOD     withInputStream(Closure)                   Object
 METHOD     withReader(Closure)                        Object
 METHOD     withReader(String, Closure)                Object
+METHOD     withTraits(Class[])                        Object
 FIELD      URLStreamHandlerFactory         [STATIC,   URLStreamHandlerFactory
 FIELD      authority                       [PUBLIC]   String
 FIELD      class                           [PUBLIC]   Class

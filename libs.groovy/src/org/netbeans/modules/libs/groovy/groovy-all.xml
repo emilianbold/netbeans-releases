@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     <properties>
         <property>
             <name>maven-dependencies</name>
-            <value>org.codehaus.groovy:groovy-all:2.1.7:jar</value>
+            <value>org.codehaus.groovy:groovy-all:2.4.5:jar</value>
         </property>
     </properties>
 </library>

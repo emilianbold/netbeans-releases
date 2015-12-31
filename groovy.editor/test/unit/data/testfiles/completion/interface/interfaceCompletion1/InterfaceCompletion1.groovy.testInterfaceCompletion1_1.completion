@@ -9,10 +9,10 @@ PACKAGE    groovyjarjarasm                            null
 PACKAGE    groovyjarjarcommonscli                     null
 PACKAGE    java                                       null
 PACKAGE    javax                                      null
+PACKAGE    jdk                                        null
 PACKAGE    oracle                                     null
 PACKAGE    org                                        null
 PACKAGE    sun                                        null
-PACKAGE    sunw                                       null
 CLASS      AdaptingMetaClass                          null
 CLASS      Appendable                                 null
 CLASS      AutoCloseable                              null
@@ -40,6 +40,7 @@ CLASS      FileNameMap                                null
 CLASS      FilenameFilter                             null
 CLASS      Flushable                                  null
 CLASS      Formattable                                null
+CLASS      GeneratedGroovyProxy                       null
 CLASS      GroovyCallable                             null
 CLASS      GroovyInterceptable                        null
 CLASS      GroovyObject                               null
@@ -63,6 +64,7 @@ CLASS      ObjectInputValidation                      null
 CLASS      ObjectOutput                               null
 CLASS      ObjectStreamConstants                      null
 CLASS      Observer                                   null
+CLASS      PrimitiveIterator                          null
 CLASS      PropertyAccessInterceptor                  null
 CLASS      ProtocolFamily                             null
 CLASS      Queue                                      null
@@ -78,5 +80,6 @@ CLASS      SocketOption                               null
 CLASS      SocketOptions                              null
 CLASS      SortedMap                                  null
 CLASS      SortedSet                                  null
+CLASS      Spliterator                                null
 CLASS      URLStreamHandlerFactory                    null
 CLASS      Writable                                   null

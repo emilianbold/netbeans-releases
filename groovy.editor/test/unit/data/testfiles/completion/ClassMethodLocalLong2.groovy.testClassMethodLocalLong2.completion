@@ -6,3 +6,4 @@ METHOD     compare(long, long)             [STATIC,   int
 METHOD     compareTo(Character)                       int
 METHOD     compareTo(Long)                 [PUBLIC]   int
 METHOD     compareTo(Number)                          int
+METHOD     compareUnsigned(long, long)     [STATIC,   int

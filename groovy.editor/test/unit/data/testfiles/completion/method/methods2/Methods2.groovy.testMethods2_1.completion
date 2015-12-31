@@ -9,6 +9,7 @@ METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
 METHOD     asBoolean()                                boolean
 METHOD     asType(Class)                              Object
+METHOD     bitwiseNegate()                            Number
 METHOD     byteValue()                     [PUBLIC]   byte
 METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
@@ -50,6 +51,7 @@ METHOD     grep()                                     Collection
 METHOD     grep(Object)                               Collection
 METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
+METHOD     hashCode(byte)                  [STATIC,   int
 METHOD     identity(Closure)                          Object
 METHOD     inject(Closure)                            Object
 METHOD     inject(Object, Closure)                    Object
@@ -111,7 +113,10 @@ METHOD     toInteger()                                Integer
 METHOD     toLong()                                   Long
 METHOD     toString()                      [PUBLIC]   String
 METHOD     toString(byte)                  [STATIC,   String
+METHOD     toUnsignedInt(byte)             [STATIC,   int
+METHOD     toUnsignedLong(byte)            [STATIC,   long
 METHOD     unaryMinus()                               Number
+METHOD     unaryPlus()                                Number
 METHOD     upto(Number, Closure)                      void
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
@@ -123,7 +128,9 @@ METHOD     wait()                          [PUBLIC]   void
 METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
+METHOD     withTraits(Class[])                        Object
 METHOD     xor(Number)                                Number
+FIELD      BYTES                           [STATIC,   int
 FIELD      MAX_VALUE                       [STATIC,   byte
 FIELD      MIN_VALUE                       [STATIC,   byte
 FIELD      SIZE                            [STATIC,   int

@@ -2,4 +2,5 @@ Code completion result for source line:
 longField.MAX|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+METHOD     max(long, long)                 [STATIC,   long
 FIELD      MAX_VALUE                       [STATIC,   long

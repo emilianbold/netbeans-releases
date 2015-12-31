@@ -4,12 +4,13 @@ Code completion result for source line:
 ------------------------------------
 METHOD     capitalize()                               String
 METHOD     center(Number)                             String
-METHOD     center(Number, CharSequence)               CharSequence
-METHOD     center(Number, String)                     String
+METHOD     center(Number, CharSequence)               String
 METHOD     charAt(int)                     [PUBLIC]   char
+METHOD     chars()                         [PUBLIC]   IntStream
 METHOD     codePointAt(int)                [PUBLIC]   int
 METHOD     codePointBefore(int)            [PUBLIC]   int
 METHOD     codePointCount(int, int)        [PUBLIC]   int
+METHOD     codePoints()                    [PUBLIC]   IntStream
 METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
@@ -19,12 +20,10 @@ METHOD     compareTo(T)                    [PUBLIC]   int
 METHOD     compareToIgnoreCase(String)     [PUBLIC]   int
 METHOD     concat(String)                  [PUBLIC]   String
 METHOD     contains(CharSequence)          [PUBLIC]   boolean
-METHOD     contains(String)                           boolean
 METHOD     contentEquals(CharSequence)     [PUBLIC]   boolean
 METHOD     contentEquals(StringBuffer)     [PUBLIC]   boolean
 METHOD     copyValueOf(char[])             [STATIC,   String
 METHOD     copyValueOf(char[], int, int)   [STATIC,   String
 METHOD     count(CharSequence)                        int
-METHOD     count(String)                              int
 FIELD      CASE_INSENSITIVE_ORDER          [STATIC,   Comparator<String>
 FIELD      class                           [PUBLIC]   Class
