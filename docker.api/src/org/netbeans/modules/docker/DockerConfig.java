@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
@@ -172,7 +173,10 @@ public final class DockerConfig {
             try (RandomAccessFile f = new RandomAccessFile(fileDesc.first(), "rw")) {
                 try (FileChannel ch = f.getChannel()) {
                     try (FileLock lock = ch.lock()) {
-                        JSONObject current = (JSONObject) new JSONParser().parse(Channels.newReader(ch, "UTF-8"));
+                        JSONObject current = null;
+                        if (f.length() > 0) {
+                            current = (JSONObject) new JSONParser().parse(Channels.newReader(ch, "UTF-8"));
+                        }
                         if (current == null) {
                             current = new JSONObject();
                         }
@@ -188,7 +192,44 @@ public final class DockerConfig {
                         currentAuths.put(credentials.getRegistry(), value);
                         ch.truncate(0);
 
-                        current.writeJSONString(Channels.newWriter(ch, "UTF-8"));
+                        Writer w = Channels.newWriter(ch, "UTF-8");
+                        current.writeJSONString(w);
+                        w.flush();
+                    } catch (ParseException ex) {
+                        throw new IOException(ex);
+                    }
+                }
+            } finally {
+                clearCache();
+            }
+        }
+    }
+
+    public void removeCredentials(Credentials credentials) throws IOException {
+        Pair<File, Boolean> fileDesc = getConfigFile();
+
+        synchronized (this) {
+            try (RandomAccessFile f = new RandomAccessFile(fileDesc.first(), "rw")) {
+                try (FileChannel ch = f.getChannel()) {
+                    try (FileLock lock = ch.lock()) {
+                        JSONObject current = (JSONObject) new JSONParser().parse(Channels.newReader(ch, "UTF-8"));
+                        if (f.length() <= 0) {
+                            return;
+                        }
+
+                        JSONObject currentAuths = current;
+                        if (!fileDesc.second()) {
+                            currentAuths = (JSONObject) current.get("auths");
+                            if (currentAuths == null) {
+                                return;
+                            }
+                        }
+                        currentAuths.remove(credentials.getRegistry());
+                        ch.truncate(0);
+
+                        Writer w = Channels.newWriter(ch, "UTF-8");
+                        current.writeJSONString(w);
+                        w.flush();
                     } catch (ParseException ex) {
                         throw new IOException(ex);
                     }
@@ -255,7 +296,10 @@ public final class DockerConfig {
                 try (FileInputStream is = new FileInputStream(fileDesc.first())) {
                     try (FileLock lock = is.getChannel().lock(0, Long.MAX_VALUE, true)) {
                         Reader r = new InputStreamReader(new BufferedInputStream(is), "UTF-8");
-                        JSONObject current = (JSONObject) new JSONParser().parse(r);
+                        JSONObject current = null;
+                        if (fileDesc.first().length() > 0) {
+                            current = (JSONObject) new JSONParser().parse(r);
+                        }
                         if (current == null) {
                             return null;
                         }
