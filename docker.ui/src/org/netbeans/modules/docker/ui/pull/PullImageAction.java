@@ -54,6 +54,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.api.DockerAuthenticationException;
 import org.netbeans.modules.docker.ui.node.EnhancedDockerInstance;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -129,6 +130,8 @@ public class PullImageAction extends NodeAction {
                     io.select();
                     DockerAction facade = new DockerAction(instance);
                     facade.pull(image, new StatusOutputListener(io));
+                } catch (DockerAuthenticationException ex) {
+                    System.out.println("ASK FOR CREDENTIALS AND RETRY");
                 } catch (DockerException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                     io.getErr().println(ex.getMessage());

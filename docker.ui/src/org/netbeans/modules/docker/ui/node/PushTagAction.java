@@ -50,6 +50,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.api.DockerAuthenticationException;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.ui.output.StatusOutputListener;
 import org.openide.DialogDisplayer;
@@ -110,6 +111,8 @@ public class PushTagAction extends NodeAction {
                     io.select();
                     DockerAction facade = new DockerAction(tag.getImage().getInstance());
                     facade.push(tag, new StatusOutputListener(io));
+                } catch (DockerAuthenticationException ex) {
+                    System.out.println("ASK FOR CREDENTIALS AND RETRY");
                 } catch (DockerException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                     io.getErr().println(ex.getMessage());

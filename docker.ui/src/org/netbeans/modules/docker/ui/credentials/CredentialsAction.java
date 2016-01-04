@@ -39,29 +39,52 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.wizard;
+package org.netbeans.modules.docker.ui.credentials;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Hejl
  */
-@ActionID(id = "org.netbeans.modules.docker.ui.wizard.AddDockerInstanceAction", category = "System")
-@ActionRegistration(displayName = "#LBL_AddDockerInstanceAction")
+@ActionID(id = "org.netbeans.modules.docker.ui.credentials.CredentialsAction", category = "System")
+@ActionRegistration(displayName = "#LBL_CredentialsAction")
 @ActionReferences(
-    @ActionReference(path = "Docker/Wizard", position = 100)
+    @ActionReference(path = "Docker/Credentials", position = 200)
 )
-public class AddDockerInstanceAction implements ActionListener {
+public class CredentialsAction implements ActionListener {
 
+    @NbBundle.Messages({
+        "LBL_Credentials=Credentials",
+        "LBL_Close=Close"
+    })
     @Override
     public void actionPerformed(ActionEvent e) {
-        AddDockerInstanceWizard wizard = new AddDockerInstanceWizard();
-        wizard.show();
+        CredentialsPanel panel = new CredentialsPanel();
+        JButton closeButton = new JButton(Bundle.LBL_Close());
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_Credentials(),
+                        true, new Object[]{closeButton}, closeButton,
+                        DialogDescriptor.DEFAULT_ALIGN, null, null);
+        descriptor.setClosingOptions(new Object[]{closeButton});
+
+        Dialog dlg = null;
+        try {
+            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.setVisible(true);
+        } finally {
+            if (dlg != null) {
+                dlg.dispose();
+            }
+        }
     }
 }

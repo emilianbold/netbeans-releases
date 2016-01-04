@@ -522,18 +522,17 @@ public class DockerAction {
                 conn.setRequestMethod("POST");
                 Pair<String, String> authHeader = null;
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
-                if (auth != null) {
-                    authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
-                }
+                authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
                 HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(),
                         ACCEPT_JSON_HEADER, authHeader);
 
                 if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     String error = HttpUtils.readError(conn);
-                    throw new DockerRemoteException(conn.getResponseCode(),
+                    throw codeToException(conn.getResponseCode(),
                             error != null ? error : conn.getResponseMessage());
                 }
 
+                String authFailure = null;
                 JSONParser parser = new JSONParser();
                 try (InputStreamReader r = new InputStreamReader(conn.getInputStream(), HttpUtils.getCharset(conn))) {
                     String line;
@@ -541,12 +540,19 @@ public class DockerAction {
                         JSONObject o = (JSONObject) parser.parse(line);
                         StatusEvent e = parseStatusEvent(o);
                         if (e != null) {
+                            if (authFailure == null) {
+                                authFailure = getAuthenticationFailure(e);
+                            }
                             listener.onEvent(e);
                         }
                         parser.reset();
                     }
                 } catch (ParseException ex) {
                     throw new DockerException(ex);
+                }
+
+                if (authFailure != null) {
+                    throw new DockerAuthenticationException(authFailure);
                 }
             } finally {
                 conn.disconnect();
@@ -583,18 +589,17 @@ public class DockerAction {
                 conn.setRequestMethod("POST");
                 Pair<String, String> authHeader = null;
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
-                if (auth != null) {
-                    authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
-                }
+                authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
                 HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(),
                         ACCEPT_JSON_HEADER, authHeader);
 
                 if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     String error = HttpUtils.readError(conn);
-                    throw new DockerRemoteException(conn.getResponseCode(),
+                    throw codeToException(conn.getResponseCode(),
                             error != null ? error : conn.getResponseMessage());
                 }
 
+                String authFailure = null;
                 JSONParser parser = new JSONParser();
                 try (InputStreamReader r = new InputStreamReader(conn.getInputStream(), HttpUtils.getCharset(conn))) {
                     String line;
@@ -602,12 +607,19 @@ public class DockerAction {
                         JSONObject o = (JSONObject) parser.parse(line);
                         StatusEvent e = parseStatusEvent(o);
                         if (e != null) {
+                            if (authFailure == null) {
+                                authFailure = getAuthenticationFailure(e);
+                            }
                             listener.onEvent(e);
                         }
                         parser.reset();
                     }
                 } catch (ParseException ex) {
                     throw new DockerException(ex);
+                }
+
+                if (authFailure != null) {
+                    throw new DockerAuthenticationException(authFailure);
                 }
             } finally {
                 conn.disconnect();
@@ -700,7 +712,7 @@ public class DockerAction {
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 task.cancel(true);
                 String error = HttpUtils.readContent(is, response);
-                throw new DockerRemoteException(responseCode,
+                throw codeToException(responseCode,
                         error != null ? error : response.getMessage());
             }
 
@@ -1137,13 +1149,18 @@ public class DockerAction {
     }
 
     private Socket createSocket(URL url) throws IOException {
+        assert "http".equals(url.getProtocol()) || "https".equals(url.getProtocol()); // NOI18N
         try {
             if ("https".equals(url.getProtocol())) { // NOI18N
                 SSLContext context = ContextProvider.getInstance().getSSLContext(instance);
                 return context.getSocketFactory().createSocket(url.getHost(), url.getPort());
             } else {
                 Socket s = new Socket(ProxySelector.getDefault().select(url.toURI()).get(0));
-                s.connect(new InetSocketAddress(url.getHost(), url.getPort()));
+                int port = url.getPort();
+                if (port < 0) {
+                    port = url.getDefaultPort();
+                }
+                s.connect(new InetSocketAddress(url.getHost(), port));
                 return s;
             }
         } catch (URISyntaxException ex) {
@@ -1183,21 +1200,40 @@ public class DockerAction {
     }
 
     private static JSONObject createAuthObject(Credentials credentials) {
+        JSONObject value = new JSONObject();
         if (credentials == null) {
+            value.put("auth", ""); // NOI18N
+            value.put("email", ""); // NOI18N
+        } else {
+            value.put("username", credentials.getUsername()); // NOI18N
+            value.put("password", new String(credentials.getPassword())); // NOI18N
+            value.put("email", credentials.getEmail()); // NOI18N
+            value.put("serveraddress", credentials.getRegistry()); // NOI18N
+            value.put("auth", ""); // NOI18N
+        }
+        return value;
+    }
+
+    private static String getAuthenticationFailure(StatusEvent e) {
+        if (!e.isError()) {
             return null;
         }
-        JSONObject value = new JSONObject();
-        value.put("username", credentials.getUsername());
-        value.put("password", new String(credentials.getPassword()));
-        value.put("email", credentials.getEmail());
-        value.put("serveraddress", credentials.getRegistry());
-        value.put("auth", "");
-        return value;
+        // this is how the docker client handles it
+        // (as the server returns HTTP 200 anyway)
+        if (e.getMessage().contains("Authentication is required")
+                || e.getMessage().contains("Status 401")
+                || e.getMessage().contains("401 Unauthorized")
+                || e.getMessage().contains("status code 401")) {
+            return e.getMessage();
+        }
+        return null;
     }
 
     private static DockerException codeToException(int code, String message) {
         if (code == HttpURLConnection.HTTP_CONFLICT) {
             return new DockerConflictException(message);
+        } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            return new DockerAuthenticationException(message);
         }
         return new DockerRemoteException(code, message);
     }
@@ -1252,7 +1288,6 @@ public class DockerAction {
         }
         return id;
     }
-
 
     private static class DirectFetcher implements StreamItem.Fetcher {
 

@@ -45,7 +45,7 @@ package org.netbeans.modules.docker.api;
  *
  * @author Petr Hejl
  */
-public class Credentials {
+public final class Credentials {
 
     private final String registry;
 

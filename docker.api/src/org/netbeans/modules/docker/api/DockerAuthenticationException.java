@@ -39,29 +39,20 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.wizard;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionRegistration;
+package org.netbeans.modules.docker.api;
 
 /**
  *
  * @author Petr Hejl
  */
-@ActionID(id = "org.netbeans.modules.docker.ui.wizard.AddDockerInstanceAction", category = "System")
-@ActionRegistration(displayName = "#LBL_AddDockerInstanceAction")
-@ActionReferences(
-    @ActionReference(path = "Docker/Wizard", position = 100)
-)
-public class AddDockerInstanceAction implements ActionListener {
+public class DockerAuthenticationException extends DockerException {
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        AddDockerInstanceWizard wizard = new AddDockerInstanceWizard();
-        wizard.show();
+    public DockerAuthenticationException(String message) {
+        super(message);
     }
+
+    public DockerAuthenticationException(Throwable cause) {
+        super(cause);
+    }
+
 }
