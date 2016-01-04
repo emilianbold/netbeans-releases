@@ -215,6 +215,7 @@ public class CredentialsPanel extends javax.swing.JPanel {
         JButton actionButton = new JButton();
         Mnemonics.setLocalizedText(actionButton, Bundle.LBL_OK());
         CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton);
+        int index = credentialsList.getSelectedIndex();
         panel.setCredentials(credentialsList.getSelectedValue().getCredentials());
         DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_EditTitle(), true,
                 new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION}, actionButton,
@@ -229,7 +230,9 @@ public class CredentialsPanel extends javax.swing.JPanel {
 
             if (descriptor.getValue() == actionButton) {
                 try {
-                    CredentialsManager.getDefault().setCredentials(panel.getCredentials());
+                    Credentials credentials = panel.getCredentials();
+                    CredentialsManager.getDefault().setCredentials(credentials);
+                    model.setElementAt(new CredentialsItem(credentials), index);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
