@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.credentials;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JPasswordField;
@@ -64,15 +65,18 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
 
     private final JButton actionButton;
 
+    private final Set<String> registries;
+
     private NotificationLineSupport messageLine;
 
     /**
      * Creates new form CredentialsDetailPanel
      */
-    public CredentialsDetailPanel(JButton actionButton) {
+    public CredentialsDetailPanel(JButton actionButton, Set<String> registries) {
         initComponents();
 
         this.actionButton = actionButton;
+        this.registries = registries;
 
         DefaultDocumentListener listener = new DefaultDocumentListener();
         registryTextField.getDocument().addDocumentListener(listener);
@@ -87,6 +91,7 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
 
     @NbBundle.Messages({
         "MSG_EmptyRegistry=Registry must not be empty.",
+        "MSG_ExistingRegistry=This registry is already defined.",
         "MSG_EmptyUsername=Username must not be empty.",
         "MSG_InvalidEmail=Email address does not seem to be valid"
     })
@@ -101,6 +106,10 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
         String registry = UiUtils.getValue(registryTextField);
         if (registry == null) {
             messageLine.setErrorMessage(Bundle.MSG_EmptyRegistry());
+            actionButton.setEnabled(false);
+            return;
+        } else if (registries.contains(registry)) {
+            messageLine.setErrorMessage(Bundle.MSG_ExistingRegistry());
             actionButton.setEnabled(false);
             return;
         }

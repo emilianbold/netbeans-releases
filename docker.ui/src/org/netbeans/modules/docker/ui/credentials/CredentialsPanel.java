@@ -43,6 +43,9 @@ package org.netbeans.modules.docker.ui.credentials;
 
 import java.awt.Dialog;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import org.netbeans.modules.docker.api.Credentials;
@@ -76,6 +79,15 @@ public class CredentialsPanel extends javax.swing.JPanel {
             Exceptions.printStackTrace(ex);
         }
         credentialsList.setModel(model);
+    }
+
+    private Set<String> getRegistries() {
+        Set<String> ret = new HashSet<>(model.size());
+        for (Enumeration<CredentialsItem> e = model.elements(); e.hasMoreElements(); ) {
+            CredentialsItem i = e.nextElement();
+            ret.add(i.getCredentials().getRegistry());
+        }
+        return ret;
     }
 
     private static class CredentialsItem {
@@ -179,7 +191,7 @@ public class CredentialsPanel extends javax.swing.JPanel {
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         JButton actionButton = new JButton();
         Mnemonics.setLocalizedText(actionButton, Bundle.LBL_Add());
-        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton);
+        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton, getRegistries());
         DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_AddTitle(), true,
                 new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION}, actionButton,
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -214,7 +226,7 @@ public class CredentialsPanel extends javax.swing.JPanel {
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
         JButton actionButton = new JButton();
         Mnemonics.setLocalizedText(actionButton, Bundle.LBL_OK());
-        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton);
+        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton, getRegistries());
         int index = credentialsList.getSelectedIndex();
         panel.setCredentials(credentialsList.getSelectedValue().getCredentials());
         DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_EditTitle(), true,
