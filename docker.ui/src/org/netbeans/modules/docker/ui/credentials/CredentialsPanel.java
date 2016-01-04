@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui.credentials;
 
 import java.awt.Dialog;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -191,7 +192,7 @@ public class CredentialsPanel extends javax.swing.JPanel {
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         JButton actionButton = new JButton();
         Mnemonics.setLocalizedText(actionButton, Bundle.LBL_Add());
-        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton, getRegistries());
+        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton, true, getRegistries());
         DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_AddTitle(), true,
                 new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION}, actionButton,
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -226,7 +227,7 @@ public class CredentialsPanel extends javax.swing.JPanel {
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
         JButton actionButton = new JButton();
         Mnemonics.setLocalizedText(actionButton, Bundle.LBL_OK());
-        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton, getRegistries());
+        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton, false, Collections.<String>emptySet());
         int index = credentialsList.getSelectedIndex();
         panel.setCredentials(credentialsList.getSelectedValue().getCredentials());
         DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_EditTitle(), true,

@@ -72,11 +72,13 @@ public class CredentialsDetailPanel extends javax.swing.JPanel {
     /**
      * Creates new form CredentialsDetailPanel
      */
-    public CredentialsDetailPanel(JButton actionButton, Set<String> registries) {
+    public CredentialsDetailPanel(JButton actionButton, boolean editableRegistry, Set<String> registries) {
         initComponents();
 
         this.actionButton = actionButton;
         this.registries = registries;
+
+        registryTextField.setEnabled(editableRegistry);
 
         DefaultDocumentListener listener = new DefaultDocumentListener();
         registryTextField.getDocument().addDocumentListener(listener);
