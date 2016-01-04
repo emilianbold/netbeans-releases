@@ -522,9 +522,7 @@ public class DockerAction {
                 conn.setRequestMethod("POST");
                 Pair<String, String> authHeader = null;
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
-                if (auth != null) {
-                    authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
-                }
+                authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
                 HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(),
                         ACCEPT_JSON_HEADER, authHeader);
 
@@ -583,9 +581,7 @@ public class DockerAction {
                 conn.setRequestMethod("POST");
                 Pair<String, String> authHeader = null;
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
-                if (auth != null) {
-                    authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
-                }
+                authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
                 HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(),
                         ACCEPT_JSON_HEADER, authHeader);
 
@@ -1188,15 +1184,17 @@ public class DockerAction {
     }
 
     private static JSONObject createAuthObject(Credentials credentials) {
-        if (credentials == null) {
-            return null;
-        }
         JSONObject value = new JSONObject();
-        value.put("username", credentials.getUsername());
-        value.put("password", new String(credentials.getPassword()));
-        value.put("email", credentials.getEmail());
-        value.put("serveraddress", credentials.getRegistry());
-        value.put("auth", "");
+        if (credentials == null) {
+            value.put("auth", ""); // NOI18N
+            value.put("email", ""); // NOI18N
+        } else {
+            value.put("username", credentials.getUsername()); // NOI18N
+            value.put("password", new String(credentials.getPassword())); // NOI18N
+            value.put("email", credentials.getEmail()); // NOI18N
+            value.put("serveraddress", credentials.getRegistry()); // NOI18N
+            value.put("auth", ""); // NOI18N
+        }
         return value;
     }
 
