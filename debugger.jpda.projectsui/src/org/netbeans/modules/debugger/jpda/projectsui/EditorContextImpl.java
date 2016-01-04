@@ -572,6 +572,11 @@ public class EditorContextImpl extends EditorContext {
         if (ep == null) {
             return null;
         }
+        Caret caret = ep.getCaret();
+        if (caret == null) {
+            // No caret => no selected text
+            return null;
+        }
         String s = ep.getSelectedText ();
         if (s == null) {
             return null;
@@ -928,10 +933,17 @@ public class EditorContextImpl extends EditorContext {
         final int currentOffset;
         final String selectedIdentifier;
         if (ep != null) {
-            String s = ep.getSelectedText ();
-            currentOffset = ep.getCaretPosition();
-            if (ep.getSelectionStart() > currentOffset || ep.getSelectionEnd() < currentOffset) {
-                s = null; // caret outside of the selection
+            String s;
+            Caret caret = ep.getCaret();
+            if (caret == null) {
+                s = null;
+                currentOffset = 0;
+            } else {
+                s = ep.getSelectedText ();
+                currentOffset = ep.getCaretPosition();
+                if (ep.getSelectionStart() > currentOffset || ep.getSelectionEnd() < currentOffset) {
+                    s = null; // caret outside of the selection
+                }
             }
             if (s != null && Utilities.isJavaIdentifier (s)) {
                 selectedIdentifier = s;
