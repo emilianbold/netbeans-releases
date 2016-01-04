@@ -2017,6 +2017,7 @@ public class BaseKit extends DefaultEditorKit {
                                                     }
                                                 } else {
                                                     doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
+                                                    c.setDot(Math.min(dot, mark));
                                                 }
                                             } catch (BadLocationException ble) {
                                                 LOG.log(Level.FINE, null, ble);
