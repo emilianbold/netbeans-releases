@@ -41,12 +41,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.derby.test;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.derby.api.DerbyDatabasesTest;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Common ancestor for all test classes.
@@ -54,9 +59,29 @@ import org.netbeans.junit.NbTestCase;
  * @author Andrei Badea
  */
 public class TestBase extends NbTestCase {
-
+    protected Lookup sampleDBLookup;
+    
     public TestBase(String name) {
         super(name);
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+       
+        clearWorkDir();
+        
+        DerbyDatabasesTest.SampleDatabaseLocator sdl = new DerbyDatabasesTest.SampleDatabaseLocator();
+        sampleDBLookup = new ProxyLookup(Lookup.getDefault(), Lookups.singleton(sdl));
+        
+        Lookups.executeWith(sampleDBLookup, new Runnable() {
+            @Override
+            public void run() {
+                // Force initialization of JDBCDrivers
+                JDBCDriverManager jdm = JDBCDriverManager.getDefault();
+                JDBCDriver[] registeredDrivers = jdm.getDrivers();
+            }
+        });
     }
 
     public static void createFakeDerbyInstallation(File location) throws IOException {

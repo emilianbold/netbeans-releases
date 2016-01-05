@@ -68,6 +68,8 @@ public class RegisterDerbyTest extends TestBase {
     public void testCanStart() throws Exception {
         DatabaseRuntime runtime = RegisterDerby.getDefault();
 
+        DerbyOptions.getDefault().setLocation("");
+        
         assertTrue(DerbyOptions.getDefault().getLocation().length() == 0);
         assertFalse(runtime.canStart());
 
