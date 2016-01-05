@@ -70,10 +70,15 @@ public final class CredentialsUtils {
     public static Credentials askForCredentials(String registry) {
         assert SwingUtilities.isEventDispatchThread();
 
+        String realRegistry = registry;
+        if (realRegistry == null) {
+            realRegistry = "https://index.docker.io/v1/"; // NOI18N
+        }
+
         try {
-            Credentials existing = CredentialsManager.getDefault().getCredentials(registry);
+            Credentials existing = CredentialsManager.getDefault().getCredentials(realRegistry);
             if (existing == null) {
-                existing = new Credentials(registry, null, new char[0], null);
+                existing = new Credentials(realRegistry, null, new char[0], null);
             }
             return editCredentials(existing, Collections.<String>emptySet());
         } catch (IOException ex) {
