@@ -138,7 +138,7 @@ public class PushTagAction extends NodeAction {
         @NbBundle.Messages({
             "# {0} - image name",
             "MSG_Pushing=Pushing {0}",
-            "MSG_EditCredentials=Authentication failed. Do you want to configure credentials for the registry?"
+            "MSG_EditCredentials=Authentication failed. Do you want to configure credentials for the registry and retry?"
         })
         @Override
         public void run() {

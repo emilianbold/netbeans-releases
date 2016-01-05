@@ -49,15 +49,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.docker.api.Credentials;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerAuthenticationException;
+import org.netbeans.modules.docker.api.DockerName;
+import org.netbeans.modules.docker.ui.credentials.CredentialsUtils;
 import org.netbeans.modules.docker.ui.node.EnhancedDockerInstance;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -89,9 +94,9 @@ public class PullImageAction extends NodeAction {
 
             DialogDescriptor descriptor
                     = new DialogDescriptor(panel, Bundle.LBL_SearchImage(),
-                            true, new Object[] {pullButton, DialogDescriptor.CANCEL_OPTION}, pullButton,
+                            true, new Object[]{pullButton, DialogDescriptor.CANCEL_OPTION}, pullButton,
                             DialogDescriptor.DEFAULT_ALIGN, null, null);
-            descriptor.setClosingOptions(new Object[] {pullButton, DialogDescriptor.CANCEL_OPTION});
+            descriptor.setClosingOptions(new Object[]{pullButton, DialogDescriptor.CANCEL_OPTION});
             Dialog dlg = null;
 
             try {
@@ -109,40 +114,8 @@ public class PullImageAction extends NodeAction {
         }
     }
 
-    @NbBundle.Messages({
-        "# {0} - image name",
-        "MSG_Pulling=Pulling {0}"
-    })
     private void perform(final DockerInstance instance, final String image) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Pulling(image), false);
-                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Pulling(image), new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        io.select();
-                    }
-                });
-                handle.start();
-                try {
-                    io.getOut().reset();
-                    io.select();
-                    DockerAction facade = new DockerAction(instance);
-                    facade.pull(image, new StatusOutputListener(io));
-                } catch (DockerAuthenticationException ex) {
-                    System.out.println("ASK FOR CREDENTIALS AND RETRY");
-                } catch (DockerException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                    io.getErr().println(ex.getMessage());
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                } finally {
-                    io.getOut().close();
-                    handle.finish();
-                }
-            }
-        });
+        RequestProcessor.getDefault().post(new Pull(instance, image));
     }
 
     @Override
@@ -172,5 +145,64 @@ public class PullImageAction extends NodeAction {
     @Override
     protected boolean asynchronous() {
         return false;
+    }
+
+    private static class Pull implements Runnable {
+
+        private final DockerInstance instance;
+
+        private final String image;
+
+        public Pull(DockerInstance instance, String image) {
+            this.instance = instance;
+            this.image = image;
+        }
+
+        @NbBundle.Messages({
+            "# {0} - image name",
+            "MSG_Pulling=Pulling {0}",
+            "MSG_EditCredentials=Authentication failed. Do you want to configure credentials for the registry and retry?"
+        })
+        @Override
+        public void run() {
+            final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Pulling(image), false);
+            ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Pulling(image), new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    io.select();
+                }
+            });
+            handle.start();
+            try {
+                io.getOut().reset();
+                io.select();
+                DockerAction facade = new DockerAction(instance);
+                facade.pull(image, new StatusOutputListener(io));
+            } catch (DockerAuthenticationException ex) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                                Bundle.MSG_EditCredentials(), NotifyDescriptor.YES_NO_OPTION);
+                        if (DialogDisplayer.getDefault().notify(desc) != NotifyDescriptor.YES_OPTION) {
+                            return;
+                        }
+                        DockerName name = DockerName.parse(image);
+                        Credentials c = CredentialsUtils.askForCredentials(name.getRegistry());
+                        if (c != null) {
+                            RequestProcessor.getDefault().post(Pull.this);
+                        }
+                    }
+                });
+            } catch (DockerException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                io.getErr().println(ex.getMessage());
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } finally {
+                io.getOut().close();
+                handle.finish();
+            }
+        }
     }
 }
