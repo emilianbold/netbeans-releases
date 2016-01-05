@@ -46,12 +46,16 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.docker.api.Credentials;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerAuthenticationException;
 import org.netbeans.modules.docker.api.DockerException;
+import org.netbeans.modules.docker.api.DockerName;
+import org.netbeans.modules.docker.ui.credentials.CredentialsUtils;
 import org.netbeans.modules.docker.ui.output.StatusOutputListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -83,9 +87,7 @@ public class PushTagAction extends NodeAction {
 
     @NbBundle.Messages({
         "# {0} - image name",
-        "MSG_PushQuestion=Do you really want to push the image {0} to the registry?",
-        "# {0} - image name",
-        "MSG_Pushing=Pushing {0}"
+        "MSG_PushQuestion=Do you really want to push the image {0} to the registry?"
     })
     private void perform(final DockerTag tag) {
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
@@ -94,36 +96,7 @@ public class PushTagAction extends NodeAction {
             return;
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                String image = tag.getTag();
-                final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Pushing(image), false);
-                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Pushing(image), new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        io.select();
-                    }
-                });
-                handle.start();
-                try {
-                    io.getOut().reset();
-                    io.select();
-                    DockerAction facade = new DockerAction(tag.getImage().getInstance());
-                    facade.push(tag, new StatusOutputListener(io));
-                } catch (DockerAuthenticationException ex) {
-                    System.out.println("ASK FOR CREDENTIALS AND RETRY");
-                } catch (DockerException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                    io.getErr().println(ex.getMessage());
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                } finally {
-                    io.getOut().close();
-                    handle.finish();
-                }
-            }
-        });
+        RequestProcessor.getDefault().post(new Push(tag));
     }
 
     @Override
@@ -152,6 +125,63 @@ public class PushTagAction extends NodeAction {
     @Override
     protected boolean asynchronous() {
         return false;
+    }
+
+    private static class Push implements Runnable {
+
+        private final DockerTag tag;
+
+        public Push(DockerTag tag) {
+            this.tag = tag;
+        }
+
+        @NbBundle.Messages({
+            "# {0} - image name",
+            "MSG_Pushing=Pushing {0}",
+            "MSG_EditCredentials=Authentication failed. Do you want to configure credentials for the registry?"
+        })
+        @Override
+        public void run() {
+            String image = tag.getTag();
+            final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Pushing(image), false);
+            ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Pushing(image), new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    io.select();
+                }
+            });
+            handle.start();
+            try {
+                io.getOut().reset();
+                io.select();
+                DockerAction facade = new DockerAction(tag.getImage().getInstance());
+                facade.push(tag, new StatusOutputListener(io));
+            } catch (DockerAuthenticationException ex) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                                Bundle.MSG_EditCredentials(), NotifyDescriptor.YES_NO_OPTION);
+                        if (DialogDisplayer.getDefault().notify(desc) != NotifyDescriptor.YES_OPTION) {
+                            return;
+                        }
+                        DockerName name = DockerName.parse(tag.getTag());
+                        Credentials c = CredentialsUtils.askForCredentials(name.getRegistry());
+                        if (c != null) {
+                            RequestProcessor.getDefault().post(Push.this);
+                        }
+                    }
+                });
+            } catch (DockerException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                io.getErr().println(ex.getMessage());
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } finally {
+                io.getOut().close();
+                handle.finish();
+            }
+        }
     }
 
 }

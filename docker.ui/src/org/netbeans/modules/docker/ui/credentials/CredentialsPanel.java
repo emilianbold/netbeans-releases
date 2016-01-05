@@ -41,21 +41,15 @@
  */
 package org.netbeans.modules.docker.ui.credentials;
 
-import java.awt.Dialog;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import org.netbeans.modules.docker.api.Credentials;
 import org.netbeans.modules.docker.api.CredentialsManager;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -185,75 +179,19 @@ public class CredentialsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    @NbBundle.Messages({
-        "LBL_Add=&Add",
-        "LBL_AddTitle=Add"
-    })
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        JButton actionButton = new JButton();
-        Mnemonics.setLocalizedText(actionButton, Bundle.LBL_Add());
-        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton, true, getRegistries());
-        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_AddTitle(), true,
-                new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION}, actionButton,
-                DialogDescriptor.DEFAULT_ALIGN, null, null);
-        descriptor.setClosingOptions(new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION});
-        panel.setMessageLine(descriptor.createNotificationLineSupport());
-
-        Dialog dlg = null;
-        try {
-            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-            dlg.setVisible(true);
-
-            if (descriptor.getValue() == actionButton) {
-                try {
-                    Credentials credentials = panel.getCredentials();
-                    CredentialsManager.getDefault().setCredentials(credentials);
-                    model.addElement(new CredentialsItem(credentials));
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        } finally {
-            if (dlg != null) {
-                dlg.dispose();
-            }
+        Credentials credentials = CredentialsUtils.editCredentials(null, getRegistries());
+        if (credentials != null) {
+            model.addElement(new CredentialsItem(credentials));
         }
     }//GEN-LAST:event_addButtonActionPerformed
 
-    @NbBundle.Messages({
-        "LBL_OK=&OK",
-        "LBL_EditTitle=Edit"
-    })
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-        JButton actionButton = new JButton();
-        Mnemonics.setLocalizedText(actionButton, Bundle.LBL_OK());
-        CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton, false, Collections.<String>emptySet());
         int index = credentialsList.getSelectedIndex();
-        panel.setCredentials(credentialsList.getSelectedValue().getCredentials());
-        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_EditTitle(), true,
-                new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION}, actionButton,
-                DialogDescriptor.DEFAULT_ALIGN, null, null);
-        descriptor.setClosingOptions(new Object[] {actionButton, DialogDescriptor.CANCEL_OPTION});
-        panel.setMessageLine(descriptor.createNotificationLineSupport());
-
-        Dialog dlg = null;
-        try {
-            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-            dlg.setVisible(true);
-
-            if (descriptor.getValue() == actionButton) {
-                try {
-                    Credentials credentials = panel.getCredentials();
-                    CredentialsManager.getDefault().setCredentials(credentials);
-                    model.setElementAt(new CredentialsItem(credentials), index);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        } finally {
-            if (dlg != null) {
-                dlg.dispose();
-            }
+        Credentials credentials = CredentialsUtils.editCredentials(
+                credentialsList.getSelectedValue().getCredentials(), Collections.<String>emptySet());
+        if (credentials != null) {
+            model.setElementAt(new CredentialsItem(credentials), index);
         }
     }//GEN-LAST:event_editButtonActionPerformed
 
