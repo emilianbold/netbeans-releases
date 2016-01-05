@@ -41,43 +41,18 @@
  */
 package org.netbeans.modules.docker.api;
 
-import java.io.IOException;
-import java.util.List;
-import org.netbeans.modules.docker.DockerConfig;
-
 /**
  *
  * @author Petr Hejl
  */
-public final class CredentialsManager {
+public class DockerAuthenticationException extends DockerException {
 
-    private static final CredentialsManager INSTANCE = new CredentialsManager();
-
-    private CredentialsManager() {
-        super();
+    public DockerAuthenticationException(String message) {
+        super(message);
     }
 
-    public static CredentialsManager getDefault() {
-        return INSTANCE;
+    public DockerAuthenticationException(Throwable cause) {
+        super(cause);
     }
 
-    public List<Credentials> getAllCredentials() throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        return DockerConfig.getDefault().getAllCredentials();
-    }
-
-    public Credentials getCredentials(String registry) throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        return DockerConfig.getDefault().getCredentials(registry);
-    }
-
-    public void setCredentials(Credentials credentials) throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        DockerConfig.getDefault().setCredentials(credentials);
-    }
-
-    public void removeCredentials(Credentials credentials) throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        DockerConfig.getDefault().removeCredentials(credentials);
-    }
 }
