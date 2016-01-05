@@ -39,45 +39,52 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api;
+package org.netbeans.modules.docker.ui.credentials;
 
-import java.io.IOException;
-import java.util.List;
-import org.netbeans.modules.docker.DockerConfig;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class CredentialsManager {
+@ActionID(id = "org.netbeans.modules.docker.ui.credentials.CredentialsAction", category = "System")
+@ActionRegistration(displayName = "#LBL_CredentialsAction")
+@ActionReferences(
+    @ActionReference(path = "Docker/Credentials", position = 200)
+)
+public class CredentialsAction implements ActionListener {
 
-    private static final CredentialsManager INSTANCE = new CredentialsManager();
+    @NbBundle.Messages({
+        "LBL_Credentials=Credentials",
+        "LBL_Close=Close"
+    })
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        CredentialsListPanel panel = new CredentialsListPanel();
+        JButton closeButton = new JButton(Bundle.LBL_Close());
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_Credentials(),
+                        true, new Object[]{closeButton}, closeButton,
+                        DialogDescriptor.DEFAULT_ALIGN, null, null);
+        descriptor.setClosingOptions(new Object[]{closeButton});
 
-    private CredentialsManager() {
-        super();
-    }
-
-    public static CredentialsManager getDefault() {
-        return INSTANCE;
-    }
-
-    public List<Credentials> getAllCredentials() throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        return DockerConfig.getDefault().getAllCredentials();
-    }
-
-    public Credentials getCredentials(String registry) throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        return DockerConfig.getDefault().getCredentials(registry);
-    }
-
-    public void setCredentials(Credentials credentials) throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        DockerConfig.getDefault().setCredentials(credentials);
-    }
-
-    public void removeCredentials(Credentials credentials) throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        DockerConfig.getDefault().removeCredentials(credentials);
+        Dialog dlg = null;
+        try {
+            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.setVisible(true);
+        } finally {
+            if (dlg != null) {
+                dlg.dispose();
+            }
+        }
     }
 }
