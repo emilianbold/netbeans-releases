@@ -225,10 +225,15 @@ public class TasksMenu extends JMenu {
         }
         // other tasks
         addAdvancedTasksMenuItems();
-        addManageMenuItems(allTasks);
         if (showSimpleTasks) {
             addTasksMenuItems(allTasks);
         }
+        if (!advancedTasks.isEmpty()
+                || (showSimpleTasks && !allTasks.isEmpty())) {
+            addSeparator();
+        }
+        // config
+        addManageMenuItems(allTasks);
         addReloadTasksMenuItem();
     }
 
@@ -238,9 +243,6 @@ public class TasksMenu extends JMenu {
         assert tasks != null;
         for (String task : tasks) {
             addTaskMenuItem(false, task);
-        }
-        if (!tasks.isEmpty()) {
-            addSeparator();
         }
     }
 
@@ -302,7 +304,6 @@ public class TasksMenu extends JMenu {
             }
         });
         add(menuItem);
-        addSeparator();
     }
 
     private void addTaskMenuItem(final boolean isDefault, final String task) {
