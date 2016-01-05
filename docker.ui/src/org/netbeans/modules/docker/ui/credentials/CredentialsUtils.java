@@ -93,7 +93,7 @@ public final class CredentialsUtils {
         try {
             JButton actionButton = new JButton();
             Mnemonics.setLocalizedText(actionButton, Bundle.LBL_OK());
-            CredentialsDetailPanel panel = new CredentialsDetailPanel(actionButton, registries);
+            CredentialsPanel panel = new CredentialsPanel(actionButton, registries);
             if (existing != null) {
                 panel.setCredentials(existing);
             }

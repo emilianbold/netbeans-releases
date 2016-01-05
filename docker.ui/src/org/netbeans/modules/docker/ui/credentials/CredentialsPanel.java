@@ -41,15 +41,16 @@
  */
 package org.netbeans.modules.docker.ui.credentials;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Set;
-import javax.swing.DefaultListModel;
+import java.util.regex.Pattern;
+import javax.swing.JButton;
+import javax.swing.JPasswordField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.docker.api.Credentials;
-import org.netbeans.modules.docker.api.CredentialsManager;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.docker.ui.UiUtils;
+import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,49 +58,105 @@ import org.openide.util.Exceptions;
  */
 public class CredentialsPanel extends javax.swing.JPanel {
 
-    private final DefaultListModel<CredentialsItem> model = new DefaultListModel<>();
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+
+    private final JPasswordField reference = new JPasswordField();
+
+    private final JButton actionButton;
+
+    private final Set<String> registries;
+
+    private NotificationLineSupport messageLine;
 
     /**
-     * Creates new form CredentialsPanel
+     * Creates new form CredentialsDetailPanel
      */
-    public CredentialsPanel() {
+    public CredentialsPanel(JButton actionButton, Set<String> registries) {
         initComponents();
 
-        CredentialsManager manager = CredentialsManager.getDefault();
-        try {
-            for (Credentials c : manager.getAllCredentials()) {
-                model.addElement(new CredentialsItem(c));
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        credentialsList.setModel(model);
+        this.actionButton = actionButton;
+        this.registries = registries;
+
+        DefaultDocumentListener listener = new DefaultDocumentListener();
+        registryTextField.getDocument().addDocumentListener(listener);
+        usernameTextField.getDocument().addDocumentListener(listener);
+        emailTextField.getDocument().addDocumentListener(listener);
     }
 
-    private Set<String> getRegistries() {
-        Set<String> ret = new HashSet<>(model.size());
-        for (Enumeration<CredentialsItem> e = model.elements(); e.hasMoreElements(); ) {
-            CredentialsItem i = e.nextElement();
-            ret.add(i.getCredentials().getRegistry());
-        }
-        return ret;
+    public void setMessageLine(NotificationLineSupport messageLine) {
+        this.messageLine = messageLine;
+        validateInput();
     }
 
-    private static class CredentialsItem {
-
-        private final Credentials credentials;
-
-        public CredentialsItem(Credentials credentials) {
-            this.credentials = credentials;
+    @NbBundle.Messages({
+        "MSG_EmptyRegistry=Registry must not be empty.",
+        "MSG_ExistingRegistry=This registry is already defined.",
+        "MSG_EmptyUsername=Username must not be empty.",
+        "MSG_InvalidEmail=Email address does not seem to be valid"
+    })
+    private void validateInput() {
+        if (messageLine == null) {
+            return;
         }
 
-        public Credentials getCredentials() {
-            return credentials;
+        messageLine.clearMessages();
+        actionButton.setEnabled(true);
+
+        String registry = UiUtils.getValue(registryTextField);
+        if (registry == null) {
+            messageLine.setErrorMessage(Bundle.MSG_EmptyRegistry());
+            actionButton.setEnabled(false);
+            return;
+        } else if (registries.contains(registry)) {
+            messageLine.setErrorMessage(Bundle.MSG_ExistingRegistry());
+            actionButton.setEnabled(false);
+            return;
+        }
+        String username = UiUtils.getValue(usernameTextField);
+        if (username == null) {
+            messageLine.setErrorMessage(Bundle.MSG_EmptyUsername());
+            actionButton.setEnabled(false);
+            return;
+        }
+        String email = UiUtils.getValue(emailTextField);
+        if (email != null && !EMAIL_PATTERN.matcher(email).matches()) {
+            messageLine.setWarningMessage(Bundle.MSG_InvalidEmail());
+        }
+    }
+
+    public Credentials getCredentials() {
+        return new Credentials(UiUtils.getValue(registryTextField),
+                UiUtils.getValue(usernameTextField),
+                passwordPasswordField.getPassword(),
+                UiUtils.getValue(emailTextField));
+    }
+
+    public void setCredentials(Credentials credentials) {
+        registryTextField.setEditable(false);
+        registryTextField.setText(credentials.getRegistry());
+        usernameTextField.setText(credentials.getUsername());
+        if (credentials.getPassword() != null) {
+            passwordPasswordField.setText(new String(credentials.getPassword()));
+        }
+        emailTextField.setText(credentials.getEmail());
+    }
+
+    private class DefaultDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            validateInput();
         }
 
         @Override
-        public String toString() {
-            return credentials.getRegistry();
+        public void removeUpdate(DocumentEvent e) {
+            validateInput();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            validateInput();
         }
     }
 
@@ -112,39 +169,34 @@ public class CredentialsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        credentialsList = new javax.swing.JList<>();
-        addButton = new javax.swing.JButton();
-        removeButton = new javax.swing.JButton();
-        editButton = new javax.swing.JButton();
+        registryLabel = new javax.swing.JLabel();
+        registryTextField = new javax.swing.JTextField();
+        usernameLabel = new javax.swing.JLabel();
+        usernameTextField = new javax.swing.JTextField();
+        passwordLabel = new javax.swing.JLabel();
+        passwordPasswordField = new javax.swing.JPasswordField();
+        emailLabel = new javax.swing.JLabel();
+        emailTextField = new javax.swing.JTextField();
+        showPasswordCheckBox = new javax.swing.JCheckBox();
 
-        credentialsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                credentialsListValueChanged(evt);
-            }
-        });
-        jScrollPane1.setViewportView(credentialsList);
+        registryLabel.setLabelFor(registryTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(registryLabel, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.registryLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.addButton.text")); // NOI18N
-        addButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addButtonActionPerformed(evt);
-            }
-        });
+        usernameLabel.setLabelFor(usernameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.usernameLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.removeButton.text")); // NOI18N
-        removeButton.setEnabled(false);
-        removeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeButtonActionPerformed(evt);
-            }
-        });
+        usernameTextField.setColumns(10);
 
-        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.editButton.text")); // NOI18N
-        editButton.setEnabled(false);
-        editButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editButtonActionPerformed(evt);
+        passwordLabel.setLabelFor(passwordPasswordField);
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.passwordLabel.text")); // NOI18N
+
+        emailLabel.setLabelFor(emailTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(emailLabel, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.emailLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(showPasswordCheckBox, org.openide.util.NbBundle.getMessage(CredentialsPanel.class, "CredentialsPanel.showPasswordCheckBox.text")); // NOI18N
+        showPasswordCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                showPasswordCheckBoxItemStateChanged(evt);
             }
         });
 
@@ -154,70 +206,66 @@ public class CredentialsPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(usernameLabel)
+                    .addComponent(registryLabel)
+                    .addComponent(passwordLabel)
+                    .addComponent(emailLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(removeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(editButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(registryTextField)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(passwordPasswordField, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(usernameTextField, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(showPasswordCheckBox)
+                        .addGap(0, 101, Short.MAX_VALUE))
+                    .addComponent(emailTextField))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(addButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(editButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeButton)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(registryLabel)
+                    .addComponent(registryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(usernameLabel)
+                    .addComponent(usernameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(passwordLabel)
+                    .addComponent(passwordPasswordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(showPasswordCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(emailLabel)
+                    .addComponent(emailTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        Credentials credentials = CredentialsUtils.editCredentials(null, getRegistries());
-        if (credentials != null) {
-            model.addElement(new CredentialsItem(credentials));
+    private void showPasswordCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_showPasswordCheckBoxItemStateChanged
+        if (showPasswordCheckBox.isSelected()) {
+            passwordPasswordField.setEchoChar((char) 0);
+        } else {
+            passwordPasswordField.setEchoChar(reference.getEchoChar());
         }
-    }//GEN-LAST:event_addButtonActionPerformed
-
-    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-        int index = credentialsList.getSelectedIndex();
-        Credentials credentials = CredentialsUtils.editCredentials(
-                credentialsList.getSelectedValue().getCredentials(), Collections.<String>emptySet());
-        if (credentials != null) {
-            model.setElementAt(new CredentialsItem(credentials), index);
-        }
-    }//GEN-LAST:event_editButtonActionPerformed
-
-    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        for (CredentialsItem i : credentialsList.getSelectedValuesList()) {
-            try {
-                CredentialsManager.getDefault().removeCredentials(i.getCredentials());
-                model.removeElement(i);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }//GEN-LAST:event_removeButtonActionPerformed
-
-    private void credentialsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_credentialsListValueChanged
-        boolean enable = !credentialsList.isSelectionEmpty();
-        editButton.setEnabled(enable);
-        removeButton.setEnabled(enable);
-    }//GEN-LAST:event_credentialsListValueChanged
+    }//GEN-LAST:event_showPasswordCheckBoxItemStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addButton;
-    private javax.swing.JList<CredentialsItem> credentialsList;
-    private javax.swing.JButton editButton;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton removeButton;
+    private javax.swing.JLabel emailLabel;
+    private javax.swing.JTextField emailTextField;
+    private javax.swing.JLabel passwordLabel;
+    private javax.swing.JPasswordField passwordPasswordField;
+    private javax.swing.JLabel registryLabel;
+    private javax.swing.JTextField registryTextField;
+    private javax.swing.JCheckBox showPasswordCheckBox;
+    private javax.swing.JLabel usernameLabel;
+    private javax.swing.JTextField usernameTextField;
     // End of variables declaration//GEN-END:variables
 }

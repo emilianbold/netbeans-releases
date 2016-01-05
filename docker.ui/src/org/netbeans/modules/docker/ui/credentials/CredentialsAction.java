@@ -70,7 +70,7 @@ public class CredentialsAction implements ActionListener {
     })
     @Override
     public void actionPerformed(ActionEvent e) {
-        CredentialsPanel panel = new CredentialsPanel();
+        CredentialsListPanel panel = new CredentialsListPanel();
         JButton closeButton = new JButton(Bundle.LBL_Close());
         DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.LBL_Credentials(),
                         true, new Object[]{closeButton}, closeButton,
