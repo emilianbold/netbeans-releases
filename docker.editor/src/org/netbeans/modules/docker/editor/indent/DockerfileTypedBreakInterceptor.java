@@ -97,7 +97,7 @@ public final class DockerfileTypedBreakInterceptor implements TypedBreakIntercep
                 break;
             }
         }
-        final boolean lineContinuation = isLineContinuation(token);
+        final boolean lineContinuation = isLineContinuation(token, offset-seq.offset());
         final Pair<Integer,TokenSequence<DockerfileTokenId>> p = findImportantLine(seq, doc, lineStart, tokenEnd);
         int indent;
         if (lineContinuation) {
@@ -135,7 +135,9 @@ public final class DockerfileTypedBreakInterceptor implements TypedBreakIntercep
     public void cancelled(Context context) {
     }
 
-    private boolean isLineContinuation(@NullAllowed final Token<DockerfileTokenId> token) {
+    private boolean isLineContinuation(
+            @NullAllowed final Token<DockerfileTokenId> token,
+            final int offsetInToken) {
         if (token == null) {
             return false;
         }
@@ -143,7 +145,7 @@ public final class DockerfileTypedBreakInterceptor implements TypedBreakIntercep
             return true;
         }
         if (token.id() == DockerfileTokenId.STRING_LITERAL &&
-            TokenUtilities.endsWith(TokenUtilities.trim(token.text()),"\\")) {  //NOI18N
+            TokenUtilities.endsWith(TokenUtilities.trim(token.text().subSequence(0, offsetInToken)),"\\")) {  //NOI18N
             return true;
         }
         return false;
